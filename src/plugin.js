@@ -24,7 +24,7 @@ class Plugin
 		}
 	}
 
-	async init(settings, secrets, actions, webServices)
+	async init(settings, secrets, actions, profiles, webServices)
 	{
 		if (this.initFunc)
 		{
@@ -35,6 +35,7 @@ class Plugin
 			this.pluginObj.secrets = pluginSecrets;
 			this.pluginObj.webServices = webServices;
 			this.pluginObj.actions = actions;
+			this.pluginObj.profiles = profiles;
 
 			await this.initFunc();
 		}

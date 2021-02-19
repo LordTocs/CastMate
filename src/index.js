@@ -1,5 +1,7 @@
 const { app, BrowserWindow } = require("electron");
 const { ActionQueue } = require("./actions/action-queue.js");
+const { ProfileManager } = require("./actions/profile-manager.js");
+const { Profile } = require("./actions/profiles.js");
 const { Plugin } = require('./plugin.js');
 const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
@@ -57,10 +59,15 @@ app.whenReady().then(async () =>
 
 	const webServices = createWebServices(settings.data.web || {});
 
+	const profiles = new ProfileManager(actions);
+	profiles.loadProfile("./profiles/root.yaml");
+
 	for (let plugin of plugins)
 	{
-		plugin.init(settings, secrets, actions, webServices);
+		plugin.init(settings, secrets, actions, profiles, webServices);
 	}
+
+	
 });
 
 app.on("activate", () =>

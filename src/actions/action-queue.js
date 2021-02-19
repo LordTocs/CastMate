@@ -175,7 +175,7 @@ class ActionQueue
 		{
 			if (subAction in this.actions)
 			{
-				this.actions[subAction].handle(action[subAction]);
+				this.actions[subAction].handler(action[subAction]);
 			}
 		}
 
