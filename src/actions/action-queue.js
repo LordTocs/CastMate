@@ -3,7 +3,6 @@ const { Mutex } = require("async-mutex");
 
 function isActionable(actionable)
 {
-
 	if (actionable instanceof Array)
 	{
 		return true;
@@ -38,6 +37,7 @@ class ActionQueue
 	{
 		this.triggers = {};
 		this.queue = [];
+		this.currentAction = null;
 		this.queueMutex = new Mutex();
 
 		//Convert plugins into action lookup table
@@ -55,6 +55,8 @@ class ActionQueue
 	{
 		this.triggers = triggers;
 	}
+
+
 
 	async pushToQueue(actionDef, context)
 	{
@@ -96,19 +98,11 @@ class ActionQueue
 			}
 			release();
 
-			this.runStartOfQueue();
+			this._runStartOfQueue();
 		}
 		else
 		{
 			this._runActions(actionArray);
-		}
-	}
-
-	async _runActions(actionArray)
-	{
-		for (let action of actionArray)
-		{
-			await this._runAction(action);
 		}
 	}
 
@@ -141,7 +135,7 @@ class ActionQueue
 			}
 			else if (selected)
 			{
-				logger.error("Selected wasn't actionable.");
+				console.error("Selected wasn't actionable.");
 			}
 		}
 		else if ("name" in options)
@@ -163,6 +157,16 @@ class ActionQueue
 		}
 	}
 
+
+	async _runActions(actionArray)
+	{
+		for (let action of actionArray)
+		{
+			await this._runAction(action);
+		}
+	}
+
+
 	async _runAction(action)
 	{
 		//Hardcoded wait
@@ -183,6 +187,40 @@ class ActionQueue
 		{
 			await sleep(action.delay * 1000);
 		}
+	}
+
+	async _runNext()
+	{
+		if (this.queue.length > 0)
+		{
+			let release = await this.queueMutex.acquire();
+			let front = this.queue.shift();
+			let frontPromise = this._runAction(front);
+			this.currentAction = frontPromise;
+			this.currentAction.then(() => this._runNext());
+			release();
+		}
+		else
+		{
+			this.currentAction = null;
+		}
+	}
+
+	async _runStartOfQueue()
+	{
+		if (this.currentAction)
+			return;
+
+		if (this.queue.length == 0)
+			return;
+
+		console.log("Starting new chain");
+		let release = await this.queueMutex.acquire();
+		let front = this.queue.shift();
+		let frontPromise = this._runAction(front);
+		this.currentAction = frontPromise;
+		this.currentAction.then(() => this._runNext());
+		release();
 	}
 }
 
