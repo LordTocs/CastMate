@@ -9,11 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
     "electron": "^11.2.3",
     "express": "^4.17.1",
     "twitch": "^4.4.11",
     "twitch-chat-client": "^4.4.11",
     "twitch-eventsub": "^4.4.11",
+    "websocket": "^1.0.33",
     "yaml": "^1.10.0"
   }
 }

@@ -1,6 +1,9 @@
 const { app, BrowserWindow } = require("electron");
 const { Plugin } = require('./plugin.js');
 const HotReloader = require('./utils/hot-reloader.js');
+const { createWebServices } = require("./utils/webserver.js");
+
+
 
 
 
@@ -34,22 +37,24 @@ app.whenReady().then(async () =>
 		},
 		(err) =>
 		{
-
+			console.error("Error loading settings", err);
 		});
 
-	const secrets = new HotReloader("secrets.yaml",
+	const secrets = new HotReloader("secrets/secrets.yaml",
 		(newSettings, oldSettings) =>
 		{
 			//TODO handle hotreload.
 		},
 		(err) =>
 		{
-
+			console.error("Error loading secrets", err);
 		});
+
+	const webServices = createWebServices(settings.data.web || {});
 
 	for (let plugin of plugins)
 	{
-		plugin.init(settings, secrets);
+		plugin.init(settings, secrets, webServices);
 	}
 });
 

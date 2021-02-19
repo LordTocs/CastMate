@@ -10,13 +10,13 @@ class Plugin
 		this.actions = config.actions || [];
 	}
 
-	async init(settings, secrets)
+	async init(settings, secrets, webServices)
 	{
 		if (this.initFunc)
 		{
 			let pluginSettings = settings.data[this.name] || {};
 			let pluginSecrets = secrets.data[this.name] || {};
-			await this.initFunc(pluginSettings, pluginSecrets);
+			await this.initFunc(pluginSettings, pluginSecrets, webServices);
 		}
 	}
 }
