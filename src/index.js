@@ -1,4 +1,5 @@
 const { app, BrowserWindow } = require("electron");
+const { ActionQueue } = require("./actions/action-queue.js");
 const { Plugin } = require('./plugin.js');
 const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
@@ -24,8 +25,6 @@ app.whenReady().then(async () =>
 {
 	createWindow();
 
-
-
 	const twitchPlugin = new Plugin(require("./plugins/twitch"));
 
 	let plugins = [twitchPlugin];
@@ -33,7 +32,10 @@ app.whenReady().then(async () =>
 	const settings = new HotReloader("settings.yaml",
 		(newSettings, oldSettings) =>
 		{
-			//TODO handle hotreload.
+			for (let plugin of plugins)
+			{
+				plugin.updateSettings(newSettings);
+			}
 		},
 		(err) =>
 		{
@@ -41,20 +43,23 @@ app.whenReady().then(async () =>
 		});
 
 	const secrets = new HotReloader("secrets/secrets.yaml",
-		(newSettings, oldSettings) =>
+		(newSecrets, oldSecrets) =>
 		{
 			//TODO handle hotreload.
+			plugin.updateSecrets(newSecrets);
 		},
 		(err) =>
 		{
 			console.error("Error loading secrets", err);
 		});
 
+	const actions = new ActionQueue(plugins);
+
 	const webServices = createWebServices(settings.data.web || {});
 
 	for (let plugin of plugins)
 	{
-		plugin.init(settings, secrets, webServices);
+		plugin.init(settings, secrets, actions, webServices);
 	}
 });
 
