@@ -27,9 +27,10 @@ app.whenReady().then(async () =>
 {
 	createWindow();
 
-	const twitchPlugin = new Plugin(require("./plugins/twitch"));
+	const twitchPlugin = new Plugin(require("./plugins/twitch.js"));
+	const lightPlugin = new Plugin(require("./plugins/lights.js"));
 
-	let plugins = [twitchPlugin];
+	let plugins = [twitchPlugin, lightPlugin];
 
 	const settings = new HotReloader("settings.yaml",
 		(newSettings, oldSettings) =>
