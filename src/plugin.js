@@ -13,14 +13,21 @@ class Plugin
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];
 		this.triggers = config.triggers || [];
-		this.actions = config.actions || [];
+		this.actions = {};
 
-		for (let action of this.actions)
+		if (config.methods)
 		{
+			Object.assign(this.pluginObj, config.methods);
+		}
+
+		for (let actionKey in config.actions)
+		{
+			let action = config.actions[actionKey];
 			if (action.handler)
 			{
 				action.handler = action.handler.bind(this.pluginObj);
 			}
+			this.actions[actionKey] = action;
 		}
 	}
 

@@ -44,9 +44,9 @@ class ActionQueue
 		this.actions = {};
 		for (let plugin of plugins)
 		{
-			for (let action of plugin.actions)
+			for (let actionKey in plugin.actions)
 			{
-				this.actions[action.name] = action;
+				this.actions[actionKey] = plugin.actions[actionKey];
 			}
 		}
 	}
