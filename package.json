@@ -16,7 +16,8 @@
     "express": "^4.17.1",
     "twitch": "^4.4.11",
     "twitch-chat-client": "^4.4.11",
-    "twitch-eventsub": "^4.4.11",
+    "twitch-pubsub-client": "^4.4.11",
+    "twitch-webhooks": "^4.4.11",
     "websocket": "^1.0.33",
     "yaml": "^1.10.0"
   }

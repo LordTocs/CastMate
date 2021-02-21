@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const websocket = require("websocket");
 const http = require("http");
 
-function createWebServices(settings)
+function createWebServices(settings, secrets)
 {
 	let app = express();
 	let routes = express.Router();
@@ -30,7 +30,9 @@ function createWebServices(settings)
 	return {
 		app,
 		routes,
-		websocketServer
+		websocketServer,
+		hostname: secrets.hostname,
+		port: settings.port
 	}
 }
 

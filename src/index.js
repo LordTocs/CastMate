@@ -57,7 +57,7 @@ app.whenReady().then(async () =>
 
 	const actions = new ActionQueue(plugins);
 
-	const webServices = createWebServices(settings.data.web || {});
+	const webServices = createWebServices(settings.data.web || {}, secrets.data.web || {});
 
 	const profiles = new ProfileManager(actions);
 	profiles.loadProfile("./profiles/root.yaml");
