@@ -65,6 +65,7 @@ app.whenReady().then(async () =>
 
 	const profiles = new ProfileManager(actions);
 	profiles.loadProfile("./profiles/root.yaml");
+	profiles.loadProfile("./profiles/kitchen.yaml");
 
 	for (let plugin of plugins)
 	{

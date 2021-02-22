@@ -52,6 +52,8 @@ module.exports = {
 		await this.setupWebHookTriggers();
 
 		await this.setupPubSubTriggers();
+
+		await this.initConditions();
 	},
 	methods: {
 		async doAuth()
@@ -166,7 +168,11 @@ module.exports = {
 			await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) => {
 				//Stream Changed
 				console.log("Stream Changed");
-				console.log(stream);
+				
+				let game = await stream.getGame();
+				console.log ("Game Name", game.name);
+
+				this.profiles.setCondition("category", game.name);
 			});
 		},
 
@@ -203,6 +209,18 @@ module.exports = {
 
 				//variables.set('subscribers', await channelTwitchClient.kraken.channels.getChannelSubscriptionCount(channelId))
 			});
+		},
+
+		async initConditions()
+		{
+			let stream = await this.channelTwitchClient.helix.streams.getStreamByUserId(this.channelId);
+
+			if (stream)
+			{
+				let game = await stream.getGame();
+
+				this.profiles.setCondition("category", game.name);
+			}
 		}
 	},
 	settings: {
@@ -212,6 +230,12 @@ module.exports = {
 	secrets: {
 		apiClientId: { type: String },
 		apiClientSecret: { type: String },
+	},
+	profileTriggers: {
+		category: {
+			name: "Twitch Category",
+			description: "Change profiles based on the stream's twitch category"
+		}
 	},
 	triggers: {
 		chat: {
