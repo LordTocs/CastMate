@@ -23,14 +23,17 @@ function createWindow()
 	win.loadFile("web/index.html");
 }
 
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
 app.whenReady().then(async () =>
 {
 	createWindow();
 
 	const twitchPlugin = new Plugin(require("./plugins/twitch.js"));
 	const lightPlugin = new Plugin(require("./plugins/lights.js"));
+	const soundPlugin = new Plugin(require("./plugins/sounds.js"));
 
-	let plugins = [twitchPlugin, lightPlugin];
+	let plugins = [twitchPlugin, lightPlugin, soundPlugin];
 
 	const settings = new HotReloader("settings.yaml",
 		(newSettings, oldSettings) =>

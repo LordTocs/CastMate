@@ -165,6 +165,7 @@ module.exports = {
 
 			await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) => {
 				//Stream Changed
+				console.log("Stream Changed");
 				console.log(stream);
 			});
 		},

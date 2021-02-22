@@ -18,10 +18,10 @@ module.exports = {
 
 		let groups = await this.hue.groups.getAll();
 
-		for (let group of groups)
+		/*for (let group of groups)
 		{
 			console.log(group.toStringDetailed());
-		}
+		}*/
 	},
 	methods: {
 		async discoverBridge()
