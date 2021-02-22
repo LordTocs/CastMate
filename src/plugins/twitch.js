@@ -6,7 +6,8 @@ const { ChatClient } = require("twitch-chat-client");
 
 const { PubSubClient } = require("twitch-pubsub-client");
 
-const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks")
+const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
+const { parse } = require("yaml");
 
 
 class ExpressWebhookAdapter extends ConnectionAdapter
@@ -96,6 +97,24 @@ module.exports = {
 			this.botId = await (await this.botTwitchClient.kraken.users.getMe()).id;
 		},
 
+		parseMessage(message)
+		{
+			let firstSpace = message.indexOf(' ');
+
+			if (firstSpace == -1)
+			{
+				return { command: message.toLowerCase(), args: [], string: "" }
+			}
+
+			let command = message.substr(0, firstSpace).toLowerCase();
+
+			let string = message.substr(firstSpace + 1);
+
+			let args = string.split(' ').filter((arg) => arg.length != 0);
+
+			return { command, args, string };
+		},
+
 		async setupChatTriggers()
 		{
 			this.chatClient = new ChatClient(this.chatAuthProvider, { channels: [this.settings.channelName] });
@@ -106,11 +125,11 @@ module.exports = {
 			//Setup triggers
 			this.chatClient.onMessage(async (channel, user, message, msgInfo) =>
 			{
-				let messageLower = message.toLowerCase();
+				let parsed = this.parseMessage(message);
 
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
 				{
-					if (this.actions.trigger('modchat', { name: messageLower, user }))
+					if (this.actions.trigger('modchat', { name: parsed.command, user, args: parsed.args, string: parsed.string }))
 					{
 						return;
 					}
@@ -118,7 +137,7 @@ module.exports = {
 
 				if (msgInfo.userInfo.isVip)
 				{
-					if (this.actions.trigger('vipchat', { name: messageLower, user }))
+					if (this.actions.trigger('vipchat', { name: parsed.command, user, args: parsed.args, string: parsed.string }))
 					{
 						return;
 					}
@@ -126,13 +145,13 @@ module.exports = {
 
 				if (msgInfo.userInfo.isSubscriber)
 				{
-					if (this.actions.trigger('subchat', { name: messageLower, user }))
+					if (this.actions.trigger('subchat', { name: parsed.command, user, args: parsed.args, string: parsed.string }))
 					{
 						return;
 					}
 				}
 
-				if (this.actions.trigger('chat', { name: messageLower, user }))
+				if (this.actions.trigger('chat', { name: parsed.command, user, args: parsed.args, string: parsed.string }))
 				{
 					return;
 				}
@@ -165,12 +184,13 @@ module.exports = {
 				//variables.set("followers", follows.total);
 			});
 
-			await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) => {
+			await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) =>
+			{
 				//Stream Changed
 				console.log("Stream Changed");
-				
+
 				let game = await stream.getGame();
-				console.log ("Game Name", game.name);
+				console.log("Game Name", game.name);
 
 				this.profiles.setCondition("category", game.name);
 			});
