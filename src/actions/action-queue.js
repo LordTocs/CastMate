@@ -85,16 +85,13 @@ class ActionQueue
 			return;
 		}
 
-		//Convert any offsets
-
-
 		if (isSync)
 		{
 			//Push to the queue
 			let release = await this.queueMutex.acquire();
 			for (let action of actionArray)
 			{
-				this.queue.push(action);
+				this.queue.push({ action, context });
 			}
 			release();
 
@@ -102,7 +99,7 @@ class ActionQueue
 		}
 		else
 		{
-			this._runActions(actionArray);
+			this._runActions(actionArray, context);
 		}
 	}
 
@@ -158,16 +155,16 @@ class ActionQueue
 	}
 
 
-	async _runActions(actionArray)
+	async _runActions(actionArray, context)
 	{
 		for (let action of actionArray)
 		{
-			await this._runAction(action);
+			await this._runAction(action, context);
 		}
 	}
 
 
-	async _runAction(action)
+	async _runAction(action, context)
 	{
 		//Hardcoded wait
 		if (action.beforeDelay)
@@ -179,7 +176,7 @@ class ActionQueue
 		{
 			if (subAction in this.actions)
 			{
-				this.actions[subAction].handler(action[subAction]);
+				this.actions[subAction].handler(action[subAction], context);
 			}
 		}
 
@@ -195,7 +192,7 @@ class ActionQueue
 		{
 			let release = await this.queueMutex.acquire();
 			let front = this.queue.shift();
-			let frontPromise = this._runAction(front);
+			let frontPromise = this._runAction(front.action, front.context);
 			this.currentAction = frontPromise;
 			this.currentAction.then(() => this._runNext());
 			release();
@@ -217,7 +214,7 @@ class ActionQueue
 		console.log("Starting new chain");
 		let release = await this.queueMutex.acquire();
 		let front = this.queue.shift();
-		let frontPromise = this._runAction(front);
+		let frontPromise = this._runAction(front.action, front.context);
 		this.currentAction = frontPromise;
 		this.currentAction.then(() => this._runNext());
 		release();

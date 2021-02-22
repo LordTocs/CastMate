@@ -8,7 +8,7 @@ const { PubSubClient } = require("twitch-pubsub-client");
 
 const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
 const { parse } = require("yaml");
-
+const template = require ('../utils/template');
 
 class ExpressWebhookAdapter extends ConnectionAdapter
 {
@@ -295,9 +295,9 @@ module.exports = {
 		say: {
 			name: "Say",
 			description: "Uses the bot to send a twitch chat message",
-			handler(message)
+			handler(message, context)
 			{
-				this.chatClient.say(this.settings.channelName.toLowerCase(), message);
+				this.chatClient.say(this.settings.channelName.toLowerCase(), template(message, context));
 			}
 		}
 	}

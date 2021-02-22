@@ -3,6 +3,7 @@ const nodeHueApi = require('node-hue-api');
 const discovery = nodeHueApi.discovery;
 const hueApi = nodeHueApi.v3.api;
 const lightstates = nodeHueApi.v3.lightStates;
+const template = require ('../utils/template');
 
 const os = require('os');
 const { sleep } = require("../utils/sleep.js");
@@ -137,7 +138,7 @@ module.exports = {
 		light: {
 			name: "Light",
 			description: "Changes HUE lights.",
-			async handler(lightData)
+			async handler(lightData, context)
 			{
 				let groupName = lightData.group || this.settings.defaultGroup;
 
@@ -153,6 +154,11 @@ module.exports = {
 				}
 				if ("hue" in lightData)
 				{
+					if (typeof lightData.hue === 'string' || lightData.hue instanceof String)
+					{
+						lightData.hue = Number(template(lightData.hue, context));
+					}
+
 					state.hue(Math.floor((lightData.hue / 360) * 65535))
 				}
 				if ("transition" in lightData)
