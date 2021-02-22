@@ -1,4 +1,4 @@
-const { evalConditional } = require("../utils/contiondals");
+const { evalConditional } = require("../utils/conditionals");
 const { Profile } = require("./profiles");
 
 class ProfileManager
@@ -25,7 +25,7 @@ class ProfileManager
 	{
 		let activeProfiles = this.profiles.filter((profile) => evalConditional(profile.conditions, this.conditions));
 		this.triggers = Profile.mergeTriggers(activeProfiles);
-		
+
 		this.actions.setTriggers(this.triggers);
 	}
 
