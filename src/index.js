@@ -29,11 +29,13 @@ app.whenReady().then(async () =>
 {
 	createWindow();
 
+	// TODO: Dynamically add plugins to array of plugins
 	const twitchPlugin = new Plugin(require("./plugins/twitch.js"));
 	const lightPlugin = new Plugin(require("./plugins/lights.js"));
 	const soundPlugin = new Plugin(require("./plugins/sounds.js"));
+	const obs = new Plugin(require("./plugins/obs.js"));
 
-	let plugins = [twitchPlugin, lightPlugin, soundPlugin];
+	let plugins = [twitchPlugin, lightPlugin, soundPlugin, obs];
 
 	const settings = new HotReloader("settings.yaml",
 		(newSettings, oldSettings) =>
