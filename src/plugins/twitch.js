@@ -8,7 +8,7 @@ const { PubSubClient } = require("twitch-pubsub-client");
 
 const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
 const { parse } = require("yaml");
-const template = require ('../utils/template');
+const { template } = require ('../utils/template');
 
 class ExpressWebhookAdapter extends ConnectionAdapter
 {

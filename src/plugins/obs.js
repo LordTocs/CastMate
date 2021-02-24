@@ -1,6 +1,5 @@
-const { description } = require('node-hue-api/dist/esm/api/discovery');
 const OBSWebSocket = require('obs-websocket-js');
- 
+const  { template } = require ('../utils/template');
 
 module.exports = {
 	name: "obs",
@@ -37,10 +36,10 @@ module.exports = {
         scene: {
             name: "OBS Scene",
             description: "Change the OBS scene.",
-            async handler(sceneData)
+            async handler(sceneData, context)
 			{
                 await this.obs.send('SetCurrentScene', {
-                    'scene-name': sceneData
+                    'scene-name': template(sceneData, context)
                 })
 			}
         }

@@ -12,7 +12,7 @@ function evalTemplate(template, data)
 	}
 	catch(err)
 	{
-		return "";
+		return null;
 	}
 }
 
@@ -87,11 +87,14 @@ function template(templateStr, data)
 		let template = templateStr.substr(index + 2, parseContext.i - 2 - (index + 2));
 		let value = evalTemplate(template, data);
 
-		resultStr += value.toString();
+		resultStr += value ? value.toString() : "";
 		searchStart = parseContext.i + 1;
 	}
 
 	return resultStr;
 }
 
-module.exports = template;
+module.exports = {
+	evalTemplate,
+	template
+}

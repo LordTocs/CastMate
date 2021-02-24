@@ -3,7 +3,7 @@ const nodeHueApi = require('node-hue-api');
 const discovery = nodeHueApi.discovery;
 const hueApi = nodeHueApi.v3.api;
 const lightstates = nodeHueApi.v3.lightStates;
-const template = require ('../utils/template');
+const { evalTemplate } = require ('../utils/template');
 
 const os = require('os');
 const { sleep } = require("../utils/sleep.js");
@@ -127,6 +127,14 @@ module.exports = {
 				console.error("Unable to connect with user to bridge. Abandoning");
 				return false;
 			}
+		},
+		handleTemplateNumber(value, context)
+		{
+			if (typeof value === 'string' || value instanceof String)
+			{
+				return evalTemplate(value, context)
+			}
+			return value;
 		}
 	},
 	settings: {
@@ -146,23 +154,26 @@ module.exports = {
 
 				if ("on" in lightData)
 				{
+					lightData.on = this.handleTemplateNumber(lightData.on, context);
+
 					state.on(lightData.on);
 				}
 				if ("bri" in lightData)
 				{
+					lightData.bri = this.handleTemplateNumber(lightData.bri, context);
+
 					state.bri(lightData.bri);
 				}
 				if ("hue" in lightData)
 				{
-					if (typeof lightData.hue === 'string' || lightData.hue instanceof String)
-					{
-						lightData.hue = Number(template(lightData.hue, context));
-					}
+					lightData.hue = this.handleTemplateNumber(lightData.hue, context);
 
 					state.hue(Math.floor((lightData.hue / 360) * 65535))
 				}
 				if ("transition" in lightData)
 				{
+					lightData.transition = this.handleTemplateNumber(lightData.transition, context);
+
 					state.transitionInMillis(lightData.transition / 1000)
 				}
 
