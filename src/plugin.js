@@ -5,6 +5,7 @@ class Plugin
 		this.pluginObj = {};
 
 		this.name = config.name;
+		console.log(`Loading Plugin: ${config.name}`);
 		this.initFunc = config.init;
 		if (this.initFunc)
 		{
