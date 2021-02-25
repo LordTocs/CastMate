@@ -13,10 +13,12 @@ module.exports = {
         })
 
         this.obs.on("SwitchScenes", data => {
-            this.profiles.setCondition("scene", data.sceneName);
+            //this.profiles.setCondition("scene", data.sceneName);
+			this.state.obsScene = data.sceneName;
         })
         let result = await this.obs.send("GetCurrentScene");
-        this.profiles.setCondition("scene", result.name);
+        //this.profiles.setCondition("scene", result.name);
+		this.state.obsScene = result.name;
 	},
 	methods: {
 	},
@@ -26,14 +28,15 @@ module.exports = {
 	secrets: {
         password: {type: String}
 	},
-    profileTriggers: {
-		scene: {
-			name: "OBS Scene",
-			description: "Change profile based on current OBS scene."
+	state: {
+		obsScene: {
+			type: String,
+			name: "Obs Scene",
+			description: "Currently Active OBS Scene"
 		}
 	},
 	actions: {
-        scene: {
+        obsScene: {
             name: "OBS Scene",
             description: "Change the OBS scene.",
             async handler(sceneData, context)
@@ -41,7 +44,7 @@ module.exports = {
                 await this.obs.send('SetCurrentScene', {
                     'scene-name': template(sceneData, context)
                 })
-			}
+			},
         }
 	}
 }

@@ -184,7 +184,7 @@ module.exports = {
 				console.log(lightUpdates);
 			}
 		},
-		scene: {
+		lightScene: {
 			name: "Scene",
 			description: "Changes HUE lights to a hue scene",
 			async handler(sceneData)

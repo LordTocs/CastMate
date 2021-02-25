@@ -117,7 +117,7 @@ class Profile
 			{
 				console.log(`Reloading Profile ${this.name}`);
 				this.reload();
-				this.onReload();
+				this.onReload(this);
 			}
 			catch (err)
 			{

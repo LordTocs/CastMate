@@ -3,11 +3,12 @@ const { fstat } = require("fs");
 const { ActionQueue } = require("./actions/action-queue.js");
 const { ProfileManager } = require("./actions/profile-manager.js");
 const { Profile } = require("./actions/profiles.js");
-const { Plugin } = require('./plugin.js');
+const { Plugin } = require('./utils/plugin.js');
 const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
 const fs = require('fs');
 const path = require('path');
+const { PluginManager } = require("./utils/plugin-manager.js");
 
 
 
@@ -30,9 +31,8 @@ app.whenReady().then(async () =>
 {
 	createWindow();
 
-	let pluginFiles = await fs.promises.readdir("./src/plugins");
-
-	let plugins = pluginFiles.map((file) => new Plugin(require(`./plugins/${file}`)));
+	let plugins = new PluginManager();
+	await plugins.load();
 
 	const settings = new HotReloader("settings.yaml",
 		(newSettings, oldSettings) =>
@@ -62,7 +62,7 @@ app.whenReady().then(async () =>
 
 	const webServices = createWebServices(settings.data.web || {}, secrets.data.web || {});
 
-	const profiles = new ProfileManager(actions);
+	const profiles = new ProfileManager(actions, plugins);
 	
 	let profileFiles = await fs.promises.readdir("./profiles");
 
@@ -71,12 +71,7 @@ app.whenReady().then(async () =>
 		profiles.loadProfile(path.join("./profiles", profileFile));
 	}
 
-	for (let plugin of plugins)
-	{
-		plugin.init(settings, secrets, actions, profiles, webServices);
-	}
-
-	
+	plugins.init(settings, secrets, actions, profiles, webServices);
 });
 
 app.on("activate", () =>

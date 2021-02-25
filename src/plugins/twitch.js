@@ -192,7 +192,7 @@ module.exports = {
 				let game = await stream.getGame();
 				console.log("Game Name", game.name);
 
-				this.profiles.setCondition("category", game.name);
+				this.state.twitchCategory = game.name;
 			});
 		},
 
@@ -239,7 +239,7 @@ module.exports = {
 			{
 				let game = await stream.getGame();
 
-				this.profiles.setCondition("category", game.name);
+				this.state.twitchCategory = game.name;
 			}
 		}
 	},
@@ -251,8 +251,9 @@ module.exports = {
 		apiClientId: { type: String },
 		apiClientSecret: { type: String },
 	},
-	profileTriggers: {
-		category: {
+	state:{
+		twitchCategory: {
+			type: String,
 			name: "Twitch Category",
 			description: "Change profiles based on the stream's twitch category"
 		}
