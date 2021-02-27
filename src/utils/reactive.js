@@ -57,6 +57,7 @@ class Watcher
 		this.func = func;
 		this.dependencies = [];
 
+		//Todo: Solve async eval race condition with async_hooks package.
 		Dependency.target = this;
 		this.func();
 		Dependency.target = null;

@@ -71,7 +71,9 @@ app.whenReady().then(async () =>
 		profiles.loadProfile(path.join("./profiles", profileFile));
 	}
 
-	plugins.init(settings, secrets, actions, profiles, webServices);
+	await plugins.init(settings, secrets, actions, profiles, webServices);
+
+	profiles.recombine();
 });
 
 app.on("activate", () =>

@@ -23,7 +23,7 @@ class PluginManager
 	{
 		for (let plugin of this.plugins)
 		{
-			plugin.init(settings, secrets, actions, profiles, webServices);
+			await plugin.init(settings, secrets, actions, profiles, webServices);
 		}
 	}
 }
