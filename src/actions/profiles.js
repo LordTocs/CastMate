@@ -82,6 +82,7 @@ class Profile
 		this.conditions = {};
 		this.watchers = [];
 		this.onReload = onReload;
+		this.rewards = [];
 		this.reload();
 	}
 
@@ -102,6 +103,7 @@ class Profile
 		this.name = profile.name || "Anon Profile";
 		this.triggers = profile.triggers;
 		this.conditions = profile.conditions || {};
+		this.rewards = profile.rewards || [];
 
 		//Setup reloads
 		let filearray = Array.from(fileset);
@@ -117,7 +119,7 @@ class Profile
 			{
 				console.log(`Reloading Profile ${this.name}`);
 				this.reload();
-				this.onReload();
+				this.onReload(this);
 			}
 			catch (err)
 			{

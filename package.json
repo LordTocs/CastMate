@@ -15,6 +15,7 @@
     "body-parser": "^1.19.0",
     "electron": "^11.2.3",
     "express": "^4.17.1",
+    "lodash": "^4.17.21",
     "node-hue-api": "^5.0.0-beta.2",
     "obs-websocket-js": "^4.0.2",
     "twitch": "^4.4.11",

@@ -1,3 +1,5 @@
+const { reactify } = require("./reactive");
+
 class Plugin
 {
 	constructor(config)
@@ -5,21 +7,27 @@ class Plugin
 		this.pluginObj = {};
 
 		this.name = config.name;
+		console.log(`Loading Plugin: ${config.name}`);
 		this.initFunc = config.init;
+		//Bind the init func to the pluginObj
 		if (this.initFunc)
 		{
 			this.initFunc = this.initFunc.bind(this.pluginObj);
 		}
+
+
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];
 		this.triggers = config.triggers || [];
 		this.actions = {};
 
+		//Pass the methods onto the plugin object for use.
 		if (config.methods)
 		{
 			Object.assign(this.pluginObj, config.methods);
 		}
 
+		//Bind all the action handlers to the pluginObj so 'this' works correctly.
 		for (let actionKey in config.actions)
 		{
 			let action = config.actions[actionKey];
@@ -29,6 +37,14 @@ class Plugin
 			}
 			this.actions[actionKey] = action;
 		}
+
+		//Create all the state.
+		this.pluginObj.state = {};
+		for (let stateKey in config.state)
+		{
+			this.pluginObj.state[stateKey] = null;
+		}
+		reactify(this.pluginObj.state);
 	}
 
 	async init(settings, secrets, actions, profiles, webServices)

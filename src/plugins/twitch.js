@@ -8,7 +8,8 @@ const { PubSubClient } = require("twitch-pubsub-client");
 
 const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
 const { parse } = require("yaml");
-const template = require ('../utils/template');
+const { template } = require('../utils/template');
+const HotReloader = require("../utils/hot-reloader");
 
 class ExpressWebhookAdapter extends ConnectionAdapter
 {
@@ -55,6 +56,8 @@ module.exports = {
 		await this.setupPubSubTriggers();
 
 		await this.initConditions();
+
+		await this.initChannelRewards();
 	},
 	methods: {
 		async doAuth()
@@ -129,7 +132,7 @@ module.exports = {
 
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
 				{
-					if (this.actions.trigger('modchat', { name: parsed.command, user, args: parsed.args, string: parsed.string }))
+					if (this.actions.trigger('modchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string }))
 					{
 						return;
 					}
@@ -137,7 +140,7 @@ module.exports = {
 
 				if (msgInfo.userInfo.isVip)
 				{
-					if (this.actions.trigger('vipchat', { name: parsed.command, user, args: parsed.args, string: parsed.string }))
+					if (this.actions.trigger('vipchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string }))
 					{
 						return;
 					}
@@ -145,13 +148,13 @@ module.exports = {
 
 				if (msgInfo.userInfo.isSubscriber)
 				{
-					if (this.actions.trigger('subchat', { name: parsed.command, user, args: parsed.args, string: parsed.string }))
+					if (this.actions.trigger('subchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string }))
 					{
 						return;
 					}
 				}
 
-				if (this.actions.trigger('chat', { name: parsed.command, user, args: parsed.args, string: parsed.string }))
+				if (this.actions.trigger('chat', { name: parsed.command, user, args: parsed.args, argString: parsed.string }))
 				{
 					return;
 				}
@@ -192,7 +195,7 @@ module.exports = {
 				let game = await stream.getGame();
 				console.log("Game Name", game.name);
 
-				this.profiles.setCondition("category", game.name);
+				this.state.twitchCategory = game.name;
 			});
 		},
 
@@ -239,7 +242,80 @@ module.exports = {
 			{
 				let game = await stream.getGame();
 
-				this.profiles.setCondition("category", game.name);
+				this.state.twitchCategory = game.name;
+			}
+		},
+
+		async initChannelRewards()
+		{
+			this.rewardsDefinitions = new HotReloader("rewards.yaml",
+				() =>
+				{
+					this.ensureChannelRewards()
+				},
+				() => { })
+			await this.ensureChannelRewards();
+		},
+
+		async ensureChannelRewards()
+		{
+			let rewards = await this.channelTwitchClient.helix.channelPoints.getCustomRewards(this.channelId, true);
+
+			let handledRewards = new Set();
+
+			for (let reward of rewards)
+			{
+				if (!reward.title in this.rewardsDefinitions.data)
+				{
+					//Not in the file, delete it.
+					await this.channelTwitchClient.helix.channelPoints.deleteCustomReward(this.channelId, reward.id);
+				}
+				else
+				{
+					//Existing Reward
+					handledRewards.add(reward.title)
+				}
+			}
+
+			//Check for new rewards
+			for (let rewardKey in this.rewardsDefinitions.data)
+			{
+				if (handledRewards.has(rewardKey))
+					continue;
+
+				let rewardDef = this.rewardsDefinitions.data[rewardKey];
+
+
+				//inputRequired: false
+				//skipQueue: true
+				//Create the new reward.
+				await this.channelTwitchClient.helix.channelPoints.createCustomReward(this.channelId, {
+					title: rewardKey,
+					prompt: rewardDef.description,
+					cost: rewardDef.cost,
+					is_user_input_required: !!rewardDef.inputRequired,
+					should_redemptions_skip_request_queue: !!rewardDef.skipQueue,
+				})
+			}
+		},
+
+		async switchChannelRewards(activeRewards, inactiveRewards)
+		{
+			if (!this.channelId)
+				return;
+
+			let rewards = await this.channelTwitchClient.helix.channelPoints.getCustomRewards(this.channelId, true);
+
+			for (let reward of rewards)
+			{
+				if (!reward.isEnabled && activeRewards.has(reward.title))
+				{
+					await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: true });
+				}
+				else if (reward.isEnabled && inactiveRewards.has(reward.title))
+				{
+					await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: false });
+				}
 			}
 		}
 	},
@@ -251,8 +327,9 @@ module.exports = {
 		apiClientId: { type: String },
 		apiClientSecret: { type: String },
 	},
-	profileTriggers: {
-		category: {
+	state: {
+		twitchCategory: {
+			type: String,
 			name: "Twitch Category",
 			description: "Change profiles based on the stream's twitch category"
 		}

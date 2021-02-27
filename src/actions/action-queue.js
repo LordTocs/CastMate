@@ -42,7 +42,7 @@ class ActionQueue
 
 		//Convert plugins into action lookup table
 		this.actions = {};
-		for (let plugin of plugins)
+		for (let plugin of plugins.plugins)
 		{
 			for (let actionKey in plugin.actions)
 			{

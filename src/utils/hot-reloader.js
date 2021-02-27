@@ -17,8 +17,9 @@ class HotReloader
 			try
 			{
 				const newData = this._load();
-				onChange(newData, oldData);
+				const oldData = this.data;
 				this.data = newData;
+				onChange(newData, oldData);
 			}
 			catch(err)
 			{

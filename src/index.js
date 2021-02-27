@@ -1,12 +1,14 @@
 const { app, BrowserWindow } = require("electron");
+const { fstat } = require("fs");
 const { ActionQueue } = require("./actions/action-queue.js");
 const { ProfileManager } = require("./actions/profile-manager.js");
 const { Profile } = require("./actions/profiles.js");
-const { Plugin } = require('./plugin.js');
+const { Plugin } = require('./utils/plugin.js');
 const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
-
-
+const fs = require('fs');
+const path = require('path');
+const { PluginManager } = require("./utils/plugin-manager.js");
 
 
 
@@ -29,13 +31,8 @@ app.whenReady().then(async () =>
 {
 	createWindow();
 
-	// TODO: Dynamically add plugins to array of plugins
-	const twitchPlugin = new Plugin(require("./plugins/twitch.js"));
-	const lightPlugin = new Plugin(require("./plugins/lights.js"));
-	const soundPlugin = new Plugin(require("./plugins/sounds.js"));
-	const obs = new Plugin(require("./plugins/obs.js"));
-
-	let plugins = [twitchPlugin, lightPlugin, soundPlugin, obs];
+	let plugins = new PluginManager();
+	await plugins.load();
 
 	const settings = new HotReloader("settings.yaml",
 		(newSettings, oldSettings) =>
@@ -65,16 +62,18 @@ app.whenReady().then(async () =>
 
 	const webServices = createWebServices(settings.data.web || {}, secrets.data.web || {});
 
-	const profiles = new ProfileManager(actions);
-	profiles.loadProfile("./profiles/root.yaml");
-	profiles.loadProfile("./profiles/kitchen.yaml");
+	const profiles = new ProfileManager(actions, plugins);
+	
+	let profileFiles = await fs.promises.readdir("./profiles");
 
-	for (let plugin of plugins)
+	for (let profileFile of profileFiles)
 	{
-		plugin.init(settings, secrets, actions, profiles, webServices);
+		profiles.loadProfile(path.join("./profiles", profileFile));
 	}
 
-	
+	await plugins.init(settings, secrets, actions, profiles, webServices);
+
+	profiles.recombine();
 });
 
 app.on("activate", () =>

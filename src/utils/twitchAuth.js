@@ -11,6 +11,7 @@ const scopes = [
 	"channel:read:hype_train",
 	"channel:read:subscriptions",
 	"channel:read:redemptions",
+	"channel:manage:redemptions",
 	"channel_subscriptions",
 	"clips:edit",
 	"user:edit",
