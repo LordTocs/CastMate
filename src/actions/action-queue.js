@@ -1,5 +1,6 @@
 const { sleep } = require("../utils/sleep.js");
 const { Mutex } = require("async-mutex");
+const { reactiveCopy } = require("../utils/reactive.js");
 
 function isActionable(actionable)
 {
@@ -49,6 +50,8 @@ class ActionQueue
 				this.actions[actionKey] = plugin.actions[actionKey];
 			}
 		}
+
+		this.plugins = plugins;
 	}
 
 	setTriggers(triggers)
@@ -56,12 +59,14 @@ class ActionQueue
 		this.triggers = triggers;
 	}
 
-
-
 	async pushToQueue(actionDef, context)
 	{
 		let actionArray = null;
 		let isSync = false;
+
+		
+		let completeContext =  {...context};
+		reactiveCopy(completeContext, this.plugins.combinedState);
 
 		if ("actions" in actionDef)
 		{
@@ -91,7 +96,7 @@ class ActionQueue
 			let release = await this.queueMutex.acquire();
 			for (let action of actionArray)
 			{
-				this.queue.push({ action, context });
+				this.queue.push({ action, completeContext });
 			}
 			release();
 
@@ -99,7 +104,7 @@ class ActionQueue
 		}
 		else
 		{
-			this._runActions(actionArray, context);
+			this._runActions(actionArray, completeContext);
 		}
 	}
 

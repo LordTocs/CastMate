@@ -143,6 +143,7 @@ function reactiveCopy(target, obj)
 		target.__reactivity__[key] = sourceReactivity[key];
 
 		Object.defineProperty(target, key, {
+			enumerable: true,
 			get()
 			{
 				sourceReactivity[key].dependency.depend();
