@@ -15,34 +15,52 @@ class ProfileManager
 		this.conditions = {};
 	}
 
+	redoDependencies()
+	{
+		for (let profile of this.profiles)
+		{
+			if (!profile.watcher)
+				continue; //Watcher hasn't been created so we don't have to do anything.
+
+			profile.watcher.unsubscribe();
+
+			//create a new watcher
+			profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+			this.recombine();
+			dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
+		}
+	}
+
 	loadProfile(filename)
 	{
 		let profile = new Profile(filename, (profile) =>
 		{
-			//destroy existing watcher.
-			profile.watcher.unsubscribe();
-
-			//create a new watcher
-			profile.watcher = new Watcher(() => this.recombine());
-			dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
-
 			for (let plugin of this.plugins.plugins)
 			{
 				if (plugin.onProfileLoad)
 					plugin.onProfileLoad(profile, profile.config);
 			}
 
+			//destroy existing watcher.
+			profile.watcher.unsubscribe();
+
+			//create a new watcher
+			profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+			this.recombine();
+			dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
 		});
 
 		this.profiles.push(profile)
-		profile.watcher = new Watcher(() => this.recombine());
-		dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
 
 		for (let plugin of this.plugins.plugins)
 		{
 			if (plugin.onProfileLoad)
 				plugin.onProfileLoad(profile, profile.config);
 		}
+
+		profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+		this.recombine();
+		dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
 	}
 
 	recombine()

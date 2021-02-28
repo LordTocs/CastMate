@@ -63,15 +63,15 @@ app.whenReady().then(async () =>
 	const webServices = createWebServices(settings.data.web || {}, secrets.data.web || {});
 
 	const profiles = new ProfileManager(actions, plugins);
-	
+
+	await plugins.init(settings, secrets, actions, profiles, webServices);
+
 	let profileFiles = await fs.promises.readdir("./profiles");
 
 	for (let profileFile of profileFiles)
 	{
 		profiles.loadProfile(path.join("./profiles", profileFile));
 	}
-
-	await plugins.init(settings, secrets, actions, profiles, webServices);
 
 	profiles.recombine();
 });

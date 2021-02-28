@@ -19,11 +19,16 @@ class PluginManager
 		}
 	}
 
+	updateReactivity(pluginObj)
+	{
+		reactiveCopy(this.combinedState, pluginObj.state);
+	}
+
 	async init(settings, secrets, actions, profiles, webServices)
 	{
 		for (let plugin of this.plugins)
 		{
-			await plugin.init(settings, secrets, actions, profiles, webServices);
+			await plugin.init(settings, secrets, actions, profiles, webServices, this);
 		}
 	}
 }

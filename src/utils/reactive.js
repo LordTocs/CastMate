@@ -52,15 +52,18 @@ Dependency.target = null;
 
 class Watcher
 {
-	constructor(func)
+	constructor(func, { fireImmediately = true })
 	{
 		this.func = func;
 		this.dependencies = [];
 
-		//Todo: Solve async eval race condition with async_hooks package.
-		Dependency.target = this;
-		this.func();
-		Dependency.target = null;
+		if (fireImmediately)
+		{
+			//Todo: Solve async eval race condition with async_hooks package.
+			Dependency.target = this;
+			this.func();
+			Dependency.target = null;
+		}
 	}
 
 	update()
@@ -79,7 +82,7 @@ class Watcher
 	}
 }
 
-function createValue(obj, key)
+function createReactiveProperty(obj, key)
 {
 	let observable = {
 		dependency: new Dependency(),
@@ -115,25 +118,29 @@ function reactify(obj)
 {
 	for (let key in obj)
 	{
-		createValue(obj, key);
+		createReactiveProperty(obj, key);
 	}
 }
 
 function reactiveCopy(target, obj)
 {
 	let sourceReactivity = obj.__reactivity__;
+
 	for (let key in obj)
 	{
-		if (!obj.__reactivity__)
+		if (!target.__reactivity__)
 		{
-			Object.defineProperty(obj, "__reactivity__", {
+			Object.defineProperty(target, "__reactivity__", {
 				enumerable: false,
 				writable: true,
 				value: {}
 			});
 		}
 
-		obj.__reactivity__[key] = sourceReactivity[key];
+		if (key in target)
+			continue;
+
+		target.__reactivity__[key] = sourceReactivity[key];
 
 		Object.defineProperty(target, key, {
 			get()
@@ -150,5 +157,5 @@ function reactiveCopy(target, obj)
 	}
 }
 
-module.exports = { Watcher, reactify, reactiveCopy }
+module.exports = { Watcher, reactify, reactiveCopy, createReactiveProperty }
 
