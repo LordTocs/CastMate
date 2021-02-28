@@ -319,6 +319,35 @@ module.exports = {
 			}
 		}
 	},
+	async onProfileLoad(profile, config)
+	{
+		profile.rewards = config.rewards || [];
+	},
+	async onProfilesChanged(activeProfiles, inactiveProfiles)
+	{
+		let activeRewards = new Set();
+		let inactiveRewards = new Set();
+		//Handle rewards
+		for (let activeProf of activeProfiles)
+		{
+			for (let reward of activeProf.rewards)
+			{
+				activeRewards.add(reward);
+			}
+		}
+
+		for (let inactiveProf of inactiveProfiles)
+		{
+			for (let reward of inactiveProf.rewards)
+			{
+				inactiveRewards.add(reward);
+			}
+		}
+
+		//Set all the reward states.
+		//Hackily reach inside twitch plugin.
+		this.switchChannelRewards(activeRewards, inactiveRewards);
+	},
 	settings: {
 		botName: { type: String },
 		channelName: { type: String },

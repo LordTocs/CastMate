@@ -15,6 +15,19 @@ class Plugin
 			this.initFunc = this.initFunc.bind(this.pluginObj);
 		}
 
+		this.onProfilesChanged = config.onProfilesChanged;
+
+		if (this.onProfilesChanged)
+		{
+			this.onProfilesChanged = this.onProfilesChanged.bind(this.pluginObj);
+		}
+
+		this.onProfileLoad = config.onProfileLoad;
+
+		if (this.onProfileLoad)
+		{
+			this.onProfileLoad = this.onProfileLoad.bind(this.pluginObj);
+		}
 
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];

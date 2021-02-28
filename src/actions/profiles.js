@@ -90,21 +90,21 @@ class Profile
 	{
 		let fileset = new Set();
 
-		let profile = loadFile(this.filename, fileset);
+		let profileConfig = loadFile(this.filename, fileset);
 
-		if (profile.triggers)
+		if (profileConfig.triggers)
 		{
-			for (let trigger in profile.triggers)
+			for (let trigger in profileConfig.triggers)
 			{
-				loadTrigger(profile.triggers[trigger], fileset);
+				loadTrigger(profileConfig.triggers[trigger], fileset);
 			}
 		}
 
-		this.name = profile.name || "Anon Profile";
-		this.triggers = profile.triggers;
-		this.conditions = profile.conditions || {};
-		this.rewards = profile.rewards || [];
-
+		this.name = profileConfig.name || "Anon Profile";
+		this.triggers = profileConfig.triggers;
+		this.conditions = profileConfig.conditions || {};
+		this.config = profileConfig;
+		
 		//Setup reloads
 		let filearray = Array.from(fileset);
 
