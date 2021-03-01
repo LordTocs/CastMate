@@ -20,6 +20,7 @@ function createWebServices(settings, secrets)
 	server.listen(port, () =>
 	{
 		console.log(`Started Internal Webserver on port ${port}`);
+		app.use(express.static("./web"));
 	});
 
 	let websocketServer = new websocket.server({
