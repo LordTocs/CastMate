@@ -17,21 +17,21 @@ module.exports = {
 	},
 	actions: {
 		notification: {
-			async handler(notificationData)
+			async handler(notificationData, context)
 			{
 				if ("header" in notificationData)
 				{
-					notificationData.header = template(notificationData.header);
+					notificationData.header = template(notificationData.header, context);
 				}
 
 				if ("text" in notificationData)
 				{
-					notificationData.text = template(notificationData.text);
+					notificationData.text = template(notificationData.text, context);
 				}
 
 				if ("color" in notificationData)
 				{
-					notificationData.color = template(notificationData.color);
+					notificationData.color = template(notificationData.color, context);
 				}
 				else
 				{

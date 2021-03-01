@@ -58,6 +58,8 @@ module.exports = {
 		await this.initConditions();
 
 		await this.initChannelRewards();
+
+		this.colorCache = {};
 	},
 	methods: {
 		async doAuth()
@@ -128,11 +130,14 @@ module.exports = {
 			//Setup triggers
 			this.chatClient.onMessage(async (channel, user, message, msgInfo) =>
 			{
+				if (this.colorCache)
+					this.colorCache[msgInfo.userInfo.userId] = msgInfo.userInfo.color;
+
 				let parsed = this.parseMessage(message);
 
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
 				{
-					if (this.actions.trigger('modchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string }))
+					if (this.actions.trigger('modchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
 					{
 						return;
 					}
@@ -140,7 +145,7 @@ module.exports = {
 
 				if (msgInfo.userInfo.isVip)
 				{
-					if (this.actions.trigger('vipchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string }))
+					if (this.actions.trigger('vipchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
 					{
 						return;
 					}
@@ -148,13 +153,13 @@ module.exports = {
 
 				if (msgInfo.userInfo.isSubscriber)
 				{
-					if (this.actions.trigger('subchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string }))
+					if (this.actions.trigger('subchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
 					{
 						return;
 					}
 				}
 
-				if (this.actions.trigger('chat', { name: parsed.command, user, args: parsed.args, argString: parsed.string }))
+				if (this.actions.trigger('chat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
 				{
 					return;
 				}
@@ -181,7 +186,7 @@ module.exports = {
 				this.followerCache.add(follow.userId);
 
 				console.log(`followed by ${follow?.userDisplayName}`);
-				this.actions.trigger('follow', { user: follow?.userDisplayName });
+				this.actions.trigger('follow', { user: follow?.userDisplayName, ...{ userColor: this.colorCache[msgInfo.userId] } });
 
 				//let follows = await channelTwitchClient.helix.users.getFollows({ followedUser: channelId });
 				//variables.set("followers", follows.total);
@@ -207,13 +212,13 @@ module.exports = {
 			await this.pubSubClient.onBits(this.channelId, (message) =>
 			{
 				console.log(`Bits: ${message.bits}`);
-				this.actions.trigger("bits", { number: message.bits, user: message.userName });
+				this.actions.trigger("bits", { number: message.bits, user: message.userName, ...{ userColor: this.colorCache[message.userId] } });
 			});
 
 			await this.pubSubClient.onRedemption(this.channelId, (message) =>
 			{
 				console.log(`Redemption: ${message.rewardId} ${message.rewardName}`);
-				this.actions.trigger("redemption", { name: message.rewardName, msg: message.message, user: message.userDisplayName });
+				this.actions.trigger("redemption", { name: message.rewardName, msg: message.message, user: message.userDisplayName, ...{ userColor: this.colorCache[message.userId] } });
 			});
 
 			await this.pubSubClient.onSubscription(this.channelId, async (message) =>
@@ -221,13 +226,13 @@ module.exports = {
 				if (message.isGift)
 				{
 					console.log(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
-					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName });
+					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, ...{ userColor: this.colorCache[message.userId] } });
 				}
 				else
 				{
 					let months = message.months ? message.months : 0;
 					console.log(`Sub ${message.userDisplayName} : ${months}`);
-					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, prime: message.subPlan == "Prime" })
+					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
 				}
 
 				//variables.set('subscribers', await channelTwitchClient.kraken.channels.getChannelSubscriptionCount(channelId))
