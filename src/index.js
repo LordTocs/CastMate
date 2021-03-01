@@ -22,7 +22,7 @@ function createWindow()
 		}
 	});
 
-	win.loadFile("web/index.html");
+	win.loadFile("electron/index.html");
 }
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');

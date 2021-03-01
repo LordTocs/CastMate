@@ -13,7 +13,7 @@ module.exports = {
 				nodeIntegration: true
 			}
 		});
-		this.audioWindow.loadFile("./web/sounds.html");
+		this.audioWindow.loadFile("./electron/sounds.html");
 
 		ipcMain.on('sound-window', (event, arg) =>
 		{
