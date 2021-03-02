@@ -15,6 +15,19 @@ class Plugin
 			this.initFunc = this.initFunc.bind(this.pluginObj);
 		}
 
+		this.onProfilesChanged = config.onProfilesChanged;
+
+		if (this.onProfilesChanged)
+		{
+			this.onProfilesChanged = this.onProfilesChanged.bind(this.pluginObj);
+		}
+
+		this.onProfileLoad = config.onProfileLoad;
+
+		if (this.onProfileLoad)
+		{
+			this.onProfileLoad = this.onProfileLoad.bind(this.pluginObj);
+		}
 
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];
@@ -47,7 +60,7 @@ class Plugin
 		reactify(this.pluginObj.state);
 	}
 
-	async init(settings, secrets, actions, profiles, webServices)
+	async init(settings, secrets, actions, profiles, webServices, plugins)
 	{
 		if (this.initFunc)
 		{
@@ -59,6 +72,7 @@ class Plugin
 			this.pluginObj.webServices = webServices;
 			this.pluginObj.actions = actions;
 			this.pluginObj.profiles = profiles;
+			this.pluginObj.plugins = plugins;
 
 			await this.initFunc();
 		}

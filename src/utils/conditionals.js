@@ -70,6 +70,9 @@ function dependOnAllConditions(conditional, reactivity, watcher)
 	{
 		for (let key in conditional)
 		{
+			if (!(key in reactivity))
+				continue;
+
 			reactivity[key].dependency.addSubscriber(watcher);
 		}
 		return true;

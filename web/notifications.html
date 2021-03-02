@@ -1,0 +1,216 @@
+<html>
+
+<head>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/color-js/1.0.1/color.min.js"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
+	<script src="js/bridge.js"></script>
+	<style>
+		:root {
+			--coreColor: 0, 0, 255;
+			--lighterColor: 55, 55, 255;
+		}
+
+		.notificationContainer {
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			margin-top: 60px;
+		}
+
+		.notification {
+			max-width: 550px;
+			min-width: 550px;
+			background-color: white;
+			position: relative;
+			/*border-radius: 10px;
+			border-width: 4px;
+			border-style: solid;*/
+
+			background-color: grey;
+			/*background: linear-gradient(180deg, hsl(234, 70%, 50%) 0%, hsl(234, 43%, 37%) 100%);
+			border-color: hsl(234, 38%, 18%);*/
+		}
+
+		.notificationHeader {
+			width: 100%;
+			height: 50px;
+			background-color: #222222;
+			background: radial-gradient(circle, #333333 0%, #222222 100%);
+			display: flex;
+			justify-content: center;
+			align-content: center;
+		}
+
+		#notificationText {
+			color: rgba(var(--lighterColor), 1);
+			text-shadow: 0 0 20px rgba(var(--coreColor), 1);
+			font-family: sans-serif;
+			font-size: 40px;
+			text-align: center;
+		}
+
+		#headerText {
+			color: rgba(var(--lighterColor), 1);
+			text-shadow: 0 0 20px rgba(var(--coreColor), 1);
+			font-family: sans-serif;
+			font-size: 30px;
+			line-height: 30px;
+			margin: auto;
+		}
+
+		.topGlow {
+			background: rgba(var(--coreColor), 1);
+			background: radial-gradient(ellipse at top, rgba(var(--coreColor), 0.5) 0%, rgba(var(--coreColor), 0) 75%);
+			position: absolute;
+			top: 0px;
+			height: 25px;
+			left: 30;
+			right: 30;
+		}
+
+		.notificationContent {
+			position: relative;
+			display: flex;
+			justify-content: center;
+			align-content: center;
+			padding: 25px;
+			background: rgb(93, 93, 93);
+			background: radial-gradient(circle, rgba(93, 93, 93, 1) 0%, rgba(43, 43, 43, 1) 100%);
+		}
+
+		#notificationImage {
+			width: 275px;
+			height: auto;
+			margin-right: 2em;
+		}
+
+		.notification_animator {
+			display: flex;
+			flex-direction: row;
+		}
+
+		.hidden {
+			display: none;
+		}
+
+		.topBorder {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 5px;
+			background: linear-gradient(to right, rgba(var(--coreColor), 1) 0%, rgba(var(--coreColor), 0) 75%);
+		}
+
+		.bottomBorder {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			height: 5px;
+			background: linear-gradient(to left, rgba(var(--coreColor), 1) 0%, rgba(var(--coreColor), 0) 75%);
+		}
+
+		.leftBorder {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 5px;
+			height: 100%;
+			background: linear-gradient(to bottom, rgba(var(--coreColor), 1) 0%, rgba(var(--coreColor), 0) 75%);
+		}
+
+		.rightBorder {
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 5px;
+			height: 100%;
+			background: linear-gradient(to top, rgba(var(--coreColor), 1) 0%, rgba(var(--coreColor), 0) 75%);
+		}
+
+		.highlight {
+			position: absolute;
+			top: 47.5px;
+			height: 5px;
+			left: 0;
+			right: 0;
+			background: radial-gradient(ellipse, rgba(var(--coreColor), 1) 0%, rgba(var(--coreColor), 0) 75%);
+		}
+	</style>
+	<script>
+		function setNotification(notification)
+		{
+			$('#notificationText').text(notification.text || "");
+			$('#headerText').text(notification.header || "");
+
+			if (notification.image)
+			{
+				let img = $('#notificationImage');
+				img.removeClass("hidden");
+				img.attr("src", notification.image);
+			}
+			else
+			{
+				$('#notificationImage').addClass("hidden");
+			}
+
+			let color = notification.color || "#44FF00";
+
+			let root = document.documentElement;
+			root.style.setProperty("--coreColor", chroma(color).rgb().join(','));
+			root.style.setProperty("--lighterColor", chroma(color).brighten(0.5).rgb().join(','));
+		}
+
+		$(document).ready(function ()
+		{
+			setNotification({ color: "rgb(154, 205, 50)", text: "Subscriber Name Dude", header: "Thanks for Subscribing!"});
+
+			castmate.connect();
+
+			castmate.on("notification", (notification) =>
+			{
+				setNotification(notification);
+
+				$('.notification_animator').removeClass("animate__zoomOut").addClass('animate__jackInTheBox');
+				setTimeout(function ()
+				{
+					$('.notification_animator').removeClass('animate__jackInTheBox').addClass("animate__zoomOut");
+				}, 4500);
+			})
+		});
+	</script>
+</head>
+
+<body>
+	<div class="notificationContainer">
+		<div class="notification_animator animate__animated animate__zoomOut">
+			<img id="notificationImage" class="hidden" />
+			<div class="notification">
+				<div class="notificationHeader">
+
+					<p id="headerText"></p>
+
+				</div>
+
+				<div class="notificationContent">
+					<div class="topGlow"></div>
+
+					<div>
+						<p id="notificationText"></p>
+					</div>
+				</div>
+				<div class="topBorder"></div>
+				<div class="highlight"></div>
+				<div class="leftBorder"></div>
+				<div class="bottomBorder"></div>
+				<div class="rightBorder"></div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

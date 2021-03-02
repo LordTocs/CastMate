@@ -13,24 +13,53 @@ class ProfileManager
 		this.plugins = plugins;
 
 		this.conditions = {};
+	}
 
-		this.twitchPlugin = this.plugins.plugins.find((p) => p.name == "twitch");
+	redoDependencies()
+	{
+		for (let profile of this.profiles)
+		{
+			if (!profile.watcher)
+				continue; //Watcher hasn't been created so we don't have to do anything.
+
+			profile.watcher.unsubscribe();
+
+			//create a new watcher
+			profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+			this.recombine();
+			dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
+		}
 	}
 
 	loadProfile(filename)
 	{
 		let profile = new Profile(filename, (profile) =>
 		{
+			for (let plugin of this.plugins.plugins)
+			{
+				if (plugin.onProfileLoad)
+					plugin.onProfileLoad(profile, profile.config);
+			}
+
 			//destroy existing watcher.
 			profile.watcher.unsubscribe();
 
 			//create a new watcher
-			profile.watcher = new Watcher(() => this.recombine());
+			profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+			this.recombine();
 			dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
 		});
 
 		this.profiles.push(profile)
-		profile.watcher = new Watcher(() => this.recombine());
+
+		for (let plugin of this.plugins.plugins)
+		{
+			if (plugin.onProfileLoad)
+				plugin.onProfileLoad(profile, profile.config);
+		}
+
+		profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+		this.recombine();
 		dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
 	}
 
@@ -42,28 +71,11 @@ class ProfileManager
 
 		this.actions.setTriggers(this.triggers);
 
-		let activeRewards = new Set();
-		let inactiveRewards = new Set();
-		//Handle rewards
-		for (let activeProf of activeProfiles)
+		for (let plugin of this.plugins.plugins)
 		{
-			for (let reward of activeProf.rewards)
-			{
-				activeRewards.add(reward);
-			}
+			if (plugin.onProfilesChanged)
+				plugin.onProfilesChanged(activeProfiles, inactiveProfiles);
 		}
-
-		for (let inactiveProf of inactiveProfiles)
-		{
-			for (let reward of inactiveProf.rewards)
-			{
-				inactiveRewards.add(reward);
-			}
-		}
-
-		//Set all the reward states.
-		//Hackily reach inside twitch plugin.
-		this.twitchPlugin.pluginObj.switchChannelRewards(activeRewards, inactiveRewards);
 	}
 
 	setCondition(name, value)

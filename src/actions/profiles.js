@@ -4,7 +4,8 @@ const YAML = require("yaml");
 function loadFile(filename, fileset)
 {
 	console.log(`Loading ${filename}`);
-	let pojo = YAML.parse(fs.readFileSync(filename, "utf-8"));
+	let contents = fs.readFileSync(filename, "utf-8");
+	let pojo = YAML.parse(contents);
 	fileset.add(filename);
 	return pojo;
 }
@@ -90,20 +91,20 @@ class Profile
 	{
 		let fileset = new Set();
 
-		let profile = loadFile(this.filename, fileset);
+		let profileConfig = loadFile(this.filename, fileset);
 
-		if (profile.triggers)
+		if (profileConfig.triggers)
 		{
-			for (let trigger in profile.triggers)
+			for (let trigger in profileConfig.triggers)
 			{
-				loadTrigger(profile.triggers[trigger], fileset);
+				loadTrigger(profileConfig.triggers[trigger], fileset);
 			}
 		}
 
-		this.name = profile.name || "Anon Profile";
-		this.triggers = profile.triggers;
-		this.conditions = profile.conditions || {};
-		this.rewards = profile.rewards || [];
+		this.name = profileConfig.name || "Anon Profile";
+		this.triggers = profileConfig.triggers;
+		this.conditions = profileConfig.conditions || {};
+		this.config = profileConfig;
 
 		//Setup reloads
 		let filearray = Array.from(fileset);
@@ -117,6 +118,7 @@ class Profile
 		{
 			try
 			{
+				console.log(`Edited ${filename}`)
 				console.log(`Reloading Profile ${this.name}`);
 				this.reload();
 				this.onReload(this);
@@ -124,12 +126,13 @@ class Profile
 			catch (err)
 			{
 				console.error(`Error Loading Profile ${this.name}`)
+				console.error(err);
 			}
 		}))
 	}
 }
 
-Profile.mergeTriggers = function(profiles)
+Profile.mergeTriggers = function (profiles)
 {
 	let combined = {};
 
