@@ -1,4 +1,4 @@
-const OBSWebSocket = require('obs-websocket-js');
+const OBSWebSocket = require('obs-websocket-js'); // For more info: https://www.npmjs.com/package/obs-websocket-js
 const  { template } = require ('../utils/template');
 
 module.exports = {
@@ -6,21 +6,31 @@ module.exports = {
 	async init()
 	{
         this.obs = new OBSWebSocket();
-
-        await this.obs.connect({
-            address: `localhost:${this.settings.port}`,
-            password: this.secrets.password
-        })
-
+        this.connectOBS();
         this.obs.on("SwitchScenes", data => {
             //this.profiles.setCondition("scene", data.sceneName);
-			this.state.obsScene = data.sceneName;
+            this.state.obsScene = data.sceneName;
         })
-        let result = await this.obs.send("GetCurrentScene");
-        //this.profiles.setCondition("scene", result.name);
-		this.state.obsScene = result.name;
+        this.obs.on("ConnectionClosed", () => {
+            console.log("Failed to connect to OBS...retrying.")
+            setTimeout(() => {this.connectOBS()}, 5000);
+        });
 	},
 	methods: {
+        async connectOBS() {
+            try {
+                await this.obs.connect({
+                    address: `localhost:${this.settings.port}`,
+                    password: this.secrets.password
+                })
+                let result = await this.obs.send("GetCurrentScene");
+                //this.profiles.setCondition("scene", result.name);
+                this.state.obsScene = result.name;
+                console.log("OBS connected!");
+            } catch {
+                return; 
+            }
+        }
 	},
 	settings: {
         port: { type: Number }
