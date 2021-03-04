@@ -197,6 +197,9 @@ module.exports = {
 				console.log(`followed by ${follow?.userDisplayName}`);
 				this.actions.trigger('follow', { user: follow?.userDisplayName, ...{ userColor: this.colorCache[msgInfo.userId] } });
 
+
+				let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
+				this.state.followers = follows.total;
 				//let follows = await channelTwitchClient.helix.users.getFollows({ followedUser: channelId });
 				//variables.set("followers", follows.total);
 			});
@@ -244,7 +247,7 @@ module.exports = {
 					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
 				}
 
-				//variables.set('subscribers', await channelTwitchClient.kraken.channels.getChannelSubscriptionCount(channelId))
+				this.state.subscribers = await this.channelTwitchClient.kraken.channels.getChannelSubscriptionCount(this.channelId);
 			});
 		},
 
@@ -258,6 +261,10 @@ module.exports = {
 
 				this.state.twitchCategory = game.name;
 			}
+
+			this.state.subscribers = await this.channelTwitchClient.kraken.channels.getChannelSubscriptionCount(this.channelId);
+			let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
+			this.state.followers = follows.total;
 		},
 
 		async initChannelRewards()
@@ -375,6 +382,14 @@ module.exports = {
 			type: String,
 			name: "Twitch Category",
 			description: "Change profiles based on the stream's twitch category"
+		},
+		subscribers: {
+			type: Number,
+			name: "Twitch Subscribers",
+		},
+		followers: {
+			type: Number,
+			name: "Twitch Followers"
 		}
 	},
 	triggers: {
