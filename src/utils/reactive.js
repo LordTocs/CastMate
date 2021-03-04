@@ -73,7 +73,7 @@ class Watcher
 
 	unsubscribe()
 	{
-		for (let dep in this.dependencies)
+		for (let dep of this.dependencies)
 		{
 			dep.removeSubscriber(this);
 		}

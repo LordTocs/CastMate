@@ -3,7 +3,7 @@ const nodeHueApi = require('node-hue-api');
 const discovery = nodeHueApi.discovery;
 const hueApi = nodeHueApi.v3.api;
 const lightstates = nodeHueApi.v3.lightStates;
-const { evalTemplate } = require ('../utils/template');
+const { evalTemplate } = require('../utils/template');
 
 const os = require('os');
 const { sleep } = require("../utils/sleep.js");
@@ -148,6 +148,8 @@ module.exports = {
 			description: "Changes HUE lights.",
 			async handler(lightData, context)
 			{
+				lightData = { ...lightData };
+
 				let groupName = lightData.group || this.settings.defaultGroup;
 
 				let state = new lightstates.GroupLightState();

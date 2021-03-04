@@ -13,13 +13,12 @@ module.exports = {
         })
 
         this.obs.on("SwitchScenes", data => {
-            //this.profiles.setCondition("scene", data.sceneName);
 			this.state.obsScene = data.sceneName;
         })
         let result = await this.obs.send("GetCurrentScene");
-        //this.profiles.setCondition("scene", result.name);
+        
 		this.state.obsScene = result.name;
-	},
+	}, 
 	methods: {
 	},
 	settings: {

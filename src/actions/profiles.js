@@ -53,6 +53,9 @@ function loadTrigger(triggerObj, fileset)
 {
 	for (let trigger in triggerObj)
 	{
+		if (trigger == "imports")
+			continue;
+
 		loadActionable(triggerObj[trigger], fileset)
 	}
 
@@ -71,7 +74,10 @@ function loadTrigger(triggerObj, fileset)
 			{
 				loadActionable(importedTriggers[trigger], fileset);
 			}
+			Object.assign(triggerObj, importedTriggers);
 		}
+
+		delete triggerObj.imports;
 	}
 }
 

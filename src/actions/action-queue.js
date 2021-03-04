@@ -25,9 +25,9 @@ function getActionArray(actionDef)
 	{
 		return actionDef;
 	}
-	else if ("oneOf" in actions)
+	else if ("oneOf" in actionDef)
 	{
-		return actions.oneOf[Math.floor(Math.random() * actions.oneOf.length)];
+		return actionDef.oneOf[Math.floor(Math.random() * actionDef.oneOf.length)];
 	}
 	return null;
 }
@@ -57,6 +57,20 @@ class ActionQueue
 	setTriggers(triggers)
 	{
 		this.triggers = triggers;
+	}
+
+	convertOffsets(actions)
+	{
+		let timeSinceStart = 0;
+
+		for (let a of actions)
+		{
+			if (a.timestamp)
+			{
+				a.beforeDelay = a.timestamp - timeSinceStart;
+				timeSinceStart = a.timestamp;
+			}
+		}
 	}
 
 	async pushToQueue(actionDef, context)
@@ -89,6 +103,8 @@ class ActionQueue
 			console.error("Action array is empty!");
 			return;
 		}
+
+		this.convertOffsets(actionArray);
 
 		if (isSync)
 		{
