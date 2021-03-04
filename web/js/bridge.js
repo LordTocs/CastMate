@@ -66,17 +66,14 @@ class CastMateBridge
 		{
 			setTimeout(() =>
 			{
-				console.log("Attempting Reconnect");
+				console.log("Connection Closed: Attempting Reconnect");
+				this.socket = null;
 				this.connect();
 			}, 1000);
 		});
 
 		this.socket.addEventListener('error', (err) => {
-			setTimeout(() =>
-			{
-				console.log("Attempting Reconnect");
-				this.connect();
-			}, 1000);
+			this.socket.close(); //Use close here instead so there's not a double reconnect.
 		});
 	}
 }

@@ -133,6 +133,15 @@ module.exports = {
 				if (this.colorCache)
 					this.colorCache[msgInfo.userInfo.userId] = msgInfo.userInfo.color;
 
+				this.webServices.websocketServer.broadcast(JSON.stringify({
+					chat: {
+						user: msgInfo.userDisplayName,
+						color: msgInfo.userInfo.color,
+						message,
+						emoteOffsets: Object.fromEntries(msgInfo.emoteOffsets)
+					}
+				}));
+
 				let parsed = this.parseMessage(message);
 
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
