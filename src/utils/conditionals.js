@@ -50,6 +50,11 @@ function evalConditional(conditional, data)
 	return checkConditions(conditional, data);
 }
 
+function manualDependency(obj, watcher, name)
+{
+	obj.__reactivity__[name].dependency.addSubscriber(watcher);
+}
+
 function dependOnAllConditions(conditional, reactivity, watcher)
 {
 	if (!reactivity)
@@ -79,4 +84,4 @@ function dependOnAllConditions(conditional, reactivity, watcher)
 	}
 }
 
-module.exports = { evalConditional, dependOnAllConditions }
+module.exports = { evalConditional, dependOnAllConditions, manualDependency}

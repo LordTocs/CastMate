@@ -19,27 +19,29 @@ module.exports = {
 		notification: {
 			async handler(notificationData, context)
 			{
-				if ("header" in notificationData)
+				let notification = { ...notificationData };
+
+				if ("header" in notification)
 				{
-					notificationData.header = template(notificationData.header, context);
+					notification.header = template(notificationData.header, context);
 				}
 
-				if ("text" in notificationData)
+				if ("text" in notification)
 				{
-					notificationData.text = template(notificationData.text, context);
+					notification.text = template(notificationData.text, context);
 				}
 
-				if ("color" in notificationData)
+				if ("color" in notification)
 				{
-					notificationData.color = template(notificationData.color, context);
+					notification.color = template(notificationData.color, context);
 				}
 				else
 				{
-					notificationData.color = this.settings.defaultColor;
+					notification.color = this.settings.defaultColor;
 				}
 
 				this.webServices.websocketServer.broadcast(JSON.stringify({
-					notification: notificationData
+					notification
 				}));
 			}
 		}

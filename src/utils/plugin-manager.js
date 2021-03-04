@@ -1,6 +1,7 @@
 const fs = require('fs');
+const { manualDependency } = require('./conditionals');
 const { Plugin } = require('./plugin');
-const { reactiveCopy } = require('./reactive');
+const { reactiveCopy, Watcher } = require('./reactive');
 
 class PluginManager
 {
@@ -19,16 +20,50 @@ class PluginManager
 		}
 	}
 
+	setupWebsocketReactivity()
+	{
+		for (let stateKey in this.combinedState)
+		{
+			let watcher = new Watcher(() =>
+			{
+				this.webServices.websocketServer.broadcast(JSON.stringify({
+					state: {
+						[stateKey]: this.combinedState[stateKey]
+					}
+				}))
+			}, { fireImmediately: false })
+			manualDependency(this.combinedState, watcher, stateKey);
+		}
+	}
+
 	updateReactivity(pluginObj)
 	{
-		reactiveCopy(this.combinedState, pluginObj.state);
+		reactiveCopy(this.combinedState, pluginObj.state, (newKey) =>
+		{
+			let watcher = new Watcher(() =>
+			{
+				this.webServices.websocketServer.broadcast(JSON.stringify({
+					state: {
+						[newKey]: this.combinedState[newKey]
+					}
+				}))
+			}, { fireImmediately: false })
+			manualDependency(this.combinedState, watcher, newKey);
+		});
 	}
 
 	async init(settings, secrets, actions, profiles, webServices)
 	{
 		for (let plugin of this.plugins)
 		{
-			await plugin.init(settings, secrets, actions, profiles, webServices, this);
+			try
+			{
+				await plugin.init(settings, secrets, actions, profiles, webServices, this);
+			}
+			catch (err)
+			{
+				console.error(err);
+			}
 		}
 	}
 }

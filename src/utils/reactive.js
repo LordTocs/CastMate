@@ -73,7 +73,7 @@ class Watcher
 
 	unsubscribe()
 	{
-		for (let dep in this.dependencies)
+		for (let dep of this.dependencies)
 		{
 			dep.removeSubscriber(this);
 		}
@@ -122,7 +122,7 @@ function reactify(obj)
 	}
 }
 
-function reactiveCopy(target, obj)
+function reactiveCopy(target, obj, onNewKey = null)
 {
 	let sourceReactivity = obj.__reactivity__;
 
@@ -155,6 +155,11 @@ function reactiveCopy(target, obj)
 				sourceReactivity[key].dependency.notify();
 			}
 		})
+
+		if (onNewKey)
+		{
+			onNewKey(key);
+		}
 	}
 }
 

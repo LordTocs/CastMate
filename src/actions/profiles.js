@@ -1,5 +1,7 @@
 const fs = require("fs");
 const YAML = require("yaml");
+const { sleep } = require("../utils/sleep");
+
 
 function loadFile(filename, fileset)
 {
@@ -51,6 +53,9 @@ function loadTrigger(triggerObj, fileset)
 {
 	for (let trigger in triggerObj)
 	{
+		if (trigger == "imports")
+			continue;
+
 		loadActionable(triggerObj[trigger], fileset)
 	}
 
@@ -69,7 +74,10 @@ function loadTrigger(triggerObj, fileset)
 			{
 				loadActionable(importedTriggers[trigger], fileset);
 			}
+			Object.assign(triggerObj, importedTriggers);
 		}
+
+		delete triggerObj.imports;
 	}
 }
 
@@ -114,12 +122,12 @@ class Profile
 			watcher.close();
 		}
 
-		this.watchers = filearray.map((filename) => fs.watch(filename, () =>
+		this.watchers = filearray.map((filename) => fs.watch(filename, async () =>
 		{
 			try
 			{
-				console.log(`Edited ${filename}`)
-				console.log(`Reloading Profile ${this.name}`);
+				console.log(`Edited ${filename}: Reloading Profile ${this.name}`)
+				await sleep(100);
 				this.reload();
 				this.onReload(this);
 			}

@@ -62,7 +62,7 @@ function template(templateStr, data)
 		resultStr +=  templateStr.substr(searchStart, index - searchStart);
 
 		let openCurlyCounter = 0;
-		let parseContext = { i: index }
+		let parseContext = { i: index + 2 }
 		for (; parseContext.i < templateStr.length; ++parseContext.i)
 		{
 			if (skipString(templateStr, parseContext))
@@ -84,7 +84,7 @@ function template(templateStr, data)
 			}
 		}
 
-		let template = templateStr.substr(index + 2, parseContext.i - 2 - (index + 2));
+		let template = templateStr.substr(index + 2, parseContext.i - 2 - (index + 2) + 1);
 		let value = evalTemplate(template, data);
 
 		resultStr += value ? value.toString() : "";
