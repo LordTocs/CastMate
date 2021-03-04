@@ -13,7 +13,7 @@ class PluginManager
 		this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));
 
 		this.combinedState = {};
-
+		
 		for (let plugin of this.plugins)
 		{
 			reactiveCopy(this.combinedState, plugin.pluginObj.state);

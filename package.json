@@ -17,6 +17,7 @@
     "express": "^4.17.1",
     "lodash": "^4.17.21",
     "node-hue-api": "^5.0.0-beta.2",
+    "node-key-sender": "^1.0.11",
     "obs-websocket-js": "^4.0.2",
     "twitch": "^4.4.11",
     "twitch-chat-client": "^4.4.11",
