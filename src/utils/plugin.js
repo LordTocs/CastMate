@@ -69,18 +69,18 @@ class Plugin
 
 	async init(settings, secrets, actions, profiles, webServices, plugins)
 	{
+		let pluginSettings = settings.data[this.name] || {};
+		let pluginSecrets = secrets.data[this.name] || {};
+
+		this.pluginObj.settings = pluginSettings;
+		this.pluginObj.secrets = pluginSecrets;
+		this.pluginObj.webServices = webServices;
+		this.pluginObj.actions = actions;
+		this.pluginObj.profiles = profiles;
+		this.pluginObj.plugins = plugins;
+
 		if (this.initFunc)
 		{
-			let pluginSettings = settings.data[this.name] || {};
-			let pluginSecrets = secrets.data[this.name] || {};
-
-			this.pluginObj.settings = pluginSettings;
-			this.pluginObj.secrets = pluginSecrets;
-			this.pluginObj.webServices = webServices;
-			this.pluginObj.actions = actions;
-			this.pluginObj.profiles = profiles;
-			this.pluginObj.plugins = plugins;
-
 			await this.initFunc();
 		}
 	}
