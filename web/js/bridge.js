@@ -38,7 +38,7 @@ class CastMateBridge
 	requestVariables(...names)
 	{
 		this.socket.send(JSON.stringify({
-			variables: [...names]
+			state: [...names]
 		}))
 	}
 

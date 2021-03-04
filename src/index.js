@@ -60,7 +60,11 @@ app.whenReady().then(async () =>
 
 	const actions = new ActionQueue(plugins);
 
-	const webServices = createWebServices(settings.data.web || {}, secrets.data.web || {});
+	const webServices = createWebServices(settings.data.web || {}, secrets.data.web || {}, plugins);
+
+	plugins.webServices = webServices;
+
+	plugins.setupWebsocketReactivity();
 
 	const profiles = new ProfileManager(actions, plugins);
 
@@ -74,6 +78,9 @@ app.whenReady().then(async () =>
 	}
 
 	profiles.recombine();
+
+	//Let loose the web server
+	webServices.start();
 });
 
 app.on("activate", () =>

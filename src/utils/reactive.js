@@ -122,7 +122,7 @@ function reactify(obj)
 	}
 }
 
-function reactiveCopy(target, obj)
+function reactiveCopy(target, obj, onNewKey = null)
 {
 	let sourceReactivity = obj.__reactivity__;
 
@@ -155,6 +155,11 @@ function reactiveCopy(target, obj)
 				sourceReactivity[key].dependency.notify();
 			}
 		})
+
+		if (onNewKey)
+		{
+			onNewKey(key);
+		}
 	}
 }
 

@@ -39,6 +39,21 @@ module.exports = {
 			this.profiles.redoDependencies();
 		}
 	},
+	async onWebsocketMessage(msg, connection)
+	{
+		if ("state" in msg)
+		{
+			let result = {};
+			for (let stateKey of msg.state)
+			{
+				if (stateKey in this.plugins.combinedState)
+				{
+					result[stateKey] = this.plugins.combinedState[stateKey];
+				}
+			}
+			connection.send(JSON.stringify({ state: result }));
+		}
+	},
 	methods: {
 		createVariable(name, value)
 		{

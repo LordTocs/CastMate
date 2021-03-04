@@ -29,6 +29,13 @@ class Plugin
 			this.onProfileLoad = this.onProfileLoad.bind(this.pluginObj);
 		}
 
+		this.onWebsocketMessage = config.onWebsocketMessage;
+
+		if (this.onWebsocketMessage)
+		{
+			this.onWebsocketMessage = this.onWebsocketMessage.bind(this.pluginObj);
+		}
+
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];
 		this.triggers = config.triggers || [];
