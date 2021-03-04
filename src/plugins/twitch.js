@@ -174,6 +174,11 @@ module.exports = {
 				}
 
 			});
+
+			this.chatClient.onRaid((channel, user, raidInfo) =>
+			{
+				this.actions.trigger("raid", { number: raidInfo.viewerCount, user: raidInfo.displayName });
+			})
 		},
 
 		async setupWebHookTriggers()
@@ -195,7 +200,7 @@ module.exports = {
 				this.followerCache.add(follow.userId);
 
 				console.log(`followed by ${follow?.userDisplayName}`);
-				this.actions.trigger('follow', { user: follow?.userDisplayName, ...{ userColor: this.colorCache[msgInfo.userId] } });
+				this.actions.trigger('follow', { user: follow?.userDisplayName, ...{ userColor: this.colorCache[follow.userId] } });
 
 
 				let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
