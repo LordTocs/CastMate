@@ -11,6 +11,13 @@ const { parse } = require("yaml");
 const { template } = require('../utils/template');
 const HotReloader = require("../utils/hot-reloader");
 
+const badwordList = require('../../data/badwords.json');
+
+const BadWords = require("bad-words");
+
+
+
+
 class ExpressWebhookAdapter extends ConnectionAdapter
 {
 	constructor(options, basePath)
@@ -43,6 +50,7 @@ class ExpressWebhookAdapter extends ConnectionAdapter
 	}
 }
 
+
 module.exports = {
 	name: "twitch",
 	async init()
@@ -60,6 +68,9 @@ module.exports = {
 		await this.initChannelRewards();
 
 		this.colorCache = {};
+
+		this.filter = new BadWords({ emptyList: true });
+		this.filter.addWords(...badwordList.words);
 	},
 	methods: {
 		async doAuth()
@@ -144,9 +155,19 @@ module.exports = {
 
 				let parsed = this.parseMessage(message);
 
+				const context = {
+					name: parsed.command,
+					user: msgInfo.userDisplayName,
+					args: parsed.args,
+					argString: parsed.string,
+					userColor: msgInfo.userInfo.color,
+					message,
+					filteredMessage: this.filter.clean(message)
+				}
+
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
 				{
-					if (this.actions.trigger('modchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
+					if (this.actions.trigger('modchat', context))
 					{
 						return;
 					}
@@ -154,7 +175,7 @@ module.exports = {
 
 				if (msgInfo.userInfo.isVip)
 				{
-					if (this.actions.trigger('vipchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
+					if (this.actions.trigger('vipchat', context))
 					{
 						return;
 					}
@@ -162,13 +183,13 @@ module.exports = {
 
 				if (msgInfo.userInfo.isSubscriber)
 				{
-					if (this.actions.trigger('subchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
+					if (this.actions.trigger('subchat', context))
 					{
 						return;
 					}
 				}
 
-				if (this.actions.trigger('chat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
+				if (this.actions.trigger('chat', context))
 				{
 					return;
 				}
@@ -232,10 +253,22 @@ module.exports = {
 				this.actions.trigger("bits", { number: message.bits, user: message.userName, ...{ userColor: this.colorCache[message.userId] } });
 			});
 
-			await this.pubSubClient.onRedemption(this.channelId, (message) =>
+			await this.pubSubClient.onRedemption(this.channelId, (redemption) =>
 			{
-				console.log(`Redemption: ${message.rewardId} ${message.rewardName}`);
-				this.actions.trigger("redemption", { name: message.rewardName, msg: message.message, user: message.userDisplayName, ...{ userColor: this.colorCache[message.userId] } });
+				console.log(`Redemption: ${redemption.rewardId} ${redemption.rewardName}`);
+				let message = redemption.message;
+				if (!message)
+				{
+					message = "";
+				}
+
+				this.actions.trigger("redemption", {
+					name: redemption.rewardName,
+					message,
+					filteredMessage: this.filter.clean(message),
+					user: redemption.userDisplayName,
+					...{ userColor: this.colorCache[redemption.userId] }
+				});
 			});
 
 			await this.pubSubClient.onSubscription(this.channelId, async (message) =>
