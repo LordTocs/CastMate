@@ -2,6 +2,8 @@
   <div class="home">
     <img alt="Vue logo" src="../assets/logo.png">
     <HelloWorld msg="G'Day CastMate!!!"/>
+    <el-button type="success">Taco</el-button>
+
   </div>
 </template>
 

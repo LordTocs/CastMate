@@ -1,5 +1,5 @@
 {
-  "name": "castmate-frontend",
+  "name": "CastMate",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,6 +14,9 @@
   "main": "background.js",
   "dependencies": {
     "core-js": "^3.6.5",
+    "custom-electron-titlebar": "^3.2.6",
+    "element-theme-dark": "^1.0.3",
+    "element-ui": "^2.15.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0"
   },
