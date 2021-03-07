@@ -66,10 +66,16 @@ const keys = {
 }
 
 const KEYBDINPUT = Struct(DStruct.KEYBDINPUT);
+const MOUSEINPUT = Struct(DStruct.MOUSEINPUT);
 
 const INPUT_KEYBOARD = Struct({
 	type: "uint32",
 	ki: KEYBDINPUT,
+})
+
+const INPUT_MOUSE = Struct({
+	type: "uint32",
+	mi: MOUSEINPUT,
 })
 
 INPUT_KEYBOARD.size = 40; //Manually set this to 40 because that's the sizeof(INPUT) due to the union.
@@ -86,7 +92,7 @@ module.exports = {
 	{
 	},
 	methods: {
-		sendInput(key, up)
+		sendKey(key, up)
 		{
 			let keyCode = keys[key];
 
@@ -111,6 +117,52 @@ module.exports = {
 					console.log("VK Error", error);
 				}
 			}
+		},
+		sendClick(button, up) {
+			let flags = 0;
+
+			if (up)
+			{
+				if (button == 1)
+				{
+					flags = 0x0004;
+				}
+				else if (button == 2)
+				{
+					flags = 0x0010;
+				}
+			}
+			else
+			{
+				if (button == 1)
+				{
+					flags = 0x0002;
+				}
+				else if (button == 2)
+				{
+					flags = 0x0008;
+				}
+			}
+
+			let inputStruct = new INPUT_MOUSE();
+
+			inputStruct.type = 0;
+			inputStruct.mi.dwFlags = flags;
+			inputStruct.mi.dx = 0;
+			inputStruct.mi.dy = 0;
+			inputStruct.mi.time = 0;
+			inputStruct.mi.mouseData = 0;
+			inputStruct.mi.dwExtraInfo = 0;
+
+			let success = user32Lib.SendInput(1, inputStruct.ref(), INPUT_KEYBOARD.size);
+			if (success != 1)
+			{
+				let error = kernel32.GetLastError();
+				if (error)
+				{
+					console.log("VK Error", error);
+				}
+			}
 		}
 	},
 	settings: {
@@ -125,13 +177,29 @@ module.exports = {
 			description: "Presses a selected keyboard key.",
 			async handler(keyData, context)
 			{
-				this.sendInput(keyData.key, false)
+				this.sendKey(keyData.key, false)
 
 				let pressLength = keyData.time || 0.1;
 
 				await sleep(pressLength * 1000);
 
-				this.sendInput(keyData.key, true);
+				this.sendKey(keyData.key, true);
+			}
+		},
+		mouseButton: {
+			name: "Mouse Button",
+			description: "Presses a mouse button",
+			async handler(mouseData, context)
+			{
+				let button = mouseData.button || 1;
+
+				this.sendClick(button, false)
+
+				let pressLength = mouseData.time || 0.1;
+
+				await sleep(pressLength * 1000);
+
+				this.sendClick(button, true);
 			}
 		}
 	}
