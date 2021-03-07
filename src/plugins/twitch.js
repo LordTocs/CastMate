@@ -334,7 +334,7 @@ module.exports = {
 
 			for (let reward of rewards)
 			{
-				if (!reward.title in this.rewardsDefinitions.data)
+				if (!(reward.title in this.rewardsDefinitions.data))
 				{
 					//Not in the file, delete it.
 					await this.channelTwitchClient.helix.channelPoints.deleteCustomReward(this.channelId, reward.id);
@@ -343,6 +343,30 @@ module.exports = {
 				{
 					//Existing Reward
 					handledRewards.add(reward.title)
+
+					let needsUpdate = false;
+
+					let rewardDef = this.rewardsDefinitions.data[reward.title];
+
+					if (reward.propmt != rewardDef.description)
+						needsUpdate = true;
+					if (reward.cost != rewardDef.cost)
+						needsUpdate = true;
+					
+					if (reward.userInputRequired != !!rewardDef.inputRequired)
+						needsUpdate = true;
+					if (reward.autoApproved != !!rewardDef.skipQueue)
+						needsUpdate = true;
+
+					if (needsUpdate)
+					{
+						await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, {
+							prompt: rewardDef.description,
+							cost: rewardDef.cost,
+							is_user_input_required: !!rewardDef.inputRequired,
+							should_redemptions_skip_request_queue: !!rewardDef.skipQueue,
+						})
+					}
 				}
 			}
 
