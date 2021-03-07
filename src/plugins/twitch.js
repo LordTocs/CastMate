@@ -363,8 +363,8 @@ module.exports = {
 						await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, {
 							prompt: rewardDef.description,
 							cost: rewardDef.cost,
-							is_user_input_required: !!rewardDef.inputRequired,
-							should_redemptions_skip_request_queue: !!rewardDef.skipQueue,
+							userInputRequired: !!rewardDef.inputRequired,
+							autoFulfill: !!rewardDef.skipQueue,
 						})
 					}
 				}
@@ -386,8 +386,8 @@ module.exports = {
 					title: rewardKey,
 					prompt: rewardDef.description,
 					cost: rewardDef.cost,
-					is_user_input_required: !!rewardDef.inputRequired,
-					should_redemptions_skip_request_queue: !!rewardDef.skipQueue,
+					userInputRequired: !!rewardDef.inputRequired,
+					autoFulfill: !!rewardDef.skipQueue,
 				})
 			}
 		},
