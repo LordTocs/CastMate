@@ -73,6 +73,16 @@ module.exports = {
 		this.filter.addWords(...badwordList.words);
 	},
 	methods: {
+		filterMessage(message)
+		{
+			if (!message || message.length < 2)
+				return message;
+			
+			if (!this.filter)
+				return "";
+			
+			return this.filter.clean(message)
+		},
 		async doAuth()
 		{
 			this.channelAuth = new AuthManager("channel");
@@ -162,7 +172,7 @@ module.exports = {
 					argString: parsed.string,
 					userColor: msgInfo.userInfo.color,
 					message,
-					filteredMessage: this.filter.clean(message)
+					filteredMessage: this.filterMessage(message)
 				}
 
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
@@ -265,7 +275,7 @@ module.exports = {
 				this.actions.trigger("redemption", {
 					name: redemption.rewardName,
 					message,
-					filteredMessage: this.filter.clean(message),
+					filteredMessage: this.filterMessage(message),
 					user: redemption.userDisplayName,
 					...{ userColor: this.colorCache[redemption.userId] }
 				});

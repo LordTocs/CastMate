@@ -26,6 +26,7 @@
     "twitch-pubsub-client": "^4.4.11",
     "twitch-webhooks": "^4.4.11",
     "websocket": "^1.0.33",
+    "win32-api": "^9.6.0",
     "yaml": "^1.10.0"
   }
 }
