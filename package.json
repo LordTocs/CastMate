@@ -14,6 +14,7 @@
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "electron": "^11.2.3",
+    "electron-serve": "^1.1.0",
     "express": "^4.17.1",
     "lodash": "^4.17.21",
     "node-hue-api": "^5.0.0-beta.2",
@@ -23,6 +24,7 @@
     "twitch-chat-client": "^4.4.11",
     "twitch-pubsub-client": "^4.4.11",
     "twitch-webhooks": "^4.4.11",
+    "vue": "^2.6.12",
     "websocket": "^1.0.33",
     "yaml": "^1.10.0"
   }
