@@ -1,5 +1,6 @@
 
 const nodeHueApi = require('node-hue-api');
+
 const discovery = nodeHueApi.discovery;
 const hueApi = nodeHueApi.v3.api;
 const lightstates = nodeHueApi.v3.lightStates;
@@ -17,7 +18,7 @@ module.exports = {
 		if (!await this.auth())
 			return;
 
-		let groups = await this.hue.groups.getAll();
+		//let groups = await this.hue.groups.getAll();
 
 		/*for (let group of groups)
 		{
@@ -43,7 +44,7 @@ module.exports = {
 		{
 			try
 			{
-				this.hueUser = JSON.parse(fs.readFileSync("./secrets/hue.json", "utf-8"));
+				this.hueUser = JSON.parse(fs.readFileSync("./user/secrets/hue.json", "utf-8"));
 				return true;
 			}
 			catch (err)
@@ -78,7 +79,7 @@ module.exports = {
 						clientKey: user.clientKey
 					}
 
-					fs.writeFileSync("./secrets/hue.json", JSON.stringify(this.hueUser));
+					fs.writeFileSync("./user/secrets/hue.json", JSON.stringify(this.hueUser));
 
 					return true;
 				}
@@ -192,7 +193,7 @@ module.exports = {
 			async handler(sceneData)
 			{
 				let scene = (sceneData instanceof String) ? sceneData : sceneData.scene;
-				let groupName = lightData.group || this.settings.defaultGroup;
+				let groupName = sceneData.group || this.settings.defaultGroup;
 
 				let sceneId = await this.hue.getSceneByName(scene);
 
@@ -201,7 +202,7 @@ module.exports = {
 
 				let groups = await this.hue.groups.getGroupByName(groupName);
 
-				let lightUpdates = await Promise.all(groups.map((group) => this.hue.groups.setGroupState(group.id, state)));
+				await Promise.all(groups.map((group) => this.hue.groups.setGroupState(group.id, state)));
 			}
 		}
 	}

@@ -37,7 +37,7 @@ class AuthManager
 		this.accessToken = null;
 		try
 		{
-			let tokenJson = JSON.parse(fs.readFileSync(`./secrets/${this.name}Tokens.json`, 'utf-8'));
+			let tokenJson = JSON.parse(fs.readFileSync(`./user/secrets/${this.name}Tokens.json`, 'utf-8'));
 			let obtainmentDate = new Date(tokenJson.obtainment_date);
 			let tokens = tokenJson;
 			this.accessToken = new AccessToken(tokens, obtainmentDate);
@@ -70,7 +70,7 @@ class AuthManager
 		let tokenResp = await this.authPromise;
 		let obtainment_date = new Date();
 
-		fs.writeFileSync(`./secrets/${this.name}Tokens.json`, JSON.stringify({ ...tokenResp, obtainment_date }, null, 4), 'utf-8');
+		fs.writeFileSync(`./user/secrets/${this.name}Tokens.json`, JSON.stringify({ ...tokenResp, obtainment_date }, null, 4), 'utf-8');
 		this.accessToken = new AccessToken(tokenResp, obtainment_date);
 
 		return this.accessToken;
@@ -89,7 +89,7 @@ class AuthManager
 			onRefresh: async (tokenData) =>
 			{
 				let tokenDataObj = tokenData; //Hack our way into privates.
-				fs.writeFileSync(`./secrets/${this.name}Tokens.json`, JSON.stringify({ ...tokenDataObj['_data'], obtainment_date: tokenDataObj["_obtainmentDate"] }, null, 4), 'utf-8');
+				fs.writeFileSync(`./user/secrets/${this.name}Tokens.json`, JSON.stringify({ ...tokenDataObj['_data'], obtainment_date: tokenDataObj["_obtainmentDate"] }, null, 4), 'utf-8');
 			}
 		});
 

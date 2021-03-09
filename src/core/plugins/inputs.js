@@ -1,6 +1,6 @@
 const ffi = require('ffi-napi');
 
-const { K, U, DStruct, DStructExt } = require('win32-api');
+const { K, DStruct } = require('win32-api');
 const kernel32 = K.load();
 
 const ref = require('ref-napi');

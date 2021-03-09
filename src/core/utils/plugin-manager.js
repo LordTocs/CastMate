@@ -7,7 +7,17 @@ class PluginManager
 {
 	async load()
 	{
-		let pluginFiles = await fs.promises.readdir("./src/plugins");
+		let pluginFiles = [
+			"inputs",
+			"lights",
+			"notifications",
+			"obs",
+			"sounds",
+			"tts",
+			"twitch",
+			"variables",
+			"websocket"
+		]
 
 		//Todo: This relative require is weird.
 		this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));

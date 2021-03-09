@@ -1,34 +1,79 @@
 {
   "name": "castmate",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
-  "main": "src/index.js",
+  "private": "true",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
   },
-  "author": "",
-  "license": "ISC",
+  "main": "background.js",
+  "author": "LordTocs & FitzBro",
   "dependencies": {
     "@julusian/jpeg-turbo": "^1.0.0",
     "async-mutex": "^0.3.0",
     "axios": "^0.21.1",
     "bad-words": "^3.0.4",
     "body-parser": "^1.19.0",
-    "electron": "^11.2.3",
+    "core-js": "^3.6.5",
+    "custom-electron-titlebar": "^3.2.6",
+    "electron": "^11.0.0",
     "electron-serve": "^1.1.0",
+    "element-theme-dark": "^1.0.3",
+    "element-ui": "^2.15.1",
     "express": "^4.17.1",
+    "ffi-napi": "^4.0.1",
     "lodash": "^4.17.21",
     "node-hue-api": "^5.0.0-beta.2",
     "node-key-sender": "^1.0.11",
     "obs-websocket-js": "^4.0.2",
+    "ref-napi": "^3.0.1",
     "say": "^0.16.0",
     "twitch": "^4.4.11",
     "twitch-chat-client": "^4.4.11",
     "twitch-pubsub-client": "^4.4.11",
     "twitch-webhooks": "^4.4.11",
-    "vue": "^2.6.12",
+    "vue": "^2.6.11",
+    "vue-router": "^3.2.0",
     "websocket": "^1.0.33",
     "win32-api": "^9.6.0",
     "yaml": "^1.10.0"
-  }
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-router": "^4.5.11",
+    "@vue/cli-service": "~4.5.0",
+    "babel-eslint": "^10.1.0",
+    "electron": "^11.0.0",
+    "electron-devtools-installer": "^3.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "vue-cli-plugin-electron-builder": "~2.0.0-rc.6",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }

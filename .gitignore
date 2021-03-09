@@ -1,11 +1,8 @@
-settings.yaml
-rewards.yaml
-secrets/
-profiles/
-sounds/
-triggers/
-sequences/
+user/
+/dist
+/dist_electron
 
+.DS_Store
 
 # Logs
 logs

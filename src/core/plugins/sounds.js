@@ -8,12 +8,14 @@ module.exports = {
 		this.audioWindow = new BrowserWindow({
 			width: 100,
 			height: 100,
-			show: false,
+			//show: false,
 			webPreferences: {
 				nodeIntegration: true
 			}
 		});
-		this.audioWindow.loadFile("./electron/sounds.html");
+
+
+		this.audioWindow.loadFile(path.join(__static, "sounds.html"));
 
 		ipcMain.on('sound-window', (event, arg) =>
 		{
@@ -23,7 +25,7 @@ module.exports = {
 	methods: {
 		getFullFilepath(filename)
 		{
-			return path.resolve(filename);
+			return path.resolve(path.join("./user",filename));
 		}
 	},
 	settings: {

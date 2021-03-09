@@ -1,14 +1,15 @@
 const fs = require("fs");
 const YAML = require("yaml");
 const { sleep } = require("../utils/sleep");
-
+const path = require("path");
 
 function loadFile(filename, fileset)
 {
 	console.log(`Loading ${filename}`);
-	let contents = fs.readFileSync(filename, "utf-8");
+	const adjustedFilename = path.join("./user", filename);
+	let contents = fs.readFileSync(adjustedFilename, "utf-8");
 	let pojo = YAML.parse(contents);
-	fileset.add(filename);
+	fileset.add(adjustedFilename);
 	return pojo;
 }
 

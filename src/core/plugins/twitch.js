@@ -1,17 +1,17 @@
 const AuthManager = require("../utils/twitchAuth");
 
-const { ApiClient, HelixFollow } = require("twitch");
+const { ApiClient } = require("twitch");
 
 const { ChatClient } = require("twitch-chat-client");
 
 const { PubSubClient } = require("twitch-pubsub-client");
 
 const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
-const { parse } = require("yaml");
+
 const { template } = require('../utils/template');
 const HotReloader = require("../utils/hot-reloader");
 
-const badwordList = require('../../data/badwords.json');
+//const badwordList = require('../../../data/badwords.json');
 
 const BadWords = require("bad-words");
 
@@ -69,8 +69,8 @@ module.exports = {
 
 		this.colorCache = {};
 
-		this.filter = new BadWords({ emptyList: true });
-		this.filter.addWords(...badwordList.words);
+		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
+		//this.filter.addWords(...badwordList.words);
 	},
 	methods: {
 		filterMessage(message)
@@ -230,8 +230,8 @@ module.exports = {
 
 				this.followerCache.add(follow.userId);
 
-				console.log(`followed by ${follow?.userDisplayName}`);
-				this.actions.trigger('follow', { user: follow?.userDisplayName, ...{ userColor: this.colorCache[follow.userId] } });
+				console.log(`followed by ${follow.userDisplayName}`);
+				this.actions.trigger('follow', { user: follow.userDisplayName, ...{ userColor: this.colorCache[follow.userId] } });
 
 
 				let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
@@ -317,7 +317,7 @@ module.exports = {
 
 		async initChannelRewards()
 		{
-			this.rewardsDefinitions = new HotReloader("rewards.yaml",
+			this.rewardsDefinitions = new HotReloader("./user/rewards.yaml",
 				() =>
 				{
 					this.ensureChannelRewards()
