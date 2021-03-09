@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require("electron");
-const { fstat } = require("fs");
+const serve = require('electron-serve');
+const loadURL = serve({directory: './electron/castmate-frontend/dist'});
 const { ActionQueue } = require("./actions/action-queue.js");
 const { ProfileManager } = require("./actions/profile-manager.js");
 const { Profile } = require("./actions/profiles.js");
@@ -11,25 +12,19 @@ const path = require('path');
 const { PluginManager } = require("./utils/plugin-manager.js");
 
 
-
-function createWindow()
+async function createWindow()
 {
-	const win = new BrowserWindow({
-		width: 800,
-		height: 600,
-		webPreferences: {
-			nodeIntegration: true
-		}
-	});
-
-	win.loadFile("electron/index.html");
+	let mainWindow;
+	mainWindow = new BrowserWindow();
+	await loadURL(mainWindow);
 }
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 app.whenReady().then(async () =>
 {
-	createWindow();
+	// launch electron
+	await createWindow();
 
 	let plugins = new PluginManager();
 	await plugins.load();
