@@ -8,7 +8,7 @@ module.exports = {
 		this.audioWindow = new BrowserWindow({
 			width: 100,
 			height: 100,
-			//show: false,
+			show: false,
 			webPreferences: {
 				nodeIntegration: true
 			}
