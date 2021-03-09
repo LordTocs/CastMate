@@ -1,36 +1,18 @@
-const { app, BrowserWindow } = require("electron");
-const serve = require('electron-serve');
-const loadURL = serve({directory: './electron/castmate-frontend/dist'});
 const { ActionQueue } = require("./actions/action-queue.js");
 const { ProfileManager } = require("./actions/profile-manager.js");
-const { Profile } = require("./actions/profiles.js");
-const { Plugin } = require('./utils/plugin.js');
 const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
 const fs = require('fs');
 const path = require('path');
 const { PluginManager } = require("./utils/plugin-manager.js");
 
-
-async function createWindow()
+export async function initCastMate()
 {
-	let mainWindow;
-	mainWindow = new BrowserWindow();
-	await loadURL(mainWindow);
-}
-
-app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-
-app.whenReady().then(async () =>
-{
-	// launch electron
-	await createWindow();
-
 	let plugins = new PluginManager();
 	await plugins.load();
 
-	const settings = new HotReloader("settings.yaml",
-		(newSettings, oldSettings) =>
+	const settings = new HotReloader("./user/settings.yaml",
+		(newSettings) =>
 		{
 			for (let plugin of plugins)
 			{
@@ -42,11 +24,14 @@ app.whenReady().then(async () =>
 			console.error("Error loading settings", err);
 		});
 
-	const secrets = new HotReloader("secrets/secrets.yaml",
-		(newSecrets, oldSecrets) =>
+	const secrets = new HotReloader("./user/secrets/secrets.yaml",
+		(newSecrets) =>
 		{
 			//TODO handle hotreload.
-			plugin.updateSecrets(newSecrets);
+			for (let plugin of plugins)
+			{
+				plugin.updateSecrets(newSecrets);
+			}
 		},
 		(err) =>
 		{
@@ -65,7 +50,7 @@ app.whenReady().then(async () =>
 
 	await plugins.init(settings, secrets, actions, profiles, webServices);
 
-	let profileFiles = await fs.promises.readdir("./profiles");
+	let profileFiles = await fs.promises.readdir("./user/profiles");
 
 	for (let profileFile of profileFiles)
 	{
@@ -76,12 +61,4 @@ app.whenReady().then(async () =>
 
 	//Let loose the web server
 	webServices.start();
-});
-
-app.on("activate", () =>
-{
-	if (BrowserWindow.getAllWindows().length === 0)
-	{
-		createWindow();
-	}
-})
+}

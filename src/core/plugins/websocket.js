@@ -44,7 +44,7 @@ module.exports = {
 					let value = obj[i];
 					if (typeof value == 'string' || value instanceof String)
 					{
-						obj[i] = template(obj[i], data);
+						obj[i] = template(obj[i], context);
 					}
 					else if (value instanceof Object || value instanceof Array)
 					{

@@ -7,13 +7,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
+      "name": "Electron Serve",
       "skipFiles": ["<node_internals>/**"],
-      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-      "windows": {
-        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
-      },
-      "args": ["."],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "electron:serve", "--legacy"],
       "outputCapture": "std"
     }
   ]

@@ -1,15 +1,22 @@
 const AuthManager = require("../utils/twitchAuth");
 
-const { ApiClient, HelixFollow } = require("twitch");
+const { ApiClient } = require("twitch");
 
 const { ChatClient } = require("twitch-chat-client");
 
 const { PubSubClient } = require("twitch-pubsub-client");
 
 const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
-const { parse } = require("yaml");
+
 const { template } = require('../utils/template');
 const HotReloader = require("../utils/hot-reloader");
+
+//const badwordList = require('../../../data/badwords.json');
+
+const BadWords = require("bad-words");
+
+
+
 
 class ExpressWebhookAdapter extends ConnectionAdapter
 {
@@ -43,6 +50,7 @@ class ExpressWebhookAdapter extends ConnectionAdapter
 	}
 }
 
+
 module.exports = {
 	name: "twitch",
 	async init()
@@ -60,8 +68,21 @@ module.exports = {
 		await this.initChannelRewards();
 
 		this.colorCache = {};
+
+		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
+		//this.filter.addWords(...badwordList.words);
 	},
 	methods: {
+		filterMessage(message)
+		{
+			if (!message || message.length < 2)
+				return message;
+			
+			if (!this.filter)
+				return "";
+			
+			return this.filter.clean(message)
+		},
 		async doAuth()
 		{
 			this.channelAuth = new AuthManager("channel");
@@ -144,9 +165,19 @@ module.exports = {
 
 				let parsed = this.parseMessage(message);
 
+				const context = {
+					name: parsed.command,
+					user: msgInfo.userDisplayName,
+					args: parsed.args,
+					argString: parsed.string,
+					userColor: msgInfo.userInfo.color,
+					message,
+					filteredMessage: this.filterMessage(message)
+				}
+
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
 				{
-					if (this.actions.trigger('modchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
+					if (this.actions.trigger('modchat', context))
 					{
 						return;
 					}
@@ -154,7 +185,7 @@ module.exports = {
 
 				if (msgInfo.userInfo.isVip)
 				{
-					if (this.actions.trigger('vipchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
+					if (this.actions.trigger('vipchat', context))
 					{
 						return;
 					}
@@ -162,13 +193,13 @@ module.exports = {
 
 				if (msgInfo.userInfo.isSubscriber)
 				{
-					if (this.actions.trigger('subchat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
+					if (this.actions.trigger('subchat', context))
 					{
 						return;
 					}
 				}
 
-				if (this.actions.trigger('chat', { name: parsed.command, user, args: parsed.args, argString: parsed.string, userColor: msgInfo.userInfo.color }))
+				if (this.actions.trigger('chat', context))
 				{
 					return;
 				}
@@ -199,8 +230,8 @@ module.exports = {
 
 				this.followerCache.add(follow.userId);
 
-				console.log(`followed by ${follow?.userDisplayName}`);
-				this.actions.trigger('follow', { user: follow?.userDisplayName, ...{ userColor: this.colorCache[follow.userId] } });
+				console.log(`followed by ${follow.userDisplayName}`);
+				this.actions.trigger('follow', { user: follow.userDisplayName, ...{ userColor: this.colorCache[follow.userId] } });
 
 
 				let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
@@ -232,10 +263,22 @@ module.exports = {
 				this.actions.trigger("bits", { number: message.bits, user: message.userName, ...{ userColor: this.colorCache[message.userId] } });
 			});
 
-			await this.pubSubClient.onRedemption(this.channelId, (message) =>
+			await this.pubSubClient.onRedemption(this.channelId, (redemption) =>
 			{
-				console.log(`Redemption: ${message.rewardId} ${message.rewardName}`);
-				this.actions.trigger("redemption", { name: message.rewardName, msg: message.message, user: message.userDisplayName, ...{ userColor: this.colorCache[message.userId] } });
+				console.log(`Redemption: ${redemption.rewardId} ${redemption.rewardName}`);
+				let message = redemption.message;
+				if (!message)
+				{
+					message = "";
+				}
+
+				this.actions.trigger("redemption", {
+					name: redemption.rewardName,
+					message,
+					filteredMessage: this.filterMessage(message),
+					user: redemption.userDisplayName,
+					...{ userColor: this.colorCache[redemption.userId] }
+				});
 			});
 
 			await this.pubSubClient.onSubscription(this.channelId, async (message) =>
@@ -274,7 +317,7 @@ module.exports = {
 
 		async initChannelRewards()
 		{
-			this.rewardsDefinitions = new HotReloader("rewards.yaml",
+			this.rewardsDefinitions = new HotReloader("./user/rewards.yaml",
 				() =>
 				{
 					this.ensureChannelRewards()
@@ -291,7 +334,7 @@ module.exports = {
 
 			for (let reward of rewards)
 			{
-				if (!reward.title in this.rewardsDefinitions.data)
+				if (!(reward.title in this.rewardsDefinitions.data))
 				{
 					//Not in the file, delete it.
 					await this.channelTwitchClient.helix.channelPoints.deleteCustomReward(this.channelId, reward.id);
@@ -300,6 +343,30 @@ module.exports = {
 				{
 					//Existing Reward
 					handledRewards.add(reward.title)
+
+					let needsUpdate = false;
+
+					let rewardDef = this.rewardsDefinitions.data[reward.title];
+
+					if (reward.propmt != rewardDef.description)
+						needsUpdate = true;
+					if (reward.cost != rewardDef.cost)
+						needsUpdate = true;
+					
+					if (reward.userInputRequired != !!rewardDef.inputRequired)
+						needsUpdate = true;
+					if (reward.autoApproved != !!rewardDef.skipQueue)
+						needsUpdate = true;
+
+					if (needsUpdate)
+					{
+						await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, {
+							prompt: rewardDef.description,
+							cost: rewardDef.cost,
+							userInputRequired: !!rewardDef.inputRequired,
+							autoFulfill: !!rewardDef.skipQueue,
+						})
+					}
 				}
 			}
 
@@ -319,8 +386,8 @@ module.exports = {
 					title: rewardKey,
 					prompt: rewardDef.description,
 					cost: rewardDef.cost,
-					is_user_input_required: !!rewardDef.inputRequired,
-					should_redemptions_skip_request_queue: !!rewardDef.skipQueue,
+					userInputRequired: !!rewardDef.inputRequired,
+					autoFulfill: !!rewardDef.skipQueue,
 				})
 			}
 		},
