@@ -101,6 +101,46 @@ class Plugin
 		//TODO: Fire Event
 	}
 
+	getUIDescription()	{
+		let actions = {};
+
+		for (let actionKey in this.actions)
+		{
+			actions[actionKey] = {
+				name: this.actions[actionKey].name,
+				description: this.actions[actionKey].description,
+			}
+		}
+
+		let settings = {};
+
+		//convert all types to strings
+		for (let settingsKey in this.settings)
+		{
+			settings[settingsKey] = { ...this.settings[settingsKey] };
+			settings[settingsKey].type = settings[settingsKey].type.name;
+		}
+
+		let secrets = {};
+
+		//convert all types to strings
+		for (let secretsKey in this.secrets)
+		{
+			secrets[secretsKey] = { ...this.secrets[secretsKey] };
+			secrets[secretsKey].type = secrets[secretsKey].type.name;
+		}
+
+		//Todo: State.
+
+		return {
+			name: this.name,
+			settings,
+			secrets,
+			triggers: this.triggers,
+			actions
+		}
+	}
+
 }
 
 module.exports = {
