@@ -113,7 +113,7 @@ class AuthManager
 					client_id: this.clientId,
 					client_secret: this.clientSecret,
 					grant_type: 'authorization_code',
-					redirect_uri: `http://localhost/auth/${this.name}/redirect`,
+					redirect_uri: `http://localhost:${this.localPort}/auth/${this.name}/redirect`,
 					code: access_code
 				}),
 				{
@@ -137,7 +137,7 @@ class AuthManager
 	{
 		app.get(`/auth/${this.name}`, (req, res, next) =>
 		{
-			let redirectUri = `http://localhost/auth/${this.name}/redirect`;
+			let redirectUri = `http://localhost:${this.localPort}/auth/${this.name}/redirect`;
 			res.redirect(`https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=${this.clientId}&redirect_uri=${redirectUri}&scope=${scopes.join('+')}`);
 		});
 
