@@ -50,6 +50,9 @@ async function initInternal()
 
 	const profiles = new ProfileManager(actions, plugins);
 
+	//Let loose the web server
+	webServices.start();
+
 	await plugins.init(settings, secrets, actions, profiles, webServices);
 
 	let profileFiles = await fs.promises.readdir("./user/profiles");
@@ -61,8 +64,7 @@ async function initInternal()
 
 	profiles.recombine();
 
-	//Let loose the web server
-	webServices.start();
+	webServices.startWebsockets();
 }
 
 export async function initCastMate()

@@ -79,7 +79,6 @@ class PluginManager
 		ipcMain.handle("getPlugins", async () =>
 		{
 			let pluginInfo = this.plugins.map((plugin) => plugin.getUIDescription());
-			console.log(pluginInfo);
 			return pluginInfo;
 		})
 	}

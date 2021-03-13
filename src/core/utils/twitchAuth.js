@@ -29,12 +29,13 @@ const scopes = [
 
 class AuthManager
 {
-	constructor(name)
+	constructor(name, port)
 	{
 		this.name = name;
 		this.authPromise = null;
 		this.authResolver = null;
 		this.accessToken = null;
+		this.localPort = port;
 		try
 		{
 			let tokenJson = JSON.parse(fs.readFileSync(`./user/secrets/${this.name}Tokens.json`, 'utf-8'));
@@ -65,7 +66,7 @@ class AuthManager
 		});
 
 		console.log(`Auth is required as ${this.name}`);
-		console.log(`Go to http://localhost/auth/${this.name}/ to sign in. If you're signing into a bot account go in incognito`);
+		console.log(`Go to http://localhost:${this.localPort}/auth/${this.name}/ to sign in. If you're signing into a bot account go in incognito`);
 
 		let tokenResp = await this.authPromise;
 		let obtainment_date = new Date();
@@ -112,7 +113,7 @@ class AuthManager
 					client_id: this.clientId,
 					client_secret: this.clientSecret,
 					grant_type: 'authorization_code',
-					redirect_uri: `http://localhost/auth/${this.name}/redirect`,
+					redirect_uri: `http://localhost:${this.localPort}/auth/${this.name}/redirect`,
 					code: access_code
 				}),
 				{
@@ -136,7 +137,7 @@ class AuthManager
 	{
 		app.get(`/auth/${this.name}`, (req, res, next) =>
 		{
-			let redirectUri = `http://localhost/auth/${this.name}/redirect`;
+			let redirectUri = `http://localhost:${this.localPort}/auth/${this.name}/redirect`;
 			res.redirect(`https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=${this.clientId}&redirect_uri=${redirectUri}&scope=${scopes.join('+')}`);
 		});
 
