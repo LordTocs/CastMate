@@ -2,7 +2,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const websocket = require("websocket");
 const http = require("http");
-const { start } = require("repl");
 
 function createWebServices(settings, secrets, plugins)
 {
@@ -19,10 +18,7 @@ function createWebServices(settings, secrets, plugins)
 	let server = http.createServer(app);
 
 
-	let websocketServer = new websocket.server({
-		httpServer: server,
-		autoAcceptConnections: true
-	});
+	let websocketServer = new websocket.server();
 
 	websocketServer.on('connect', function (connection)
 	{
@@ -60,6 +56,13 @@ function createWebServices(settings, secrets, plugins)
 			{
 				console.log(`Started Internal Webserver on port ${port}`);
 				app.use(express.static("./web"));
+			});
+		},
+		startWebsockets: () =>
+		{
+			websocketServer.mount({
+				httpServer: server,
+				autoAcceptConnections: true
 			});
 		}
 	}

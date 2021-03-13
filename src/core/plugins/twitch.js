@@ -85,7 +85,7 @@ module.exports = {
 		},
 		async doAuth()
 		{
-			this.channelAuth = new AuthManager("channel");
+			this.channelAuth = new AuthManager("channel", this.webServices.port);
 			this.channelAuth.setClientInfo(this.secrets.apiClientId, this.secrets.apiClientSecret);
 
 			//Do the channel authentication
@@ -101,7 +101,7 @@ module.exports = {
 
 			if (this.settings.botName != this.settings.channelName)
 			{
-				this.botAuth = new AuthManager("bot");
+				this.botAuth = new AuthManager("bot", this.webServices.port);
 				this.botAuth.setClientInfo(this.secrets.apiClientId, this.secrets.apiClientSecret);
 				//Do the bot authentication only if there's a different bot name
 				this.botAuth.installMiddleware(this.webServices.app);

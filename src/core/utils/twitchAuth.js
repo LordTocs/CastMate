@@ -29,12 +29,13 @@ const scopes = [
 
 class AuthManager
 {
-	constructor(name)
+	constructor(name, port)
 	{
 		this.name = name;
 		this.authPromise = null;
 		this.authResolver = null;
 		this.accessToken = null;
+		this.localPort = port;
 		try
 		{
 			let tokenJson = JSON.parse(fs.readFileSync(`./user/secrets/${this.name}Tokens.json`, 'utf-8'));
@@ -65,7 +66,7 @@ class AuthManager
 		});
 
 		console.log(`Auth is required as ${this.name}`);
-		console.log(`Go to http://localhost/auth/${this.name}/ to sign in. If you're signing into a bot account go in incognito`);
+		console.log(`Go to http://localhost:${this.localPort}/auth/${this.name}/ to sign in. If you're signing into a bot account go in incognito`);
 
 		let tokenResp = await this.authPromise;
 		let obtainment_date = new Date();
