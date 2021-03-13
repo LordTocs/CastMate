@@ -2,7 +2,7 @@ const { template } = require('../utils/template');
 
 
 module.exports = {
-	name: "variables",
+	name: "notifications",
 	async init()
 	{
 

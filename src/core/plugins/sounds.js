@@ -14,7 +14,6 @@ module.exports = {
 			}
 		});
 
-
 		this.audioWindow.loadFile(path.join(__static, "sounds.html"));
 
 		ipcMain.on('sound-window', (event, arg) =>

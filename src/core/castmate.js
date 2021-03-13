@@ -5,8 +5,10 @@ const { createWebServices } = require("./utils/webserver.js");
 const fs = require('fs');
 const path = require('path');
 const { PluginManager } = require("./utils/plugin-manager.js");
+const { ipcMain } = require("electron");
 
-export async function initCastMate()
+
+async function initInternal()
 {
 	let plugins = new PluginManager();
 	await plugins.load();
@@ -61,4 +63,15 @@ export async function initCastMate()
 
 	//Let loose the web server
 	webServices.start();
+}
+
+export async function initCastMate()
+{
+	let initPromise = initInternal();
+
+	ipcMain.handle('waitForInit', async () => {
+		return await initPromise;
+	})
+
+	await initPromise;
 }

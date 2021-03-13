@@ -2,7 +2,7 @@ const fs = require('fs');
 const { manualDependency } = require('./conditionals');
 const { Plugin } = require('./plugin');
 const { reactiveCopy, Watcher } = require('./reactive');
-
+const { ipcMain } = require("electron");
 class PluginManager
 {
 	async load()
@@ -23,7 +23,7 @@ class PluginManager
 		this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));
 
 		this.combinedState = {};
-		
+
 		for (let plugin of this.plugins)
 		{
 			reactiveCopy(this.combinedState, plugin.pluginObj.state);
@@ -75,6 +75,13 @@ class PluginManager
 				console.error(err);
 			}
 		}
+
+		ipcMain.handle("getPlugins", async () =>
+		{
+			let pluginInfo = this.plugins.map((plugin) => plugin.getUIDescription());
+			console.log(pluginInfo);
+			return pluginInfo;
+		})
 	}
 }
 
