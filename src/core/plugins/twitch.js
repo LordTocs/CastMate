@@ -11,8 +11,6 @@ const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
 const { template } = require('../utils/template');
 const HotReloader = require("../utils/hot-reloader");
 
-//const badwordList = require('../../../data/badwords.json');
-
 const BadWords = require("bad-words");
 
 
@@ -99,7 +97,7 @@ module.exports = {
 				authProvider: this.chatAuthProvider,
 			});
 
-			if (this.settings.botName != this.settings.channelName)
+			if (this.settings.botName && this.settings.botName != this.settings.channelName)
 			{
 				this.botAuth = new AuthManager("bot", this.webServices.port);
 				this.botAuth.setClientInfo(this.secrets.apiClientId, this.secrets.apiClientSecret);
@@ -156,7 +154,7 @@ module.exports = {
 
 				this.webServices.websocketServer.broadcast(JSON.stringify({
 					chat: {
-						user: msgInfo.userDisplayName,
+						user,
 						color: msgInfo.userInfo.color,
 						message,
 						emoteOffsets: Object.fromEntries(msgInfo.emoteOffsets)
@@ -167,7 +165,7 @@ module.exports = {
 
 				const context = {
 					name: parsed.command,
-					user: msgInfo.userDisplayName,
+					user,
 					args: parsed.args,
 					argString: parsed.string,
 					userColor: msgInfo.userInfo.color,
