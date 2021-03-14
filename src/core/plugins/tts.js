@@ -4,11 +4,17 @@ const say = require("say");
 
 module.exports = {
 	name: "tts",
-	async init() {
+	async init()
+	{
+		
 	},
 	actions: {
 		tts: {
-			async handler(data, context) {
+			data: {
+				type: "TemplateString"
+			},
+			async handler(data, context)
+			{
 				say.speak(template(data, context));
 			}
 		}

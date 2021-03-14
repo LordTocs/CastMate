@@ -1,4 +1,3 @@
-const fs = require('fs');
 const { manualDependency } = require('./conditionals');
 const { Plugin } = require('./plugin');
 const { reactiveCopy, Watcher } = require('./reactive');

@@ -53,6 +53,9 @@ module.exports = {
 		obsScene: {
 			name: "OBS Scene",
 			description: "Change the OBS scene.",
+			data: {
+				type: "TemplateString"
+			},
 			async handler(sceneData, context)
 			{
 				await this.obs.send('SetCurrentScene', {

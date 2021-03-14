@@ -7,9 +7,9 @@
             <i class="el-icon-menu"></i>
             <span>Home</span>
           </el-menu-item>
-          <el-menu-item index="/about">
+          <el-menu-item index="/profiles">
             <i class="el-icon-document"></i>
-            <span>About</span>
+            <span>Profiles</span>
           </el-menu-item>
 
           <el-submenu index="1">

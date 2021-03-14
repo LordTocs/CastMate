@@ -17,6 +17,15 @@ module.exports = {
 	},
 	actions: {
 		notification: {
+			name: "Notification",
+			data: {
+				type: Object,
+				properties: {
+					header: { type: "TemplateString", name: "Header" },
+					text: { type: "TemplateString", name: "Text" },
+					color: { type: "TemplateString", name: "Color" },
+				}
+			},
 			async handler(notificationData, context)
 			{
 				let notification = { ...notificationData };

@@ -135,13 +135,13 @@ class AuthManager
 
 	installMiddleware(app)
 	{
-		app.get(`/auth/${this.name}`, (req, res, next) =>
+		app.get(`/auth/${this.name}`, (req, res) =>
 		{
 			let redirectUri = `http://localhost:${this.localPort}/auth/${this.name}/redirect`;
 			res.redirect(`https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=${this.clientId}&redirect_uri=${redirectUri}&scope=${scopes.join('+')}`);
 		});
 
-		app.get(`/auth/${this.name}/redirect`, async (req, res, next) =>
+		app.get(`/auth/${this.name}/redirect`, async (req, res) =>
 		{
 			if (!req.query.code)
 			{

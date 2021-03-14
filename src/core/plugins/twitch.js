@@ -75,10 +75,10 @@ module.exports = {
 		{
 			if (!message || message.length < 2)
 				return message;
-			
+
 			if (!this.filter)
 				return "";
-			
+
 			return this.filter.clean(message)
 		},
 		async doAuth()
@@ -350,7 +350,7 @@ module.exports = {
 						needsUpdate = true;
 					if (reward.cost != rewardDef.cost)
 						needsUpdate = true;
-					
+
 					if (reward.userInputRequired != !!rewardDef.inputRequired)
 						needsUpdate = true;
 					if (reward.autoApproved != !!rewardDef.skipQueue)
@@ -500,6 +500,9 @@ module.exports = {
 		say: {
 			name: "Say",
 			description: "Uses the bot to send a twitch chat message",
+			data: {
+				type: "TemplateString"
+			},
 			handler(message, context)
 			{
 				this.chatClient.say(this.settings.channelName.toLowerCase(), template(message, context));

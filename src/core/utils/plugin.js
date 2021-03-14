@@ -1,4 +1,5 @@
 const { reactify } = require("./reactive");
+const { cleanSchemaForIPC } = require("./schema");
 
 class Plugin
 {
@@ -109,6 +110,7 @@ class Plugin
 			actions[actionKey] = {
 				name: this.actions[actionKey].name,
 				description: this.actions[actionKey].description,
+				data: cleanSchemaForIPC(this.actions[actionKey].data)
 			}
 		}
 

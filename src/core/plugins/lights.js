@@ -147,6 +147,16 @@ module.exports = {
 		light: {
 			name: "Light",
 			description: "Changes HUE lights.",
+			data: {
+				type: Object,
+				properties: {
+					on: { type: Boolean, name: "On" },
+					bri: { type: "TemplateNumber", name: "Brightness" },
+					hue: { type: "TemplateNumber", name: "Hue" },
+					transition: { type: "TemplateNumber", name: "Transition Time" },
+					group: { type: String, name: "HUE Light Group" },
+				}
+			},
 			async handler(lightData, context)
 			{
 				lightData = { ...lightData };
@@ -190,9 +200,16 @@ module.exports = {
 		lightScene: {
 			name: "Scene",
 			description: "Changes HUE lights to a hue scene",
+			data: {
+				type: Object,
+				properties: {
+					scene: { type: String, name: "Scene" },
+					group: { type: String, name: "HUE Light Group" },
+				}
+			},
 			async handler(sceneData)
 			{
-				let scene = (sceneData instanceof String) ? sceneData : sceneData.scene;
+				let scene = sceneData.scene;
 				let groupName = sceneData.group || this.settings.defaultGroup;
 
 				let sceneId = await this.hue.getSceneByName(scene);
