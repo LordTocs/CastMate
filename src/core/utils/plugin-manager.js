@@ -12,6 +12,7 @@ class PluginManager
 			"notifications",
 			"obs",
 			"sounds",
+			"minecraft",
 			"tts",
 			"twitch",
 			"variables",
