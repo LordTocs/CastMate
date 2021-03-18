@@ -248,9 +248,9 @@ module.exports = {
 				{
 					lightData.transition = this.handleTemplateNumber(lightData.transition, context);
 
-					state.transitionInMillis(lightData.transition / 1000)
+					state.transitionInMillis(lightData.transition * 1000)
 				}
-				
+
 				let group = await this.hue.groups.getGroupByName(groupName);//await this.getGroupByName(groupName)
 
 				if (group.length == 0)
