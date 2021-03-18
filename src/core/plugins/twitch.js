@@ -258,7 +258,15 @@ module.exports = {
 			await this.pubSubClient.onBits(this.channelId, (message) =>
 			{
 				console.log(`Bits: ${message.bits}`);
-				this.actions.trigger("bits", { number: message.bits, user: message.userName, ...{ userColor: this.colorCache[message.userId] } });
+
+				
+				this.actions.trigger("bits", {
+					number: message.bits,
+					user: message.userName,
+					message: message.message,
+					filteredMessage: this.filterMessage(message.message),
+					...{ userColor: this.colorCache[message.userId] }
+				});
 			});
 
 			await this.pubSubClient.onRedemption(this.channelId, (redemption) =>

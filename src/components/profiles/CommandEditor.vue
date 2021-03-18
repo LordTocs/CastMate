@@ -1,6 +1,8 @@
 <template>
   <div>
-    <el-checkbox v-model="value.sync"> Synchronous </el-checkbox>
+    <el-form-item>
+      <el-checkbox v-model="value.sync"> Synchronous </el-checkbox>
+    </el-form-item>
     <actions-list-editor v-model="value.actions" />
   </div>
 </template>
@@ -16,4 +18,5 @@ export default {
 </script>
 
 <style>
+
 </style>

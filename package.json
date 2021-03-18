@@ -24,6 +24,7 @@
     "custom-electron-titlebar": "^3.2.6",
     "electron": "^11.0.0",
     "electron-serve": "^1.1.0",
+    "element-theme-chalk": "^2.15.1",
     "element-theme-dark": "^1.0.3",
     "element-ui": "^2.15.1",
     "express": "^4.17.1",

@@ -10,6 +10,7 @@ module.exports = {
 	},
 	actions: {
 		tts: {
+			name: "Text to Speech",
 			data: {
 				type: "TemplateString"
 			},

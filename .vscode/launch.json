@@ -2,15 +2,23 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Electron: Serve",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "electron:serve"]
+    },
+    {
       "name": "Electron: Main",
       "type": "node",
       "request": "launch",
       "protocol": "inspector",
+	  "preLaunchTask": "electron-debug",
       "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
       "windows": {
         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
       },
-      "preLaunchTask": "electron-debug",
       "args": ["--remote-debugging-port=9223", "./dist_electron"],
       "outFiles": ["${workspaceFolder}/dist_electron/**/*.js"]
     },
@@ -30,7 +38,10 @@
   "compounds": [
     {
       "name": "Electron: All",
-      "configurations": ["Electron: Main", "Electron: Renderer"]
+      "configurations": [
+        "Electron: Main",
+        "Electron: Renderer"
+      ]
     }
   ]
 }

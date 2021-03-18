@@ -1,12 +1,12 @@
 <template>
-  <div class="object-indent">
+  <el-card shadow="never" class="object-indent">
     <data-input
       v-for="propertyKey in Object.keys(schema)"
       :key="propertyKey"
       :schema="schema[propertyKey]"
       v-model="value[propertyKey]"
     />
-  </div>
+  </el-card>
 </template>
 
 <script>
@@ -22,6 +22,6 @@ export default {
 
 <style scoped>
 .object-indent {
-  padding-left: 3rem;
+  margin-left: 2rem;
 }
 </style>

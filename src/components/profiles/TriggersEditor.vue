@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <el-card>
     <trigger-editor
       v-for="triggerName in Object.keys(value)"
       :key="triggerName"
       v-model="value[triggerName]"
       :trigger-name="triggerName"
     />
-  </div>
+  </el-card>
 </template>
 
 <script>

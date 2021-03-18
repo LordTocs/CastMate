@@ -53,6 +53,7 @@ module.exports = {
 	},
 	actions: {
 		variable: {
+			name: "Change Variable",
 			data: {
 				type: Object,
 				properties: {

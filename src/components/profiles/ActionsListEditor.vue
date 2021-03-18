@@ -1,9 +1,6 @@
 <template>
   <div>
-    <div v-for="(action, i) in value" :key="i">
-      <action-editor :value="action" />
-      <el-divider></el-divider>
-    </div>
+    <action-editor v-for="(action, i) in value" :key="i" :value="action" />
     <el-row>
       <el-button> New Action </el-button>
       <el-button> Import Sequence </el-button>
