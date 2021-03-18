@@ -35,6 +35,14 @@ module.exports = {
 		async startConnectLoop()
 		{
 			this.rcon = null;
+
+			if (!this.settings.host)
+				return;
+			if (!this.settings.port)
+				return;
+			if (!this.secrets.password)
+				return;
+
 			while (!(await this.tryConnect()));
 		}
 	},
@@ -47,7 +55,7 @@ module.exports = {
 	},
 	actions: {
 		mineCmd: {
-			name: "Minecraft Running",
+			name: "Minecraft Command",
 			data: {
 				type: "TemplateString",
 			},
