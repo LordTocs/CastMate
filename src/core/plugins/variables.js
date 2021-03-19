@@ -1,4 +1,6 @@
 const { createReactiveProperty } = require("../utils/reactive.js");
+const { evalTemplate } = require('../utils/template');
+
 module.exports = {
 	name: "variables",
 	async init()
@@ -45,6 +47,14 @@ module.exports = {
 			this.state[name] = value
 			createReactiveProperty(this.state, name);
 			this.plugins.updateReactivity(this);
+		},
+		handleTemplateNumber(value, context)
+		{
+			if (typeof value === 'string' || value instanceof String)
+			{
+				return evalTemplate(value, context)
+			}
+			return value;
 		}
 	},
 	settings: {
@@ -62,7 +72,7 @@ module.exports = {
 					offset: { type: String, name: "Offset Value" },
 				}
 			},
-			async handler(variableData)
+			async handler(variableData, context)
 			{
 				if (!variableData.name)
 					return;
@@ -73,8 +83,12 @@ module.exports = {
 				if ("set" in variableData)
 				{
 					//Set the value
-
-					this.state[variableData.name] = variableData.set;
+					let setValue = variableData.set;
+					if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number)
+					{
+						setValue = this.handleTemplateNumber(setValue, context);
+					}
+					this.state[variableData.name] = setValue;
 				}
 				else if ("offset" in variableData)
 				{

@@ -19,8 +19,6 @@ const fakeSetGroupStateEndpoint = {
 
 		data.url = `/${parameters.username}/groups/${parameters.id}/action`;
 
-		console.log(parameters);
-
 		data.data = parameters.state;
 
 		data.headers = {
