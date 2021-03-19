@@ -67,6 +67,8 @@ class ProfileManager
 	{
 		let [activeProfiles, inactiveProfiles] = _.partition(this.profiles, (profile) => evalConditional(profile.conditions, this.plugins.combinedState));
 
+		console.log("Changing Profiles: ", activeProfiles.map(p => p.filename).join(', '));
+
 		this.triggers = Profile.mergeTriggers(activeProfiles);
 
 		this.actions.setTriggers(this.triggers);

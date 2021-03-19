@@ -71,9 +71,11 @@ export async function initCastMate()
 {
 	let initPromise = initInternal();
 
-	ipcMain.handle('waitForInit', async () => {
+	ipcMain.handle('waitForInit', async () =>
+	{
 		return await initPromise;
 	})
 
 	await initPromise;
 }
+

@@ -13,6 +13,7 @@ class PluginManager
 			"obs",
 			"sounds",
 			"minecraft",
+			"csgo",
 			"tts",
 			"twitch",
 			"variables",

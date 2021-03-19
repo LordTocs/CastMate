@@ -17,6 +17,8 @@ function createWebServices(settings, secrets, plugins)
 
 	let server = http.createServer(app);
 
+	app.use(routes);
+
 
 	let websocketServer = new websocket.server();
 
