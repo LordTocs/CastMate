@@ -13,7 +13,15 @@ export default {
 	},
 	getters: {
 		plugins: state => state.plugins,
-		inited: state => state.inited
+		inited: state => state.inited,
+		actions: state => {
+			let result = {};
+			for (let plugin of state.plugins)
+			{
+				Object.assign(result, plugin.actions)
+			}
+			return result;
+		}
 	},
 	mutations: {
 		setInited(state)

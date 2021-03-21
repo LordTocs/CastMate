@@ -57,6 +57,9 @@ module.exports = {
 	actions: {
 		websocket: {
 			name: "Websocket Broadcast",
+			data: {
+				type: Object
+			},
 			async handler(websocketData, context) {
 
 				let data = _.cloneDeep(websocketData);

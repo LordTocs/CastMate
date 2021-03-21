@@ -175,7 +175,14 @@ module.exports = {
 		pressKey: {
 			name: "Press Key",
 			description: "Presses a selected keyboard key.",
-			async handler(keyData, context)
+			data: {
+				type: Object,
+				properties: {
+					key: { type: String, name: "Key" },
+					time: { type: Number, name: "Press Time" }
+				}
+			},
+			async handler(keyData)
 			{
 				this.sendKey(keyData.key, false)
 
@@ -189,7 +196,14 @@ module.exports = {
 		mouseButton: {
 			name: "Mouse Button",
 			description: "Presses a mouse button",
-			async handler(mouseData, context)
+			data: {
+				type: Object,
+				properties: {
+					button: { type: Number, name: "Mouse Button" },
+					time: { type: Number, name: "Press Time" }
+				}
+			},
+			async handler(mouseData)
 			{
 				let button = mouseData.button || 1;
 

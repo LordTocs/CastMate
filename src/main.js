@@ -2,7 +2,8 @@ import Vue from 'vue'
 import App from './App.vue'
 import Vuex from "vuex";
 import Element from 'element-ui';
-import 'element-theme-dark';
+//import 'element-theme-dark';
+import 'element-theme-chalk';
 import router from './router';
 import ipcModule from './store/ipc';
 

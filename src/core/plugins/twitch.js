@@ -11,8 +11,6 @@ const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
 const { template } = require('../utils/template');
 const HotReloader = require("../utils/hot-reloader");
 
-//const badwordList = require('../../../data/badwords.json');
-
 const BadWords = require("bad-words");
 
 
@@ -77,10 +75,10 @@ module.exports = {
 		{
 			if (!message || message.length < 2)
 				return message;
-			
+
 			if (!this.filter)
 				return "";
-			
+
 			return this.filter.clean(message)
 		},
 		async doAuth()
@@ -99,7 +97,7 @@ module.exports = {
 				authProvider: this.chatAuthProvider,
 			});
 
-			if (this.settings.botName != this.settings.channelName)
+			if (this.settings.botName && this.settings.botName != this.settings.channelName)
 			{
 				this.botAuth = new AuthManager("bot", this.webServices.port);
 				this.botAuth.setClientInfo(this.secrets.apiClientId, this.secrets.apiClientSecret);
@@ -156,7 +154,7 @@ module.exports = {
 
 				this.webServices.websocketServer.broadcast(JSON.stringify({
 					chat: {
-						user: msgInfo.userDisplayName,
+						user,
 						color: msgInfo.userInfo.color,
 						message,
 						emoteOffsets: Object.fromEntries(msgInfo.emoteOffsets)
@@ -167,7 +165,7 @@ module.exports = {
 
 				const context = {
 					name: parsed.command,
-					user: msgInfo.userDisplayName,
+					user,
 					args: parsed.args,
 					argString: parsed.string,
 					userColor: msgInfo.userInfo.color,
@@ -260,7 +258,15 @@ module.exports = {
 			await this.pubSubClient.onBits(this.channelId, (message) =>
 			{
 				console.log(`Bits: ${message.bits}`);
-				this.actions.trigger("bits", { number: message.bits, user: message.userName, ...{ userColor: this.colorCache[message.userId] } });
+
+				
+				this.actions.trigger("bits", {
+					number: message.bits,
+					user: message.userName,
+					message: message.message,
+					filteredMessage: this.filterMessage(message.message),
+					...{ userColor: this.colorCache[message.userId] }
+				});
 			});
 
 			await this.pubSubClient.onRedemption(this.channelId, (redemption) =>
@@ -352,7 +358,7 @@ module.exports = {
 						needsUpdate = true;
 					if (reward.cost != rewardDef.cost)
 						needsUpdate = true;
-					
+
 					if (reward.userInputRequired != !!rewardDef.inputRequired)
 						needsUpdate = true;
 					if (reward.autoApproved != !!rewardDef.skipQueue)
@@ -502,6 +508,9 @@ module.exports = {
 		say: {
 			name: "Say",
 			description: "Uses the bot to send a twitch chat message",
+			data: {
+				type: "TemplateString"
+			},
 			handler(message, context)
 			{
 				this.chatClient.say(this.settings.channelName.toLowerCase(), template(message, context));

@@ -16,7 +16,7 @@ module.exports = {
 
 		this.audioWindow.loadFile(path.join(__static, "sounds.html"));
 
-		ipcMain.on('sound-window', (event, arg) =>
+		ipcMain.on('sound-window', (event) =>
 		{
 			this.audioWindowSender = event.sender;
 		})
@@ -33,6 +33,9 @@ module.exports = {
 	},
 	actions: {
 		sound: {
+			data: {
+				type: String
+			},
 			async handler(soundData)
 			{
 				if (this.audioWindowSender)

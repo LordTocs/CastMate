@@ -1,4 +1,3 @@
-const fs = require('fs');
 const { manualDependency } = require('./conditionals');
 const { Plugin } = require('./plugin');
 const { reactiveCopy, Watcher } = require('./reactive');
@@ -13,6 +12,7 @@ class PluginManager
 			"notifications",
 			"obs",
 			"sounds",
+			"minecraft",
 			"tts",
 			"twitch",
 			"variables",

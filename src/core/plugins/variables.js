@@ -53,6 +53,15 @@ module.exports = {
 	},
 	actions: {
 		variable: {
+			name: "Change Variable",
+			data: {
+				type: Object,
+				properties: {
+					name: { type: String, name: "Variable Name" },
+					set: { type: String, name: "Set Value" },
+					offset: { type: String, name: "Offset Value" },
+				}
+			},
 			async handler(variableData)
 			{
 				if (!variableData.name)
