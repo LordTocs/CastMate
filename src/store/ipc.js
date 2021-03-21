@@ -20,6 +20,29 @@ export default {
 			{
 				Object.assign(result, plugin.actions)
 			}
+			result.delay = {
+				name: "Delay (After)",
+				data: { type: "Number" },
+				description: "Puts a delay after the current action",
+			};
+			result.beforeDelay = {
+				name: "Delay (Before)",
+				data: { type: "Number" },
+				description: "Puts a delay before the current action",
+			};
+			result.timestamp = {
+				name: "Timestamp",
+				data: { type: "Number" },
+				description: "Delays execution of this action until a certain time after the start of this action list."
+			}
+			return result;
+		},
+		triggers: state => {
+			let result = {};
+			for (let plugin of state.plugins)
+			{
+				Object.assign(result, plugin.triggers)
+			}
 			return result;
 		}
 	},
