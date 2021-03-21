@@ -1,0 +1,75 @@
+- sound: "./sounds/recorderfox.mp3"
+  light:
+    'on': false
+- light:
+    'on': true
+    hue: 0
+  timestamp: 0.939
+- light:
+    'on': false
+  timestamp: 1.641
+- light:
+    'on': true
+    hue: 0
+  timestamp: 2.045
+- light:
+    'on': false
+  timestamp: 2.728
+- light:
+    'on': true
+    hue: 0
+  timestamp: 3.209
+- light:
+    'on': false
+  timestamp: 4.782
+- light:
+    'on': true
+    hue: 120
+  timestamp: 5.34
+- light:
+    hue: 30
+  timestamp: 6.859
+- light:
+    hue: 60
+  timestamp: 7.052
+- light:
+    hue: 280
+  timestamp: 7.308
+- light:
+    hue: 180
+  timestamp: 7.551
+- light:
+    hue: 47
+  timestamp: 7.803
+- light:
+    hue: 320
+  timestamp: 8.063
+- light:
+    hue: 1
+  timestamp: 8.329
+- light:
+    hue: 75
+  timestamp: 8.594
+- light:
+    hue: 290
+  timestamp: 9.52
+- light:
+    hue: 22
+  timestamp: 10.005
+- light:
+    'on': false
+  timestamp: 11.084
+- light:
+    'on': true
+    hue: 240
+  timestamp: 11.565
+- light:
+    hue: 120
+  timestamp: 13.893
+- light:
+    hue: 0
+  timestamp: 16.145
+- timestamp: 21.145
+  light:
+    on: true
+    hue: "userhue"
