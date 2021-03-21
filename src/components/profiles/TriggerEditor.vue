@@ -1,10 +1,10 @@
 <template>
-  <div class="trigger-editor">
-    <level>
+  <el-card class="trigger-editor">
+    <level style="margin-bottom: 1rem">
       <div class="left">
-        <p>
+        <h3>
           {{ triggerName }}
-        </p>
+        </h3>
       </div>
       <div class="right">
         <el-button> Add Command </el-button>
@@ -21,7 +21,7 @@
         class="clearfix"
         style="display: flex; flex-direction: row"
       >
-        <el-input
+        <key-input
           :value="commandKey"
           @input="(newKey) => changeKey(commandKey, newKey)"
         />
@@ -32,14 +32,15 @@
         @input="(newData) => updateCommand(commandKey, newData)"
       />
     </el-card>
-  </div>
+  </el-card>
 </template>
 
 <script>
+import KeyInput from "../data/KeyInput.vue";
 import Level from "../layout/Level";
 import CommandEditor from "./CommandEditor.vue";
 export default {
-  components: { CommandEditor, Level },
+  components: { CommandEditor, Level, KeyInput },
   computed: {
     commands() {
       return Object.keys(this.value).filter((key) => key != "imports");
@@ -49,9 +50,10 @@ export default {
     changeKey(oldKey, newKey) {
       const keyMap = { [oldKey]: newKey };
       const keyValues = Object.keys(this.value).map((key) => {
-        const newKey = keyMap[key] || key;
+        const newKey = key in keyMap ? keyMap[key] : key;
         return { [newKey]: this.value[key] };
       });
+
       let result = Object.assign({}, ...keyValues);
       this.$emit("input", result);
     },
@@ -84,7 +86,13 @@ export default {
 <style>
 .trigger-editor {
   text-align: left;
+  background-color: #efefef;
 }
+
+.trigger-editor:not(:last-child) {
+  margin-bottom: 1.5rem;
+}
+
 .command-editor {
   margin-bottom: 1rem;
 }

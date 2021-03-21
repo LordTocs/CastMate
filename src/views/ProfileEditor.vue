@@ -2,6 +2,7 @@
   <div>
     <p>{{ profileName }}</p>
     <el-form :model="profile" label-width="120px">
+      <variables-editor v-model="profile.variables" />
       <el-divider />
       <triggers-editor v-model="profile.triggers" />
     </el-form>
@@ -13,9 +14,10 @@ import TriggersEditor from "../components/profiles/TriggersEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
+import VariablesEditor from "../components/profiles/VariablesEditor.vue";
 
 export default {
-  components: { TriggersEditor },
+  components: { TriggersEditor, VariablesEditor },
   computed: {
     profileName() {
       return this.$route.params.profile;

@@ -514,6 +514,10 @@ module.exports = {
 		bits: {
 			name: "Bits",
 			description: "Fires for when a user gives bits"
+		},
+		raid: {
+			names: "Raid",
+			description: "Fires when a raid start"
 		}
 	},
 	actions: {
