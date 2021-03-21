@@ -259,7 +259,7 @@ module.exports = {
 			{
 				console.log(`Bits: ${message.bits}`);
 
-				
+
 				this.actions.trigger("bits", {
 					number: message.bits,
 					user: message.userName,
@@ -354,7 +354,7 @@ module.exports = {
 
 					let rewardDef = this.rewardsDefinitions.data[reward.title];
 
-					if (reward.propmt != rewardDef.description)
+					if (reward.prompt != rewardDef.description)
 						needsUpdate = true;
 					if (reward.cost != rewardDef.cost)
 						needsUpdate = true;
@@ -362,6 +362,12 @@ module.exports = {
 					if (reward.userInputRequired != !!rewardDef.inputRequired)
 						needsUpdate = true;
 					if (reward.autoApproved != !!rewardDef.skipQueue)
+						needsUpdate = true;
+					if (reward.globalCooldown != rewardDef.cooldown)
+						needsUpdate = true;
+					if (reward.maxRedemptionsPerStream != rewardDef.maxRedemptionsPerStream)
+						needsUpdate = true;
+					if (reward.maxRedemptionsPerUserPerStream != rewardDef.maxRedemptionsPerUserPerStream)
 						needsUpdate = true;
 
 					if (needsUpdate)
@@ -371,6 +377,9 @@ module.exports = {
 							cost: rewardDef.cost,
 							userInputRequired: !!rewardDef.inputRequired,
 							autoFulfill: !!rewardDef.skipQueue,
+							globalCooldown: rewardDef.cooldown || 0,
+							maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
+							maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
 						})
 					}
 				}
@@ -394,6 +403,9 @@ module.exports = {
 					cost: rewardDef.cost,
 					userInputRequired: !!rewardDef.inputRequired,
 					autoFulfill: !!rewardDef.skipQueue,
+					globalCooldown: rewardDef.cooldown || 0,
+					maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
+					maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
 				})
 			}
 		},
