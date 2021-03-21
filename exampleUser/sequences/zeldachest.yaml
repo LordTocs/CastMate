@@ -1,0 +1,24 @@
+- sound: "./sounds/zeldachest.mp3"
+  light:
+    on: false
+- timestamp: 1.79
+  light:
+    on: true
+    hue: 40
+    bri: 1
+- timestamp: 2.59
+  light:
+    hue: 40
+    bri: 254
+    transition: 3.1
+- timestamp: 6.526
+  light:
+    "on": false
+- timestamp: 7.252
+  light:
+    "on": true
+    hue: 0
+- timestamp: 9.252
+  light:
+    on: true
+    hue: "userhue"

@@ -1,0 +1,47 @@
+- light:
+    on: false
+  delay: 5
+- sound: "./sounds/sirenAlert.wav"
+  delay: 1.384
+- light:
+    hue: 0
+    on: true
+  delay: 0.877
+- light:
+    on: false
+  delay: 0.877
+- light:
+    hue: 0
+    on: true
+  delay: 0.877
+- light:
+    on: false
+  delay: 0.877
+- light:
+    hue: 0
+    on: true
+  delay: 0.877
+- light:
+    on: false
+  delay: 0.877
+- light:
+    hue: 0
+    on: true
+  delay: 0.877
+- light:
+    on: false
+  delay: 0.877
+- light:
+    hue: 0
+    on: true
+  delay: 0.877
+- light:
+    on: false
+  delay: 0.877
+- light:
+    hue: 280
+    on: true
+- beforeDelay: 6
+  light:
+    on: true
+    hue: "userhue"

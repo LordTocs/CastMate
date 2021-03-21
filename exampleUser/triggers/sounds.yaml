@@ -1,0 +1,173 @@
+"!getyourshit":
+  actions:
+    - sound: "./sounds/getyourshittogether.mp3"
+"!secret":
+  actions:
+    - sound: "./sounds/secret.mp3"
+"!":
+  actions:
+    - sound: "./sounds/alert.mp3"
+"!salt":
+  actions:
+    - sound: "./sounds/salt.mp3"
+"!slap":
+  actions:
+    - sound: "./sounds/youtube/slap.mp3"
+"!loser":
+  actions:
+    - sound: "./sounds/losinghorn.mp3"
+"!ehhghh":
+  actions:
+    - sound: "./sounds/steve.mp3"
+"!suspense":
+  actions:
+    - sound: "./sounds/youtube/Dun Dun Dun.mp3"
+"!scream":
+  actions:
+    - sound: "./sounds/youtube/wilhelm.mp3"
+"!yeet":
+  actions:
+    - sound: "./sounds/youtube/yeet.mp3"
+"!rimshot":
+  actions:
+    - sound: "./sounds/youtube/Badum Tsss.mp3"
+"!woo":
+  actions:
+    - sound: "./sounds/archerwoo.mp3"
+"!womp":
+  actions:
+    - sound: "./sounds/youtube/Fail 2.mp3"
+"!figure":
+  actions:
+    - sound: "./sounds/figureitout.mp3"
+"!stupid":
+  actions:
+    - sound: "./sounds/stupidbitch.mp3"
+"!goodnews":
+  actions:
+    - sound: "./sounds/goodnews.mp3"
+"!fubar":
+  actions:
+    - sound: "./sounds/fubar.wav"
+"!murder":
+  actions:
+    - sound: "./sounds/murder.wav"
+"!yep":
+  actions:
+    - sound: "./sounds/yep.mp3"
+"!math":
+  actions:
+    - sound: "./sounds/math.mp3"
+"!cando":
+  actions:
+    - sound: "./sounds/cando.mp3"
+"!unacceptable":
+  actions:
+    - sound: "./sounds/unacceptable.mp3"
+"!wubba":
+  actions:
+    - sound: "./sounds/wubba.mp3"
+"!jeez":
+  actions:
+    - sound: "./sounds/jeez.mp3"
+"!geez":
+  actions:
+    - sound: "./sounds/jeez.mp3"
+"!ricktler":
+  actions:
+    - sound: "./sounds/ricktler.mp3"
+"!organic":
+  actions:
+    - sound: "./sounds/organic.mp3"
+"!danger":
+  actions:
+    - sound: "./sounds/indanger.mp3"
+"!grass":
+  actions:
+    - sound: "./sounds/assgrass.mp3"
+"!english":
+  actions:
+    - sound: "./sounds/failenglish.mp3"
+"!nintendo":
+  actions:
+    - sound: "./sounds/nintendo.mp3"
+"!ohno":
+  actions:
+    - sound: "./sounds/ohno.mp3"
+"!rage":
+  actions:
+    - sound: "./sounds/charging.mp3"
+"!infinite":
+  actions:
+    - sound: "./sounds/infinite.mp3"
+"!auughh":
+  actions:
+    - sound: "./sounds/ahhhhhh.mp3"
+"!buhbai":
+  actions:
+    - sound: "./sounds/buhbai.mp3"
+"!no":
+  actions:
+    - sound: "./sounds/no.mp3"
+"!chew":
+  actions:
+    - sound: "./sounds/chew.mp3"
+"!right":
+  actions:
+    - sound: "./sounds/probablyright.mp3"
+"!serious":
+  actions:
+    - sound: "./sounds/areyouserious.mp3"
+"!insult":
+  - tts: You're a big dumb dumb {{user}}
+"!xfiles":
+  actions:
+    oneOf:
+      - - sound: "./sounds/xfilesshort.mp3"
+      - - sound: "./sounds/xfiles.mp3"
+"!fart":
+  actions:
+    oneOf:
+      - - sound: "./sounds/youtube/Fart 1.mp3"
+      - - sound: "./sounds/youtube/Fart 2.mp3"
+"!dungeon":
+  actions:
+    oneOf:
+      - - sound: "./sounds/dungeon1.mp3"
+      - - sound: "./sounds/dungeon2.mp3"
+"!pew":
+  actions:
+    oneOf:
+      - - sound: "./sounds/blaster/001.mp3"
+      - - sound: "./sounds/blaster/002.mp3"
+      - - sound: "./sounds/blaster/003.mp3"
+      - - sound: "./sounds/blaster/004.mp3"
+      - - sound: "./sounds/blaster/005.mp3"
+"!navi":
+  actions:
+    oneOf:
+      - - sound: "./sounds/navi/heylisten.mp3"
+      - - sound: "./sounds/navi/hey.wav"
+      - - sound: "./sounds/navi/listen.wav"
+"!69":
+  actions:
+    - sound: "./sounds/noice.mp3"
+    - say: 😎 😎 😎NOICE 😎 😎 😎
+    - websocket:
+        chat:
+          message: 😎 😎 😎 😎 😎 😎
+"!clap":
+  actions:
+    oneOf:
+      - - websocket:
+            chat:
+              message: 👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏
+        - sound: "./sounds/golfclap.mp3"
+      - - websocket:
+            chat:
+              message: 👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏
+        - sound: "./sounds/slow-clap-processor.mp3"
+      - - websocket:
+            chat:
+              message: 👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏👏
+        - sound: "./sounds/applause.mp3"
