@@ -88,7 +88,7 @@ function template(templateStr, data)
 		let template = templateStr.substr(index + 2, parseContext.i - 2 - (index + 2) + 1);
 		let value = evalTemplate(template, data);
 
-		resultStr += value ? value.toString() : "";
+		resultStr += (value != null && value != undefined) ? value.toString() : "";
 		searchStart = parseContext.i + 1;
 	}
 
