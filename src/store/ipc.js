@@ -1,6 +1,13 @@
 
 const { ipcRenderer } = require("electron");
 
+class IPCClient
+{
+	async getCombinedState()
+	{
+		return await ipcRenderer.invoke("getCombinedState");
+	}
+}
 
 export default {
 	namespaced: true,
@@ -9,12 +16,15 @@ export default {
 		return {
 			inited: false,
 			plugins: [],
+			client: null,
 		}
 	},
 	getters: {
 		plugins: state => state.plugins,
 		inited: state => state.inited,
-		actions: state => {
+		client: state => state.client,
+		actions: state =>
+		{
 			let result = {};
 			for (let plugin of state.plugins)
 			{
@@ -37,7 +47,8 @@ export default {
 			}
 			return result;
 		},
-		triggers: state => {
+		triggers: state =>
+		{
 			let result = {};
 			for (let plugin of state.plugins)
 			{
@@ -54,10 +65,17 @@ export default {
 		setPlugins(state, plugins)
 		{
 			state.plugins = plugins;
+		},
+		setClient(state, client)
+		{
+			state.client = client;
 		}
 	},
 	actions: {
-		async init({ commit }) {
+		async init({ commit })
+		{
+			commit('setClient', new IPCClient());
+
 			await ipcRenderer.invoke("waitForInit");
 			commit('setInited');
 
