@@ -1,4 +1,4 @@
-name: GTA
+# Channel Rewards for GTA V
 conditions:
   obsScene: Gaming GTA
 rewards:

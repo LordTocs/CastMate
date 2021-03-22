@@ -1,4 +1,4 @@
-name: Cookie Wheel
+# Channel Rewards for Cookie Wheel
 conditions:
   obsScene: Cookie Wheel
 rewards:

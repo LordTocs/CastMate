@@ -47,6 +47,13 @@ class AuthManager
 		{ }
 	}
 
+	getLocalHost() {
+		let localhost = "localhost";
+			if (this.localPort != 80) 
+				localhost = `localhost:${this.localPort}`;
+		return localhost;
+	}
+
 	setClientInfo(clientId, clientSecret)
 	{
 		this.clientId = clientId;
@@ -66,7 +73,7 @@ class AuthManager
 		});
 
 		console.log(`Auth is required as ${this.name}`);
-		console.log(`Go to http://localhost:${this.localPort}/auth/${this.name}/ to sign in. If you're signing into a bot account go in incognito`);
+		console.log(`Go to http://${this.getLocalHost()}/auth/${this.name}/ to sign in. If you're signing into a bot account go in incognito`);
 
 		let tokenResp = await this.authPromise;
 		let obtainment_date = new Date();
@@ -113,7 +120,7 @@ class AuthManager
 					client_id: this.clientId,
 					client_secret: this.clientSecret,
 					grant_type: 'authorization_code',
-					redirect_uri: `http://localhost:${this.localPort}/auth/${this.name}/redirect`,
+					redirect_uri: `http://${this.getLocalHost()}/auth/${this.name}/redirect`,
 					code: access_code
 				}),
 				{
@@ -125,7 +132,7 @@ class AuthManager
 		} catch (err)
 		{
 			console.error(`Auth Error: ${err}`);
-			throw new Error('Error something happened.');
+			throw new Error('Error authorizing Twitch.');
 		}
 
 		this.authResolver(response.data);
@@ -137,7 +144,7 @@ class AuthManager
 	{
 		app.get(`/auth/${this.name}`, (req, res) =>
 		{
-			let redirectUri = `http://localhost:${this.localPort}/auth/${this.name}/redirect`;
+			let redirectUri = `http://${this.getLocalHost()}/auth/${this.name}/redirect`;
 			res.redirect(`https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=${this.clientId}&redirect_uri=${redirectUri}&scope=${scopes.join('+')}`);
 		});
 

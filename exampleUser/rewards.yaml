@@ -1,4 +1,3 @@
-# Channel Rewards that are referenced in user/profiles/exampleprofile.yaml
 "Spin the Cookie Wheel":
   cost: 1
   description: Spin the Cookie Quest Wheel
@@ -6,7 +5,7 @@
   skipQueue: true
 "Fire Away":
   cost: 1
-  description: Fire's {{channelName}}'s weapon
+  description: Fire's weapon
   inputRequired: false
   skipQueue: true
 "Sheepify Me":
@@ -16,31 +15,31 @@
   skipQueue: true
 "Boom Boom":
   cost: 600
-  description: Puts a creeper right on top of {{channelName}}.
+  description: Drop a creeper on top of me.
   inputRequired: false
   skipQueue: true
   cooldown: 15
 "Slow Down There":
   cost: 400
-  description: Slow's {{channelName}} down.
+  description: Slow me down.
   inputRequired: false
   skipQueue: true
   cooldown: 15
 "Butter Fingers":
   cost: 300
-  description: Drops Whatever's In {{channelName}}'s Hand
+  description: Drops Whatever's In My Hand
   inputRequired: false
   skipQueue: true
   cooldown: 15
 "Woops I Spilled":
   cost: 600
-  description: Spill some water all over {{channelName}}' redstone.
+  description: Spill some water all over my redstone.
   inputRequired: false
   skipQueue: true
   cooldown: 120
 "Bail Out":
   cost: 1
-  description: Press the key to get out of the vehicle. Or in I guess.
+  description: Press the key to get out/in a vehicle.
   inputRequired: false
   skipQueue: true
 "Honky Tonk":

@@ -1,4 +1,4 @@
-name: Minecraft
+# Channel Rewards for Minecraft
 conditions:
   obsScene: Gaming Minecraft
 rewards:

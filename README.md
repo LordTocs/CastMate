@@ -41,18 +41,32 @@ If we run out of time, edit secrets.yaml and input
 
 Demo profiles have been created to get started with CastMate. Create the following scenes in OBS. Scene names will need to match exactly to use the demo profiles. 
 
-Scene Name| Browser Source URL | Notes |
-|---------|--------------------|-------|
-| Gaming Apex |  |
-| Gaming BF2 |
-| Cookie Wheel |
-| Gaming GTA |
-| Gaming Minecraft |
-| Gaming Age of Empires 3|
-| Lobby Age of Empires 3|
-| 
+Game | Scene Name| Browser Source URL | Notes |
+|----|--------------------|-----------|-------|
+| Apex Legends | Gaming Apex |  |
+| Star Wars Battlefront 2 | Gaming BF2 |
+| N/A | Cookie Wheel |
+| Grand Theft Auto V | Gaming GTA |
+| Minecraft | Gaming Minecraft |
+| Age of Empires 3: DE | Gaming AOE3|
+| Age of Empires 3: DE | Lobby AoE3|
 
 *Events are fully customizable by editing the corresponding .yaml file that match the scene name. These customizations will be easily made available via the CastMate UI in future versions.*
+*Switch between between your scenes a few times to update your Channel Rewards on initial setup*
+
+## OBS Overlay Setup
+
+Add the below browser sources to each scene. For easier setup, create one scene containing the browser sources you want and reference that 'Overlay' scene in each scene from above.
+
+Feature| Browser Source URL | Example Size |Configuration
+|---------|-----------------|--------------|-------------|
+| Bouncing Emotes | http://127.0.0.1:80/emotes.html | 1920x1080 | N/A |
+| Notifications | http://localhost:80/notifications.html | 650x350 | N/A |
+| Sub Goal | http://127.0.0.1/goal.html?variable=subscribers&goal=100&title=Sub%20Goal | Update the 'goal' and 'title' variables in the URL to your liking | 
+
+Leave 'Custom CSS' as is. You do not need to check any of the boxes.
+
+*If browser sources are not working, you can select the source and click 'refresh' in OBS. Ideally, start CastMate before launching OBS and all of the browser sources will be ready to go!*
 
 ## Phillips Hue Setup
 Start CastMate and press the link button on your Hue bridge.
