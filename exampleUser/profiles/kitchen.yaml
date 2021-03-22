@@ -1,0 +1,11 @@
+# Channel Rewards for Kitchen
+name: Kitchen
+conditions:
+  obsScene: Kitchen Main
+rewards:
+  - CastMate Test Reward
+triggers:
+  chat:
+    "!kitchen":
+      actions:
+        - say: "I'm in the kitchen"

@@ -1,0 +1,59 @@
+"Spin the Cookie Wheel":
+  cost: 1
+  description: Spin the Cookie Quest Wheel
+  inputRequired: false
+  skipQueue: true
+"Fire Away":
+  cost: 1
+  description: Fire's weapon
+  inputRequired: false
+  skipQueue: true
+"Sheepify Me":
+  cost: 200
+  description: Spawns a sheep version of you.
+  inputRequired: false
+  skipQueue: true
+"Boom Boom":
+  cost: 600
+  description: Drop a creeper on top of me.
+  inputRequired: false
+  skipQueue: true
+  cooldown: 15
+"Slow Down There":
+  cost: 400
+  description: Slow me down.
+  inputRequired: false
+  skipQueue: true
+  cooldown: 15
+"Butter Fingers":
+  cost: 300
+  description: Drops Whatever's In My Hand
+  inputRequired: false
+  skipQueue: true
+  cooldown: 15
+"Woops I Spilled":
+  cost: 600
+  description: Spill some water all over my redstone.
+  inputRequired: false
+  skipQueue: true
+  cooldown: 120
+"Bail Out":
+  cost: 1
+  description: Press the key to get out/in a vehicle.
+  inputRequired: false
+  skipQueue: true
+"Honky Tonk":
+  cost: 1
+  description: Honk the Horn
+  inputRequired: false
+  skipQueue: true
+"Pedal to the Metal":
+  cost: 1
+  description: Put your foot on the gas.
+  inputRequired: false
+  skipQueue: true
+"No More Gas":
+  cost: 1
+  description: Put your foot on the gas.
+  inputRequired: false
+  skipQueue: true

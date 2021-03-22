@@ -1,0 +1,59 @@
+# Channel Rewards for GTA V
+conditions:
+  obsScene: Gaming GTA
+rewards:
+  - Bail Out
+  - Honky Tonk
+  - Pedal to the Metal
+  - Fire Away
+  - No More Gas
+triggers:
+  redemption:
+    "Bail Out":
+      actions:
+        - notification:
+            header: Time To Go
+            text: "{{user}} says bail out."
+            color: "{{userColor}}"
+        - pressKey:
+            key: f
+    "Honky Tonk":
+      actions:
+        - pressKey:
+            key: e
+            time: 2.5
+    "Pedal to the Metal":
+      sync: true
+      actions:
+        - notification:
+            header: Vroom Vroom
+            text: "{{user}} is putting their foot on the gas."
+            color: "{{userColor}}" 
+        - pressKey:
+            key: o
+            time: 5
+          delay: 0.01
+    "No More Gas":
+      sync: true
+      actions:
+        - notification:
+            header: Skreeeech
+            text: "{{user}} is putting their foot on the breaks."
+            color: "{{userColor}}" 
+        - pressKey:
+            key: i
+            time: 5
+          delay: 0.01
+    "Fire Away":
+      actions:
+        - notification:
+            header: Pew Pew
+            text: "{{user}} is giving away your position"
+            color: "{{userColor}}"
+        - pressKey:
+            key: l
+            time: 2
+        - beforeDelay: 1
+          mouseButton:
+            button: 1
+            time: 1

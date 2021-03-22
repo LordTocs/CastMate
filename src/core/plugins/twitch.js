@@ -397,16 +397,20 @@ module.exports = {
 				//inputRequired: false
 				//skipQueue: true
 				//Create the new reward.
-				await this.channelTwitchClient.helix.channelPoints.createCustomReward(this.channelId, {
-					title: rewardKey,
-					prompt: rewardDef.description,
-					cost: rewardDef.cost,
-					userInputRequired: !!rewardDef.inputRequired,
-					autoFulfill: !!rewardDef.skipQueue,
-					globalCooldown: rewardDef.cooldown || 0,
-					maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
-					maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
-				})
+				try {
+					await this.channelTwitchClient.helix.channelPoints.createCustomReward(this.channelId, {
+						title: rewardKey,
+						prompt: rewardDef.description,
+						cost: rewardDef.cost,
+						userInputRequired: !!rewardDef.inputRequired,
+						autoFulfill: !!rewardDef.skipQueue,
+						globalCooldown: rewardDef.cooldown || 0,
+						maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
+						maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
+					})
+				} catch (err) {
+					console.log(`Error creating channel reward: ${rewardKey}. Message: ${err}`);
+				}
 			}
 		},
 

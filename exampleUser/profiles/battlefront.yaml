@@ -1,0 +1,16 @@
+# Channel Rewards for Star Wars Battlefront 2
+conditions:
+  obsScene: Gaming BF2
+rewards:
+  - Fire Away
+triggers:
+  redemption:
+    "Fire Away":
+      actions:
+        - notification:
+            header: Pew Pew
+            text: "{{user}} is giving away your position"
+            color: "{{userColor}}"
+        - mouseButton:
+            button: 1
+            time: 1.5

@@ -1,0 +1,13 @@
+# Channel Rewards for Cookie Wheel
+conditions:
+  obsScene: Cookie Wheel
+rewards:
+  - Spin the Cookie Wheel
+triggers:
+  redemption:
+    "Spin the Cookie Wheel":
+      actions:
+        - websocket:
+            wheel:
+              spin: 10
+

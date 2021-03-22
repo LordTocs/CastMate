@@ -1,0 +1,56 @@
+"!red":
+  actions:
+    - light:
+        hue: 0
+        on: true
+    - variable:
+        name: userhue
+        set: 0
+"!blue":
+  actions:
+    - light:
+        hue: 255
+        on: true
+    - variable:
+        name: userhue
+        set: 255
+"!green":
+  actions:
+    - light:
+        hue: 136
+        on: true
+    - variable:
+        name: userhue
+        set: 136
+"!purple":
+  actions:
+    - light:
+        hue: 277
+        on: true
+    - variable:
+        name: userhue
+        set: 277
+"!magenta":
+  actions:
+    - light:
+        hue: 302
+        on: true
+    - variable:
+        name: userhue
+        set: 302
+"!off":
+  actions:
+    - light:
+        on: false
+"!on":
+  actions:
+    - light:
+        on: true
+"!hue":
+  actions:
+    - light:
+        on: true
+        hue: "args[0] / 1000 * 360"
+    - variable:
+        name: userhue
+        set: "args[0] / 1000 * 360"
