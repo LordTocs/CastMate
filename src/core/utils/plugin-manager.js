@@ -31,6 +31,12 @@ class PluginManager
 		{
 			reactiveCopy(this.combinedState, plugin.pluginObj.state);
 		}
+
+		this.combinedTemplateFunctions = {}
+		for (let plugin of this.plugins)
+		{
+			Object.assign(this.combinedTemplateFunctions, plugin.templateFunctions);
+		}
 	}
 
 	setupWebsocketReactivity()

@@ -59,6 +59,14 @@ class Plugin
 			this.actions[actionKey] = action;
 		}
 
+		this.templateFunctions = {};
+		for (let funcKey in config.templateFunctions)
+		{
+			let func = config.templateFunctions[funcKey];
+			func = func.bind(this.pluginObj);
+			this.templateFunctions[funcKey] = func;
+		}
+
 		//Create all the state.
 		this.pluginObj.state = {};
 		for (let stateKey in config.state)

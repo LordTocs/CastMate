@@ -79,8 +79,9 @@ class ActionQueue
 		let isSync = false;
 
 		
-		let completeContext =  {...context};
+		let completeContext =  {...context, ...this.plugins.combinedTemplateFunctions};
 		reactiveCopy(completeContext, this.plugins.combinedState);
+
 
 		if ("actions" in actionDef)
 		{
