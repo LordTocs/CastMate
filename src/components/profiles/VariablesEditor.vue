@@ -3,7 +3,7 @@
     <h3>Variables</h3>
     <div
       class="input-row"
-      v-for="(variableName, i) in Object.keys(value)"
+      v-for="(variableName, i) in Object.keys(valueSafe)"
       :key="i"
     >
       <el-form-item label="Name">
@@ -37,6 +37,12 @@ export default {
   components: { KeyInput, Level },
   props: {
     value: {},
+  },
+  computed: {
+    valueSafe() {
+      if (!this.value) return {};
+      return this.value;
+    },
   },
   methods: {
     changeKey(oldKey, newKey) {
