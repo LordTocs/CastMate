@@ -1,15 +1,18 @@
 <template>
-  <el-card>
+  <div>
     <trigger-editor
-      v-for="triggerName in Object.keys(value)"
-      :key="triggerName"
-      v-model="value[triggerName]"
-      :trigger-name="triggerName"
+      v-for="triggerKey in Object.keys(value)"
+      :key="triggerKey"
+      v-model="value[triggerKey]"
+      :trigger-name="
+        triggers[triggerKey] ? triggers[triggerKey].name : triggerKey
+      "
     />
-  </el-card>
+  </div>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import TriggerEditor from "./TriggerEditor.vue";
 
 export default {
@@ -19,7 +22,9 @@ export default {
   components: {
     TriggerEditor,
   },
-  computed: {},
+  computed: {
+    ...mapGetters("ipc", ["triggers"]),
+  },
 };
 </script>
 

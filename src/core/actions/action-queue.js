@@ -112,7 +112,11 @@ class ActionQueue
 			let release = await this.queueMutex.acquire();
 			for (let action of actionArray)
 			{
+<<<<<<< HEAD
+				this.queue.push({ action, context: completeContext });
+=======
 				this.queue.push({ action, context:completeContext });
+>>>>>>> origin/main
 			}
 			release();
 

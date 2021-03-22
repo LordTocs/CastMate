@@ -1,27 +1,31 @@
 <template>
-  <div class="input-row" v-if="schema.type == 'Number'">
-    <label class="object-label"> {{ schema.name || label }} </label>
-    <el-input-number v-model="value" />
-  </div>
-  <div
-    class="input-row"
-    v-else-if="
-      schema.type == 'String' ||
-      schema.type == 'TemplateString' ||
-      schema.type == 'NumberTemplate'
-    "
-  >
-    <label class="object-label"> {{ schema.name || label }} </label>
-    <el-input v-model="value" />
-  </div>
-  <div v-else-if="schema.type == 'Object' && schema.properties">
-    <label class="object-label"> {{ schema.name || label }} </label>
-    <object-editor :schema="schema.properties" v-model="value" />
-  </div>
-  <free-object-editor
-    v-else-if="schema.type == 'Object' && !schema.properties"
-    v-model="value"
-  />
+  <tr>
+    <td>
+      <label class="object-label"> {{ schema.name || label }} </label>
+    </td>
+    <td style="width: 100%">
+      <el-input-number
+        :value="value"
+        @input="(v) => $emit('input', v)"
+        v-if="schema.type == 'Number'"
+      />
+      <el-input
+        :value="value"
+        @input="(v) => $emit('input', v)"
+        v-else-if="
+          schema.type == 'String' ||
+          schema.type == 'TemplateString' ||
+          schema.type == 'TemplateNumber'
+        "
+      />
+      <object-editor
+        :schema="schema.properties"
+        :value="value"
+        @input="(v) => $emit('input', v)"
+        v-else-if="schema.type == 'Object' && schema.properties"
+      />
+    </td>
+  </tr>
 </template>
 
 <script>
@@ -29,7 +33,7 @@ export default {
   name: "data-input",
   components: {
     ObjectEditor: () => import("./ObjectEditor.vue"),
-    FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
+    //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {
     schema: {},
@@ -45,7 +49,6 @@ export default {
   color: #606266;
   line-height: 32px;
   display: inline-block;
-  width: 5rem;
   text-align: right;
   padding-right: 0.5rem;
 }

@@ -2,6 +2,8 @@ const { manualDependency } = require('./conditionals');
 const { Plugin } = require('./plugin');
 const { reactiveCopy, Watcher } = require('./reactive');
 const { ipcMain } = require("electron");
+const _ = require('lodash');
+
 class PluginManager
 {
 	async load()
@@ -81,6 +83,11 @@ class PluginManager
 		{
 			let pluginInfo = this.plugins.map((plugin) => plugin.getUIDescription());
 			return pluginInfo;
+		})
+
+		ipcMain.handle("getCombinedState", async () => 
+		{
+			return _.cloneDeep(this.combinedState);
 		})
 	}
 }

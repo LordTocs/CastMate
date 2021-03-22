@@ -22,6 +22,18 @@ function checkOr(list, data)
 	return false;
 }
 
+function checkAnd(list, data)
+{
+	for (let subCondition of list)
+	{
+		if (!checkConditions(subCondition, data))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 function checkConditions(conditional, data)
 {
 	if ("or" in conditional)
@@ -31,6 +43,10 @@ function checkConditions(conditional, data)
 	else if ("not" in conditional)
 	{
 		return !checkConditions(conditional.not, data)
+	}
+	else if ("and" in conditional)
+	{
+		return checkAnd(conditional.and, data);
 	}
 	else
 	{
@@ -84,4 +100,4 @@ function dependOnAllConditions(conditional, reactivity, watcher)
 	}
 }
 
-module.exports = { evalConditional, dependOnAllConditions, manualDependency}
+module.exports = { evalConditional, dependOnAllConditions, manualDependency }

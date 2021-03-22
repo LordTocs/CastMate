@@ -1,38 +1,39 @@
 <template>
-  <el-card class="action-editor" shadow="never">
-    <div
-      slot="header"
-      class="clearfix"
-      style="display: flex; flex-direction: row"
-    >
-      <el-button> Delete </el-button>
-    </div>
-    <div
-      v-for="actionKey in Object.keys(value)"
-      :key="actionKey"
-      class="action-card"
-    >
-      <div class="action-card-body" v-if="actions[actionKey]">
+  <div class="action-card">
+    <div class="action-card-body" v-if="actions[actionKey]">
+      <table style="width: 100%">
         <data-input
-          v-model="value[actionKey]"
+          :value="value"
+          @input="(v) => $emit('input', v)"
           :schema="actions[actionKey].data"
           :label="actions[actionKey].name || actionKey"
         />
-      </div>
-      <div v-else-if="actionKey == 'import'">
-        Import: {{ value[actionKey] }}
-      </div>
-      <div v-else>Unknown Action Key: {{ actionKey }}</div>
+      </table>
+      <el-button @click="$emit('delete')"> Delete </el-button>
     </div>
-  </el-card>
+    <div class="action-card-body" v-else-if="actionKey == 'import'">
+      <div style="width: 100%">
+        <data-input
+          :value="value"
+          @input="(v) => $emit('input', v)"
+          label="Import"
+          :schema="{ type: 'String' }"
+        />
+      </div>
+      <el-button @click="$emit('delete')"> Delete </el-button>
+    </div>
+    <div v-else>Unknown Action Key: {{ actionKey }}</div>
+  </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
 import DataInput from "../data/DataInput.vue";
+
 export default {
   props: {
     value: {},
+    actionKey: {},
   },
   components: { DataInput },
   computed: {
@@ -41,11 +42,7 @@ export default {
 };
 </script>
 
-<style scoped>
-.action-editor {
-  text-align: left;
-  margin-bottom: 0.75rem;
-}
+<style>
 .action-card {
   margin-bottom: 0.75rem;
 }

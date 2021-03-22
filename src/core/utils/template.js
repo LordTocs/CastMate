@@ -16,11 +16,12 @@ function evalTemplate(template, data)
 	}
 }
 
+//TODO: Improve backtick string support
 function skipString(templateStr, parseContext)
 {
 	if (!(templateStr[parseContext.i] == '\'' || templateStr[parseContext.i] == '\"' || templateStr[parseContext.i] == '\`'))
 	{
-		return false;
+		return false; 
 	}
 
 	let stringCloser = templateStr[parseContext.i];
