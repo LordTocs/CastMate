@@ -19,7 +19,8 @@ class PluginManager
 			"tts",
 			"twitch",
 			"variables",
-			"websocket"
+			"websocket",
+			"aoe3",
 		]
 
 		//Todo: This relative require is weird.
