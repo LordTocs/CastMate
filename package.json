@@ -31,6 +31,8 @@
     "element-ui": "^2.15.1",
     "express": "^4.17.1",
     "ffi-napi": "^4.0.1",
+    "got": "^11.8.2",
+    "jsdom": "^16.5.1",
     "lodash": "^4.17.21",
     "node-hue-api": "^5.0.0-beta.2",
     "node-key-sender": "^1.0.11",

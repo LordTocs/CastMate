@@ -15,6 +15,12 @@ class Plugin
 		{
 			this.initFunc = this.initFunc.bind(this.pluginObj);
 		}
+		
+		this.onSettingsReload = config.onSettingsReload;
+		if (this.onSettingsReload)
+		{
+			this.onSettingsReload = this.onSettingsReload.bind(this.pluginObj);
+		}
 
 		this.onProfilesChanged = config.onProfilesChanged;
 
@@ -28,6 +34,13 @@ class Plugin
 		if (this.onProfileLoad)
 		{
 			this.onProfileLoad = this.onProfileLoad.bind(this.pluginObj);
+		}
+
+		this.onSecretsReload = config.onSecretsReload;
+
+		if (this.onSecretsReload)
+		{
+			this.onSecretsReload = this.onSecretsReload.bind(this.pluginObj);
 		}
 
 		this.onWebsocketMessage = config.onWebsocketMessage;
@@ -90,24 +103,37 @@ class Plugin
 
 		if (this.initFunc)
 		{
-			await this.initFunc();
+			try {
+				await this.initFunc();
+			} catch (err) {
+				// TODO: Throw exception to UI
+				console.log(`Error loading ${this.name} plugin. Error Msg: ${err}.`)
+			}
 		}
 	}
 
-	async updateSettings(settings)
+	async updateSettings(newSettings, oldSettings)
 	{
-		let pluginSettings = settings[this.name] || {};
-		this.pluginObj.settings = pluginSettings;
-
-		//TODO: Fire Event
+		if (this.onSettingsReload) {
+			let newPluginSettings = newSettings[this.name] || {};
+			let oldPluginSettings = oldSettings[this.name] || {};
+			this.pluginObj.settings = newPluginSettings;
+			if (!_.isEqual(newPluginSettings, oldPluginSettings)) {
+				this.onSettingsReload(newPluginSettings, oldPluginSettings);
+			}
+		} 
 	}
 
-	async updateSecrets(secrets)
+	async updateSecrets(newSecrets, oldSecrets)
 	{
-		let pluginSecrets = secrets[this.name] || {};
-		this.pluginObj.pluginSecrets = pluginSecrets;
-
-		//TODO: Fire Event
+		if (this.onSecretsReload) {
+			let newPluginSecrets = newSecrets[this.name] || {};
+			let olgPluginSecrets = oldSecrets[this.name] || {};
+			this.pluginObj.pluginSecrets = newPluginSecrets;
+			if (!_.isEqual(newPluginSecrets, olgPluginSecrets)) {
+				this.onSettingsReload(newPluginSecrets, olgPluginSecrets);
+			}
+		} 
 	}
 
 	getUIDescription()	{
