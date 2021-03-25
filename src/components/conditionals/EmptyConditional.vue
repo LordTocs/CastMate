@@ -1,9 +1,9 @@
 <template>
-  <div>
-    <el-button> Add And </el-button>
-    <el-button> Add Or </el-button>
-    <el-button> Add Not </el-button>
-    <el-button> Add Value </el-button>
+  <div style="margin-bottom: 18px;">
+    <el-button @click="setAnd"> Add And </el-button>
+    <el-button @click="setOr"> Add Or </el-button>
+    <el-button @click="setNot"> Add Not </el-button>
+    <el-button @click="setValue"> Add Value </el-button>
   </div>
 </template>
 

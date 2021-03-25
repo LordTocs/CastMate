@@ -95,29 +95,36 @@ module.exports = {
 	triggers: {
 		csgoDeath: {
 			name: "CSGO Death",
+			type: "NumberAction"
 		},
 		csgoKill: {
 			name: "CSGO Death",
+			type: "NumberAction"
 		},
 		csgoBombPlant: {
 			name: "CSGO Bomb Planted",
-			description: "Triggers when a bomb is planted."
+			description: "Triggers when a bomb is planted.",
+			type: "NameAction"
 		},
 		csgoBombDefused: {
 			name: "CSGO Bomb Defused",
-			description: "Triggers when a bomb is defused."
+			description: "Triggers when a bomb is defused.",
+			type: "NameAction"
 		},
 		csgoBombExploded: {
 			name: "CSGO Bomb Exploded",
-			description: "Triggers when a bomb is exploded."
+			description: "Triggers when a bomb is exploded.",
+			type: "NameAction"
 		},
 		csgoRoundLoss: {
 			name: "CSGO Round Loss",
-			description: "Triggers when the round is lost."
+			description: "Triggers when the round is lost.",
+			type: "NumberAction"
 		},
 		csgoRoundWin: {
 			name: "CSGO Round Win",
-			description: "Triggers when the round is won."
+			description: "Triggers when the round is won.",
+			type: "NumberAction"
 		}
 	}
 }

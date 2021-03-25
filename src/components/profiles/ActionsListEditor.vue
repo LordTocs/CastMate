@@ -11,7 +11,7 @@
     />
     <level>
       <div class="right">
-        <el-button @click="newAction"> New Action Group </el-button>
+        <el-button @click="newActionGroup"> New Action Group </el-button>
         <el-button> Import Sequence </el-button>
       </div>
     </level>
@@ -41,7 +41,7 @@ export default {
 
       this.$emit("input", newValue);
     },
-    newAction() {
+    newActionGroup() {
       let newValue = [...this.value, {}];
 
       this.$emit("input", newValue);

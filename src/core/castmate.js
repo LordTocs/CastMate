@@ -16,7 +16,7 @@ async function initInternal()
 	const settings = new HotReloader("./user/settings.yaml",
 		(newSettings) =>
 		{
-			for (let plugin of plugins)
+			for (let plugin of plugins.plugins)
 			{
 				plugin.updateSettings(newSettings);
 			}
@@ -30,7 +30,7 @@ async function initInternal()
 		(newSecrets) =>
 		{
 			//TODO handle hotreload.
-			for (let plugin of plugins)
+			for (let plugin of plugins.plugins)
 			{
 				plugin.updateSecrets(newSecrets);
 			}

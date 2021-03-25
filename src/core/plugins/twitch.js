@@ -489,39 +489,48 @@ module.exports = {
 	triggers: {
 		chat: {
 			name: "Chat",
-			description: "Fires when any user chats."
+			description: "Fires when any user chats.",
+			type: "NameAction"
 		},
 		subchat: {
 			name: "Sub Chat",
-			description: "Fires for only subscribed user chats"
+			description: "Fires for only subscribed user chats",
+			type: "NameAction"
 		},
 		vipchat: {
 			name: "VIP Chat",
-			description: "Fires for only VIP user chats"
+			description: "Fires for only VIP user chats",
+			type: "NameAction"
 		},
 		modchat: {
 			name: "Mod Chat",
-			description: "Fires for when a mod or the broadcaster chats"
+			description: "Fires for when a mod or the broadcaster chats",
+			type: "NameAction"
 		},
 		redemption: {
 			name: "Channel Points Redemption",
-			description: "Fires for when a channel point reward is redeemed"
+			description: "Fires for when a channel point reward is redeemed",
+			type: "NameAction"
 		},
 		follow: {
 			name: "Follow",
-			description: "Fires for when a user follows."
+			description: "Fires for when a user follows.",
+			type: "SingleAction"
 		},
 		subscribe: {
 			name: "Subscription",
-			description: "Fires for when a user subscribes."
+			description: "Fires for when a user subscribes.",
+			type: "NumberAction"
 		},
 		bits: {
 			name: "Bits",
-			description: "Fires for when a user gives bits"
+			description: "Fires for when a user gives bits",
+			type: "NumberAction"
 		},
 		raid: {
-			names: "Raid",
-			description: "Fires when a raid start"
+			name: "Raid",
+			description: "Fires when a raid start",
+			type: "NumberAction"
 		}
 	},
 	actions: {
