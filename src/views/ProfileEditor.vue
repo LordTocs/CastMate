@@ -15,6 +15,8 @@
       <el-divider />
       <variables-editor v-model="profile.variables" />
       <el-divider />
+      <rewards-editor v-model="profile.rewards" />
+      <el-divider />
       <triggers-editor v-model="profile.triggers" />
     </el-form>
   </div>
@@ -24,13 +26,20 @@
 import TriggersEditor from "../components/profiles/TriggersEditor.vue";
 import VariablesEditor from "../components/profiles/VariablesEditor.vue";
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
+import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
 import Level from "@/components/layout/Level.vue";
 
 export default {
-  components: { TriggersEditor, VariablesEditor, ConditionsEditor, Level },
+  components: {
+    TriggersEditor,
+    VariablesEditor,
+    ConditionsEditor,
+    RewardsEditor,
+    Level,
+  },
   computed: {
     profileName() {
       return this.$route.params.profile;
