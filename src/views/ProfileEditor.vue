@@ -1,6 +1,15 @@
 <template>
   <div>
-    <p>{{ profileName }}</p>
+    <level style="margin-bottom: 18px">
+      <div class="left">
+        <h1>{{ profileName }}</h1>
+      </div>
+      <div class="right">
+        <el-button type="success" @click="save" style="width: 120px">
+          <h3>Save</h3>
+        </el-button>
+      </div>
+    </level>
     <el-form :model="profile" label-width="120px">
       <conditions-editor v-model="profile.conditions" />
       <el-divider />
@@ -18,9 +27,10 @@ import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
+import Level from "@/components/layout/Level.vue";
 
 export default {
-  components: { TriggersEditor, VariablesEditor, ConditionsEditor },
+  components: { TriggersEditor, VariablesEditor, ConditionsEditor, Level },
   computed: {
     profileName() {
       return this.$route.params.profile;
@@ -32,6 +42,16 @@ export default {
         triggers: {},
       },
     };
+  },
+  methods: {
+    async save() {
+      let newYaml = YAML.stringify(this.profile);
+
+      await fs.promises.writeFile(
+        path.join("./user/profiles", `${this.profileName}.yaml`),
+        newYaml
+      );
+    },
   },
   async mounted() {
     let fileData = await fs.promises.readFile(
