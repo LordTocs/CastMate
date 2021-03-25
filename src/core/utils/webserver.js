@@ -57,6 +57,9 @@ function createWebServices(settings, secrets, plugins)
 			{
 				console.log(`Started Internal Webserver on port ${port}`);
 				app.use(express.static("./web"));
+				app.use("/user", express.static("./user/data", {
+					etag: false
+				}));
 			});
 		},
 		startWebsockets: () =>
