@@ -55,14 +55,7 @@ async function initInternal()
 
 	await plugins.init(settings, secrets, actions, profiles, webServices);
 
-	let profileFiles = await fs.promises.readdir("./user/profiles");
-
-	for (let profileFile of profileFiles)
-	{
-		profiles.loadProfile(path.join("./profiles", profileFile));
-	}
-
-	profiles.recombine();
+	await profiles.load();
 
 	webServices.startWebsockets();
 }

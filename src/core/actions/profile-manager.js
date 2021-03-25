@@ -2,7 +2,8 @@ const { evalConditional, dependOnAllConditions } = require("../utils/conditional
 const { Watcher } = require("../utils/reactive");
 const { Profile } = require("./profiles");
 const _ = require('lodash');
-
+const chokidar = require("chokidar");
+const { sleep } = require("../utils/sleep");
 class ProfileManager
 {
 	constructor(actions, plugins)
@@ -13,7 +14,68 @@ class ProfileManager
 		this.plugins = plugins;
 
 		this.conditions = {};
+
 	}
+
+	async load()
+	{
+		this.profileWatcher = chokidar.watch('./user/profiles/');
+		this.triggersWatcher = chokidar.watch('./user/triggers/');
+		this.sequencesWatcher = chokidar.watch('./user/sequences/');
+
+		this.profileWatcher.on('add', async (path) =>
+		{
+			console.log("Profile Added: ", path);
+			await sleep(50);
+			this.loadProfile(path);
+		});
+		this.profileWatcher.on('change', async (path) =>
+		{
+			console.log("Profile Changed: ", path);
+			let profile = this.profiles.find((p) => p.filename == path);
+
+			if (!profile) return;
+
+			await sleep(50);
+
+			profile.handleFileChanged(path);
+		});
+		this.profileWatcher.on('unlink', (path) =>
+		{
+			let i = this.profiles.findIndex((p) => p.filename == path);
+
+			if (i == -1) return;
+
+			console.log("Profile Deleted: ", path);
+
+			this.profiles[i].watcher.unsubscribe();
+
+			this.profiles.splice(i, 1);
+
+			this.recombine();
+		});
+
+		this.triggersWatcher.on('change', async (path) =>
+		{
+			console.log("Triggers Changed: ", path);
+			await sleep(50);
+			for (let profile of this.profiles)
+			{
+				profile.handleFileChanged(path);
+			}
+		})
+
+		this.sequencesWatcher.on('change', async (path) =>
+		{
+			await sleep(50);
+			console.log("Sequence Changed: ", path);
+			for (let profile of this.profiles)
+			{
+				profile.handleFileChanged(path);
+			}
+		})
+	}
+
 
 	redoDependencies()
 	{

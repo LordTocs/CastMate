@@ -3,10 +3,10 @@ const YAML = require("yaml");
 const { sleep } = require("../utils/sleep");
 const path = require("path");
 
-function loadFile(filename, fileset)
+function loadFile(filename, fileset, root="./user")
 {
-	console.log(`Loading ${filename}`);
-	const adjustedFilename = path.join("./user", filename);
+	//console.log(`Loading ${filename}`);
+	const adjustedFilename = path.join(root, filename);
 	let contents = fs.readFileSync(adjustedFilename, "utf-8");
 	let pojo = YAML.parse(contents);
 	fileset.add(adjustedFilename);
@@ -88,11 +88,11 @@ class Profile
 	{
 		this.filename = filename;
 		this.triggers = {};
-		this.name = "";
 		this.conditions = {};
 		this.watchers = [];
 		this.onReload = onReload;
 		this.rewards = [];
+		this.dependencies = null;
 		this.reload();
 	}
 
@@ -100,7 +100,8 @@ class Profile
 	{
 		let fileset = new Set();
 
-		let profileConfig = loadFile(this.filename, fileset);
+		console.log("Loading Profile: ", this.filename);
+		let profileConfig = loadFile(this.filename, fileset, ".");
 
 		if (profileConfig.triggers)
 		{
@@ -110,34 +111,20 @@ class Profile
 			}
 		}
 
-		this.name = profileConfig.name || "Anon Profile";
 		this.triggers = profileConfig.triggers;
 		this.conditions = profileConfig.conditions || {};
 		this.config = profileConfig;
 
-		//Setup reloads
-		let filearray = Array.from(fileset);
+		this.dependencies = fileset;
+	}
 
-		for (let watcher of this.watchers)
+	async handleFileChanged(filename)
+	{
+		if (this.dependencies.has(filename))
 		{
-			watcher.close();
+			this.reload();
+			this.onReload(this);
 		}
-
-		this.watchers = filearray.map((filename) => fs.watch(filename, async () =>
-		{
-			try
-			{
-				console.log(`Edited ${filename}: Reloading Profile ${this.name}`)
-				await sleep(100);
-				this.reload();
-				this.onReload(this);
-			}
-			catch (err)
-			{
-				console.error(`Error Loading Profile ${this.name}`)
-				console.error(err);
-			}
-		}))
 	}
 }
 
