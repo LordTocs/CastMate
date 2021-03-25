@@ -1,5 +1,5 @@
 <template>
-  <el-card class="trigger-editor">
+  <el-card class="trigger-editor" v-if="trigger.type != 'SingleAction'">
     <level style="margin-bottom: 1rem">
       <div class="left">
         <h3>
@@ -7,7 +7,7 @@
         </h3>
       </div>
       <div class="right">
-        <el-button> Add Command </el-button>
+        <el-button @click="addCommand"> Add Command </el-button>
         <el-button> Import Triggers </el-button>
       </div>
     </level>
@@ -21,16 +21,38 @@
         class="clearfix"
         style="display: flex; flex-direction: row"
       >
-        <key-input
-          :value="commandKey"
-          @input="(newKey) => changeKey(commandKey, newKey)"
-        />
-        <el-button @click="deleteCommand(commandKey)"> Delete </el-button>
+        <level>
+          <div class="left" style="width: 100%;">
+            <key-input
+              :value="commandKey"
+              @input="(newKey) => changeKey(commandKey, newKey)"
+              :is-number="trigger.type == 'NumberAction'"
+            />
+          </div>
+          <div class="right">
+            <el-button @click="deleteCommand(commandKey)"> Delete </el-button>
+          </div>
+        </level>
       </div>
       <command-editor
         :value="value[commandKey]"
         @input="(newData) => updateCommand(commandKey, newData)"
       />
+    </el-card>
+  </el-card>
+  <el-card class="trigger-editor" v-else>
+    <level style="margin-bottom: 1rem">
+      <div class="left">
+        <h3>
+          {{ triggerName }}
+        </h3>
+      </div>
+      <div class="right">
+        <el-button> Import Triggers </el-button>
+      </div>
+    </level>
+    <el-card class="command-editor">
+      <command-editor :value="value" @input="(v) => $emit('input', v)" />
     </el-card>
   </el-card>
 </template>
@@ -44,6 +66,9 @@ export default {
   computed: {
     commands() {
       return Object.keys(this.value).filter((key) => key != "imports");
+    },
+    triggerName() {
+      return this.trigger ? this.trigger.name : this.triggerKey;
     },
   },
   methods: {
@@ -75,10 +100,19 @@ export default {
 
       this.$emit("input", result);
     },
+    addCommand() {
+      let result = {
+        ...this.value,
+        "": { actions: [], sync: false },
+      };
+
+      this.$emit("input", result);
+    },
   },
   props: {
     value: {},
-    triggerName: { type: String },
+    triggerKey: { type: String },
+    trigger: {},
   },
 };
 </script>

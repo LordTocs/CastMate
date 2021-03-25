@@ -1,5 +1,5 @@
 <template>
-  <el-select :value="value" @input="(v) => $emit('input', v)">
+  <el-select :value="value" @input="(v) => $emit('input', v)" placeholder="State Variable">
     <el-option
       v-for="item in stateNames"
       :key="item"

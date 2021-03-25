@@ -1,5 +1,13 @@
 <template>
   <el-input
+    v-if="!isNumber"
+    :value="displayValue"
+    @focus="startEdit"
+    @blur="endEdit"
+    @input="(v) => changeValue(v)"
+  />
+  <el-input-number
+    v-else
     :value="displayValue"
     @focus="startEdit"
     @blur="endEdit"
@@ -13,6 +21,7 @@ import _ from "lodash";
 export default {
   props: {
     value: {},
+    isNumber: { type: Boolean, default: () => false },
   },
   data() {
     return {

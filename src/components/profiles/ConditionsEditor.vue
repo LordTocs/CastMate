@@ -1,7 +1,11 @@
 <template>
   <el-card class="conditions-editor">
     <h3>Conditions</h3>
-    <conditional-editor :value="value" @input="(v) => $emit('input', v)" />
+    <conditional-editor
+      :value="value"
+      @input="(v) => $emit('input', v)"
+      @delete="$emit('input', null)"
+    />
   </el-card>
 </template>
 
