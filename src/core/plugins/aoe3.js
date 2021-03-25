@@ -154,7 +154,14 @@ module.exports = {
             } else {
                 return;
             }
+        },
+
+        toTitleCase(str) {
+            return str.replace(/\w\S*/g, function (txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+            })
         }
+        
     },
     templateFunctions: {
         getAoe3PlayerStat(playerName) {
@@ -177,6 +184,38 @@ module.exports = {
                 return "Problem retrieving player aoe3 player stat.";
             }
         },
+        getAoe3GameStat(unit) {
+            let sectionBlacklist = [""];
+            let statBlackList = ["Introduced in"];
+            let gameStats = JSON.parse(fs.readFileSync("./user/data/aoe3GameStats.json", "utf-8"));
+
+            let result = []
+            let unitName = this.toTitleCase(unit)
+
+            for (let sectionKey in gameStats[unitName]) {
+                if (sectionBlacklist.includes(sectionKey))
+                    continue;
+                let formattedString = ''
+                formattedString += `${sectionKey} | `;
+
+                const statKeys = Object.keys(gameStats[unitName][sectionKey]);
+                for (let i = 0; i < statKeys.length; ++i) {
+                    const stat = statKeys[i];
+                    
+                    if (statBlackList.includes(stat))
+                        continue;
+                    formattedString += `${stat}:\xa0${gameStats[unitName][sectionKey][stat]}`
+
+                    if (i != statKeys.length - 1)
+                    {
+                        formattedString += ' - ';
+                    }
+                }
+                // TODO: If a single key is more than 509 chars, the message won't send :(. Example: Cow.
+                result.push(formattedString);
+            }
+            return result;
+        }
     },
     settings: {
         enabled: { type: Boolean }

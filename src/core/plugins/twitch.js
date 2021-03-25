@@ -9,6 +9,7 @@ const { PubSubClient } = require("twitch-pubsub-client");
 const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
 
 const { template } = require('../utils/template');
+const { evalTemplate } = require('../utils/template');
 const HotReloader = require("../utils/hot-reloader");
 
 const BadWords = require("bad-words");
@@ -495,6 +496,19 @@ module.exports = {
 			},
 			handler(message, context) {
 				this.chatClient.say(this.settings.channelName.toLowerCase(), template(message, context));
+			}
+		},
+		multiSay: {
+			name: "Multi Say",
+			description: "Uses the bot to send an array of twitch chat messages",
+			data: {
+				type: "TemplateString"
+			},
+			handler(message, context) {
+				let msgArray = evalTemplate(message, context)
+				for (msg of msgArray) {
+					this.chatClient.say(this.settings.channelName.toLowerCase(), msg);
+				}
 			}
 		}
 	}
