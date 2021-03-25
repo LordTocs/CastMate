@@ -41,7 +41,7 @@ module.exports = {
         },
 
         shouldUpdate() {
-            if (!fs.existsSync("./aoe3.json")) {
+            if (!fs.existsSync("./user/data/aoe3GameStats.json")) {
                 return true;
             }
 
@@ -148,7 +148,7 @@ module.exports = {
                     }
 
                 }
-                console.log(JSON.stringify(data, null, 2));
+                // console.log(JSON.stringify(data, null, 2));
 
                 fs.writeFileSync('./user/data/aoe3GameStats.json', JSON.stringify(data, null, 2))
             } else {
