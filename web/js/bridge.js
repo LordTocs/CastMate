@@ -45,7 +45,7 @@ class CastMateBridge
 	connect()
 	{
 		// TODO: This address needs to be dynamic!
-		this.socket = new WebSocket("ws://127.0.0.1:80");
+		this.socket = new WebSocket(`ws://${window.location.host}`);
 
 		this.socket.addEventListener('message', (event) =>
 		{
