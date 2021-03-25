@@ -103,7 +103,12 @@ class Plugin
 
 		if (this.initFunc)
 		{
-			await this.initFunc();
+			try {
+				await this.initFunc();
+			} catch (err) {
+				// TODO: Throw exception to UI
+				console.log(`Error loading ${this.name} plugin. Error Msg: ${err}.`)
+			}
 		}
 	}
 
