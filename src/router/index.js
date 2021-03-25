@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Profiles from "../views/Profiles.vue";
 import ProfileEditor from "../views/ProfileEditor.vue";
+import Plugin from "../views/Plugin.vue";
 
 Vue.use(VueRouter)
 
@@ -29,6 +30,11 @@ const routes = [
 		path: "/profiles/:profile",
 		name: "Profile Editor",
 		component: ProfileEditor
+	},
+	{
+		path: "/plugins/:pluginName",
+		name: "Plugin Settings",
+		component: Plugin
 	}
 ]
 

@@ -3,8 +3,6 @@ const { Watcher } = require("../utils/reactive");
 const { Profile } = require("./profiles");
 const _ = require('lodash');
 const chokidar = require("chokidar");
-const fs = require("fs");
-const path = require("path");
 const { sleep } = require("../utils/sleep");
 class ProfileManager
 {
@@ -45,6 +43,7 @@ class ProfileManager
 		this.profileWatcher.on('unlink', (path) =>
 		{
 			let i = this.profiles.findIndex((p) => p.filename == path);
+
 			if (i == -1) return;
 
 			console.log("Profile Deleted: ", path);
