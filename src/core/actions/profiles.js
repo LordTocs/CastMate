@@ -1,6 +1,5 @@
 const fs = require("fs");
 const YAML = require("yaml");
-const { sleep } = require("../utils/sleep");
 const path = require("path");
 
 function loadFile(filename, fileset, root="./user")

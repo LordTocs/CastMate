@@ -10,7 +10,7 @@
         </el-button>
       </div>
     </level>
-    <el-card v-if="settingsKeys.length > 0">
+    <el-card class="settings-card" v-if="settingsKeys.length > 0">
       <h3>Settings</h3>
 
       <div
@@ -21,15 +21,38 @@
         <data-input :schema="plugin.settings[settingKey]" :label="settingKey" />
       </div>
     </el-card>
-	<el-card v-if="secretKeys.length > 0">
-      <h3>Secrets</h3>
+    <el-card class="settings-card" v-if="secretKeys.length > 0">
+      <div v-if="showSecrets">
+        <level style="margin-bottom: 18px">
+          <div class="left">
+            <h3>Secrets</h3>
+          </div>
+          <div class="right">
+            <el-button @click="showSecrets = !showSecrets">
+              Hide Secrets
+            </el-button>
+          </div>
+        </level>
 
-      <div
-        style="margin-bottom: 18px"
-        v-for="secretKey in secretKeys"
-        :key="secretKey"
-      >
-        <data-input :schema="plugin.secrets[secretKey]" :label="secretKey" />
+        <div
+          style="margin-bottom: 18px"
+          v-for="secretKey in secretKeys"
+          :key="secretKey"
+        >
+          <data-input :schema="plugin.secrets[secretKey]" :label="secretKey" />
+        </div>
+      </div>
+      <div v-else>
+        <level style="margin-bottom: 18px">
+          <div class="left">
+            <h3>Secrets</h3>
+          </div>
+          <div class="right">
+            <el-button @click="showSecrets = !showSecrets">
+              Show Secrets
+            </el-button>
+          </div>
+        </level>
       </div>
     </el-card>
   </div>
@@ -60,8 +83,16 @@ export default {
     DataInput,
     Level,
   },
+  data() {
+    return {
+      showSecrets: false,
+    };
+  },
 };
 </script>
 
 <style scoped>
+.settings-card {
+  margin-bottom: 18px;
+}
 </style>

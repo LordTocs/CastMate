@@ -2,8 +2,6 @@ const { ActionQueue } = require("./actions/action-queue.js");
 const { ProfileManager } = require("./actions/profile-manager.js");
 const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
-const fs = require('fs');
-const path = require('path');
 const { PluginManager } = require("./utils/plugin-manager.js");
 const { ipcMain } = require("electron");
 
