@@ -22,7 +22,7 @@ CastMate is a broadcaster tool that allows Twitch viewers to interact with a bro
  **Optional Plugins**
  - Age of Empires 3 (leaderboard stats, unit stats)
  - CSGO (game state stats)
- - Minecraft (execute minecraft commands dynamically)
+ - Minecraft (execute Minecraft commands dynamically)
 
 ## Installation
 

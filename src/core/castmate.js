@@ -13,6 +13,18 @@ async function initInternal()
 	let plugins = new PluginManager();
 	await plugins.load();
 
+	if (!fs.existsSync("./user")){
+		fs.mkdirSync("./user/data", {recursive: true});
+		fs.mkdirSync("./user/profiles");
+		fs.mkdirSync("./user/secrets");
+		fs.writeFileSync('./user/secrets/secrets.yaml', "");
+		fs.mkdirSync("./user/sequences");
+		fs.mkdirSync("./user/sounds");
+		fs.mkdirSync("./user/triggers");
+		fs.writeFileSync('./user/rewards.yaml', "");
+		fs.writeFileSync('./user/settings.yaml', "");
+	}
+
 	const settings = new HotReloader("./user/settings.yaml",
 		(newSettings, oldSettings) =>
 		{
@@ -29,7 +41,6 @@ async function initInternal()
 	const secrets = new HotReloader("./user/secrets/secrets.yaml",
 		(newSecrets, oldSecrets) =>
 		{
-			//TODO handle hotreload.
 			for (let plugin of plugins.plugins)
 			{
 				plugin.updateSecrets(newSecrets, oldSecrets);
