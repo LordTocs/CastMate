@@ -1,0 +1,12 @@
+name: Wheel
+conditions:
+  obsScene: "Coding"
+rewards:
+  - Spin the Wheel!
+triggers:
+  redemption:
+    "Spin the Wheel!":
+      actions:
+        - websocket:
+            wheel:
+              spin: 10

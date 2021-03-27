@@ -2,10 +2,11 @@
 conditions:
   obsScene: Gaming Apex
 rewards:
-  - Fire Away
+  - Fire Away!
+  - Jump!
 triggers:
   redemption:
-    "Fire Away":
+    Fire Away!:
       actions:
         - notification:
             header: Pew Pew
@@ -14,3 +15,11 @@ triggers:
         - mouseButton:
             button: 1
             time: 1.5
+    Jump!:
+      actions:
+        - notification:
+            header: Jump
+            text: "{{user}} has jumped!"
+            color: "{{userColor}}"
+        - pressKey:
+            key: space

@@ -2,25 +2,31 @@
 
 CastMate is a broadcaster tool that allows Twitch viewers to interact with a broadcasters stream components through Channel Point rewards. 
 
-**Viewers Abilities:**
- - Change OBS scenes (trigger cat cam)
- - Change Philips Hue lights (disco time!!!)
- - Play sound files ("Never Gonna Give You Up..."
- - Read text-to-speech ("wololooooo")
- - Trigger keyboard and mouse inputs (throw a grenade, jump out of a moving vehicle, drop weapon, etc.)
- - Interact with customizable OBS overlays (change score, fill the screen with emotes, etc.)
- - Execute Minecraft commands (spawn sheep with a viewer's name)
+**Viewer Abilities:**
+ - Change OBS scenes (trigger cat cam).
+ - Change Philips Hue lights (disco time!!!).
+ - Play sound files ("Never Gonna Give You Up...").
+ - Read text-to-speech ("wololooooo").
+ - Trigger keyboard and mouse inputs (throw a grenade, jump out of a moving vehicle, drop weapon, etc.).
+ - Interact with customizable OBS overlays (change score, fill the screen with emotes, etc.).
+ - Execute Minecraft commands (spawn sheep with a viewer's name).
  
 **Broadcaster Abilities**
-- Create scenes that dynamically activate/deactivate rewards (activate Minecraft related rewards when your "Minecraft In-Game Scene" is activated, turn off in-game related rewards when your "Age of Empires Lobby" scene is activated, etc.)
-- Easily turn CastMate features on and off through with the "CastMate Dashboard" 
-- Create chat commands that trigger events (play a sound file, change lights, etc.)
-- Create Twitch Sub, VIP, or Moderator only commands (moderator can change your scene when you forget!)
- - Create overlays with counters, goals, notifications, random wheel, and emotes
+- Create scenes that dynamically activate/deactivate channel rewards (activate Minecraft related rewards when your "Minecraft In-Game Scene" is activated, turn off in-game related rewards when your "Age of Empires Lobby" scene is activated, etc.).
+- Create custom profiles with the CastMate UI that link with your OBS scenes. Unique triggers can be created within each profile such as channel rewards, chat commands, follow/sub events, Hue commands, etc. You can also create global triggers that are available in all of your profiles. 
+- Toggle CastMate global features on and off through the "CastMate Dashboard" (mute sounds, turn off light commands, etc.).
+- Create chat commands that trigger events (play a sound file, change lights, etc.).
+- Create Twitch Sub, VIP, or Moderator only commands (moderator can change your scene when you forget!).
+ - Create overlays with counters, goals, notifications, random wheel, and emotes.
+
+ **Optional Plugins**
+ - Age of Empires 3 (leaderboard stats, unit stats)
+ - CSGO (game state stats)
+ - Minecraft (execute Minecraft commands dynamically)
 
 ## Installation
 
-TBD...click this link and have fun. 
+TBD 
   
 ## CastMate Setup
 
@@ -35,15 +41,15 @@ TBD...click this link and have fun.
 ## Twitch Setup
 TBD
 
-If we run out of time, edit secrets.yaml and input 
+Update secrets.yaml.
 
 ## OBS Scene Setup
 
-Demo profiles have been created to get started with CastMate. Create the following scenes in OBS. Scene names will need to match exactly to use the demo profiles. 
+Demo profiles have been created to get started with CastMate. Create the following scenes in OBS to use these profiles. Scene names will need to match exactly to use the demo profiles. You can also edit these profiles through the UI.
 
-Game | Scene Name| Browser Source URL | Notes |
-|----|--------------------|-----------|-------|
-| Apex Legends | Gaming Apex |  |
+Game | Scene Name| 
+|----|--------------------|
+| Apex Legends | Gaming Apex |  
 | Star Wars Battlefront 2 | Gaming BF2 |
 | N/A | Cookie Wheel |
 | Grand Theft Auto V | Gaming GTA |
@@ -51,8 +57,8 @@ Game | Scene Name| Browser Source URL | Notes |
 | Age of Empires 3: DE | Gaming AOE3|
 | Age of Empires 3: DE | Lobby AoE3|
 
-*Events are fully customizable by editing the corresponding .yaml file that match the scene name. These customizations will be easily made available via the CastMate UI in future versions.*
-*Switch between between your scenes a few times to update your Channel Rewards on initial setup*
+*Events are fully customizable via the CastMate UI.*
+*Once setup, change between scenes and your channel rewards will update to match each profile (with the exception of designated globabl channel rewards).*
 
 ## OBS Overlay Setup
 
@@ -62,14 +68,14 @@ Feature| Browser Source URL | Example Size |Configuration
 |---------|-----------------|--------------|-------------|
 | Bouncing Emotes | http://127.0.0.1:80/emotes.html | 1920x1080 | N/A |
 | Notifications | http://localhost:80/notifications.html | 650x350 | N/A |
-| Sub Goal | http://127.0.0.1/goal.html?variable=subscribers&goal=100&title=Sub%20Goal | Update the 'goal' and 'title' variables in the URL to your liking | 
+| Sub Goal | http://127.0.0.1/goal.html?variable=subscribers&goal=100&title=Sub%20Goal | 800x600 | Update the 'goal' and 'title' variables in the URL to your liking | 
 
 Leave 'Custom CSS' as is. You do not need to check any of the boxes.
 
 *If browser sources are not working, you can select the source and click 'refresh' in OBS. Ideally, start CastMate before launching OBS and all of the browser sources will be ready to go!*
 
 ## Phillips Hue Setup
-Start CastMate and press the link button on your Hue bridge.
+Start CastMate and press the link button on your Hue bridge when prompted.
 
 ## Additional Documentation
 

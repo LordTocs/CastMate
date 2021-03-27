@@ -4,12 +4,24 @@ const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
 const { PluginManager } = require("./utils/plugin-manager.js");
 const { ipcMain } = require("electron");
-
+const fs  = require("fs");
 
 async function initInternal()
 {
 	let plugins = new PluginManager();
 	await plugins.load();
+
+	if (!fs.existsSync("./user")){
+		fs.mkdirSync("./user/data", {recursive: true});
+		fs.mkdirSync("./user/profiles");
+		fs.mkdirSync("./user/secrets");
+		fs.writeFileSync('./user/secrets/secrets.yaml', "");
+		fs.mkdirSync("./user/sequences");
+		fs.mkdirSync("./user/sounds");
+		fs.mkdirSync("./user/triggers");
+		fs.writeFileSync('./user/rewards.yaml', "");
+		fs.writeFileSync('./user/settings.yaml', "");
+	}
 
 	const settings = new HotReloader("./user/settings.yaml",
 		(newSettings, oldSettings) =>
@@ -27,7 +39,6 @@ async function initInternal()
 	const secrets = new HotReloader("./user/secrets/secrets.yaml",
 		(newSecrets, oldSecrets) =>
 		{
-			//TODO handle hotreload.
 			for (let plugin of plugins.plugins)
 			{
 				plugin.updateSecrets(newSecrets, oldSecrets);
