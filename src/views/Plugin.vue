@@ -54,10 +54,8 @@
           <data-input
             :schema="plugin.secrets[secretKey]"
             :label="secretKey"
-            :value="
-              secrets[pluginName] ? secrets[pluginName][settingKey] : null
-            "
-            @input="(v) => setSecretsValue(settingKey, v)"
+            :value="getSecretValue(secretKey)"
+            @input="(v) => setSecretsValue(secretKey, v)"
           />
         </div>
       </div>
@@ -104,21 +102,29 @@ export default {
       return !!this.plugin.settingsView;
     },
     settingsComponent() {
-      return () => import(`../core/plugins/${this.plugin.settingsView}`);
+      return () => import(`../components/plugins/${this.plugin.settingsView}`);
     },
   },
   methods: {
     setSettingsValue(key, value) {
       if (!this.settings[this.pluginName]) {
-        this.settings[this.pluginName] = {};
+        this.settings[this.pluginName] = { [key]: value };
+      } else {
+        this.settings[this.pluginName][key] = value;
       }
-      this.settings[this.pluginName][key] = value;
+    },
+    getSecretValue(key) {
+      return this.secrets[this.pluginName]
+        ? this.secrets[this.pluginName][key]
+        : null;
     },
     setSecretsValue(key, value) {
       if (!this.secrets[this.pluginName]) {
-        this.secrets[this.pluginName] = {};
+        this.$set(this.secrets, this.pluginName, {});
+        this.$set(this.secrets[this.pluginName], key, value);
+      } else {
+        this.secrets[this.pluginName][key] = value;
       }
-      this.secrets[this.pluginName][key] = value;
     },
     async save() {
       let newSettingsYaml = YAML.stringify(this.settings);
@@ -154,7 +160,7 @@ export default {
     this.settings = fullSettings;
 
     const fullSecretsText = await fs.promises.readFile(
-      "./user/settings.yaml",
+      "./user/secrets/secrets.yaml",
       "utf-8"
     );
     const fullSecrets = YAML.parse(fullSecretsText);
