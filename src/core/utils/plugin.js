@@ -50,6 +50,8 @@ class Plugin
 			this.onWebsocketMessage = this.onWebsocketMessage.bind(this.pluginObj);
 		}
 
+		this.settingsView = config.settingsView;
+
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];
 		this.triggers = config.triggers || [];
@@ -173,7 +175,8 @@ class Plugin
 			settings,
 			secrets,
 			triggers: this.triggers,
-			actions
+			actions,
+			...this.settingsView ? { settingsView: this.settingsView } : {}
 		}
 	}
 

@@ -1,10 +1,10 @@
-const AuthManager = require("../utils/twitchAuth");
+const { ElectronAuthManager } = require("../utils/twitchAuth");
 
 const { ApiClient } = require("twitch");
 
 const { ChatClient } = require("twitch-chat-client");
 
-const { PubSubClient } = require("twitch-pubsub-client");
+const { PubSubClient, BasicPubSubClient } = require("twitch-pubsub-client");
 
 const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
 
@@ -14,31 +14,39 @@ const HotReloader = require("../utils/hot-reloader");
 
 const BadWords = require("bad-words");
 
+const { ipcMain } = require("electron");
+
+const express = require('express');
 
 
-
-class ExpressWebhookAdapter extends ConnectionAdapter {
-	constructor(options, basePath) {
+class ExpressWebhookAdapter extends ConnectionAdapter
+{
+	constructor(options, basePath)
+	{
 		super(options);
 		this._hostName = options.hostName;
 		this._basePath = basePath;
 	}
 
 	/** @protected */
-	get connectUsingSsl() {
+	get connectUsingSsl()
+	{
 		return this.listenUsingSsl;
 	}
 	/** @protected */
-	async getExternalPort() {
+	async getExternalPort()
+	{
 		return this.getListenerPort();
 	}
 
 	/** @protected */
-	async getHostName() {
+	async getHostName()
+	{
 		return this._hostName;
 	}
 
-	get pathPrefix() {
+	get pathPrefix()
+	{
 		return this._basePath;
 	}
 }
@@ -46,18 +54,13 @@ class ExpressWebhookAdapter extends ConnectionAdapter {
 
 module.exports = {
 	name: "twitch",
-	async init() {
-		await this.doAuth();
+	async init()
+	{
+		console.log("Starting Twitch");
 
-		await this.setupChatTriggers();
+		await this.doInitialAuth();
 
-		await this.setupWebHookTriggers();
-
-		await this.setupPubSubTriggers();
-
-		await this.initConditions();
-
-		await this.initChannelRewards();
+		this.setupSettingsIPC();
 
 		this.colorCache = {};
 
@@ -65,7 +68,8 @@ module.exports = {
 		//this.filter.addWords(...badwordList.words);
 	},
 	methods: {
-		filterMessage(message) {
+		filterMessage(message)
+		{
 			if (!message || message.length < 2)
 				return message;
 
@@ -74,47 +78,122 @@ module.exports = {
 
 			return this.filter.clean(message)
 		},
-		async doAuth() {
-			this.channelAuth = new AuthManager("channel", this.webServices.port);
-			this.channelAuth.setClientInfo(this.secrets.apiClientId, this.secrets.apiClientSecret);
 
-			//Do the channel authentication
-			this.channelAuth.installMiddleware(this.webServices.app);
+		async doInitialAuth()
+		{
+			this.channelAuth = new ElectronAuthManager({ clientId: this.secrets.apiClientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Channel" })
+			this.botAuth = new ElectronAuthManager({ clientId: this.secrets.apiClientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Bot" })
 
-			await this.channelAuth.doAuth();
+			await this.channelAuth.trySilentAuth();
+			await this.botAuth.trySilentAuth();
 
-			this.chatAuthProvider = this.channelAuth.createAuthProvider()
+
+			await this.completeAuth();
+
+		},
+
+		async shutdown()
+		{
+			if (this.chatClient)
+			{
+				await this.chatClient.quit();
+			}
+
+			if (this.webhooks)
+			{
+				for (let sub of this.webhookSubs)
+				{
+					sub.stop();
+				}
+
+				let index = this.webServices.app._router.stack.findIndex((item) => item.handle == this.webhookRouter)
+				if (index >= 0)
+				{
+					console.log("Removing router by index", index);
+					this.webServices.app._router.stack.splice(index, 1);
+				}
+			}
+
+			if (this.basePubSubClient)
+			{
+				this.basePubSubClient.disconnect();
+			}
+		},
+
+		async completeAuth()
+		{
+			if (!this.channelAuth.isAuthed || !this.botAuth.isAuthed)
+			{
+				return;
+			}
+
+			await this.shutdown();
+
+			await this.doAuth();
+
+			await this.setupChatTriggers();
+
+			await this.setupWebHookTriggers();
+
+			await this.setupPubSubTriggers();
+
+			await this.initConditions();
+
+			await this.initChannelRewards();
+		},
+
+		async doAuth()
+		{
+			this.chatAuthProvider = null;//this.channelAuth.createAuthProvider()
 
 			this.channelTwitchClient = new ApiClient({
-				authProvider: this.chatAuthProvider,
+				authProvider: this.channelAuth,
 			});
 
-			if (this.settings.botName && this.settings.botName != this.settings.channelName) {
-				this.botAuth = new AuthManager("bot", this.webServices.port);
-				this.botAuth.setClientInfo(this.secrets.apiClientId, this.secrets.apiClientSecret);
-				//Do the bot authentication only if there's a different bot name
-				this.botAuth.installMiddleware(this.webServices.app);
-				await this.botAuth.doAuth();
-
-				this.chatAuthProvider = this.botAuth.createAuthProvider()
-
-				this.botTwitchClient = new ApiClient({
-					authProvider: this.chatAuthProvider
-				});
-			}
-			else {
-				this.botTwitchClient = this.channelTwitchClient;
-			}
+			this.botTwitchClient = new ApiClient({
+				authProvider: this.botAuth
+			});
 
 			//Get the IDs
 			this.channelId = await (await this.channelTwitchClient.kraken.users.getMe()).id;
 			this.botId = await (await this.botTwitchClient.kraken.users.getMe()).id;
 		},
 
-		parseMessage(message) {
+		setupSettingsIPC()
+		{
+			ipcMain.handle('twitchGetAuthStatus', async () =>
+			{
+				return {
+					bot: this.botAuth.isAuthed,
+					channel: this.channelAuth.isAuthed,
+				}
+			})
+
+			ipcMain.handle('twitchDoBotAuth', async () =>
+			{
+				let result = await this.botAuth.doAuth(true);
+				if (result)
+				{
+					await this.completeAuth();
+				}
+			})
+
+			ipcMain.handle('twitchDoChannelAuth', async () =>
+			{
+				let result = await this.channelAuth.doAuth(true);
+				if (result)
+				{
+					await this.completeAuth();
+				}
+			})
+		},
+
+		parseMessage(message)
+		{
 			let firstSpace = message.indexOf(' ');
 
-			if (firstSpace == -1) {
+			if (firstSpace == -1)
+			{
 				return { command: message.toLowerCase(), args: [], string: "" }
 			}
 
@@ -127,14 +206,16 @@ module.exports = {
 			return { command, args, string };
 		},
 
-		async setupChatTriggers() {
-			this.chatClient = new ChatClient(this.chatAuthProvider, { channels: [this.settings.channelName] });
+		async setupChatTriggers()
+		{
+			this.chatClient = new ChatClient(this.botAuth, { channels: [this.settings.channelName] });
 			await this.chatClient.connect();
 
 			this.chatClient.say(this.settings.channelName.toLowerCase(), "StreamMachine is now running.");
 
 			//Setup triggers
-			this.chatClient.onMessage(async (channel, user, message, msgInfo) => {
+			this.chatClient.onMessage(async (channel, user, message, msgInfo) =>
+			{
 				if (this.colorCache)
 					this.colorCache[msgInfo.userInfo.userId] = msgInfo.userInfo.color;
 
@@ -159,46 +240,60 @@ module.exports = {
 					filteredMessage: this.filterMessage(message)
 				}
 
-				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
-					if (this.actions.trigger('modchat', context)) {
+				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
+				{
+					if (this.actions.trigger('modchat', context))
+					{
 						return;
 					}
 				}
 
-				if (msgInfo.userInfo.isVip) {
-					if (this.actions.trigger('vipchat', context)) {
+				if (msgInfo.userInfo.isVip)
+				{
+					if (this.actions.trigger('vipchat', context))
+					{
 						return;
 					}
 				}
 
-				if (msgInfo.userInfo.isSubscriber) {
-					if (this.actions.trigger('subchat', context)) {
+				if (msgInfo.userInfo.isSubscriber)
+				{
+					if (this.actions.trigger('subchat', context))
+					{
 						return;
 					}
 				}
 
-				if (this.actions.trigger('chat', context)) {
+				if (this.actions.trigger('chat', context))
+				{
 					return;
 				}
 
 			});
 
-			this.chatClient.onRaid((channel, user, raidInfo) => {
+			this.chatClient.onRaid((channel, user, raidInfo) =>
+			{
 				this.actions.trigger("raid", { number: raidInfo.viewerCount, user: raidInfo.displayName });
 			})
 		},
 
-		async setupWebHookTriggers() {
+		async setupWebHookTriggers()
+		{
 			this.webhooks = new WebHookListener(this.channelTwitchClient, new ExpressWebhookAdapter({
 				hostName: this.webServices.hostname,
 				listenerPort: this.webServices.port
 			}, "/twitch-hooks"));
 
-			this.webhooks.applyMiddleware(this.webServices.app);
+			this.webhookRouter = express.Router();
+
+			this.webhooks.applyMiddleware(this.webhookRouter);
+
+			this.webServices.app.use(this.webhookRouter);
 
 			this.followerCache = new Set();
 
-			await this.webhooks.subscribeToFollowsToUser(this.channelId, async (follow) => {
+			let followHook = await this.webhooks.subscribeToFollowsToUser(this.channelId, async (follow) =>
+			{
 				if (this.followerCache.has(follow.userId))
 					return;
 
@@ -214,7 +309,8 @@ module.exports = {
 				//variables.set("followers", follows.total);
 			});
 
-			await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) => {
+			let subHook = await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) =>
+			{
 				//Stream Changed
 				console.log("Stream Changed");
 
@@ -223,13 +319,18 @@ module.exports = {
 
 				this.state.twitchCategory = game.name;
 			});
+
+			this.webhookSubs = [followHook, subHook];
 		},
 
-		async setupPubSubTriggers() {
-			this.pubSubClient = new PubSubClient();
+		async setupPubSubTriggers()
+		{
+			this.basePubSubClient = new BasicPubSubClient();
+			this.pubSubClient = new PubSubClient(this.basePubSubClient);
 			await this.pubSubClient.registerUserListener(this.channelTwitchClient, this.channelId);
 
-			await this.pubSubClient.onBits(this.channelId, (message) => {
+			await this.pubSubClient.onBits(this.channelId, (message) =>
+			{
 				console.log(`Bits: ${message.bits}`);
 
 
@@ -242,10 +343,12 @@ module.exports = {
 				});
 			});
 
-			await this.pubSubClient.onRedemption(this.channelId, (redemption) => {
+			await this.pubSubClient.onRedemption(this.channelId, (redemption) =>
+			{
 				console.log(`Redemption: ${redemption.rewardId} ${redemption.rewardName}`);
 				let message = redemption.message;
-				if (!message) {
+				if (!message)
+				{
 					message = "";
 				}
 
@@ -258,12 +361,15 @@ module.exports = {
 				});
 			});
 
-			await this.pubSubClient.onSubscription(this.channelId, async (message) => {
-				if (message.isGift) {
+			await this.pubSubClient.onSubscription(this.channelId, async (message) =>
+			{
+				if (message.isGift)
+				{
 					console.log(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
 					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, ...{ userColor: this.colorCache[message.userId] } });
 				}
-				else {
+				else
+				{
 					let months = message.months ? message.months : 0;
 					console.log(`Sub ${message.userDisplayName} : ${months}`);
 					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
@@ -273,10 +379,12 @@ module.exports = {
 			});
 		},
 
-		async initConditions() {
+		async initConditions()
+		{
 			let stream = await this.channelTwitchClient.helix.streams.getStreamByUserId(this.channelId);
 
-			if (stream) {
+			if (stream)
+			{
 				let game = await stream.getGame();
 
 				this.state.twitchCategory = game.name;
@@ -287,26 +395,32 @@ module.exports = {
 			this.state.followers = follows.total;
 		},
 
-		async initChannelRewards() {
+		async initChannelRewards()
+		{
 			this.rewardsDefinitions = new HotReloader("./user/rewards.yaml",
-				() => {
+				() =>
+				{
 					this.ensureChannelRewards()
 				},
 				() => { })
 			await this.ensureChannelRewards();
 		},
 
-		async ensureChannelRewards() {
+		async ensureChannelRewards()
+		{
 			let rewards = await this.channelTwitchClient.helix.channelPoints.getCustomRewards(this.channelId, true);
 
 			let handledRewards = new Set();
 
-			for (let reward of rewards) {
-				if (!(reward.title in this.rewardsDefinitions.data)) {
+			for (let reward of rewards)
+			{
+				if (!(reward.title in this.rewardsDefinitions.data))
+				{
 					//Not in the file, delete it.
 					await this.channelTwitchClient.helix.channelPoints.deleteCustomReward(this.channelId, reward.id);
 				}
-				else {
+				else
+				{
 					//Existing Reward
 					handledRewards.add(reward.title)
 
@@ -330,7 +444,8 @@ module.exports = {
 					if (reward.maxRedemptionsPerUserPerStream != rewardDef.maxRedemptionsPerUserPerStream)
 						needsUpdate = true;
 
-					if (needsUpdate) {
+					if (needsUpdate)
+					{
 						await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, {
 							prompt: rewardDef.description,
 							cost: rewardDef.cost,
@@ -345,7 +460,8 @@ module.exports = {
 			}
 
 			//Check for new rewards
-			for (let rewardKey in this.rewardsDefinitions.data) {
+			for (let rewardKey in this.rewardsDefinitions.data)
+			{
 				if (handledRewards.has(rewardKey))
 					continue;
 
@@ -355,7 +471,8 @@ module.exports = {
 				//inputRequired: false
 				//skipQueue: true
 				//Create the new reward.
-				try {
+				try
+				{
 					await this.channelTwitchClient.helix.channelPoints.createCustomReward(this.channelId, {
 						title: rewardKey,
 						prompt: rewardDef.description,
@@ -366,49 +483,54 @@ module.exports = {
 						maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
 						maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
 					})
-				} catch (err) {
+				} catch (err)
+				{
 					console.log(`Error creating channel reward: ${rewardKey}. Message: ${err}`);
 				}
 			}
 		},
 
-		async switchChannelRewards(activeRewards, inactiveRewards) {
+		async switchChannelRewards(activeRewards, inactiveRewards)
+		{
 			if (!this.channelId)
 				return;
 
 			let rewards = await this.channelTwitchClient.helix.channelPoints.getCustomRewards(this.channelId, true);
 
-			for (let reward of rewards) {
-				if (!reward.isEnabled && activeRewards.has(reward.title)) {
+			for (let reward of rewards)
+			{
+				if (!reward.isEnabled && activeRewards.has(reward.title))
+				{
 					await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: true });
 				}
-				else if (reward.isEnabled && inactiveRewards.has(reward.title)) {
+				else if (reward.isEnabled && inactiveRewards.has(reward.title))
+				{
 					await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: false });
 				}
 			}
 		}
 	},
-	async onSettingsReload(newPluginSettings, oldPluginSettings) {
-		console.log("Settings were reloaded inside the Twitch plugin! Do fun stuff.")
-	},
-	async onSecretsReload(newSecrets, oldSecrets){
-		console.log("Secrets were reloaded inside the Twitch plugin! Do fun stuff.")
-	},
-	async onProfileLoad(profile, config) {
+	async onProfileLoad(profile, config)
+	{
 		profile.rewards = config.rewards || [];
 	},
-	async onProfilesChanged(activeProfiles, inactiveProfiles) {
+	async onProfilesChanged(activeProfiles, inactiveProfiles)
+	{
 		let activeRewards = new Set();
 		let inactiveRewards = new Set();
 		//Handle rewards
-		for (let activeProf of activeProfiles) {
-			for (let reward of activeProf.rewards) {
+		for (let activeProf of activeProfiles)
+		{
+			for (let reward of activeProf.rewards)
+			{
 				activeRewards.add(reward);
 			}
 		}
 
-		for (let inactiveProf of inactiveProfiles) {
-			for (let reward of inactiveProf.rewards) {
+		for (let inactiveProf of inactiveProfiles)
+		{
+			for (let reward of inactiveProf.rewards)
+			{
 				inactiveRewards.add(reward);
 			}
 		}
@@ -494,7 +616,8 @@ module.exports = {
 			data: {
 				type: "TemplateString"
 			},
-			handler(message, context) {
+			handler(message, context)
+			{
 				this.chatClient.say(this.settings.channelName.toLowerCase(), template(message, context));
 			}
 		},
@@ -504,14 +627,17 @@ module.exports = {
 			data: {
 				type: "TemplateString"
 			},
-			handler(message, context) {
+			handler(message, context)
+			{
 				let msgArray = evalTemplate(message, context)
-				for (msg of msgArray) {
+				for (let msg of msgArray)
+				{
 					this.chatClient.say(this.settings.channelName.toLowerCase(), msg);
 				}
 			}
 		}
-	}
+	},
+	settingsView: 'twitch.vue'
 }
 
 
