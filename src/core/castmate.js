@@ -4,7 +4,7 @@ const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
 const { PluginManager } = require("./utils/plugin-manager.js");
 const { ipcMain } = require("electron");
-
+const fs  = require("fs");
 
 async function initInternal()
 {

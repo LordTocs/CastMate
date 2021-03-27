@@ -57,3 +57,8 @@
   description: Put your foot on the gas.
   inputRequired: false
   skipQueue: true
+"Jump":
+  cost: 1
+  description: Make me jump!
+  inputRequired: false
+  skipQueue: true
