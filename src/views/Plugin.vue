@@ -10,6 +10,7 @@
         </el-button>
       </div>
     </level>
+	<component v-if="hasSettingsComponent" v-bind:is="settingsComponent" style="margin-bottom: 18px;"/>
     <el-card class="settings-card" v-if="settingsKeys.length > 0">
       <h3>Settings</h3>
 
@@ -77,6 +78,12 @@ export default {
     },
     secretKeys() {
       return Object.keys(this.plugin.secrets);
+    },
+    hasSettingsComponent() {
+      return !!this.plugin.settingsView;
+    },
+    settingsComponent() {
+      return () => import(`../core/plugins/${this.plugin.settingsView}`);
     },
   },
   components: {

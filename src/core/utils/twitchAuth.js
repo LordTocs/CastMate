@@ -1,7 +1,7 @@
-const axios = require('axios');
+
 const qs = require('querystring');
-const fs = require('fs');
-const { AccessToken, RefreshableAuthProvider, StaticAuthProvider } = require('twitch-auth');
+const { AccessToken } = require('twitch-auth');
+const { BrowserWindow } = require('electron');
 
 const scopes = [
 	"analytics:read:extensions",
@@ -27,142 +27,216 @@ const scopes = [
 	"whispers:edit"
 ]
 
-class AuthManager
+class ElectronAuthManager
 {
-	constructor(name, port)
+	constructor({ clientId, redirectUri, name })
 	{
+		this._clientId = clientId;
+		this._redirectUri = redirectUri;
 		this.name = name;
-		this.authPromise = null;
-		this.authResolver = null;
-		this.accessToken = null;
-		this.localPort = port;
-		try
-		{
-			let tokenJson = JSON.parse(fs.readFileSync(`./user/secrets/${this.name}Tokens.json`, 'utf-8'));
-			let obtainmentDate = new Date(tokenJson.obtainment_date);
-			let tokens = tokenJson;
-			this.accessToken = new AccessToken(tokens, obtainmentDate);
-		}
-		catch (err)
-		{ }
 	}
 
-	getLocalHost() {
-		let localhost = "localhost";
-			if (this.localPort != 80) 
-				localhost = `localhost:${this.localPort}`;
-		return localhost;
-	}
-
-	setClientInfo(clientId, clientSecret)
+	get clientId()
 	{
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
+		return this._clientId;
 	}
 
-	async doAuth()
+	get currentScopes()
 	{
-		if (this.accessToken)
-		{
-			return this.accessToken;
-		}
-
-		this.authPromise = new Promise((resolve) =>
-		{
-			this.authResolver = resolve;
-		});
-
-		console.log(`Auth is required as ${this.name}`);
-		console.log(`Go to http://${this.getLocalHost()}/auth/${this.name}/ to sign in. If you're signing into a bot account go in incognito`);
-
-		let tokenResp = await this.authPromise;
-		let obtainment_date = new Date();
-
-		fs.writeFileSync(`./user/secrets/${this.name}Tokens.json`, JSON.stringify({ ...tokenResp, obtainment_date }, null, 4), 'utf-8');
-		this.accessToken = new AccessToken(tokenResp, obtainment_date);
-
-		return this.accessToken;
-
+		return Array.from(this._currentScopes);
 	}
 
-	createAuthProvider()
+	get tokenType()
 	{
-		if (!this.accessToken)
-			throw new Error("You forgot to auth before creating the provider")
+		return 'user';
+	}
 
-		const authProvider = new RefreshableAuthProvider(new StaticAuthProvider(this.clientId, this.accessToken.accessToken, scopes), {
-			clientSecret: this.clientSecret,
-			refreshToken: this.accessToken.refreshToken,
-			expiry: this.accessToken.expiryDate ? this.accessToken.expiryDate : null,
-			onRefresh: async (tokenData) =>
-			{
-				let tokenDataObj = tokenData; //Hack our way into privates.
-				fs.writeFileSync(`./user/secrets/${this.name}Tokens.json`, JSON.stringify({ ...tokenDataObj['_data'], obtainment_date: tokenDataObj["_obtainmentDate"] }, null, 4), 'utf-8');
+	get isAuthed() {
+		return this._accessToken != null;
+	}
+
+	trySilentAuth()
+	{
+		//Tests if auth can succeed silently.
+		const promise = new Promise((resolve, reject) =>
+		{
+			console.log("Attempting Twitch Silent Auth")
+			const params = {
+				response_type: "token",
+				client_id: this._clientId,
+				redirect_uri: this._redirectUri,
+				scope: scopes.join(' ')
 			}
-		});
 
-		return authProvider;
-	}
+			const authUrl = `https://id.twitch.tv/oauth2/authorize?${qs.stringify(params)}`
 
-	async completeAuth(access_code)
-	{
-		if (!this.authResolver)
-		{
-			return;
-		}
-
-		let response;
-		try
-		{
-			response = await axios.post(
-				'https://id.twitch.tv/oauth2/token',
-				qs.stringify({
-					client_id: this.clientId,
-					client_secret: this.clientSecret,
-					grant_type: 'authorization_code',
-					redirect_uri: `http://${this.getLocalHost()}/auth/${this.name}/redirect`,
-					code: access_code
-				}),
-				{
-					headers: {
-						'Content-Type': 'application/x-www-form-urlencoded',
-					},
+			const windowOptions = {
+				width: 600,
+				height: 600,
+				show: false,
+				modal: true,
+				webPreferences: {
+					nodeIntegration: false,
+					partition: `persist:twitch${this.name}`
 				}
-			)
-		} catch (err)
-		{
-			console.error(`Auth Error: ${err}`);
-			throw new Error('Error authorizing Twitch.');
-		}
+			}
 
-		this.authResolver(response.data);
-		this.authResolver = null;
+			let window = new BrowserWindow(windowOptions);
+
+			window.webContents.session.webRequest.onBeforeRequest((details, callback) =>
+			{
+				const url = new URL(details.url);
+				const matchUrl = url.origin + url.pathname;
+
+				console.log('Silent BeforeRequest', matchUrl);
+				if (matchUrl == this._redirectUri)
+				{
+					const respParams = qs.parse(details.url.substr(details.url.indexOf('#') + 1));
+					console.log("RedirectUri Detected");
+					if (respParams.error || respParams.access_token)
+					{
+						window.destroy();
+					}
+
+					if (respParams.error)
+					{
+						//todo error!
+						reject(respParams.error);
+					}
+					else if (respParams.access_token)
+					{
+						this._accessToken = new AccessToken({
+							access_token: respParams.access_token,
+							scope: scopes,
+							refresh_token: ''
+						})
+
+						this._currentScopes = new Set(scopes);
+
+						//todo return this sucker.
+						resolve(this._accessToken);
+						console.log("Resolved");
+					}
+					callback({ cancel: true });
+				}
+				else if (matchUrl == "https://www.twitch.tv/login")
+				{
+					//console.log("Login Screen Detected")
+					resolve(false);
+					callback({ cancel: true });
+					window.destroy();
+				}
+				else
+				{
+					callback({});
+				}
+			});
+
+			window.loadURL(authUrl);
+		});
+
+		return promise;
 	}
 
-
-	installMiddleware(app)
+	doAuth(forceAuth = false)
 	{
-		app.get(`/auth/${this.name}`, (req, res) =>
+		const promise = new Promise((resolve, reject) =>
 		{
-			let redirectUri = `http://${this.getLocalHost()}/auth/${this.name}/redirect`;
-			res.redirect(`https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=${this.clientId}&redirect_uri=${redirectUri}&scope=${scopes.join('+')}`);
+			const params = {
+				response_type: "token",
+				client_id: this._clientId,
+				redirect_uri: this._redirectUri,
+				scope: scopes.join(' '),
+				...forceAuth ? { force_verify: true } : {}
+			}
+
+			const authUrl = `https://id.twitch.tv/oauth2/authorize?${qs.stringify(params)}`
+
+			const windowOptions = {
+				width: 600,
+				height: 600,
+				show: true,
+				modal: true,
+				webPreferences: {
+					nodeIntegration: false,
+					partition: `persist:twitch${this.name}`
+				}
+			}
+
+			let window = new BrowserWindow(windowOptions);
+
+			window.webContents.once('did-finish-load', () => window.show());
+
+			window.webContents.session.webRequest.onBeforeRequest({ urls: [this._redirectUri] }, (details, callback) =>
+			{
+				const url = new URL(details.url);
+				const matchUrl = url.origin + url.pathname;
+
+				console.log('BeforeRequest', matchUrl);
+				if (matchUrl == this._redirectUri)
+				{
+					const respParams = qs.parse(details.url.substr(details.url.indexOf('#') + 1));
+					console.log("RedirectUri Detected");
+					if (respParams.error || respParams.access_token)
+					{
+						window.destroy();
+					}
+
+					if (respParams.error)
+					{
+						console.log("Error!");
+						//todo error!
+						reject(respParams.error);
+						callback({ cancel: true });
+					}
+					else if (respParams.access_token)
+					{
+						console.log("Access Token Success");
+						this._accessToken = new AccessToken({
+							access_token: respParams.access_token,
+							scope: scopes,
+							refresh_token: ''
+						})
+
+						this._currentScopes = new Set(scopes);
+
+						//todo return this sucker.
+						resolve(this._accessToken);
+						callback({ cancel: true });
+					}
+				}
+				else
+				{
+					callback({});
+				}
+			});
+
+			window.loadURL(authUrl);
 		});
 
-		app.get(`/auth/${this.name}/redirect`, async (req, res) =>
+		return promise;
+	}
+
+	async getAccessToken()
+	{
+		if (this._accessToken)
 		{
-			if (!req.query.code)
-			{
-				let error = req.query.error;
-				let errorMsg = req.query.error_description;
-				console.error("Auth Error", error, errorMsg);
-				throw new Error(`Error: ${error}: ${errorMsg}`);
-			}
-			this.completeAuth(req.query.code);
-			res.status(200).send("Complete!");
-		});
+			return this._accessToken;
+		}
+	}
+
+	setAccessToken(token)
+	{
+		this._accessToken = token;
+	}
+
+	get refresh()
+	{
+		return null;
 	}
 }
 
-module.exports = AuthManager;
+
+module.exports = { ElectronAuthManager };
 
 
