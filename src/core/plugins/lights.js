@@ -49,26 +49,63 @@ const { evalTemplate } = require('../utils/template');
 
 const os = require('os');
 const { sleep } = require("../utils/sleep.js");
-
+const { ipcMain } = require("electron");
 const fs = require("fs");
 
 module.exports = {
 	name: "lights",
 	async init()
 	{
-		if (!await this.auth())
-			return;
-
 		this.groupCache = {};
 
-		//let groups = await this.hue.groups.getAll();
+		ipcMain.handle("lightsSearchForHub", async () => {
+			return await this.forceAuth();
+		});
 
-		/*for (let group of groups)
+		ipcMain.handle("lightsGetHubStatus", async () => {
+			return !!this.hue;
+		});
+
+		if (!await this.discoverBridge())
 		{
-			console.log(group.toStringDetailed());
-		}*/
+			return false;
+		}
+
+		if (!(await this.loadKey()))
+		{
+			return false;
+		}
+
+		if (!await this.initApi())
+		{
+			return false;
+		}
+
+		return true;
 	},
 	methods: {
+		async forceAuth()
+		{
+			this.hue = null;
+
+			if (!await this.discoverBridge())
+			{
+				return false;
+			}
+
+			if (!(await this.createUser()))
+			{
+				console.error("Unable to create new hue user. Abandoning");
+				return false;
+			}
+
+			if (!(await this.initApi()))
+			{
+				return false;
+			}
+
+			return true;
+		},
 		async discoverBridge()
 		{
 			const results = await discovery.nupnpSearch();
@@ -76,11 +113,12 @@ module.exports = {
 			if (results.length == 0)
 			{
 				console.error("Couldn't find hue bridge");
-				return null;
+				return false;
 			}
 			else
 			{
-				return results[0].ipaddress;
+				this.bridgeIp = results[0].ipaddress;
+				return true;
 			}
 		},
 		async loadKey()
@@ -115,7 +153,7 @@ module.exports = {
 			{
 				try
 				{
-					let user = await unauthenticatedApi.users.createUser("StreamMachine", os.userInfo().username)
+					let user = await unauthenticatedApi.users.createUser("CastMate", os.userInfo().username)
 
 					this.hueUser = {
 						username: user.username,
@@ -140,27 +178,7 @@ module.exports = {
 
 			return false;
 		},
-		async auth()
-		{
-			this.bridgeIp = await this.discoverBridge();
-
-			if (!this.bridgeIp)
-			{
-				console.error("Unable to find hue bridge");
-				return false;
-			}
-
-			if (!(await this.loadKey()))
-			{
-				console.log("Couldn't find hue user, creating a new one.")
-
-				if (!(await this.createUser()))
-				{
-					console.error("Unable to create new hue user. Abandoning");
-					return false;
-				}
-			}
-
+		async initApi() {
 			try
 			{
 				this.hue = await hueApi.createLocal(this.bridgeIp).connect(this.hueUser.username);
@@ -285,5 +303,6 @@ module.exports = {
 				await Promise.all(groups.map((group) => this.hue.groups.setGroupState(group.id, state)));
 			}
 		}
-	}
+	},
+	settingsView: 'lights.vue'
 }

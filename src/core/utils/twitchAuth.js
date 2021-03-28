@@ -60,7 +60,7 @@ class ElectronAuthManager
 		//Tests if auth can succeed silently.
 		const promise = new Promise((resolve, reject) =>
 		{
-			console.log("Attempting Twitch Silent Auth")
+			console.log(`Attempting ${this.name} Twitch Silent Auth`)
 			const params = {
 				response_type: "token",
 				client_id: this._clientId,
@@ -73,7 +73,7 @@ class ElectronAuthManager
 			const windowOptions = {
 				width: 600,
 				height: 600,
-				show: false,
+				show: true,
 				modal: true,
 				webPreferences: {
 					nodeIntegration: false,
@@ -88,7 +88,7 @@ class ElectronAuthManager
 				const url = new URL(details.url);
 				const matchUrl = url.origin + url.pathname;
 
-				console.log('Silent BeforeRequest', matchUrl);
+				console.log(`Silent ${this.name} BeforeRequest`, matchUrl);
 				if (matchUrl == this._redirectUri)
 				{
 					const respParams = qs.parse(details.url.substr(details.url.indexOf('#') + 1));

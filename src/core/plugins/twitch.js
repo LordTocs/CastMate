@@ -81,6 +81,9 @@ module.exports = {
 
 		async doInitialAuth()
 		{
+			if (!this.secrets.apiClientId)
+				return;
+
 			this.channelAuth = new ElectronAuthManager({ clientId: this.secrets.apiClientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Channel" })
 			this.botAuth = new ElectronAuthManager({ clientId: this.secrets.apiClientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Bot" })
 
@@ -122,7 +125,7 @@ module.exports = {
 
 		async completeAuth()
 		{
-			if (!this.channelAuth.isAuthed || !this.botAuth.isAuthed)
+			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.botAuth || !this.botAuth.isAuthed)
 			{
 				return;
 			}
@@ -164,8 +167,8 @@ module.exports = {
 			ipcMain.handle('twitchGetAuthStatus', async () =>
 			{
 				return {
-					bot: this.botAuth.isAuthed,
-					channel: this.channelAuth.isAuthed,
+					bot: this.botAuth ? this.botAuth.isAuthed : false,
+					channel: this.channelAuth ? this.channelAuth.isAuthed : false,
 				}
 			})
 
@@ -305,6 +308,7 @@ module.exports = {
 
 				let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
 				this.state.followers = follows.total;
+
 				//let follows = await channelTwitchClient.helix.users.getFollows({ followedUser: channelId });
 				//variables.set("followers", follows.total);
 			});
@@ -545,7 +549,6 @@ module.exports = {
 	},
 	secrets: {
 		apiClientId: { type: String },
-		apiClientSecret: { type: String },
 	},
 	state: {
 		twitchCategory: {
