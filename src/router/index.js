@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Profiles from "../views/Profiles.vue";
 import ProfileEditor from "../views/ProfileEditor.vue";
 import Plugin from "../views/Plugin.vue";
+import Rewards from "../views/Rewards.vue";
 
 Vue.use(VueRouter)
 
@@ -21,6 +22,11 @@ const routes = [
 		path: "/plugins/:pluginName",
 		name: "Plugin Settings",
 		component: Plugin
+	},
+	{
+		path: "/rewards",
+		name: "Channel Point Rewards",
+		component: Rewards
 	}
 ]
 

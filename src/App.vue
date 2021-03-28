@@ -8,6 +8,11 @@
             <span>Profiles</span>
           </el-menu-item>
 
+          <el-menu-item index="/rewards">
+            <i class="el-icon-star-on"></i>
+            <span>Channel Point Rewards</span>
+          </el-menu-item>
+
           <el-submenu index="1">
             <template slot="title">
               <i class="el-icon-cpu"></i>
