@@ -2,7 +2,7 @@ const fs = require("fs");
 const YAML = require("yaml");
 const path = require("path");
 
-function loadFile(filename, fileset, root="./user")
+function loadFile(filename, fileset, root = "./user")
 {
 	//console.log(`Loading ${filename}`);
 	const adjustedFilename = path.join(root, filename);
@@ -21,18 +21,26 @@ function loadActionable(actionable, fileset)
 			let action = actionable[i];
 			if ("import" in action)
 			{
-				let actionsInsert = loadFile(action["import"], fileset);
-				if (!(actionsInsert instanceof Array))
+				try
 				{
-					throw new Error("Imports in the middle of action arrays must be arrays themselves");
+					let actionsInsert = loadFile(action["import"], fileset);
+					if (!(actionsInsert instanceof Array))
+					{
+						throw new Error("Imports in the middle of action arrays must be arrays themselves");
+					}
+
+					//Handle recursive imports
+					loadActionable(actionsInsert, fileset);
+
+					actionable.splice(i, 1, ...actionsInsert);
+
+					i += actionsInsert.length - 1;
 				}
-
-				//Handle recursive imports
-				loadActionable(actionsInsert, fileset);
-
-				actionable.splice(i, 1, ...actionsInsert);
-
-				i += actionsInsert.length - 1;
+				catch (err)
+				{
+					console.log("Unable to load file ", action["import"]);
+					throw err;
+				}
 			}
 		}
 	}
@@ -56,6 +64,7 @@ function loadTrigger(triggerObj, fileset)
 		if (trigger == "imports")
 			continue;
 
+
 		loadActionable(triggerObj[trigger], fileset)
 	}
 
@@ -69,12 +78,20 @@ function loadTrigger(triggerObj, fileset)
 
 		for (let filename of importFiles)
 		{
-			let importedTriggers = loadFile(filename, fileset);
-			for (let trigger in importedTriggers)
+			try
 			{
-				loadActionable(importedTriggers[trigger], fileset);
+				let importedTriggers = loadFile(filename, fileset);
+				for (let trigger in importedTriggers)
+				{
+					loadActionable(importedTriggers[trigger], fileset);
+				}
+				Object.assign(triggerObj, importedTriggers);
 			}
-			Object.assign(triggerObj, importedTriggers);
+			catch (err)
+			{
+				console.log("Unable to load file ", filename);
+				throw err;
+			}
 		}
 
 		delete triggerObj.imports;
@@ -106,7 +123,16 @@ class Profile
 		{
 			for (let trigger in profileConfig.triggers)
 			{
-				loadTrigger(profileConfig.triggers[trigger], fileset);
+				try
+				{
+					loadTrigger(profileConfig.triggers[trigger], fileset);
+				}
+				catch (err)
+				{
+					console.log("Unable to load file ", this.filename);
+					throw err;
+				}
+				
 			}
 		}
 
