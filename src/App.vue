@@ -4,10 +4,6 @@
       <el-aside>
         <el-menu :router="true">
           <el-menu-item index="/">
-            <i class="el-icon-menu"></i>
-            <span>Home</span>
-          </el-menu-item>
-          <el-menu-item index="/profiles">
             <i class="el-icon-document"></i>
             <span>Profiles</span>
           </el-menu-item>
