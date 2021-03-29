@@ -2,8 +2,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const websocket = require("websocket");
 const http = require("http");
+const publicIp = require('public-ip');
 
-function createWebServices(settings, secrets, plugins)
+async function createWebServices(settings, secrets, plugins)
 {
 	let app = express();
 	let routes = express.Router();
@@ -44,15 +45,18 @@ function createWebServices(settings, secrets, plugins)
 		});
 	});
 
+	let port = settings.port || 80;
+
+	let hostname = await publicIp.v4();
+
 	return {
 		app,
 		routes,
 		websocketServer,
-		hostname: secrets.hostname,
-		port: settings.port,
+		hostname,
+		port: port,
 		start: () =>
 		{
-			let port = settings.port || 80;
 			server.listen(port, () =>
 			{
 				console.log(`Started Internal Webserver on port ${port}`);

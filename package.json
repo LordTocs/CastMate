@@ -37,6 +37,7 @@
     "node-hue-api": "^5.0.0-beta.2",
     "node-key-sender": "^1.0.11",
     "obs-websocket-js": "^4.0.2",
+    "public-ip": "^4.0.3",
     "rcon-client": "^4.2.3",
     "ref-napi": "^3.0.1",
     "say": "^0.16.0",

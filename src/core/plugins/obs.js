@@ -21,10 +21,12 @@ module.exports = {
 	methods: {
 		async connectOBS()
 		{
+			let port = this.settings.port || 4444;
+
 			try
 			{
 				await this.obs.connect({
-					address: `localhost:${this.settings.port}`,
+					address: `localhost:${port}`,
 					password: this.secrets.password
 				})
 				let result = await this.obs.send("GetCurrentScene");

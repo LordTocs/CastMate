@@ -76,7 +76,14 @@ module.exports = {
 			if (!this.filter)
 				return "";
 
-			return this.filter.clean(message)
+			try
+			{
+				return this.filter.clean(message)
+			}
+			catch (err)
+			{
+				return ""
+			}
 		},
 
 		async doInitialAuth()
@@ -158,7 +165,9 @@ module.exports = {
 			});
 
 			//Get the IDs
-			this.channelId = await (await this.channelTwitchClient.kraken.users.getMe()).id;
+			let channel = await this.channelTwitchClient.kraken.users.getMe();
+			this.channelName = channel.name;
+			this.channelId = await channel.id;
 			this.botId = await (await this.botTwitchClient.kraken.users.getMe()).id;
 		},
 
@@ -211,10 +220,10 @@ module.exports = {
 
 		async setupChatTriggers()
 		{
-			this.chatClient = new ChatClient(this.botAuth, { channels: [this.settings.channelName] });
+			this.chatClient = new ChatClient(this.botAuth, { channels: [this.channelName] });
 			await this.chatClient.connect();
 
-			this.chatClient.say(this.settings.channelName.toLowerCase(), "StreamMachine is now running.");
+			this.chatClient.say(this.channelName.toLowerCase(), "StreamMachine is now running.");
 
 			//Setup triggers
 			this.chatClient.onMessage(async (channel, user, message, msgInfo) =>
@@ -543,14 +552,28 @@ module.exports = {
 		//Hackily reach inside twitch plugin.
 		this.switchChannelRewards(activeRewards, inactiveRewards);
 	},
-	settings: {
-		botName: { type: String },
-		channelName: { type: String },
+	async onSettingsReload()
+	{
+		await this.shutdown();
+
+		await this.doInitialAuth();
+	},
+	async onSecretsReload()
+	{
+		console.log("Secrets Changed");
+		await this.shutdown();
+
+		await this.doInitialAuth();
 	},
 	secrets: {
 		apiClientId: { type: String },
 	},
 	state: {
+		channelName: {
+			type: String,
+			name: "Twitch Channel Name",
+			description: "The active channel's Name"
+		},
 		twitchCategory: {
 			type: String,
 			name: "Twitch Category",
@@ -621,7 +644,7 @@ module.exports = {
 			},
 			handler(message, context)
 			{
-				this.chatClient.say(this.settings.channelName.toLowerCase(), template(message, context));
+				this.chatClient.say(this.channelName.toLowerCase(), template(message, context));
 			}
 		},
 		multiSay: {
@@ -635,7 +658,7 @@ module.exports = {
 				let msgArray = evalTemplate(message, context)
 				for (let msg of msgArray)
 				{
-					this.chatClient.say(this.settings.channelName.toLowerCase(), msg);
+					this.chatClient.say(this.channelName.toLowerCase(), msg);
 				}
 			}
 		}

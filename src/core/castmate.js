@@ -6,22 +6,35 @@ const { PluginManager } = require("./utils/plugin-manager.js");
 const { ipcMain } = require("electron");
 const fs  = require("fs");
 
+function ensureFolder(path) {
+	if (!fs.existsSync(path))
+	{
+		fs.mkdirSync(path, {recursive: true});
+	}
+}
+
+function ensureFile(path) {
+	if (!fs.existsSync(path))
+	{
+		fs.writeFileSync(path, "");
+	}
+}
+
 async function initInternal()
 {
 	let plugins = new PluginManager();
 	await plugins.load();
 
-	if (!fs.existsSync("./user")){
-		fs.mkdirSync("./user/data", {recursive: true});
-		fs.mkdirSync("./user/profiles");
-		fs.mkdirSync("./user/secrets");
-		fs.writeFileSync('./user/secrets/secrets.yaml', "");
-		fs.mkdirSync("./user/sequences");
-		fs.mkdirSync("./user/sounds");
-		fs.mkdirSync("./user/triggers");
-		fs.writeFileSync('./user/rewards.yaml', "");
-		fs.writeFileSync('./user/settings.yaml', "");
-	}
+	ensureFolder("./user");
+	ensureFolder("./user/data");
+	ensureFolder("./user/profiles");
+	ensureFolder("./user/secrets");
+	ensureFile('./user/secrets/secrets.yaml');
+	ensureFolder("./user/sequences");
+	ensureFolder("./user/sounds");
+	ensureFolder("./user/triggers");
+	ensureFile('./user/rewards.yaml');
+	ensureFile('./user/settings.yaml');
 
 	const settings = new HotReloader("./user/settings.yaml",
 		(newSettings, oldSettings) =>
@@ -51,7 +64,7 @@ async function initInternal()
 
 	const actions = new ActionQueue(plugins);
 
-	const webServices = createWebServices(settings.data.web || {}, secrets.data.web || {}, plugins);
+	const webServices = await createWebServices(settings.data.web || {}, secrets.data.web || {}, plugins);
 
 	plugins.webServices = webServices;
 
