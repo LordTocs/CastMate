@@ -76,7 +76,14 @@ module.exports = {
 			if (!this.filter)
 				return "";
 
-			return this.filter.clean(message)
+			try
+			{
+				return this.filter.clean(message)
+			}
+			catch (err)
+			{
+				return ""
+			}
 		},
 
 		async doInitialAuth()
@@ -553,7 +560,7 @@ module.exports = {
 	},
 	async onSecretsReload()
 	{
-		console.log ("Secrets Changed");
+		console.log("Secrets Changed");
 		await this.shutdown();
 
 		await this.doInitialAuth();
