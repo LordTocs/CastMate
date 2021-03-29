@@ -40,7 +40,7 @@ TBD
 
 5. Click "Authenticate With Channel" and sign in with your Twitch credentials. Next, click "Authenticate With Bot". You can login with the same account, or create a seperate bot Twitch account...it's up to you!
 
-6. To configure Hue lights (optional) in the CastMate UI, navigate to "Plugins" > "lights" > click "Search for HUE Hub" > press pairing button on your Phillips Hue Hub. 
+6. To configure Hue lights (optional) in the CastMate UI, navigate to "Plugins" > "lights" > click "Search for HUE Hub" > press pairing button on your Phillips Hue Hub. Enter the name of the room from your HUE app that you'd like to change the lights of in the "defaultGroup" under Settings and click "Save"
 
 7. Download the OBS Websocket plugin: https://github.com/Palakis/obs-websocket/releases. In the topbar of OBS, navigate to "Tools" > "Websockets Server Settings". If you want to enable an OBS auth password, enter a password in OBS and in the CastMate UI, navigate to "Plugins" > "obs" > Click 'Show Secrets' and enter your password, then click "Save". If you do not want to use a password, you will need to disable auth in the OBS WebSockets Server Settings.
 
