@@ -86,6 +86,8 @@ export default {
     },
     async deleteProfile(profile) {
       await fs.promises.unlink(`./user/profiles/${profile.name}.yaml`);
+
+      await this.getFiles();
     },
   },
   async mounted() {
