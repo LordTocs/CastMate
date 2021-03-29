@@ -64,7 +64,7 @@ async function initInternal()
 
 	const actions = new ActionQueue(plugins);
 
-	const webServices = createWebServices(settings.data.web || {}, secrets.data.web || {}, plugins);
+	const webServices = await createWebServices(settings.data.web || {}, secrets.data.web || {}, plugins);
 
 	plugins.webServices = webServices;
 
