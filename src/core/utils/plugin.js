@@ -1,5 +1,6 @@
 const { reactify } = require("./reactive");
 const { cleanSchemaForIPC } = require("./schema");
+const _ = require('lodash');
 
 class Plugin
 {
@@ -15,7 +16,7 @@ class Plugin
 		{
 			this.initFunc = this.initFunc.bind(this.pluginObj);
 		}
-		
+
 		this.onSettingsReload = config.onSettingsReload;
 		if (this.onSettingsReload)
 		{
@@ -105,9 +106,11 @@ class Plugin
 
 		if (this.initFunc)
 		{
-			try {
+			try
+			{
 				await this.initFunc();
-			} catch (err) {
+			} catch (err)
+			{
 				// TODO: Throw exception to UI
 				console.log(`Error loading ${this.name} plugin. Error Msg: ${err}.`)
 			}
@@ -116,29 +119,35 @@ class Plugin
 
 	async updateSettings(newSettings, oldSettings)
 	{
-		if (this.onSettingsReload) {
-			let newPluginSettings = newSettings[this.name] || {};
-			let oldPluginSettings = oldSettings[this.name] || {};
-			this.pluginObj.settings = newPluginSettings;
-			if (!_.isEqual(newPluginSettings, oldPluginSettings)) {
+		let newPluginSettings = newSettings[this.name] || {};
+		this.pluginObj.settings = newPluginSettings;
+		if (this.onSettingsReload)
+		{
+			let oldPluginSettings = oldSettings[this.name] || {};	
+			if (!_.isEqual(newPluginSettings, oldPluginSettings))
+			{
 				this.onSettingsReload(newPluginSettings, oldPluginSettings);
 			}
-		} 
+		}
 	}
 
 	async updateSecrets(newSecrets, oldSecrets)
 	{
-		if (this.onSecretsReload) {
-			let newPluginSecrets = newSecrets[this.name] || {};
-			let olgPluginSecrets = oldSecrets[this.name] || {};
-			this.pluginObj.pluginSecrets = newPluginSecrets;
-			if (!_.isEqual(newPluginSecrets, olgPluginSecrets)) {
-				this.onSettingsReload(newPluginSecrets, olgPluginSecrets);
+		let newPluginSecrets = newSecrets[this.name] || {};
+		this.pluginObj.secrets = newPluginSecrets;
+		if (this.onSecretsReload)
+		{
+			console.log("Secrets Changed Plugin: ", this.name);
+			let oldPluginSecrets = oldSecrets[this.name] || {};
+			if (!_.isEqual(newPluginSecrets, oldPluginSecrets))
+			{
+				this.onSettingsReload(newPluginSecrets, oldPluginSecrets);
 			}
-		} 
+		}
 	}
 
-	getUIDescription()	{
+	getUIDescription()
+	{
 		let actions = {};
 
 		for (let actionKey in this.actions)
