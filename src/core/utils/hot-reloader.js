@@ -33,7 +33,7 @@ class HotReloader
 
 	_load()
 	{
-		return YAML.parse(fs.readFileSync(this.filename, 'utf-8'));
+		return YAML.parse(fs.readFileSync(this.filename, 'utf-8')) || {};
 	}
 }
 
