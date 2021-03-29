@@ -24,9 +24,8 @@ CastMate is a broadcaster tool that allows Twitch viewers to interact with a bro
  - CSGO (game state stats)
  - Minecraft (execute Minecraft commands dynamically...not included in demo profile)
 
-## Installation
-
-TBD 
+## Download
+Download from GitHub releases: https://www.github.com/LordTocs/CastMate/releases
   
 ## CastMate Setup
 
