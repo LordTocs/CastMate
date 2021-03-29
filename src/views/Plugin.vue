@@ -111,7 +111,8 @@ export default {
     },
     setSettingsValue(key, value) {
       if (!this.settings[this.pluginName]) {
-        this.settings[this.pluginName] = { [key]: value };
+        this.$set(this.settings, this.pluginName, {});
+        this.$set(this.settings[this.pluginName], key, value);
       } else {
         this.settings[this.pluginName][key] = value;
       }
