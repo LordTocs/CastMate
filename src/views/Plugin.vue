@@ -102,10 +102,13 @@ export default {
       return !!this.plugin.settingsView;
     },
     settingsComponent() {
-      return () => import(`../components/plugins/${this.plugin.settingsView}`);
+      return this.importSettingsView(this.plugin.settingsView);
     },
   },
   methods: {
+    importSettingsView(viewName) {
+      return () => import(`../components/plugins/${viewName}`);
+    },
     setSettingsValue(key, value) {
       if (!this.settings[this.pluginName]) {
         this.settings[this.pluginName] = { [key]: value };
