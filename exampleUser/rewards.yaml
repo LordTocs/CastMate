@@ -1,42 +1,8 @@
-"Spin the Cookie Wheel":
-  cost: 1
-  description: Spin the Cookie Quest Wheel
-  inputRequired: false
-  skipQueue: true
 "Fire Away":
   cost: 1
   description: Fire's weapon
   inputRequired: false
   skipQueue: true
-"Sheepify Me":
-  cost: 200
-  description: Spawns a sheep version of you.
-  inputRequired: false
-  skipQueue: true
-"Boom Boom":
-  cost: 600
-  description: Drop a creeper on top of me.
-  inputRequired: false
-  skipQueue: true
-  cooldown: 15
-"Slow Down There":
-  cost: 400
-  description: Slow me down.
-  inputRequired: false
-  skipQueue: true
-  cooldown: 15
-"Butter Fingers":
-  cost: 300
-  description: Drops Whatever's In My Hand
-  inputRequired: false
-  skipQueue: true
-  cooldown: 15
-"Woops I Spilled":
-  cost: 600
-  description: Spill some water all over my redstone.
-  inputRequired: false
-  skipQueue: true
-  cooldown: 120
 "Bail Out":
   cost: 1
   description: Press the key to get out/in a vehicle.
@@ -62,3 +28,65 @@
   description: Make me jump!
   inputRequired: false
   skipQueue: true
+"Single Blade":
+  cost: 1
+  description: Switch to single blade!
+  inputRequired: false
+  skipQueue: true
+"Double Blade":
+  cost: 1
+  description: Switch to double blade!
+  inputRequired: false
+  skipQueue: true
+"Throw Lightsaber":
+  cost: 1
+  description: Throw my lightsaber!
+  inputRequired: false
+  skipQueue: true
+"Force Pull":
+  cost: 1
+  description: Activate force pull!
+  inputRequired: false
+  skipQueue: true
+"Force Push":
+  cost: 1
+  description: Activate force push!
+  inputRequired: false
+  skipQueue: true
+"Basic Lightsaber Attack":
+  cost: 1
+  description: Swing away!
+  inputRequired: false
+  skipQueue: true
+"Use Health Stim":
+  cost: 1
+  description: Save me from death!
+  inputRequired: false
+  skipQueue: true
+"Police!":
+  cost: 100
+  inputRequired: false
+  skipQueue: false
+"1v1 With Me!!!":
+  cost: 15000
+  description: Do you dare challenge ME?!
+  inputRequired: false
+  skipQueue: false
+"2v2 With Me!!!":
+  cost: 15000
+  description: Together we can age the empires!
+  inputRequired: false
+  skipQueue: false
+"Lakota Coaching w/FitzBro":
+  cost: 15000
+  description: FitzBro will coach you via Discord.
+  inputRequired: false
+  skipQueue: false
+"Pick a Civ":
+  cost: 10000
+  inputRequired: true
+  skipQueue: false
+"Spin the Wheel!":
+  cost: 1000
+  inputRequired: false
+  skipQueue: false

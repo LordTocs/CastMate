@@ -1,0 +1,96 @@
+conditions:
+  obsScene: Gaming Fallen Order
+rewards:
+  - Jump!
+  - Single Blade
+  - Double Blade
+  - Throw Lightsaber
+  - Force Pull
+  - Force Push
+  - Basic Lightsaber Attack
+  - Use Health Stim
+triggers:
+  redemption:
+    Jump!:
+      actions:
+        - notification:
+            header: Jump
+            text: "{{user}} has jumped!"
+            color: "{{userColor}}"
+        - pressKey:
+            key: space
+            time: 1
+      sync: true
+    Single Blade:
+      actions:
+        - notification:
+            header: Weapon Change
+            text: "{{user}} has activated single blade!"
+            color: "{{userColor}}"
+        - pressKey:
+            key: x
+            time: 1
+      sync: true
+    Double Blade:
+      actions:
+        - notification:
+            header: Weapon Change
+            text: "{{user}} has activated double blade!"
+            color: "{{userColor}}"
+        - pressKey:
+            key: c
+            time: 1
+      sync: true
+    Force Push:
+      actions:
+        - notification:
+            header: Force Move Activated
+            text: "{{user}} has activated force push!"
+            color: "{{userColor}}"
+        - pressKey:
+            key: 2
+            time: 1
+      sync: true
+    Force Pull:
+      actions:
+        - notification:
+            header: Force Move Activated
+            text: "{{user}} has activated force pull!"
+            color: "{{userColor}}"
+        - pressKey:
+            key: 3
+            time: 1
+      sync: true
+    Throw Lightsaber:
+      actions:
+        - notification:
+            header: Force Move Activated
+            text: "{{user}} has thrown the lightsaber!"
+            color: "{{userColor}}"
+        - mouseButton:
+            button: 2
+            time: .25
+        - pressKey:
+            key: f
+            time: .25
+      sync: true
+    Basic Lightsaber Attack:
+      actions:
+        - notification:
+            header: Lightsaber Attack
+            text: "Vroom, swoosh, vroom"
+            color: "{{userColor}}"
+        - mouseButton:
+            button: 1
+            time: .25
+      sync: true
+    Use Health Stim:
+      actions:
+        - notification:
+            header: Health Stim Activated
+            text: "{{user}} is calling the medic!"
+            color: "{{userColor}}"
+        - pressKey:
+            key: q
+            time: .25
+      sync: true
