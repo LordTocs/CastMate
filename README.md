@@ -79,9 +79,6 @@ Leave 'Custom CSS' as is. You do not need to check any of the boxes.
 
 *If browser sources are not working, you can select the source and click 'refresh' in OBS. Ideally, start CastMate before launching OBS and all of the browser sources will be ready to go!*
 
-## Phillips Hue Setup
-Start CastMate and press the link button on your Hue bridge when prompted.
-
 ## Additional Documentation
 
 *  [Twitch Authentication](https://dev.twitch.tv/docs/authentication)
