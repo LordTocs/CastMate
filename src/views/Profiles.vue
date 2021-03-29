@@ -1,10 +1,13 @@
 <template>
   <div>
-    <el-table :data="profiles" style="width: 100%; margin-bottom: 18px;">
+    <el-table :data="profiles" style="width: 100%; margin-bottom: 18px">
       <el-table-column prop="name" label="Name"> </el-table-column>
       <el-table-column label="Operations" align="right">
         <template slot-scope="scope">
-          <el-button size="mini" @click="$router.push(`/profiles/${scope.row.name}`)">
+          <el-button
+            size="mini"
+            @click="$router.push(`/profiles/${scope.row.name}`)"
+          >
             Edit
           </el-button>
           <el-popconfirm
@@ -74,6 +77,8 @@ export default {
         newYaml,
         "utf-8"
       );
+
+      await this.getFiles();
     },
     async deleteProfile(profile) {
       await fs.promises.unlink(`./user/profiles/${profile.name}.yaml`);
