@@ -1,6 +1,6 @@
 name: Wheel
 conditions:
-  obsScene: "Coding"
+  obsScene: "Civ Wheel"
 rewards:
   - Spin the Wheel!
 triggers:

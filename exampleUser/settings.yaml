@@ -1,9 +1,0 @@
-twitch:
-  botName: FitzBot #Insert your bot name or delete this line if you want CastMate to chat with your channelName
-  channelName: FitzBro #Insert your channel's name
-web:
-  port: 80 #Make sure you have already forwarded a port and insert the port number. (see README for port forwarding resources)
-lights:
-  defaultGroup: Office #The name of the room in the Philips Hue app that you want to change the lights in. 
-obs:
-  port: 4444 #Leave this as is or input a different valid port number for the OBS plugin
