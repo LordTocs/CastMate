@@ -80,12 +80,19 @@ function dependOnAllConditions(conditional, reactivity, watcher)
 	{
 		for (let clause of conditional.or)
 		{
-			dependOnAll(clause);
+			dependOnAllConditions(clause);
+		}
+	}
+	else if ("and" in conditional)
+	{
+		for (let clause of conditional.and)
+		{
+			dependOnAllConditions(clause);
 		}
 	}
 	else if ("not" in conditional)
 	{
-		dependOnAll(conditional.not);
+		dependOnAllConditions(conditional.not);
 	}
 	else
 	{
