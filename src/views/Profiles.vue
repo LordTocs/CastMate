@@ -45,7 +45,11 @@
 import fs from "fs";
 import path from "path";
 import YAML from "yaml";
+import Level from "../components/layout/Level";
 export default {
+  components: {
+    Level,
+  },
   data() {
     return {
       newProfileName: null,
