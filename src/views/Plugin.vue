@@ -155,7 +155,7 @@ export default {
       "./user/settings.yaml",
       "utf-8"
     );
-    const fullSettings = YAML.parse(fullSettingsText);
+    const fullSettings = YAML.parse(fullSettingsText) || {};
 
     this.settings = fullSettings;
 
@@ -163,7 +163,7 @@ export default {
       "./user/secrets/secrets.yaml",
       "utf-8"
     );
-    const fullSecrets = YAML.parse(fullSecretsText);
+    const fullSecrets = YAML.parse(fullSecretsText) || {};
 
     this.secrets = fullSecrets;
   },
