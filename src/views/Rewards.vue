@@ -85,7 +85,7 @@ export default {
       "utf-8"
     );
 
-    let rewardsObj = YAML.parse(rewardsText);
+    let rewardsObj = YAML.parse(rewardsText) || {};
 
     this.$set(this, "rewards", rewardsObj);
   },
