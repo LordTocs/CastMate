@@ -42,9 +42,7 @@ TBD
 
 6. To configure Hue lights (optional) in the CastMate UI, navigate to "Plugins" > "lights" > click "Search for HUE Hub" > press pairing button on your Phillips Hue Hub. 
 
-7. Download the OBS Websocket plugin: https://github.com/Palakis/obs-websocket/releases/tag/4.9.0. In the topbar of OBS, navigate to "Tools" > "Websockets Server Settings". If you want to enable an OBS auth password, enter a password in OBS and enter that same password into secrets.yaml under OBS > password (Open the file path where you downloaded CastMate, navigate to "CastMate" > "User" > "Secrets" > and open "secrets.yaml" with a code editor). If you do not want to use a password, you will need to disable auth in the OBS WebSockets Server Settings.
-
-8. After completing the above setup steps, close both OBS and CastMate and relaunch both applications. OBS and CastMate should automatically connect if the settings in settings.yaml and the OBS Websocket plugin match. 
+7. Download the OBS Websocket plugin: https://github.com/Palakis/obs-websocket/releases. In the topbar of OBS, navigate to "Tools" > "Websockets Server Settings". If you want to enable an OBS auth password, enter a password in OBS and in the CastMate UI, navigate to "Plugins" > "obs" > Click 'Show Secrets' and enter your password, then click "Save". If you do not want to use a password, you will need to disable auth in the OBS WebSockets Server Settings.
 
 ## OBS Scene Setup
 
