@@ -29,7 +29,7 @@ Download from GitHub releases: https://www.github.com/LordTocs/CastMate/releases
   
 ## CastMate Setup
 
-1. Register a new Twitch application [Here](https://dev.twitch.tv/console/apps/create).
+1. Register a new Twitch application [Here](https://dev.twitch.tv/console/apps/create). Use this redirect URL: http://localhost/auth/channel/redirect
 
 2. Forward port 80 (or port of your choosing) in your router to the machine running this code. Reference [https://portforward.com/](https://portforward.com/) or this [YouTube Guide](https://www.youtube.com/watch?v=NTLDsEuQlYc&ab_channel=TheBreakdown) for help.
 
