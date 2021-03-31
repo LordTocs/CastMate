@@ -3,6 +3,7 @@ const { template } = require('../utils/template');
 
 module.exports = {
 	name: "notifications",
+	uiName: "Notifications",
 	async init()
 	{
 

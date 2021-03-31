@@ -6,6 +6,7 @@ const { JSDOM } = jsdom
 
 module.exports = {
     name: "aoe3",
+	uiName: "Age Of Empires",
     async init() {
         if (this.settings.enabled) {
             this.scrapePlayerStats();

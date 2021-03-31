@@ -2,6 +2,7 @@ const CSGameState = require('cs-gamestate');
 
 module.exports = {
 	name: "csgo",
+	uiName: "Counter Strike",
 	async init()
 	{
 		this.gamestateIntegration = new CSGameState({ createServer: false });

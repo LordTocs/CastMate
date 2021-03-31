@@ -4,6 +4,7 @@ const say = require("say");
 
 module.exports = {
 	name: "tts",
+	uiName: "Text to Speech",
 	async init()
 	{
 		

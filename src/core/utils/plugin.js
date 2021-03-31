@@ -9,6 +9,7 @@ class Plugin
 		this.pluginObj = {};
 
 		this.name = config.name;
+		this.uiName = config.uiName || config.name;
 		console.log(`Loading Plugin: ${config.name}`);
 		this.initFunc = config.init;
 		//Bind the init func to the pluginObj
@@ -181,6 +182,7 @@ class Plugin
 
 		return {
 			name: this.name,
+			uiName: this.uiName,
 			settings,
 			secrets,
 			triggers: this.triggers,

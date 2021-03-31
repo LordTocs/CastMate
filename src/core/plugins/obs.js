@@ -3,6 +3,7 @@ const { template } = require('../utils/template');
 
 module.exports = {
 	name: "obs",
+	uiName: "OBS",
 	async init()
 	{
 		this.obs = new OBSWebSocket();

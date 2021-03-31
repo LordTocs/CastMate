@@ -71,12 +71,18 @@ export default {
       this.$delete(this.rewards, key);
     },
     newReward() {
-      this.$set(this.rewards, "", {})
+      this.$set(this.rewards, "", {});
     },
     async save() {
       let newYaml = YAML.stringify(this.rewards);
 
       await fs.promises.writeFile("./user/rewards.yaml", newYaml);
+
+      this.$message({
+        showClose: true,
+        message: "Saved.",
+        type: "success",
+      });
     },
   },
   async mounted() {
