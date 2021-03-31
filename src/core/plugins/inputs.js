@@ -88,6 +88,7 @@ const user32Lib = ffi.Library('user32', {
 
 module.exports = {
 	name: "inputs",
+	uiName: "Input Simulation",
 	async init()
 	{
 	},

@@ -20,11 +20,11 @@
             </template>
             <el-menu-item
               :index="`/plugins/${plugin.name}`"
-              v-for="plugin in plugins"
+              v-for="plugin in uiPlugins"
               :key="plugin.name"
             >
               <!--i class="el-icon-document"></i-->
-              <span> {{ plugin.name }}</span>
+              <span> {{ plugin.uiName }}</span>
             </el-menu-item>
           </el-submenu>
         </el-menu>
@@ -45,6 +45,22 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["inited", "plugins"]),
+    uiPlugins() {
+      return this.plugins
+        .filter(
+          (p) =>
+            p.settingsView ||
+            Object.keys(p.settings).length > 0 ||
+            Object.keys(p.secrets).length > 0
+        )
+        .sort((a, b) => {
+          let astr = a.uiName.toUpperCase();
+          let bstr = b.uiName.toUpperCase();
+          if (astr < bstr) return -1;
+          if (astr > bstr) return 1;
+          return 0;
+        });
+    },
   },
   methods: {
     ...mapActions("ipc", ["init"]),

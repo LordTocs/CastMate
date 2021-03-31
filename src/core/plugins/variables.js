@@ -3,6 +3,7 @@ const { evalTemplate } = require('../utils/template');
 
 module.exports = {
 	name: "variables",
+	uiName: "Variables",
 	async init()
 	{
 

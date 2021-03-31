@@ -54,6 +54,7 @@ class ExpressWebhookAdapter extends ConnectionAdapter
 
 module.exports = {
 	name: "twitch",
+	uiName: "Twitch",
 	async init()
 	{
 		console.log("Starting Twitch");

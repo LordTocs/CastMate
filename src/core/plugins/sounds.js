@@ -3,6 +3,7 @@ const path = require("path");
 
 module.exports = {
 	name: "sounds",
+	uiName: "Sounds",
 	async init()
 	{
 		this.audioWindow = new BrowserWindow({

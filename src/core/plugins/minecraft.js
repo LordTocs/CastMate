@@ -4,6 +4,7 @@ const { template } = require('../utils/template');
 
 module.exports = {
 	name: "minecraft",
+	uiName: "Minecraft",
 	async init()
 	{
 		this.startConnectLoop();

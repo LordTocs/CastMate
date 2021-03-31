@@ -3,6 +3,7 @@ const { template } = require('../utils/template');
 const _ = require('lodash');
 module.exports = {
 	name: "websocket",
+	uiName: "Websocket",
 	async onWebsocketMessage(msg, connection)
 	{
 		//Broadcast state out over the websocket.

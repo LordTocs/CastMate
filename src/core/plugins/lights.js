@@ -54,6 +54,7 @@ const fs = require("fs");
 
 module.exports = {
 	name: "lights",
+	uiName: "Lights",
 	async init()
 	{
 		this.groupCache = {};
