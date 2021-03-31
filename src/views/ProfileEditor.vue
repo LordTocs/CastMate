@@ -60,6 +60,12 @@ export default {
         path.join("./user/profiles", `${this.profileName}.yaml`),
         newYaml
       );
+
+      this.$message({
+        showClose: true,
+        message: "Saved.",
+        type: "success",
+      });
     },
   },
   async mounted() {

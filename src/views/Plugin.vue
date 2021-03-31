@@ -141,6 +141,12 @@ export default {
         "./user/secrets/secrets.yaml",
         newSecretsYaml
       );
+
+      this.$message({
+        showClose: true,
+        message: "Saved.",
+        type: "success",
+      });
     },
   },
   components: {
