@@ -24,7 +24,12 @@ export default {
     updateObject(key, value) {
       let newValue = this.value ? { ...this.value } : {};
 
-      newValue[key] = value;
+      if (value != "" && value != undefined) {
+        console.log("Update Obj", key, value);
+        newValue[key] = value;
+      } else {
+        delete newValue[key];
+      }
 
       this.$emit("input", newValue);
     },
@@ -33,6 +38,4 @@ export default {
 </script>
 
 <style scoped>
-.object-indent {
-}
 </style>

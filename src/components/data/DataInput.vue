@@ -23,6 +23,15 @@
         @input="(v) => $emit('input', v)"
         v-else-if="schema.type == 'Boolean'"
       />
+      <el-select
+        :value="value"
+        @input="(v) => $emit('input', v)"
+        v-else-if="schema.type == 'OptionalBoolean'"
+      >
+        <el-option label="On" :value="true" />
+        <el-option label="Off" :value="false" />
+        <el-option label="Unset" :value="undefined" />
+      </el-select>
       <object-editor
         :schema="schema.properties"
         :value="value"
