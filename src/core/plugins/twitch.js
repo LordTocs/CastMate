@@ -59,8 +59,6 @@ module.exports = {
 
 		await this.doInitialAuth();
 
-		this.setupSettingsIPC();
-
 		this.colorCache = {};
 
 		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
