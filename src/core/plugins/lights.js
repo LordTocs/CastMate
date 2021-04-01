@@ -49,7 +49,6 @@ const { evalTemplate } = require('../utils/template');
 
 const os = require('os');
 const { sleep } = require("../utils/sleep.js");
-const { ipcMain } = require("electron");
 const fs = require("fs");
 
 module.exports = {
@@ -231,7 +230,7 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					on: { type: Boolean, name: "On" },
+					on: { type: "OptionalBoolean", name: "On" },
 					bri: { type: "TemplateNumber", name: "Brightness" },
 					hue: { type: "TemplateNumber", name: "Hue" },
 					transition: { type: "TemplateNumber", name: "Transition Time" },

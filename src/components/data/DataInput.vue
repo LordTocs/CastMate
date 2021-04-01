@@ -18,6 +18,11 @@
           schema.type == 'TemplateNumber'
         "
       />
+      <el-switch
+        :value="value"
+        @input="(v) => $emit('input', v)"
+        v-else-if="schema.type == 'Boolean'"
+      />
       <object-editor
         :schema="schema.properties"
         :value="value"
