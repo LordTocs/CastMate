@@ -1,54 +1,84 @@
 <template>
-  <div>
-    <el-button @click="doChannelAuth">
-      Authenicate With Channel
-    </el-button>
-    <el-button @click="doBotAuth">
-      Authenicate With Bot
-    </el-button>
+  <div class="twitch-settings">
+    <div class="twitch-column">
+      <div class="twitch-label" v-if="channelName">
+        Channel: {{ channelName }}
+      </div>
+      <div class="twitch-label" v-else>Not Authed</div>
+      <div class="twitch-control">
+        <el-button @click="startChannelAuth" v-if="!channelWorking">
+          Authenicate With Channel
+        </el-button>
+        <span v-else> Connecting </span>
+      </div>
+    </div>
+    <div class="twitch-column">
+      <div class="twitch-label" v-if="channelName">Bot: {{ botName }}</div>
+      <div class="twitch-label" v-else>Not Authed</div>
+      <div class="twitch-control">
+        <el-button @click="startBotAuth" v-if="!botWorking">
+          Authenicate With Bot
+        </el-button>
+        <span v-else> Connecting </span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-const { ipcRenderer } = require("electron");
+const { mapIpcs } = require("../../utils/ipcMap");
 
 export default {
   data() {
     return {
       channelWorking: false,
-      hasChannelAuthed: false,
+      channelName: null,
+      botName: null,
       botWorking: false,
-      hasBotAuthed: false,
     };
   },
   methods: {
-    async doChannelAuth() {
+    ...mapIpcs("twitch"),
+    async startChannelAuth() {
       this.channelWorking = true;
-      if (await ipcRenderer.invoke("twitchDoChannelAuth")) {
+      if (await this.doChannelAuth()) {
         this.hasChannelAuthed = true;
       }
       this.channelWorking = false;
     },
-    async doBotAuth() {
+    async startBotAuth() {
       this.botWorking = true;
-      if (await ipcRenderer.invoke("twitchDoBotAuth")) {
+      if (await this.doBotAuth()) {
         this.hasBotAuthed = true;
       }
       this.botWorking = false;
     },
   },
   async mounted() {
-    let { bot, channel } = await ipcRenderer.invoke("twitchGetAuthStatus");
-
-    if (bot) {
-      this.hasBotAuthed = true;
-    }
-    if (channel) {
-      this.hasChannelAuthed = true;
-    }
+    let { bot, channel } = await this.getAuthStatus();
+    this.botName = bot;
+    this.channelName = channel;
   },
 };
 </script>
 
-<style>
+<style scoped>
+.twitch-settings {
+  display: flex;
+  flex-direction: row;
+}
+
+.twitch-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.twitch-label {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.twitch-control {
+  text-align: center;
+}
 </style>

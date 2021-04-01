@@ -1,6 +1,7 @@
 const { reactify } = require("./reactive");
 const { cleanSchemaForIPC } = require("./schema");
 const _ = require('lodash');
+const { ipcMain } = require("electron");
 
 class Plugin
 {
@@ -84,6 +85,16 @@ class Plugin
 			this.templateFunctions[funcKey] = func;
 		}
 
+		this.ipcMethods = {}
+		for (let funcKey in config.ipcMethods)
+		{
+			this.ipcMethods[funcKey] = config.ipcMethods[funcKey].bind(this.pluginObj);
+			ipcMain.handle(`${this.name}_${funcKey}`, async (event, ...args) =>
+			{
+				return await this.ipcMethods[funcKey](...args);
+			})
+		}
+
 		//Create all the state.
 		this.pluginObj.state = {};
 		for (let stateKey in config.state)
@@ -124,7 +135,7 @@ class Plugin
 		this.pluginObj.settings = newPluginSettings;
 		if (this.onSettingsReload)
 		{
-			let oldPluginSettings = oldSettings[this.name] || {};	
+			let oldPluginSettings = oldSettings[this.name] || {};
 			if (!_.isEqual(newPluginSettings, oldPluginSettings))
 			{
 				this.onSettingsReload(newPluginSettings, oldPluginSettings);
@@ -187,6 +198,7 @@ class Plugin
 			secrets,
 			triggers: this.triggers,
 			actions,
+			ipcMethods: Object.keys(this.ipcMethods),
 			...this.settingsView ? { settingsView: this.settingsView } : {}
 		}
 	}

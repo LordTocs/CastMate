@@ -59,14 +59,6 @@ module.exports = {
 	{
 		this.groupCache = {};
 
-		ipcMain.handle("lightsSearchForHub", async () => {
-			return await this.forceAuth();
-		});
-
-		ipcMain.handle("lightsGetHubStatus", async () => {
-			return !!this.hue;
-		});
-
 		if (!await this.discoverBridge())
 		{
 			return false;
@@ -83,6 +75,16 @@ module.exports = {
 		}
 
 		return true;
+	},
+	ipcMethods: {
+		async getHubStatus()
+		{
+			return !!this.hue;
+		},
+		async searchForHub()
+		{
+			return await this.forceAuth();
+		}
 	},
 	methods: {
 		async forceAuth()
@@ -179,7 +181,8 @@ module.exports = {
 
 			return false;
 		},
-		async initApi() {
+		async initApi()
+		{
 			try
 			{
 				this.hue = await hueApi.createLocal(this.bridgeIp).connect(this.hueUser.username);

@@ -1,17 +1,20 @@
 <template>
-  <div>
-    <span v-if="!isConnected">
+  <div class="hue-settings">
+    <div v-if="!isConnected">
       To Connect, push button on hue bridge and then click Search
-    </span>
-	<span v-else>
-		Connected to Hue Bridge
-	</span>
-    <el-button @click="searchForHub"> Search for HUE Hub </el-button>
+    </div>
+    <div v-else>Connected to Hue Bridge</div>
+    <el-button @click="startSearchForHub" v-if="!connecting">
+      Search for HUE Hub
+    </el-button>
+    <div v-else>
+		Searching ...
+	</div>
   </div>
 </template>
 
 <script>
-const { ipcRenderer } = require("electron");
+const { mapIpcs } = require("../../utils/ipcMap");
 
 export default {
   data() {
@@ -21,19 +24,25 @@ export default {
     };
   },
   methods: {
-    async searchForHub() {
+    ...mapIpcs("lights"),
+    async startSearchForHub() {
       this.connecting = true;
-      if (await ipcRenderer.invoke("lightsSearchForHub")) {
+      if (await this.searchForHub()) {
         this.isConnected = true;
       }
       this.connecting = false;
     },
   },
   async mounted() {
-    this.isConnected = await ipcRenderer.invoke("lightsGetHubStatus");
+    this.isConnected = await this.getHubStatus();
   },
 };
 </script>
 
 <style>
+.hue-settings {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+}
 </style>
