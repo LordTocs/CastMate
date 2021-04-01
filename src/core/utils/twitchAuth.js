@@ -51,7 +51,8 @@ class ElectronAuthManager
 		return 'user';
 	}
 
-	get isAuthed() {
+	get isAuthed()
+	{
 		return this._accessToken != null;
 	}
 
@@ -73,7 +74,7 @@ class ElectronAuthManager
 			const windowOptions = {
 				width: 600,
 				height: 600,
-				show: false,
+				show: true,
 				modal: true,
 				webPreferences: {
 					nodeIntegration: false,
@@ -121,7 +122,6 @@ class ElectronAuthManager
 				}
 				else if (matchUrl == "https://www.twitch.tv/login")
 				{
-					//console.log("Login Screen Detected")
 					resolve(false);
 					callback({ cancel: true });
 					window.destroy();
@@ -132,7 +132,17 @@ class ElectronAuthManager
 				}
 			});
 
-			window.loadURL(authUrl);
+			window.loadURL(authUrl).then(() => {
+				let fullUrl = window.webContents.getURL();
+				const url = new URL(fullUrl);
+				const matchUrl = url.origin + url.pathname;
+
+				if (matchUrl == "https://id.twitch.tv/oauth2/authorize")
+				{
+					resolve(false);
+					window.destroy();
+				}
+			});
 		});
 
 		return promise;
