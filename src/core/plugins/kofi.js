@@ -12,13 +12,16 @@ module.exports = {
 			const routes = this.webServices.routes;
 			routes.post(`/kofi`, (req, res) =>
 			{
-				if (req.body.type == "Donation")
+				console.log("KOFI!")
+				console.log(req.body);
+				let data = JSON.parse(req.body.data);
+				if (data.type == "Donation")
 				{
 					this.actions.trigger('kofiDonation', {
-						number: Number(req.body.amount),
-						currency: req.body.currency,
-						user: req.body.from_name,
-						message: req.body.message,
+						number: Number(data.amount),
+						currency: data.currency,
+						user: data.from_name,
+						message: data.message,
 					})
 				}
 
