@@ -1,28 +1,44 @@
 <template>
-  <div class="twitch-settings">
-    <div class="twitch-column">
-      <div class="twitch-label" v-if="channelName">
-        Channel: {{ channelName }}
-      </div>
-      <div class="twitch-label" v-else>Not Authed</div>
-      <div class="twitch-control">
-        <el-button @click="startChannelAuth" v-if="!channelWorking">
-          Authenicate With Channel
-        </el-button>
-        <span v-else> Connecting </span>
-      </div>
-    </div>
-    <div class="twitch-column">
-      <div class="twitch-label" v-if="channelName">Bot: {{ botName }}</div>
-      <div class="twitch-label" v-else>Not Authed</div>
-      <div class="twitch-control">
-        <el-button @click="startBotAuth" v-if="!botWorking">
-          Authenicate With Bot
-        </el-button>
-        <span v-else> Connecting </span>
-      </div>
-    </div>
-  </div>
+  <v-row>
+    <v-col>
+      <v-card>
+        <v-card-title> Twitch Channel Account </v-card-title>
+        <v-card-subtitle> Twitch Account of your Channel </v-card-subtitle>
+        <v-card-text>
+          <span v-if="channelName">
+            {{ channelName }}
+          </span>
+          <span v-else> Not Signed In </span>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="purple"
+            :loading="channelWorking"
+            @click="startChannelAuth"
+          >
+            Sign In
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card>
+        <v-card-title> Twitch Bot Account </v-card-title>
+        <v-card-subtitle> Twitch Account of your Chat Bot </v-card-subtitle>
+        <v-card-text>
+          <span v-if="botName">
+            {{ botName }}
+          </span>
+          <span v-else> Not Signed In </span>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="purple" :loading="botWorking" @click="startBotAuth">
+            Sign In
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -63,22 +79,4 @@ export default {
 </script>
 
 <style scoped>
-.twitch-settings {
-  display: flex;
-  flex-direction: row;
-}
-
-.twitch-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.twitch-label {
-  text-align: center;
-  margin-bottom: 18px;
-}
-.twitch-control {
-  text-align: center;
-}
 </style>

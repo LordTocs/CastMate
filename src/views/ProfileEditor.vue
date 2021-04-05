@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-container fluid>
     <level style="margin-bottom: 18px">
       <div class="left">
         <h1>{{ profileName }}</h1>
@@ -19,7 +19,7 @@
       <el-divider />
       <triggers-editor v-model="profile.triggers" />
     </el-form>
-  </div>
+  </v-container>
 </template>
 
 <script>

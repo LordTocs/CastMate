@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-container fluid>
     <v-card id="lateral">
       <confirm-dialog ref="deleteConfirm" />
       <v-simple-table>
@@ -37,7 +37,7 @@
         <v-icon> mdi-plus </v-icon>
       </v-btn>
     </v-fab-transition>
-  </div>
+  </v-container>
 </template>
 
 <script>

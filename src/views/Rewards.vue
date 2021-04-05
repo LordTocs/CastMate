@@ -1,12 +1,11 @@
 <template>
-  <v-row dense>
-    <v-col
-      v-for="reward in rewards"
-      :key="reward.name"
-    >
-      <reward-card :reward="reward" />
-    </v-col>
-  </v-row>
+  <v-container fluid>
+    <v-row dense>
+      <v-col v-for="reward in rewards" :key="reward.name">
+        <reward-card :reward="reward" />
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>

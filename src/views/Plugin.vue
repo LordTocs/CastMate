@@ -1,5 +1,6 @@
 <template>
-  <div style="text-align: left">
+  <v-container fluid>
+    <!--div style="text-align: left">
     <level style="margin-bottom: 18px">
       <div class="left">
         <h1>{{ pluginName }}</h1>
@@ -9,70 +10,51 @@
           <h3>Save</h3>
         </el-button>
       </div>
-    </level>
+    </level-->
     <component
       v-if="hasSettingsComponent"
       v-bind:is="settingsComponent"
       style="margin-bottom: 18px"
     />
-    <el-card class="settings-card" v-if="settingsKeys.length > 0">
-      <h3>Settings</h3>
+    <v-row v-if="settingsKeys.length > 0">
+      <v-col>
+        <v-card>
+          <v-card-title> Settings </v-card-title>
 
-      <div
-        style="margin-bottom: 18px"
-        v-for="settingKey in settingsKeys"
-        :key="settingKey"
-      >
-        <data-input
-          :schema="plugin.settings[settingKey]"
-          :label="settingKey"
-          :value="
-            settings[pluginName] ? settings[pluginName][settingKey] : null
-          "
-          @input="(v) => setSettingsValue(settingKey, v)"
-        />
-      </div>
-    </el-card>
-    <el-card class="settings-card" v-if="secretKeys.length > 0">
-      <div v-if="showSecrets">
-        <level style="margin-bottom: 18px">
-          <div class="left">
-            <h3>Secrets</h3>
-          </div>
-          <div class="right">
-            <el-button @click="showSecrets = !showSecrets">
-              Hide Secrets
-            </el-button>
-          </div>
-        </level>
+          <v-card-text>
+            <data-input
+              v-for="settingKey in settingsKeys"
+              :key="settingKey"
+              :schema="plugin.settings[settingKey]"
+              :label="settingKey"
+              :value="
+                settings[pluginName] ? settings[pluginName][settingKey] : null
+              "
+              @input="(v) => setSettingsValue(settingKey, v)"
+            />
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row v-if="secretKeys.length > 0">
+      <v-col>
+        <v-card>
+          <v-card-title> Secrets </v-card-title>
 
-        <div
-          style="margin-bottom: 18px"
-          v-for="secretKey in secretKeys"
-          :key="secretKey"
-        >
-          <data-input
-            :schema="plugin.secrets[secretKey]"
-            :label="secretKey"
-            :value="getSecretValue(secretKey)"
-            @input="(v) => setSecretsValue(secretKey, v)"
-          />
-        </div>
-      </div>
-      <div v-else>
-        <level style="margin-bottom: 18px">
-          <div class="left">
-            <h3>Secrets</h3>
-          </div>
-          <div class="right">
-            <el-button @click="showSecrets = !showSecrets">
-              Show Secrets
-            </el-button>
-          </div>
-        </level>
-      </div>
-    </el-card>
-  </div>
+          <v-card-text>
+            <data-input
+              v-for="secretKey in secretKeys"
+              :key="secretKey"
+              :schema="plugin.secrets[secretKey]"
+              :label="secretKey"
+              :value="getSecretValue(secretKey)"
+              @input="(v) => setSecretsValue(secretKey, v)"
+            />
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -181,7 +163,4 @@ export default {
 </script>
 
 <style scoped>
-.settings-card {
-  margin-bottom: 18px;
-}
 </style>
