@@ -99,9 +99,11 @@ export default {
   },
   methods: {
     ...mapActions("ipc", ["init"]),
+    ...mapActions("rewards", ["loadRewards"]),
   },
   async mounted() {
     await this.init();
+    await this.loadRewards();
   },
 };
 </script>
