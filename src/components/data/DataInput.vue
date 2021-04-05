@@ -1,37 +1,36 @@
 <template>
   <tr>
-    <td>
-      <label class="object-label"> {{ schema.name || label }} </label>
-    </td>
     <td style="width: 100%">
-      <el-input-number
+      <number-input
         :value="value"
         @input="(v) => $emit('input', v)"
-        v-if="schema.type == 'Number'"
+        v-if="schema.type == 'Number' || schema.type == 'TemplateNumber'"
+        :allowTemplate="schema.type == 'TemplateNumber'"
+        :label="schema.name || label"
       />
-      <el-input
+      <v-text-field
         :value="value"
         @input="(v) => $emit('input', v)"
-        v-else-if="
-          schema.type == 'String' ||
-          schema.type == 'TemplateString' ||
-          schema.type == 'TemplateNumber'
-        "
+        v-else-if="schema.type == 'String' || schema.type == 'TemplateString'"
+        :label="schema.name || label"
       />
-      <el-switch
+      <v-switch
         :value="value"
-        @input="(v) => $emit('input', v)"
+        @change="(v) => $emit('input', v)"
         v-else-if="schema.type == 'Boolean'"
       />
       <el-select
         :value="value"
-        @input="(v) => $emit('input', v)"
-        v-else-if="schema.type == 'OptionalBoolean'"
-      >
-        <el-option label="On" :value="true" />
-        <el-option label="Off" :value="false" />
-        <el-option label="Unset" :value="undefined" />
-      </el-select>
+        @change="(v) => $emit('input', v)"
+        :items="[
+          { name: 'On', value: true },
+          { name: 'Off', value: false },
+          { name: 'unset', value: undefined },
+        ]"
+        item-text="name"
+        item-value="value"
+		v-else-if="schema.type == 'OptionalBoolean'"
+      />
       <object-editor
         :schema="schema.properties"
         :value="value"
@@ -43,10 +42,12 @@
 </template>
 
 <script>
+import NumberInput from "./NumberInput.vue";
 export default {
   name: "data-input",
   components: {
     ObjectEditor: () => import("./ObjectEditor.vue"),
+    NumberInput,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {

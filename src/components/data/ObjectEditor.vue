@@ -1,15 +1,13 @@
 <template>
-  <el-card shadow="never" class="object-indent">
-    <table>
-      <data-input
-        v-for="propertyKey in Object.keys(schema)"
-        :key="propertyKey"
-        :schema="schema[propertyKey]"
-        :value="value ? value[propertyKey] : null"
-        @input="(v) => updateObject(propertyKey, v)"
-      />
-    </table>
-  </el-card>
+  <div class="data-object-container">
+    <data-input
+      v-for="propertyKey in Object.keys(schema)"
+      :key="propertyKey"
+      :schema="schema[propertyKey]"
+      :value="value ? value[propertyKey] : null"
+      @input="(v) => updateObject(propertyKey, v)"
+    />
+  </div>
 </template>
 
 <script>
@@ -38,4 +36,7 @@ export default {
 </script>
 
 <style scoped>
+.data-object-container {
+  padding-left: 3rem;
+}
 </style>
