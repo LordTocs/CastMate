@@ -1,53 +1,34 @@
 <template>
-  <v-card class="mx-auto" max-width="400" min-width="300">
+  <v-card class='mx-auto' min-width="300" max-width="400">
     <v-card-title> {{ reward.name }} </v-card-title>
     <v-card-subtitle> {{ reward.description }} </v-card-subtitle>
 
     <v-card-actions>
       <v-spacer></v-spacer>
 
-      <v-btn icon @click="show = !show">
-        <v-icon>{{ show ? "mdi-cancel" : "mdi-pencil" }}</v-icon>
+      <v-btn icon @click="showEdit">
+        <v-icon> mdi-pencil </v-icon>
       </v-btn>
     </v-card-actions>
-    <v-expand-transition>
-      <div v-show="show">
-        <v-divider></v-divider>
-
-        <v-card-text>
-          <reward-editor
-            :value="reward"
-            @input="(v) => triggerRewardUpdate(v)"
-            @delete="deleteMe"
-          />
-        </v-card-text>
-      </div>
-    </v-expand-transition>
+    <reward-edit-modal :reward="reward" ref="editModal" />
   </v-card>
 </template>
 
 <script>
 import { mapActions } from "vuex";
-import RewardEditor from "./RewardEditor.vue";
+import RewardEditModal from "./RewardEditModal.vue";
+
 export default {
-  components: { RewardEditor },
+  components: { RewardEditModal },
   props: {
     reward: {},
   },
-  data() {
-    return {
-      show: false,
-    };
-  },
   methods: {
     ...mapActions("rewards", ["updateReward", "deleteReward"]),
-    async triggerRewardUpdate(newReward) {
-      await this.updateReward({ rewardName: this.reward.name, newReward });
+    showEdit() {
+      this.$refs.editModal.open();
     },
-    async deleteMe() {
-      await this.deleteReward(this.reward.name);
-    },
-  },
+  }
 };
 </script>
 

@@ -61,6 +61,17 @@ export default {
 			await fs.promises.writeFile('./user/rewards.yaml', YAML.stringify(newRewards), 'utf-8');
 
 			commit('setRewards', newRewards)
+		},
+		async createReward({commit, state}, newReward)
+		{
+			const rewardMinusName = { ...newReward };
+			delete rewardMinusName.name;
+
+			let newRewards = { ...state.rewards, [newReward.name]: rewardMinusName};
+
+			await fs.promises.writeFile('./user/rewards.yaml', YAML.stringify(newRewards), 'utf-8');
+
+			commit('setRewards', newRewards);
 		}
 	}
 }

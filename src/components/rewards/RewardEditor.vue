@@ -1,86 +1,76 @@
 <template>
   <div>
-    <confirm-dialog ref="deleteConfirm" />
-
-    <v-text-field v-model="editValue.name" label="Reward Name" />
-
-    <v-text-field label="Description" v-model="editValue.description" />
-
-    <v-text-field label="Cost" type="number" v-model="editValue.cost" />
-
-    <v-text-field label="Cooldown" type="number" v-model="editValue.cooldown" />
-
-    <v-switch label="Requires Message" v-model="editValue.inputRequired" />
-
-    <v-switch label="Skip Queue" v-model="editValue.skipQueue" />
+    <v-text-field
+      label="Name"
+      :value="value.name"
+      @input="(v) => setSubValue('name', v)"
+    />
 
     <v-text-field
+      label="Description"
+      :value="value.description"
+      @input="(v) => setSubValue('description', v)"
+    />
+
+    <number-input
+      label="Cost"
+      :value="value.cost"
+      @input="(v) => setSubValue('cost', v)"
+    />
+
+    <number-input
+      label="Cooldown"
+      :value="value.cooldown"
+      @input="(v) => setSubValue('cooldown', v)"
+    />
+
+    <v-switch
+      label="Requires Message"
+      :input-value="value.inputRequired"
+      @change="(v) => setSubValue('inputRequired', v)"
+    />
+
+    <v-switch
+      label="Skip Queue"
+      :input-value="value.skipQueue"
+      @change="(v) => setSubValue('skipQueue', v)"
+      hide-details
+    />
+
+    <number-input
       label="Max Redemptions Per Stream"
-      type="number"
-      v-model="editValue.maxRedemptionsPerStream"
+      :value="value.maxRedemptionsPerStream"
+      @input="(v) => setSubValue('maxRedemptionsPerStream', v)"
     />
 
-    <v-text-field
+    <number-input
       label="Max Redemptions Per User Per Stream"
-      type="number"
-      v-model="editValue.maxRedemptionsPerUserPerStream"
+      :value="value.maxRedemptionsPerUserPerStream"
+      @input="(v) => setSubValue('maxRedemptionsPerUserPerStream', v)"
     />
-
-    <v-row>
-      <v-col>
-        <v-btn @click="endEdit"> Save </v-btn>
-      </v-col>
-      <v-spacer />
-      <v-col>
-        <v-btn @click="deleteMe" color="red"> Delete </v-btn>
-      </v-col>
-    </v-row>
   </div>
 </template>
 
 <script>
-import _ from "lodash";
+import NumberInput from "../data/NumberInput.vue";
 
 export default {
+  components: { NumberInput },
   props: {
     value: {},
   },
-  components: {
-    ConfirmDialog: () => import("../dialogs/ConfirmDialog.vue"),
-  },
-  data() {
-    return {
-      editValue: {},
-    };
-  },
   methods: {
-    startEdit() {
-      this.editValue = _.clone(this.value);
-    },
-    endEdit() {
-      this.$emit("input", this.editValue);
-    },
-    async deleteMe() {
-      console.log("Starting Delete");
-      if (
-        await this.$refs.deleteConfirm.open(
-          "Confirm",
-          "Are you sure you want to delete this channel point reward?"
-        )
-      ) {
-        this.$emit("delete");
+    setSubValue(key, value) {
+      let newValue = { ...this.value };
+
+      if (value !== undefined && value !== "") {
+        newValue[key] = value;
+      } else {
+        delete newValue[key];
       }
+
+      this.$emit("input", newValue);
     },
-  },
-  watch: {
-    value: {
-      handler() {
-        this.startEdit();
-      },
-    },
-  },
-  mounted() {
-    this.startEdit();
   },
 };
 </script>
