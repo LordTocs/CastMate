@@ -1,45 +1,21 @@
 <template>
   <div style="text-align: left">
-    <level style="margin-bottom: 18px">
-      <div class="left">
-        <h1>Channel Point Rewards</h1>
-      </div>
-      <div class="right">
-        <el-button type="success" @click="save" style="width: 120px">
-          <h3>Save</h3>
-        </el-button>
-      </div>
-    </level>
-
-    <el-form>
-      <el-card
+    <v-expansion-panels multiple class="mb-6">
+      <key-card
         v-for="rewardKey in Object.keys(rewards)"
         :key="rewardKey"
-        style="margin-bottom: 18px"
+        :keyValue="rewardKey"
+        @updatekey="(newKey) => updateRewardKey(rewardKey, newKey)"
+        @delete="deleteReward(rewardKey)"
       >
-        <div
-          slot="header"
-          class="clearfix"
-          style="display: flex; flex-direction: row"
-        >
-          <level>
-            <div class="left" style="width: 100%">
-              <key-input
-                :value="rewardKey"
-                @input="(newKey) => updateRewardKey(rewardKey, newKey)"
-              />
-            </div>
-            <div class="right">
-              <el-button @click="deleteReward(rewardKey)"> Delete </el-button>
-            </div>
-          </level>
-        </div>
         <reward-editor
           :value="rewards[rewardKey]"
           @input="(v) => updateReward(rewardKey, v)"
         />
-      </el-card>
-    </el-form>
+      </key-card>
+    </v-expansion-panels>
+
+
     <el-button @click="newReward"> New Reward </el-button>
   </div>
 </template>
@@ -47,12 +23,13 @@
 <script>
 import RewardEditor from "../components/rewards/RewardEditor.vue";
 import { changeObjectKey } from "../utils/objects";
-import KeyInput from "../components/data/KeyInput.vue";
-import Level from "../components/layout/Level";
 import fs from "fs";
 import YAML from "yaml";
 export default {
-  components: { RewardEditor, KeyInput, Level },
+  components: {
+    RewardEditor,
+    KeyCard: () => import("../components/data/KeyCard.vue"),
+  },
   data() {
     return {
       rewards: {},

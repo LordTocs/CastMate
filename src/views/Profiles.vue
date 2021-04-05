@@ -1,43 +1,42 @@
 <template>
   <div>
-    <el-table :data="profiles" style="width: 100%; margin-bottom: 18px">
-      <el-table-column prop="name" label="Name"> </el-table-column>
-      <el-table-column label="Operations" align="right">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            @click="$router.push(`/profiles/${scope.row.name}`)"
-          >
-            Edit
-          </el-button>
-          <el-popconfirm
-            confirm-button-text="OK"
-            cancel-button-text="No, Thanks"
-            icon="el-icon-info"
-            icon-color="red"
-            title="Are you sure to delete this?"
-            @confirm="deleteProfile(scope.row)"
-          >
-            <el-button slot="reference" size="mini">Delete</el-button>
-          </el-popconfirm>
+    <v-card id="lateral">
+      <confirm-dialog ref="deleteConfirm" />
+      <v-simple-table>
+        <template v-slot:default>
+          <thead>
+            <tr>
+              <th class="text-left">Name</th>
+              <th class="text-left"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="profile in profiles"
+              :key="profile.name"
+              @click="$router.push(`/profiles/${profile.name}`)"
+            >
+              <td>{{ profile.name }}</td>
+              <td style="width: 25%">
+                <v-btn
+                  color="danger"
+                  elevation="4"
+                  @click.stop="askDelete(profile)"
+                >
+                  Delete
+                </v-btn>
+              </td>
+            </tr>
+          </tbody>
         </template>
-      </el-table-column>
-    </el-table>
+      </v-simple-table>
+    </v-card>
 
-    <level>
-      <div class="right">
-        <el-popover v-model="profilePop" placement="top">
-          <el-form>
-            <el-form-item label="Profile Name">
-              <el-input v-model="newProfileName" placeholder="Profile Name" />
-              <!-- todo validate filename -->
-              <el-button @click="createProfile()"> Create Profile </el-button>
-            </el-form-item>
-          </el-form>
-          <el-button slot="reference"> Add Profile </el-button>
-        </el-popover>
-      </div>
-    </level>
+    <v-fab-transition>
+      <v-btn color="primary" fixed fab large right bottom>
+        <v-icon> mdi-plus </v-icon>
+      </v-btn>
+    </v-fab-transition>
   </div>
 </template>
 
@@ -45,10 +44,9 @@
 import fs from "fs";
 import path from "path";
 import YAML from "yaml";
-import Level from "../components/layout/Level";
 export default {
   components: {
-    Level,
+    ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   data() {
     return {
@@ -89,6 +87,16 @@ export default {
 
       await this.getFiles();
     },
+    async askDelete(profile) {
+      if (
+        await this.$refs.deleteConfirm.open(
+          "Confirm",
+          "Are you sure you want to delete this profile?"
+        )
+      ) {
+        await this.deleteProfile(profile);
+      }
+    },
   },
   async mounted() {
     await this.getFiles();
@@ -99,5 +107,13 @@ export default {
 <style>
 .el-table__empty-block {
   display: none !important;
+}
+
+/* This is for documentation purposes and will not be needed in your application */
+#lateral .v-btn--example {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  margin: 0 0 16px 16px;
 }
 </style>

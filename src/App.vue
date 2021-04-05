@@ -1,39 +1,74 @@
 <template>
-  <div id="app">
-    <el-container>
-      <el-aside>
-        <el-menu :router="true">
-          <el-menu-item index="/">
-            <i class="el-icon-document"></i>
-            <span>Profiles</span>
-          </el-menu-item>
+  <v-app>
+    <v-app-bar dense app>
+      <v-app-bar-nav-icon></v-app-bar-nav-icon>
 
-          <el-menu-item index="/rewards">
-            <i class="el-icon-star-on"></i>
-            <span>Channel Point Rewards</span>
-          </el-menu-item>
+      <v-toolbar-title> {{ $route.name }}</v-toolbar-title>
 
-          <el-submenu index="1">
-            <template slot="title">
-              <i class="el-icon-cpu"></i>
-              <span>Plugins</span>
-            </template>
-            <el-menu-item
-              :index="`/plugins/${plugin.name}`"
-              v-for="plugin in uiPlugins"
-              :key="plugin.name"
-            >
-              <!--i class="el-icon-document"></i-->
-              <span> {{ plugin.uiName }}</span>
-            </el-menu-item>
-          </el-submenu>
-        </el-menu>
-      </el-aside>
-      <el-main>
-        <router-view />
-      </el-main>
-    </el-container>
-  </div>
+      <v-spacer></v-spacer>
+    </v-app-bar>
+
+    <v-navigation-drawer app>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="title"> CastMate </v-list-item-title>
+          <!--v-list-item-subtitle> subtext </v-list-item-subtitle-->
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-divider></v-divider>
+
+      <v-list dense nav>
+        <v-list-item link to="/">
+          <v-list-item-icon>
+            <v-icon>mdi-file-document-outline</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Profiles </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item link to="/rewards">
+          <v-list-item-icon>
+            <v-icon>mdi-view-dashboard</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Rewards </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-group n-action>
+          <template v-slot:activator>
+            <v-list-item-title>Plugins</v-list-item-title>
+          </template>
+
+          <v-list-item
+            v-for="plugin in uiPlugins"
+            :to="`/plugins/${plugin.name}`"
+            :key="plugin.name"
+          >
+            <v-list-item-icon>
+              <v-icon> mdi-view-dashboard </v-icon>
+            </v-list-item-icon>
+            <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
+          </v-list-item>
+        </v-list-group>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-main>
+      <!-- Provides the application the proper gutter -->
+      <v-container fluid>
+        <router-view></router-view>
+      </v-container>
+    </v-main>
+
+    <v-footer app>
+      <!-- -->
+    </v-footer>
+  </v-app>
 </template>
 
 <script>
@@ -72,28 +107,4 @@ export default {
 </script>
 
 <style>
-body {
-  margin: 0;
-}
-
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
 </style>

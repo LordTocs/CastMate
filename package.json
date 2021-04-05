@@ -1,8 +1,9 @@
 {
   "name": "castmate",
   "version": "0.1.0",
-  "description": "",
   "private": "true",
+  "description": "",
+  "author": "LordTocs & FitzBro",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -13,7 +14,6 @@
     "postuninstall": "electron-builder install-app-deps"
   },
   "main": "background.js",
-  "author": "LordTocs & FitzBro",
   "dependencies": {
     "@julusian/jpeg-turbo": "^1.0.0",
     "async-mutex": "^0.3.0",
@@ -34,6 +34,8 @@
     "got": "^11.8.2",
     "jsdom": "^16.5.1",
     "lodash": "^4.17.21",
+    "material-design-icons": "^3.0.1",
+    "material-design-icons-iconfont": "^6.1.0",
     "node-hue-api": "^5.0.0-beta.2",
     "node-key-sender": "^1.0.11",
     "obs-websocket-js": "^4.0.2",
@@ -47,6 +49,7 @@
     "twitch-webhooks": "^4.5.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
+    "vuetify": "^2.4.0",
     "vuex": "^3.6.2",
     "websocket": "^1.0.33",
     "win32-api": "^9.6.0",
@@ -62,8 +65,12 @@
     "electron-devtools-installer": "^3.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "sass": "^1.32.0",
+    "sass-loader": "^10.0.0",
     "vue-cli-plugin-electron-builder": "~2.0.0-rc.6",
-    "vue-template-compiler": "^2.6.11"
+    "vue-cli-plugin-vuetify": "~2.3.1",
+    "vue-template-compiler": "^2.6.11",
+    "vuetify-loader": "^1.7.0"
   },
   "eslintConfig": {
     "root": true,
