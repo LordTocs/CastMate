@@ -1,14 +1,16 @@
 <template>
-  <el-input
+  <v-text-field
     v-if="!isNumber"
     :value="displayValue"
+    :label="label"
     @focus="startEdit"
     @blur="endEdit"
     @input="(v) => changeValue(v)"
   />
-  <el-input-number
+  <number-input
     v-else
     :value="displayValue"
+    :label="label"
     @focus="startEdit"
     @blur="endEdit"
     @input="(v) => changeValue(v)"
@@ -17,10 +19,13 @@
 
 <script>
 import _ from "lodash";
+import NumberInput from "./NumberInput.vue";
 
 export default {
+  components: { NumberInput },
   props: {
     value: {},
+    label: {},
     isNumber: { type: Boolean, default: () => false },
   },
   data() {

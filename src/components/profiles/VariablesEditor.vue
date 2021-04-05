@@ -1,40 +1,43 @@
 <template>
-  <el-card class="variable-editor">
-    <h3>Variables</h3>
-    <div
-      class="input-row"
-      v-for="(variableName, i) in Object.keys(valueSafe)"
-      :key="i"
-    >
-      <el-form-item label="Name">
-        <key-input
-          :value="variableName"
-          @input="(v) => changeKey(variableName, v)"
-        />
-      </el-form-item>
-      <el-form-item label="Default Value">
-        <el-input
-          :value="value[variableName].default"
-          @input="(v) => changeValue(variableName, v)"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="deleteKey(variableName)"> Delete </el-button>
-      </el-form-item>
-    </div>
-    <level>
-      <div class="right">
-        <el-button @click="addVariable"> New Variable </el-button>
-      </div>
-    </level>
-  </el-card>
+  <v-card>
+    <v-card-title> Variables </v-card-title>
+    <v-card-subtitle>
+      These are streamer defined values that can change via actions.
+    </v-card-subtitle>
+    <v-card-text>
+      <v-row v-for="(variableName, i) in Object.keys(valueSafe)" :key="i">
+        <v-col>
+          <key-input
+            :value="variableName"
+            label="Variable Name"
+            @input="(v) => changeKey(variableName, v)"
+          />
+        </v-col>
+        <v-col>
+          <number-input
+            :value="value[variableName].default"
+            label="Starting Value"
+            @input="(v) => changeValue(variableName, v)"
+            allow-template
+          />
+        </v-col>
+        <v-col>
+          <v-btn color="red" @click="deleteKey(variableName)"> Delete </v-btn>
+        </v-col>
+      </v-row>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer />
+      <v-btn @click="addVariable"> New Variable </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>
 import KeyInput from "../data/KeyInput.vue";
-import Level from "../layout/Level.vue";
+import NumberInput from "../data/NumberInput.vue";
 export default {
-  components: { KeyInput, Level },
+  components: { KeyInput, NumberInput },
   props: {
     value: {},
   },
