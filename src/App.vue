@@ -1,7 +1,6 @@
 <template>
-  <v-app>
+  <v-app style="max-height: 100vh">
     <system-bar title="CastMate" />
-
     <v-app-bar dense app>
       <v-app-bar-nav-icon @click="navDrawer = !navDrawer"></v-app-bar-nav-icon>
 
@@ -60,8 +59,7 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main>
-      <!-- Provides the application the proper gutter -->
+    <v-main style="max-height: 100%">
       <router-view></router-view>
     </v-main>
 
@@ -115,4 +113,35 @@ export default {
 </script>
 
 <style>
+html {
+  overflow: hidden;
+}
+
+.v-main__wrap {
+  bottom: 0;
+  right: 0;
+  overflow: auto;
+}
+
+/*Scroll Bars don't play nicely with the FABs so we shift it a little*/
+.v-speed-dial--right {
+  right: 32px;
+}
+.v-speed-dial--bottom {
+  bottom: 32px;
+}
+.v-btn--fixed.v-btn--right {
+  right: 32px;
+}
+.v-btn--fixed.v-btn--bottom {
+  bottom: 32px;
+}
+
+::-webkit-scrollbar {
+  background-color: #424242;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #616161;
+}
 </style>
