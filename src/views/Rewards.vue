@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
-    <v-row dense>
-      <v-col v-for="reward in rewards" :key="reward.name">
+    <v-row>
+      <v-col v-for="reward in rewards" :key="reward.name" cols="12" xl="3" lg="4" md="6" sm="12">
         <reward-card :reward="reward" />
       </v-col>
     </v-row>

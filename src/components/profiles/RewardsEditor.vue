@@ -5,8 +5,8 @@
       These Channel Point Rewards will be active when this profile is active.
     </v-card-subtitle>
     <v-card-text>
-      <v-row dense>
-        <v-col v-for="(reward, i) in value" :key="reward">
+      <v-row>
+        <v-col v-for="(reward, i) in value" :key="reward" cols="12" xl="3" lg="4" md="6" sm="12">
           <reward-card
             v-if="getReward(reward) != null"
             hasRemove
