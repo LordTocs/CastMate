@@ -6,6 +6,7 @@
     @focus="startEdit"
     @blur="endEdit"
     @input="(v) => changeValue(v)"
+    @click.stop="(event) => event.stopPropagation()"
   />
   <number-input
     v-else
@@ -14,6 +15,7 @@
     @focus="startEdit"
     @blur="endEdit"
     @input="(v) => changeValue(v)"
+    @click.stop="(event) => event.stopPropagation()"
   />
 </template>
 

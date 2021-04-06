@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <level style="margin-bottom: 18px">
+    <!--level style="margin-bottom: 18px">
       <div class="left">
         <h1>{{ profileName }}</h1>
       </div>
@@ -9,36 +9,43 @@
           <h3>Save</h3>
         </el-button>
       </div>
-    </level>
-    <el-form :model="profile" label-width="120px">
-      <conditions-editor v-model="profile.conditions" />
-      <el-divider />
-      <variables-editor v-model="profile.variables" />
-      <el-divider />
-      <rewards-editor v-model="profile.rewards" />
-      <el-divider />
-      <triggers-editor v-model="profile.triggers" />
-    </el-form>
+    </level-->
+
+    <!--conditions-editor v-model="profile.conditions" /-->
+    <v-row>
+      <v-col>
+        <variables-editor v-model="profile.variables" />
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <rewards-editor v-model="profile.rewards" />
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <triggers-editor v-model="profile.triggers" />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
 import TriggersEditor from "../components/profiles/TriggersEditor.vue";
 import VariablesEditor from "../components/profiles/VariablesEditor.vue";
-import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
+//import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
-import Level from "@/components/layout/Level.vue";
 
 export default {
   components: {
     TriggersEditor,
     VariablesEditor,
-    ConditionsEditor,
+    //ConditionsEditor,
     RewardsEditor,
-    Level,
+    //Level,
   },
   computed: {
     profileName() {

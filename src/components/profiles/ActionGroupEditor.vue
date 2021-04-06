@@ -1,57 +1,39 @@
 <template>
-  <el-card class="action-editor" shadow="never">
-    <level
-      slot="header"
-      class="clearfix"
-      style="display: flex; flex-direction: row"
-    >
-      <div class="right">
-        <el-button @click="$emit('moveUp')"> Up </el-button>
-        <el-button @click="$emit('moveDown')"> Down </el-button>
-        <el-button @click="$emit('delete')"> Delete </el-button>
-      </div>
-    </level>
-
-    <div v-for="(actionKey, i) in Object.keys(value)" :key="i">
-      <action-editor
-        :actionKey="actionKey"
-        :value="value[actionKey]"
-        @input="(v) => updateAction(actionKey, v)"
-        @delete="deleteAction(actionKey)"
-      />
-    </div>
-    <level>
-      <div class="left">
-        <el-select
-          :value="null"
-          placeholder="Select"
-          @input="(v) => newAction(v)"
-        >
-          <el-option
-            v-for="actionKey in Object.keys(actions)"
-            :key="actionKey"
-            :label="actions[actionKey].name || actionKey"
-            :value="actionKey"
-          >
-          </el-option>
-        </el-select>
-      </div>
-      <div class="right"></div>
-    </level>
-  </el-card>
+  <v-timeline-item right>
+    <v-card color="grey darken-2">
+      <v-card-title> {{ actions[firstActionKey].name }} </v-card-title>
+      <v-card-text>
+        <action-editor
+          :actionKey="firstActionKey"
+          :value="firstAction"
+          @input="(v) => updateAction(firstActionKey, v)"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="red" @click="$emit('delete')">
+          Delete
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-timeline-item>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
-import Level from "../layout/Level";
 import ActionEditor from "./ActionEditor.vue";
 export default {
   props: {
     value: {},
   },
-  components: { Level, ActionEditor },
+  components: { ActionEditor },
   computed: {
     ...mapGetters("ipc", ["actions"]),
+    firstActionKey() {
+      return Object.keys(this.value)[0];
+    },
+    firstAction() {
+      return this.value[this.firstActionKey];
+    },
   },
   methods: {
     updateAction(key, value) {
@@ -85,8 +67,5 @@ export default {
 }
 .action-card {
   margin-bottom: 0.75rem;
-}
-
-.action-card-body {
 }
 </style>

@@ -1,11 +1,13 @@
 <template>
-  <v-card class='mx-auto' min-width="300" max-width="400">
+  <v-card class="mx-auto" min-width="300" max-width="400">
     <v-card-title> {{ reward.name }} </v-card-title>
     <v-card-subtitle> {{ reward.description }} </v-card-subtitle>
 
     <v-card-actions>
       <v-spacer></v-spacer>
-
+      <v-btn icon v-if="hasRemove" @click="$emit('remove')">
+        <v-icon> mdi-cancel </v-icon>
+      </v-btn>
       <v-btn icon @click="showEdit">
         <v-icon> mdi-pencil </v-icon>
       </v-btn>
@@ -22,13 +24,14 @@ export default {
   components: { RewardEditModal },
   props: {
     reward: {},
+    hasRemove: { type: Boolean, default: () => false },
   },
   methods: {
     ...mapActions("rewards", ["updateReward", "deleteReward"]),
     showEdit() {
       this.$refs.editModal.open();
     },
-  }
+  },
 };
 </script>
 

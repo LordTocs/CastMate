@@ -37,6 +37,5 @@ export default {
 
 <style scoped>
 .data-object-container {
-  padding-left: 3rem;
 }
 </style>

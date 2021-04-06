@@ -17,7 +17,7 @@
     @change="(v) => $emit('input', v)"
     v-else-if="schema.type == 'Boolean'"
   />
-  <el-select
+  <v-select
     :value="value"
     @change="(v) => $emit('input', v)"
     :items="[

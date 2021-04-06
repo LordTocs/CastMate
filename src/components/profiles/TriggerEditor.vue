@@ -1,70 +1,47 @@
 <template>
-  <el-card class="trigger-editor" v-if="trigger.type != 'SingleAction'">
-    <level style="margin-bottom: 1rem">
-      <div class="left">
-        <h3>
-          {{ triggerName }}
-        </h3>
-      </div>
-      <div class="right">
-        <el-button @click="addCommand"> Add Command </el-button>
-        <el-button> Import Triggers </el-button>
-      </div>
-    </level>
-    <el-card
-      class="command-editor"
-      v-for="(commandKey, i) in commands"
-      :key="i"
-    >
-      <div
-        slot="header"
-        class="clearfix"
-        style="display: flex; flex-direction: row"
-      >
-        <level>
-          <div class="left" style="width: 100%;">
-            <key-input
-              :value="commandKey"
-              @input="(newKey) => changeKey(commandKey, newKey)"
-              :is-number="trigger.type == 'NumberAction'"
-            />
-          </div>
-          <div class="right">
-            <el-button @click="deleteCommand(commandKey)"> Delete </el-button>
-          </div>
-        </level>
-      </div>
-      <command-editor
-        :value="value[commandKey]"
-        @input="(newData) => updateCommand(commandKey, newData)"
-      />
-    </el-card>
-  </el-card>
-  <el-card class="trigger-editor" v-else>
-    <level style="margin-bottom: 1rem">
-      <div class="left">
-        <h3>
-          {{ triggerName }}
-        </h3>
-      </div>
-      <div class="right">
-        <el-button> Import Triggers </el-button>
-      </div>
-    </level>
-    <el-card class="command-editor">
-      <command-editor :value="value" @input="(v) => $emit('input', v)" />
-    </el-card>
-  </el-card>
+  <v-expansion-panels>
+    <v-expansion-panel v-if="trigger.type != 'SingleAction'">
+      <v-expansion-panel-header> {{ triggerName }} </v-expansion-panel-header>
+      <v-expansion-panel-content>
+        <v-row v-for="(commandKey, i) in commands" :key="i">
+          <v-col>
+            <v-expansion-panels>
+              <command-editor
+                :value="value[commandKey]"
+                :actionKey="commandKey"
+                @input="(newData) => updateCommand(commandKey, newData)"
+                @delete="deleteCommand(commandKey)"
+                @key-change="(v) => changeKey(commandKey, v)"
+              />
+            </v-expansion-panels>
+          </v-col>
+        </v-row>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn @click="addCommand"> Add Command </v-btn>
+        </v-card-actions>
+      </v-expansion-panel-content>
+    </v-expansion-panel>
+    <v-expansion-panel v-else>
+      <v-expansion-panel-header> {{ triggerName }} </v-expansion-panel-header>
+      <v-expansion-panel-content>
+        <v-expansion-panels>
+          <command-editor :value="value" @input="(v) => $emit('input', v)" />
+        </v-expansion-panels>
+      </v-expansion-panel-content>
+    </v-expansion-panel>
+  </v-expansion-panels>
 </template>
 
 <script>
-import KeyInput from "../data/KeyInput.vue";
-import Level from "../layout/Level";
 import CommandEditor from "./CommandEditor.vue";
 export default {
-  components: { CommandEditor, Level, KeyInput },
+  components: { CommandEditor },
   computed: {
     commands() {
+      if (!this.value) {
+        return [];
+      }
       return Object.keys(this.value).filter((key) => key != "imports");
     },
     triggerName() {
