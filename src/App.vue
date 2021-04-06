@@ -1,5 +1,7 @@
 <template>
   <v-app>
+    <system-bar title="CastMate" />
+
     <v-app-bar dense app>
       <v-app-bar-nav-icon @click="navDrawer = !navDrawer"></v-app-bar-nav-icon>
 
@@ -71,8 +73,12 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
+import SystemBar from "./components/layout/SystemBar.vue";
 
 export default {
+  components: {
+    SystemBar,
+  },
   data() {
     return {
       navDrawer: null,
