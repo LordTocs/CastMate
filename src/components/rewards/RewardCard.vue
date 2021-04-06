@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" min-width="300" max-width="400">
+  <v-card class="mx-auto" min-width="300" max-width="400" :color="color">
     <v-card-title> {{ reward.name }} </v-card-title>
     <v-card-subtitle> {{ reward.description }} </v-card-subtitle>
 
@@ -25,6 +25,7 @@ export default {
   props: {
     reward: {},
     hasRemove: { type: Boolean, default: () => false },
+    color: {},
   },
   methods: {
     ...mapActions("rewards", ["updateReward", "deleteReward"]),

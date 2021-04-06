@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <v-card-title> Profile Reward </v-card-title>
+    <v-card-title> Profile Rewards </v-card-title>
     <v-card-subtitle>
       These Channel Point Rewards will be active when this profile is active.
     </v-card-subtitle>
@@ -12,6 +12,7 @@
             hasRemove
             :reward="getReward(reward)"
             @remove="deleteReward(i)"
+            color="grey darken-3"
           />
           <v-card class="mx-auto" min-width="300" max-width="400" v-else>
             <v-card-title> {{ reward }} </v-card-title>
@@ -23,6 +24,9 @@
         </v-col>
       </v-row>
     </v-card-text>
+    <v-card-actions>
+      <add-reward-popover @input="addReward" :existingRewards="value" />
+    </v-card-actions>
   </v-card>
 </template>
 
@@ -30,9 +34,11 @@
 import { mapGetters } from "vuex";
 //import RewardSelector from "@/components/data/RewardSelector.vue";
 import RewardCard from "../rewards/RewardCard.vue";
+import AddRewardPopover from "./AddRewardPopover.vue";
 export default {
   components: {
     RewardCard,
+    AddRewardPopover,
   },
   props: {
     value: {},

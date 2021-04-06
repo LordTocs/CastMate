@@ -6,24 +6,25 @@
     offset-x
   >
     <template v-slot:activator="{ on, attrs }">
-      <v-btn v-bind="attrs" v-on="on"> Add Action </v-btn>
+      <v-btn v-bind="attrs" v-on="on"> Add Reward </v-btn>
     </template>
 
     <v-card>
-      <v-card-title> Add New Action </v-card-title>
+      <v-card-title> Add Reward To Profile </v-card-title>
       <v-divider />
       <v-card-text>
         <v-select
-          :items="actionItems"
-          item-text="name"
-          item-value="key"
-          label="Action Type"
+          :value="null"
+          label="Channel Point Reward"
           @change="
             (v) => {
-              $emit('select', v);
+              $emit('input', v);
               menu = false;
             }
           "
+          :items="remainingRewards"
+          item-value="name"
+          item-text="name"
         />
       </v-card-text>
     </v-card>
@@ -33,13 +34,14 @@
 <script>
 import { mapGetters } from "vuex";
 export default {
+  props: {
+    existingRewards: {},
+  },
   computed: {
-    ...mapGetters("ipc", ["actions"]),
-    actionItems() {
-      return Object.keys(this.actions).map((k) => ({
-        name: this.actions[k].name,
-        key: k,
-      }));
+    ...mapGetters("rewards", ["rewards"]),
+    remainingRewards() {
+      let filterRewards = this.existingRewards || [];
+      return this.rewards.filter((k) => !filterRewards.includes(k.name));
     },
   },
   data() {
