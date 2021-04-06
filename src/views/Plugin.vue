@@ -30,7 +30,7 @@
         <v-card>
           <v-card-title> Secrets </v-card-title>
 
-          <v-card-text>
+          <v-card-text v-if="showSecrets">
             <data-input
               v-for="secretKey in secretKeys"
               :key="secretKey"
@@ -40,6 +40,19 @@
               @input="(v) => setSecretsValue(secretKey, v)"
             />
           </v-card-text>
+          <v-card-text v-else>
+            <v-skeleton-loader
+              boilerplate
+              type="text"
+              v-for="secretKey in secretKeys"
+              :key="secretKey"
+            ></v-skeleton-loader>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn @click="showSecrets = !showSecrets">
+              {{ showSecrets ? "Hide Secrets" : "Show Secrets " }}
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
