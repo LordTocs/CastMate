@@ -1,14 +1,14 @@
 <template>
   <v-app>
     <v-app-bar dense app>
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon @click="navDrawer = !navDrawer"></v-app-bar-nav-icon>
 
       <v-toolbar-title> {{ $route.name }}</v-toolbar-title>
 
       <v-spacer></v-spacer>
     </v-app-bar>
 
-    <v-navigation-drawer app>
+    <v-navigation-drawer app v-model="navDrawer">
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title"> CastMate </v-list-item-title>
@@ -74,7 +74,9 @@ import { mapGetters, mapActions } from "vuex";
 
 export default {
   data() {
-    return {};
+    return {
+      navDrawer: null,
+    };
   },
   computed: {
     ...mapGetters("ipc", ["inited", "plugins"]),
