@@ -20,6 +20,14 @@
         <triggers-editor v-model="profile.triggers" />
       </v-col>
     </v-row>
+    <v-fab-transition>
+      <v-btn color="primary" fab large fixed bottom right @click="save">
+        <v-icon> mdi-content-save </v-icon>
+      </v-btn>
+    </v-fab-transition>
+    <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
+      Saved
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -49,6 +57,7 @@ export default {
       profile: {
         triggers: {},
       },
+      saveSnack: false,
     };
   },
   methods: {
@@ -60,11 +69,7 @@ export default {
         newYaml
       );
 
-      this.$message({
-        showClose: true,
-        message: "Saved.",
-        type: "success",
-      });
+      this.saveSnack = true;
     },
   },
   async mounted() {

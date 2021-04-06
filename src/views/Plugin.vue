@@ -1,16 +1,5 @@
 <template>
   <v-container fluid>
-    <!--div style="text-align: left">
-    <level style="margin-bottom: 18px">
-      <div class="left">
-        <h1>{{ pluginName }}</h1>
-      </div>
-      <div class="right">
-        <el-button type="success" @click="save" style="width: 120px">
-          <h3>Save</h3>
-        </el-button>
-      </div>
-    </level-->
     <component
       v-if="hasSettingsComponent"
       v-bind:is="settingsComponent"
@@ -54,6 +43,14 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-fab-transition>
+      <v-btn color="primary" fab large fixed bottom right @click="save">
+        <v-icon> mdi-content-save </v-icon>
+      </v-btn>
+    </v-fab-transition>
+    <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
+      Saved
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -124,11 +121,7 @@ export default {
         newSecretsYaml
       );
 
-      this.$message({
-        showClose: true,
-        message: "Saved.",
-        type: "success",
-      });
+      this.saveSnack = true;
     },
   },
   components: {
@@ -140,6 +133,7 @@ export default {
       showSecrets: false,
       settings: {},
       secrets: {},
+      saveSnack: false,
     };
   },
   async mounted() {
