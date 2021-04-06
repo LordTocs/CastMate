@@ -8,7 +8,7 @@
       <v-row dense>
         <v-col v-for="(reward, i) in value" :key="reward">
           <reward-card
-            v-if="getReward(reward)"
+            v-if="getReward(reward) != null"
             hasRemove
             :reward="getReward(reward)"
             @remove="deleteReward(i)"
