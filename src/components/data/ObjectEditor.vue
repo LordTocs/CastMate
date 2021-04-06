@@ -36,6 +36,4 @@ export default {
 </script>
 
 <style scoped>
-.data-object-container {
-}
 </style>
