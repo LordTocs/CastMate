@@ -73,7 +73,7 @@ export default {
   methods: {
     ...mapActions("rewards", ["createReward", "updateReward", "deleteReward"]),
     open() {
-      this.rewardEdit = _.cloneDeep(this.reward);
+      this.rewardEdit = _.cloneDeep(this.reward) || {};
       this.dialog = true;
     },
     save() {

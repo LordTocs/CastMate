@@ -16,6 +16,7 @@
     :value="value"
     @change="(v) => $emit('input', v)"
     v-else-if="schema.type == 'Boolean'"
+	:label="schema.name || label"
   />
   <v-select
     :value="value"
