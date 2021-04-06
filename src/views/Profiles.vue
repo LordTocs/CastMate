@@ -1,39 +1,35 @@
 <template>
   <v-container fluid>
     <v-card id="lateral">
-      <confirm-dialog ref="deleteConfirm" />
-      <v-simple-table>
-        <template v-slot:default>
-          <thead>
-            <tr>
-              <th class="text-left">Name</th>
-              <th class="text-left"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="profile in profiles"
+      <v-list>
+        <v-list-item-group>
+          <template v-for="(profile, i) in profiles">
+            <v-list-item
               :key="profile.name"
               @click="$router.push(`/profiles/${profile.name}`)"
             >
-              <td>{{ profile.name }}</td>
-              <td style="width: 25%">
-                <v-btn
-                  color="danger"
-                  elevation="4"
-                  @click.stop="askDelete(profile)"
-                >
-                  Delete
-                </v-btn>
-              </td>
-            </tr>
-          </tbody>
-        </template>
-      </v-simple-table>
+              <v-list-item-content>
+                <v-list-item-title> {{ profile.name }} </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider :key="i" />
+          </template>
+        </v-list-item-group>
+      </v-list>
     </v-card>
 
+    <new-profile-modal ref="profileModal" @created="getFiles()" />
+
     <v-fab-transition>
-      <v-btn color="primary" fixed fab large right bottom>
+      <v-btn
+        color="primary"
+        fixed
+        fab
+        large
+        right
+        bottom
+        @click="$refs.profileModal.open()"
+      >
         <v-icon> mdi-plus </v-icon>
       </v-btn>
     </v-fab-transition>
@@ -44,9 +40,10 @@
 import fs from "fs";
 import path from "path";
 import YAML from "yaml";
+import NewProfileModal from "../components/profiles/NewProfileModal.vue";
 export default {
   components: {
-    ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
+    NewProfileModal,
   },
   data() {
     return {
@@ -81,21 +78,6 @@ export default {
       );
 
       await this.getFiles();
-    },
-    async deleteProfile(profile) {
-      await fs.promises.unlink(`./user/profiles/${profile.name}.yaml`);
-
-      await this.getFiles();
-    },
-    async askDelete(profile) {
-      if (
-        await this.$refs.deleteConfirm.open(
-          "Confirm",
-          "Are you sure you want to delete this profile?"
-        )
-      ) {
-        await this.deleteProfile(profile);
-      }
     },
   },
   async mounted() {
