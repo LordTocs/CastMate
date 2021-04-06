@@ -21,9 +21,9 @@
             allow-template
           />
         </v-col>
-        <v-col>
+        <div style="margin-top: 28px">
           <v-btn color="red" @click="deleteKey(variableName)"> Delete </v-btn>
-        </v-col>
+        </div>
       </v-row>
     </v-card-text>
     <v-card-actions>

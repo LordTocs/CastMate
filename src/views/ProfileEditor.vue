@@ -1,17 +1,10 @@
 <template>
   <v-container fluid>
-    <!--level style="margin-bottom: 18px">
-      <div class="left">
-        <h1>{{ profileName }}</h1>
-      </div>
-      <div class="right">
-        <el-button type="success" @click="save" style="width: 120px">
-          <h3>Save</h3>
-        </el-button>
-      </div>
-    </level-->
-
-    <!--conditions-editor v-model="profile.conditions" /-->
+    <v-row>
+      <v-col>
+        <conditions-editor v-model="profile.conditions" />
+      </v-col>
+    </v-row>
     <v-row>
       <v-col>
         <variables-editor v-model="profile.variables" />
@@ -33,7 +26,7 @@
 <script>
 import TriggersEditor from "../components/profiles/TriggersEditor.vue";
 import VariablesEditor from "../components/profiles/VariablesEditor.vue";
-//import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
+import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
@@ -43,9 +36,8 @@ export default {
   components: {
     TriggersEditor,
     VariablesEditor,
-    //ConditionsEditor,
+    ConditionsEditor,
     RewardsEditor,
-    //Level,
   },
   computed: {
     profileName() {

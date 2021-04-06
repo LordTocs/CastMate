@@ -31,7 +31,7 @@
 
         <v-list-item link to="/rewards">
           <v-list-item-icon>
-            <v-icon>mdi-view-dashboard</v-icon>
+            <v-icon>mdi-star-circle-outline</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>

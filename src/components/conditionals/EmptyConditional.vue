@@ -1,10 +1,10 @@
 <template>
-  <div style="margin-bottom: 18px;">
-    <el-button @click="setAnd"> Add And </el-button>
-    <el-button @click="setOr"> Add Or </el-button>
-    <el-button @click="setNot"> Add Not </el-button>
-    <el-button @click="setValue"> Add Value </el-button>
-  </div>
+  <v-card-actions>
+    <v-btn @click="setAnd"> Add And </v-btn>
+    <v-btn @click="setOr"> Add Or </v-btn>
+    <v-btn @click="setNot"> Add Not </v-btn>
+    <v-btn @click="setValue"> Add Value </v-btn>
+  </v-card-actions>
 </template>
 
 <script>

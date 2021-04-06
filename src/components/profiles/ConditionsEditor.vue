@@ -1,12 +1,18 @@
 <template>
-  <el-card class="conditions-editor">
-    <h3>Conditions</h3>
-    <conditional-editor
-      :value="value"
-      @input="(v) => $emit('input', v)"
-      @delete="$emit('input', null)"
-    />
-  </el-card>
+  <v-card>
+    <v-card-title> Profile Conditions </v-card-title>
+    <v-card-subtitle>
+      If these conditions become true this profile and all it's triggers will
+      become active
+    </v-card-subtitle>
+    <v-card-text>
+      <conditional-editor
+        :value="value"
+        @input="(v) => $emit('input', v)"
+        @delete="$emit('input', null)"
+      />
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>
