@@ -1,72 +1,100 @@
 <template>
-  <div v-if="isEmpty">
-    <empty-conditional :value="value" @input="(v) => $emit('input', v)" />
-  </div>
-  <div class="array-div" v-else-if="isAnd">
-    <div class="array-header">And</div>
-    <div class="array-container">
-      <conditional-editor
-        v-for="(subConditional, i) in value.and"
-        :key="i"
-        :value="subConditional"
-        @input="(v) => updateSubCondition(i, v)"
-        @delete="deleteSubCondition(i)"
+  <v-card :color="color">
+    <v-card-text>
+      <empty-conditional
+        :value="value"
+        @input="(v) => $emit('input', v)"
+        v-if="isEmpty"
       />
-      <empty-conditional :value="null" @input="(v) => addSubCondition(v)" />
-    </div>
-    <el-button @click="$emit('delete')" icon="el-icon-delete" />
-  </div>
-  <div class="array-div" v-else-if="isOr">
-    <div class="array-header">Or</div>
-    <div class="array-container">
-      <conditional-editor
-        v-for="(subConditional, i) in value.or"
-        :value="subConditional"
-        :key="i"
-        @input="(v) => updateSubCondition(i, v)"
-        @delete="deleteSubCondition(i)"
-      />
-      <empty-conditional :value="null" @input="(v) => addSubCondition(v)" />
-    </div>
-    <el-button @click="$emit('delete')" icon="el-icon-delete" />
-  </div>
-  <div class="array-div" v-else-if="isNot">
-    <div class="array-header">Not</div>
-    <div class="array-container">
-      <conditional-editor
-        :value="value.not"
-        @input="(v) => changeStateValue('not', v)"
-        @delete="(v) => changeStateValue('not', null)"
-      />
-    </div>
-    <div style="flex: 0; margin-bottom: 18px; margin-left: 5px">
-      <el-button @click="$emit('delete')" icon="el-icon-delete" />
-    </div>
-  </div>
-  <div class="value-div" v-else>
-    <el-form-item label="State Name">
-      <state-selector
-        :value="stateName"
-        @input="(v) => changeStateName(stateName, v)"
-        @delete="deleteSubCondition(i)"
-      />
-    </el-form-item>
-    <el-form-item label="Target Value" v-if="stateName" style="flex: 1">
-      <el-input
-        :value="stateValue"
-        @input="(v) => changeStateValue(stateName, v)"
-      />
-    </el-form-item>
-    <div style="flex: 0; margin-bottom: 18px; margin-left: 5px">
-      <el-button @click="$emit('delete')" icon="el-icon-delete" />
-    </div>
-  </div>
+      <div class="array-div" v-else-if="isAnd">
+        <div class="array-header">And</div>
+        <div class="array-container">
+          <v-row v-for="(subConditional, i) in value.and" :key="i">
+            <v-col>
+              <conditional-editor
+                :value="subConditional"
+                @input="(v) => updateSubCondition(i, v)"
+                @delete="deleteSubCondition(i)"
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <empty-conditional
+                :value="null"
+                @input="(v) => addSubCondition(v)"
+              />
+            </v-col>
+          </v-row>
+        </div>
+        <v-btn @click="$emit('delete')" color="red"> Delete </v-btn>
+      </div>
+      <div class="array-div" v-else-if="isOr">
+        <div class="array-header">Or</div>
+        <div class="array-container">
+          <v-row v-for="(subConditional, i) in value.or" :key="i">
+            <v-col>
+              <conditional-editor
+                :value="subConditional"
+                @input="(v) => updateSubCondition(i, v)"
+                @delete="deleteSubCondition(i)"
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <empty-conditional
+                :value="null"
+                @input="(v) => addSubCondition(v)"
+              />
+            </v-col>
+          </v-row>
+        </div>
+        <v-btn @click="$emit('delete')" color="red"> Delete </v-btn>
+      </div>
+      <div class="array-div" v-else-if="isNot">
+        <div class="array-header">Not</div>
+        <div class="array-container">
+          <conditional-editor
+            :value="value.not"
+            @input="(v) => changeStateValue('not', v)"
+            @delete="(v) => changeStateValue('not', null)"
+          />
+        </div>
+        <div style="flex: 0; margin-bottom: 18px; margin-left: 5px">
+          <v-btn @click="$emit('delete')" color="red"> Delete </v-btn>
+        </div>
+      </div>
+      <v-row v-else>
+        <v-col>
+          <state-selector
+            :value="stateName"
+            label="Variable Name"
+            @input="(v) => changeStateName(stateName, v)"
+            @delete="deleteSubCondition(i)"
+          />
+        </v-col>
+        <v-col>
+          <number-input
+            :value="stateValue"
+            @input="(v) => changeStateValue(stateName, v)"
+            label="Target Value"
+            allowTemplate
+          />
+        </v-col>
+        <div style="margin-top: 28px">
+          <v-btn @click="$emit('delete')" color="red"> Delete </v-btn>
+        </div>
+      </v-row>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>
 import StateSelector from "../state/StateSelector.vue";
 import EmptyConditional from "./EmptyConditional.vue";
 import { changeObjectKey } from "../../utils/objects.js";
+import NumberInput from "../data/NumberInput.vue";
 export default {
   name: "ConditionalEditor",
   props: {
@@ -75,6 +103,7 @@ export default {
   components: {
     StateSelector,
     EmptyConditional,
+    NumberInput,
   },
   computed: {
     isOr() {
@@ -96,6 +125,12 @@ export default {
     },
     stateValue() {
       return this.value[this.stateName];
+    },
+    color() {
+      if (this.isEmpty || this.isOr || this.isAnd || this.isNot) {
+        return "grey darken-3";
+      }
+      return "grey darken-2";
     },
   },
   methods: {

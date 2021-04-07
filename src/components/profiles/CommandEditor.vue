@@ -1,22 +1,44 @@
 <template>
-  <div>
-    <el-form-item>
-      <el-checkbox v-model="value.sync"> Synchronous </el-checkbox>
-    </el-form-item>
+  <key-card
+    :key-value="actionKey"
+    @key-change="keyChange"
+    color="grey darken-3"
+  >
     <actions-list-editor v-model="value.actions" />
-  </div>
+    <v-card-actions>
+      <add-action-popover @select="addAction" />
+      <v-spacer />
+      <v-btn color="red" @click="$emit('delete')"> Delete </v-btn>
+    </v-card-actions>
+  </key-card>
 </template>
 
 <script>
-import ActionsListEditor from "./ActionsListEditor.vue";
+import KeyCard from "../data/KeyCard.vue";
+import ActionsListEditor from "./ActionsListEditor";
+import AddActionPopover from "./AddActionPopover.vue";
 export default {
-  components: { ActionsListEditor },
+  components: { KeyCard, ActionsListEditor, AddActionPopover },
   props: {
     value: {},
+
+    actionKey: {},
+  },
+  methods: {
+    keyChange(newKey) {
+      console.log("New Key", newKey);
+      this.$emit("key-change", newKey);
+    },
+    addAction(v) {
+      let newCommand = { ...this.value };
+
+      newCommand.actions.push({ [v]: null });
+
+      this.$emit("input", newCommand);
+    },
   },
 };
 </script>
 
 <style>
-
 </style>

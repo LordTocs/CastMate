@@ -17,6 +17,7 @@ class PluginManager
 			"minecraft",
 			"csgo",
 			"tts",
+			"kofi",
 			"twitch",
 			"variables",
 			"websocket",

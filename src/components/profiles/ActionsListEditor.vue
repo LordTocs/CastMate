@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-timeline dense align-top>
     <action-group-editor
       v-for="(action, i) in value"
       :key="i"
@@ -9,20 +9,13 @@
       @moveUp="moveActionUp(i)"
       @moveDown="moveActionDown(i)"
     />
-    <level>
-      <div class="right">
-        <el-button @click="newActionGroup"> New Action Group </el-button>
-        <el-button> Import Sequence </el-button>
-      </div>
-    </level>
-  </div>
+  </v-timeline>
 </template>
 
 <script>
 import ActionGroupEditor from "./ActionGroupEditor.vue";
-import Level from "../layout/Level.vue";
 export default {
-  components: { ActionGroupEditor, Level },
+  components: { ActionGroupEditor },
   props: {
     value: {},
   },

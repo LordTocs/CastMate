@@ -1,17 +1,34 @@
 <template>
-  <div>
-    <span v-if="!isConnected">
-      To Connect, push button on hue bridge and then click Search
-    </span>
-	<span v-else>
-		Connected to Hue Bridge
-	</span>
-    <el-button @click="searchForHub"> Search for HUE Hub </el-button>
-  </div>
+  <v-row>
+    <v-col>
+      <v-card>
+        <v-card-title> Phillip's HUE </v-card-title>
+        <v-card-subtitle>
+          Connect to HUE hub for light control
+        </v-card-subtitle>
+        <v-card-text>
+          <span v-if="isConnected"> Already connect to HUE hub </span>
+          <span v-else>
+            Push the button on your HUE Bridge, then you have about 30 seconds
+            to click connect below
+          </span>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="primary"
+            :loading="connecting"
+            @click="startSearchForHub"
+          >
+            Connect to HUE
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
-const { ipcRenderer } = require("electron");
+const { mapIpcs } = require("../../utils/ipcMap");
 
 export default {
   data() {
@@ -21,19 +38,25 @@ export default {
     };
   },
   methods: {
-    async searchForHub() {
+    ...mapIpcs("lights"),
+    async startSearchForHub() {
       this.connecting = true;
-      if (await ipcRenderer.invoke("lightsSearchForHub")) {
+      if (await this.searchForHub()) {
         this.isConnected = true;
       }
       this.connecting = false;
     },
   },
   async mounted() {
-    this.isConnected = await ipcRenderer.invoke("lightsGetHubStatus");
+    this.isConnected = await this.getHubStatus();
   },
 };
 </script>
 
 <style>
+.hue-settings {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+}
 </style>

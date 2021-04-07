@@ -1,54 +1,82 @@
 <template>
-  <div>
-    <el-button @click="doChannelAuth">
-      Authenicate With Channel
-    </el-button>
-    <el-button @click="doBotAuth">
-      Authenicate With Bot
-    </el-button>
-  </div>
+  <v-row>
+    <v-col>
+      <v-card>
+        <v-card-title> Twitch Channel Account </v-card-title>
+        <v-card-subtitle> Twitch Account of your Channel </v-card-subtitle>
+        <v-card-text>
+          <span v-if="channelName">
+            {{ channelName }}
+          </span>
+          <span v-else> Not Signed In </span>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="purple"
+            :loading="channelWorking"
+            @click="startChannelAuth"
+          >
+            Sign In
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card>
+        <v-card-title> Twitch Bot Account </v-card-title>
+        <v-card-subtitle> Twitch Account of your Chat Bot </v-card-subtitle>
+        <v-card-text>
+          <span v-if="botName">
+            {{ botName }}
+          </span>
+          <span v-else> Not Signed In </span>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="purple" :loading="botWorking" @click="startBotAuth">
+            Sign In
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
-const { ipcRenderer } = require("electron");
+const { mapIpcs } = require("../../utils/ipcMap");
 
 export default {
   data() {
     return {
       channelWorking: false,
-      hasChannelAuthed: false,
+      channelName: null,
+      botName: null,
       botWorking: false,
-      hasBotAuthed: false,
     };
   },
   methods: {
-    async doChannelAuth() {
+    ...mapIpcs("twitch"),
+    async startChannelAuth() {
       this.channelWorking = true;
-      if (await ipcRenderer.invoke("twitchDoChannelAuth")) {
+      if (await this.doChannelAuth()) {
         this.hasChannelAuthed = true;
       }
       this.channelWorking = false;
     },
-    async doBotAuth() {
+    async startBotAuth() {
       this.botWorking = true;
-      if (await ipcRenderer.invoke("twitchDoBotAuth")) {
+      if (await this.doBotAuth()) {
         this.hasBotAuthed = true;
       }
       this.botWorking = false;
     },
   },
   async mounted() {
-    let { bot, channel } = await ipcRenderer.invoke("twitchGetAuthStatus");
-
-    if (bot) {
-      this.hasBotAuthed = true;
-    }
-    if (channel) {
-      this.hasChannelAuthed = true;
-    }
+    let { bot, channel } = await this.getAuthStatus();
+    this.botName = bot;
+    this.channelName = channel;
   },
 };
 </script>
 
-<style>
+<style scoped>
 </style>

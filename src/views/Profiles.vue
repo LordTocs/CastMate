@@ -1,54 +1,49 @@
 <template>
-  <div>
-    <el-table :data="profiles" style="width: 100%; margin-bottom: 18px">
-      <el-table-column prop="name" label="Name"> </el-table-column>
-      <el-table-column label="Operations" align="right">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            @click="$router.push(`/profiles/${scope.row.name}`)"
-          >
-            Edit
-          </el-button>
-          <el-popconfirm
-            confirm-button-text="OK"
-            cancel-button-text="No, Thanks"
-            icon="el-icon-info"
-            icon-color="red"
-            title="Are you sure to delete this?"
-            @confirm="deleteProfile(scope.row)"
-          >
-            <el-button slot="reference" size="mini">Delete</el-button>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-    </el-table>
+  <v-container fluid>
+    <v-card id="lateral">
+      <v-list>
+        <v-list-item-group>
+          <template v-for="(profile, i) in profiles">
+            <v-list-item
+              :key="profile.name"
+              @click="$router.push(`/profiles/${profile.name}`)"
+            >
+              <v-list-item-content>
+                <v-list-item-title> {{ profile.name }} </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider :key="i" />
+          </template>
+        </v-list-item-group>
+      </v-list>
+    </v-card>
 
-    <level>
-      <div class="right">
-        <el-popover v-model="profilePop" placement="top">
-          <el-form>
-            <el-form-item label="Profile Name">
-              <el-input v-model="newProfileName" placeholder="Profile Name" />
-              <!-- todo validate filename -->
-              <el-button @click="createProfile()"> Create Profile </el-button>
-            </el-form-item>
-          </el-form>
-          <el-button slot="reference"> Add Profile </el-button>
-        </el-popover>
-      </div>
-    </level>
-  </div>
+    <new-profile-modal ref="profileModal" @created="getFiles()" />
+
+    <v-fab-transition>
+      <v-btn
+        color="primary"
+        fixed
+        fab
+        large
+        right
+        bottom
+        @click="$refs.profileModal.open()"
+      >
+        <v-icon> mdi-plus </v-icon>
+      </v-btn>
+    </v-fab-transition>
+  </v-container>
 </template>
 
 <script>
 import fs from "fs";
 import path from "path";
 import YAML from "yaml";
-import Level from "../components/layout/Level";
+import NewProfileModal from "../components/profiles/NewProfileModal.vue";
 export default {
   components: {
-    Level,
+    NewProfileModal,
   },
   data() {
     return {
@@ -84,11 +79,6 @@ export default {
 
       await this.getFiles();
     },
-    async deleteProfile(profile) {
-      await fs.promises.unlink(`./user/profiles/${profile.name}.yaml`);
-
-      await this.getFiles();
-    },
   },
   async mounted() {
     await this.getFiles();
@@ -99,5 +89,13 @@ export default {
 <style>
 .el-table__empty-block {
   display: none !important;
+}
+
+/* This is for documentation purposes and will not be needed in your application */
+#lateral .v-btn--example {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  margin: 0 0 16px 16px;
 }
 </style>

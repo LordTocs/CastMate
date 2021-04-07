@@ -1,58 +1,61 @@
 <template>
   <div>
-    <el-form-item label="Description">
-      <el-input
-        :value="value.description"
-        @input="(v) => setSubValue('description', v)"
-      />
-    </el-form-item>
+    <v-text-field
+      label="Name"
+      :value="value.name"
+      @input="(v) => setSubValue('name', v)"
+    />
 
-    <el-form-item label="Cost">
-      <el-input-number
-        :value="value.cost"
-        @input="(v) => setSubValue('cost', v)"
-      />
-    </el-form-item>
+    <v-text-field
+      label="Description"
+      :value="value.description"
+      @input="(v) => setSubValue('description', v)"
+    />
 
-    <el-form-item label="Requires Message">
-      <el-switch
-        :value="value.inputRequired"
-        @input="(v) => setSubValue('inputRequired', v)"
-      />
-    </el-form-item>
+    <number-input
+      label="Cost"
+      :value="value.cost"
+      @input="(v) => setSubValue('cost', v)"
+    />
 
-    <el-form-item label="Cooldown">
-      <el-input-number
-        :value="value.cooldown"
-        @input="(v) => setSubValue('cooldown', v)"
-      />
-    </el-form-item>
+    <number-input
+      label="Cooldown"
+      :value="value.cooldown"
+      @input="(v) => setSubValue('cooldown', v)"
+    />
 
-    <el-form-item label="Skip Queue">
-      <el-switch
-        :value="value.skipQueue"
-        @input="(v) => setSubValue('skipQueue', v)"
-      />
-    </el-form-item>
+    <v-switch
+      label="Requires Message"
+      :input-value="value.inputRequired"
+      @change="(v) => setSubValue('inputRequired', v)"
+    />
 
-    <el-form-item label="Max Redemptions Per Stream">
-      <el-input-number
-        :value="value.maxRedemptionsPerStream"
-        @input="(v) => setSubValue('maxRedemptionsPerStream', v)"
-      />
-    </el-form-item>
+    <v-switch
+      label="Skip Queue"
+      :input-value="value.skipQueue"
+      @change="(v) => setSubValue('skipQueue', v)"
+      hide-details
+    />
 
-    <el-form-item label="Max Redemptions Per User Per Stream">
-      <el-input-number
-        :value="value.maxRedemptionsPerUserPerStream"
-        @input="(v) => setSubValue('maxRedemptionsPerUserPerStream', v)"
-      />
-    </el-form-item>
+    <number-input
+      label="Max Redemptions Per Stream"
+      :value="value.maxRedemptionsPerStream"
+      @input="(v) => setSubValue('maxRedemptionsPerStream', v)"
+    />
+
+    <number-input
+      label="Max Redemptions Per User Per Stream"
+      :value="value.maxRedemptionsPerUserPerStream"
+      @input="(v) => setSubValue('maxRedemptionsPerUserPerStream', v)"
+    />
   </div>
 </template>
 
 <script>
+import NumberInput from "../data/NumberInput.vue";
+
 export default {
+  components: { NumberInput },
   props: {
     value: {},
   },
@@ -60,7 +63,7 @@ export default {
     setSubValue(key, value) {
       let newValue = { ...this.value };
 
-      if (value != undefined && value !== "") {
+      if (value !== undefined && value !== "") {
         newValue[key] = value;
       } else {
         delete newValue[key];

@@ -1,15 +1,13 @@
 <template>
-  <el-card shadow="never" class="object-indent">
-    <table>
-      <data-input
-        v-for="propertyKey in Object.keys(schema)"
-        :key="propertyKey"
-        :schema="schema[propertyKey]"
-        :value="value ? value[propertyKey] : null"
-        @input="(v) => updateObject(propertyKey, v)"
-      />
-    </table>
-  </el-card>
+  <div class="data-object-container">
+    <data-input
+      v-for="propertyKey in Object.keys(schema)"
+      :key="propertyKey"
+      :schema="schema[propertyKey]"
+      :value="value ? value[propertyKey] : null"
+      @input="(v) => updateObject(propertyKey, v)"
+    />
+  </div>
 </template>
 
 <script>
@@ -24,7 +22,12 @@ export default {
     updateObject(key, value) {
       let newValue = this.value ? { ...this.value } : {};
 
-      newValue[key] = value;
+      if (value != "" && value != undefined) {
+        console.log("Update Obj", key, value);
+        newValue[key] = value;
+      } else {
+        delete newValue[key];
+      }
 
       this.$emit("input", newValue);
     },
@@ -33,6 +36,4 @@ export default {
 </script>
 
 <style scoped>
-.object-indent {
-}
 </style>

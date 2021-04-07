@@ -9,7 +9,6 @@
           :label="actions[actionKey].name || actionKey"
         />
       </table>
-      <el-button @click="$emit('delete')"> Delete </el-button>
     </div>
     <div class="action-card-body" v-else-if="actionKey == 'import'">
       <div style="width: 100%">
@@ -20,7 +19,6 @@
           :schema="{ type: 'String' }"
         />
       </div>
-      <el-button @click="$emit('delete')"> Delete </el-button>
     </div>
     <div v-else>Unknown Action Key: {{ actionKey }}</div>
   </div>

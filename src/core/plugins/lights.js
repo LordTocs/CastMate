@@ -49,7 +49,6 @@ const { evalTemplate } = require('../utils/template');
 
 const os = require('os');
 const { sleep } = require("../utils/sleep.js");
-const { ipcMain } = require("electron");
 const fs = require("fs");
 
 module.exports = {
@@ -58,14 +57,6 @@ module.exports = {
 	async init()
 	{
 		this.groupCache = {};
-
-		ipcMain.handle("lightsSearchForHub", async () => {
-			return await this.forceAuth();
-		});
-
-		ipcMain.handle("lightsGetHubStatus", async () => {
-			return !!this.hue;
-		});
 
 		if (!await this.discoverBridge())
 		{
@@ -83,6 +74,16 @@ module.exports = {
 		}
 
 		return true;
+	},
+	ipcMethods: {
+		async getHubStatus()
+		{
+			return !!this.hue;
+		},
+		async searchForHub()
+		{
+			return await this.forceAuth();
+		}
 	},
 	methods: {
 		async forceAuth()
@@ -179,7 +180,8 @@ module.exports = {
 
 			return false;
 		},
-		async initApi() {
+		async initApi()
+		{
 			try
 			{
 				this.hue = await hueApi.createLocal(this.bridgeIp).connect(this.hueUser.username);
@@ -228,7 +230,7 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					on: { type: Boolean, name: "On" },
+					on: { type: "OptionalBoolean", name: "On" },
 					bri: { type: "TemplateNumber", name: "Brightness" },
 					hue: { type: "TemplateNumber", name: "Hue" },
 					transition: { type: "TemplateNumber", name: "Transition Time" },

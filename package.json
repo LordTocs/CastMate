@@ -1,8 +1,9 @@
 {
   "name": "castmate",
   "version": "0.1.0",
-  "description": "",
   "private": "true",
+  "description": "",
+  "author": "LordTocs & FitzBro",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -13,9 +14,9 @@
     "postuninstall": "electron-builder install-app-deps"
   },
   "main": "background.js",
-  "author": "LordTocs & FitzBro",
   "dependencies": {
     "@julusian/jpeg-turbo": "^1.0.0",
+    "@mdi/font": "^5.9.55",
     "async-mutex": "^0.3.0",
     "axios": "^0.21.1",
     "bad-words": "^3.0.4",
@@ -26,9 +27,6 @@
     "custom-electron-titlebar": "^3.2.6",
     "electron": "^11.0.0",
     "electron-serve": "^1.1.0",
-    "element-theme-chalk": "^2.15.1",
-    "element-theme-dark": "^1.0.3",
-    "element-ui": "^2.15.1",
     "express": "^4.17.1",
     "ffi-napi": "^4.0.1",
     "got": "^11.8.2",
@@ -40,6 +38,7 @@
     "public-ip": "^4.0.3",
     "rcon-client": "^4.2.3",
     "ref-napi": "^3.0.1",
+    "regenerator-runtime": "^0.13.7",
     "say": "^0.16.0",
     "twitch": "^4.5.1",
     "twitch-chat-client": "^4.5.1",
@@ -47,6 +46,7 @@
     "twitch-webhooks": "^4.5.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
+    "vuetify": "^2.4.0",
     "vuex": "^3.6.2",
     "websocket": "^1.0.33",
     "win32-api": "^9.6.0",
@@ -62,8 +62,12 @@
     "electron-devtools-installer": "^3.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "sass": "^1.32.0",
+    "sass-loader": "^10.0.0",
     "vue-cli-plugin-electron-builder": "~2.0.0-rc.6",
-    "vue-template-compiler": "^2.6.11"
+    "vue-cli-plugin-vuetify": "~2.3.1",
+    "vue-template-compiler": "^2.6.11",
+    "vuetify-loader": "^1.7.0"
   },
   "eslintConfig": {
     "root": true,

@@ -25,7 +25,7 @@ module.exports = {
 	methods: {
 		getFullFilepath(filename)
 		{
-			return path.resolve(path.join("./user",filename));
+			return path.resolve(path.join("./user", filename));
 		}
 	},
 	settings: {
@@ -34,8 +34,9 @@ module.exports = {
 	},
 	actions: {
 		sound: {
+			name: "Sound",
 			data: {
-				type: String
+				type: String,
 			},
 			async handler(soundData)
 			{

@@ -14,8 +14,6 @@ const HotReloader = require("../utils/hot-reloader");
 
 const BadWords = require("bad-words");
 
-const { ipcMain } = require("electron");
-
 const express = require('express');
 
 
@@ -61,8 +59,6 @@ module.exports = {
 
 		await this.doInitialAuth();
 
-		this.setupSettingsIPC();
-
 		this.colorCache = {};
 
 		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
@@ -89,9 +85,6 @@ module.exports = {
 
 		async doInitialAuth()
 		{
-			if (!this.secrets.apiClientId)
-				return;
-
 			let clientId = this.secrets.apiClientId || "qnybd4aoxlom3u3wjbsstsp5yd2sdl"
 
 			this.channelAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Channel" })
@@ -169,38 +162,11 @@ module.exports = {
 
 			//Get the IDs
 			let channel = await this.channelTwitchClient.kraken.users.getMe();
-			this.channelName = channel.name;
+			this.state.channelName = channel.name;
 			this.channelId = await channel.id;
-			this.botId = await (await this.botTwitchClient.kraken.users.getMe()).id;
-		},
-
-		setupSettingsIPC()
-		{
-			ipcMain.handle('twitchGetAuthStatus', async () =>
-			{
-				return {
-					bot: this.botAuth ? this.botAuth.isAuthed : false,
-					channel: this.channelAuth ? this.channelAuth.isAuthed : false,
-				}
-			})
-
-			ipcMain.handle('twitchDoBotAuth', async () =>
-			{
-				let result = await this.botAuth.doAuth(true);
-				if (result)
-				{
-					await this.completeAuth();
-				}
-			})
-
-			ipcMain.handle('twitchDoChannelAuth', async () =>
-			{
-				let result = await this.channelAuth.doAuth(true);
-				if (result)
-				{
-					await this.completeAuth();
-				}
-			})
+			let bot = await this.botTwitchClient.kraken.users.getMe();
+			this.botId = await bot.id;
+			this.state.botName = bot.name;
 		},
 
 		parseMessage(message)
@@ -223,10 +189,8 @@ module.exports = {
 
 		async setupChatTriggers()
 		{
-			this.chatClient = new ChatClient(this.botAuth, { channels: [this.channelName] });
+			this.chatClient = new ChatClient(this.botAuth, { channels: [this.state.channelName] });
 			await this.chatClient.connect();
-
-			this.chatClient.say(this.channelName.toLowerCase(), "StreamMachine is now running.");
 
 			//Setup triggers
 			this.chatClient.onMessage(async (channel, user, message, msgInfo) =>
@@ -320,9 +284,6 @@ module.exports = {
 
 				let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
 				this.state.followers = follows.total;
-
-				//let follows = await channelTwitchClient.helix.users.getFollows({ followedUser: channelId });
-				//variables.set("followers", follows.total);
 			});
 
 			let subHook = await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) =>
@@ -330,10 +291,17 @@ module.exports = {
 				//Stream Changed
 				console.log("Stream Changed");
 
-				let game = await stream.getGame();
-				console.log("Game Name", game.name);
+				try
+				{
+					let game = await stream.getGame();
+					console.log("Game Name", game.name);
 
-				this.state.twitchCategory = game.name;
+					this.state.twitchCategory = game.name;
+				}
+				catch (err)
+				{
+					this.state.twitchCategory = null;
+				}
 			});
 
 			this.webhookSubs = [followHook, subHook];
@@ -526,6 +494,33 @@ module.exports = {
 			}
 		}
 	},
+	ipcMethods: {
+		async getAuthStatus()
+		{
+			return {
+				bot: this.botAuth ? this.state.botName : null,
+				channel: this.channelAuth ? this.state.channelName : false,
+			}
+		},
+
+		async doBotAuth()
+		{
+			let result = await this.botAuth.doAuth(true);
+			if (result)
+			{
+				await this.completeAuth();
+			}
+		},
+
+		async doChannelAuth()
+		{
+			let result = await this.channelAuth.doAuth(true);
+			if (result)
+			{
+				await this.completeAuth();
+			}
+		}
+	},
 	async onProfileLoad(profile, config)
 	{
 		profile.rewards = config.rewards || [];
@@ -576,6 +571,11 @@ module.exports = {
 			type: String,
 			name: "Twitch Channel Name",
 			description: "The active channel's Name"
+		},
+		botName: {
+			type: String,
+			name: "Bot Name",
+			description: "The chat bot's Name"
 		},
 		twitchCategory: {
 			type: String,
@@ -647,7 +647,7 @@ module.exports = {
 			},
 			handler(message, context)
 			{
-				this.chatClient.say(this.channelName.toLowerCase(), template(message, context));
+				this.chatClient.say(this.state.channelName.toLowerCase(), template(message, context));
 			}
 		},
 		multiSay: {
@@ -661,7 +661,7 @@ module.exports = {
 				let msgArray = evalTemplate(message, context)
 				for (let msg of msgArray)
 				{
-					this.chatClient.say(this.channelName.toLowerCase(), msg);
+					this.chatClient.say(this.state.channelName.toLowerCase(), msg);
 				}
 			}
 		}

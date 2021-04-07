@@ -1,47 +1,102 @@
 <template>
-  <div id="app">
-    <el-container>
-      <el-aside>
-        <el-menu :router="true">
-          <el-menu-item index="/">
-            <i class="el-icon-document"></i>
-            <span>Profiles</span>
-          </el-menu-item>
+  <v-app style="max-height: 100vh">
+    <system-bar title="CastMate" />
+    <v-app-bar dense app v-if="loaded">
+      <v-app-bar-nav-icon @click="navDrawer = !navDrawer"></v-app-bar-nav-icon>
 
-          <el-menu-item index="/rewards">
-            <i class="el-icon-star-on"></i>
-            <span>Channel Point Rewards</span>
-          </el-menu-item>
+      <v-toolbar-title> {{ $route.name }}</v-toolbar-title>
 
-          <el-submenu index="1">
-            <template slot="title">
-              <i class="el-icon-cpu"></i>
-              <span>Plugins</span>
-            </template>
-            <el-menu-item
-              :index="`/plugins/${plugin.name}`"
-              v-for="plugin in uiPlugins"
-              :key="plugin.name"
-            >
-              <!--i class="el-icon-document"></i-->
-              <span> {{ plugin.uiName }}</span>
-            </el-menu-item>
-          </el-submenu>
-        </el-menu>
-      </el-aside>
-      <el-main>
-        <router-view />
-      </el-main>
-    </el-container>
-  </div>
+      <v-spacer></v-spacer>
+    </v-app-bar>
+
+    <v-navigation-drawer app v-model="navDrawer" v-if="loaded">
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="title"> CastMate </v-list-item-title>
+          <!--v-list-item-subtitle> subtext </v-list-item-subtitle-->
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-divider></v-divider>
+
+      <v-list dense nav>
+        <v-list-item link to="/">
+          <v-list-item-icon>
+            <v-icon>mdi-file-document-outline</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Profiles </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item link to="/rewards">
+          <v-list-item-icon>
+            <v-icon>mdi-star-circle-outline</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Rewards </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-group n-action>
+          <template v-slot:activator>
+            <v-list-item-title>Plugins</v-list-item-title>
+          </template>
+
+          <v-list-item
+            v-for="plugin in uiPlugins"
+            :to="`/plugins/${plugin.name}`"
+            :key="plugin.name"
+          >
+            <v-list-item-icon>
+              <v-icon> mdi-view-dashboard </v-icon>
+            </v-list-item-icon>
+            <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
+          </v-list-item>
+        </v-list-group>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-main style="max-height: 100%" v-if="loaded">
+      <router-view></router-view>
+    </v-main>
+    <v-main style="max-height: 100%" v-else>
+      <v-container fluid class="fill-height">
+        <v-row align="center" justify="center">
+          <v-col cols="12" sm="4" style="justify-content: center; text-align: center">
+              <h1>Loading CastMate</h1>
+              <v-progress-circular
+                indeterminate
+                color="cyan"
+                :size="100"
+                :width="15"
+              />
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+
+    <v-footer app>
+      <!-- -->
+    </v-footer>
+  </v-app>
 </template>
 
 <script>
 import { mapGetters, mapActions } from "vuex";
+import SystemBar from "./components/layout/SystemBar.vue";
 
 export default {
+  components: {
+    SystemBar,
+  },
   data() {
-    return {};
+    return {
+      navDrawer: null,
+      loaded: false,
+    };
   },
   computed: {
     ...mapGetters("ipc", ["inited", "plugins"]),
@@ -64,36 +119,46 @@ export default {
   },
   methods: {
     ...mapActions("ipc", ["init"]),
+    ...mapActions("rewards", ["loadRewards"]),
   },
   async mounted() {
     await this.init();
+    await this.loadRewards();
+    this.loaded = true;
   },
 };
 </script>
 
 <style>
-body {
-  margin: 0;
+html {
+  overflow: hidden;
 }
 
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+.v-main__wrap {
+  bottom: 0;
+  right: 0;
+  overflow: auto;
 }
 
-#nav {
-  padding: 30px;
+/*Scroll Bars don't play nicely with the FABs so we shift it a little*/
+.v-speed-dial--right {
+  right: 32px;
+}
+.v-speed-dial--bottom {
+  bottom: 32px;
+}
+.v-btn--fixed.v-btn--right {
+  right: 32px;
+}
+.v-btn--fixed.v-btn--bottom {
+  bottom: 32px;
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+::-webkit-scrollbar {
+  background-color: #424242;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+::-webkit-scrollbar-thumb {
+  background: #616161;
 }
 </style>

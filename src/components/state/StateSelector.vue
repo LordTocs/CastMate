@@ -1,13 +1,10 @@
 <template>
-  <el-select :value="value" @input="(v) => $emit('input', v)" placeholder="State Variable">
-    <el-option
-      v-for="item in stateNames"
-      :key="item"
-      :label="item"
-      :value="item"
-    >
-    </el-option>
-  </el-select>
+  <v-select
+    :value="value"
+    @change="(v) => $emit('input', v)"
+    :label="label"
+    :items="stateNames"
+  />
 </template>
 
 <script>
@@ -15,6 +12,7 @@ import { mapGetters } from "vuex";
 export default {
   props: {
     value: {},
+    label: {},
   },
   data() {
     return {

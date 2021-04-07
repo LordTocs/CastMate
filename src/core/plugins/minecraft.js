@@ -48,11 +48,11 @@ module.exports = {
 		}
 	},
 	settings: {
-		host: { type: String },
-		port: { type: Number },
+		host: { type: String, name: "Server" },
+		port: { type: Number, name: "Port" },
 	},
 	secrets: {
-		password: { type: String }
+		password: { type: String, name: "RCON Password" }
 	},
 	actions: {
 		mineCmd: {
