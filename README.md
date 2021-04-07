@@ -24,13 +24,12 @@ CastMate is a broadcaster tool that allows Twitch viewers to interact with a bro
  - CSGO (game state stats)
  - Minecraft (execute Minecraft commands dynamically...not included in demo profile)
 
-## Installation
-
-TBD 
+## Download
+Download from GitHub releases: https://www.github.com/LordTocs/CastMate/releases
   
 ## CastMate Setup
 
-1. Register a new Twitch application [Here](https://dev.twitch.tv/console/apps/create).
+1. Register a new Twitch application [Here](https://dev.twitch.tv/console/apps/create). Use this redirect URL: http://localhost/auth/channel/redirect
 
 2. Forward port 80 (or port of your choosing) in your router to the machine running this code. Reference [https://portforward.com/](https://portforward.com/) or this [YouTube Guide](https://www.youtube.com/watch?v=NTLDsEuQlYc&ab_channel=TheBreakdown) for help.
 
@@ -76,9 +75,6 @@ Leave 'Custom CSS' as is. You do not need to check any of the boxes.
 *After everything is setup, switch between your scenes a few times. CastMate will create your new channel rewards on Twitch and update them when you change scenes. 
 
 *If browser sources are not working, you can select the source and click 'refresh' in OBS. Ideally, start CastMate before launching OBS and all of the browser sources will be ready to go!*
-
-## Phillips Hue Setup
-Start CastMate and press the link button on your Hue bridge when prompted.
 
 ## Additional Documentation
 
