@@ -52,7 +52,7 @@ Download from GitHub releases: https://www.github.com/LordTocs/CastMate/releases
 
 1. Start CastMate and wait for the plugins to load.
 
-1. Navigate to "Plugins" > "Twitch" and click "Sign In" and sign in under Twitch Channel Account. Sign in with your channel's account.. Next, click "Sign In" under Twitch Bot Account. You can login with the same account, or create a separate bot Twitch account...it's up to you!
+1. Navigate to "Plugins" > "Twitch" and click "Sign In" and sign in under Twitch Channel Account. Sign in with your channel's account. Next, click "Sign In" under Twitch Bot Account. You can login with the same account, or create a separate bot Twitch account...it's up to you!
 
 1. To configure Hue lights (optional) in the CastMate UI, navigate to "Plugins" > "Lights" > click "Connect To HUE" > press pairing button on your Phillips Hue Hub. Enter the name of the room from your HUE app that you'd like to change the lights of in the "defaultGroup" under Settings and click "Save"
 
