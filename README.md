@@ -63,7 +63,6 @@ Download from GitHub releases: https://www.github.com/LordTocs/CastMate/releases
 Demo profiles have been created to get started with CastMate. Create the following scenes in OBS to use these profiles. Scene names will need to match exactly to use the demo profiles. You can also edit these profiles through the UI.
 
 Game/Activity | Scene Name|
-
 |----|--------------------|
 | Apex Legends | Gaming Apex |
 | Star Wars Fallen Order | Gaming Fallen Order |
