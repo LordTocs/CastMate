@@ -65,21 +65,14 @@ Demo profiles have been created to get started with CastMate. Create the followi
 Game/Activity | Scene Name|
 
 |----|--------------------|
-
 | Apex Legends | Gaming Apex |
-
 | Star Wars Fallen Order | Gaming Fallen Order |
-
 | Grand Theft Auto V | Gaming GTA |
-
 | Age of Empires 3: DE | Gaming AOE3|
-
 | Age of Empires 3: DE | Lobby AoE3|
-
 | AOE Civilization Wheel | Civ Wheel |
 
 _Events are fully customizable via the CastMate UI._
-
 _Once setup, change between scenes and your channel rewards will update to match each profile (with the exception of designated globabl channel rewards)._
 
 ## OBS Overlay Setup
@@ -87,15 +80,10 @@ _Once setup, change between scenes and your channel rewards will update to match
 Add the below browser sources to each scene. For easier setup, create one scene containing the browser sources you want and reference that 'Overlay' scene in each scene from above.
 
 Feature| Browser Source URL | Example Size |Configuration
-
 |---------|-----------------|--------------|-------------|
-
 | Bouncing Emotes | http://127.0.0.1:80/emotes.html | 1920x1080 | N/A |
-
 | Notifications | http://localhost:80/notifications.html | 650x350 | N/A |
-
 | Sub Goal | http://127.0.0.1/goal.html?variable=subscribers&goal=100&title=Sub%20Goal | 800x600 | Update the 'goal' and 'title' variables in the URL to your liking |
-
 | Civ Wheel | http://127.0.0.1:80/wheel.html?name=civs&items=civs | 800 x 600 | N/A |
 
 Leave 'Custom CSS' as is. You do not need to check any of the boxes.
