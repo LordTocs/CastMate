@@ -1,7 +1,7 @@
 <template>
   <v-app style="max-height: 100vh">
     <system-bar title="CastMate" />
-    <v-app-bar dense app>
+    <v-app-bar dense app v-if="loaded">
       <v-app-bar-nav-icon @click="navDrawer = !navDrawer"></v-app-bar-nav-icon>
 
       <v-toolbar-title> {{ $route.name }}</v-toolbar-title>
@@ -9,7 +9,7 @@
       <v-spacer></v-spacer>
     </v-app-bar>
 
-    <v-navigation-drawer app v-model="navDrawer">
+    <v-navigation-drawer app v-model="navDrawer" v-if="loaded">
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title"> CastMate </v-list-item-title>
@@ -59,8 +59,23 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main style="max-height: 100%">
+    <v-main style="max-height: 100%" v-if="loaded">
       <router-view></router-view>
+    </v-main>
+    <v-main style="max-height: 100%" v-else>
+      <v-container fluid class="fill-height">
+        <v-row align="center" justify="center">
+          <v-col cols="12" sm="4" style="justify-content: center; text-align: center">
+              <h1>Loading CastMate</h1>
+              <v-progress-circular
+                indeterminate
+                color="cyan"
+                :size="100"
+                :width="15"
+              />
+          </v-col>
+        </v-row>
+      </v-container>
     </v-main>
 
     <v-footer app>
@@ -80,6 +95,7 @@ export default {
   data() {
     return {
       navDrawer: null,
+      loaded: false,
     };
   },
   computed: {
@@ -108,6 +124,7 @@ export default {
   async mounted() {
     await this.init();
     await this.loadRewards();
+    this.loaded = true;
   },
 };
 </script>
