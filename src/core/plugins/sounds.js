@@ -46,6 +46,10 @@ module.exports = {
 						source: this.getFullFilepath(soundData)
 					});
 				}
+				else
+				{
+					console.log("Sound Window Not Available")
+				}
 			}
 		}
 	}

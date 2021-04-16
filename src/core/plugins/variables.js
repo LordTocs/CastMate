@@ -53,7 +53,7 @@ module.exports = {
 		{
 			if (typeof value === 'string' || value instanceof String)
 			{
-				return evalTemplate(value, context)
+				return Number(evalTemplate(value, context))
 			}
 			return value;
 		}
@@ -89,6 +89,7 @@ module.exports = {
 					{
 						setValue = this.handleTemplateNumber(setValue, context);
 					}
+					console.log("Setting ", variableData.name, "to", setValue)
 					this.state[variableData.name] = setValue;
 				}
 				else if ("offset" in variableData)

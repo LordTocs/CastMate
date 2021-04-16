@@ -17,7 +17,9 @@ module.exports = {
 			},
 			async handler(data, context)
 			{
-				say.speak(template(data, context));
+				const message = template(data, context);
+				console.log("Speaking", message);
+				say.speak(message);
 			}
 		}
 	}
