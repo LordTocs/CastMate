@@ -1,4 +1,3 @@
-
 const nodeHueApi = require('node-hue-api');
 
 //node-hue-api is dumb and rate limits setGroupState()
@@ -296,10 +295,10 @@ module.exports = {
 				let scene = sceneData.scene;
 				let groupName = sceneData.group || this.settings.defaultGroup;
 
-				let sceneId = await this.hue.getSceneByName(scene);
+				let sceneObj = await this.hue.scenes.getSceneByName(scene);
 
 				let state = new lightstates.GroupLightState();
-				state.scene(sceneId);
+				state.scene(sceneObj[0].id);
 
 				let groups = await this.hue.groups.getGroupByName(groupName);
 
