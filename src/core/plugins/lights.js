@@ -18,7 +18,7 @@ const fakeSetGroupStateEndpoint = {
 
 		data.url = `/${parameters.username}/groups/${parameters.id}/action`;
 
-		data.data = parameters.state;
+		data.data = parameters.state.getPayload();
 
 		data.headers = {
 			'Content-Type': 'application/json'
@@ -232,6 +232,8 @@ module.exports = {
 					on: { type: "OptionalBoolean", name: "On" },
 					bri: { type: "TemplateNumber", name: "Brightness" },
 					hue: { type: "TemplateNumber", name: "Hue" },
+					sat: { type: "TemplateNumber", name: "Saturation" },
+					ct: { type: "TemplateNumber", name: "Color Temp" },
 					transition: { type: "TemplateNumber", name: "Transition Time" },
 					group: { type: String, name: "HUE Light Group" },
 				}
@@ -256,6 +258,18 @@ module.exports = {
 
 					state.bri(lightData.bri);
 				}
+				if ("sat" in lightData)
+				{
+					lightData.sat = this.handleTemplateNumber(lightData.sat, context);
+
+					state.sat(lightData.sat);
+				}
+				if ("ct" in lightData)
+				{
+					lightData.ct = this.handleTemplateNumber(lightData.ct, context);
+
+					state.ct(lightData.ct);
+				}
 				if ("hue" in lightData)
 				{
 					lightData.hue = this.handleTemplateNumber(lightData.hue, context);
@@ -274,9 +288,9 @@ module.exports = {
 				if (group.length == 0)
 					return;
 
-				//await this.hue.groups.setGroupState(group.id, state);
+				//await this.hue.groups.setGroupState(group[0].id, state);
 				//Run our fake endpoint instead of the library's
-				await this.hue.groups.execute(fakeSetGroupStateEndpoint, { id: group[0].id, state: state._state });
+				await this.hue.groups.execute(fakeSetGroupStateEndpoint, { id: group[0].id, state: state });
 
 			}
 		},
