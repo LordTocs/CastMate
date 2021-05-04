@@ -7,6 +7,7 @@
     <actions-list-editor v-model="value.actions" />
     <v-card-actions>
       <add-action-popover @select="addAction" />
+      <v-btn @click="addImport" style="margin-left: 8px;"> Add Import </v-btn>
       <v-spacer />
       <v-btn color="red" @click="$emit('delete')"> Delete </v-btn>
     </v-card-actions>
@@ -33,6 +34,13 @@ export default {
       let newCommand = { ...this.value };
 
       newCommand.actions.push({ [v]: null });
+
+      this.$emit("input", newCommand);
+    },
+    addImport() {
+      let newCommand = { ...this.value };
+
+      newCommand.actions.push({ import: null });
 
       this.$emit("input", newCommand);
     },

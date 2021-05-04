@@ -16,9 +16,34 @@
             </v-expansion-panels>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col>
+            <v-card color="grey darken-3" v-if="imports">
+              <v-card-title> Imports </v-card-title>
+              <v-card-text>
+                <v-list color="grey darken-3">
+                  <v-list-item v-for="(imprt, i) in imports" :key="i">
+                    <v-list-item-content>
+                      <v-text-field
+                        :value="imprt"
+                        @change="(v) => changeImport(i, v)"
+                      />
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-btn color="red" @click="deleteImport(i)">
+                        Delete
+                      </v-btn>
+                    </v-list-item-action>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
         <v-card-actions>
           <v-spacer />
           <v-btn @click="addCommand"> Add Command </v-btn>
+          <v-btn @click="addImport"> Import Triggers </v-btn>
         </v-card-actions>
       </v-expansion-panel-content>
     </v-expansion-panel>
@@ -65,6 +90,12 @@ export default {
       }
       return Object.keys(this.value).filter((key) => key != "imports");
     },
+    imports() {
+      if (!this.value) {
+        return undefined;
+      }
+      return this.value.imports;
+    },
     triggerName() {
       return this.trigger ? this.trigger.name : this.triggerKey;
     },
@@ -78,6 +109,39 @@ export default {
       });
 
       let result = Object.assign({}, ...keyValues);
+      this.$emit("input", result);
+    },
+    addImport() {
+      let result = {
+        ...this.value,
+      };
+
+      if (!result.imports) result.imports = [];
+
+      result.imports.push("");
+
+      this.$emit("input", result);
+    },
+    deleteImport(index) {
+      let result = {
+        ...this.value,
+      };
+
+      if (!result.imports) return;
+
+      result.imports.splice(index, 1);
+
+      this.$emit("input", result);
+    },
+    changeImport(index, value) {
+      let result = {
+        ...this.value,
+      };
+
+      if (!result.imports) return;
+
+      result.imports[index] = value;
+
       this.$emit("input", result);
     },
     updateCommand(command, data) {

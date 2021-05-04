@@ -1,7 +1,12 @@
 <template>
   <v-timeline-item right>
     <v-card color="grey darken-2">
-      <v-card-title> {{ actions[firstActionKey].name }} </v-card-title>
+      <v-card-title v-if="actions[firstActionKey]">
+        {{ actions[firstActionKey].name }}
+      </v-card-title>
+      <v-card-title v-else-if="firstActionKey == 'import'">
+        Import
+      </v-card-title>
       <v-card-text>
         <action-editor
           :actionKey="firstActionKey"
@@ -10,9 +15,7 @@
         />
       </v-card-text>
       <v-card-actions>
-        <v-btn color="red" @click="$emit('delete')">
-          Delete
-        </v-btn>
+        <v-btn color="red" @click="$emit('delete')"> Delete </v-btn>
       </v-card-actions>
     </v-card>
   </v-timeline-item>
