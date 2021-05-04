@@ -45,6 +45,28 @@
           </template>
         </v-list-item-group>
       </v-list>
+      <v-list color="grey darken-3">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title"> Sequences </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <v-list>
+        <v-list-item-group>
+          <template v-for="(sequence, i) in sequences">
+            <v-list-item
+              :key="sequence.name"
+              @click="$router.push(`/sequences/${sequence.name}`)"
+            >
+              <v-list-item-content>
+                <v-list-item-title> {{ sequence.name }} </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider :key="i" />
+          </template>
+        </v-list-item-group>
+      </v-list>
     </v-card>
 
     <new-profile-modal ref="profileModal" @created="getFiles()" />
@@ -80,21 +102,28 @@ export default {
       profilePop: false,
       profiles: [],
       triggers: [],
+      sequences: [],
     };
   },
   methods: {
     async getFiles() {
       let profiles = await fs.promises.readdir("./user/profiles");
       let triggers = await fs.promises.readdir("./user/triggers");
+      let sequences = await fs.promises.readdir("./user/sequences");
 
       profiles = profiles.filter((f) => path.extname(f) == ".yaml");
       triggers = triggers.filter((f) => path.extname(f) == ".yaml");
+      sequences = sequences.filter((f) => path.extname(f) == ".yaml");
 
       this.profiles = profiles.map((f) => ({
         name: path.basename(f, ".yaml"),
       }));
 
       this.triggers = triggers.map((f) => ({
+        name: path.basename(f, ".yaml"),
+      }));
+
+      this.sequences = sequences.map((f) => ({
         name: path.basename(f, ".yaml"),
       }));
     },

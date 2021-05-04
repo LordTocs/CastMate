@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Profiles from "../views/Profiles.vue";
 import ProfileEditor from "../views/ProfileEditor.vue";
 import TriggersEditor from "../views/TriggersEditor.vue";
+import SequenceEditor from "../views/SequenceEditor.vue";
 import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
 
@@ -23,6 +24,11 @@ const routes = [
 		path: "/triggers/:triggers",
 		name: "Trigger Editor",
 		component: TriggersEditor
+	},
+	{
+		path: "/sequences/:sequence",
+		name: "Sequence Editor",
+		component: SequenceEditor
 	},
 	{
 		path: "/plugins/:pluginName",
