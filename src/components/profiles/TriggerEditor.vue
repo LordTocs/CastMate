@@ -1,5 +1,5 @@
 <template>
-  <v-expansion-panels>
+  <v-expansion-panels v-if="trigger">
     <v-expansion-panel v-if="trigger.type != 'SingleAction'">
       <v-expansion-panel-header> {{ triggerName }} </v-expansion-panel-header>
       <v-expansion-panel-content>
@@ -31,6 +31,27 @@
       </v-expansion-panel-content>
     </v-expansion-panel>
   </v-expansion-panels>
+  <v-card v-else>
+    <v-card-text>
+      <v-row v-for="(commandKey, i) in commands" :key="i">
+        <v-col>
+          <v-expansion-panels>
+            <command-editor
+              :value="value[commandKey]"
+              :actionKey="commandKey"
+              @input="(newData) => updateCommand(commandKey, newData)"
+              @delete="deleteCommand(commandKey)"
+              @key-change="(v) => changeKey(commandKey, v)"
+            />
+          </v-expansion-panels>
+        </v-col>
+      </v-row>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer />
+      <v-btn @click="addCommand"> Add Command </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>

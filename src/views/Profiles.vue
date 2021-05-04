@@ -1,6 +1,13 @@
 <template>
   <v-container fluid>
     <v-card id="lateral">
+      <v-list color="grey darken-3">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title"> Profiles </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
       <v-list>
         <v-list-item-group>
           <template v-for="(profile, i) in profiles">
@@ -10,6 +17,28 @@
             >
               <v-list-item-content>
                 <v-list-item-title> {{ profile.name }} </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider :key="i" />
+          </template>
+        </v-list-item-group>
+      </v-list>
+      <v-list color="grey darken-3">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title"> Triggers </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <v-list>
+        <v-list-item-group>
+          <template v-for="(trigger, i) in triggers">
+            <v-list-item
+              :key="trigger.name"
+              @click="$router.push(`/triggers/${trigger.name}`)"
+            >
+              <v-list-item-content>
+                <v-list-item-title> {{ trigger.name }} </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-divider :key="i" />
@@ -50,15 +79,22 @@ export default {
       newProfileName: null,
       profilePop: false,
       profiles: [],
+      triggers: [],
     };
   },
   methods: {
     async getFiles() {
       let profiles = await fs.promises.readdir("./user/profiles");
+      let triggers = await fs.promises.readdir("./user/triggers");
 
       profiles = profiles.filter((f) => path.extname(f) == ".yaml");
+      triggers = triggers.filter((f) => path.extname(f) == ".yaml");
 
       this.profiles = profiles.map((f) => ({
+        name: path.basename(f, ".yaml"),
+      }));
+
+      this.triggers = triggers.map((f) => ({
         name: path.basename(f, ".yaml"),
       }));
     },
