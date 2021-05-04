@@ -5,6 +5,10 @@
         <actions-list-editor v-model="sequence" />
       </v-col>
     </v-row>
+    <v-card-actions>
+      <add-action-popover @select="addAction" />
+      <v-spacer />
+    </v-card-actions>
     <v-speed-dial v-model="fab" fixed bottom right open-on-hover>
       <template v-slot:activator>
         <v-btn v-model="fab" color="primary" fab>
@@ -28,6 +32,7 @@
 
 <script>
 import ActionsListEditor from "../components/profiles/ActionsListEditor.vue";
+import AddActionPopover from "../components/profiles/AddActionPopover.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
@@ -35,6 +40,7 @@ import path from "path";
 export default {
   components: {
     ActionsListEditor,
+    AddActionPopover,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   computed: {
@@ -71,6 +77,9 @@ export default {
 
         this.$router.push("/");
       }
+    },
+    addAction(v) {
+      this.sequence.push({ [v]: null });
     },
   },
   async mounted() {
