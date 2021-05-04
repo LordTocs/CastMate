@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-row>
+    <v-row style="padding-bottom: 3.5rem;">
       <v-col>
         <trigger-editor v-model="triggers" :triggerKey="triggersName" />
       </v-col>
