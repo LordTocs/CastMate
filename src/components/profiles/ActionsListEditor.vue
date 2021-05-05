@@ -1,5 +1,11 @@
 <template>
-  <v-timeline dense align-top>
+  <draggable
+    :list="value"
+    handle=".handle"
+    tag="v-timeline"
+    :component-data="getDraggableData()"
+  >
+    <!--v-timeline dense align-top-->
     <action-group-editor
       v-for="(action, i) in value"
       :key="i"
@@ -9,17 +15,33 @@
       @moveUp="moveActionUp(i)"
       @moveDown="moveActionDown(i)"
     />
-  </v-timeline>
+  </draggable>
 </template>
 
 <script>
 import ActionGroupEditor from "./ActionGroupEditor.vue";
+import Draggable from "vuedraggable";
 export default {
-  components: { ActionGroupEditor },
+  components: { ActionGroupEditor, Draggable },
   props: {
     value: {},
   },
   methods: {
+    getDraggableData() {
+      return {
+        on: {
+          change: this.changed,
+        },
+        attrs: {
+          dense: true,
+          "align-top": true,
+        },
+      };
+    },
+    changed(arr) {
+      console.log("Changed", arr);
+      this.$emit("input", arr);
+    },
     updateAction(index, value) {
       let newValue = [...this.value];
 

@@ -1,7 +1,7 @@
 <template>
   <v-timeline-item right>
     <v-card color="grey darken-2">
-      <v-card-title v-if="actions[firstActionKey]">
+      <v-card-title v-if="actions[firstActionKey]" class="handle">
         {{ actions[firstActionKey].name }}
       </v-card-title>
       <v-card-title v-else-if="firstActionKey == 'import'">
