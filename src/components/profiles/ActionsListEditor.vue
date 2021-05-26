@@ -6,23 +6,21 @@
     :component-data="getDraggableData()"
   >
     <!--v-timeline dense align-top-->
-    <action-group-editor
+    <action-list-item
       v-for="(action, i) in value"
       :key="i"
       :value="action"
       @input="(v) => updateAction(i, v)"
       @delete="deleteAction(i)"
-      @moveUp="moveActionUp(i)"
-      @moveDown="moveActionDown(i)"
     />
   </draggable>
 </template>
 
 <script>
-import ActionGroupEditor from "./ActionGroupEditor.vue";
+import ActionListItem from "./ActionListItem.vue";
 import Draggable from "vuedraggable";
 export default {
-  components: { ActionGroupEditor, Draggable },
+  components: { ActionListItem, Draggable },
   props: {
     value: {},
   },
@@ -60,31 +58,7 @@ export default {
       let newValue = [...this.value, {}];
 
       this.$emit("input", newValue);
-    },
-    moveActionUp(index) {
-      let newValue = [...this.value];
-
-      let newIndex = Math.max(Math.min(index - 1, newValue.length), 0);
-      if (newIndex == index) {
-        return;
-      }
-
-      newValue.splice(newIndex, 0, newValue.splice(index, 1)[0]);
-
-      this.$emit("input", newValue);
-    },
-    moveActionDown(index) {
-      let newValue = [...this.value];
-
-      let newIndex = Math.max(Math.min(index + 1, newValue.length), 0);
-      if (newIndex == index) {
-        return;
-      }
-
-      newValue.splice(newIndex, 0, newValue.splice(index, 1)[0]);
-
-      this.$emit("input", newValue);
-    },
+    }
   },
 };
 </script>

@@ -38,6 +38,7 @@ module.exports = {
 			data: {
 				type: String,
 			},
+			color: "#62894F",
 			async handler(soundData)
 			{
 				if (this.audioWindowSender)

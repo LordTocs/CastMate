@@ -5,15 +5,13 @@
       <v-expansion-panel-content>
         <v-row v-for="(commandKey, i) in commands" :key="i">
           <v-col>
-            <v-expansion-panels>
-              <command-editor
-                :value="value[commandKey]"
-                :actionKey="commandKey"
-                @input="(newData) => updateCommand(commandKey, newData)"
-                @delete="deleteCommand(commandKey)"
-                @key-change="(v) => changeKey(commandKey, v)"
-              />
-            </v-expansion-panels>
+            <command-editor
+              :value="value[commandKey]"
+              :actionKey="commandKey"
+              @input="(newData) => updateCommand(commandKey, newData)"
+              @delete="deleteCommand(commandKey)"
+              @key-change="(v) => changeKey(commandKey, v)"
+            />
           </v-col>
         </v-row>
         <v-row>
@@ -50,9 +48,7 @@
     <v-expansion-panel v-else>
       <v-expansion-panel-header> {{ triggerName }} </v-expansion-panel-header>
       <v-expansion-panel-content>
-        <v-expansion-panels>
-          <command-editor :value="value" @input="(v) => $emit('input', v)" />
-        </v-expansion-panels>
+        <command-editor :value="value" @input="(v) => $emit('input', v)" />
       </v-expansion-panel-content>
     </v-expansion-panel>
   </v-expansion-panels>
@@ -60,15 +56,13 @@
     <v-card-text>
       <v-row v-for="(commandKey, i) in commands" :key="i">
         <v-col>
-          <v-expansion-panels>
-            <command-editor
-              :value="value[commandKey]"
-              :actionKey="commandKey"
-              @input="(newData) => updateCommand(commandKey, newData)"
-              @delete="deleteCommand(commandKey)"
-              @key-change="(v) => changeKey(commandKey, v)"
-            />
-          </v-expansion-panels>
+          <command-editor
+            :value="value[commandKey]"
+            :actionKey="commandKey"
+            @input="(newData) => updateCommand(commandKey, newData)"
+            @delete="deleteCommand(commandKey)"
+            @key-change="(v) => changeKey(commandKey, v)"
+          />
         </v-col>
       </v-row>
     </v-card-text>

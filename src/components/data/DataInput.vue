@@ -20,6 +20,7 @@
   />
   <v-select
     :value="value"
+	:label="schema.name || label"
     @change="(v) => $emit('input', v)"
     :items="[
       { name: 'On', value: true },

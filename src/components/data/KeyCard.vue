@@ -1,17 +1,22 @@
 <template>
-  <v-expansion-panel>
-    <v-expansion-panel-header :color="color">
+  <v-card :color="color">
+    <v-card-title @click="expanded = !expanded">
       <key-input
         :value="keyValue"
         :label="label"
         @input="(v) => $emit('key-change', v)"
+        v-if="expanded"
       />
-      <div style="width: 15px" />
-    </v-expansion-panel-header>
-    <v-expansion-panel-content :color="color">
-      <slot />
-    </v-expansion-panel-content>
-  </v-expansion-panel>
+      <h1 class="title" v-else>
+        {{ keyValue }}
+      </h1>
+    </v-card-title>
+    <v-expand-transition>
+      <v-card-text v-if="expanded">
+        <slot />
+      </v-card-text>
+    </v-expand-transition>
+  </v-card>
 </template>
 
 <script>
@@ -22,6 +27,11 @@ export default {
     label: {},
     keyValue: {},
     color: {},
+  },
+  data() {
+    return {
+      expanded: false,
+    };
   },
 };
 </script>

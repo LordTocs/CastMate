@@ -226,12 +226,13 @@ module.exports = {
 		light: {
 			name: "Light",
 			description: "Changes HUE lights.",
+			color: "#7F743F",
 			data: {
 				type: Object,
 				properties: {
-					on: { type: "OptionalBoolean", name: "On" },
-					bri: { type: "TemplateNumber", name: "Brightness" },
+					on: { type: "OptionalBoolean", name: "Light Switch" },
 					hue: { type: "TemplateNumber", name: "Hue" },
+					bri: { type: "TemplateNumber", name: "Brightness" },
 					sat: { type: "TemplateNumber", name: "Saturation" },
 					ct: { type: "TemplateNumber", name: "Color Temp" },
 					transition: { type: "TemplateNumber", name: "Transition Time" },
