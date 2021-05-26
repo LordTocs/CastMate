@@ -8,7 +8,7 @@
         v-if="expanded"
       />
       <h1 class="title" v-else>
-        {{ keyValue }}
+        {{ keyValue ? keyValue : defaultLabel }}
       </h1>
     </v-card-title>
     <v-expand-transition>
@@ -27,6 +27,7 @@ export default {
     label: {},
     keyValue: {},
     color: {},
+    defaultLabel: {},
   },
   data() {
     return {

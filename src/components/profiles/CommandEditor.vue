@@ -3,11 +3,12 @@
     :key-value="actionKey"
     @key-change="keyChange"
     color="grey darken-3"
+    defaultLabel="New Command"
   >
     <actions-list-editor v-model="value.actions" />
     <v-card-actions>
       <add-action-popover @select="addAction" />
-      <v-btn @click="addImport" style="margin-left: 8px;"> Add Import </v-btn>
+      <v-btn @click="addImport" style="margin-left: 8px"> Add Import </v-btn>
       <v-spacer />
       <v-btn color="red" @click="$emit('delete')"> Delete </v-btn>
     </v-card-actions>
