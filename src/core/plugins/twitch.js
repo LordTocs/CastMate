@@ -642,6 +642,7 @@ module.exports = {
 		say: {
 			name: "Say",
 			description: "Uses the bot to send a twitch chat message",
+			color: "#5E5172",
 			data: {
 				type: "TemplateString"
 			},
@@ -653,6 +654,7 @@ module.exports = {
 		multiSay: {
 			name: "Multi Say",
 			description: "Uses the bot to send an array of twitch chat messages",
+			color: "#5E5172",
 			data: {
 				type: "TemplateString"
 			},

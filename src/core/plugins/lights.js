@@ -298,6 +298,7 @@ module.exports = {
 		lightScene: {
 			name: "Scene",
 			description: "Changes HUE lights to a hue scene",
+			color: "#7F743F",
 			data: {
 				type: Object,
 				properties: {

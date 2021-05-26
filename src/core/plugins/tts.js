@@ -7,11 +7,12 @@ module.exports = {
 	uiName: "Text to Speech",
 	async init()
 	{
-		
+
 	},
 	actions: {
 		tts: {
 			name: "Text to Speech",
+			color: "#717287",
 			data: {
 				type: "TemplateString"
 			},

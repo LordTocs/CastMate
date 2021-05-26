@@ -56,6 +56,7 @@ module.exports = {
 		obsScene: {
 			name: "OBS Scene",
 			description: "Change the OBS scene.",
+			color: "#607A7F",
 			data: {
 				type: "TemplateString"
 			},
@@ -69,6 +70,7 @@ module.exports = {
 		obsFilter: {
 			name: "OBS Filter",
 			description: "Enable/Disable OBS filter",
+			color: "#607A7F",
 			data: {
 				type: Object,
 				properties: {

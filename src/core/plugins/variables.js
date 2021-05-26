@@ -65,6 +65,7 @@ module.exports = {
 	actions: {
 		variable: {
 			name: "Change Variable",
+			color: "#D3934A",
 			data: {
 				type: Object,
 				properties: {
