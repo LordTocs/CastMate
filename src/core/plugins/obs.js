@@ -65,6 +65,39 @@ module.exports = {
 					'scene-name': template(sceneData, context)
 				})
 			},
+		},
+		obsFilter: {
+			name: "OBS Filter",
+			description: "Enable/Disable OBS filter",
+			data: {
+				type: Object,
+				properties: {
+					sourceName: {
+						type: "TemplateString",
+						name: "Source Name",
+					},
+					filterName: {
+						type: "TemplateString",
+						name: "Filter Name",
+					},
+					filterEnabled: {
+						type: Boolean,
+						name: "Filter Enabled"
+					}
+				}
+			},
+			async handler(filterData, context)
+			{
+				const sourceName = template(filterData.sourceName, context);
+				const filterName = template(filterData.filterName, context);
+				console.log("Filter: ", sourceName, filterName);
+
+				await this.obs.send('SetSourceFilterVisibility', {
+					sourceName,
+					filterName,
+					filterEnabled: !!filterData.filterEnabled
+				})	
+			}
 		}
 	}
 }

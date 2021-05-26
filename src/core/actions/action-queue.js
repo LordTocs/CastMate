@@ -78,8 +78,8 @@ class ActionQueue
 		let actionArray = null;
 		let isSync = false;
 
-		
-		let completeContext =  {...context, ...this.plugins.combinedTemplateFunctions};
+
+		let completeContext = { ...context, ...this.plugins.combinedTemplateFunctions };
 		reactiveCopy(completeContext, this.plugins.combinedState);
 
 
@@ -198,7 +198,11 @@ class ActionQueue
 		{
 			if (subAction in this.actions)
 			{
-				this.actions[subAction].handler(action[subAction], context);
+				this.actions[subAction].handler(action[subAction], context).catch((reason) =>
+				{
+					console.error(`${subAction} threw Exception!`);
+					console.error(reason);
+				});
 			}
 		}
 
