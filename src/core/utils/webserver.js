@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const websocket = require("websocket");
 const http = require("http");
 const publicIp = require('public-ip');
+const { userFolder } = require("./configuration");
+const path = require("path");
 
 async function createWebServices(settings, secrets, plugins)
 {
@@ -61,7 +63,7 @@ async function createWebServices(settings, secrets, plugins)
 			{
 				console.log(`Started Internal Webserver on port ${port}`);
 				app.use(express.static("./web"));
-				app.use("/user", express.static("./user/data", {
+				app.use("/user", express.static(path.join(userFolder, "data"), {
 					etag: false
 				}));
 			});

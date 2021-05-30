@@ -2,24 +2,13 @@
   <v-container fluid>
     <v-row>
       <v-col>
-        <conditions-editor v-model="profile.conditions" />
+        <actions-list-editor v-model="sequence" />
       </v-col>
     </v-row>
-    <v-row>
-      <v-col>
-        <variables-editor v-model="profile.variables" />
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <rewards-editor v-model="profile.rewards" />
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <triggers-editor v-model="profile.triggers" />
-      </v-col>
-    </v-row>
+    <v-card-actions>
+      <add-action-popover @select="addAction" />
+      <v-spacer />
+    </v-card-actions>
     <v-speed-dial v-model="fab" fixed bottom right open-on-hover>
       <template v-slot:activator>
         <v-btn v-model="fab" color="primary" fab>
@@ -42,10 +31,8 @@
 </template>
 
 <script>
-import TriggersEditor from "../components/profiles/TriggersEditor.vue";
-import VariablesEditor from "../components/profiles/VariablesEditor.vue";
-import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
-import RewardsEditor from "../components/profiles/RewardsEditor.vue";
+import ActionsListEditor from "../components/profiles/ActionsListEditor.vue";
+import AddActionPopover from "../components/profiles/AddActionPopover.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
@@ -53,33 +40,29 @@ import { mapGetters } from "vuex";
 
 export default {
   components: {
-    TriggersEditor,
-    VariablesEditor,
-    ConditionsEditor,
-    RewardsEditor,
+    ActionsListEditor,
+    AddActionPopover,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
-    profileName() {
-      return this.$route.params.profile;
+    sequenceName() {
+      return this.$route.params.sequence;
     },
   },
   data() {
     return {
-      profile: {
-        triggers: {},
-      },
+      sequence: [],
       saveSnack: false,
       fab: false,
     };
   },
   methods: {
     async save() {
-      let newYaml = YAML.stringify(this.profile);
+      let newYaml = YAML.stringify(this.sequence);
 
       await fs.promises.writeFile(
-        path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
+        path.join(this.paths.userFolder, `sequences/${this.sequenceName}.yaml`),
         newYaml
       );
 
@@ -89,24 +72,30 @@ export default {
       if (
         await this.$refs.deleteConfirm.open(
           "Confirm",
-          "Are you sure you want to delete this profile?"
+          "Are you sure you want to delete this trigger file?"
         )
       ) {
         await fs.promises.unlink(
-          path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`)
+          path.join(
+            this.paths.userFolder,
+            `sequences/${this.sequenceName}.yaml`
+          )
         );
 
         this.$router.push("/");
       }
     },
+    addAction(v) {
+      this.sequence.push({ [v]: null });
+    },
   },
   async mounted() {
     let fileData = await fs.promises.readFile(
-      path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
+      path.join(this.paths.userFolder, `sequences/${this.sequenceName}.yaml`),
       "utf-8"
     );
 
-    this.profile = YAML.parse(fileData);
+    this.sequence = YAML.parse(fileData);
   },
 };
 </script>

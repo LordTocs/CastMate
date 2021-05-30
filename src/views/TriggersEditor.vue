@@ -1,23 +1,8 @@
 <template>
   <v-container fluid>
-    <v-row>
+    <v-row style="padding-bottom: 3.5rem">
       <v-col>
-        <conditions-editor v-model="profile.conditions" />
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <variables-editor v-model="profile.variables" />
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <rewards-editor v-model="profile.rewards" />
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <triggers-editor v-model="profile.triggers" />
+        <trigger-editor v-model="triggers" :triggerKey="triggersName" />
       </v-col>
     </v-row>
     <v-speed-dial v-model="fab" fixed bottom right open-on-hover>
@@ -42,10 +27,7 @@
 </template>
 
 <script>
-import TriggersEditor from "../components/profiles/TriggersEditor.vue";
-import VariablesEditor from "../components/profiles/VariablesEditor.vue";
-import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
-import RewardsEditor from "../components/profiles/RewardsEditor.vue";
+import TriggerEditor from "../components/profiles/TriggerEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
@@ -53,33 +35,28 @@ import { mapGetters } from "vuex";
 
 export default {
   components: {
-    TriggersEditor,
-    VariablesEditor,
-    ConditionsEditor,
-    RewardsEditor,
+    TriggerEditor,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
-    profileName() {
-      return this.$route.params.profile;
+    triggersName() {
+      return this.$route.params.triggers;
     },
   },
   data() {
     return {
-      profile: {
-        triggers: {},
-      },
+      triggers: {},
       saveSnack: false,
       fab: false,
     };
   },
   methods: {
     async save() {
-      let newYaml = YAML.stringify(this.profile);
+      let newYaml = YAML.stringify(this.triggers);
 
       await fs.promises.writeFile(
-        path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
+        path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`),
         newYaml
       );
 
@@ -89,11 +66,11 @@ export default {
       if (
         await this.$refs.deleteConfirm.open(
           "Confirm",
-          "Are you sure you want to delete this profile?"
+          "Are you sure you want to delete this trigger file?"
         )
       ) {
         await fs.promises.unlink(
-          path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`)
+          path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`)
         );
 
         this.$router.push("/");
@@ -102,11 +79,11 @@ export default {
   },
   async mounted() {
     let fileData = await fs.promises.readFile(
-      path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
+      path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`),
       "utf-8"
     );
 
-    this.profile = YAML.parse(fileData);
+    this.triggers = YAML.parse(fileData);
   },
 };
 </script>

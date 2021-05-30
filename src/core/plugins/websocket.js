@@ -21,7 +21,7 @@ module.exports = {
 		}
 	},
 	methods: {
-		transformTemplatesRecursive(obj, context)
+		async transformTemplatesRecursive(obj, context)
 		{
 			if (obj instanceof Object)
 			{
@@ -30,11 +30,11 @@ module.exports = {
 					let value = obj[key];
 					if (typeof value == 'string' || value instanceof String)
 					{
-						obj[key] = template(value, context);
+						obj[key] = await template(value, context);
 					}
 					else if (value instanceof Object || value instanceof Array)
 					{
-						this.transformTemplatesRecursive(value, context);
+						await this.transformTemplatesRecursive(value, context);
 					}
 				}
 			}
@@ -45,11 +45,11 @@ module.exports = {
 					let value = obj[i];
 					if (typeof value == 'string' || value instanceof String)
 					{
-						obj[i] = template(obj[i], context);
+						obj[i] = await template(obj[i], context);
 					}
 					else if (value instanceof Object || value instanceof Array)
 					{
-						this.transformTemplatesRecursive(value, context);
+						await this.transformTemplatesRecursive(value, context);
 					}
 				}
 			}
@@ -65,7 +65,7 @@ module.exports = {
 
 				let data = _.cloneDeep(websocketData);
 
-				this.transformTemplatesRecursive(data, context);
+				await this.transformTemplatesRecursive(data, context);
 
 				await this.webServices.websocketServer.broadcast(JSON.stringify(data));
 			}

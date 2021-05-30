@@ -1,25 +1,45 @@
 <template>
-  <v-timeline dense align-top>
-    <action-group-editor
+  <draggable
+    :list="value"
+    handle=".handle"
+    tag="v-timeline"
+    :component-data="getDraggableData()"
+  >
+    <!--v-timeline dense align-top-->
+    <action-list-item
       v-for="(action, i) in value"
       :key="i"
       :value="action"
       @input="(v) => updateAction(i, v)"
       @delete="deleteAction(i)"
-      @moveUp="moveActionUp(i)"
-      @moveDown="moveActionDown(i)"
     />
-  </v-timeline>
+  </draggable>
 </template>
 
 <script>
-import ActionGroupEditor from "./ActionGroupEditor.vue";
+import ActionListItem from "./ActionListItem.vue";
+import Draggable from "vuedraggable";
 export default {
-  components: { ActionGroupEditor },
+  components: { ActionListItem, Draggable },
   props: {
     value: {},
   },
   methods: {
+    getDraggableData() {
+      return {
+        on: {
+          change: this.changed,
+        },
+        attrs: {
+          dense: true,
+          "align-top": true,
+        },
+      };
+    },
+    changed(arr) {
+      console.log("Changed", arr);
+      this.$emit("input", arr);
+    },
     updateAction(index, value) {
       let newValue = [...this.value];
 
@@ -38,31 +58,7 @@ export default {
       let newValue = [...this.value, {}];
 
       this.$emit("input", newValue);
-    },
-    moveActionUp(index) {
-      let newValue = [...this.value];
-
-      let newIndex = Math.max(Math.min(index - 1, newValue.length), 0);
-      if (newIndex == index) {
-        return;
-      }
-
-      newValue.splice(newIndex, 0, newValue.splice(index, 1)[0]);
-
-      this.$emit("input", newValue);
-    },
-    moveActionDown(index) {
-      let newValue = [...this.value];
-
-      let newIndex = Math.max(Math.min(index + 1, newValue.length), 0);
-      if (newIndex == index) {
-        return;
-      }
-
-      newValue.splice(newIndex, 0, newValue.splice(index, 1)[0]);
-
-      this.$emit("input", newValue);
-    },
+    }
   },
 };
 </script>

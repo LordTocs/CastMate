@@ -11,6 +11,7 @@ class Plugin
 
 		this.name = config.name;
 		this.uiName = config.uiName || config.name;
+		this.color = config.color;
 		console.log(`Loading Plugin: ${config.name}`);
 		this.initFunc = config.init;
 		//Bind the init func to the pluginObj
@@ -167,7 +168,8 @@ class Plugin
 			actions[actionKey] = {
 				name: this.actions[actionKey].name,
 				description: this.actions[actionKey].description,
-				data: cleanSchemaForIPC(this.actions[actionKey].data)
+				data: cleanSchemaForIPC(this.actions[actionKey].data),
+				color: this.actions[actionKey].color,
 			}
 		}
 

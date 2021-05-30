@@ -1,4 +1,4 @@
-- sound: "./sounds/zeldachest.mp3"
+- sound: "zeldachest.mp3"
   light:
     on: false
 - timestamp: 1.79

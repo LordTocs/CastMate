@@ -49,11 +49,11 @@ module.exports = {
 			createReactiveProperty(this.state, name);
 			this.plugins.updateReactivity(this);
 		},
-		handleTemplateNumber(value, context)
+		async handleTemplateNumber(value, context)
 		{
 			if (typeof value === 'string' || value instanceof String)
 			{
-				return evalTemplate(value, context)
+				return Number(await evalTemplate(value, context))
 			}
 			return value;
 		}
@@ -65,12 +65,13 @@ module.exports = {
 	actions: {
 		variable: {
 			name: "Change Variable",
+			color: "#D3934A",
 			data: {
 				type: Object,
 				properties: {
 					name: { type: String, name: "Variable Name" },
-					set: { type: String, name: "Set Value" },
-					offset: { type: String, name: "Offset Value" },
+					set: { type: "TemplateNumber", name: "Set Value" },
+					offset: { type: "TemplateNumber", name: "Offset Value" },
 				}
 			},
 			async handler(variableData, context)
@@ -87,8 +88,9 @@ module.exports = {
 					let setValue = variableData.set;
 					if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number)
 					{
-						setValue = this.handleTemplateNumber(setValue, context);
+						setValue = await this.handleTemplateNumber(setValue, context);
 					}
+					console.log("Setting ", variableData.name, "to", setValue)
 					this.state[variableData.name] = setValue;
 				}
 				else if ("offset" in variableData)

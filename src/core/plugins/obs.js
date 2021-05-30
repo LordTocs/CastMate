@@ -56,15 +56,50 @@ module.exports = {
 		obsScene: {
 			name: "OBS Scene",
 			description: "Change the OBS scene.",
+			color: "#607A7F",
 			data: {
 				type: "TemplateString"
 			},
 			async handler(sceneData, context)
 			{
 				await this.obs.send('SetCurrentScene', {
-					'scene-name': template(sceneData, context)
+					'scene-name': await template(sceneData, context)
 				})
 			},
+		},
+		obsFilter: {
+			name: "OBS Filter",
+			description: "Enable/Disable OBS filter",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+					sourceName: {
+						type: "TemplateString",
+						name: "Source Name",
+					},
+					filterName: {
+						type: "TemplateString",
+						name: "Filter Name",
+					},
+					filterEnabled: {
+						type: Boolean,
+						name: "Filter Enabled"
+					}
+				}
+			},
+			async handler(filterData, context)
+			{
+				const sourceName = await template(filterData.sourceName, context);
+				const filterName = await template(filterData.filterName, context);
+				console.log("Filter: ", sourceName, filterName);
+
+				await this.obs.send('SetSourceFilterVisibility', {
+					sourceName,
+					filterName,
+					filterEnabled: !!filterData.filterEnabled
+				})	
+			}
 		}
 	}
 }

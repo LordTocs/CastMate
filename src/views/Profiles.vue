@@ -1,6 +1,13 @@
 <template>
   <v-container fluid>
     <v-card id="lateral">
+      <v-list color="grey darken-3">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title"> Profiles </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
       <v-list>
         <v-list-item-group>
           <template v-for="(profile, i) in profiles">
@@ -10,6 +17,50 @@
             >
               <v-list-item-content>
                 <v-list-item-title> {{ profile.name }} </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider :key="i" />
+          </template>
+        </v-list-item-group>
+      </v-list>
+      <v-list color="grey darken-3">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title"> Triggers </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <v-list>
+        <v-list-item-group>
+          <template v-for="(trigger, i) in triggers">
+            <v-list-item
+              :key="trigger.name"
+              @click="$router.push(`/triggers/${trigger.name}`)"
+            >
+              <v-list-item-content>
+                <v-list-item-title> {{ trigger.name }} </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider :key="i" />
+          </template>
+        </v-list-item-group>
+      </v-list>
+      <v-list color="grey darken-3">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title"> Sequences </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <v-list>
+        <v-list-item-group>
+          <template v-for="(sequence, i) in sequences">
+            <v-list-item
+              :key="sequence.name"
+              @click="$router.push(`/sequences/${sequence.name}`)"
+            >
+              <v-list-item-content>
+                <v-list-item-title> {{ sequence.name }} </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-divider :key="i" />
@@ -41,24 +92,48 @@ import fs from "fs";
 import path from "path";
 import YAML from "yaml";
 import NewProfileModal from "../components/profiles/NewProfileModal.vue";
+import { mapGetters } from "vuex";
 export default {
   components: {
     NewProfileModal,
+  },
+  computed: {
+    ...mapGetters("ipc", ["paths"]),
   },
   data() {
     return {
       newProfileName: null,
       profilePop: false,
       profiles: [],
+      triggers: [],
+      sequences: [],
     };
   },
   methods: {
     async getFiles() {
-      let profiles = await fs.promises.readdir("./user/profiles");
+      let profiles = await fs.promises.readdir(
+        path.join(this.paths.userFolder, "profiles")
+      );
+      let triggers = await fs.promises.readdir(
+        path.join(this.paths.userFolder, "triggers")
+      );
+      let sequences = await fs.promises.readdir(
+        path.join(this.paths.userFolder, "sequences")
+      );
 
       profiles = profiles.filter((f) => path.extname(f) == ".yaml");
+      triggers = triggers.filter((f) => path.extname(f) == ".yaml");
+      sequences = sequences.filter((f) => path.extname(f) == ".yaml");
 
       this.profiles = profiles.map((f) => ({
+        name: path.basename(f, ".yaml"),
+      }));
+
+      this.triggers = triggers.map((f) => ({
+        name: path.basename(f, ".yaml"),
+      }));
+
+      this.sequences = sequences.map((f) => ({
         name: path.basename(f, ".yaml"),
       }));
     },
@@ -72,7 +147,10 @@ export default {
       });
 
       await fs.promises.writeFile(
-        `./user/profiles/${this.newProfileName}.yaml`,
+        path.join(
+          this.paths.userFolder,
+          `profiles/${this.newProfileName}.yaml`
+        ),
         newYaml,
         "utf-8"
       );

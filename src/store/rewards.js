@@ -1,6 +1,7 @@
 import fs from 'fs';
 import YAML from 'yaml';
 import { changeObjectKey } from '../utils/objects';
+
 export default {
 	namespaced: true,
 	state()
@@ -25,12 +26,12 @@ export default {
 		},
 	},
 	actions: {
-		async loadRewards({ commit })
+		async loadRewards({ commit, rootGetters })
 		{
-			const rewards = YAML.parse(await fs.promises.readFile('./user/rewards.yaml', 'utf-8')) || {};
+			const rewards = YAML.parse(await fs.promises.readFile(rootGetters['ipc/paths'].rewardsFilePath, 'utf-8')) || {};
 			commit('setRewards', rewards);
 		},
-		async updateReward({ commit, state }, { rewardName, newReward })
+		async updateReward({ commit, state, rootGetters }, { rewardName, newReward })
 		{
 			let newRewards = { ...state.rewards };
 
@@ -49,27 +50,27 @@ export default {
 
 			newRewards[name] = rewardMinusName;
 
-			await fs.promises.writeFile('./user/rewards.yaml', YAML.stringify(newRewards), 'utf-8');
+			await fs.promises.writeFile(rootGetters['ipc/paths'].rewardsFilePath, YAML.stringify(newRewards), 'utf-8');
 
 			commit('setRewards', newRewards)
 		},
-		async deleteReward({ commit, state }, rewardName)
+		async deleteReward({ commit, state, rootGetters }, rewardName)
 		{
 			let newRewards = { ...state.rewards };
 			delete newRewards[rewardName]
 
-			await fs.promises.writeFile('./user/rewards.yaml', YAML.stringify(newRewards), 'utf-8');
+			await fs.promises.writeFile(rootGetters['ipc/paths'].rewardsFilePath, YAML.stringify(newRewards), 'utf-8');
 
 			commit('setRewards', newRewards)
 		},
-		async createReward({commit, state}, newReward)
+		async createReward({commit, state, rootGetters}, newReward)
 		{
 			const rewardMinusName = { ...newReward };
 			delete rewardMinusName.name;
 
 			let newRewards = { ...state.rewards, [newReward.name]: rewardMinusName};
 
-			await fs.promises.writeFile('./user/rewards.yaml', YAML.stringify(newRewards), 'utf-8');
+			await fs.promises.writeFile(rootGetters['ipc/paths'].rewardsFilePath, YAML.stringify(newRewards), 'utf-8');
 
 			commit('setRewards', newRewards);
 		}

@@ -1,5 +1,6 @@
 const { ipcMain, BrowserWindow } = require("electron");
 const path = require("path");
+const { userFolder } = require("../utils/configuration");
 
 module.exports = {
 	name: "sounds",
@@ -25,7 +26,7 @@ module.exports = {
 	methods: {
 		getFullFilepath(filename)
 		{
-			return path.resolve(path.join("./user", filename));
+			return path.resolve(path.join(userFolder, 'sounds', filename));
 		}
 	},
 	settings: {
@@ -38,6 +39,7 @@ module.exports = {
 			data: {
 				type: String,
 			},
+			color: "#62894F",
 			async handler(soundData)
 			{
 				if (this.audioWindowSender)
@@ -45,6 +47,10 @@ module.exports = {
 					this.audioWindowSender.send('play-sound', {
 						source: this.getFullFilepath(soundData)
 					});
+				}
+				else
+				{
+					console.log("Sound Window Not Available")
 				}
 			}
 		}

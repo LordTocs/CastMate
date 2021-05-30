@@ -4,6 +4,9 @@ const { Profile } = require("./profiles");
 const _ = require('lodash');
 const chokidar = require("chokidar");
 const { sleep } = require("../utils/sleep");
+const path = require('path');
+const { userFolder } = require("../utils/configuration");
+
 class ProfileManager
 {
 	constructor(actions, plugins)
@@ -19,9 +22,9 @@ class ProfileManager
 
 	async load()
 	{
-		this.profileWatcher = chokidar.watch('./user/profiles/');
-		this.triggersWatcher = chokidar.watch('./user/triggers/');
-		this.sequencesWatcher = chokidar.watch('./user/sequences/');
+		this.profileWatcher = chokidar.watch(path.join(userFolder, 'profiles/'));
+		this.triggersWatcher = chokidar.watch(path.join(userFolder, 'triggers/'));
+		this.sequencesWatcher = chokidar.watch(path.join(userFolder, 'sequences/'));
 
 		this.profileWatcher.on('add', async (path) =>
 		{

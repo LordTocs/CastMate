@@ -15,7 +15,48 @@ const HotReloader = require("../utils/hot-reloader");
 const BadWords = require("bad-words");
 
 const express = require('express');
+const { rewardsFilePath } = require("../utils/configuration");
 
+
+//https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
+function dateInterval(date1, date2)
+{
+	if (date1 > date2)
+	{ // swap
+		var result = dateInterval(date2, date1);
+		result.years = -result.years;
+		result.months = -result.months;
+		result.days = -result.days;
+		result.hours = -result.hours;
+		return result;
+	}
+	result = {
+		years: date2.getYear() - date1.getYear(),
+		months: date2.getMonth() - date1.getMonth(),
+		days: date2.getDate() - date1.getDate(),
+		hours: date2.getHours() - date1.getHours()
+	};
+	if (result.hours < 0)
+	{
+		result.days--;
+		result.hours += 24;
+	}
+	if (result.days < 0)
+	{
+		result.months--;
+		// days = days left in date1's month, 
+		//   plus days that have passed in date2's month
+		var copy1 = new Date(date1.getTime());
+		copy1.setDate(32);
+		result.days = 32 - date1.getDate() - copy1.getDate() + date2.getDate();
+	}
+	if (result.months < 0)
+	{
+		result.years--;
+		result.months += 12;
+	}
+	return result;
+}
 
 class ExpressWebhookAdapter extends ConnectionAdapter
 {
@@ -212,6 +253,7 @@ module.exports = {
 				const context = {
 					name: parsed.command,
 					user,
+					userId: msgInfo.userInfo.userId,
 					args: parsed.args,
 					argString: parsed.string,
 					userColor: msgInfo.userInfo.color,
@@ -279,7 +321,7 @@ module.exports = {
 				this.followerCache.add(follow.userId);
 
 				console.log(`followed by ${follow.userDisplayName}`);
-				this.actions.trigger('follow', { user: follow.userDisplayName, ...{ userColor: this.colorCache[follow.userId] } });
+				this.actions.trigger('follow', { user: follow.userDisplayName, userId: follow.userId, ...{ userColor: this.colorCache[follow.userId] } });
 
 
 				let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
@@ -321,6 +363,7 @@ module.exports = {
 				this.actions.trigger("bits", {
 					number: message.bits,
 					user: message.userName,
+					userId: message.userId,
 					message: message.message,
 					filteredMessage: this.filterMessage(message.message),
 					...{ userColor: this.colorCache[message.userId] }
@@ -341,6 +384,7 @@ module.exports = {
 					message,
 					filteredMessage: this.filterMessage(message),
 					user: redemption.userDisplayName,
+					userId: redemption.userId,
 					...{ userColor: this.colorCache[redemption.userId] }
 				});
 			});
@@ -350,13 +394,13 @@ module.exports = {
 				if (message.isGift)
 				{
 					console.log(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
-					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, ...{ userColor: this.colorCache[message.userId] } });
+					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
 				}
 				else
 				{
 					let months = message.months ? message.months : 0;
 					console.log(`Sub ${message.userDisplayName} : ${months}`);
-					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
+					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, userId: message.userId, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
 				}
 
 				this.state.subscribers = await this.channelTwitchClient.kraken.channels.getChannelSubscriptionCount(this.channelId);
@@ -381,7 +425,7 @@ module.exports = {
 
 		async initChannelRewards()
 		{
-			this.rewardsDefinitions = new HotReloader("./user/rewards.yaml",
+			this.rewardsDefinitions = new HotReloader(rewardsFilePath,
 				() =>
 				{
 					this.ensureChannelRewards()
@@ -642,28 +686,75 @@ module.exports = {
 		say: {
 			name: "Say",
 			description: "Uses the bot to send a twitch chat message",
+			color: "#5E5172",
 			data: {
 				type: "TemplateString"
 			},
-			handler(message, context)
+			async handler(message, context)
 			{
-				this.chatClient.say(this.state.channelName.toLowerCase(), template(message, context));
+				await this.chatClient.say(this.state.channelName.toLowerCase(), await template(message, context));
 			}
 		},
 		multiSay: {
 			name: "Multi Say",
 			description: "Uses the bot to send an array of twitch chat messages",
+			color: "#5E5172",
 			data: {
 				type: "TemplateString"
 			},
-			handler(message, context)
+			async handler(message, context)
 			{
-				let msgArray = evalTemplate(message, context)
+				let msgArray = await evalTemplate(message, context)
 				for (let msg of msgArray)
 				{
-					this.chatClient.say(this.state.channelName.toLowerCase(), msg);
+					await this.chatClient.say(this.state.channelName.toLowerCase(), msg);
 				}
 			}
+		}
+	},
+	templateFunctions: {
+		async followAge(user)
+		{
+			const follow = await this.channelTwitchClient.helix.users.getFollowFromUserToBroadcaster(user, this.channelId);
+
+			if (!follow)
+			{
+				return "Not Following";
+			}
+
+			const now = new Date();
+			const diff = dateInterval(follow.followDate, now);
+
+			let result = "";
+
+			console.log(diff);
+
+			if (diff.years > 0)
+			{
+				result += ` ${diff.years} year${diff.years > 1 ? 's' : ''}`;
+			}
+
+			if (diff.months > 0)
+			{
+				result += ` ${diff.months} month${diff.months > 1 ? 's' : ''}`;
+			}
+
+			if (diff.days > 0)
+			{
+				result += ` ${diff.days} day${diff.days > 1 ? 's' : ''}`;
+			}
+
+			if (diff.hours > 0)
+			{
+				result += ` ${diff.hours} hour${diff.hours > 1 ? 's' : ''}`
+			}
+
+			if (result.length == 0)
+			{
+				result = "Just Followed";
+			}
+
+			return result;
 		}
 	},
 	settingsView: 'twitch.vue'
