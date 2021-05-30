@@ -722,9 +722,11 @@ module.exports = {
 			}
 
 			const now = new Date();
-			const diff = dateInterval(now, follow.followDate);
+			const diff = dateInterval(follow.followDate, now);
 
 			let result = "";
+
+			console.log(diff);
 
 			if (diff.years > 0)
 			{
@@ -741,24 +743,14 @@ module.exports = {
 				result += ` ${diff.days} day${diff.days > 1 ? 's' : ''}`;
 			}
 
-			if (result.length == 0)
+			if (diff.hours > 0)
 			{
-				if (diff.hours > 0)
-				{
-					result += ` ${diff.hours} hour${diff.hours > 1 ? 's' : ''}`
-				}
-				if (diff.minutes > 0)
-				{
-					result += ` ${diff.minutes} minute${diff.minutes > 1 ? 's' : ''}`
-				}
+				result += ` ${diff.hours} hour${diff.hours > 1 ? 's' : ''}`
 			}
 
 			if (result.length == 0)
 			{
-				if (diff.seconds > 0)
-				{
-					result += ` ${diff.seconds} second${diff.seconds > 1 ? 's' : ''}`
-				}
+				result = "Just Followed";
 			}
 
 			return result;
