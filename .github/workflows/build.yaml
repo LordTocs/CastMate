@@ -25,6 +25,6 @@ jobs:
       - name: "Install Node Packages"
         run: "npm install"
       - name: "Build"
-        run: "npm run electron:build -p always"
+        run: "npm run electron:build -- -p always"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

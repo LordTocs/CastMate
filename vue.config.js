@@ -8,7 +8,11 @@ module.exports = {
 			externals: ["win32-api", "ffi-napi", "ref-napi", "node-gyp-build", "@peter-murray/hue-bridge-model", "node-hue-api", "jsdom", "canvas", "chokidar"],
 			nodeIntegration: true,
 			builderOptions: {
-				publish: ['github'],
+				publish: [{
+					provider: 'github',
+					owner: "LordTocs",
+					repo: "CastMate"
+				}],
 				productName: "CastMate",
 			}
 		}

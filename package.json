@@ -27,6 +27,7 @@
     "custom-electron-titlebar": "^3.2.6",
     "electron": "^11.0.0",
     "electron-serve": "^1.1.0",
+    "electron-updater": "^4.3.9",
     "express": "^4.17.1",
     "ffi-napi": "^4.0.1",
     "got": "^11.8.2",
@@ -83,8 +84,8 @@
       "parser": "babel-eslint"
     },
     "rules": {
-		"strict": "off"
-	}
+      "strict": "off"
+    }
   },
   "browserslist": [
     "> 1%",
