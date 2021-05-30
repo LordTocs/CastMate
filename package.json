@@ -2,7 +2,7 @@
   "name": "castmate",
   "version": "0.0.3",
   "private": "true",
-  "description": "",
+  "description": "CastMate is a broadcaster tool that allows Twitch viewers to interact with a broadcasters stream components through Chat Commands, Channel Point rewards, and more.",
   "author": "LordTocs & FitzBro",
   "scripts": {
     "serve": "vue-cli-service serve",
