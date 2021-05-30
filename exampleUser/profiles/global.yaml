@@ -69,7 +69,7 @@ triggers:
   bits:
     "0":
       actions:
-        - sound: ./sounds/cashRegister.mp3
+        - sound: cashRegister.mp3
         - notification:
             header: Bits!
             text: Thanks {{ user }} for the bits!

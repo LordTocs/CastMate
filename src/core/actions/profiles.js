@@ -1,8 +1,9 @@
 const fs = require("fs");
 const YAML = require("yaml");
 const path = require("path");
+const { userFolder } = require("../utils/configuration");
 
-function loadFile(filename, fileset, root = "./user")
+function loadFile(filename, fileset, root = userFolder)
 {
 	//console.log(`Loading ${filename}`);
 	const adjustedFilename = path.join(root, filename);

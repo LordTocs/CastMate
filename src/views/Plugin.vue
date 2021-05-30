@@ -77,7 +77,7 @@ import YAML from "yaml";
 
 export default {
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapGetters("ipc", ["plugins", "paths"]),
     pluginName() {
       return this.$route.params.pluginName;
     },
@@ -125,14 +125,11 @@ export default {
     async save() {
       let newSettingsYaml = YAML.stringify(this.settings);
 
-      await fs.promises.writeFile("./user/settings.yaml", newSettingsYaml);
+      await fs.promises.writeFile(this.paths.settingsFilePath, newSettingsYaml);
 
       let newSecretsYaml = YAML.stringify(this.secrets);
 
-      await fs.promises.writeFile(
-        "./user/secrets/secrets.yaml",
-        newSecretsYaml
-      );
+      await fs.promises.writeFile(this.paths.secretsFilePath, newSecretsYaml);
 
       this.saveSnack = true;
     },
@@ -151,7 +148,7 @@ export default {
   },
   async mounted() {
     const fullSettingsText = await fs.promises.readFile(
-      "./user/settings.yaml",
+      this.paths.settingsFilePath,
       "utf-8"
     );
     const fullSettings = YAML.parse(fullSettingsText) || {};
@@ -159,7 +156,7 @@ export default {
     this.settings = fullSettings;
 
     const fullSecretsText = await fs.promises.readFile(
-      "./user/secrets/secrets.yaml",
+      this.paths.secretsFilePath,
       "utf-8"
     );
     const fullSecrets = YAML.parse(fullSecretsText) || {};

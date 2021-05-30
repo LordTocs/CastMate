@@ -33,8 +33,10 @@
 </template>
 
 <script>
-import YAML from 'yaml';
-import fs from 'fs';
+import YAML from "yaml";
+import fs from "fs";
+import path from "path";
+import { mapGetters } from "vuex";
 
 export default {
   props: {},
@@ -43,6 +45,9 @@ export default {
       profileName: null,
       dialog: false,
     };
+  },
+  computed: {
+    ...mapGetters("ipc", ["paths"]),
   },
   methods: {
     open() {
@@ -64,7 +69,7 @@ export default {
       });
 
       await fs.promises.writeFile(
-        `./user/profiles/${this.profileName}.yaml`,
+        path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
         newYaml,
         "utf-8"
       );

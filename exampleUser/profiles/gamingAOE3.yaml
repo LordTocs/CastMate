@@ -67,6 +67,6 @@ triggers:
             text: "{{User}} is challenging {{channel}} to a 2v2"
             color: "{{userColor}}"
         - oneOf:
-            - - sound: ./sounds/aoeUke.mp3
-            - - sound: ./sounds/aoeTrumpet.mp3
+            - - sound: aoeUke.mp3
+            - - sound: aoeTrumpet.mp3
         - tts: "{{user}} is challenging {{channel}} to a 2v2. Prepare to duel!"

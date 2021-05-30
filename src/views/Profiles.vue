@@ -92,9 +92,13 @@ import fs from "fs";
 import path from "path";
 import YAML from "yaml";
 import NewProfileModal from "../components/profiles/NewProfileModal.vue";
+import { mapGetters } from "vuex";
 export default {
   components: {
     NewProfileModal,
+  },
+  computed: {
+    ...mapGetters("ipc", ["paths"]),
   },
   data() {
     return {
@@ -107,9 +111,15 @@ export default {
   },
   methods: {
     async getFiles() {
-      let profiles = await fs.promises.readdir("./user/profiles");
-      let triggers = await fs.promises.readdir("./user/triggers");
-      let sequences = await fs.promises.readdir("./user/sequences");
+      let profiles = await fs.promises.readdir(
+        path.join(this.paths.userFolder, "profiles")
+      );
+      let triggers = await fs.promises.readdir(
+        path.join(this.paths.userFolder, "triggers")
+      );
+      let sequences = await fs.promises.readdir(
+        path.join(this.paths.userFolder, "sequences")
+      );
 
       profiles = profiles.filter((f) => path.extname(f) == ".yaml");
       triggers = triggers.filter((f) => path.extname(f) == ".yaml");
@@ -137,7 +147,10 @@ export default {
       });
 
       await fs.promises.writeFile(
-        `./user/profiles/${this.newProfileName}.yaml`,
+        path.join(
+          this.paths.userFolder,
+          `profiles/${this.newProfileName}.yaml`
+        ),
         newYaml,
         "utf-8"
       );

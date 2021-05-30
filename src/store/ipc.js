@@ -17,9 +17,11 @@ export default {
 			inited: false,
 			plugins: [],
 			client: null,
+			paths: {},
 		}
 	},
 	getters: {
+		paths: state => state.paths,
 		plugins: state => state.plugins,
 		inited: state => state.inited,
 		client: state => state.client,
@@ -69,6 +71,10 @@ export default {
 		setClient(state, client)
 		{
 			state.client = client;
+		},
+		setPaths(state, paths)
+		{
+			state.paths = paths
 		}
 	},
 	actions: {
@@ -81,6 +87,9 @@ export default {
 
 			let plugins = await ipcRenderer.invoke('getPlugins');
 			commit('setPlugins', plugins);
+
+			const paths = await ipcRenderer.invoke('getPaths');
+			commit('setPaths', paths);
 		},
 	}
 }

@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-row style="padding-bottom: 3.5rem;">
+    <v-row style="padding-bottom: 3.5rem">
       <v-col>
         <trigger-editor v-model="triggers" :triggerKey="triggersName" />
       </v-col>
@@ -31,6 +31,7 @@ import TriggerEditor from "../components/profiles/TriggerEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
@@ -38,6 +39,7 @@ export default {
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   computed: {
+    ...mapGetters("ipc", ["paths"]),
     triggersName() {
       return this.$route.params.triggers;
     },
@@ -54,7 +56,7 @@ export default {
       let newYaml = YAML.stringify(this.triggers);
 
       await fs.promises.writeFile(
-        path.join("./user/triggers", `${this.triggersName}.yaml`),
+        path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`),
         newYaml
       );
 
@@ -67,7 +69,9 @@ export default {
           "Are you sure you want to delete this trigger file?"
         )
       ) {
-        await fs.promises.unlink(`./user/triggers/${this.triggersName}.yaml`);
+        await fs.promises.unlink(
+          path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`)
+        );
 
         this.$router.push("/");
       }
@@ -75,7 +79,7 @@ export default {
   },
   async mounted() {
     let fileData = await fs.promises.readFile(
-      path.join("./user/triggers", `${this.triggersName}.yaml`),
+      path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`),
       "utf-8"
     );
 

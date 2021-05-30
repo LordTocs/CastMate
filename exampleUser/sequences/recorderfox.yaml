@@ -1,4 +1,4 @@
-- sound: "./sounds/recorderfox.mp3"
+- sound: "recorderfox.mp3"
   light:
     'on': false
 - light:

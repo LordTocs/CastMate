@@ -36,6 +36,7 @@ import AddActionPopover from "../components/profiles/AddActionPopover.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
@@ -44,6 +45,7 @@ export default {
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   computed: {
+    ...mapGetters("ipc", ["paths"]),
     sequenceName() {
       return this.$route.params.sequence;
     },
@@ -60,7 +62,7 @@ export default {
       let newYaml = YAML.stringify(this.sequence);
 
       await fs.promises.writeFile(
-        path.join("./user/sequences", `${this.sequenceName}.yaml`),
+        path.join(this.paths.userFolder, `sequences/${this.sequenceName}.yaml`),
         newYaml
       );
 
@@ -73,7 +75,12 @@ export default {
           "Are you sure you want to delete this trigger file?"
         )
       ) {
-        await fs.promises.unlink(`./user/sequences/${this.sequenceName}.yaml`);
+        await fs.promises.unlink(
+          path.join(
+            this.paths.userFolder,
+            `sequences/${this.sequenceName}.yaml`
+          )
+        );
 
         this.$router.push("/");
       }
@@ -84,7 +91,7 @@ export default {
   },
   async mounted() {
     let fileData = await fs.promises.readFile(
-      path.join("./user/sequences", `${this.sequenceName}.yaml`),
+      path.join(this.paths.userFolder, `sequences/${this.sequenceName}.yaml`),
       "utf-8"
     );
 

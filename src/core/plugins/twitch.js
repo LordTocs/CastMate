@@ -15,6 +15,7 @@ const HotReloader = require("../utils/hot-reloader");
 const BadWords = require("bad-words");
 
 const express = require('express');
+const { rewardsFilePath } = require("../utils/configuration");
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -424,7 +425,7 @@ module.exports = {
 
 		async initChannelRewards()
 		{
-			this.rewardsDefinitions = new HotReloader("./user/rewards.yaml",
+			this.rewardsDefinitions = new HotReloader(rewardsFilePath,
 				() =>
 				{
 					this.ensureChannelRewards()

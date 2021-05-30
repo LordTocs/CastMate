@@ -49,6 +49,8 @@ const { evalTemplate } = require('../utils/template');
 const os = require('os');
 const { sleep } = require("../utils/sleep.js");
 const fs = require("fs");
+const path = require('path');
+const { userFolder } = require('../utils/configuration');
 
 module.exports = {
 	name: "lights",
@@ -126,7 +128,7 @@ module.exports = {
 		{
 			try
 			{
-				this.hueUser = JSON.parse(fs.readFileSync("./user/secrets/hue.json", "utf-8"));
+				this.hueUser = JSON.parse(fs.readFileSync(path.join(userFolder, "secrets/hue.json"), "utf-8"));
 				return true;
 			}
 			catch (err)
@@ -161,7 +163,7 @@ module.exports = {
 						clientKey: user.clientKey
 					}
 
-					fs.writeFileSync("./user/secrets/hue.json", JSON.stringify(this.hueUser));
+					fs.writeFileSync(path.join(userFolder, "secrets/hue.json"), JSON.stringify(this.hueUser));
 
 					return true;
 				}

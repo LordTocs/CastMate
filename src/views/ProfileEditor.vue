@@ -49,6 +49,7 @@ import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
@@ -59,6 +60,7 @@ export default {
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   computed: {
+    ...mapGetters("ipc", ["paths"]),
     profileName() {
       return this.$route.params.profile;
     },
@@ -77,7 +79,7 @@ export default {
       let newYaml = YAML.stringify(this.profile);
 
       await fs.promises.writeFile(
-        path.join("./user/profiles", `${this.profileName}.yaml`),
+        path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
         newYaml
       );
 
@@ -90,7 +92,9 @@ export default {
           "Are you sure you want to delete this profile?"
         )
       ) {
-        await fs.promises.unlink(`./user/profiles/${this.profileName}.yaml`);
+        await fs.promises.unlink(
+          path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`)
+        );
 
         this.$router.push("/");
       }
@@ -98,7 +102,7 @@ export default {
   },
   async mounted() {
     let fileData = await fs.promises.readFile(
-      path.join("./user/profiles", `${this.profileName}.yaml`),
+      path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
       "utf-8"
     );
 

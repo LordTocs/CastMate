@@ -1,7 +1,7 @@
 - light:
     on: false
   delay: 5
-- sound: "./sounds/sirenAlert.wav"
+- sound: "sirenAlert.wav"
   delay: 1.384
 - light:
     hue: 0

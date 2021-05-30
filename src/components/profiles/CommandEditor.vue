@@ -5,6 +5,7 @@
     color="grey darken-3"
     defaultLabel="New Command"
   >
+    <v-switch v-model="value.sync" label="Synchronous" />
     <actions-list-editor v-model="value.actions" />
     <v-card-actions>
       <add-action-popover @select="addAction" />

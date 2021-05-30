@@ -1,5 +1,6 @@
 const { ipcMain, BrowserWindow } = require("electron");
 const path = require("path");
+const { userFolder } = require("../utils/configuration");
 
 module.exports = {
 	name: "sounds",
@@ -25,7 +26,7 @@ module.exports = {
 	methods: {
 		getFullFilepath(filename)
 		{
-			return path.resolve(path.join("./user", filename));
+			return path.resolve(path.join(userFolder, 'sounds', filename));
 		}
 	},
 	settings: {
