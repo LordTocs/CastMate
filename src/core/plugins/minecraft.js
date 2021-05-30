@@ -66,7 +66,7 @@ module.exports = {
 				{
 					return;
 				}
-				let fullCommand = template(command, context);
+				let fullCommand = await template(command, context);
 				console.log("MCRCON: ", fullCommand);
 				let result = await this.rcon.send(fullCommand);
 				console.log("MCRCON: ", result);

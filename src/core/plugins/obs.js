@@ -63,7 +63,7 @@ module.exports = {
 			async handler(sceneData, context)
 			{
 				await this.obs.send('SetCurrentScene', {
-					'scene-name': template(sceneData, context)
+					'scene-name': await template(sceneData, context)
 				})
 			},
 		},
@@ -90,8 +90,8 @@ module.exports = {
 			},
 			async handler(filterData, context)
 			{
-				const sourceName = template(filterData.sourceName, context);
-				const filterName = template(filterData.filterName, context);
+				const sourceName = await template(filterData.sourceName, context);
+				const filterName = await template(filterData.filterName, context);
 				console.log("Filter: ", sourceName, filterName);
 
 				await this.obs.send('SetSourceFilterVisibility', {

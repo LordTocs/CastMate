@@ -192,11 +192,11 @@ module.exports = {
 				return false;
 			}
 		},
-		handleTemplateNumber(value, context)
+		async handleTemplateNumber(value, context)
 		{
 			if (typeof value === 'string' || value instanceof String)
 			{
-				return evalTemplate(value, context)
+				return await evalTemplate(value, context)
 			}
 			return value;
 		},
@@ -249,37 +249,37 @@ module.exports = {
 
 				if ("on" in lightData)
 				{
-					lightData.on = this.handleTemplateNumber(lightData.on, context);
+					lightData.on = await this.handleTemplateNumber(lightData.on, context);
 
 					state.on(lightData.on);
 				}
 				if ("bri" in lightData)
 				{
-					lightData.bri = this.handleTemplateNumber(lightData.bri, context);
+					lightData.bri = await this.handleTemplateNumber(lightData.bri, context);
 
 					state.bri(lightData.bri);
 				}
 				if ("sat" in lightData)
 				{
-					lightData.sat = this.handleTemplateNumber(lightData.sat, context);
+					lightData.sat = await this.handleTemplateNumber(lightData.sat, context);
 
 					state.sat(lightData.sat);
 				}
 				if ("ct" in lightData)
 				{
-					lightData.ct = this.handleTemplateNumber(lightData.ct, context);
+					lightData.ct = await this.handleTemplateNumber(lightData.ct, context);
 
 					state.ct(lightData.ct);
 				}
 				if ("hue" in lightData)
 				{
-					lightData.hue = this.handleTemplateNumber(lightData.hue, context);
+					lightData.hue = await this.handleTemplateNumber(lightData.hue, context);
 
 					state.hue(Math.floor((lightData.hue / 360) * 65535))
 				}
 				if ("transition" in lightData)
 				{
-					lightData.transition = this.handleTemplateNumber(lightData.transition, context);
+					lightData.transition = await this.handleTemplateNumber(lightData.transition, context);
 
 					state.transitionInMillis(lightData.transition * 1000)
 				}

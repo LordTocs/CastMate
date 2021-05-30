@@ -49,11 +49,11 @@ module.exports = {
 			createReactiveProperty(this.state, name);
 			this.plugins.updateReactivity(this);
 		},
-		handleTemplateNumber(value, context)
+		async handleTemplateNumber(value, context)
 		{
 			if (typeof value === 'string' || value instanceof String)
 			{
-				return Number(evalTemplate(value, context))
+				return Number(await evalTemplate(value, context))
 			}
 			return value;
 		}
@@ -88,7 +88,7 @@ module.exports = {
 					let setValue = variableData.set;
 					if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number)
 					{
-						setValue = this.handleTemplateNumber(setValue, context);
+						setValue = await this.handleTemplateNumber(setValue, context);
 					}
 					console.log("Setting ", variableData.name, "to", setValue)
 					this.state[variableData.name] = setValue;
