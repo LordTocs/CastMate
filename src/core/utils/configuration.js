@@ -3,11 +3,11 @@ const path = require('path');
 const fs = require("fs");
 
 const isPortable = process.argv.includes('--portable');
-const userFolder = (!isPortable ? path.join(app.getPath('userData'), 'user') : './user');
+const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData'), 'user') : './user'));
 
-const settingsFilePath = path.join(userFolder, "settings.yaml");
-const secretsFilePath = path.join(userFolder, "secrets/secrets.yaml");
-const rewardsFilePath = path.join(userFolder, "rewards.yaml");
+const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));
+const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
+const rewardsFilePath = path.resolve(path.join(userFolder, "rewards.yaml"));
 
 
 function ensureFolder(path)

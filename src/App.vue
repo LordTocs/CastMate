@@ -40,6 +40,16 @@
           </v-list-item-content>
         </v-list-item>
 
+        <v-list-item @click="openSoundsFolder">
+          <v-list-item-icon>
+            <v-icon>mdi-folder-music</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Open Sounds Folder </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
         <v-list-group n-action>
           <template v-slot:activator>
             <v-list-item-title>Plugins</v-list-item-title>
@@ -65,14 +75,18 @@
     <v-main style="max-height: 100%" v-else>
       <v-container fluid class="fill-height">
         <v-row align="center" justify="center">
-          <v-col cols="12" sm="4" style="justify-content: center; text-align: center">
-              <h1>Loading CastMate</h1>
-              <v-progress-circular
-                indeterminate
-                color="cyan"
-                :size="100"
-                :width="15"
-              />
+          <v-col
+            cols="12"
+            sm="4"
+            style="justify-content: center; text-align: center"
+          >
+            <h1>Loading CastMate</h1>
+            <v-progress-circular
+              indeterminate
+              color="cyan"
+              :size="100"
+              :width="15"
+            />
           </v-col>
         </v-row>
       </v-container>
@@ -87,6 +101,8 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import SystemBar from "./components/layout/SystemBar.vue";
+import path from "path";
+import { shell } from "electron";
 
 export default {
   components: {
@@ -99,7 +115,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["inited", "plugins"]),
+    ...mapGetters("ipc", ["inited", "plugins", "paths"]),
     uiPlugins() {
       return this.plugins
         .filter(
@@ -120,6 +136,9 @@ export default {
   methods: {
     ...mapActions("ipc", ["init"]),
     ...mapActions("rewards", ["loadRewards"]),
+    openSoundsFolder() {
+      shell.openPath(path.join(this.paths.userFolder, "sounds"));
+    },
   },
   async mounted() {
     await this.init();
