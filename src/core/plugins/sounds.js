@@ -50,7 +50,7 @@ module.exports = {
 				}
 				else
 				{
-					console.log("Sound Window Not Available")
+					this.logger.error("Audio Window Not Available");
 				}
 			}
 		}

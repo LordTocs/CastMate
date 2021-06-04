@@ -90,13 +90,14 @@ module.exports = {
 					{
 						setValue = await this.handleTemplateNumber(setValue, context);
 					}
-					console.log("Setting ", variableData.name, "to", setValue)
+					this.logger.info(`Setting ${variableData.name} to ${setValue}`);
 					this.state[variableData.name] = setValue;
 				}
 				else if ("offset" in variableData)
 				{
 					//Add the value
 					this.state[variableData.name] += variableData.offset;
+					this.logger.info(`Offseting ${variableData.name} by ${variableData.offset}`);
 				}
 			}
 		}

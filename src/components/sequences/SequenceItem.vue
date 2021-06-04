@@ -2,31 +2,29 @@
   <v-timeline-item right>
     <v-card :color="actionColor" :class="{ expanded, shrunk: !expanded }">
       <v-card-title
-        v-if="firstAction"
+        v-if="actionDefinition"
         class="handle action-item-title"
         @click="expanded = !expanded"
       >
         <div style="flex-shrink: 0">
-          {{ firstAction.name }}
+          {{ actionDefinition.name }}
         </div>
 
         <div class="data-preview">
           <data-view
-            :value="firstActionData"
-            :schema="firstAction.data"
+            :value="actionData"
+            :schema="actionDefinition.data"
             v-if="!expanded"
           />
         </div>
       </v-card-title>
-      <v-card-title v-else-if="firstActionKey == 'import'">
-        Import
-      </v-card-title>
+      <v-card-title v-else-if="actionKey == 'import'"> Import </v-card-title>
       <v-expand-transition>
         <v-card-text v-if="expanded">
           <action-editor
-            :actionKey="firstActionKey"
-            :value="firstActionData"
-            @input="(v) => updateAction(firstActionKey, v)"
+            :actionKey="actionKey"
+            :value="actionData"
+            @input="(v) => updateAction(actionKey, v)"
           />
         </v-card-text>
       </v-expand-transition>
@@ -41,7 +39,7 @@
 
 <script>
 import { mapGetters } from "vuex";
-import ActionEditor from "./ActionEditor.vue";
+import ActionEditor from "../actions/ActionEditor.vue";
 import DataView from "../data/DataView.vue";
 export default {
   props: {
@@ -55,17 +53,17 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["actions"]),
-    firstActionKey() {
+    actionKey() {
       return Object.keys(this.value)[0];
     },
-    firstActionData() {
-      return this.value[this.firstActionKey];
+    actionData() {
+      return this.value[this.actionKey];
     },
-    firstAction() {
-      return this.actions[this.firstActionKey];
+    actionDefinition() {
+      return this.actions[this.actionKey];
     },
     actionColor() {
-      return this.firstAction.color || "grey darken-2";
+      return this.actionDefinition.color || "grey darken-2";
     },
   },
   methods: {
@@ -76,38 +74,11 @@ export default {
 
       this.$emit("input", newValue);
     },
-    newAction(key) {
-      let newValue = { ...this.value, [key]: null };
-
-      this.$emit("input", newValue);
-    },
-    deleteAction(key) {
-      let newValue = { ...this.value };
-
-      delete newValue[key];
-
-      this.$emit("input", newValue);
-    },
-    onFocus() {
-      console.log("Focus");
-    },
-    onBlur() {
-      console.log("Blur");
-    },
   },
 };
 </script>
 
 <style scoped>
-.action-editor {
-  text-align: left;
-  margin-bottom: 0.75rem;
-  background-color: #efefef;
-}
-.action-card {
-  margin-bottom: 0.75rem;
-}
-
 .shrunk {
   max-width: 600px;
 }

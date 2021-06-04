@@ -5,8 +5,7 @@
     tag="v-timeline"
     :component-data="getDraggableData()"
   >
-    <!--v-timeline dense align-top-->
-    <action-list-item
+    <sequence-item
       v-for="(action, i) in value"
       :key="i"
       :value="action"
@@ -17,10 +16,10 @@
 </template>
 
 <script>
-import ActionListItem from "./ActionListItem.vue";
+import SequenceItem from "./SequenceItem.vue";
 import Draggable from "vuedraggable";
 export default {
-  components: { ActionListItem, Draggable },
+  components: { SequenceItem, Draggable },
   props: {
     value: {},
   },
@@ -37,7 +36,6 @@ export default {
       };
     },
     changed(arr) {
-      console.log("Changed", arr);
       this.$emit("input", arr);
     },
     updateAction(index, value) {
@@ -58,7 +56,7 @@ export default {
       let newValue = [...this.value, {}];
 
       this.$emit("input", newValue);
-    }
+    },
   },
 };
 </script>

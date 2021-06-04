@@ -165,11 +165,10 @@ module.exports = {
 						}
 
 						data[unitName] = unitData;
-						console.log(`Scraped ${unitName}`);
+						this.logger.info(`Scraped ${unitName}`);
 					}
 
 				}
-				// console.log(JSON.stringify(data, null, 2));
 
 				fs.writeFileSync(path.join(userFolder, 'data/aoe3GameStats.json'), JSON.stringify(data, null, 2))
 			} else

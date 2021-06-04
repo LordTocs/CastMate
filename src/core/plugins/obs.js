@@ -15,7 +15,6 @@ module.exports = {
 		})
 		this.obs.on("ConnectionClosed", () =>
 		{
-			console.log("Failed to connect to OBS...retrying.")
 			setTimeout(() => { this.connectOBS() }, 5000);
 		});
 	},
@@ -33,7 +32,7 @@ module.exports = {
 				let result = await this.obs.send("GetCurrentScene");
 				//this.profiles.setCondition("scene", result.name);
 				this.state.obsScene = result.name;
-				console.log("OBS connected!");
+				this.logger.info("OBS connected!");
 			} catch {
 				return;
 			}
@@ -92,7 +91,6 @@ module.exports = {
 			{
 				const sourceName = await template(filterData.sourceName, context);
 				const filterName = await template(filterData.filterName, context);
-				console.log("Filter: ", sourceName, filterName);
 
 				await this.obs.send('SetSourceFilterVisibility', {
 					sourceName,

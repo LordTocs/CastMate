@@ -96,7 +96,7 @@ module.exports = {
 	uiName: "Twitch",
 	async init()
 	{
-		console.log("Starting Twitch");
+		this.logger.info("Starting Twitch");
 
 		await this.doInitialAuth();
 
@@ -134,7 +134,6 @@ module.exports = {
 			await this.channelAuth.trySilentAuth();
 			await this.botAuth.trySilentAuth();
 
-
 			await this.completeAuth();
 
 		},
@@ -156,7 +155,7 @@ module.exports = {
 				let index = this.webServices.app._router.stack.findIndex((item) => item.handle == this.webhookRouter)
 				if (index >= 0)
 				{
-					console.log("Removing router by index", index);
+					this.logger.info("Removing router by index", index);
 					this.webServices.app._router.stack.splice(index, 1);
 				}
 			}
@@ -176,17 +175,57 @@ module.exports = {
 
 			await this.shutdown();
 
-			await this.doAuth();
+			try
+			{
+				await this.doAuth();
+			}
+			catch (err)
+			{
+				this.logger.error(`Failed to Auth`);
+				this.logger.error(`${err}`);
+			}
 
-			await this.setupChatTriggers();
+			try
+			{
+				await this.setupChatTriggers();
+			}
+			catch (err)
+			{
+				this.logger.error(`Failed to setup Chat Triggers`);
+				this.logger.error(`${err}`);
+			}
 
-			await this.setupWebHookTriggers();
+			try
+			{
+				await this.setupWebHookTriggers();
+			}
+			catch (err)
+			{
+				this.logger.error(`Failed to setup WebHook Triggers`);
+				this.logger.error(`${err}`);
+			}
 
-			await this.setupPubSubTriggers();
+			try
+			{
+				await this.setupPubSubTriggers();
+			}
+			catch (err)
+			{
+				this.logger.error(`Failed to set up PubSub Triggers`);
+				this.logger.error(`${err}`);
+			}
 
 			await this.initConditions();
 
-			await this.initChannelRewards();
+			try
+			{
+				await this.initChannelRewards();
+			}
+			catch (err)
+			{
+				this.logger.error(`Failed to setup Channel Rewards`);
+				this.logger.error(`${err}`);
+			}
 		},
 
 		async doAuth()
@@ -320,7 +359,7 @@ module.exports = {
 
 				this.followerCache.add(follow.userId);
 
-				console.log(`followed by ${follow.userDisplayName}`);
+				this.logger.info(`followed by ${follow.userDisplayName}`);
 				this.actions.trigger('follow', { user: follow.userDisplayName, userId: follow.userId, ...{ userColor: this.colorCache[follow.userId] } });
 
 
@@ -328,15 +367,16 @@ module.exports = {
 				this.state.followers = follows.total;
 			});
 
+
 			let subHook = await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) =>
 			{
 				//Stream Changed
-				console.log("Stream Changed");
+				this.logger.info("Stream Changed");
 
 				try
 				{
 					let game = await stream.getGame();
-					console.log("Game Name", game.name);
+					this.logger.info(`Game Name: ${game.name}`);
 
 					this.state.twitchCategory = game.name;
 				}
@@ -357,7 +397,7 @@ module.exports = {
 
 			await this.pubSubClient.onBits(this.channelId, (message) =>
 			{
-				console.log(`Bits: ${message.bits}`);
+				this.logger.info(`Bits: ${message.bits}`);
 
 
 				this.actions.trigger("bits", {
@@ -372,7 +412,7 @@ module.exports = {
 
 			await this.pubSubClient.onRedemption(this.channelId, (redemption) =>
 			{
-				console.log(`Redemption: ${redemption.rewardId} ${redemption.rewardName}`);
+				this.logger.info(`Redemption: ${redemption.rewardId} ${redemption.rewardName}`);
 				let message = redemption.message;
 				if (!message)
 				{
@@ -393,13 +433,13 @@ module.exports = {
 			{
 				if (message.isGift)
 				{
-					console.log(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
+					this.logger.info(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
 					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
 				}
 				else
 				{
 					let months = message.months ? message.months : 0;
-					console.log(`Sub ${message.userDisplayName} : ${months}`);
+					this.logger.info(`Sub ${message.userDisplayName} : ${months}`);
 					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, userId: message.userId, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
 				}
 
@@ -513,7 +553,7 @@ module.exports = {
 					})
 				} catch (err)
 				{
-					console.log(`Error creating channel reward: ${rewardKey}. Message: ${err}`);
+					this.logger.error(`Error creating channel reward: ${rewardKey}. Message: ${err}`);
 				}
 			}
 		},
@@ -602,7 +642,6 @@ module.exports = {
 	},
 	async onSecretsReload()
 	{
-		console.log("Secrets Changed");
 		await this.shutdown();
 
 		await this.doInitialAuth();
@@ -726,8 +765,6 @@ module.exports = {
 			const diff = dateInterval(follow.followDate, now);
 
 			let result = "";
-
-			console.log(diff);
 
 			if (diff.years > 0)
 			{

@@ -2,10 +2,10 @@ const fs = require("fs");
 const YAML = require("yaml");
 const path = require("path");
 const { userFolder } = require("../utils/configuration");
+const logger = require("../utils/logger");
 
 function loadFile(filename, fileset, root = userFolder)
 {
-	//console.log(`Loading ${filename}`);
 	const adjustedFilename = path.join(root, filename);
 	let contents = fs.readFileSync(adjustedFilename, "utf-8");
 	let pojo = YAML.parse(contents);
@@ -27,6 +27,7 @@ function loadActionable(actionable, fileset)
 					let actionsInsert = loadFile(action["import"], fileset);
 					if (!(actionsInsert instanceof Array))
 					{
+						logger.error(`Imports in the middle of action arrays must be arrays themselves.`);
 						throw new Error("Imports in the middle of action arrays must be arrays themselves");
 					}
 
@@ -39,7 +40,7 @@ function loadActionable(actionable, fileset)
 				}
 				catch (err)
 				{
-					console.log("Unable to load file ", action["import"]);
+					logger.error(`Unable to load file ${action["import"]}`);
 					throw err;
 				}
 			}
@@ -90,7 +91,7 @@ function loadTrigger(triggerObj, fileset)
 			}
 			catch (err)
 			{
-				console.log("Unable to load file ", filename);
+				logger.error(`Unable to load file ${filename}`);
 				throw err;
 			}
 		}
@@ -117,7 +118,7 @@ class Profile
 	{
 		let fileset = new Set();
 
-		console.log("Loading Profile: ", this.filename);
+		logger.info(`Loading Profile: ${this.filename}`);
 		let profileConfig = loadFile(this.filename, fileset, ".");
 
 		if (profileConfig.triggers)
@@ -130,10 +131,10 @@ class Profile
 				}
 				catch (err)
 				{
-					console.log("Unable to load file ", this.filename);
+					logger.error(`Unable to load file ${this.filename}`);
 					throw err;
 				}
-				
+
 			}
 		}
 
@@ -177,4 +178,4 @@ Profile.mergeTriggers = function (profiles)
 	return combined;
 }
 
-module.exports = { Profile };
+module.exports = { Profile, loadActionable };

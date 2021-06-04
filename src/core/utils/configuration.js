@@ -3,11 +3,11 @@ const path = require('path');
 const fs = require("fs");
 
 const isPortable = process.argv.includes('--portable');
-const userFolder = (!isPortable ? path.join(app.getPath('userData'), 'user') : './user');
+const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData'), 'user') : './user'));
 
-const settingsFilePath = path.join(userFolder, "settings.yaml");
-const secretsFilePath = path.join(userFolder, "secrets/secrets.yaml");
-const rewardsFilePath = path.join(userFolder, "rewards.yaml");
+const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));
+const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
+const rewardsFilePath = path.resolve(path.join(userFolder, "rewards.yaml"));
 
 
 function ensureFolder(path)
@@ -29,8 +29,6 @@ function ensureFile(path)
 
 function ensureUserFolder()
 {
-	console.log("Ensuring User Folder: ", userFolder);
-
 	ensureFolder(userFolder);
 	ensureFolder(path.join(userFolder, "data"));
 	ensureFolder(path.join(userFolder, "profiles"));
@@ -38,7 +36,7 @@ function ensureUserFolder()
 
 	ensureFolder(path.join(userFolder, "sequences"));
 	ensureFolder(path.join(userFolder, "sounds"));
-	ensureFolder(path.join(userFolder, "triggers"));
+	ensureFolder(path.join(userFolder, "commands"));
 
 	ensureFile(rewardsFilePath);
 	ensureFile(secretsFilePath);

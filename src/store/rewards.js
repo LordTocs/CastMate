@@ -35,9 +35,6 @@ export default {
 		{
 			let newRewards = { ...state.rewards };
 
-			console.log(rewardName)
-			console.log(newReward);
-
 			if (rewardName != newReward.name)
 			{
 				newRewards = changeObjectKey(newRewards, rewardName, newReward.name);
