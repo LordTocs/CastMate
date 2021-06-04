@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row>
       <v-col>
-        <actions-list-editor v-model="sequence" />
+        <sequence-editor v-model="sequence" />
       </v-col>
     </v-row>
     <v-card-actions>
@@ -31,8 +31,8 @@
 </template>
 
 <script>
-import ActionsListEditor from "../components/profiles/ActionsListEditor.vue";
-import AddActionPopover from "../components/profiles/AddActionPopover.vue";
+import SequenceEditor from "../components/sequences/SequenceEditor.vue";
+import AddActionPopover from "../components/actions/AddActionPopover.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
@@ -40,7 +40,7 @@ import { mapGetters } from "vuex";
 
 export default {
   components: {
-    ActionsListEditor,
+    SequenceEditor,
     AddActionPopover,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },

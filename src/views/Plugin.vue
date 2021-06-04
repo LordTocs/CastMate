@@ -72,7 +72,6 @@ import { mapGetters } from "vuex";
 import DataInput from "../components/data/DataInput.vue";
 import Level from "@/components/layout/Level.vue";
 import fs from "fs";
-
 import YAML from "yaml";
 
 export default {

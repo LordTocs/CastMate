@@ -32,6 +32,7 @@ export default {
   props: {
     schema: {},
     value: {},
+	label: {}
   },
 };
 </script>

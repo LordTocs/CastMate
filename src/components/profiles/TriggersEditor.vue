@@ -14,7 +14,7 @@
 
 <script>
 import { mapGetters } from "vuex";
-import TriggerEditor from "./TriggerEditor.vue";
+import TriggerEditor from "../triggers/TriggerEditor.vue";
 
 export default {
   props: {
