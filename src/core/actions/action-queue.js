@@ -2,6 +2,9 @@ const { sleep } = require("../utils/sleep.js");
 const { Mutex } = require("async-mutex");
 const { reactiveCopy } = require("../utils/reactive.js");
 const logger = require('../utils/logger');
+const { ipcMain } = require("electron");
+const { loadActionable } = require('./profiles');
+
 
 function isActionable(actionable)
 {
@@ -53,6 +56,25 @@ class ActionQueue
 		}
 
 		this.plugins = plugins;
+
+		ipcMain.handle('pushToQueue', async (event, actions) =>
+		{
+			const dummySet = new Set();
+
+			const actionable = { actions, sync: false }
+
+			loadActionable(actionable, dummySet)
+
+			this.convertOffsets(actionable.actions);
+
+			console.log(actionable);
+			this.pushToQueue(actionable, {
+				user: "Test User",
+				userColor: "#4411FF",
+				message: "Test Message From User",
+				filteredMessage: "Test Message From User",
+			})
+		})
 	}
 
 	setTriggers(triggers)

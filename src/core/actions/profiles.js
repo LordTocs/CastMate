@@ -178,4 +178,4 @@ Profile.mergeTriggers = function (profiles)
 	return combined;
 }
 
-module.exports = { Profile };
+module.exports = { Profile, loadActionable };
