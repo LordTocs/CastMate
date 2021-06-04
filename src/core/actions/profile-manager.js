@@ -6,6 +6,7 @@ const chokidar = require("chokidar");
 const { sleep } = require("../utils/sleep");
 const path = require('path');
 const { userFolder } = require("../utils/configuration");
+const logger = require("../utils/logger");
 
 class ProfileManager
 {
@@ -28,13 +29,13 @@ class ProfileManager
 
 		this.profileWatcher.on('add', async (path) =>
 		{
-			console.log("Profile Added: ", path);
+			logger.info(`Profile Added: ${path}`);
 			await sleep(50);
 			this.loadProfile(path);
 		});
 		this.profileWatcher.on('change', async (path) =>
 		{
-			console.log("Profile Changed: ", path);
+			logger.info(`Profile Changed: ${path}`);
 			let profile = this.profiles.find((p) => p.filename == path);
 
 			if (!profile) return;
@@ -49,7 +50,7 @@ class ProfileManager
 
 			if (i == -1) return;
 
-			console.log("Profile Deleted: ", path);
+			logger.info(`Profile Deleted: ${path}`);
 
 			this.profiles[i].watcher.unsubscribe();
 
@@ -60,7 +61,7 @@ class ProfileManager
 
 		this.triggersWatcher.on('change', async (path) =>
 		{
-			console.log("Triggers Changed: ", path);
+			logger.info(`Triggers Changed: ${path}`);
 			await sleep(50);
 			for (let profile of this.profiles)
 			{
@@ -71,7 +72,7 @@ class ProfileManager
 		this.sequencesWatcher.on('change', async (path) =>
 		{
 			await sleep(50);
-			console.log("Sequence Changed: ", path);
+			logger.info(`Sequence Changed: ${path}`);
 			for (let profile of this.profiles)
 			{
 				profile.handleFileChanged(path);
@@ -132,7 +133,7 @@ class ProfileManager
 	{
 		let [activeProfiles, inactiveProfiles] = _.partition(this.profiles, (profile) => evalConditional(profile.conditions, this.plugins.combinedState));
 
-		console.log("Changing Profiles: ", activeProfiles.map(p => p.filename).join(', '));
+		logger.info(`Combining Profiles: ${activeProfiles.map(p => p.filename).join(', ')}`);
 
 		this.triggers = Profile.mergeTriggers(activeProfiles);
 

@@ -169,12 +169,12 @@ module.exports = {
 				}
 				catch (err)
 				{
-					console.error("The link button on the bridge was not pressed. Press and try again.");
+					this.logger.error("The link button on the bridge was not pressed. Press and try again.");
 				}
 
 				if (i != retries - 1)
 				{
-					console.log("Trying again in 5 seconds...");
+					this.logger.info("Trying again in 5 seconds...");
 					await sleep(5000);
 				}
 			}

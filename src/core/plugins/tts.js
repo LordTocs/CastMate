@@ -19,7 +19,7 @@ module.exports = {
 			async handler(data, context)
 			{
 				const message = await template(data, context);
-				console.log("Speaking", message);
+				this.logger.info(`Speaking: ${message}`);
 				say.speak(message);
 			}
 		}

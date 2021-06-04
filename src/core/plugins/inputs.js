@@ -115,7 +115,7 @@ module.exports = {
 				let error = kernel32.GetLastError();
 				if (error)
 				{
-					console.log("VK Error", error);
+					this.logger.error(`VK Error ${error}`);
 				}
 			}
 		},
@@ -162,7 +162,7 @@ module.exports = {
 				let error = kernel32.GetLastError();
 				if (error)
 				{
-					console.log("VK Error", error);
+					this.logger.error(`SendInput Error ${error}`);
 				}
 			}
 		}

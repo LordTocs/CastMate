@@ -28,7 +28,6 @@ export default {
       let newValue = this.value ? { ...this.value } : {};
 
       if (value != "" && value != undefined) {
-        console.log("Update Obj", key, value);
         newValue[key] = value;
       } else {
         delete newValue[key];

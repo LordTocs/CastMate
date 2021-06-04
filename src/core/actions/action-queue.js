@@ -1,6 +1,7 @@
 const { sleep } = require("../utils/sleep.js");
 const { Mutex } = require("async-mutex");
 const { reactiveCopy } = require("../utils/reactive.js");
+const logger = require('../utils/logger');
 
 function isActionable(actionable)
 {
@@ -136,7 +137,7 @@ class ActionQueue
 
 		if ("number" in options)
 		{
-			console.log(`Fired ${name} : ${options.number}`)
+			logger.info(`Fired ${name} : ${options.number}`)
 			//Handle a numberlike event action
 			let selected = null;
 			for (let key in event)
@@ -159,7 +160,7 @@ class ActionQueue
 		}
 		else if ("name" in options)
 		{
-			console.log(`Fired ${name} : ${options.name}`)
+			logger.info(`Fired ${name} : ${options.name}`)
 			//Handle a namelike event
 			let namedEvent = event[options.name];
 			if (namedEvent && isActionable(namedEvent))
@@ -170,7 +171,7 @@ class ActionQueue
 		}
 		if (isActionable(event))
 		{
-			console.log(`Fired ${name}`)
+			logger.info(`Fired ${name}`)
 			this.pushToQueue(event, options);
 			return true;
 		}
@@ -237,7 +238,7 @@ class ActionQueue
 		if (this.queue.length == 0)
 			return;
 
-		console.log("Starting new chain");
+		logger.info("Starting new synchronous chain");
 		let release = await this.queueMutex.acquire();
 		let front = this.queue.shift();
 		let frontPromise = this._runAction(front.action, front.context);

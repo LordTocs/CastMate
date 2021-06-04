@@ -12,8 +12,6 @@ module.exports = {
 			const routes = this.webServices.routes;
 			routes.post(`/kofi`, (req, res) =>
 			{
-				console.log("KOFI!")
-				console.log(req.body);
 				let data = JSON.parse(req.body.data);
 				if (data.type == "Donation")
 				{

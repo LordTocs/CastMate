@@ -29,8 +29,6 @@ function ensureFile(path)
 
 function ensureUserFolder()
 {
-	console.log("Ensuring User Folder: ", userFolder);
-
 	ensureFolder(userFolder);
 	ensureFolder(path.join(userFolder, "data"));
 	ensureFolder(path.join(userFolder, "profiles"));
