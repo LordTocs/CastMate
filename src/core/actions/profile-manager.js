@@ -24,7 +24,7 @@ class ProfileManager
 	async load()
 	{
 		this.profileWatcher = chokidar.watch(path.join(userFolder, 'profiles/'));
-		this.triggersWatcher = chokidar.watch(path.join(userFolder, 'triggers/'));
+		this.commandsWatcher = chokidar.watch(path.join(userFolder, 'commands/'));
 		this.sequencesWatcher = chokidar.watch(path.join(userFolder, 'sequences/'));
 
 		this.profileWatcher.on('add', async (path) =>
@@ -59,9 +59,9 @@ class ProfileManager
 			this.recombine();
 		});
 
-		this.triggersWatcher.on('change', async (path) =>
+		this.commandsWatcher.on('change', async (path) =>
 		{
-			logger.info(`Triggers Changed: ${path}`);
+			logger.info(`Commands Changed: ${path}`);
 			await sleep(50);
 			for (let profile of this.profiles)
 			{

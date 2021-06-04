@@ -2,10 +2,10 @@
   <v-container fluid>
     <v-row style="padding-bottom: 3.5rem">
       <v-col>
-        <v-row v-for="(commandKey, i) in commands" :key="i">
+        <v-row v-for="(commandKey, i) in commandList" :key="i">
           <v-col>
             <command-card
-              :value="triggers[commandKey]"
+              :value="commands[commandKey]"
               :actionKey="commandKey"
               @input="(newData) => updateCommand(commandKey, newData)"
               @delete="deleteCommand(commandKey)"
@@ -54,42 +54,42 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
-    commands() {
-      if (!this.triggers) {
+    commandList() {
+      if (!this.commands) {
         return [];
       }
-      return Object.keys(this.triggers).filter((key) => key != "imports");
+      return Object.keys(this.commands).filter((key) => key != "imports");
     },
-    triggersName() {
-      return this.$route.params.triggers;
+    commandFileName() {
+      return this.$route.params.commandFile;
     },
   },
   data() {
     return {
-      triggers: {},
+      commands: {},
       saveSnack: false,
       fab: false,
     };
   },
   methods: {
     updateCommandKey(oldKey, newKey) {
-      this.triggers = changeObjectKey(this.triggers, oldKey, newKey);
+      this.commands = changeObjectKey(this.commands, oldKey, newKey);
     },
     updateCommand(command, data) {
-      this.triggers[command] = data;
+      this.commands[command] = data;
     },
     deleteCommand(command) {
-      delete this.triggers[command];
+      delete this.commands[command];
     },
     addCommand() {
-      this.triggers[""] = { actions: [], sync: false };
+      this.commands[""] = { actions: [], sync: false };
     },
 
     async save() {
-      let newYaml = YAML.stringify(this.triggers);
+      let newYaml = YAML.stringify(this.commands);
 
       await fs.promises.writeFile(
-        path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`),
+        path.join(this.paths.userFolder, `commands/${this.commandFileName}.yaml`),
         newYaml
       );
 
@@ -99,11 +99,11 @@ export default {
       if (
         await this.$refs.deleteConfirm.open(
           "Confirm",
-          "Are you sure you want to delete this trigger file?"
+          "Are you sure you want to delete this command file?"
         )
       ) {
         await fs.promises.unlink(
-          path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`)
+          path.join(this.paths.userFolder, `commands/${this.commandFileName}.yaml`)
         );
 
         this.$router.push("/");
@@ -112,11 +112,11 @@ export default {
   },
   async mounted() {
     let fileData = await fs.promises.readFile(
-      path.join(this.paths.userFolder, `triggers/${this.triggersName}.yaml`),
+      path.join(this.paths.userFolder, `commands/${this.commandFileName}.yaml`),
       "utf-8"
     );
 
-    this.triggers = YAML.parse(fileData);
+    this.commands = YAML.parse(fileData);
   },
 };
 </script>

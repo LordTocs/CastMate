@@ -26,19 +26,19 @@
       <v-list color="grey darken-3">
         <v-list-item>
           <v-list-item-content>
-            <v-list-item-title class="title"> Triggers </v-list-item-title>
+            <v-list-item-title class="title"> Command Files </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
       <v-list>
         <v-list-item-group>
-          <template v-for="(trigger, i) in triggers">
+          <template v-for="(commandFile, i) in commandFiles">
             <v-list-item
-              :key="trigger.name"
-              @click="$router.push(`/triggers/${trigger.name}`)"
+              :key="commandFile.name"
+              @click="$router.push(`/commandFiles/${commandFile.name}`)"
             >
               <v-list-item-content>
-                <v-list-item-title> {{ trigger.name }} </v-list-item-title>
+                <v-list-item-title> {{ commandFile.name }} </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
             <v-divider :key="i" />
@@ -77,10 +77,10 @@
       @created="createNewProfile"
     />
     <named-item-modal
-      ref="triggerModal"
+      ref="commandsModal"
       header="Create New Commands File"
       label="Commands File Name"
-      @created="createNewTriggersFile"
+      @created="createNewCommandFile"
     />
     <named-item-modal
       ref="sequenceModal"
@@ -91,7 +91,7 @@
 
     <v-speed-dial v-model="fabOpen" fixed fab large right bottom>
       <template v-slot:activator>
-        <v-btn v-model="fab" color="blue darken-2" dark fab>
+        <v-btn v-model="fabOpen" color="blue darken-2" dark fab>
           <v-icon v-if="fabOpen"> mdi-close </v-icon>
           <v-icon v-else> mdi-plus </v-icon>
         </v-btn>
@@ -100,9 +100,9 @@
         <v-icon>mdi-plus</v-icon>
         <div class="fab-label green">Sequence</div>
       </v-btn>
-      <v-btn fab dark small color="indigo" @click="$refs.triggerModal.open()">
+      <v-btn fab dark small color="indigo" @click="$refs.commandsModal.open()">
         <v-icon>mdi-plus</v-icon>
-        <div class="fab-label indigo">Trigger</div>
+        <div class="fab-label indigo">Commands File</div>
       </v-btn>
       <v-btn fab dark small color="red" @click="$refs.profileModal.open()">
         <v-icon>mdi-plus</v-icon>
@@ -142,7 +142,7 @@ export default {
   data() {
     return {
       profiles: [],
-      triggers: [],
+      commandFiles: [],
       sequences: [],
       fabOpen: false,
     };
@@ -152,22 +152,22 @@ export default {
       let profiles = await fs.promises.readdir(
         path.join(this.paths.userFolder, "profiles")
       );
-      let triggers = await fs.promises.readdir(
-        path.join(this.paths.userFolder, "triggers")
+      let commandFiles = await fs.promises.readdir(
+        path.join(this.paths.userFolder, "commands")
       );
       let sequences = await fs.promises.readdir(
         path.join(this.paths.userFolder, "sequences")
       );
 
       profiles = profiles.filter((f) => path.extname(f) == ".yaml");
-      triggers = triggers.filter((f) => path.extname(f) == ".yaml");
+      commandFiles = commandFiles.filter((f) => path.extname(f) == ".yaml");
       sequences = sequences.filter((f) => path.extname(f) == ".yaml");
 
       this.profiles = profiles.map((f) => ({
         name: path.basename(f, ".yaml"),
       }));
 
-      this.triggers = triggers.map((f) => ({
+      this.commandFiles = commandFiles.map((f) => ({
         name: path.basename(f, ".yaml"),
       }));
 
@@ -203,11 +203,11 @@ export default {
       await this.getFiles();
     },
 
-    async createNewTriggersFile(name) {
+    async createNewCommandFile(name) {
       let newYaml = YAML.stringify({});
 
       await fs.promises.writeFile(
-        path.join(this.paths.userFolder, `triggers/${name}.yaml`),
+        path.join(this.paths.userFolder, `commands/${name}.yaml`),
         newYaml,
         "utf-8"
       );

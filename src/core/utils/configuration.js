@@ -36,7 +36,7 @@ function ensureUserFolder()
 
 	ensureFolder(path.join(userFolder, "sequences"));
 	ensureFolder(path.join(userFolder, "sounds"));
-	ensureFolder(path.join(userFolder, "triggers"));
+	ensureFolder(path.join(userFolder, "commands"));
 
 	ensureFile(rewardsFilePath);
 	ensureFile(secretsFilePath);
