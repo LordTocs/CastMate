@@ -44,9 +44,9 @@ export default {
 				description: "Puts a delay before the current action",
 			};
 			result.import = {
-				name: "Import Sequence",
+				name: "Play a Sequence",
 				data: { type: "String" },
-				description: "Imports a sequence.",
+				description: "Plays a Sequence",
 				color: "#7C4275"
 			}
 			result.timestamp = {
