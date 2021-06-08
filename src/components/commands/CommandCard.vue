@@ -5,7 +5,11 @@
     color="grey darken-3"
     defaultLabel="New Command"
   >
-    <command-editor :value="value" @input="(v) => $emit('input', v)" />
+    <command-editor
+      :value="value"
+      @input="(v) => $emit('input', v)"
+      @delete="() => $emit('delete')"
+    />
   </key-card>
 </template>
 
@@ -21,7 +25,7 @@ export default {
   methods: {
     keyChange(newKey) {
       this.$emit("key-change", newKey);
-    }
+    },
   },
 };
 </script>
