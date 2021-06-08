@@ -44,6 +44,7 @@ import CommandCard from "../components/commands/CommandCard.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
+import Vue from "vue";
 import { mapGetters } from "vuex";
 import { changeObjectKey } from "../utils/objects.js";
 
@@ -82,14 +83,17 @@ export default {
       delete this.commands[command];
     },
     addCommand() {
-      this.commands[""] = { actions: [], sync: false };
+      Vue.set(this.commands, "", { actions: [], sync: false });
     },
 
     async save() {
       let newYaml = YAML.stringify(this.commands);
 
       await fs.promises.writeFile(
-        path.join(this.paths.userFolder, `commands/${this.commandFileName}.yaml`),
+        path.join(
+          this.paths.userFolder,
+          `commands/${this.commandFileName}.yaml`
+        ),
         newYaml
       );
 
@@ -103,7 +107,10 @@ export default {
         )
       ) {
         await fs.promises.unlink(
-          path.join(this.paths.userFolder, `commands/${this.commandFileName}.yaml`)
+          path.join(
+            this.paths.userFolder,
+            `commands/${this.commandFileName}.yaml`
+          )
         );
 
         this.$router.push("/");
