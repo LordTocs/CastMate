@@ -45,7 +45,11 @@ export default {
 			};
 			result.import = {
 				name: "Play a Sequence",
-				data: { type: "String" },
+				data: {
+					type: "FilePath",
+					path: './sequences/',
+					basePath: './'
+				},
 				description: "Plays a Sequence",
 				color: "#7C4275"
 			}
