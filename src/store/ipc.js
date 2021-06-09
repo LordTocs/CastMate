@@ -34,7 +34,7 @@ export default {
 			}
 			//Special Injected Actions, these don't map to a plugin action.
 			result.delay = {
-				name: "Delay (After)",
+				name: "Delay",
 				data: { type: "Number" },
 				description: "Puts a delay after the current action",
 			};

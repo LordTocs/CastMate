@@ -1,23 +1,40 @@
 <template>
-  <draggable
-    :list="value"
-    handle=".handle"
-    tag="v-timeline"
-    :component-data="getDraggableData()"
-  >
-    <sequence-item
-      v-for="(action, i) in value"
-      :key="i"
-      :value="action"
-      @input="(v) => updateAction(i, v)"
-      @delete="deleteAction(i)"
-    />
-  </draggable>
+  <div>
+    <div style="display: flex; flex-direction: row">
+      <div
+        style="
+          min-width: 96px;
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+        "
+      >
+        <v-btn @click="testSequence" color="primary">
+          <v-icon> mdi-play </v-icon>
+        </v-btn>
+      </div>
+    </div>
+    <draggable
+      :list="value"
+      handle=".handle"
+      tag="v-timeline"
+      :component-data="getDraggableData()"
+    >
+      <sequence-item
+        v-for="(action, i) in value"
+        :key="i"
+        :value="action"
+        @input="(v) => updateAction(i, v)"
+        @delete="deleteAction(i)"
+      />
+    </draggable>
+  </div>
 </template>
 
 <script>
 import SequenceItem from "./SequenceItem.vue";
 import Draggable from "vuedraggable";
+import { ipcRenderer } from "electron";
 export default {
   components: { SequenceItem, Draggable },
   props: {
@@ -56,6 +73,9 @@ export default {
       let newValue = [...this.value, {}];
 
       this.$emit("input", newValue);
+    },
+    testSequence() {
+      ipcRenderer.invoke("pushToQueue", this.value);
     },
   },
 };
