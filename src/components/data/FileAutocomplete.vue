@@ -18,19 +18,24 @@
 import fs from "fs";
 import path from "path";
 import { mapGetters } from "vuex";
+import recursiveReaddir from "recursive-readdir";
 
 export default {
   props: {
     path: { type: String },
     label: { type: String, default: () => undefined },
-    ext: { type: Array },
-    //recursive: { type: Boolean, default: () => false },
+    ext: { type: Array, default: () => [] },
+    recursive: { type: Boolean, default: () => false },
+    basePath: { type: String, default: () => null },
     value: {},
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
     searchPath() {
       return path.join(this.paths.userFolder, this.path);
+    },
+    fullBasePath() {
+      return path.join(this.paths.userFolder, this.basePath);
     },
   },
   data() {
@@ -50,28 +55,35 @@ export default {
   methods: {
     async getFilenames() {
       console.log("Searching: ", this.searchPath);
-      const allFiles = await fs.readdirSync(this.searchPath);
 
-      console.log(
-        "ExtName",
-        allFiles.map((f) => path.extname(f))
-      );
+      let files = await (!this.recursive
+        ? fs.readdirSync(this.searchPath)
+        : recursiveReaddir(this.searchPath));
 
       //Filter out extensions
-      const files = allFiles.filter((filename) =>
-        this.ext.includes(path.extname(filename))
-      );
+      if (this.ext && this.ext.length > 0) {
+        files = files.filter((filename) =>
+          this.ext.includes(path.extname(filename))
+        );
+      }
 
-      const fullFiles = files.map((f) => path.join(this.searchPath, f));
+      if (!this.recursive) {
+        files = files.map((filename) => path.join(this.searchPath, filename));
+      }
 
-      const fileObjs = fullFiles.map((filename) => ({
-        path: path.relative(this.paths.userFolder, filename),
+      //console.log("UserFolder: ", this.paths.userFolder);
+      //console.log("File: ", files[0]);
+      //console.log("Relative", path.relative(this.paths.userFolder, files[0]));
+
+      files = files.map((filename) => ({
+        path: path.relative(
+          !this.basePath ? this.searchPath : this.fullBasePath,
+          filename
+        ),
         basename: path.basename(filename),
       }));
 
-      console.log(("Found Files: ", JSON.stringify(fileObjs, null, 2)));
-
-      return fileObjs;
+      return files;
     },
     async filterFiles(name) {
       this.loading = true;

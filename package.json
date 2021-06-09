@@ -38,6 +38,7 @@
     "obs-websocket-js": "^4.0.2",
     "public-ip": "^4.0.3",
     "rcon-client": "^4.2.3",
+    "recursive-readdir": "^2.2.2",
     "ref-napi": "^3.0.1",
     "regenerator-runtime": "^0.13.7",
     "say": "^0.16.0",

@@ -11,6 +11,7 @@
               path="./commands/"
               :ext="['.yaml']"
               label="Commands File"
+              basePath="./"
             />
           </v-list-item-content>
           <v-list-item-action>
