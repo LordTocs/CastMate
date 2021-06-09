@@ -5,7 +5,13 @@
       <v-list color="grey darken-3">
         <v-list-item v-for="(imprt, i) in value" :key="i">
           <v-list-item-content>
-            <v-text-field :value="imprt" @change="(v) => changeImport(i, v)" />
+            <file-autocomplete
+              :value="imprt"
+              @change="(v) => changeImport(i, v)"
+              path="./commands/"
+              :ext="['.yaml']"
+              label="Commands File"
+            />
           </v-list-item-content>
           <v-list-item-action>
             <v-btn color="red" @click="deleteImport(i)"> Delete </v-btn>
@@ -17,7 +23,10 @@
 </template>
 
 <script>
+import FileAutocomplete from "../data/FileAutocomplete.vue";
+
 export default {
+  components: { FileAutocomplete },
   props: {
     value: {},
   },
@@ -34,7 +43,7 @@ export default {
       if (!this.value) return;
       let result = [...this.value];
 
-      result.imports[index] = value;
+      result[index] = value;
 
       this.$emit("input", result);
     },
