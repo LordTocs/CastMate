@@ -34,7 +34,7 @@ export default {
 			}
 			//Special Injected Actions, these don't map to a plugin action.
 			result.delay = {
-				name: "Delay (After)",
+				name: "Delay",
 				data: { type: "Number" },
 				description: "Puts a delay after the current action",
 			};
@@ -44,9 +44,13 @@ export default {
 				description: "Puts a delay before the current action",
 			};
 			result.import = {
-				name: "Import Sequence",
-				data: { type: "String" },
-				description: "Imports a sequence.",
+				name: "Play a Sequence",
+				data: {
+					type: "FilePath",
+					path: './sequences/',
+					basePath: './'
+				},
+				description: "Plays a Sequence",
 				color: "#7C4275"
 			}
 			result.timestamp = {

@@ -66,7 +66,6 @@ function loadTrigger(triggerObj, fileset)
 		if (trigger == "imports")
 			continue;
 
-
 		loadActionable(triggerObj[trigger], fileset)
 	}
 
@@ -111,38 +110,46 @@ class Profile
 		this.onReload = onReload;
 		this.rewards = [];
 		this.dependencies = null;
-		this.reload();
+		try
+		{
+			this.reload();
+		}
+		catch (err)
+		{
+			//Catch this error here, so initial construction of profiles doesn't error out.
+			//Otherwise it will break hotreloading if the profile is fixed.
+			logger.error(`Initial Loading of ${filename} failed.`);
+		}
 	}
 
 	reload()
 	{
 		let fileset = new Set();
+		this.dependencies = fileset;
 
 		logger.info(`Loading Profile: ${this.filename}`);
-		let profileConfig = loadFile(this.filename, fileset, ".");
-
-		if (profileConfig.triggers)
+		let profileConfig;
+		try
 		{
-			for (let trigger in profileConfig.triggers)
+			profileConfig = loadFile(this.filename, fileset, ".");
+
+			if (profileConfig.triggers)
 			{
-				try
+				for (let trigger in profileConfig.triggers)
 				{
 					loadTrigger(profileConfig.triggers[trigger], fileset);
 				}
-				catch (err)
-				{
-					logger.error(`Unable to load file ${this.filename}`);
-					throw err;
-				}
-
 			}
+		}
+		catch (err)
+		{
+			logger.error(`Unable to load file ${this.filename}`);
+			throw err;
 		}
 
 		this.triggers = profileConfig.triggers;
 		this.conditions = profileConfig.conditions || {};
 		this.config = profileConfig;
-
-		this.dependencies = fileset;
 	}
 
 	async handleFileChanged(filename)

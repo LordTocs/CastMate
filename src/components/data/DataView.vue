@@ -16,6 +16,9 @@
     <span v-if="schema.name || label"> {{ schema.name || label }}: </span
     >{{ value }}
   </div>
+  <div v-else-if="schema.type == 'FilePath'">
+    {{ value }}
+  </div>
   <div v-else-if="schema.type == 'Object' && schema.properties">
     <data-view
       v-for="key in Object.keys(value)"
@@ -32,7 +35,7 @@ export default {
   props: {
     schema: {},
     value: {},
-	label: {}
+    label: {},
   },
 };
 </script>

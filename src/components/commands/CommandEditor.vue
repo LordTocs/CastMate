@@ -14,10 +14,6 @@
           </v-tooltip>
         </template>
       </v-switch>
-      <v-spacer />
-      <v-btn @click="testSequence" color="primary">
-        <v-icon> mdi-play </v-icon>
-      </v-btn>
     </v-card-actions>
 
     <sequence-editor v-model="value.actions" />
@@ -32,7 +28,6 @@
 <script>
 import SequenceEditor from "../sequences/SequenceEditor.vue";
 import AddActionPopover from "../actions/AddActionPopover.vue";
-import { ipcRenderer } from "electron";
 
 export default {
   components: { AddActionPopover, SequenceEditor },
@@ -40,9 +35,6 @@ export default {
     value: {},
   },
   methods: {
-    testSequence() {
-      ipcRenderer.invoke("pushToQueue", this.value.actions);
-    },
     addAction(v) {
       let newCommand = { ...this.value };
 

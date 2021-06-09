@@ -67,7 +67,6 @@ class ActionQueue
 
 			this.convertOffsets(actionable.actions);
 
-			console.log(actionable);
 			this.pushToQueue(actionable, {
 				user: "Test User",
 				userColor: "#4411FF",

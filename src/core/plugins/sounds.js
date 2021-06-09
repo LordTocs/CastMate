@@ -37,7 +37,9 @@ module.exports = {
 		sound: {
 			name: "Sound",
 			data: {
-				type: String,
+				type: "FilePath",
+				recursive: true,
+				path: './sounds/',
 			},
 			color: "#62894F",
 			async handler(soundData)

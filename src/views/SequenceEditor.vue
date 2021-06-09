@@ -87,7 +87,7 @@ export default {
     },
     addAction(v) {
       this.sequence.push({ [v]: null });
-    },
+    }
   },
   async mounted() {
     let fileData = await fs.promises.readFile(
