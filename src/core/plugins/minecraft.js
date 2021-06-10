@@ -66,10 +66,10 @@ module.exports = {
 				{
 					return;
 				}
-				let fullCommand = template(command, context);
-				console.log("MCRCON: ", fullCommand);
+				let fullCommand = await template(command, context);
+				this.logger.info(`MCRCON Send:  ${fullCommand}`);
 				let result = await this.rcon.send(fullCommand);
-				console.log("MCRCON: ", result);
+				this.logger.info(`MCRCON Recv:  ${result}`);
 			}
 		}
 	}

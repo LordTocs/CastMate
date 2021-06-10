@@ -1,10 +1,11 @@
 const fs = require("fs");
 const YAML = require("yaml");
 const path = require("path");
+const { userFolder } = require("../utils/configuration");
+const logger = require("../utils/logger");
 
-function loadFile(filename, fileset, root = "./user")
+function loadFile(filename, fileset, root = userFolder)
 {
-	//console.log(`Loading ${filename}`);
 	const adjustedFilename = path.join(root, filename);
 	let contents = fs.readFileSync(adjustedFilename, "utf-8");
 	let pojo = YAML.parse(contents);
@@ -26,6 +27,7 @@ function loadActionable(actionable, fileset)
 					let actionsInsert = loadFile(action["import"], fileset);
 					if (!(actionsInsert instanceof Array))
 					{
+						logger.error(`Imports in the middle of action arrays must be arrays themselves.`);
 						throw new Error("Imports in the middle of action arrays must be arrays themselves");
 					}
 
@@ -38,7 +40,7 @@ function loadActionable(actionable, fileset)
 				}
 				catch (err)
 				{
-					console.log("Unable to load file ", action["import"]);
+					logger.error(`Unable to load file ${action["import"]}`);
 					throw err;
 				}
 			}
@@ -64,7 +66,6 @@ function loadTrigger(triggerObj, fileset)
 		if (trigger == "imports")
 			continue;
 
-
 		loadActionable(triggerObj[trigger], fileset)
 	}
 
@@ -89,7 +90,7 @@ function loadTrigger(triggerObj, fileset)
 			}
 			catch (err)
 			{
-				console.log("Unable to load file ", filename);
+				logger.error(`Unable to load file ${filename}`);
 				throw err;
 			}
 		}
@@ -109,38 +110,46 @@ class Profile
 		this.onReload = onReload;
 		this.rewards = [];
 		this.dependencies = null;
-		this.reload();
+		try
+		{
+			this.reload();
+		}
+		catch (err)
+		{
+			//Catch this error here, so initial construction of profiles doesn't error out.
+			//Otherwise it will break hotreloading if the profile is fixed.
+			logger.error(`Initial Loading of ${filename} failed.`);
+		}
 	}
 
 	reload()
 	{
 		let fileset = new Set();
+		this.dependencies = fileset;
 
-		console.log("Loading Profile: ", this.filename);
-		let profileConfig = loadFile(this.filename, fileset, ".");
-
-		if (profileConfig.triggers)
+		logger.info(`Loading Profile: ${this.filename}`);
+		let profileConfig;
+		try
 		{
-			for (let trigger in profileConfig.triggers)
+			profileConfig = loadFile(this.filename, fileset, ".");
+
+			if (profileConfig.triggers)
 			{
-				try
+				for (let trigger in profileConfig.triggers)
 				{
 					loadTrigger(profileConfig.triggers[trigger], fileset);
 				}
-				catch (err)
-				{
-					console.log("Unable to load file ", this.filename);
-					throw err;
-				}
-				
 			}
+		}
+		catch (err)
+		{
+			logger.error(`Unable to load file ${this.filename}`);
+			throw err;
 		}
 
 		this.triggers = profileConfig.triggers;
 		this.conditions = profileConfig.conditions || {};
 		this.config = profileConfig;
-
-		this.dependencies = fileset;
 	}
 
 	async handleFileChanged(filename)
@@ -176,4 +185,4 @@ Profile.mergeTriggers = function (profiles)
 	return combined;
 }
 
-module.exports = { Profile };
+module.exports = { Profile, loadActionable };

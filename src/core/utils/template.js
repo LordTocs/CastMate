@@ -1,10 +1,11 @@
 
+const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 
-function evalTemplate(template, data)
+async function evalTemplate(template, data)
 {
 	let contextObjs = { ...data };
 
-	let func = new Function(...Object.keys(contextObjs),`return (${template})`);
+	let func = new AsyncFunction(...Object.keys(contextObjs),`return (${template})`);
 
 	try
 	{
@@ -45,7 +46,7 @@ function skipString(templateStr, parseContext)
 	return true;
 }
 
-function template(templateStr, data)
+async function template(templateStr, data)
 {
 	//Extract stuff inbetween {{ }}
 	let resultStr = "";
@@ -86,7 +87,7 @@ function template(templateStr, data)
 		}
 
 		let template = templateStr.substr(index + 2, parseContext.i - 2 - (index + 2) + 1);
-		let value = evalTemplate(template, data);
+		let value = await evalTemplate(template, data);
 
 		resultStr += (value != null && value != undefined) ? value.toString() : "";
 		searchStart = parseContext.i + 1;

@@ -18,7 +18,7 @@ const fakeSetGroupStateEndpoint = {
 
 		data.url = `/${parameters.username}/groups/${parameters.id}/action`;
 
-		data.data = parameters.state;
+		data.data = parameters.state.getPayload();
 
 		data.headers = {
 			'Content-Type': 'application/json'
@@ -49,6 +49,8 @@ const { evalTemplate } = require('../utils/template');
 const os = require('os');
 const { sleep } = require("../utils/sleep.js");
 const fs = require("fs");
+const path = require('path');
+const { userFolder } = require('../utils/configuration');
 
 module.exports = {
 	name: "lights",
@@ -126,7 +128,7 @@ module.exports = {
 		{
 			try
 			{
-				this.hueUser = JSON.parse(fs.readFileSync("./user/secrets/hue.json", "utf-8"));
+				this.hueUser = JSON.parse(fs.readFileSync(path.join(userFolder, "secrets/hue.json"), "utf-8"));
 				return true;
 			}
 			catch (err)
@@ -161,18 +163,18 @@ module.exports = {
 						clientKey: user.clientKey
 					}
 
-					fs.writeFileSync("./user/secrets/hue.json", JSON.stringify(this.hueUser));
+					fs.writeFileSync(path.join(userFolder, "secrets/hue.json"), JSON.stringify(this.hueUser));
 
 					return true;
 				}
 				catch (err)
 				{
-					console.error("The link button on the bridge was not pressed. Press and try again.");
+					this.logger.error("The link button on the bridge was not pressed. Press and try again.");
 				}
 
 				if (i != retries - 1)
 				{
-					console.log("Trying again in 5 seconds...");
+					this.logger.info("Trying again in 5 seconds...");
 					await sleep(5000);
 				}
 			}
@@ -192,11 +194,11 @@ module.exports = {
 				return false;
 			}
 		},
-		handleTemplateNumber(value, context)
+		async handleTemplateNumber(value, context)
 		{
 			if (typeof value === 'string' || value instanceof String)
 			{
-				return evalTemplate(value, context)
+				return await evalTemplate(value, context)
 			}
 			return value;
 		},
@@ -226,12 +228,15 @@ module.exports = {
 		light: {
 			name: "Light",
 			description: "Changes HUE lights.",
+			color: "#7F743F",
 			data: {
 				type: Object,
 				properties: {
-					on: { type: "OptionalBoolean", name: "On" },
-					bri: { type: "TemplateNumber", name: "Brightness" },
+					on: { type: "OptionalBoolean", name: "Light Switch" },
 					hue: { type: "TemplateNumber", name: "Hue" },
+					bri: { type: "TemplateNumber", name: "Brightness" },
+					sat: { type: "TemplateNumber", name: "Saturation" },
+					ct: { type: "TemplateNumber", name: "Color Temp" },
 					transition: { type: "TemplateNumber", name: "Transition Time" },
 					group: { type: String, name: "HUE Light Group" },
 				}
@@ -246,25 +251,37 @@ module.exports = {
 
 				if ("on" in lightData)
 				{
-					lightData.on = this.handleTemplateNumber(lightData.on, context);
+					lightData.on = await this.handleTemplateNumber(lightData.on, context);
 
 					state.on(lightData.on);
 				}
 				if ("bri" in lightData)
 				{
-					lightData.bri = this.handleTemplateNumber(lightData.bri, context);
+					lightData.bri = await this.handleTemplateNumber(lightData.bri, context);
 
 					state.bri(lightData.bri);
 				}
+				if ("sat" in lightData)
+				{
+					lightData.sat = await this.handleTemplateNumber(lightData.sat, context);
+
+					state.sat(lightData.sat);
+				}
+				if ("ct" in lightData)
+				{
+					lightData.ct = await this.handleTemplateNumber(lightData.ct, context);
+
+					state.ct(lightData.ct);
+				}
 				if ("hue" in lightData)
 				{
-					lightData.hue = this.handleTemplateNumber(lightData.hue, context);
+					lightData.hue = await this.handleTemplateNumber(lightData.hue, context);
 
 					state.hue(Math.floor((lightData.hue / 360) * 65535))
 				}
 				if ("transition" in lightData)
 				{
-					lightData.transition = this.handleTemplateNumber(lightData.transition, context);
+					lightData.transition = await this.handleTemplateNumber(lightData.transition, context);
 
 					state.transitionInMillis(lightData.transition * 1000)
 				}
@@ -274,15 +291,16 @@ module.exports = {
 				if (group.length == 0)
 					return;
 
-				//await this.hue.groups.setGroupState(group.id, state);
+				//await this.hue.groups.setGroupState(group[0].id, state);
 				//Run our fake endpoint instead of the library's
-				await this.hue.groups.execute(fakeSetGroupStateEndpoint, { id: group[0].id, state: state._state });
+				await this.hue.groups.execute(fakeSetGroupStateEndpoint, { id: group[0].id, state: state });
 
 			}
 		},
 		lightScene: {
 			name: "Scene",
 			description: "Changes HUE lights to a hue scene",
+			color: "#7F743F",
 			data: {
 				type: Object,
 				properties: {

@@ -83,7 +83,7 @@ INPUT_KEYBOARD.size = 40; //Manually set this to 40 because that's the sizeof(IN
 const user32Lib = ffi.Library('user32', {
 	'SendInput': ['uint32', ['uint32', "pointer", 'int32']],
 	'MapVirtualKeyExA': ['uint32', ['uint32', 'uint32', 'uint64']],
-	'GetKeyboardLayout': ['uint64', ['uint32'] ]
+	'GetKeyboardLayout': ['uint64', ['uint32']]
 })
 
 module.exports = {
@@ -115,11 +115,12 @@ module.exports = {
 				let error = kernel32.GetLastError();
 				if (error)
 				{
-					console.log("VK Error", error);
+					this.logger.error(`VK Error ${error}`);
 				}
 			}
 		},
-		sendClick(button, up) {
+		sendClick(button, up)
+		{
 			let flags = 0;
 
 			if (up)
@@ -161,7 +162,7 @@ module.exports = {
 				let error = kernel32.GetLastError();
 				if (error)
 				{
-					console.log("VK Error", error);
+					this.logger.error(`SendInput Error ${error}`);
 				}
 			}
 		}
@@ -176,6 +177,7 @@ module.exports = {
 		pressKey: {
 			name: "Press Key",
 			description: "Presses a selected keyboard key.",
+			color: "#826262",
 			data: {
 				type: Object,
 				properties: {
@@ -197,6 +199,7 @@ module.exports = {
 		mouseButton: {
 			name: "Mouse Button",
 			description: "Presses a mouse button",
+			color: "#826262",
 			data: {
 				type: Object,
 				properties: {

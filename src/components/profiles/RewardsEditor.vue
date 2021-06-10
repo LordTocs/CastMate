@@ -34,7 +34,7 @@
 import { mapGetters } from "vuex";
 //import RewardSelector from "@/components/data/RewardSelector.vue";
 import RewardCard from "../rewards/RewardCard.vue";
-import AddRewardPopover from "./AddRewardPopover.vue";
+import AddRewardPopover from "../rewards/AddRewardPopover.vue";
 export default {
   components: {
     RewardCard,

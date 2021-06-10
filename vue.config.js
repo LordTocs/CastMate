@@ -8,15 +8,16 @@ module.exports = {
 			externals: ["win32-api", "ffi-napi", "ref-napi", "node-gyp-build", "@peter-murray/hue-bridge-model", "node-hue-api", "jsdom", "canvas", "chokidar"],
 			nodeIntegration: true,
 			builderOptions: {
-				productName: "CastMate",
-				win: {
-					target: [
-						"portable"
-					]
+				nsis: {
+					oneClick: false,
+					allowToChangeInstallationDirectory: true,
 				},
-				portable: {
-					artifactName: "castmate.exe"
-				}
+				publish: [{
+					provider: 'github',
+					owner: "LordTocs",
+					repo: "CastMate"
+				}],
+				productName: "CastMate",
 			}
 		}
 	},

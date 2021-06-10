@@ -16,10 +16,11 @@
     :value="value"
     @change="(v) => $emit('input', v)"
     v-else-if="schema.type == 'Boolean'"
-	:label="schema.name || label"
+    :label="schema.name || label"
   />
   <v-select
     :value="value"
+    :label="schema.name || label"
     @change="(v) => $emit('input', v)"
     :items="[
       { name: 'On', value: true },
@@ -29,6 +30,14 @@
     item-text="name"
     item-value="value"
     v-else-if="schema.type == 'OptionalBoolean'"
+  />
+  <file-autocomplete
+    v-else-if="schema.type == 'FilePath'"
+    :value="value"
+    @change="(v) => $emit('input', v)"
+    :recursive="!!schema.recursive"
+    :path="schema.path"
+    :basePath="schema.basePath"
   />
   <object-editor
     :schema="schema.properties"
@@ -40,11 +49,13 @@
 
 <script>
 import NumberInput from "./NumberInput.vue";
+import FileAutocomplete from "./FileAutocomplete.vue";
 export default {
   name: "data-input",
   components: {
     ObjectEditor: () => import("./ObjectEditor.vue"),
     NumberInput,
+    FileAutocomplete,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {

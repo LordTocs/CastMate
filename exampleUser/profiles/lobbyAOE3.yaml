@@ -19,7 +19,7 @@ triggers:
         - tts: Ha ha ha hahhhhhh
     "31":
       actions:
-        - sound: /sounds/trumpet.mp3
+        - sound: trumpet.mp3
     "!villager":
       actions:
         - tts: Train a villager

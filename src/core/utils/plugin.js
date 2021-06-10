@@ -2,7 +2,7 @@ const { reactify } = require("./reactive");
 const { cleanSchemaForIPC } = require("./schema");
 const _ = require('lodash');
 const { ipcMain } = require("electron");
-
+const logger = require('../utils/logger');
 class Plugin
 {
 	constructor(config)
@@ -11,7 +11,8 @@ class Plugin
 
 		this.name = config.name;
 		this.uiName = config.uiName || config.name;
-		console.log(`Loading Plugin: ${config.name}`);
+		this.color = config.color;
+		logger.info(`Loading Plugin: ${config.name}`);
 		this.initFunc = config.init;
 		//Bind the init func to the pluginObj
 		if (this.initFunc)
@@ -95,6 +96,8 @@ class Plugin
 			})
 		}
 
+		this.pluginObj.logger = logger;
+
 		//Create all the state.
 		this.pluginObj.state = {};
 		for (let stateKey in config.state)
@@ -124,7 +127,7 @@ class Plugin
 			} catch (err)
 			{
 				// TODO: Throw exception to UI
-				console.log(`Error loading ${this.name} plugin. Error Msg: ${err}.`)
+				logger.error(`Error loading ${this.name} plugin. Error Msg: ${err}.`)
 			}
 		}
 	}
@@ -149,7 +152,6 @@ class Plugin
 		this.pluginObj.secrets = newPluginSecrets;
 		if (this.onSecretsReload)
 		{
-			console.log("Secrets Changed Plugin: ", this.name);
 			let oldPluginSecrets = oldSecrets[this.name] || {};
 			if (!_.isEqual(newPluginSecrets, oldPluginSecrets))
 			{
@@ -167,7 +169,8 @@ class Plugin
 			actions[actionKey] = {
 				name: this.actions[actionKey].name,
 				description: this.actions[actionKey].description,
-				data: cleanSchemaForIPC(this.actions[actionKey].data)
+				data: cleanSchemaForIPC(this.actions[actionKey].data),
+				color: this.actions[actionKey].color,
 			}
 		}
 

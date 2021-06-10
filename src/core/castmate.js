@@ -1,42 +1,19 @@
+const { ensureUserFolder, secretsFilePath, settingsFilePath } = require("./utils/configuration.js");
 const { ActionQueue } = require("./actions/action-queue.js");
 const { ProfileManager } = require("./actions/profile-manager.js");
 const HotReloader = require('./utils/hot-reloader.js');
 const { createWebServices } = require("./utils/webserver.js");
 const { PluginManager } = require("./utils/plugin-manager.js");
 const { ipcMain } = require("electron");
-const fs  = require("fs");
-
-function ensureFolder(path) {
-	if (!fs.existsSync(path))
-	{
-		fs.mkdirSync(path, {recursive: true});
-	}
-}
-
-function ensureFile(path) {
-	if (!fs.existsSync(path))
-	{
-		fs.writeFileSync(path, "");
-	}
-}
 
 async function initInternal()
 {
 	let plugins = new PluginManager();
 	await plugins.load();
 
-	ensureFolder("./user");
-	ensureFolder("./user/data");
-	ensureFolder("./user/profiles");
-	ensureFolder("./user/secrets");
-	ensureFile('./user/secrets/secrets.yaml');
-	ensureFolder("./user/sequences");
-	ensureFolder("./user/sounds");
-	ensureFolder("./user/triggers");
-	ensureFile('./user/rewards.yaml');
-	ensureFile('./user/settings.yaml');
+	ensureUserFolder();
 
-	const settings = new HotReloader("./user/settings.yaml",
+	const settings = new HotReloader(settingsFilePath,
 		(newSettings, oldSettings) =>
 		{
 			for (let plugin of plugins.plugins)
@@ -49,7 +26,7 @@ async function initInternal()
 			console.error("Error loading settings", err);
 		});
 
-	const secrets = new HotReloader("./user/secrets/secrets.yaml",
+	const secrets = new HotReloader(secretsFilePath,
 		(newSecrets, oldSecrets) =>
 		{
 			for (let plugin of plugins.plugins)

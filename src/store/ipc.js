@@ -17,9 +17,11 @@ export default {
 			inited: false,
 			plugins: [],
 			client: null,
+			paths: {},
 		}
 	},
 	getters: {
+		paths: state => state.paths,
 		plugins: state => state.plugins,
 		inited: state => state.inited,
 		client: state => state.client,
@@ -30,8 +32,9 @@ export default {
 			{
 				Object.assign(result, plugin.actions)
 			}
+			//Special Injected Actions, these don't map to a plugin action.
 			result.delay = {
-				name: "Delay (After)",
+				name: "Delay",
 				data: { type: "Number" },
 				description: "Puts a delay after the current action",
 			};
@@ -40,6 +43,16 @@ export default {
 				data: { type: "Number" },
 				description: "Puts a delay before the current action",
 			};
+			result.import = {
+				name: "Play a Sequence",
+				data: {
+					type: "FilePath",
+					path: './sequences/',
+					basePath: './'
+				},
+				description: "Plays a Sequence",
+				color: "#7C4275"
+			}
 			result.timestamp = {
 				name: "Timestamp",
 				data: { type: "Number" },
@@ -69,6 +82,10 @@ export default {
 		setClient(state, client)
 		{
 			state.client = client;
+		},
+		setPaths(state, paths)
+		{
+			state.paths = paths
 		}
 	},
 	actions: {
@@ -81,6 +98,9 @@ export default {
 
 			let plugins = await ipcRenderer.invoke('getPlugins');
 			commit('setPlugins', plugins);
+
+			const paths = await ipcRenderer.invoke('getPaths');
+			commit('setPaths', paths);
 		},
 	}
 }

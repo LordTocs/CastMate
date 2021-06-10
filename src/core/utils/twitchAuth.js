@@ -2,6 +2,7 @@
 const qs = require('querystring');
 const { AccessToken } = require('twitch-auth');
 const { BrowserWindow } = require('electron');
+const logger = require('./logger');
 
 const scopes = [
 	"analytics:read:extensions",
@@ -61,7 +62,7 @@ class ElectronAuthManager
 		//Tests if auth can succeed silently.
 		const promise = new Promise((resolve, reject) =>
 		{
-			console.log(`Attempting ${this.name} Twitch Silent Auth`)
+			logger.info(`Attempting ${this.name} Twitch Silent Auth`)
 			const params = {
 				response_type: "token",
 				client_id: this._clientId,
@@ -89,11 +90,11 @@ class ElectronAuthManager
 				const url = new URL(details.url);
 				const matchUrl = url.origin + url.pathname;
 
-				console.log(`Silent ${this.name} BeforeRequest`, matchUrl);
+				logger.info(`Silent ${this.name} BeforeRequest`, matchUrl);
 				if (matchUrl == this._redirectUri)
 				{
 					const respParams = qs.parse(details.url.substr(details.url.indexOf('#') + 1));
-					console.log("RedirectUri Detected");
+					logger.info("RedirectUri Detected");
 					if (respParams.error || respParams.access_token)
 					{
 						window.destroy();
@@ -116,7 +117,7 @@ class ElectronAuthManager
 
 						//todo return this sucker.
 						resolve(this._accessToken);
-						console.log("Resolved");
+						logger.info("Resolved");
 					}
 					callback({ cancel: true });
 				}
@@ -132,7 +133,8 @@ class ElectronAuthManager
 				}
 			});
 
-			window.loadURL(authUrl).then(() => {
+			window.loadURL(authUrl).then(() =>
+			{
 				let fullUrl = window.webContents.getURL();
 				const url = new URL(fullUrl);
 				const matchUrl = url.origin + url.pathname;
@@ -182,11 +184,11 @@ class ElectronAuthManager
 				const url = new URL(details.url);
 				const matchUrl = url.origin + url.pathname;
 
-				console.log('BeforeRequest', matchUrl);
+				logger.info(`BeforeRequest ${matchUrl}`);
 				if (matchUrl == this._redirectUri)
 				{
 					const respParams = qs.parse(details.url.substr(details.url.indexOf('#') + 1));
-					console.log("RedirectUri Detected");
+					logger.info("RedirectUri Detected");
 					if (respParams.error || respParams.access_token)
 					{
 						window.destroy();
@@ -194,14 +196,14 @@ class ElectronAuthManager
 
 					if (respParams.error)
 					{
-						console.log("Error!");
+						logger.info("Error!");
 						//todo error!
 						reject(respParams.error);
 						callback({ cancel: true });
 					}
 					else if (respParams.access_token)
 					{
-						console.log("Access Token Success");
+						logger.info("Access Token Success");
 						this._accessToken = new AccessToken({
 							access_token: respParams.access_token,
 							scope: scopes,

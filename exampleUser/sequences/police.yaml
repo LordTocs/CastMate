@@ -1,4 +1,4 @@
-- sound: "./sounds/police.mp3"
+- sound: police.mp3
   light:
     on: true
 - timestamp: 0

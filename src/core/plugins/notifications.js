@@ -33,17 +33,17 @@ module.exports = {
 
 				if ("header" in notification)
 				{
-					notification.header = template(notificationData.header, context);
+					notification.header = await template(notificationData.header, context);
 				}
 
 				if ("text" in notification)
 				{
-					notification.text = template(notificationData.text, context);
+					notification.text = await template(notificationData.text, context);
 				}
 
 				if ("color" in notification)
 				{
-					notification.color = template(notificationData.color, context);
+					notification.color = await template(notificationData.color, context);
 				}
 				else
 				{
