@@ -1,35 +1,36 @@
 - sound: police.mp3
-  light:
+- light:
     on: true
 - timestamp: 0
-  light:
+- light:
     on: true
     hue: 0
+    sat: 254
 - timestamp: 1
-  light:
+- light:
     hue: 255
 - timestamp: 2
-  light:
+- light:
     on: true
     hue: 0
 - timestamp: 3
-  light:
+- light:
     hue: 255
 - timestamp: 4
-  light:
+- light:
     on: true
     hue: 0
 - timestamp: 5
-  light:
+- light:
     hue: 255
 - timestamp: 6
-  light:
+- light:
     on: true
     hue: 0
 - timestamp: 7
-  light:
+- light:
     hue: 255
 - timestamp: 8
-  light:
+- light:
     on: true
     hue: "userhue"

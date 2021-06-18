@@ -1,47 +1,48 @@
 - light:
     on: false
-  delay: 5
+- delay: 5
 - sound: "sirenAlert.wav"
-  delay: 1.384
+- delay: 1.384
 - light:
     hue: 0
     on: true
-  delay: 0.877
+    sat: 254
+- delay: 0.877
 - light:
     on: false
-  delay: 0.877
+- delay: 0.877
 - light:
     hue: 0
     on: true
-  delay: 0.877
+- delay: 0.877
 - light:
     on: false
-  delay: 0.877
+- delay: 0.877
 - light:
     hue: 0
     on: true
-  delay: 0.877
+- delay: 0.877
 - light:
     on: false
-  delay: 0.877
+- delay: 0.877
 - light:
     hue: 0
     on: true
-  delay: 0.877
+- delay: 0.877
 - light:
     on: false
-  delay: 0.877
+- delay: 0.877
 - light:
     hue: 0
     on: true
-  delay: 0.877
+- delay: 0.877
 - light:
     on: false
-  delay: 0.877
+- delay: 0.877
 - light:
     hue: 280
     on: true
 - beforeDelay: 6
-  light:
+- light:
     on: true
     hue: "userhue"
