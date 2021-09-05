@@ -734,6 +734,20 @@ module.exports = {
 				await this.chatClient.say(this.state.channelName.toLowerCase(), await template(message, context));
 			}
 		},
+		streamTitle: {
+			name: "Change Stream Title",
+			description: "Change the stream title",
+			color: "#5E5172",
+			data: {
+				type: "TemplateString"
+			},
+			async handler(message, context)
+			{
+				await this.channelTwitchClient.helix.channels.updateChannelInfo(this.channelId, {
+					title: await template(message, context)
+				})
+			}
+		},
 		multiSay: {
 			name: "Multi Say",
 			description: "Uses the bot to send an array of twitch chat messages",
