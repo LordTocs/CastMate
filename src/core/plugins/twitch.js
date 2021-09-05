@@ -639,7 +639,25 @@ module.exports = {
 				return { name: category.name, id: category.id, boxArtUrl: category.boxArtUrl };
 			}
 			return null;
-		}
+		},
+
+		async getAllTags()
+		{
+			const pageniator = this.channelTwitchClient.helix.tags.getAllStreamTagsPaginated();
+
+			const tags = await pageniator.getAll();
+			const pojoTags = []
+
+			for (let tag of tags)
+			{
+				if (!tag.isAuto)
+				{
+					pojoTags.push({ id: tag.id, name: tag.getName("en-us") })
+				}
+			}
+
+			return pojoTags;
+		},
 	},
 	async onProfileLoad(profile, config)
 	{

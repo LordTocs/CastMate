@@ -18,6 +18,7 @@ export default {
 			plugins: [],
 			client: null,
 			paths: {},
+			tags: [],
 		}
 	},
 	getters: {
@@ -25,6 +26,7 @@ export default {
 		plugins: state => state.plugins,
 		inited: state => state.inited,
 		client: state => state.client,
+		tags: state => state.tags,
 		actions: state =>
 		{
 			let result = {};
@@ -86,6 +88,10 @@ export default {
 		setPaths(state, paths)
 		{
 			state.paths = paths
+		},
+		setTags(state, tags)
+		{
+			state.tags = tags;
 		}
 	},
 	actions: {
@@ -101,6 +107,9 @@ export default {
 
 			const paths = await ipcRenderer.invoke('getPaths');
 			commit('setPaths', paths);
+
+			const tags = await ipcRenderer.invoke('twitch_getAllTags');
+			commit('setTags', tags);
 		},
 	}
 }
