@@ -7,7 +7,7 @@
     :items="categories"
     item-value="id"
     item-text="name"
-    prepend-icon="mdi-search"
+    prepend-icon="mdi-magnify"
     label="Category"
   >
     <template v-slot:item="data">
