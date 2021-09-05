@@ -54,7 +54,7 @@ export default {
     };
   },
   methods: {
-    ...mapIpcs("twitch"),
+    ...mapIpcs("twitch", ["doChannelAuth", "doBotAuth"]),
     async startChannelAuth() {
       this.channelWorking = true;
       if (await this.doChannelAuth()) {

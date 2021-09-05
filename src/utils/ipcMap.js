@@ -1,19 +1,13 @@
-import { store } from '../store/store';
 import { ipcRenderer } from 'electron'; 
 
-export function mapIpcs(pluginName)
+export function mapIpcs(pluginName, functions)
 {
-	let plugins = store.getters['ipc/plugins'];
-	let plugin = plugins.find((p) => p.name == pluginName);
-
-	if (!plugin)
-		return {}
-	
 	let result = {}
-	for (let ipcMethod of plugin.ipcMethods)
+	for (let ipcMethod of functions)
 	{
+		console.log(`Binding ${ipcMethod}`)
 		result[ipcMethod] = async function (...args) {
-			return await ipcRenderer.invoke(`${plugin.name}_${ipcMethod}`, ...args);
+			return await ipcRenderer.invoke(`${pluginName}_${ipcMethod}`, ...args);
 		}
 	}
 	return result;
