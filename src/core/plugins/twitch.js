@@ -17,6 +17,8 @@ const BadWords = require("bad-words");
 const express = require('express');
 const { rewardsFilePath } = require("../utils/configuration");
 
+const axios = require('axios');
+
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
 function dateInterval(date1, date2)
@@ -609,9 +611,7 @@ module.exports = {
 		{
 			try
 			{
-				console.log("Searching Categories: ", query);
 				const categories = await this.channelTwitchClient.helix.search.searchCategories(query);
-				console.log(categories);
 				const pojoCategories = [];
 
 				for (let cat of categories.data)
@@ -643,6 +643,9 @@ module.exports = {
 
 		async getAllTags()
 		{
+			if (!this.channelAuth || !this.channelAuth.isAuthed)
+				return [];
+
 			const pageniator = this.channelTwitchClient.helix.tags.getAllStreamTagsPaginated();
 
 			const tags = await pageniator.getAll();
@@ -658,6 +661,28 @@ module.exports = {
 
 			return pojoTags;
 		},
+
+		async updateStreamInfo(info)
+		{
+			console.log(this.channelId);
+
+			await this.channelTwitchClient.helix.channels.updateChannelInfo(this.channelId, {
+				title: info.title,
+				gameId: info.category,
+			})
+
+			//Awaiting fix from d-fisher
+			//await this.channelTwitchClient.helix.streams.replaceStreamTags(this.channelId, info.tags);
+
+			await axios.put(`https://api.twitch.tv/helix/streams/tags?broadcaster_id=${this.channelId}`, {
+				tag_ids: info.tags
+			}, {
+				headers: {
+					Authorization: `Bearer ${this.channelAuth._accessToken.accessToken}`,
+					'Client-ID': this.channelAuth.clientId
+				}
+			})
+		}
 	},
 	async onProfileLoad(profile, config)
 	{
