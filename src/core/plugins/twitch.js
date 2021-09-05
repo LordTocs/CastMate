@@ -603,6 +603,42 @@ module.exports = {
 			{
 				await this.completeAuth();
 			}
+		},
+
+		async searchCategories(query = "")
+		{
+			try
+			{
+				console.log("Searching Categories: ", query);
+				const categories = await this.channelTwitchClient.helix.search.searchCategories(query);
+				console.log(categories);
+				const pojoCategories = [];
+
+				for (let cat of categories.data)
+				{
+					pojoCategories.push({
+						id: cat.id,
+						name: cat.name,
+						boxArtUrl: cat.boxArtUrl
+					})
+				}
+
+				return pojoCategories;
+			}
+			catch (err)
+			{
+				console.error(err);
+			}
+		},
+
+		async getCategoryById(id)
+		{
+			const category = await this.channelTwitchClient.helix.games.getGameById(id);
+			if (category)
+			{
+				return { name: category.name, id: category.id, boxArtUrl: category.boxArtUrl };
+			}
+			return null;
 		}
 	},
 	async onProfileLoad(profile, config)
