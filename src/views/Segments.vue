@@ -90,7 +90,9 @@ export default {
 
       this.updateStreamInfo(segment);
 
-      ipcRenderer.invoke("pushToQueue", segment.sequence);
+      if (segment.sequence.length > 0) {
+        ipcRenderer.invoke("pushToQueue", segment.sequence);
+      }
     },
     async updateTitle(index, title) {
       const segment = { ...this.segments[index], title };
