@@ -192,7 +192,7 @@ module.exports = {
 			let stats = JSON.parse(fs.readFileSync(path.join(userFolder, "data/officialPlayerStats.json"), "utf-8"));
 			try
 			{
-				let result = (stats.find((_) => _.userName.toLowerCase() == playerName))
+                let result = (stats.find((_) => _.userName.toLowerCase() == playerName.toLowerCase()))
 				if (result)
 				{
 					let formattedResult = {}
