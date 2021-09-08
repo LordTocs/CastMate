@@ -18,7 +18,8 @@ module.exports = {
 					repo: "CastMate"
 				}],
 				productName: "CastMate",
-			}
+			},
+			mainProcessWatch: ['src/core/**'],
 		}
 	},
 
