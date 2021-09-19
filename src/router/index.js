@@ -6,12 +6,18 @@ import CommandFileEditor from "../views/CommandFileEditor.vue";
 import SequenceEditor from "../views/SequenceEditor.vue";
 import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
+import Segments from '../views/Segments.vue';
 
 Vue.use(VueRouter)
 
 const routes = [
 	{
-		path: "/",
+		path: '/',
+		name: "Segments",
+		component: Segments
+	},
+	{
+		path: "/profiles",
 		name: "Profiles",
 		component: Profiles
 	},

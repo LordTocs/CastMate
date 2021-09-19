@@ -26,6 +26,15 @@
           </v-list-item-icon>
 
           <v-list-item-content>
+            <v-list-item-title> Segments </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item link to="/profiles">
+          <v-list-item-icon>
+            <v-icon>mdi-file-document-outline</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
             <v-list-item-title> Profiles </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
@@ -136,6 +145,7 @@ export default {
   methods: {
     ...mapActions("ipc", ["init"]),
     ...mapActions("rewards", ["loadRewards"]),
+	...mapActions("segments", ["loadSegments"]),
     openSoundsFolder() {
       shell.openPath(path.join(this.paths.userFolder, "sounds"));
     },
@@ -143,6 +153,7 @@ export default {
   async mounted() {
     await this.init();
     await this.loadRewards();
+	await this.loadSegments();
     this.loaded = true;
   },
 };
