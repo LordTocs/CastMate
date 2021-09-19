@@ -57,7 +57,7 @@
         large
         right
         bottom
-        @click="addSegment({ title: '', goLive: '', tags: [], actions: [] })"
+        @click="addSegment({ title: '', goLive: '', tags: [], sequence: [] })"
       >
         <v-icon> mdi-plus </v-icon>
       </v-btn>
