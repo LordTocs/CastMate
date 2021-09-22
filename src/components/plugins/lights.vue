@@ -38,7 +38,7 @@ export default {
     };
   },
   methods: {
-    ...mapIpcs("lights"),
+    ...mapIpcs("lights", ["searchForHub"]),
     async startSearchForHub() {
       this.connecting = true;
       if (await this.searchForHub()) {

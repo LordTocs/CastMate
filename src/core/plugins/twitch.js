@@ -6,16 +6,17 @@ const { ChatClient } = require("twitch-chat-client");
 
 const { PubSubClient, BasicPubSubClient } = require("twitch-pubsub-client");
 
-const { WebHookListener, ConnectionAdapter } = require("twitch-webhooks");
-
 const { template } = require('../utils/template');
 const { evalTemplate } = require('../utils/template');
 const HotReloader = require("../utils/hot-reloader");
 
 const BadWords = require("bad-words");
 
-const express = require('express');
 const { rewardsFilePath } = require("../utils/configuration");
+
+const { WebSocket } = require('ws');
+
+const axios = require('axios');
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -57,39 +58,6 @@ function dateInterval(date1, date2)
 	}
 	return result;
 }
-
-class ExpressWebhookAdapter extends ConnectionAdapter
-{
-	constructor(options, basePath)
-	{
-		super(options);
-		this._hostName = options.hostName;
-		this._basePath = basePath;
-	}
-
-	/** @protected */
-	get connectUsingSsl()
-	{
-		return this.listenUsingSsl;
-	}
-	/** @protected */
-	async getExternalPort()
-	{
-		return this.getListenerPort();
-	}
-
-	/** @protected */
-	async getHostName()
-	{
-		return this._hostName;
-	}
-
-	get pathPrefix()
-	{
-		return this._basePath;
-	}
-}
-
 
 module.exports = {
 	name: "twitch",
@@ -145,24 +113,17 @@ module.exports = {
 				await this.chatClient.quit();
 			}
 
-			if (this.webhooks)
-			{
-				for (let sub of this.webhookSubs)
-				{
-					sub.stop();
-				}
-
-				let index = this.webServices.app._router.stack.findIndex((item) => item.handle == this.webhookRouter)
-				if (index >= 0)
-				{
-					this.logger.info("Removing router by index", index);
-					this.webServices.app._router.stack.splice(index, 1);
-				}
-			}
-
 			if (this.basePubSubClient)
 			{
 				this.basePubSubClient.disconnect();
+			}
+
+			if (this.castMateWebsocket)
+			{
+				//Flag so the automatic reconnect does not run
+				this.castMateWebsocketReconnect = false;
+				this.castMateWebsocket.terminate();
+				this.castMateWebsocket = null;
 			}
 		},
 
@@ -197,11 +158,11 @@ module.exports = {
 
 			try
 			{
-				await this.setupWebHookTriggers();
+				await this.setupCastMateWebsocketWorkaround();
 			}
 			catch (err)
 			{
-				this.logger.error(`Failed to setup WebHook Triggers`);
+				this.logger.error(`Failed to setup Websocket Workaround`);
 				this.logger.error(`${err}`);
 			}
 
@@ -337,56 +298,60 @@ module.exports = {
 			})
 		},
 
-		async setupWebHookTriggers()
+		async setupCastMateWebsocketWorkaround() 
 		{
-			this.webhooks = new WebHookListener(this.channelTwitchClient, new ExpressWebhookAdapter({
-				hostName: this.webServices.hostname,
-				listenerPort: this.webServices.port
-			}, "/twitch-hooks"));
-
-			this.webhookRouter = express.Router();
-
-			this.webhooks.applyMiddleware(this.webhookRouter);
-
-			this.webServices.app.use(this.webhookRouter);
-
 			this.followerCache = new Set();
 
-			let followHook = await this.webhooks.subscribeToFollowsToUser(this.channelId, async (follow) =>
-			{
-				if (this.followerCache.has(follow.userId))
-					return;
-
-				this.followerCache.add(follow.userId);
-
-				this.logger.info(`followed by ${follow.userDisplayName}`);
-				this.actions.trigger('follow', { user: follow.userDisplayName, userId: follow.userId, ...{ userColor: this.colorCache[follow.userId] } });
-
-
-				let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
-				this.state.followers = follows.total;
+			this.castMateWebsocketReconnect = true;
+			this.castMateWebsocket = new WebSocket('wss://castmate-websocket.herokuapp.com', {
+				headers: {
+					Authorization: `Bearer ${this.channelAuth._accessToken.accessToken}`,
+				}
 			});
 
-
-			let subHook = await this.webhooks.subscribeToStreamChanges(this.channelId, async (stream) =>
+			this.castMateWebsocket.on('message', async (data) =>
 			{
-				//Stream Changed
-				this.logger.info("Stream Changed");
-
+				let message = null;
 				try
 				{
-					let game = await stream.getGame();
-					this.logger.info(`Game Name: ${game.name}`);
-
-					this.state.twitchCategory = game.name;
+					message = JSON.parse(data);
 				}
-				catch (err)
+				catch
 				{
-					this.state.twitchCategory = null;
+					console.error("Unable to parse", data);
+				}
+
+				if (!message)
+					return;
+
+				if (message.event == "follow")
+				{
+					if (this.followerCache.has(message.userId))
+						return;
+
+					this.followerCache.add(message.userId);
+
+					this.logger.info(`followed by ${message.userDisplayName}`);
+					this.actions.trigger('follow', { user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
+
+					let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
+					this.state.followers = follows.total;
 				}
 			});
 
-			this.webhookSubs = [followHook, subHook];
+			this.castMateWebsocket.on('close', () =>
+			{
+				this.castMateWebsocket = null;
+
+				//Retry connection in 5 seconds.
+				if (this.castMateWebsocketReconnect)
+				{
+					setTimeout(() =>
+					{
+						this.setupCastMateWebsocketWorkaround();
+					}, 5000);
+				}
+			});
 		},
 
 		async setupPubSubTriggers()
@@ -603,6 +568,83 @@ module.exports = {
 			{
 				await this.completeAuth();
 			}
+		},
+
+		async searchCategories(query = "")
+		{
+			try
+			{
+				const categories = await this.channelTwitchClient.helix.search.searchCategories(query);
+				const pojoCategories = [];
+
+				for (let cat of categories.data)
+				{
+					pojoCategories.push({
+						id: cat.id,
+						name: cat.name,
+						boxArtUrl: cat.boxArtUrl
+					})
+				}
+
+				return pojoCategories;
+			}
+			catch (err)
+			{
+				console.error(err);
+			}
+		},
+
+		async getCategoryById(id)
+		{
+			const category = await this.channelTwitchClient.helix.games.getGameById(id);
+			if (category)
+			{
+				return { name: category.name, id: category.id, boxArtUrl: category.boxArtUrl };
+			}
+			return null;
+		},
+
+		async getAllTags()
+		{
+			if (!this.channelAuth || !this.channelAuth.isAuthed)
+				return [];
+
+			const pageniator = this.channelTwitchClient.helix.tags.getAllStreamTagsPaginated();
+
+			const tags = await pageniator.getAll();
+			const pojoTags = []
+
+			for (let tag of tags)
+			{
+				if (!tag.isAuto)
+				{
+					pojoTags.push({ id: tag.id, name: tag.getName("en-us") })
+				}
+			}
+
+			return pojoTags;
+		},
+
+		async updateStreamInfo(info)
+		{
+			console.log(this.channelId);
+
+			await this.channelTwitchClient.helix.channels.updateChannelInfo(this.channelId, {
+				title: info.title,
+				gameId: info.category,
+			})
+
+			//Awaiting fix from d-fisher
+			//await this.channelTwitchClient.helix.streams.replaceStreamTags(this.channelId, info.tags);
+
+			await axios.put(`https://api.twitch.tv/helix/streams/tags?broadcaster_id=${this.channelId}`, {
+				tag_ids: info.tags
+			}, {
+				headers: {
+					Authorization: `Bearer ${this.channelAuth._accessToken.accessToken}`,
+					'Client-ID': this.channelAuth.clientId
+				}
+			})
 		}
 	},
 	async onProfileLoad(profile, config)
@@ -732,6 +774,20 @@ module.exports = {
 			async handler(message, context)
 			{
 				await this.chatClient.say(this.state.channelName.toLowerCase(), await template(message, context));
+			}
+		},
+		streamTitle: {
+			name: "Change Stream Title",
+			description: "Change the stream title",
+			color: "#5E5172",
+			data: {
+				type: "TemplateString"
+			},
+			async handler(message, context)
+			{
+				await this.channelTwitchClient.helix.channels.updateChannelInfo(this.channelId, {
+					title: await template(message, context)
+				})
 			}
 		},
 		multiSay: {

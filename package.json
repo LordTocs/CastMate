@@ -54,6 +54,7 @@
     "websocket": "^1.0.33",
     "win32-api": "^9.6.0",
     "winston": "^3.3.3",
+    "ws": "^8.2.2",
     "yaml": "^1.10.0"
   },
   "devDependencies": {
