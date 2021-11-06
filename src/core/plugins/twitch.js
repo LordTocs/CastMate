@@ -131,6 +131,9 @@ module.exports = {
 		{
 			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.botAuth || !this.botAuth.isAuthed)
 			{
+				this.logger.info("Failed to complete auth.");
+				this.logger.info(`  Channel Auth ${this.channelAuth ? this.channelAuth.isAuthed : 'None'}`)
+				this.logger.info(`  Bot     Auth ${this.botAuth ? this.botAuth.isAuthed : 'None'}`)
 				return;
 			}
 
@@ -232,6 +235,8 @@ module.exports = {
 		{
 			this.chatClient = new ChatClient(this.botAuth, { channels: [this.state.channelName] });
 			await this.chatClient.connect();
+
+			this.logger.info(`Connected to Chat`);
 
 			//Setup triggers
 			this.chatClient.onMessage(async (channel, user, message, msgInfo) =>
@@ -602,6 +607,8 @@ module.exports = {
 
 		async getCategoryById(id)
 		{
+			if (!this.channelTwitchClient)
+				return null;
 			const category = await this.channelTwitchClient.helix.games.getGameById(id);
 			if (category)
 			{
