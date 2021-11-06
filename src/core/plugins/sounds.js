@@ -30,6 +30,11 @@ module.exports = {
 		}
 	},
 	settings: {
+		globalVolume: {
+			type: Number,
+			name: "Global Volume",
+			description: "Global Volume control."
+		}
 	},
 	secrets: {
 	},
@@ -37,17 +42,30 @@ module.exports = {
 		sound: {
 			name: "Sound",
 			data: {
-				type: "FilePath",
-				recursive: true,
-				path: './sounds/',
+				type: Object,
+				properties: {
+					sound: {
+						type: "FilePath",
+						recursive: true,
+						path: './sounds/',
+						name: "Sound File",
+					},
+					volume: {
+						type: "TemplateNumber",
+						name: "Volume",
+						default: 1.0
+					}
+				}
 			},
 			color: "#62894F",
 			async handler(soundData)
 			{
 				if (this.audioWindowSender)
 				{
+					const globalVolume = this.settings.globalVolume != undefined ? this.settings.globalVolume : 1.0;
 					this.audioWindowSender.send('play-sound', {
-						source: this.getFullFilepath(soundData)
+						source: this.getFullFilepath(soundData.sound),
+						volume: ("volume" in soundData ? soundData.volume : 1.0) * globalVolume
 					});
 				}
 				else

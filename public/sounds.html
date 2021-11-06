@@ -8,6 +8,7 @@
 		ipcRenderer.on('play-sound', (event, arg) =>
 		{
 			let audio = new Audio(`file://${arg.source}`);
+			audio.volume = arg.volume;
 			audio.addEventListener("canplaythrough", event =>
 			{
 				audio.play();
