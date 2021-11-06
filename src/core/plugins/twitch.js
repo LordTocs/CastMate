@@ -309,6 +309,11 @@ module.exports = {
 				}
 			});
 
+			this.castMateWebsocket.on('open', () =>
+			{
+				this.logger.info(`Connection to castmate websocket open`);
+			})
+
 			this.castMateWebsocket.on('message', async (data) =>
 			{
 				let message = null;
@@ -346,6 +351,7 @@ module.exports = {
 				//Retry connection in 5 seconds.
 				if (this.castMateWebsocketReconnect)
 				{
+					this.logger.info(`Connection to castmate websocket failed, retrying in 5 seconds...`);
 					setTimeout(() =>
 					{
 						this.setupCastMateWebsocketWorkaround();
@@ -804,6 +810,30 @@ module.exports = {
 				{
 					await this.chatClient.say(this.state.channelName.toLowerCase(), msg);
 				}
+			}
+		},
+		runAd: {
+			name: "Run Ad",
+			description: "Run an ad",
+			color: "#5E5172",
+			data: {
+				type: Number,
+			},
+			async handler(duration)
+			{
+				await this.channelTwitchClient.helix.channels.startChannelCommercial(this.channelId, duration);
+			}
+		},
+		streamMarker: {
+			name: "Place Stream Marker",
+			description: "Places a marker in the stream for use in the video editor",
+			color: "#5E5172",
+			data: {
+				type: "TemplateString",
+			},
+			async handler(message, context)
+			{
+				await this.channelTwitchClient.helix.streams.createStreamMarker(this.channelId, await template(message, context));
 			}
 		}
 	},
