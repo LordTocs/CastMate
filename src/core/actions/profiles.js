@@ -61,6 +61,9 @@ function loadActionable(actionable, fileset)
 
 function loadTrigger(triggerObj, fileset)
 {
+	if (!triggerObj)
+		return;
+
 	for (let trigger in triggerObj)
 	{
 		if (trigger == "imports")
