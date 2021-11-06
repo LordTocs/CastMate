@@ -98,6 +98,30 @@ module.exports = {
 					filterEnabled: !!filterData.filterEnabled
 				})	
 			}
+		},
+		obsText: {
+			name: "OBS Text",
+			description: "Change the text in a GDI+ text element.",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+					text: { type: "TemplateString", name: "Text" },
+					sourceName: {
+						type: "TemplateString",
+						name: "Source Name",
+					},
+				}
+			},
+			async handler(textData, context)
+			{
+				const sourceName = await template(textData.sourceName, context);
+
+				await this.obs.send('SetTextGDIPlusProperties', {
+					source: sourceName,
+					text: await template(textData.text, context)
+				})	
+			}
 		}
 	}
 }
