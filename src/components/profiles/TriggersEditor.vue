@@ -1,12 +1,8 @@
 <template>
   <div>
-    <v-row v-for="triggerKey in sortedTriggers" :key="triggerKey">
+    <v-row v-for="plugin in triggerPlugins" :key="plugin.name">
       <v-col>
-        <trigger-editor
-          v-model="value[triggerKey]"
-          :triggerKey="triggerKey"
-          :trigger="triggers[triggerKey]"
-        />
+        <profile-plugin v-model="value" :plugin="plugin" />
       </v-col>
     </v-row>
   </div>
@@ -14,39 +10,19 @@
 
 <script>
 import { mapGetters } from "vuex";
-import TriggerEditor from "../triggers/TriggerEditor.vue";
+import ProfilePlugin from "./ProfilePlugin.vue";
 
 export default {
   props: {
     value: {},
   },
   components: {
-    TriggerEditor,
+    ProfilePlugin,
   },
   computed: {
-    ...mapGetters("ipc", ["triggers"]),
-    sortedTriggers() {
-      return Object.keys(this.triggers).sort((a, b) => {
-        const aCommands = this.hasCommands(a);
-        const bCommands = this.hasCommands(b);
-
-        if (aCommands && !bCommands) {
-          return -1;
-        }
-        if (!aCommands && bCommands) {
-          return 1;
-        }
-        return 0;
-      });
-    },
-  },
-  methods: {
-    hasCommands(key) {
-      try {
-        return Object.keys(this.value[key]).length >= 1;
-      } catch {
-        return false;
-      }
+    ...mapGetters("ipc", ["triggers", "plugins"]),
+    triggerPlugins() {
+      return this.plugins.filter((p) => Object.keys(p.triggers).length > 0);
     },
   },
 };
