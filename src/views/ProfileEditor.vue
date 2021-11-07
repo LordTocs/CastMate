@@ -7,11 +7,6 @@
     </v-row>
     <v-row>
       <v-col>
-        <variables-editor v-model="profile.variables" />
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
         <rewards-editor v-model="profile.rewards" />
       </v-col>
     </v-row>
@@ -43,7 +38,6 @@
 
 <script>
 import TriggersEditor from "../components/profiles/TriggersEditor.vue";
-import VariablesEditor from "../components/profiles/VariablesEditor.vue";
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import YAML from "yaml";
@@ -54,7 +48,6 @@ import { mapGetters } from "vuex";
 export default {
   components: {
     TriggersEditor,
-    VariablesEditor,
     ConditionsEditor,
     RewardsEditor,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),

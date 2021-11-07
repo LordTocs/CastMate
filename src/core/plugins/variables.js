@@ -1,48 +1,94 @@
-const { createReactiveProperty } = require("../utils/reactive.js");
+const { createReactiveProperty, deleteReactiveProperty } = require("../utils/reactive.js");
 const { evalTemplate } = require('../utils/template');
+const { variablesFilePath } = require('../utils/configuration.js');
+
+const HotReloader = require('../utils/hot-reloader');
 
 module.exports = {
 	name: "variables",
 	uiName: "Variables",
 	async init()
 	{
+		this.variableSpecs = {};
+		this.logger.info(`Watching ${variablesFilePath}`);
+		this.variableSettingsReloader = new HotReloader(variablesFilePath,
+			() =>
+			{
+				this.loadVariables();
+			},
+			() =>
+			{
+				this.logger.error('Oh no there was a variable file error.')
+			});
+
+		this.loadVariables();
 
 	},
-	onProfileLoad(profile, config)
-	{
-		let needsDependencyUpdate = false;
-		for (let variable in config.variables)
+	methods: {
+		loadVariables()
 		{
-			let variableSpec = config.variables[variable];
+			const variableData = this.variableSettingsReloader.data;
 
-			let defaultValue = variableSpec.default;
+			this.logger.info("Reloading Variables...");
+			let needsDependencyUpdate = false;
 
-			if (defaultValue == undefined)
+			for (let variableName in variableData)
 			{
-				if (variableSpec.type && variableSpec.type == "string")
+				let variableSpec = variableData[variableName];
+
+				let defaultValue = variableSpec.default;
+
+				if (defaultValue == undefined)
 				{
-					defaultValue = "";
+					if (variableSpec.type && variableSpec.type == "string")
+					{
+						defaultValue = "";
+					}
+					else
+					{
+						defaultValue = 0;
+					}
+				}
+
+				if (variableName in this.variableSpecs)
+				{
+					//Already have this variable.
+					if (this.variableSpecs[variableName].type != variableSpec.type)
+					{
+						//We need to update the type and thus the default value.
+						this.logger.info(`Variable ${variableName} type has changed, resetting to default.`)
+						this.variableSpecs[variableName].type = variableSpec.type;
+						this.state[variableName] = defaultValue;
+					}
 				}
 				else
 				{
-					defaultValue = 0;
+					//This is a new variable.
+					this.logger.info(`New Variable ${variableName}`);
+					this.variableSpecs[variableName] = variableSpec;
+					this.createVariable(variableName, defaultValue);
+					needsDependencyUpdate = true;
 				}
 			}
 
-			if (!(variable in this.state))
+			for (let variableName in this.variableSpecs)
 			{
-				//Trigger creation here.
-				this.createVariable(variable, defaultValue);
-				needsDependencyUpdate = true;
+				if (!(variableName in variableData))
+				{
+					//This variable is gone, destroy it.
+					this.logger.info(`Deleting Variable ${variableName}`);
+					deleteReactiveProperty(this.state, variableName);
+					this.plugins.removeReactiveValue(variableName);
+					needsDependencyUpdate = true;
+					delete this.variableSpecs[variableName];
+				}
 			}
-		}
 
-		if (needsDependencyUpdate)
-		{
-			this.profiles.redoDependencies();
-		}
-	},
-	methods: {
+			if (needsDependencyUpdate)
+			{
+				this.profiles.redoDependencies();
+			}
+		},
 		createVariable(name, value)
 		{
 			this.state[name] = value

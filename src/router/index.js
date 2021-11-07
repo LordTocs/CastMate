@@ -7,6 +7,7 @@ import SequenceEditor from "../views/SequenceEditor.vue";
 import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
 import Segments from '../views/Segments.vue';
+import Variables from '../views/Variables.vue';
 
 Vue.use(VueRouter)
 
@@ -20,6 +21,11 @@ const routes = [
 		path: "/profiles",
 		name: "Profiles",
 		component: Profiles
+	},
+	{
+		path: "/variables",
+		name: "Variables",
+		component: Variables,
 	},
 	{
 		path: "/profiles/:profile",

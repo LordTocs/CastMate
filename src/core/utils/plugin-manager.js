@@ -1,6 +1,6 @@
 const { manualDependency } = require('./conditionals');
 const { Plugin } = require('./plugin');
-const { reactiveCopy, Watcher } = require('./reactive');
+const { reactiveCopy, Watcher, deleteReactiveProperty } = require('./reactive');
 const { ipcMain } = require("electron");
 const _ = require('lodash');
 
@@ -71,6 +71,11 @@ class PluginManager
 			}, { fireImmediately: false })
 			manualDependency(this.combinedState, watcher, newKey);
 		});
+	}
+
+	removeReactiveValue(valueName)
+	{
+		deleteReactiveProperty(this.combinedState, valueName);
 	}
 
 	async init(settings, secrets, actions, profiles, webServices)

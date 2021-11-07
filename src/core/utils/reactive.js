@@ -110,8 +110,18 @@ function createReactiveProperty(obj, key)
 		{
 			observable.internalValue = value;
 			observable.dependency.notify();
-		}
+		},
+		configurable: true
 	})
+}
+
+function deleteReactiveProperty(obj, key)
+{
+	if (!obj.__reactivity__)
+		return;
+
+	delete obj.__reactivity__[key];
+	delete obj[key];
 }
 
 function reactify(obj)
@@ -144,16 +154,17 @@ function reactiveCopy(target, obj, onNewKey = null)
 
 		Object.defineProperty(target, key, {
 			enumerable: true,
-			get()
+			get: () =>
 			{
 				sourceReactivity[key].dependency.depend();
 				return sourceReactivity[key].internalValue;
 			},
-			set(value)
+			set: (value) =>
 			{
 				sourceReactivity[key].internalValue = value;
 				sourceReactivity[key].dependency.notify();
-			}
+			},
+			configurable: true
 		})
 
 		if (onNewKey)
@@ -163,5 +174,5 @@ function reactiveCopy(target, obj, onNewKey = null)
 	}
 }
 
-module.exports = { Watcher, reactify, reactiveCopy, createReactiveProperty }
+module.exports = { Watcher, reactify, reactiveCopy, createReactiveProperty, deleteReactiveProperty }
 

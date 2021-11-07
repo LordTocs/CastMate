@@ -8,10 +8,10 @@ const { ipcMain } = require("electron");
 
 async function initInternal()
 {
+	ensureUserFolder();
+
 	let plugins = new PluginManager();
 	await plugins.load();
-
-	ensureUserFolder();
 
 	const settings = new HotReloader(settingsFilePath,
 		(newSettings, oldSettings) =>
