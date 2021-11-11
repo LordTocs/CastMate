@@ -194,7 +194,7 @@ module.exports = {
 
 		async doAuth()
 		{
-			this.chatAuthProvider = null;//this.channelAuth.createAuthProvider()
+			this.chatAuthProvider = null;
 
 			this.channelTwitchClient = new ApiClient({
 				authProvider: this.channelAuth,
@@ -205,12 +205,12 @@ module.exports = {
 			});
 
 			//Get the IDs
-			let channel = await this.channelTwitchClient.kraken.users.getMe();
-			this.state.channelName = channel.name;
+			let channel = await this.channelTwitchClient.helix.users.getMe(false);
+			this.state.channelName = channel.displayName;
 			this.channelId = await channel.id;
-			let bot = await this.botTwitchClient.kraken.users.getMe();
+			let bot = await this.botTwitchClient.helix.users.getMe(false);
 			this.botId = await bot.id;
-			this.state.botName = bot.name;
+			this.state.botName = bot.displayName;
 		},
 
 		parseMessage(message)
