@@ -155,21 +155,7 @@ class ElectronAuthManager
 				}
 			});
 
-			window.loadURL(authUrl);/*.then(() =>
-			{
-				let fullUrl = window.webContents.getURL();
-				const url = new URL(fullUrl);
-				const matchUrl = url.origin + url.pathname;
-
-				if (matchUrl == "https://id.twitch.tv/oauth2/authorize")
-				{
-					//resolve(false);
-					//window.destroy();
-
-					//Uh oh!
-					logger.info(` We've hit the new intermediate step: ${fullUrl}`);
-				}
-			});*/
+			window.loadURL(authUrl);
 		});
 
 		return promise;
