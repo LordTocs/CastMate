@@ -8,21 +8,28 @@ const scopes = [
 	"analytics:read:extensions",
 	"analytics:read:games",
 	"bits:read",
+
 	"channel:edit:commercial",
+	"channel:manage:broadcast",
+	"channel:manage:redemptions",
+
+	"channel_subscriptions",
+
 	"channel:read:hype_train",
 	"channel:read:subscriptions",
 	"channel:read:redemptions",
-	"channel:manage:redemptions",
-	"channel:manage:broadcast",
-	"channel_subscriptions",
+	//"channel:manage:polls",
+
 	"clips:edit",
+
 	"user:edit",
-	"user_read",
-	"user:edit:broadcast",
-	"user:edit:follows",
-	"user:read:broadcast",
 	"user:read:email",
+
+	"user:edit:broadcast",
+	"user:read:broadcast",
+
 	"channel:moderate",
+
 	"chat:edit",
 	"chat:read",
 	"whispers:read",
@@ -76,7 +83,7 @@ class ElectronAuthManager
 			const windowOptions = {
 				width: 600,
 				height: 600,
-				show: false,
+				show: true,
 				modal: true,
 				webPreferences: {
 					nodeIntegration: false,
@@ -86,24 +93,21 @@ class ElectronAuthManager
 
 			let window = new BrowserWindow(windowOptions);
 
+			logger.info(`Doing Silent Auth ${this.name}`);
 			window.webContents.session.webRequest.onBeforeRequest((details, callback) =>
 			{
 				const url = new URL(details.url);
 				const matchUrl = url.origin + url.pathname;
-
-				logger.info(`Silent ${this.name} BeforeRequest`, matchUrl);
+				logger.info(`  -${matchUrl}`);
 				if (matchUrl == this._redirectUri)
 				{
 					const respParams = qs.parse(details.url.substr(details.url.indexOf('#') + 1));
-					logger.info("RedirectUri Detected");
-					if (respParams.error || respParams.access_token)
-					{
-						window.destroy();
-					}
 
 					if (respParams.error)
 					{
 						//todo error!
+						logger.info(`  Auth Error: ${respParams.error}`);
+						window.destroy();
 						reject(respParams.error);
 					}
 					else if (respParams.access_token)
@@ -116,14 +120,31 @@ class ElectronAuthManager
 
 						this._currentScopes = new Set(scopes);
 
-						//todo return this sucker.
+						logger.info("  Auth Success");
 						resolve(this._accessToken);
-						logger.info("Resolved");
+						window.destroy();
 					}
+					else
+					{
+						logger.info("  Weird Extra Case");
+						for (let key in respParams)
+						{
+							logger.info(`  ${key}:${respParams[key]}`);
+						}
+					}
+					callback({ cancel: true });
+				}
+				else if (matchUrl.includes('jquery'))
+				{
+					//Hacky, assume that if we're loading jquery we've failed auth.
+					logger.info("  We've *probably* failed auth because scopes have changed.");
+					resolve(false)
+					window.destroy();
 					callback({ cancel: true });
 				}
 				else if (matchUrl == "https://www.twitch.tv/login")
 				{
+					logger.info("  No Signin Cookies");
 					resolve(false);
 					callback({ cancel: true });
 					window.destroy();
@@ -134,7 +155,7 @@ class ElectronAuthManager
 				}
 			});
 
-			window.loadURL(authUrl).then(() =>
+			window.loadURL(authUrl);/*.then(() =>
 			{
 				let fullUrl = window.webContents.getURL();
 				const url = new URL(fullUrl);
@@ -142,10 +163,13 @@ class ElectronAuthManager
 
 				if (matchUrl == "https://id.twitch.tv/oauth2/authorize")
 				{
-					resolve(false);
-					window.destroy();
+					//resolve(false);
+					//window.destroy();
+
+					//Uh oh!
+					logger.info(` We've hit the new intermediate step: ${fullUrl}`);
 				}
-			});
+			});*/
 		});
 
 		return promise;
