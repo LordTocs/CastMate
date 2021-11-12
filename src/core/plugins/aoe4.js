@@ -24,7 +24,6 @@ module.exports = {
             })
 
             if (response.data && response.data.items && response.data.items.length) {
-                console.log(response.data.items[0]);
                 let result = response.data.items[0];
 
                 let formattedResult = {};
@@ -40,6 +39,27 @@ module.exports = {
 
                 console.log(formattedResult);
                 return playerStatString;
+            } else {
+                return "Could not find player.";
+            }
+        },
+
+        async getAoe4Top5() {
+            let response = await axios.post('https://api.ageofempires.com/api/ageiv/Leaderboard', {
+                region: 7,
+                versus: "players",
+                matchType: "unranked",
+                teamSize: "1v1",
+                searchPlayer: "",
+                page: 1,
+                count: 1
+            })
+
+            if (response.data && response.data.items && response.data.items.length) {
+                let items = response.data.items;
+                let playerString = `🥇${items[0].userName}🥇 🥈${items[1].userName}🥈 🥉${items[2].userName}🥉`;
+
+                return playerString;
             } else {
                 return "Could not find player.";
             }
