@@ -83,7 +83,7 @@ class ElectronAuthManager
 			const windowOptions = {
 				width: 600,
 				height: 600,
-				show: true,
+				show: false,
 				modal: true,
 				webPreferences: {
 					nodeIntegration: false,
