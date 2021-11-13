@@ -17,6 +17,28 @@ module.exports = {
 		{
 			setTimeout(() => { this.connectOBS() }, 5000);
 		});
+		this.obs.on("StreamStarted", () =>
+		{
+			this.state.obsStreaming = true;
+		})
+		this.obs.on("StreamStopped", () =>
+		{
+			this.state.obsStreaming = false;
+		})
+		this.obs.on("StreamStatus", (data) =>
+		{
+			this.state.obsStreaming = data.streaming;
+			this.state.obsRecording = data.recording;
+		});
+
+		this.obs.on("RecordingStarted", () =>
+		{
+			this.state.obsRecording = true;
+		})
+		this.obs.on("RecordingStopped", () =>
+		{
+			this.state.obsRecording = false;
+		})
 	},
 	methods: {
 		async connectOBS()
@@ -49,6 +71,16 @@ module.exports = {
 			type: String,
 			name: "Obs Scene",
 			description: "Currently Active OBS Scene"
+		},
+		obsStreaming: {
+			type: Boolean,
+			name: "Obs Streaming",
+			description: "Is OBS currently Streaming?"
+		},
+		obsRecording: {
+			type: Boolean,
+			name: "Obs Recording",
+			description: "Is OBS currently Recording?"
 		}
 	},
 	actions: {
@@ -96,7 +128,7 @@ module.exports = {
 					sourceName,
 					filterName,
 					filterEnabled: !!filterData.filterEnabled
-				})	
+				})
 			}
 		},
 		obsText: {
@@ -120,7 +152,7 @@ module.exports = {
 				await this.obs.send('SetTextGDIPlusProperties', {
 					source: sourceName,
 					text: await template(textData.text, context)
-				})	
+				})
 			}
 		}
 	}
