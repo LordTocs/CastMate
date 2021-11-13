@@ -6,7 +6,7 @@ const _ = require('lodash');
 
 class PluginManager
 {
-	async load()
+	async load(ipcSender)
 	{
 		let pluginFiles = [
 			"inputs",
@@ -39,9 +39,11 @@ class PluginManager
 		{
 			Object.assign(this.combinedTemplateFunctions, plugin.templateFunctions);
 		}
+
+		this.ipcSender = ipcSender;
 	}
 
-	setupWebsocketReactivity()
+	setupReactivity()
 	{
 		for (let stateKey in this.combinedState)
 		{
@@ -52,7 +54,15 @@ class PluginManager
 						[stateKey]: this.combinedState[stateKey]
 					}
 				}))
+
+				if (this.ipcSender)
+				{
+					this.ipcSender.send('state-update', { [stateKey]: this.combinedState[stateKey] });
+				}
+
 			}, { fireImmediately: false })
+
+
 			manualDependency(this.combinedState, watcher, stateKey);
 		}
 	}
@@ -68,14 +78,26 @@ class PluginManager
 						[newKey]: this.combinedState[newKey]
 					}
 				}))
+
+				if (this.ipcSender)
+				{
+					this.ipcSender.send('state-update', { [newKey]: this.combinedState[newKey] });
+				}
 			}, { fireImmediately: false })
+
 			manualDependency(this.combinedState, watcher, newKey);
+
+			if (this.ipcSender)
+			{
+				this.ipcSender.send('state-update', { [newKey]: this.combinedState[newKey] });
+			}
 		});
 	}
 
 	removeReactiveValue(valueName)
 	{
 		deleteReactiveProperty(this.combinedState, valueName);
+		this.ipcSender.send('state-removal', valueName);
 	}
 
 	async init(settings, secrets, actions, profiles, webServices)

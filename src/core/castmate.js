@@ -1,3 +1,4 @@
+const { getMainWindowSender } = require("./utils/ipcUtil.js");
 const { ensureUserFolder, secretsFilePath, settingsFilePath } = require("./utils/configuration.js");
 const { ActionQueue } = require("./actions/action-queue.js");
 const { ProfileManager } = require("./actions/profile-manager.js");
@@ -10,8 +11,10 @@ async function initInternal()
 {
 	ensureUserFolder();
 
+	const mainWindowSender = await getMainWindowSender();
+
 	let plugins = new PluginManager();
-	await plugins.load();
+	await plugins.load(mainWindowSender);
 
 	const settings = new HotReloader(settingsFilePath,
 		(newSettings, oldSettings) =>
@@ -45,7 +48,7 @@ async function initInternal()
 
 	plugins.webServices = webServices;
 
-	plugins.setupWebsocketReactivity();
+	plugins.setupReactivity();
 
 	const profiles = new ProfileManager(actions, plugins);
 

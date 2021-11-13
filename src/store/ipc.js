@@ -1,5 +1,6 @@
 
 const { ipcRenderer } = require("electron");
+import Vue from 'vue';
 
 class IPCClient
 {
@@ -19,6 +20,7 @@ export default {
 			client: null,
 			paths: {},
 			tags: [],
+			combinedState: {}
 		}
 	},
 	getters: {
@@ -27,6 +29,7 @@ export default {
 		inited: state => state.inited,
 		client: state => state.client,
 		tags: state => state.tags,
+		combinedState: state => state.combinedState,
 		actions: state =>
 		{
 			let result = {};
@@ -92,6 +95,17 @@ export default {
 		setTags(state, tags)
 		{
 			state.tags = tags;
+		},
+		applyState(state, update)
+		{
+			for (let key in update)
+			{
+				Vue.set(state.combinedState, key, update[key]);
+			}
+		},
+		removeState(state, varName)
+		{
+			Vue.delete(state.combinedState, varName);
 		}
 	},
 	actions: {
@@ -110,6 +124,16 @@ export default {
 
 			const tags = await ipcRenderer.invoke('twitch_getAllTags');
 			commit('setTags', tags);
+
+			commit('applyState', await ipcRenderer.invoke("getCombinedState"));
 		},
+		stateUpdate({ commit }, update)
+		{
+			commit('applyState', update);
+		},
+		removeState({ commit }, varName)
+		{
+			commit('removeState', varName);
+		}
 	}
 }
