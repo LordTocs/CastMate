@@ -2,8 +2,10 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Profiles from "../views/Profiles.vue";
 import ProfileEditor from "../views/ProfileEditor.vue";
+import CommandEditor from "../views/CommandEditor.vue";
 import CommandFileEditor from "../views/CommandFileEditor.vue";
 import SequenceEditor from "../views/SequenceEditor.vue";
+
 import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
 import Segments from '../views/Segments.vue';
@@ -31,6 +33,11 @@ const routes = [
 		path: "/profiles/:profile",
 		name: "Profile Editor",
 		component: ProfileEditor
+	},
+	{
+		path: "/profiles/:profile/:trigger/:command",
+		name: "Command Editor",
+		component: CommandEditor,
 	},
 	{
 		path: "/commandFiles/:commandFile",

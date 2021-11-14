@@ -21,7 +21,7 @@
       :search="search"
     >
       <template v-slot:item.actions="{ item }">
-        <v-btn fab small class="mx-1">
+        <v-btn fab small class="mx-1" as="router-link" :to="`/profiles/${profileName}/${triggerKey}/${item.key}`">
           <v-icon small> mdi-pencil </v-icon>
         </v-btn>
         <v-btn fab small class="mx-1" @click="tryDelete(item.key)">
@@ -60,7 +60,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("profile", ["profile"]),
+    ...mapGetters("profile", ["profile", "profileName"]),
     commandList() {
       const triggerObj = this.profile.triggers[this.triggerKey] || {};
       return Object.keys(triggerObj)

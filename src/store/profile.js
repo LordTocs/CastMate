@@ -11,6 +11,7 @@ export default {
 	{
 		return {
 			profilePath: null,
+			profileName: null,
 			dirty: false,
 			profile: {},
 		}
@@ -19,13 +20,15 @@ export default {
 		profilePath: (state) => state.profilePath,
 		dirty: (state) => state.dirty,
 		profile: (state) => state.profile,
+		profileName: (state) => state.profileName
 	},
 	mutations: {
-		loadedProfile(state, { profilePath, profile })
+		loadedProfile(state, { profilePath, profile, profileName })
 		{
 			state.profilePath = profilePath;
 			state.dirty = false;
 			state.profile = profile;
+			state.profileName = profileName;
 		},
 		markClean(state)
 		{
@@ -65,7 +68,7 @@ export default {
 		{
 			const profilePath = path.join(rootGetters['ipc/paths'].userFolder, 'profiles', name + '.yaml')
 			const profile = YAML.parse(await fs.promises.readFile(profilePath, 'utf-8')) || {};
-			commit('loadedProfile', { profilePath, profile});
+			commit('loadedProfile', { profilePath, profile, profileName: name});
 		},
 		async saveProfile({ commit, getters })
 		{
