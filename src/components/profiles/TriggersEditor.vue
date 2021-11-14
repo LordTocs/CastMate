@@ -2,7 +2,7 @@
   <div>
     <v-row v-for="plugin in triggerPlugins" :key="plugin.name">
       <v-col>
-        <profile-plugin v-model="value" :plugin="plugin" />
+        <profile-plugin :plugin="plugin" />
       </v-col>
     </v-row>
   </div>

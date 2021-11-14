@@ -303,6 +303,25 @@ module.exports = {
 			})
 		},
 
+		async retryWebsocketWorkaround()
+		{
+			this.castMateWebsocket = null;
+
+			//Retry connection in 5 seconds.
+			if (this.castMateWebsocketReconnect)
+			{
+				this.logger.info(`Connection to castmate websocket failed, retrying in 5 seconds...`);
+				setTimeout(() =>
+				{
+					this.setupCastMateWebsocketWorkaround().catch(err => {
+						this.logger.error(`Exception on socket reconnect.`);
+						this.logger.error(`${err}`);
+						this.retryWebsocketWorkaround();
+					})
+				}, 5000);
+			}
+		},
+
 		async setupCastMateWebsocketWorkaround() 
 		{
 			this.followerCache = new Set();
@@ -351,17 +370,7 @@ module.exports = {
 
 			this.castMateWebsocket.on('close', () =>
 			{
-				this.castMateWebsocket = null;
-
-				//Retry connection in 5 seconds.
-				if (this.castMateWebsocketReconnect)
-				{
-					this.logger.info(`Connection to castmate websocket failed, retrying in 5 seconds...`);
-					setTimeout(() =>
-					{
-						this.setupCastMateWebsocketWorkaround();
-					}, 5000);
-				}
+				this.retryWebsocketWorkaround();
 			});
 		},
 

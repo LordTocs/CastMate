@@ -2,6 +2,7 @@ import ipcModule from './ipc';
 import rewardsModule from './rewards';
 import segmentsModule from './segments';
 import variablesModule from './variables';
+import profileModule from './profile';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
@@ -14,16 +15,19 @@ export const store = new Vuex.Store({
 		ipc: ipcModule,
 		rewards: rewardsModule,
 		segments: segmentsModule,
-		variables: variablesModule
+		variables: variablesModule,
+		profile: profileModule,
 	}
 });
 
 ipcRenderer.sendSync("main-window", "hello!");
 
-ipcRenderer.on('state-update', (event, arg) => {
+ipcRenderer.on('state-update', (event, arg) =>
+{
 	store.dispatch('ipc/stateUpdate', arg);
 });
 
-ipcRenderer.on('state-removal', (event, arg) => {
+ipcRenderer.on('state-removal', (event, arg) =>
+{
 	store.dispatch(`ipc/removeState`, arg);
 })

@@ -49,7 +49,7 @@
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vuedraggable": "^2.24.3",
-    "vuetify": "^2.4.0",
+    "vuetify": "^2.5.14",
     "vuex": "^3.6.2",
     "websocket": "^1.0.33",
     "win32-api": "^9.6.0",
@@ -87,7 +87,9 @@
       "parser": "babel-eslint"
     },
     "rules": {
-      "strict": "off"
+      "strict": "off",
+      "no-unused-vars": "off",
+      "vue/no-unused-components": "off"
     }
   },
   "browserslist": [

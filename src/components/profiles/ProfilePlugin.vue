@@ -11,7 +11,6 @@
         >
           <v-col>
             <trigger-editor
-              v-model="value[triggerKey]"
               :triggerKey="triggerKey"
               :trigger="triggers[triggerKey]"
             />
@@ -30,7 +29,6 @@ export default {
   components: { TriggerEditor },
   props: {
     plugin: {},
-    value: {},
   },
   computed: {
     ...mapGetters("ipc", ["plugins", "triggers"]),

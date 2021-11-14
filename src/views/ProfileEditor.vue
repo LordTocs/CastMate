@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-row>
+    <!--v-row>
       <v-col>
         <conditions-editor v-model="profile.conditions" />
       </v-col>
@@ -9,10 +9,10 @@
       <v-col>
         <rewards-editor v-model="profile.rewards" />
       </v-col>
-    </v-row>
+    </v-row-->
     <v-row>
       <v-col>
-        <triggers-editor v-model="profile.triggers" />
+        <triggers-editor />
       </v-col>
     </v-row>
     <v-speed-dial v-model="fab" fixed bottom right open-on-hover>
@@ -43,7 +43,7 @@ import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import YAML from "yaml";
 import fs from "fs";
 import path from "path";
-import { mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   components: {
@@ -60,21 +60,20 @@ export default {
   },
   data() {
     return {
-      profile: {
-        triggers: {},
-      },
       saveSnack: false,
       fab: false,
     };
   },
   methods: {
+    ...mapActions("profile", ["loadProfile", "saveProfile"]),
     async save() {
-      let newYaml = YAML.stringify(this.profile);
+      /*let newYaml = YAML.stringify(this.profile);
 
       await fs.promises.writeFile(
         path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
         newYaml
-      );
+      );*/
+      await this.saveProfile();
 
       this.saveSnack = true;
     },
@@ -94,12 +93,13 @@ export default {
     },
   },
   async mounted() {
-    let fileData = await fs.promises.readFile(
+    /*let fileData = await fs.promises.readFile(
       path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
       "utf-8"
     );
 
-    this.profile = YAML.parse(fileData);
+    this.profile = YAML.parse(fileData);*/
+    await this.loadProfile(this.profileName);
   },
 };
 </script>

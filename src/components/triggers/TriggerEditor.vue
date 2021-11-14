@@ -1,24 +1,37 @@
 <template>
-  <multi-command-trigger
-    v-if="trigger.type == 'NameAction' || trigger.type == 'NumberAction'"
+  <named-command-trigger
+    v-if="trigger.type == 'NameAction'"
     :trigger="trigger"
+	:triggerKey="triggerKey"
+    @input="(v) => $emit('input', v)"
+  />
+  <!--multi-command-trigger
+    v-else-if="trigger.type == 'NumberAction'"
+    :trigger="trigger"
+	:triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
   />
   <single-command-trigger
     v-else-if="trigger.type == 'SingleAction'"
     :trigger="trigger"
+	:triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
-  />
+  /-->
 </template>
 
 <script>
 import MultiCommandTrigger from "./MultiCommandTrigger.vue";
 import SingleCommandTrigger from "./SingleCommandTrigger.vue";
+import NamedCommandTrigger from "./NamedCommandTrigger.vue";
 
 export default {
-  components: { MultiCommandTrigger, SingleCommandTrigger },
+  components: {
+    MultiCommandTrigger,
+    SingleCommandTrigger,
+    NamedCommandTrigger,
+  },
   computed: {
     commands() {
       if (!this.value) {
@@ -28,7 +41,6 @@ export default {
     },
   },
   props: {
-    value: {},
     triggerKey: { type: String },
     trigger: {},
   },

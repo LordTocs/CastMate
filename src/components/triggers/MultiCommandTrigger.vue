@@ -5,7 +5,13 @@
         {{ triggerName }}
       </v-expansion-panel-header>
       <v-expansion-panel-content :color="panelColor">
-        <v-row v-for="(commandKey, i) in commands" :key="i">
+        <div style="padding: 0.5rem">
+          <!--command-list
+            :value="value"
+            @input="(newData) => $emit('input', newData)"
+          /-->
+        </div>
+        <!--v-row v-for="(commandKey, i) in commands" :key="i">
           <v-col>
             <command-card
               :value="value[commandKey]"
@@ -23,7 +29,7 @@
               @input="changeImports"
             />
           </v-col>
-        </v-row>
+        </v-row-->
         <v-card-actions>
           <v-spacer />
           <v-btn @click="addCommand"> Add Command </v-btn>
@@ -37,9 +43,10 @@
 <script>
 import TriggerImports from "./TriggerImports.vue";
 import CommandCard from "../commands/CommandCard.vue";
+import CommandList from "../commands/CommandList.vue";
 import { changeObjectKey } from "../../utils/objects";
 export default {
-  components: { TriggerImports, CommandCard },
+  components: { TriggerImports, CommandCard, CommandList },
   props: {
     value: {},
     trigger: {},
@@ -50,8 +57,8 @@ export default {
       return Object.keys(this.value).length > 0;
     },
     panelColor() {
-      if (this.hasCommands) return "grey darken-2";
-      return "";
+      //if (this.hasCommands) return "grey darken-2";
+      return "grey darken-4";
     },
     commands() {
       if (!this.value) {
