@@ -1,4 +1,5 @@
 const axios = require('axios');
+const get = require('lodash/get');
 
 module.exports = {
     name: "aoe4",
@@ -10,35 +11,18 @@ module.exports = {
     },
     templateFunctions: {
         async getAoe4PlayerStat(playerName) {
-            if (playerName.toLowerCase().includes("fitzbro")) {
-                playerName = 'FitzBro'
+            if (!playerName) {
+                playerName = 'FitzBro';
             }
-            let response = await axios.post('https://api.ageofempires.com/api/ageiv/Leaderboard', {
-                region: 7,
-                versus: "players",
-                matchType: "unranked",
-                teamSize: "1v1",
-                searchPlayer: playerName,
-                page: 1,
-                count: 100
-            })
 
-            if (response.data && response.data.items && response.data.items.length) {
-                let result = response.data.items[0];
+            const response = await axios.get(`https://aoeiv.net/api/leaderboard?game=aoe4&leaderboard_id=17&search=${playerName}`);
+            const result = get(response, ['data', 'leaderboard', 0]);
+        
+            if (result) {
+                console.log(result);
 
-                let formattedResult = {};
-                formattedResult.userName = result.userName;
-                formattedResult.elo = result.elo;
-                formattedResult.rank = result.rank;
-                formattedResult.wins = result.wins;
-                formattedResult.winPercent = result.winPercent;
-                formattedResult.losses = result.losses;
-                formattedResult.winStreak = result.winStreak;
-
-                let playerStatString = `⚔️ ${formattedResult.userName} ⚔️ Rank: ${formattedResult.rank} - Elo: ${formattedResult.elo} - Win Rate: ${formattedResult.winPercent}% - W/L: ${formattedResult.wins}/${formattedResult.losses} - Win Streak: ${formattedResult.winStreak}`;
-
-                console.log(formattedResult);
-                return playerStatString;
+                return `⚔️ ${result.name} ⚔️ Rank: ${result.rank} - Elo: ${result.rating} - W/L: ${result.wins}/${result.losses} - Win Streak: ${result.streak}`;
+                
             } else {
                 return "Could not find player.";
             }
