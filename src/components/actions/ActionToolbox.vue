@@ -12,23 +12,29 @@
           </v-list-item-content>
         </template>
 
-        <v-list-item
-          v-for="actionKey in Object.keys(plugin.actions)"
-          :key="actionKey"
+        <draggable
+          :list="pluginActionLists[plugin.name]"
+          :group="{ name: 'actions', pull: 'clone', put: false }"
+          :component-data="{ attrs: { 'no-action': true } }"
         >
-          <v-list-item-avatar :color="plugin.actions[actionKey].color">
-            <v-icon>mdi-file-document-outline</v-icon>
-          </v-list-item-avatar>
+          <v-list-item
+            v-for="actionKey in Object.keys(plugin.actions)"
+            :key="actionKey"
+          >
+            <v-list-item-avatar :color="plugin.actions[actionKey].color">
+              <v-icon>mdi-file-document-outline</v-icon>
+            </v-list-item-avatar>
 
-          <v-list-item-content>
-            <v-list-item-title>{{
-              plugin.actions[actionKey].name
-            }}</v-list-item-title>
-            <v-list-item-subtitle>
-              {{ plugin.actions[actionKey].description }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>{{
+                plugin.actions[actionKey].name
+              }}</v-list-item-title>
+              <v-list-item-subtitle>
+                {{ plugin.actions[actionKey].description }}
+              </v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+        </draggable>
       </v-list-group>
     </v-list>
   </v-navigation-drawer>
@@ -36,8 +42,10 @@
 
 <script>
 import { mapGetters } from "vuex";
+import Draggable from "vuedraggable";
 
 export default {
+  components: { Draggable },
   computed: {
     ...mapGetters("ipc", ["actions", "plugins"]),
     actionPlugins() {
@@ -45,11 +53,16 @@ export default {
         (plugin) => Object.keys(plugin.actions).length > 0
       );
     },
-    actionItems() {
-      return Object.keys(this.actions).map((k) => ({
-        ...this.actions[k],
-        key: k,
-      }));
+    pluginActionLists() {
+      const pluginLists = {};
+
+      for (let plugin of this.actionPlugins) {
+        pluginLists[plugin.name] = Object.keys(plugin.actions).map(
+          (actionKey) => ({ [actionKey]: null })
+        );
+      }
+
+      return pluginLists;
     },
   },
 };

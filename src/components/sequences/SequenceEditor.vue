@@ -18,6 +18,7 @@
       :list="value"
       handle=".handle"
       tag="v-timeline"
+      group="actions"
       :component-data="getDraggableData()"
     >
       <sequence-item
