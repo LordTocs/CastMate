@@ -109,14 +109,14 @@ module.exports = {
 	secrets: {
 	},
 	actions: {
-		variable: {
-			name: "Change Variable",
+		setVariable: {
+			name: "Set Variable",
 			color: "#D3934A",
 			data: {
 				type: Object,
 				properties: {
 					name: { type: String, name: "Variable Name" },
-					set: { type: Number, template: true, name: "Set Value" },
+					value: { type: Number, template: true, name: "Set Value" },
 					offset: { type: Number, template: true, name: "Offset Value" },
 				}
 			},
@@ -128,23 +128,37 @@ module.exports = {
 				if (!(variableData.name in this.state))
 					return;
 
-				if ("set" in variableData)
+				//Set the value
+				let setValue = variableData.set;
+				if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number)
 				{
-					//Set the value
-					let setValue = variableData.set;
-					if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number)
-					{
-						setValue = await this.handleTemplateNumber(setValue, context);
-					}
-					this.logger.info(`Setting ${variableData.name} to ${setValue}`);
-					this.state[variableData.name] = setValue;
+					setValue = await this.handleTemplateNumber(setValue, context);
 				}
-				else if ("offset" in variableData)
-				{
-					//Add the value
-					this.state[variableData.name] += variableData.offset;
-					this.logger.info(`Offseting ${variableData.name} by ${variableData.offset}`);
+				this.logger.info(`Setting ${variableData.name} to ${setValue}`);
+				this.state[variableData.name] = setValue;
+			}
+		},
+		incVariable: {
+			name: "Increment Variable",
+			color: "#D3934A",
+			data: {
+				type: Object,
+				properties: {
+					name: { type: String, name: "Variable Name" },
+					offset: { type: Number, template: true, name: "Offset Value" },
 				}
+			},
+			async handler(variableData, context)
+			{
+				if (!variableData.name)
+					return;
+
+				if (!(variableData.name in this.state))
+					return;
+
+				//Add the value
+				this.state[variableData.name] += variableData.offset;
+				this.logger.info(`Offseting ${variableData.name} by ${variableData.offset}`);
 			}
 		}
 	}
