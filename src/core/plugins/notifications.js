@@ -22,9 +22,9 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					header: { type: "TemplateString", name: "Header" },
-					text: { type: "TemplateString", name: "Text" },
-					color: { type: "TemplateString", name: "Color" },
+					header: { type: String, template: true, name: "Header" },
+					text: { type: String, template: true, name: "Text" },
+					color: { type: String, template: true, name: "Color" },
 				}
 			},
 			async handler(notificationData, context)

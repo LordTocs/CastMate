@@ -7,8 +7,7 @@
     class="one-text-line"
     v-else-if="
       schema.type == 'String' ||
-      schema.type == 'TemplateString' ||
-      schema.type == 'TemplateNumber' ||
+      schema.type == 'Number' ||
       schema.type == 'Boolean' ||
       schema.type == 'OptionalBoolean'
     "

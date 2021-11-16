@@ -313,7 +313,8 @@ module.exports = {
 				this.logger.info(`Connection to castmate websocket failed, retrying in 5 seconds...`);
 				setTimeout(() =>
 				{
-					this.setupCastMateWebsocketWorkaround().catch(err => {
+					this.setupCastMateWebsocketWorkaround().catch(err =>
+					{
 						this.logger.error(`Exception on socket reconnect.`);
 						this.logger.error(`${err}`);
 						this.retryWebsocketWorkaround();
@@ -791,7 +792,8 @@ module.exports = {
 			description: "Uses the bot to send a twitch chat message",
 			color: "#5E5172",
 			data: {
-				type: "TemplateString"
+				type: String,
+				template: true,
 			},
 			async handler(message, context)
 			{
@@ -803,7 +805,8 @@ module.exports = {
 			description: "Change the stream title",
 			color: "#5E5172",
 			data: {
-				type: "TemplateString"
+				type: String,
+				template: true,
 			},
 			async handler(message, context)
 			{
@@ -817,7 +820,8 @@ module.exports = {
 			description: "Uses the bot to send an array of twitch chat messages",
 			color: "#5E5172",
 			data: {
-				type: "TemplateString"
+				type: String,
+				template: true,
 			},
 			async handler(message, context)
 			{
@@ -845,7 +849,8 @@ module.exports = {
 			description: "Places a marker in the stream for use in the video editor",
 			color: "#5E5172",
 			data: {
-				type: "TemplateString",
+				type: String,
+				template: true,
 			},
 			async handler(message, context)
 			{

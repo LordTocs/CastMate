@@ -51,7 +51,8 @@ module.exports = {
 						name: "Sound File",
 					},
 					volume: {
-						type: "TemplateNumber",
+						type: Number,
+						template: true,
 						name: "Volume",
 						default: 1.0
 					}

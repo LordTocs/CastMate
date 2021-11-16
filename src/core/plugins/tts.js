@@ -14,7 +14,8 @@ module.exports = {
 			name: "Text to Speech",
 			color: "#717287",
 			data: {
-				type: "TemplateString"
+				type: String,
+				template: true,
 			},
 			async handler(data, context)
 			{

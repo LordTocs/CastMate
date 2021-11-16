@@ -116,8 +116,8 @@ module.exports = {
 				type: Object,
 				properties: {
 					name: { type: String, name: "Variable Name" },
-					set: { type: "TemplateNumber", name: "Set Value" },
-					offset: { type: "TemplateNumber", name: "Offset Value" },
+					set: { type: Number, template: true, name: "Set Value" },
+					offset: { type: Number, template: true, name: "Offset Value" },
 				}
 			},
 			async handler(variableData, context)

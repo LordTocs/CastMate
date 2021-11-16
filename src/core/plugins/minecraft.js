@@ -58,7 +58,8 @@ module.exports = {
 		mineCmd: {
 			name: "Minecraft Command",
 			data: {
-				type: "TemplateString",
+				type: String,
+				template: true,
 			},
 			async handler(command, context)
 			{

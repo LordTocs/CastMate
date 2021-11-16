@@ -2,14 +2,14 @@
   <number-input
     :value="value"
     @input="(v) => $emit('input', v)"
-    v-if="schema.type == 'Number' || schema.type == 'TemplateNumber'"
-    :allowTemplate="schema.type == 'TemplateNumber'"
+    v-if="schema.type == 'Number'"
+    :allowTemplate="!!schema.template"
     :label="schema.name || label"
   />
   <v-text-field
     :value="value"
     @input="(v) => $emit('input', v)"
-    v-else-if="schema.type == 'String' || schema.type == 'TemplateString'"
+    v-else-if="schema.type == 'String'"
     :label="schema.name || label"
   />
   <v-switch

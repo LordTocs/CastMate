@@ -89,7 +89,8 @@ module.exports = {
 			description: "Change the OBS scene.",
 			color: "#607A7F",
 			data: {
-				type: "TemplateString"
+				type: String,
+				template: true,
 			},
 			async handler(sceneData, context)
 			{
@@ -106,11 +107,13 @@ module.exports = {
 				type: Object,
 				properties: {
 					sourceName: {
-						type: "TemplateString",
+						type: String,
+						template: true,
 						name: "Source Name",
 					},
 					filterName: {
-						type: "TemplateString",
+						type: String,
+						template: true,
 						name: "Filter Name",
 					},
 					filterEnabled: {
@@ -138,9 +141,14 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					text: { type: "TemplateString", name: "Text" },
+					text: {
+						type: String,
+						template: true,
+						name: "Text"
+					},
 					sourceName: {
-						type: "TemplateString",
+						type: String,
+						template: true,
 						name: "Source Name",
 					},
 				}

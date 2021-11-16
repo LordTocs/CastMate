@@ -233,12 +233,12 @@ module.exports = {
 				type: Object,
 				properties: {
 					on: { type: "OptionalBoolean", name: "Light Switch" },
-					hue: { type: "TemplateNumber", name: "Hue" },
-					bri: { type: "TemplateNumber", name: "Brightness" },
-					sat: { type: "TemplateNumber", name: "Saturation" },
-					ct: { type: "TemplateNumber", name: "Color Temp" },
-					transition: { type: "TemplateNumber", name: "Transition Time" },
-					group: { type: String, name: "HUE Light Group" },
+					hue: { type: Number, template: true, name: "Hue" },
+					bri: { type: Number, template: true, name: "Brightness" },
+					sat: { type: Number, template: true, name: "Saturation" },
+					ct: { type: Number, template: true, name: "Color Temp" },
+					transition: { type: Number, template: true, name: "Transition Time" },
+					group: { type: String, template: true, name: "HUE Light Group" },
 				}
 			},
 			async handler(lightData, context)
