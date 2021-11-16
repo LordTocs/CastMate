@@ -22,7 +22,7 @@
       <v-list dense nav>
         <v-list-item link to="/">
           <v-list-item-icon>
-            <v-icon>mdi-file-document-outline</v-icon>
+            <v-icon>mdi-tag</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
@@ -32,7 +32,7 @@
 
         <v-list-item link to="/profiles">
           <v-list-item-icon>
-            <v-icon>mdi-file-document-outline</v-icon>
+            <v-icon>mdi-timeline</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
@@ -42,7 +42,7 @@
 
 		<v-list-item link to="/variables">
           <v-list-item-icon>
-            <v-icon>mdi-file-document-outline</v-icon>
+            <v-icon>mdi-variable</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
