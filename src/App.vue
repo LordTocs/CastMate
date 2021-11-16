@@ -30,6 +30,16 @@
           </v-list-item-content>
         </v-list-item>
 
+		<v-list-item link to="/automations">
+          <v-list-item-icon>
+            <v-icon>mdi-timeline</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Automations </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
         <v-list-item link to="/profiles">
           <v-list-item-icon>
             <v-icon>mdi-timeline</v-icon>

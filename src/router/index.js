@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Profiles from "../views/Profiles.vue";
+import Automations from "../views/Automations.vue";
 import ProfileEditor from "../views/ProfileEditor.vue";
 import CommandEditor from "../views/CommandEditor.vue";
 import CommandFileEditor from "../views/CommandFileEditor.vue";
@@ -23,6 +24,11 @@ const routes = [
 		path: "/profiles",
 		name: "Profiles",
 		component: Profiles
+	},
+	{
+		path: "/automations",
+		name: "Automations",
+		component: Automations,
 	},
 	{
 		path: "/variables",
