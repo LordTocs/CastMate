@@ -10,7 +10,7 @@ class PluginManager
 	{
 		let pluginFiles = [
 			"inputs",
-			"lights",
+			"hue",
 			"notifications",
 			"obs",
 			"sounds",

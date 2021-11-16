@@ -53,8 +53,8 @@ const path = require('path');
 const { userFolder } = require('../utils/configuration');
 
 module.exports = {
-	name: "lights",
-	uiName: "Lights",
+	name: "hue",
+	uiName: "HUE Lights",
 	async init()
 	{
 		this.groupCache = {};
@@ -226,7 +226,7 @@ module.exports = {
 	},
 	actions: {
 		light: {
-			name: "Light",
+			name: "Hue Light",
 			description: "Changes HUE lights.",
 			color: "#7F743F",
 			data: {
@@ -298,7 +298,7 @@ module.exports = {
 			}
 		},
 		lightScene: {
-			name: "Scene",
+			name: "Hue Scene",
 			description: "Changes HUE lights to a hue scene",
 			color: "#7F743F",
 			data: {
