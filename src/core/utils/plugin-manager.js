@@ -13,13 +13,12 @@ class PluginManager {
             "obs",
             "sounds",
             "minecraft",
-            "csgo",
             "tts",
             "kofi",
             "twitch",
             "variables",
             "websocket",
-            "aoe3",
+            // "aoe3",
             "aoe4",
         ]
 
