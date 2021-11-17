@@ -17,6 +17,7 @@ const { rewardsFilePath } = require("../utils/configuration");
 const { WebSocket } = require('ws');
 
 const axios = require('axios');
+const logger = require("../utils/logger");
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -305,6 +306,11 @@ module.exports = {
 
 		async retryWebsocketWorkaround()
 		{
+			if (this.castMateWebsocket)
+			{
+				this.castMateWebsocket.terminate();
+			}
+
 			this.castMateWebsocket = null;
 
 			//Retry connection in 5 seconds.
@@ -328,6 +334,7 @@ module.exports = {
 			this.followerCache = new Set();
 
 			this.castMateWebsocketReconnect = true;
+
 			this.castMateWebsocket = new WebSocket('wss://castmate-websocket.herokuapp.com', {
 				headers: {
 					Authorization: `Bearer ${this.channelAuth._accessToken.accessToken}`,
@@ -373,6 +380,15 @@ module.exports = {
 			{
 				this.retryWebsocketWorkaround();
 			});
+
+			this.castMateWebsocket.on('unexpected-response', (request, response) => {
+				this.logger.info(`Unexpected Response! ${response}`);
+				if (response.status == 200)
+				{
+					//this.retryWebsocketWorkaround();
+					this.logger.info(`It's the mysterious 200 response!`);
+				}
+			})
 		},
 
 		async setupPubSubTriggers()
