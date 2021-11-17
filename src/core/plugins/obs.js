@@ -1,3 +1,4 @@
+const e = require('express');
 const OBSWebSocket = require('obs-websocket-js'); // For more info: https://www.npmjs.com/package/obs-websocket-js
 const { template } = require('../utils/template');
 
@@ -58,6 +59,28 @@ module.exports = {
 			} catch {
 				return;
 			}
+		},
+		async getAllSources()
+		{
+			try
+			{
+				const result = await this.obs.send("GetSourcesList");
+				return result.sources;
+			}
+			catch
+			{
+				return [];
+			}
+		}
+	},
+	ipcMethods: {
+		async refereshAllBrowsers()
+		{
+			const sources = await this.getAllSources();
+
+			const browsers = sources.filter((s) => s.typeId == "browser_source");
+
+			await Promise.all(browsers.map(browser => this.obs.send('RefreshBrowserSource', { sourceName: browser.name })));
 		}
 	},
 	settings: {
