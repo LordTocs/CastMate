@@ -20,8 +20,38 @@
       :items="commandList"
       :search="search"
     >
+      <template v-slot:item.key="props">
+        <v-edit-dialog
+          @open="openRename(props.item.key)"
+          @save="renameCommand(props.item.key, rename.toLowerCase())"
+        >
+          {{ props.item.key }}
+          <template v-slot:input>
+            <v-text-field
+              v-model="rename"
+              label="Command"
+              single-line
+              counter
+            ></v-text-field>
+          </template>
+        </v-edit-dialog>
+      </template>
+
+      <template v-slot:item.automation="props">
+        <automation-selector
+          :value="props.item.automation"
+          @change="(v) => changeAutomation(props.item.key, v)"
+        />
+      </template>
+
       <template v-slot:item.actions="{ item }">
-        <v-btn fab small class="mx-1" as="router-link" :to="`/profiles/${profileName}/${triggerKey}/${item.key}`">
+        <v-btn
+          fab
+          small
+          class="mx-1"
+          as="router-link"
+          :to="`/automations/${item.automation}`"
+        >
           <v-icon small> mdi-pencil </v-icon>
         </v-btn>
         <v-btn fab small class="mx-1" @click="tryDelete(item.key)">
@@ -46,23 +76,27 @@
 <script>
 import { mapGetters, mapMutations } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
+import AutomationSelector from "../automations/AutomationSelector.vue";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
+import { changeObjectKey } from "../../utils/objects";
 
 export default {
-  components: { NamedItemModal,ConfirmDialog },
+  components: { NamedItemModal, ConfirmDialog, AutomationSelector },
   props: {
     trigger: {},
     triggerKey: { type: String },
+    value: {},
   },
   data() {
     return {
+      rename: null,
       search: "",
     };
   },
   computed: {
-    ...mapGetters("profile", ["profile", "profileName"]),
     commandList() {
-      const triggerObj = this.profile.triggers[this.triggerKey] || {};
+      const triggerObj = this.value;
+      if (!triggerObj) return [];
       return Object.keys(triggerObj)
         .filter((key) => key != "imports")
         .map((key) => ({
@@ -76,23 +110,27 @@ export default {
     headers() {
       return [
         { text: "Command", value: "key" },
+        { text: "Automation", value: "automation" },
         { text: "Actions", value: "actions", sortable: false, align: "right" },
       ];
     },
   },
   methods: {
-    ...mapMutations("profile", ["changeCommand", "deleteCommand"]),
-    createNewCommand(name) {
-      const command = {
-        sync: false,
-        actions: [],
-      };
+    openRename(commandKey) {
+      this.rename = commandKey;
+    },
+    createNewCommand(commandkey) {
+      if (this.value && commandkey in this.value) return;
 
-      this.changeCommand({
-        triggerKey: this.triggerKey,
-        commandKey: name,
-        command,
-      });
+      const result = { ...this.value };
+      result[commandkey] = { automation: null };
+
+      this.$emit("input", result);
+    },
+    changeAutomation(commandKey, automationName) {
+      const result = { ...this.value };
+      result[commandKey] = { automation: automationName };
+      this.$emit("input", result);
     },
     async tryDelete(commandKey) {
       if (
@@ -101,8 +139,16 @@ export default {
           "Are you sure you want to delete this command?"
         )
       ) {
-        await this.deleteCommand({ triggerKey: this.triggerKey, commandKey });
+        //Delete the command
+        const result = { ...this.value };
+        delete result[commandKey];
+        this.$emit("input", result);
       }
+    },
+    renameCommand(oldKey, newKey) {
+      console.log("renameCommand", oldKey, newKey);
+      const result = changeObjectKey(this.value, oldKey, newKey);
+      this.$emit("input", result);
     },
   },
 };

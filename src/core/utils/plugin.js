@@ -3,6 +3,9 @@ const { cleanSchemaForIPC } = require("./schema");
 const _ = require('lodash');
 const { ipcMain } = require("electron");
 const logger = require('../utils/logger');
+const { NumberTriggerHandler } = require("../actions/number-trigger-handler");
+const { CommandTriggerHandler } = require("../actions/command-trigger-handler");
+const { SingleTriggerHandler } = require("../actions/single-trigger-handler");
 class Plugin
 {
 	constructor(config)
@@ -58,7 +61,27 @@ class Plugin
 
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];
-		this.triggers = config.triggers || [];
+		this.triggers = {};
+
+		for (let triggerName in config.triggers)
+		{
+			const triggerSpec = config.triggers[triggerName];
+			this.triggers[triggerName] = { ...triggerSpec };
+
+			if (triggerSpec.type == 'NumberTrigger')
+			{
+				this.triggers[triggerName].handler = new NumberTriggerHandler(triggerName, triggerSpec.key || 'number')
+			}
+			else if (triggerSpec.type == 'CommandTrigger')
+			{
+				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
+			}
+			else if (triggerSpec.type == 'SingleTrigger')
+			{
+				this.triggers[triggerName].handler = new SingleTriggerHandler(triggerName)
+			}
+		}
+
 		this.actions = {};
 
 		//Pass the methods onto the plugin object for use.

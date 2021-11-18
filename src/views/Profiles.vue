@@ -1,128 +1,47 @@
 <template>
   <v-container fluid>
-    <v-card id="lateral">
-      <v-list color="grey darken-3">
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="title"> Profiles </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-      <v-list>
-        <v-list-item-group>
-          <template v-for="(profile, i) in profiles">
-            <v-list-item
-              :key="profile.name"
-              @click="$router.push(`/profiles/${profile.name}`)"
-            >
-              <v-list-item-content>
-                <v-list-item-title> {{ profile.name }} </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider :key="i" />
-          </template>
-        </v-list-item-group>
-      </v-list>
-      <v-list color="grey darken-3">
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="title"> Command Files </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-      <v-list>
-        <v-list-item-group>
-          <template v-for="(commandFile, i) in commandFiles">
-            <v-list-item
-              :key="commandFile.name"
-              @click="$router.push(`/commandFiles/${commandFile.name}`)"
-            >
-              <v-list-item-content>
-                <v-list-item-title> {{ commandFile.name }} </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider :key="i" />
-          </template>
-        </v-list-item-group>
-      </v-list>
-      <v-list color="grey darken-3">
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="title"> Sequences </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-      <v-list>
-        <v-list-item-group>
-          <template v-for="(sequence, i) in sequences">
-            <v-list-item
-              :key="sequence.name"
-              @click="$router.push(`/sequences/${sequence.name}`)"
-            >
-              <v-list-item-content>
-                <v-list-item-title> {{ sequence.name }} </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider :key="i" />
-          </template>
-        </v-list-item-group>
-      </v-list>
-    </v-card>
-
-    <!--new-profile-modal ref="profileModal" @created="getFiles()" /-->
-    <named-item-modal
-      ref="profileModal"
-      header="Create New Profile"
-      label="Profile Name"
-      @created="createNewProfile"
-    />
-    <named-item-modal
-      ref="commandsModal"
-      header="Create New Commands File"
-      label="Commands File Name"
-      @created="createNewCommandFile"
-    />
-    <named-item-modal
-      ref="sequenceModal"
-      header="Create New Sequence"
-      label="Sequence Name"
-      @created="createNewSequence"
-    />
-
-    <v-speed-dial v-model="fabOpen" fixed fab large right bottom>
-      <template v-slot:activator>
-        <v-btn v-model="fabOpen" color="blue darken-2" dark fab>
-          <v-icon v-if="fabOpen"> mdi-close </v-icon>
-          <v-icon v-else> mdi-plus </v-icon>
-        </v-btn>
-      </template>
-      <v-btn fab dark small color="green" @click="$refs.sequenceModal.open()">
-        <v-icon>mdi-plus</v-icon>
-        <div class="fab-label green">Sequence</div>
-      </v-btn>
-      <v-btn fab dark small color="indigo" @click="$refs.commandsModal.open()">
-        <v-icon>mdi-plus</v-icon>
-        <div class="fab-label indigo">Commands File</div>
-      </v-btn>
-      <v-btn fab dark small color="red" @click="$refs.profileModal.open()">
-        <v-icon>mdi-plus</v-icon>
-        <div class="fab-label red">Profile</div>
-      </v-btn>
-    </v-speed-dial>
-
-    <!--v-fab-transition>
-      <v-btn
-        color="primary"
-        fixed
-        fab
-        large
-        right
-        bottom
-        @click="$refs.profileModal.open()"
+    <v-card color="grey darken-2">
+      <v-card-title>
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Filter"
+          single-line
+          hide-details
+        />
+      </v-card-title>
+      <v-data-table
+        :headers="profileHeaders"
+        :items="profiles"
+        @click:row="(item) => $router.push(`/profiles/${item.name}`)"
       >
-        <v-icon> mdi-plus </v-icon>
-      </v-btn>
-    </v-fab-transition-->
+        <template v-slot:item.actions="{ item }">
+          <!--v-btn
+            fab
+            small
+            class="mx-1"
+            as="router-link"
+            :to="`/profiles/${item.name}`"
+          >
+            <v-icon small> mdi-pencil </v-icon>
+          </v-btn-->
+          <v-btn fab small class="mx-1" @click.stop="tryDelete(item.name)">
+            <v-icon small> mdi-delete </v-icon>
+          </v-btn>
+        </template>
+
+        <template v-slot:footer.prepend>
+          <v-btn @click="$refs.addProfileModal.open()"> Add Profile </v-btn>
+        </template>
+      </v-data-table>
+      <named-item-modal
+        ref="addProfileModal"
+        header="Create New Profile"
+        label="Profile Name"
+        @created="createNewProfile"
+      />
+      <confirm-dialog ref="deleteDlg" />
+    </v-card>
   </v-container>
 </template>
 
@@ -131,20 +50,26 @@ import fs from "fs";
 import path from "path";
 import YAML from "yaml";
 import { mapGetters } from "vuex";
+import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
 export default {
   components: {
     NamedItemModal,
+    ConfirmDialog,
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
+    profileHeaders() {
+      return [
+        { text: "Profile Name", value: "name" },
+        { text: "", value: "actions", sortable: false, align: "right" },
+      ];
+    },
   },
   data() {
     return {
       profiles: [],
-      commandFiles: [],
-      sequences: [],
-      fabOpen: false,
+      search: "",
     };
   },
   methods: {
@@ -152,26 +77,10 @@ export default {
       let profiles = await fs.promises.readdir(
         path.join(this.paths.userFolder, "profiles")
       );
-      let commandFiles = await fs.promises.readdir(
-        path.join(this.paths.userFolder, "commands")
-      );
-      let sequences = await fs.promises.readdir(
-        path.join(this.paths.userFolder, "sequences")
-      );
 
       profiles = profiles.filter((f) => path.extname(f) == ".yaml");
-      commandFiles = commandFiles.filter((f) => path.extname(f) == ".yaml");
-      sequences = sequences.filter((f) => path.extname(f) == ".yaml");
 
       this.profiles = profiles.map((f) => ({
-        name: path.basename(f, ".yaml"),
-      }));
-
-      this.commandFiles = commandFiles.map((f) => ({
-        name: path.basename(f, ".yaml"),
-      }));
-
-      this.sequences = sequences.map((f) => ({
         name: path.basename(f, ".yaml"),
       }));
     },
@@ -190,29 +99,31 @@ export default {
 
       await this.getFiles();
     },
+    async tryDelete(name) {
+      if (
+        await this.$refs.deleteDlg.open(
+          "Confirm",
+          "Are you sure you want to delete this profile?"
+        )
+      ) {
+        const filePath = path.join(
+          this.paths.userFolder,
+          "profiles",
+          name + ".yaml"
+        );
 
-    async createNewSequence(name) {
-      let newYaml = YAML.stringify([]);
+        if (!fs.existsSync(filePath)) {
+          return;
+        }
 
-      await fs.promises.writeFile(
-        path.join(this.paths.userFolder, `sequences/${name}.yaml`),
-        newYaml,
-        "utf-8"
-      );
+        await fs.promises.unlink(filePath);
 
-      await this.getFiles();
-    },
+        const idx = this.profiles.findIndex((af) => af.name == name);
 
-    async createNewCommandFile(name) {
-      let newYaml = YAML.stringify({});
-
-      await fs.promises.writeFile(
-        path.join(this.paths.userFolder, `commands/${name}.yaml`),
-        newYaml,
-        "utf-8"
-      );
-
-      await this.getFiles();
+        if (idx != -1) {
+          this.profiles.splice(idx, 1);
+        }
+      }
     },
   },
   async mounted() {

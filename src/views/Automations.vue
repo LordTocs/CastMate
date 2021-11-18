@@ -10,12 +10,16 @@
           hide-details
         />
       </v-card-title>
-      <v-data-table :headers="automationHeaders" :items="automationFiles">
-        <template v-slot:item.actions>
-          <v-btn fab small class="mx-1">
+      <v-data-table
+        :headers="automationHeaders"
+        :items="automationFiles"
+        @click:row="(item) => $router.push(`/automations/${item.name}`)"
+      >
+        <template v-slot:item.actions="{ item }">
+          <!--v-btn fab small class="mx-1">
             <v-icon small> mdi-pencil </v-icon>
-          </v-btn>
-          <v-btn fab small class="mx-1" @click="tryDelete(item.key)">
+          </v-btn-->
+          <v-btn fab small class="mx-1" @click.stop="tryDelete(item.name)">
             <v-icon small> mdi-delete </v-icon>
           </v-btn>
         </template>
@@ -29,7 +33,8 @@
       <named-item-modal
         ref="addAutomationModal"
         header="Create New Automation"
-        label="Automation"
+        label="Name"
+        @created="createNewAutomation"
       />
       <confirm-dialog ref="deleteDlg" />
     </v-card>
@@ -41,8 +46,11 @@ import fs from "fs";
 import path from "path";
 import YAML from "yaml";
 import { mapGetters } from "vuex";
+import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
+import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
 
 export default {
+  components: { ConfirmDialog, NamedItemModal },
   computed: {
     ...mapGetters("ipc", ["inited", "paths"]),
     automationHeaders() {
@@ -66,9 +74,56 @@ export default {
         name: path.basename(f, ".yaml"),
       }));
     },
+    async createNewAutomation(name) {
+      const filePath = path.join(
+        this.paths.userFolder,
+        "automations",
+        name + ".yaml"
+      );
+
+      if (fs.existsSync(filePath)) {
+        return;
+      }
+
+      const automation = {
+        description: "",
+        actions: [],
+      };
+
+      await fs.promises.writeFile(filePath, YAML.stringify(automation));
+
+      //Todo open path.
+    },
+    async tryDelete(name) {
+      if (
+        await this.$refs.deleteDlg.open(
+          "Confirm",
+          "Are you sure you want to delete this automation?"
+        )
+      ) {
+        const filePath = path.join(
+          this.paths.userFolder,
+          "automations",
+          name + ".yaml"
+        );
+
+        if (!fs.existsSync(filePath)) {
+          return;
+        }
+
+        await fs.promises.unlink(filePath);
+
+        const idx = this.automationFiles.findIndex((af) => af.name == name);
+
+        if (idx != -1) {
+          this.automationFiles.splice(idx, 1);
+        }
+      }
+    },
   },
   data() {
     return {
+      search: "",
       automationFiles: [],
     };
   },

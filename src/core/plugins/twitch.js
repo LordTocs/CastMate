@@ -257,7 +257,7 @@ module.exports = {
 				let parsed = this.parseMessage(message);
 
 				const context = {
-					name: parsed.command,
+					command: parsed.command,
 					user,
 					userId: msgInfo.userInfo.userId,
 					args: parsed.args,
@@ -382,11 +382,12 @@ module.exports = {
 			});
 
 			this.castMateWebsocket.on('unexpected-response', (request, response) => {
-				this.logger.info(`Unexpected Response! ${response}`);
+				this.logger.error(`Unexpected Response! ${JSON.stringify(response)}`);
+				this.retryWebsocketWorkaround();
 				if (response.status == 200)
 				{
-					//this.retryWebsocketWorkaround();
 					this.logger.info(`It's the mysterious 200 response!`);
+					
 				}
 			})
 		},
@@ -759,47 +760,47 @@ module.exports = {
 		chat: {
 			name: "Chat",
 			description: "Fires when any user chats.",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		subchat: {
 			name: "Sub Chat",
 			description: "Fires for only subscribed user chats",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		vipchat: {
 			name: "VIP Chat",
 			description: "Fires for only VIP user chats",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		modchat: {
 			name: "Mod Chat",
 			description: "Fires for when a mod or the broadcaster chats",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		redemption: {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		follow: {
 			name: "Follow",
 			description: "Fires for when a user follows.",
-			type: "SingleAction"
+			type: "SingleTrigger"
 		},
 		subscribe: {
 			name: "Subscription",
 			description: "Fires for when a user subscribes.",
-			type: "NumberAction"
+			type: "NumberTrigger"
 		},
 		bits: {
 			name: "Bits",
 			description: "Fires for when a user gives bits",
-			type: "NumberAction"
+			type: "NumberTrigger"
 		},
 		raid: {
 			name: "Raid",
 			description: "Fires when a raid start",
-			type: "NumberAction"
+			type: "NumberTrigger"
 		}
 	},
 	actions: {

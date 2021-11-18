@@ -1,11 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Profiles from "../views/Profiles.vue";
-import Automations from "../views/Automations.vue";
 import ProfileEditor from "../views/ProfileEditor.vue";
-import CommandEditor from "../views/CommandEditor.vue";
-import CommandFileEditor from "../views/CommandFileEditor.vue";
-import SequenceEditor from "../views/SequenceEditor.vue";
+
+import Automations from "../views/Automations.vue";
+import AutomationEditor from "../views/AutomationEditor.vue";
 
 import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
@@ -25,11 +24,7 @@ const routes = [
 		name: "Profiles",
 		component: Profiles
 	},
-	{
-		path: "/automations",
-		name: "Automations",
-		component: Automations,
-	},
+
 	{
 		path: "/variables",
 		name: "Variables",
@@ -41,19 +36,14 @@ const routes = [
 		component: ProfileEditor
 	},
 	{
-		path: "/profiles/:profile/:trigger/:command",
-		name: "Command Editor",
-		component: CommandEditor,
+		path: "/automations",
+		name: "Automations",
+		component: Automations,
 	},
 	{
-		path: "/commandFiles/:commandFile",
-		name: "Command File Editor",
-		component: CommandFileEditor
-	},
-	{
-		path: "/sequences/:sequence",
-		name: "Sequence Editor",
-		component: SequenceEditor
+		path: "/automations/:automation",
+		name: "Automation Editor",
+		component: AutomationEditor,
 	},
 	{
 		path: "/plugins/:pluginName",

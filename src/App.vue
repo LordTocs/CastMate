@@ -42,7 +42,7 @@
 
         <v-list-item link to="/profiles">
           <v-list-item-icon>
-            <v-icon>mdi-timeline</v-icon>
+            <v-icon>mdi-card-account-details-outline</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>

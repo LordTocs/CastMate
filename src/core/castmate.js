@@ -1,3 +1,5 @@
+import { AutomationManager } from "./automations/automation-manager.js";
+
 const { getMainWindowSender } = require("./utils/ipcUtil.js");
 const { ensureUserFolder, secretsFilePath, settingsFilePath } = require("./utils/configuration.js");
 const { ActionQueue } = require("./actions/action-queue.js");
@@ -42,7 +44,10 @@ async function initInternal()
 			console.error("Error loading secrets", err);
 		});
 
-	const actions = new ActionQueue(plugins);
+	const automations = new AutomationManager();
+	await automations.load();
+
+	const actions = new ActionQueue(plugins, automations);
 
 	const webServices = await createWebServices(settings.data.web || {}, secrets.data.web || {}, plugins);
 

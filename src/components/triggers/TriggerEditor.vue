@@ -1,19 +1,20 @@
 <template>
   <named-command-trigger
-    v-if="trigger.type == 'NameAction'"
+    v-if="trigger.type == 'CommandTrigger'"
     :trigger="trigger"
-	:triggerKey="triggerKey"
+    :triggerKey="triggerKey"
+    :value="value"
     @input="(v) => $emit('input', v)"
   />
   <!--multi-command-trigger
-    v-else-if="trigger.type == 'NumberAction'"
+    v-else-if="trigger.type == 'NumberTrigger'"
     :trigger="trigger"
 	:triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
   />
   <single-command-trigger
-    v-else-if="trigger.type == 'SingleAction'"
+    v-else-if="trigger.type == 'SingleTrigger'"
     :trigger="trigger"
 	:triggerKey="triggerKey"
     :value="value"
@@ -43,6 +44,7 @@ export default {
   props: {
     triggerKey: { type: String },
     trigger: {},
+    value: {},
   },
 };
 </script>

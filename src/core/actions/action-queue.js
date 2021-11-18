@@ -3,46 +3,19 @@ const { Mutex } = require("async-mutex");
 const { reactiveCopy } = require("../utils/reactive.js");
 const logger = require('../utils/logger');
 const { ipcMain } = require("electron");
-const { loadActionable } = require('./profiles');
-
-
-function isActionable(actionable)
-{
-	if (actionable instanceof Array)
-	{
-		return true;
-	}
-	else if ("actions" in actionable)
-	{
-		return true;
-	}
-	else if ("oneOf" in actionable)
-	{
-		return true;
-	}
-	return false;
-}
-
-function getActionArray(actionDef)
-{
-	if (actionDef instanceof Array)
-	{
-		return actionDef;
-	}
-	else if ("oneOf" in actionDef)
-	{
-		return actionDef.oneOf[Math.floor(Math.random() * actionDef.oneOf.length)];
-	}
-	return null;
-}
 
 class ActionQueue
 {
-	constructor(plugins)
+	constructor(plugins, automations)
 	{
-		this.triggers = {};
+		this.triggerMappings = {};
+		this.triggerHandlers = {};
+
+		this.automations = automations;
+
+		//Queue of automations to run synchronously.
 		this.queue = [];
-		this.currentAction = null;
+		this.syncAutomationPromise = null;
 		this.queueMutex = new Mutex();
 
 		//Convert plugins into action lookup table
@@ -53,32 +26,52 @@ class ActionQueue
 			{
 				this.actions[actionKey] = plugin.actions[actionKey];
 			}
+
+			for (let triggerName in plugin.triggers)
+			{
+				this.triggerHandlers[triggerName] = plugin.triggers[triggerName].handler
+			}
 		}
 
 		this.plugins = plugins;
 
 		ipcMain.handle('pushToQueue', async (event, actions) =>
 		{
-			const dummySet = new Set();
+			const automation = { actions, sync: false };
 
-			const actionable = { actions, sync: false }
-
-			loadActionable(actionable, dummySet)
-
-			this.convertOffsets(actionable.actions);
-
-			this.pushToQueue(actionable, {
+			this.pushToQueue(automation, {
+				//Some dummy data.
 				user: "Test User",
 				userColor: "#4411FF",
 				message: "Test Message From User",
 				filteredMessage: "Test Message From User",
 			})
 		})
+
+		ipcMain.handle('core_runActions', async (event, actions, context) =>
+		{
+			const automation = { actions, sync: false };
+
+			this.pushToQueue(automation, context || {
+				//Some dummy data.
+				user: "Test User",
+				userColor: "#4411FF",
+				message: "Test Message From User",
+				filteredMessage: "Test Message From User",
+			})
+		})
+
+		ipcMain.handle('core_runAutomation', async (event, automationName, context) =>
+		{
+			const automation = this.automations.get(automationName);
+
+			this.startAutomation(automation, context)
+		})
 	}
 
 	setTriggers(triggers)
 	{
-		this.triggers = triggers;
+		this.triggerMappings = triggers;
 	}
 
 	convertOffsets(actions)
@@ -95,113 +88,84 @@ class ActionQueue
 		}
 	}
 
-	async pushToQueue(actionDef, context)
+	async startAutomation(automationName, context)
 	{
-		let actionArray = null;
-		let isSync = false;
+		const automation = this.automations.get(automationName)
 
+		if (!automation)
+		{
+			logger.error(`Missing Automation: ${automationName}`);
+		}
 
+		this.pushToQueue(automation, context);
+	}
+
+	_prepAutomation(automation)
+	{
+		if (!(automation.actions instanceof Array))
+		{
+			logger.error("Automations must have an actions array.");
+			return false;
+		}
+
+		if (automation.actions.length == 0)
+		{
+			logger.error("Automations shouldn't be empty.");
+			return false;
+		}
+
+		automation.sync = !!automation.sync; //ensure that sync exists and is a bool.
+
+		this.convertOffsets(automation.actions);
+	}
+
+	async pushToQueue(automation, context)
+	{
+		//Build our complete context.
 		let completeContext = { ...context, ...this.plugins.combinedTemplateFunctions };
+		//Reactively copy in combinedState incase it's mutated mid action.
 		reactiveCopy(completeContext, this.plugins.combinedState);
 
+		this._prepAutomation(automation);
 
-		if ("actions" in actionDef)
-		{
-			actionArray = getActionArray(actionDef.actions);
-			isSync = !!actionDef.sync;
-		}
-		else
-		{
-			actionArray = getActionArray(actionDef);
-		}
-
-		if (!(actionArray instanceof Array))
-		{
-			console.error("Action Array wasn't an array. Aborting");
-			return;
-		}
-
-		if (actionArray.length == 0)
-		{
-			console.error("Action array is empty!");
-			return;
-		}
-
-		this.convertOffsets(actionArray);
-
-		if (isSync)
+		if (automation.sync)
 		{
 			//Push to the queue
 			let release = await this.queueMutex.acquire();
-			for (let action of actionArray)
-			{
-				this.queue.push({ action, context: completeContext });
-			}
+			this.queue.push({ automation, context: completeContext });
 			release();
 
 			this._runStartOfQueue();
 		}
 		else
 		{
-			this._runActions(actionArray, completeContext);
+			this._runAutomation(automation, completeContext);
 		}
 	}
 
 	trigger(name, options)
 	{
-		let event = this.triggers[name];
+		let triggerHandler = this.triggerHandlers[name];
 
-		if (!event)
+		if (!triggerHandler)
 		{
 			return false;
 		}
 
-		if ("number" in options)
+		const automationTable = this.triggerMappings[name];
+
+		if (!automationTable)
 		{
-			logger.info(`Fired ${name} : ${options.number}`)
-			//Handle a numberlike event action
-			let selected = null;
-			for (let key in event)
-			{
-				let keyNumber = Number(key);
-				if (isNaN(keyNumber))
-					continue;
-				if (options.number >= keyNumber)
-					selected = event[key];
-			}
-			if (selected && isActionable(selected))
-			{
-				this.pushToQueue(selected, options);
-				return true;
-			}
-			else if (selected)
-			{
-				console.error("Selected wasn't actionable.");
-			}
+			return false;
 		}
-		else if ("name" in options)
-		{
-			logger.info(`Fired ${name} : ${options.name}`)
-			//Handle a namelike event
-			let namedEvent = event[options.name];
-			if (namedEvent && isActionable(namedEvent))
-			{
-				this.pushToQueue(namedEvent, options);
-				return true;
-			}
-		}
-		if (isActionable(event))
-		{
-			logger.info(`Fired ${name}`)
-			this.pushToQueue(event, options);
-			return true;
-		}
+
+		return triggerHandler.handle(this, this.triggerMappings[name], options);
 	}
 
 
-	async _runActions(actionArray, context)
+	async _runAutomation(automation, context)
 	{
-		for (let action of actionArray)
+		for (let action of automation.actions)
 		{
 			await this._runAction(action, context);
 		}
@@ -210,13 +174,13 @@ class ActionQueue
 
 	async _runAction(action, context)
 	{
-		//Hardcoded wait
+		//Before delay is used by our offset calculations so it must stay.
 		if (action.beforeDelay)
 		{
 			await sleep(action.beforeDelay * 1000);
 		}
 
-		for (let subAction in action)
+		for (let subAction in action) //Technically we iterate but there should never be more than one action per object.
 		{
 			if (subAction in this.actions)
 			{
@@ -226,11 +190,19 @@ class ActionQueue
 					console.error(reason);
 				});
 			}
-		}
 
-		if (action.delay)
-		{
-			await sleep(action.delay * 1000);
+			if (subAction == 'automation')
+			{
+				const subAutomationName = action.automation.automation;
+				const subAutomation = this.automations.get(subAutomationName);
+				this._prepAutomation(subAutomation);
+				await this._runAutomation(subAutomation);
+			}
+
+			if (subAction == 'delay')
+			{
+				await sleep(action.delay.delay);
+			}
 		}
 	}
 
@@ -239,32 +211,32 @@ class ActionQueue
 		if (this.queue.length > 0)
 		{
 			let release = await this.queueMutex.acquire();
-			let front = this.queue.shift();
-			let frontPromise = this._runAction(front.action, front.context);
-			this.currentAction = frontPromise;
-			this.currentAction.then(() => this._runNext());
+			let frontAutomation = this.queue.shift();
+			let frontPromise = this._runAutomation(frontAutomation.automation, frontAutomation.context);
+			this.syncAutomationPromise = frontPromise;
+			this.syncAutomationPromise.then(() => this._runNext());
 			release();
 		}
 		else
 		{
-			this.currentAction = null;
+			this.syncAutomationPromise = null;
 		}
 	}
 
 	async _runStartOfQueue()
 	{
-		if (this.currentAction)
+		if (this.syncAutomationPromise)
 			return;
 
 		if (this.queue.length == 0)
 			return;
 
-		logger.info("Starting new synchronous chain");
+		logger.info("Starting new synchronous automation chain");
 		let release = await this.queueMutex.acquire();
-		let front = this.queue.shift();
-		let frontPromise = this._runAction(front.action, front.context);
-		this.currentAction = frontPromise;
-		this.currentAction.then(() => this._runNext());
+		let frontAutomation = this.queue.shift();
+		let frontPromise = this._runAutomation(frontAutomation.automation, frontAutomation.context);
+		this.syncAutomationPromise = frontPromise;
+		this.syncAutomationPromise.then(() => this._runNext());
 		release();
 	}
 }

@@ -11,7 +11,6 @@ module.exports = {
 		this.connectOBS();
 		this.obs.on("SwitchScenes", data =>
 		{
-			//this.profiles.setCondition("scene", data.sceneName);
 			this.state.obsScene = data.sceneName;
 		})
 		this.obs.on("ConnectionClosed", () =>
@@ -53,7 +52,6 @@ module.exports = {
 					password: this.secrets.password
 				})
 				let result = await this.obs.send("GetCurrentScene");
-				//this.profiles.setCondition("scene", result.name);
 				this.state.obsScene = result.name;
 				this.logger.info("OBS connected!");
 			} catch {

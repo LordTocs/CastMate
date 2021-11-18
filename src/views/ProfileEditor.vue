@@ -10,9 +10,9 @@
         <rewards-editor v-model="profile.rewards" />
       </v-col>
     </v-row-->
-    <v-row>
+    <v-row v-for="plugin in triggerPlugins" :key="plugin.name">
       <v-col>
-        <triggers-editor />
+        <profile-plugin :plugin="plugin" v-model="profile" />
       </v-col>
     </v-row>
     <v-speed-dial v-model="fab" fixed bottom right open-on-hover>
@@ -25,9 +25,6 @@
       <v-btn fab dark small color="green" @click="save">
         <v-icon>mdi-content-save</v-icon>
       </v-btn>
-      <v-btn fab dark small color="red" @click="deleteMe">
-        <v-icon>mdi-delete</v-icon>
-      </v-btn>
     </v-speed-dial>
     <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
       Saved
@@ -37,7 +34,7 @@
 </template>
 
 <script>
-import TriggersEditor from "../components/profiles/TriggersEditor.vue";
+import ProfilePlugin from "../components/profiles/ProfilePlugin.vue";
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import YAML from "yaml";
@@ -47,19 +44,23 @@ import { mapActions, mapGetters } from "vuex";
 
 export default {
   components: {
-    TriggersEditor,
+    ProfilePlugin,
     ConditionsEditor,
     RewardsEditor,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   computed: {
-    ...mapGetters("ipc", ["paths"]),
+    ...mapGetters("ipc", ["paths", "plugins"]),
     profileName() {
       return this.$route.params.profile;
+    },
+    triggerPlugins() {
+      return this.plugins.filter((p) => Object.keys(p.triggers).length > 0);
     },
   },
   data() {
     return {
+      profile: {},
       saveSnack: false,
       fab: false,
     };
@@ -67,13 +68,12 @@ export default {
   methods: {
     ...mapActions("profile", ["loadProfile", "saveProfile"]),
     async save() {
-      /*let newYaml = YAML.stringify(this.profile);
+      let newYaml = YAML.stringify(this.profile);
 
       await fs.promises.writeFile(
         path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
         newYaml
-      );*/
-      await this.saveProfile();
+      );
 
       this.saveSnack = true;
     },
@@ -93,13 +93,12 @@ export default {
     },
   },
   async mounted() {
-    /*let fileData = await fs.promises.readFile(
+    let fileData = await fs.promises.readFile(
       path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`),
       "utf-8"
     );
 
-    this.profile = YAML.parse(fileData);*/
-    await this.loadProfile(this.profileName);
+    this.profile = YAML.parse(fileData);
   },
 };
 </script>
