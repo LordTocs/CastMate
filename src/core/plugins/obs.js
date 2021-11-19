@@ -5,6 +5,8 @@ const { template } = require('../utils/template');
 module.exports = {
 	name: "obs",
 	uiName: "OBS",
+	icon: "mdi-broadcast",
+	color: "#607A7F",
 	async init()
 	{
 		this.obs = new OBSWebSocket();
@@ -108,6 +110,7 @@ module.exports = {
 		obsScene: {
 			name: "OBS Scene",
 			description: "Change the OBS scene.",
+			icon: "mdi-swap-horizontal-bold",
 			color: "#607A7F",
 			data: {
 				type: String,
@@ -123,6 +126,7 @@ module.exports = {
 		obsFilter: {
 			name: "OBS Filter",
 			description: "Enable/Disable OBS filter",
+			icon: "mdi-eye",
 			color: "#607A7F",
 			data: {
 				type: Object,
@@ -158,6 +162,7 @@ module.exports = {
 		obsText: {
 			name: "OBS Text",
 			description: "Change the text in a GDI+ text element.",
+			icon: "mdi-form-textbox",
 			color: "#607A7F",
 			data: {
 				type: Object,

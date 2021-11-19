@@ -9,6 +9,8 @@ const { JSDOM } = jsdom
 module.exports = {
 	name: "aoe3",
 	uiName: "Age Of Empires",
+	icon: "mdi-crown",
+	color: "#619DB7",
 	async init()
 	{
 		if (this.settings.enabled)

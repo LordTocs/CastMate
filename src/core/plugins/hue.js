@@ -55,6 +55,8 @@ const { userFolder } = require('../utils/configuration');
 module.exports = {
 	name: "hue",
 	uiName: "HUE Lights",
+	icon: "mdi-lightbulb-on-outline",
+	color: "#7F743F",
 	async init()
 	{
 		this.groupCache = {};
@@ -225,9 +227,10 @@ module.exports = {
 	secrets: {
 	},
 	actions: {
-		light: {
+		hueLight: {
 			name: "Hue Light",
 			description: "Changes HUE lights.",
+			icon: "mdi-lightbulb-on-outline",
 			color: "#7F743F",
 			data: {
 				type: Object,
@@ -297,9 +300,10 @@ module.exports = {
 
 			}
 		},
-		lightScene: {
+		hueScene: {
 			name: "Hue Scene",
 			description: "Changes HUE lights to a hue scene",
+			icon: "mdi-lightbulb-on-outline",
 			color: "#7F743F",
 			data: {
 				type: Object,

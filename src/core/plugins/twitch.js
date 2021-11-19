@@ -63,6 +63,8 @@ function dateInterval(date1, date2)
 module.exports = {
 	name: "twitch",
 	uiName: "Twitch",
+	icon: "mdi-twitch",
+	color: "#5E5172",
 	async init()
 	{
 		this.logger.info("Starting Twitch");
@@ -807,6 +809,7 @@ module.exports = {
 		sendChat: {
 			name: "Chat",
 			description: "Sends a message in twitch chat.",
+			icon: "mdi-chat",
 			color: "#5E5172",
 			data: {
 				type: String,
@@ -820,6 +823,7 @@ module.exports = {
 		streamTitle: {
 			name: "Change Stream Title",
 			description: "Change the stream title",
+			icon: "mdi-title",
 			color: "#5E5172",
 			data: {
 				type: String,
@@ -835,6 +839,7 @@ module.exports = {
 		runAd: {
 			name: "Run Ad",
 			description: "Run an ad",
+			icon: "mdi-advertisements",
 			color: "#5E5172",
 			data: {
 				type: Number,
@@ -847,6 +852,7 @@ module.exports = {
 		streamMarker: {
 			name: "Place Stream Marker",
 			description: "Places a marker in the stream for use in the video editor",
+			icon: "mdi-map-icon",
 			color: "#5E5172",
 			data: {
 				type: String,

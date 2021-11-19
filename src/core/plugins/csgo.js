@@ -3,6 +3,8 @@ const CSGameState = require('cs-gamestate');
 module.exports = {
 	name: "csgo",
 	uiName: "Counter Strike",
+	icon: "mdi-pistol",
+	color: "#6E72AD",
 	async init()
 	{
 		this.gamestateIntegration = new CSGameState({ createServer: false });

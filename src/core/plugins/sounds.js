@@ -5,6 +5,8 @@ const { userFolder } = require("../utils/configuration");
 module.exports = {
 	name: "sounds",
 	uiName: "Sounds",
+	icon: "mdi-volume-high",
+	color: "#62894F",
 	async init()
 	{
 		this.audioWindow = new BrowserWindow({
@@ -58,6 +60,7 @@ module.exports = {
 					}
 				}
 			},
+			icon: "mdi-volume-high",
 			color: "#62894F",
 			async handler(soundData)
 			{

@@ -2,6 +2,8 @@
 module.exports = {
 	name: "kofi",
 	uiName: "Kofi",
+	icon: "mdi-currency-usd",
+	color: "#72AADB",
 	async init()
 	{
 		this.installWebhook()

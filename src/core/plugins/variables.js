@@ -7,6 +7,8 @@ const HotReloader = require('../utils/hot-reloader');
 module.exports = {
 	name: "variables",
 	uiName: "Variables",
+	icon: "mdi-variable",
+	color: "#D3934A",
 	async init()
 	{
 		this.variableSpecs = {};
@@ -111,6 +113,7 @@ module.exports = {
 	actions: {
 		setVariable: {
 			name: "Set Variable",
+			icon: "mdi-variable",
 			color: "#D3934A",
 			data: {
 				type: Object,
@@ -140,6 +143,7 @@ module.exports = {
 		},
 		incVariable: {
 			name: "Increment Variable",
+			icon: "mdi-variable",
 			color: "#D3934A",
 			data: {
 				type: Object,

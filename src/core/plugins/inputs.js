@@ -89,6 +89,8 @@ const user32Lib = ffi.Library('user32', {
 module.exports = {
 	name: "inputs",
 	uiName: "Input Simulation",
+	icon: "mdi-keyboard",
+	color: "#826262",
 	async init()
 	{
 	},
@@ -177,6 +179,7 @@ module.exports = {
 		pressKey: {
 			name: "Press Key",
 			description: "Presses a selected keyboard key.",
+			icon: "mdi-keyboard",
 			color: "#826262",
 			data: {
 				type: Object,
@@ -199,6 +202,7 @@ module.exports = {
 		mouseButton: {
 			name: "Mouse Button",
 			description: "Presses a mouse button",
+			icon: "mdi-mouse",
 			color: "#826262",
 			data: {
 				type: Object,
