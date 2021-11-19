@@ -13,6 +13,7 @@
       <v-data-table
         :headers="profileHeaders"
         :items="profiles"
+        :search="search"
         @click:row="(item) => $router.push(`/profiles/${item.name}`)"
       >
         <template v-slot:item.actions="{ item }">

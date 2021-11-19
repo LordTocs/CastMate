@@ -13,6 +13,7 @@
       <v-data-table
         :headers="automationHeaders"
         :items="automationFiles"
+		:search="search"
         @click:row="(item) => $router.push(`/automations/${item.name}`)"
       >
         <template v-slot:item.actions="{ item }">
