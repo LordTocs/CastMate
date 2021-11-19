@@ -6,11 +6,18 @@
     :allowTemplate="!!schema.template"
     :label="schema.name || label"
   />
-  <v-text-field
+  <!--v-text-field
     :value="value"
     @input="(v) => $emit('input', v)"
     v-else-if="schema.type == 'String'"
     :label="schema.name || label"
+  /-->
+  <string-data-input
+    :value="value"
+    @input="(v) => $emit('input', v)"
+    v-else-if="schema.type == 'String'"
+    :dataName="schema.name || label"
+    :schema="schema"
   />
   <v-switch
     :value="value"
@@ -50,12 +57,15 @@
 <script>
 import NumberInput from "./NumberInput.vue";
 import FileAutocomplete from "./FileAutocomplete.vue";
+import StringDataInput from "./StringDataInput.vue";
+
 export default {
   name: "data-input",
   components: {
     ObjectEditor: () => import("./ObjectEditor.vue"),
     NumberInput,
     FileAutocomplete,
+    StringDataInput,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {

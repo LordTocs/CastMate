@@ -1,5 +1,5 @@
 const { reactify } = require("./reactive");
-const { cleanSchemaForIPC } = require("./schema");
+const { cleanSchemaForIPC, makeIPCEnumFunctions } = require("./schema");
 const _ = require('lodash');
 const { ipcMain } = require("electron");
 const logger = require('../utils/logger');
@@ -98,6 +98,10 @@ class Plugin
 			{
 				action.handler = action.handler.bind(this.pluginObj);
 			}
+			if (action.data)
+			{
+				makeIPCEnumFunctions(this.pluginObj, this.name + "_action_" + actionKey, action.data);
+			}
 			this.actions[actionKey] = action;
 		}
 
@@ -192,7 +196,7 @@ class Plugin
 			actions[actionKey] = {
 				name: this.actions[actionKey].name,
 				description: this.actions[actionKey].description,
-				data: cleanSchemaForIPC(this.actions[actionKey].data),
+				data: cleanSchemaForIPC(this.name + "_action_" + actionKey, this.actions[actionKey].data),
 				color: this.actions[actionKey].color,
 			}
 		}
