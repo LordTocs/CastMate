@@ -804,9 +804,9 @@ module.exports = {
 		}
 	},
 	actions: {
-		say: {
-			name: "Say",
-			description: "Uses the bot to send a twitch chat message",
+		sendChat: {
+			name: "Chat",
+			description: "Sends a message in twitch chat.",
 			color: "#5E5172",
 			data: {
 				type: String,
@@ -830,23 +830,6 @@ module.exports = {
 				await this.channelTwitchClient.helix.channels.updateChannelInfo(this.channelId, {
 					title: await template(message, context)
 				})
-			}
-		},
-		multiSay: {
-			name: "Multi Say",
-			description: "Uses the bot to send an array of twitch chat messages",
-			color: "#5E5172",
-			data: {
-				type: String,
-				template: true,
-			},
-			async handler(message, context)
-			{
-				let msgArray = await evalTemplate(message, context)
-				for (let msg of msgArray)
-				{
-					await this.chatClient.say(this.state.channelName.toLowerCase(), msg);
-				}
 			}
 		},
 		runAd: {
