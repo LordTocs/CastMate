@@ -384,7 +384,8 @@ module.exports = {
 			});
 
 			this.castMateWebsocket.on('unexpected-response', (request, response) => {
-				this.logger.error(`Unexpected Response! ${JSON.stringify(response)}`);
+				this.logger.error(`Unexpected Response!`);
+				console.log(response);
 				this.retryWebsocketWorkaround();
 				if (response.status == 200)
 				{
