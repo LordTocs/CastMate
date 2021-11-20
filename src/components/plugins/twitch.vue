@@ -42,7 +42,7 @@
 </template>
 
 <script>
-const { mapIpcs } = require("../../utils/ipcMap");
+import { mapIpcs } from "../../utils/ipcMap";
 
 export default {
   data() {
