@@ -2,16 +2,20 @@
   <number-input
     :value="value"
     @input="(v) => $emit('input', v)"
-    v-if="schema.type == 'Number'"
+    v-if="schema.type == 'Number' && !schema.slider"
     :allowTemplate="!!schema.template"
     :label="schema.name || label"
   />
-  <!--v-text-field
-    :value="value"
-    @input="(v) => $emit('input', v)"
-    v-else-if="schema.type == 'String'"
+  <v-slider
+    v-else-if="schema.type == 'Number' && schema.slider"
     :label="schema.name || label"
-  /-->
+    :value="value"
+    :min="schema.slider[0]"
+    :max="schema.slider[1]"
+    :step="0"
+	color="white"
+    @input="(v) => $emit('input', v)"
+  />
   <string-data-input
     :value="value"
     @input="(v) => $emit('input', v)"
