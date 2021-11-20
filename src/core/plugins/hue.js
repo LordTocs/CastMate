@@ -236,10 +236,7 @@ module.exports = {
 				type: Object,
 				properties: {
 					on: { type: "OptionalBoolean", name: "Light Switch" },
-					hue: { type: Number, template: true, name: "Hue" },
-					bri: { type: Number, template: true, name: "Brightness" },
-					sat: { type: Number, template: true, name: "Saturation" },
-					ct: { type: Number, template: true, name: "Color Temp" },
+					hsbk: { type: "LightColor", name: "Color", tempRange: [2000, 6500] },
 					transition: { type: Number, template: true, name: "Transition Time" },
 					group: { type: String, template: true, name: "HUE Light Group" },
 				}
@@ -252,36 +249,46 @@ module.exports = {
 
 				let state = new lightstates.GroupLightState();
 
+				this.logger.info(`Hue Lights: ${JSON.stringify(lightData)}`)
+
 				if ("on" in lightData)
 				{
 					lightData.on = await this.handleTemplateNumber(lightData.on, context);
 
 					state.on(lightData.on);
 				}
-				if ("bri" in lightData)
-				{
-					lightData.bri = await this.handleTemplateNumber(lightData.bri, context);
+				const mode = lightData.hsbk.mode || 'color';
 
-					state.bri(lightData.bri);
-				}
-				if ("sat" in lightData)
+				if ("hsbk" in lightData)
 				{
-					lightData.sat = await this.handleTemplateNumber(lightData.sat, context);
+					if ("bri" in lightData.hsbk && (mode == 'color' || mode == "template"))
+					{
+						lightData.hsbk.bri = await this.handleTemplateNumber(lightData.hsbk.bri, context);
 
-					state.sat(lightData.sat);
-				}
-				if ("ct" in lightData)
-				{
-					lightData.ct = await this.handleTemplateNumber(lightData.ct, context);
+						state.bri(lightData.hsbk.bri / 100 * 254);
+					}
+					if ("sat" in lightData.hsbk && (mode == 'color' || mode == "template"))
+					{
+						lightData.hsbk.sat = await this.handleTemplateNumber(lightData.hsbk.sat, context);
 
-					state.ct(lightData.ct);
-				}
-				if ("hue" in lightData)
-				{
-					lightData.hue = await this.handleTemplateNumber(lightData.hue, context);
+						state.sat(lightData.hsbk.sat / 100 * 254);
+					}
+					if ("hue" in lightData.hsbk && (mode == 'color' || mode == "template"))
+					{
+						lightData.hsbk.hue = await this.handleTemplateNumber(lightData.hsbk.hue, context);
 
-					state.hue(Math.floor((lightData.hue / 360) * 65535))
+						//Hue is 0-360
+						state.hue(Math.floor((lightData.hsbk.hue / 360) * 65535))
+					}
+					if ("temp" in lightData.hsbk && (mode == 'temp' || mode == "template"))
+					{
+						lightData.hsbk.temp = await this.handleTemplateNumber(lightData.hsbk.temp, context);
+
+						//Convert kelvin to mired. https://en.wikipedia.org/wiki/Mired
+						state.ct(1000000 / lightData.hsbk.temp);
+					}
 				}
+
 				if ("transition" in lightData)
 				{
 					lightData.transition = await this.handleTemplateNumber(lightData.transition, context);
@@ -328,5 +335,5 @@ module.exports = {
 			}
 		}
 	},
-	settingsView: 'lights.vue'
+	settingsView: 'hue.vue'
 }

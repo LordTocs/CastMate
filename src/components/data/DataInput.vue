@@ -10,10 +10,10 @@
     v-else-if="schema.type == 'Number' && schema.slider"
     :label="schema.name || label"
     :value="value"
-    :min="schema.slider[0]"
-    :max="schema.slider[1]"
-    :step="0"
-	color="white"
+    :min="schema.slider.min"
+    :max="schema.slider.max"
+    :step="schema.slider.step"
+    color="white"
     @input="(v) => $emit('input', v)"
   />
   <string-data-input
@@ -50,6 +50,12 @@
     :path="schema.path"
     :basePath="schema.basePath"
   />
+  <color-picker
+    :value="value"
+    @input="(v) => $emit('input', v)"
+    v-else-if="schema.type == 'LightColor'"
+    :schema="schema"
+  />
   <object-editor
     :schema="schema.properties"
     :value="value"
@@ -60,6 +66,7 @@
 
 <script>
 import NumberInput from "./NumberInput.vue";
+import ColorPicker from "./ColorPicker.vue";
 import FileAutocomplete from "./FileAutocomplete.vue";
 import StringDataInput from "./StringDataInput.vue";
 
@@ -70,6 +77,7 @@ export default {
     NumberInput,
     FileAutocomplete,
     StringDataInput,
+    ColorPicker,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {

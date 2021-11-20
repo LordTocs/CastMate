@@ -16,6 +16,7 @@
   "main": "background.js",
   "dependencies": {
     "@electron/remote": "^2.0.1",
+    "@jaames/iro": "^5.5.2",
     "@julusian/jpeg-turbo": "^1.1.1",
     "@mdi/font": "^6.5.95",
     "async-mutex": "^0.3.0",

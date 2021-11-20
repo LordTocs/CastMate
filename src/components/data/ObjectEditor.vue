@@ -1,18 +1,15 @@
 <template>
-  <v-row>
-    <v-col
-      cols="12"
-      md="3"
-      v-for="propertyKey in Object.keys(schema)"
-      :key="propertyKey"
-    >
-      <data-input
-        :schema="schema[propertyKey]"
-        :value="value ? value[propertyKey] : null"
-        @input="(v) => updateObject(propertyKey, v)"
-      />
-    </v-col>
-  </v-row>
+  <div>
+    <v-row v-for="propertyKey in Object.keys(schema)" :key="propertyKey">
+      <v-col>
+        <data-input
+          :schema="schema[propertyKey]"
+          :value="value ? value[propertyKey] : null"
+          @input="(v) => updateObject(propertyKey, v)"
+        />
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>
