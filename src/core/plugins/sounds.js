@@ -58,7 +58,11 @@ module.exports = {
 						template: true,
 						name: "Volume",
 						default: 1.0,
-						slider: [0.0, 1.0]
+						slider: {
+							min: 0,
+							max: 100,
+							step: 1,
+						}
 					}
 				}
 			},
@@ -68,10 +72,10 @@ module.exports = {
 			{
 				if (this.audioWindowSender)
 				{
-					const globalVolume = this.settings.globalVolume != undefined ? this.settings.globalVolume : 1.0;
+					const globalVolume = this.settings.globalVolume != undefined ? (this.settings.globalVolume / 100) : 1.0;
 					this.audioWindowSender.send('play-sound', {
 						source: this.getFullFilepath(soundData.sound),
-						volume: ("volume" in soundData ? soundData.volume : 1.0) * globalVolume
+						volume: ("volume" in soundData ? (soundData.volume / 100) : 1.0) * globalVolume
 					});
 				}
 				else
