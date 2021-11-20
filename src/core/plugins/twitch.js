@@ -824,7 +824,7 @@ module.exports = {
 		streamTitle: {
 			name: "Change Stream Title",
 			description: "Change the stream title",
-			icon: "mdi-title",
+			icon: "mdi-cursor-text",
 			color: "#5E5172",
 			data: {
 				type: String,
@@ -853,7 +853,7 @@ module.exports = {
 		streamMarker: {
 			name: "Place Stream Marker",
 			description: "Places a marker in the stream for use in the video editor",
-			icon: "mdi-map-icon",
+			icon: "mdi-map-marker-star",
 			color: "#5E5172",
 			data: {
 				type: String,

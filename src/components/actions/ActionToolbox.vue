@@ -22,7 +22,7 @@
             :key="actionKey"
           >
             <v-list-item-avatar :color="plugin.actions[actionKey].color">
-              <v-icon>mdi-file-document-outline</v-icon>
+              <v-icon> {{ plugin.actions[actionKey].icon ? plugin.actions[actionKey].icon : 'mdi-file-document-outline' }}</v-icon>
             </v-list-item-avatar>
 
             <v-list-item-content>
