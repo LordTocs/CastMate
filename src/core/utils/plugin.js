@@ -15,6 +15,7 @@ class Plugin
 		this.name = config.name;
 		this.uiName = config.uiName || config.name;
 		this.color = config.color;
+		this.icon = config.icon;
 		logger.info(`Loading Plugin: ${config.name}`);
 		this.initFunc = config.init;
 		//Bind the init func to the pluginObj
@@ -198,6 +199,7 @@ class Plugin
 				description: this.actions[actionKey].description,
 				data: cleanSchemaForIPC(this.name + "_action_" + actionKey, this.actions[actionKey].data),
 				color: this.actions[actionKey].color,
+				icon: this.actions[actionKey].icon,
 			}
 		}
 
@@ -224,6 +226,7 @@ class Plugin
 		return {
 			name: this.name,
 			uiName: this.uiName,
+			icon: this.icon,
 			settings,
 			secrets,
 			triggers: this.triggers,
