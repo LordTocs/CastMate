@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="display: flex; flex-direction: column">
     <div style="display: flex; flex-direction: row">
       <div
         style="
@@ -19,6 +19,7 @@
       handle=".handle"
       tag="v-timeline"
       group="actions"
+      style="flex: 1"
       :component-data="getDraggableData()"
     >
       <sequence-item

@@ -1,8 +1,7 @@
 <template>
-  <v-container fluid>
-    <action-toolbox />
-    <v-row>
-      <v-col>
+  <div class="editor-base">
+    <div class="editor-area">
+      <div class="editor-area-scrollable">
         <v-card>
           <v-card-title>
             {{ automationName }}
@@ -11,14 +10,18 @@
             <v-btn @click="saveAutomation"> Save </v-btn>
           </v-card-actions>
         </v-card>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <sequence-editor v-if="automation" v-model="automation.actions" />
-      </v-col>
-    </v-row>
-  </v-container>
+        <div style="height: 16px" />
+        <sequence-editor
+          v-if="automation"
+          v-model="automation.actions"
+          style="flex: 1"
+        />
+      </div>
+    </div>
+    <div class="editor-toolbox">
+      <action-toolbox />
+    </div>
+  </div>
 </template>
 
 <script>
@@ -67,5 +70,30 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.editor-base {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+.editor-area {
+  flex: 1;
+  position: relative;
+}
+
+.editor-area-scrollable {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  padding-right: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-toolbox {
+  width: 300px;
+}
 </style>

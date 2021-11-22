@@ -1,5 +1,5 @@
 <template>
-  <v-timeline-item right>
+  <v-timeline-item right :icon="actionDefinition.icon" :color="actionColor">
     <v-card :color="actionColor" :class="{ expanded, shrunk: !expanded }">
       <v-card-title
         v-if="actionDefinition"
