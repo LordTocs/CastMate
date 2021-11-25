@@ -88,7 +88,7 @@ export default {
   right: 0;
   bottom: 0;
   overflow: auto;
-  padding-right: 20px;
+  /*padding-right: 20px;*/
   display: flex;
   flex-direction: column;
 }

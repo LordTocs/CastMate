@@ -1,40 +1,43 @@
 <template>
-  <v-timeline-item right :icon="actionDefinition.icon" :color="actionColor">
-    <v-card :color="actionColor" :class="{ expanded, shrunk: !expanded }">
-      <v-card-title
-        v-if="actionDefinition"
-        class="handle action-item-title"
-        @click="expanded = !expanded"
-      >
-        <div style="flex-shrink: 0">
-          {{ actionDefinition.name }}
-        </div>
+  <v-card
+    :color="actionColor"
+    :class="{ expanded, shrunk: !expanded, 'sequence-item': true }"
+  >
+    <!--class  action-item-title-->
+    <v-card-title
+      v-if="actionDefinition"
+      class="handle"
+      @click="expanded = !expanded"
+    >
+      <v-icon large left> {{ actionDefinition.icon }} </v-icon>
+      {{ actionDefinition.name }}
+    </v-card-title>
+    <v-expand-transition>
+      <v-card-subtitle class="handle" @click="expanded = !expanded">
+        <data-view
+          class="data-preview"
+          :value="actionData"
+          :schema="actionDefinition.data"
+          v-if="!expanded"
+        />
+      </v-card-subtitle>
+    </v-expand-transition>
+    <v-expand-transition>
+      <v-card-text v-if="expanded" class="grey darken-4" @click.stop="">
+        <action-editor
+          :actionKey="actionKey"
+          :value="actionData"
+          @input="(v) => updateAction(actionKey, v)"
+        />
+      </v-card-text>
+    </v-expand-transition>
 
-        <div class="data-preview">
-          <data-view
-            :value="actionData"
-            :schema="actionDefinition.data"
-            v-if="!expanded"
-          />
-        </div>
-      </v-card-title>
-      <v-card-title v-else-if="actionKey == 'import'"> Import </v-card-title>
-      <v-expand-transition>
-        <v-card-text v-if="expanded">
-          <action-editor
-            :actionKey="actionKey"
-            :value="actionData"
-            @input="(v) => updateAction(actionKey, v)"
-          />
-        </v-card-text>
-      </v-expand-transition>
-      <v-expand-transition>
-        <v-card-actions v-if="expanded">
-          <v-btn color="red" @click="$emit('delete')"> Delete </v-btn>
-        </v-card-actions>
-      </v-expand-transition>
-    </v-card>
-  </v-timeline-item>
+    <!--v-expand-transition>
+      <v-card-actions v-if="expanded">
+        <v-btn color="red" @click="$emit('delete')"> Delete </v-btn>
+      </v-card-actions>
+    </v-expand-transition-->
+  </v-card>
 </template>
 
 <script>
@@ -80,7 +83,7 @@ export default {
 
 <style scoped>
 .shrunk {
-  max-width: 600px;
+  /*max-width: 600px;*/
 }
 .action-item-title {
   display: flex;
@@ -92,5 +95,10 @@ export default {
   flex: 1;
   margin-left: 25px;
   min-width: 0;
+}
+
+.sequence-item {
+  margin-bottom: 16px;
+  margin-top: 16px;
 }
 </style>

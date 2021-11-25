@@ -1,6 +1,6 @@
 <template>
   <div style="display: flex; flex-direction: column">
-    <div style="display: flex; flex-direction: row">
+    <!--div style="display: flex; flex-direction: row">
       <div
         style="
           min-width: 96px;
@@ -13,13 +13,13 @@
           <v-icon> mdi-play </v-icon>
         </v-btn>
       </div>
-    </div>
+    </div-->
     <draggable
       :list="value"
       handle=".handle"
-      tag="v-timeline"
       group="actions"
       style="flex: 1"
+      class="sequence-container"
       :component-data="getDraggableData()"
     >
       <sequence-item
@@ -46,16 +46,19 @@ export default {
     getDraggableData() {
       return {
         on: {
-          change: this.changed,
+          inputChanged: this.changed,
         },
         attrs: {
-          dense: true,
-          "align-top": true,
+          /*dense: true,
+          "align-top": true,*/
         },
       };
     },
     changed(arr) {
-      this.$emit("input", arr);
+      console.log(arr);
+      if (arr instanceof Array) {
+        this.$emit("input", arr);
+      }
     },
     updateAction(index, value) {
       let newValue = [...this.value];
@@ -83,5 +86,8 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.sequence-container {
+  padding: 16px;
+}
 </style>
