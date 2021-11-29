@@ -1,7 +1,7 @@
 <template>
   <v-card
     :color="actionColor"
-    :class="{ expanded, shrunk: !expanded, 'sequence-item': true }"
+    :class="{ expanded, shrunk: !expanded, 'sequence-item': true, selected }"
   >
     <!--class  action-item-title-->
     <v-card-title
@@ -47,6 +47,7 @@ import DataView from "../data/DataView.vue";
 export default {
   props: {
     value: {},
+    selected: { type: Boolean, default: () => false }
   },
   components: { ActionEditor, DataView },
   data() {
@@ -85,6 +86,12 @@ export default {
 .shrunk {
   /*max-width: 600px;*/
 }
+.selected {
+  border-color: #EFEFEF !important;
+  border-width: 3px;
+  border-style: solid;
+}
+
 .action-item-title {
   display: flex;
   flex-direction: row;
