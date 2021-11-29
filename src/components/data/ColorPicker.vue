@@ -114,13 +114,14 @@ export default {
   },
   methods: {
     changeHue(newHue) {
-      this.$emit("input", { ...this.value, ...newHue });
+
+      this.$emit("input", { ...this.value, ...newHue, mode: this.value?.mode || 'color' });
     },
     changeTemp(newTemp) {
-      this.$emit("input", { ...this.value, ...newTemp });
+      this.$emit("input", { ...this.value, ...newTemp, mode: this.value?.mode || 'temp' });
     },
     changeBri(newBri) {
-      this.$emit("input", { ...this.value, bri: newBri });
+      this.$emit("input", { ...this.value, bri: newBri, mode: this.value?.mode || 'color' });
     },
     changeMode(newMode) {
       this.$emit("input", { ...this.value, mode: indexToMode[newMode] });

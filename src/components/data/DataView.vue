@@ -1,5 +1,6 @@
 <template>
-  <div class="one-text-line" v-if="schema.type == 'Number'">
+  <div v-if="!schema || !value" />
+  <div class="one-text-line" v-else-if="schema.type == 'Number'">
     <span v-if="schema.name || label"> {{ schema.name || label }}: </span>
     {{ value }}
   </div>
@@ -12,12 +13,16 @@
       schema.type == 'OptionalBoolean'
     "
   >
-    <span v-if="schema.name || label"> {{ schema.name || label }}: </span
-    >{{ value }}
+    <span v-if="schema.name || label"> {{ schema.name || label }}: </span>
+    {{ value }}
   </div>
   <div v-else-if="schema.type == 'FilePath'">
-    <span v-if="schema.name || label"> {{ schema.name || label }}: </span
-    >{{ value }}
+    <span v-if="schema.name || label"> {{ schema.name || label }}: </span>
+    {{ value }}
+  </div>
+  <div v-else-if="schema.type == 'LightColor'">
+    <span v-if="schema.name || label"> {{ schema.name || label }}: </span>
+    <color-swatch :value="value" />
   </div>
   <div v-else-if="schema.type == 'Object' && schema.properties">
     <data-view
@@ -30,7 +35,9 @@
 </template>
 
 <script>
+import ColorSwatch from './ColorSwatch.vue';
 export default {
+  components: { ColorSwatch },
   name: "data-view",
   props: {
     schema: {},
