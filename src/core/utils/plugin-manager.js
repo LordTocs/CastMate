@@ -20,6 +20,7 @@ class PluginManager {
             "websocket",
             // "aoe3",
             "aoe4",
+            "twinkly"
         ]
 
         //Todo: This relative require is weird.

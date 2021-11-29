@@ -5,9 +5,136 @@ module.exports = {
     name: "aoe4",
     uiName: "Age Of Empires 4",
     async init() {
+        this.maps = [
+            "Dry Arabia",
+            "Lipany",
+            "High View",
+            "Mountain Pass",
+            "Ancient Spires",
+            "Danube River",
+            "Black Forest",
+            "Mongolian Heights",
+            "Altai",
+            "Confluence",
+            "French Pass",
+            "Hill and Dale",
+            "King of the Hill",
+            "Warring Islands",
+            "Archipelago",
+            "Nagari",
+            "Boulder Bay"
+        ]
+
+        this.civs = [
+            "Abbasid Dynasty",
+            "Chinese",
+            "Delhi Sultanate",
+            "English",
+            "French",
+            "Holy Roman Empire",
+            "Mongols",
+            "Rus"
+        ]
 
     },
+    state: {
+        aoe4Map: {
+            name: "Current AoE4 Map",
+            type: String,
+        },
+        aoe4Opponent: {
+            name: "Current AoE4 Opponent",
+            type: String,
+        },
+        aoe4OpponentRating: {
+            name: "Current AoE4 Opponent Rating",
+            type: Number,
+        },
+        aoe4OpponentCiv: {
+            name: "Current AoE4 Opponent Rating",
+            type: String,
+        },
+        aoe4Rating: {
+            name: "Your current AoE4 Rating",
+            type: Number,
+        },
+        aoe4Civ: {
+            name: "Your current AoE4 Civ",
+            type: String,
+        }
+    },
+    methods: {
+        getRandomCiv() {
+            const civNames = [
+                "English",
+                "French",
+                "Chinese",
+                "Delhi Sultanate",
+                "Abbasid Dynasty",
+                "Holy Roman Empire",
+                "Rus",
+                "Mongols"
+            ]
+
+            const randomCiv = civNames[Math.floor(Math.random() * civNames.length)];
+            return randomCiv;
+        },
+    },
     templateFunctions: {
+        async getMatchInfo(profileID) {
+            const agent = new https.Agent({
+                rejectUnauthorized: false
+            });
+
+            let response = await axios.get('https://aoeiv.net/api/player/matches', {
+                httpsAgent: agent,
+                params: {
+                    game: "aoe4",
+                    profile_id: 707064,
+                    count: 1
+                }
+            })
+
+            let result = response.data[0];
+
+            // formattedResult.streak = result.streak;
+
+
+            // TODO - format return data for output
+            console.log(response.data[0].players);
+
+            this.state.aoe4Civ = this.civs[result.players[0].civ];
+            this.state.aoe4Rating = result.players[0].rating;
+
+            this.state.aoe4Opponent = result.players[1].name
+            this.state.aoe4OpponentCiv = this.civs[result.players[1].civ];
+            this.state.aoe4OpponentRating = result.players[1].rating;
+
+            this.state.aoe4Map = this.maps[result.map_type];
+
+
+            let playerNames = `Player 1: ${result.players[0].name} ${this.civs[result.players[0].civ]} ${result.players[0].rating} - Player 2: ${result.players[1].name} ${result.players[1].rating} ${this.civs[result.players[1].civ]} Map: ${this.maps[result.map_type]}`
+            return playerNames;
+        },
+
+        getRandomCiv() {
+            return this.getRandomCiv();
+        },
+
+        get5RandomCivs() {
+            let civs = [];
+            let count = 0;
+            while (civs.length < 5) {
+                let randomCiv = this.getRandomCiv();
+                if (!civs.includes(randomCiv)) {
+                    civs.push(randomCiv);
+                    count++
+                };
+            }
+            let civString = `Civ Poll Options: ${civs[0]}, ${civs[1]}, ${civs[2]}, ${civs[3]}, ${civs[4]}`
+            return civString;
+        },
+
         async getAoe4PlayerStat(playerName) {
             if (!playerName.length) {
                 playerName = "FitzBro";
@@ -26,9 +153,6 @@ module.exports = {
                 }
             })
 
-            // Search for exact string matches
-            // 
-            // Select highest elo
 
             if (response.data.leaderboard && response.data.leaderboard.length) {
                 let result = response.data.leaderboard.find((player) => {
