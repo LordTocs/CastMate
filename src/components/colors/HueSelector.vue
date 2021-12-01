@@ -29,7 +29,7 @@ export default {
 
       this.colorPicker.on("input:end", this.colorHandler);
 
-      if ("hue" in this.value && "sat" in this.value && "bri" in this.value) {
+      if (this.value && "hue" in this.value && "sat" in this.value && "bri" in this.value) {
         this.colorPicker.color.hsv = {
           h: this.value.hue,
           s: this.value.sat,
@@ -53,7 +53,7 @@ export default {
   },
   watch: {
     value() {
-      if ("hue" in this.value && "sat" in this.value && "bri" in this.value) {
+      if (this.value && "hue" in this.value && "sat" in this.value && "bri" in this.value) {
         this.colorPicker.color.hsv = {
           h: this.value.hue,
           s: this.value.sat,
