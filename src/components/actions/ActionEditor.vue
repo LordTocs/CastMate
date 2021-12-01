@@ -10,16 +10,6 @@
         />
       </table>
     </div>
-    <div class="action-card-body" v-else-if="actionKey == 'import'">
-      <div style="width: 100%">
-        <data-input
-          :value="value"
-          @input="(v) => $emit('input', v)"
-          label="Import"
-          :schema="{ type: 'String' }"
-        />
-      </div>
-    </div>
     <div v-else>Unknown Action Key: {{ actionKey }}</div>
   </div>
 </template>
