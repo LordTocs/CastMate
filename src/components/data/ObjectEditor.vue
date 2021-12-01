@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="object-row">
     <v-row v-for="propertyKey in Object.keys(schema)" :key="propertyKey">
       <v-col>
         <data-input
@@ -24,7 +24,7 @@ export default {
     updateObject(key, value) {
       let newValue = this.value ? { ...this.value } : {};
 
-      if (value != "" && value != undefined) {
+      if (value !== "" && value !== undefined) {
         newValue[key] = value;
       } else {
         delete newValue[key];
@@ -37,4 +37,7 @@ export default {
 </script>
 
 <style scoped>
+.object-row {
+  flex: 1;
+}
 </style>
