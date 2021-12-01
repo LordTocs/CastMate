@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!schema || !value" />
+  <div v-if="!schema || value === undefined" />
   <div class="one-text-line" v-else-if="schema.type == 'Number'">
     <span v-if="schema.name || label"> {{ schema.name || label }}: </span>
     {{ value }}
