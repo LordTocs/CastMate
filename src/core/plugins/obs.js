@@ -113,28 +113,34 @@ module.exports = {
 			icon: "mdi-swap-horizontal-bold",
 			color: "#607A7F",
 			data: {
-				type: String,
-				template: true,
-				async enum() {
-					try
-					{
-						console.log("Getting Scenes");
-						const result = await this.obs.send('GetSceneList');
-						const sceneitems = result.scenes.map((s) => s.name);
-						console.log(sceneitems);
-						return sceneitems;
-					}
-					catch (err)
-					{
-						console.error(err);
-						return [];
+				type: Object,
+				properties: {
+					scene: {
+						type: String,
+						template: true,
+						async enum()
+						{
+							try
+							{
+								console.log("Getting Scenes");
+								const result = await this.obs.send('GetSceneList');
+								const sceneitems = result.scenes.map((s) => s.name);
+								console.log(sceneitems);
+								return sceneitems;
+							}
+							catch (err)
+							{
+								console.error(err);
+								return [];
+							}
+						}
 					}
 				}
 			},
 			async handler(sceneData, context)
 			{
 				await this.obs.send('SetCurrentScene', {
-					'scene-name': await template(sceneData, context)
+					'scene-name': await template(sceneData.scene, context)
 				})
 			},
 		},
