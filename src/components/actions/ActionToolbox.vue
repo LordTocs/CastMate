@@ -58,7 +58,7 @@ export default {
 
       for (let plugin of this.actionPlugins) {
         pluginLists[plugin.name] = Object.keys(plugin.actions).map(
-          (actionKey) => ({ [actionKey]: null })
+          (actionKey) => ({ [actionKey]: {} })
         );
       }
 
