@@ -62,8 +62,10 @@ module.exports = {
 			icon: "mdi-minecraft",
 			color: "#66A87B",
 			data: {
-				type: String,
-				template: true,
+				type: Object,
+				properties: {
+					command: { type: String, template: true }
+				}
 			},
 			async handler(command, context)
 			{

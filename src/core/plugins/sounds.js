@@ -57,7 +57,7 @@ module.exports = {
 						type: Number,
 						template: true,
 						name: "Volume",
-						default: 1.0,
+						default: 100,
 						slider: {
 							min: 0,
 							max: 100,

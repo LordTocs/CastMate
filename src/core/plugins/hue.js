@@ -235,7 +235,7 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					on: { type: "OptionalBoolean", name: "Light Switch" },
+					on: { type: Boolean, name: "Light Switch" },
 					hsbk: { type: "LightColor", name: "Color", tempRange: [2000, 6500] },
 					transition: { type: Number, template: true, name: "Transition Time" },
 					group: { type: String, template: true, name: "HUE Light Group" },
