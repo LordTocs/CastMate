@@ -43,6 +43,7 @@
 <script>
 import { mapGetters } from "vuex";
 import Draggable from "vuedraggable";
+import { constructDefaultSchema } from '../../utils/objects';
 
 export default {
   components: { Draggable },
@@ -58,7 +59,7 @@ export default {
 
       for (let plugin of this.actionPlugins) {
         pluginLists[plugin.name] = Object.keys(plugin.actions).map(
-          (actionKey) => ({ [actionKey]: {} })
+          (actionKey) => ({ [actionKey]: constructDefaultSchema(plugin.actions[actionKey].data) })
         );
       }
 
