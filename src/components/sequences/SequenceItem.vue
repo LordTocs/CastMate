@@ -3,7 +3,6 @@
     :color="actionColor"
     :class="{ expanded, shrunk: !expanded, 'sequence-item': true, selected }"
   >
-    <!--class  action-item-title-->
     <v-card-title
       v-if="actionDefinition"
       class="handle"
@@ -31,12 +30,6 @@
         />
       </v-card-text>
     </v-expand-transition>
-
-    <!--v-expand-transition>
-      <v-card-actions v-if="expanded">
-        <v-btn color="red" @click="$emit('delete')"> Delete </v-btn>
-      </v-card-actions>
-    </v-expand-transition-->
   </v-card>
 </template>
 
@@ -46,7 +39,7 @@ import ActionEditor from "../actions/ActionEditor.vue";
 import DataView from "../data/DataView.vue";
 export default {
   props: {
-    value: {},
+    value: { type: Object, required: true },
     selected: { type: Boolean, default: () => false }
   },
   components: { ActionEditor, DataView },
