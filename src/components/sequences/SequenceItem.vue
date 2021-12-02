@@ -22,7 +22,12 @@
       </v-card-subtitle>
     </v-expand-transition>
     <v-expand-transition>
-      <v-card-text v-if="expanded" class="grey darken-4" @click.stop="">
+      <v-card-text
+        v-if="expanded"
+        class="grey darken-4"
+        @click.stop=""
+        @mousedown.stop=""
+      >
         <action-editor
           :actionKey="actionKey"
           :value="actionData"
@@ -40,7 +45,7 @@ import DataView from "../data/DataView.vue";
 export default {
   props: {
     value: { type: Object, required: true },
-    selected: { type: Boolean, default: () => false }
+    selected: { type: Boolean, default: () => false },
   },
   components: { ActionEditor, DataView },
   data() {
@@ -80,7 +85,7 @@ export default {
   /*max-width: 600px;*/
 }
 .selected {
-  border-color: #EFEFEF !important;
+  border-color: #efefef !important;
   border-width: 3px;
   border-style: solid;
 }

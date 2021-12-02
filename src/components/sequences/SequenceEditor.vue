@@ -77,6 +77,7 @@ export default {
       return {
         on: {
           inputChanged: this.changed,
+          start: this.onDragStart,
         },
         attrs: {
           /*dense: true,
@@ -112,14 +113,6 @@ export default {
     testSequence() {
       ipcRenderer.invoke("pushToQueue", this.value);
     },
-    /*rectOverlap(r1, r2) {
-      return !(
-        r1.left > r2.right ||
-        r2.right < r1.left ||
-        r1.top > r2.bottom ||
-        r2.bottom < r1.top
-      );
-    },*/
     rectOverlap(r1, r2) {
       return (
         r1.left < r2.right &&
@@ -127,6 +120,9 @@ export default {
         r1.top < r2.bottom &&
         r1.bottom > r2.top
       );
+    },
+    onDragStart() {
+      this.abandonDrag();
     },
     doDrag() {
       const areaRect = this.$refs.dragArea.getBoundingClientRect();
@@ -139,8 +135,6 @@ export default {
 
       const newSelection = [];
 
-      console.log(dragRect);
-
       for (let itemId in this.$refs.sequenceItems) {
         const item = this.$refs.sequenceItems[itemId];
         const itemRect = item.getBoundingClientRect
@@ -149,13 +143,9 @@ export default {
 
         if (this.rectOverlap(dragRect, itemRect)) {
           newSelection.push(Number(itemId));
-          console.log(itemRect);
         }
       }
 
-      if (newSelection.length > 0) {
-        console.log(newSelection);
-      }
       this.selected = newSelection;
     },
     startDrag(e) {
@@ -190,6 +180,10 @@ export default {
 
       this.doDrag();
 
+      this.abandonDrag();
+    },
+    abandonDrag() {
+      this.dragBox.dragging = false;
       this.dragBox.startX = 0;
       this.dragBox.startY = 0;
       this.dragBox.endX = 0;
