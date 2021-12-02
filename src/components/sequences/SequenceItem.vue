@@ -100,5 +100,7 @@ export default {
 .sequence-item {
   margin-bottom: 16px;
   margin-top: 16px;
+  border-width: 3px;
+  border-style: solid;
 }
 </style>

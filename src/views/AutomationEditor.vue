@@ -10,7 +10,6 @@
             <v-btn @click="saveAutomation"> Save </v-btn>
           </v-card-actions>
         </v-card>
-        <div style="height: 16px" />
         <sequence-editor
           v-if="automation"
           v-model="automation.actions"
