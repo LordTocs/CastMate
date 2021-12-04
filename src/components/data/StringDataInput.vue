@@ -3,7 +3,7 @@
     :value="value"
     @input="(v) => $emit('input', v)"
     v-if="!schema.enum"
-    :label="schema.name || label"
+    :label="schema.name || dataName"
   />
   <v-autocomplete
     :value="value"

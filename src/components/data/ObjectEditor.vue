@@ -1,14 +1,12 @@
 <template>
-  <div class="object-row">
-    <v-row v-for="propertyKey in Object.keys(schema)" :key="propertyKey">
-      <v-col>
-        <data-input
-          :schema="schema[propertyKey]"
-          :value="value ? value[propertyKey] : null"
-          @input="(v) => updateObject(propertyKey, v)"
-        />
-      </v-col>
-    </v-row>
+  <div>
+    <data-input
+      v-for="propertyKey in Object.keys(schema)"
+      :key="propertyKey"
+      :schema="schema[propertyKey]"
+      :value="value ? value[propertyKey] : null"
+      @input="(v) => updateObject(propertyKey, v)"
+    />
   </div>
 </template>
 

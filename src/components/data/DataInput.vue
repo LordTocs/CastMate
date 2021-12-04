@@ -5,13 +5,15 @@
     @input="(v) => $emit('input', v)"
     v-if="schema.type == 'Object' && schema.properties"
   />
-  <div class="input-row" v-else>
+  <div class="d-flex" v-else>
+    <!--div class="d-flex"-->
     <number-input
       :value="value"
       @input="(v) => $emit('input', v)"
       v-if="schema.type == 'Number' && !schema.slider"
       :allowTemplate="!!schema.template"
       :label="schema.name || label"
+      class="pt-5"
     />
     <v-slider
       v-else-if="schema.type == 'Number' && schema.slider"
@@ -63,7 +65,9 @@
       v-else-if="schema.type == 'LightColor'"
       :schema="schema"
     />
-    <v-btn v-if="!schema.required" @click="(v) => $emit('input', undefined)"> Reset </v-btn>
+    <v-btn v-if="!schema.required" @click="(v) => $emit('input', undefined)">
+      Reset
+    </v-btn>
   </div>
 </template>
 

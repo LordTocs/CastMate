@@ -1,5 +1,11 @@
 <template>
-  <div class="drag-area" ref="dragArea" @mousedown="startDrag">
+  <div
+    class="drag-area"
+    ref="dragArea"
+    @mousedown="startDrag"
+    @keyup.delete.self="doDelete"
+    tabindex="0"
+  >
     <div
       v-if="dragBox.dragging"
       ref="selectRect"
@@ -122,6 +128,7 @@ export default {
       );
     },
     onDragStart() {
+      this.selected = [];
       this.abandonDrag();
     },
     doDrag() {
@@ -174,6 +181,7 @@ export default {
       this.doDrag();
     },
     stopDrag(e) {
+      if (!this.dragBox.dragging) return;
       let containerRect = this.$refs.dragArea.getBoundingClientRect();
       const x = e.clientX - containerRect.left;
       const y = e.clientY - containerRect.top;
@@ -191,6 +199,23 @@ export default {
       this.dragBox.dragging = false;
 
       document.removeEventListener("mousemove", this.drag);
+    },
+    doDelete() {
+      if (this.selected.length == 0) {
+        return;
+      }
+
+      let newValue = [...this.value];
+
+      let removed = 0;
+      for (let idx of this.selected) {
+        newValue.splice(idx - removed, 1);
+        removed += 1;
+      }
+
+      this.$emit("input", newValue);
+
+      this.selected = [];
     },
   },
   mounted() {
@@ -213,6 +238,10 @@ export default {
   display: flex;
   flex-direction: column;
   position: relative;
+}
+
+.drag-area:focus {
+  outline: none !important;
 }
 
 .select-rect {
