@@ -5,6 +5,9 @@
     @mousedown="startDrag"
     @keyup.delete.self="doDelete"
     tabindex="0"
+    @copy="copy"
+    @paste="paste"
+    @cut="cut"
   >
     <div
       v-if="dragBox.dragging"
@@ -35,6 +38,8 @@
         @input="(v) => updateAction(i, v)"
         @delete="deleteAction(i)"
       />
+      <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
+      <div slot="footer" style="font-size: 0">...</div>
     </draggable>
   </div>
 </template>
@@ -43,6 +48,7 @@
 import SequenceItem from "./SequenceItem.vue";
 import Draggable from "vuedraggable";
 import { ipcRenderer } from "electron";
+import _cloneDeep from "lodash/cloneDeep";
 export default {
   components: { SequenceItem, Draggable },
   props: {
@@ -200,6 +206,60 @@ export default {
 
       document.removeEventListener("mousemove", this.drag);
     },
+    copy(event) {
+      console.log("Copy!");
+
+      if (this.selected.length == 0) return;
+
+      const clipData = [];
+
+      for (let idx of this.selected) {
+        clipData.push(_cloneDeep(this.value[idx]));
+      }
+
+      event.clipboardData.setData("application/json", JSON.stringify(clipData));
+      event.preventDefault();
+    },
+    paste(event) {
+      console.log("Paste!");
+
+      let paste = (event.clipboardData || window.clipboardData).getData(
+        "application/json"
+      );
+
+      try {
+        const pasteData = JSON.parse(paste);
+
+        if (!(pasteData instanceof Array)) return;
+
+        //TODO: Validate JSON
+
+        const newValue = [...this.value];
+
+        let insertIdx = newValue.length;
+        //If we have a current selection, overwrite it.
+        if (this.selected.length != 0) {
+          insertIdx = this.selected[0];
+
+          let removed = 0;
+          for (let idx of this.selected) {
+            newValue.splice(idx - removed, 1);
+            removed += 1;
+          }
+        }
+
+        newValue.splice(insertIdx, 0, ...pasteData);
+        this.$emit("input", newValue);
+      } catch {
+        console.log("error pasting");
+      } finally {
+        event.preventDefault();
+      }
+    },
+    cut(event) {
+      this.copy(event);
+      this.doDelete();
+    },
     doDelete() {
       if (this.selected.length == 0) {
         return;
@@ -217,14 +277,23 @@ export default {
 
       this.selected = [];
     },
+    clearSelection() {
+      this.selected = [];
+    },
   },
   mounted() {
     document.addEventListener("mouseup", this.stopDrag);
     //document.addEventListener("touchend", this.stopDrag);
+
+    //this.$refs.dragArea.addEventListener("copy", this.copy);
+
+    //console.log("Bound copy event!");
   },
   destroyed() {
     document.removeEventListener("mouseup", this.stopDrag);
     //document.removeEventListener("touchend", this.stopDrag);
+
+    //this.$refs.dragArea.removeEventListener("copy", this.copy);
   },
 };
 </script>

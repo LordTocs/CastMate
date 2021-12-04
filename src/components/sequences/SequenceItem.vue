@@ -3,22 +3,24 @@
     :color="actionColor"
     :class="{ expanded, shrunk: !expanded, 'sequence-item': true, selected }"
   >
+    <div style="font-size: 0; user-select: auto">...</div>
     <v-card-title
       v-if="actionDefinition"
       class="handle"
-      @click="expanded = !expanded"
+      @click.stop="toggleExpand"
     >
       <v-icon large left> {{ actionDefinition.icon }} </v-icon>
       {{ actionDefinition.name }}
     </v-card-title>
     <v-expand-transition>
-      <v-card-subtitle class="handle" @click="expanded = !expanded">
+      <v-card-subtitle class="handle" @click.stop="toggleExpand">
         <data-view
           class="data-preview"
           :value="actionData"
           :schema="actionDefinition.data"
           v-if="!expanded"
         />
+        <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
       </v-card-subtitle>
     </v-expand-transition>
     <v-expand-transition>
@@ -75,6 +77,10 @@ export default {
       newValue[key] = value;
 
       this.$emit("input", newValue);
+    },
+    toggleExpand() {
+      this.expanded = !this.expanded;
+      this.$emit("expanded", this.expanded);
     },
   },
 };

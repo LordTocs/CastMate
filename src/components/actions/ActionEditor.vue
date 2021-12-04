@@ -5,14 +5,6 @@
     :schema="actions[actionKey].data"
     :label="actions[actionKey].name || actionKey"
   />
-  <!--
-  <div class="action-card">
-    <div class="action-card-body" v-if="actions[actionKey]">
-      
-    </div>
-    <div v-else>Unknown Action Key: {{ actionKey }}</div>
-  </div>
-  -->
 </template>
 
 <script>
