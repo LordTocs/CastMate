@@ -31,6 +31,10 @@ export default {
     async filterAutomations(name) {
       const automations = await this.getAutomations();
 
+      if (!name) {
+        return automations;
+      }
+
       automations.filter((a) => a.toLowerCase().includes(name.toLowerCase()));
 
       this.automations = automations.map((a) => ({
