@@ -3,23 +3,34 @@
     <div class="editor-area">
       <div class="editor-area-scrollable">
         <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                color="primary"
-                fab
-                x-large
-                dark
-                class="mx-4 align-self-center"
-                @click="preview"
-                v-bind="attrs"
-                v-on="on"
-              >
-                <v-icon>mdi-play</v-icon>
-              </v-btn>
-            </template>
-            <span>Preview Automation</span>
-          </v-tooltip>
+          <div class="d-flex flex-column mx-4">
+            <v-btn
+              color="primary"
+              fab
+              dark
+              class="my-1 align-self-center"
+              @click="saveAutomation"
+              :disabled="!dirty"
+            >
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="primary"
+                  fab
+                  dark
+                  class="my-1 align-self-center"
+                  @click="preview"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon>mdi-play</v-icon>
+                </v-btn>
+              </template>
+              <span>Preview Automation</span>
+            </v-tooltip>
+          </div>
 
           <div class="flex-grow-1">
             <h1>{{ automationName }}</h1>
@@ -29,10 +40,6 @@
               label="Description"
             />
           </div>
-          <!--v-card-actions>
-            <v-spacer />
-            <v-btn @click="saveAutomation"> Save </v-btn>
-          </v-card-actions-->
         </v-sheet>
         <sequence-editor
           v-if="automation"
