@@ -2,14 +2,38 @@
   <div class="editor-base">
     <div class="editor-area">
       <div class="editor-area-scrollable">
-        <v-card>
-          <v-card-title>
-            {{ automationName }}
-          </v-card-title>
-          <v-card-actions>
+        <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="primary"
+                fab
+                x-large
+                dark
+                class="mx-4 align-self-center"
+                @click="preview"
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+            </template>
+            <span>Preview Automation</span>
+          </v-tooltip>
+
+          <div class="flex-grow-1">
+            <h1>{{ automationName }}</h1>
+            <v-text-field
+              v-if="automation"
+              v-model="automation.description"
+              label="Description"
+            />
+          </div>
+          <!--v-card-actions>
+            <v-spacer />
             <v-btn @click="saveAutomation"> Save </v-btn>
-          </v-card-actions>
-        </v-card>
+          </v-card-actions-->
+        </v-sheet>
         <sequence-editor
           v-if="automation"
           v-model="automation.actions"
@@ -20,6 +44,7 @@
     <div class="editor-toolbox">
       <action-toolbox />
     </div>
+    <confirm-dialog ref="saveDlg" />
   </div>
 </template>
 
@@ -30,15 +55,19 @@ import SequenceEditor from "../components/sequences/SequenceEditor.vue";
 import fs from "fs";
 import path from "path";
 import YAML from "yaml";
+import { mapIpcs } from "../utils/ipcMap";
+import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 
 export default {
   components: {
     ActionToolbox,
     SequenceEditor,
+    ConfirmDialog,
   },
   data() {
     return {
       automation: null,
+      dirty: false,
     };
   },
   computed: {
@@ -54,17 +83,48 @@ export default {
     },
   },
   methods: {
+    ...mapIpcs("core", ["runActions"]),
     async saveAutomation() {
       await fs.promises.writeFile(
         this.filePath,
         YAML.stringify(this.automation)
       );
+      this.dirty = false;
+    },
+    async preview() {
+      await this.runActions(this.automation.actions);
     },
   },
   async mounted() {
     let fileData = await fs.promises.readFile(this.filePath, "utf-8");
 
     this.automation = YAML.parse(fileData);
+  },
+  watch: {
+    automation: {
+      deep: true,
+      handler(newAutomation, oldAutomation) {
+        if (oldAutomation != null) {
+          this.dirty = true;
+        }
+      },
+    },
+  },
+  async beforeRouteLeave(to, from, next) {
+    if (!this.dirty) {
+      return next();
+    }
+    if (
+      await this.$refs.saveDlg.open(
+        "Unsaved Changes",
+        "Do you want to save your changes?",
+        "Save Changes",
+        "Discard Changes"
+      )
+    ) {
+      await this.saveAutomation();
+    }
+    return next();
   },
 };
 </script>
