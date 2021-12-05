@@ -40,7 +40,7 @@ module.exports = {
 			this.state.csgoKills = kills;
 			if (kills > 0) 
 			{
-				this.actions.trigger('csgoKill', {});
+				this.actions.trigger('csgoKill', { kills });
 			}
 		})
 
@@ -49,7 +49,7 @@ module.exports = {
 			this.state.csgoDeaths = deaths;
 			if (deaths > 0)
 			{
-				this.actions.trigger('csgoDeath', {});
+				this.actions.trigger('csgoDeath', { deaths });
 			}
 		})
 
@@ -98,36 +98,38 @@ module.exports = {
 	triggers: {
 		csgoDeath: {
 			name: "CSGO Death",
-			type: "NumberTrigger"
+			type: "NumberTrigger",
+			key: "deaths",
 		},
 		csgoKill: {
 			name: "CSGO Death",
-			type: "NumberTrigger"
+			type: "NumberTrigger",
+			key: "kills",
 		},
 		csgoBombPlant: {
 			name: "CSGO Bomb Planted",
 			description: "Triggers when a bomb is planted.",
-			type: "CommandTrigger"
+			type: "SingleTrigger"
 		},
 		csgoBombDefused: {
 			name: "CSGO Bomb Defused",
 			description: "Triggers when a bomb is defused.",
-			type: "CommandTrigger"
+			type: "SingleTrigger"
 		},
 		csgoBombExploded: {
 			name: "CSGO Bomb Exploded",
 			description: "Triggers when a bomb is exploded.",
-			type: "CommandTrigger"
+			type: "SingleTrigger"
 		},
 		csgoRoundLoss: {
 			name: "CSGO Round Loss",
 			description: "Triggers when the round is lost.",
-			type: "NumberTrigger"
+			type: "SingleTrigger"
 		},
 		csgoRoundWin: {
 			name: "CSGO Round Win",
 			description: "Triggers when the round is won.",
-			type: "NumberTrigger"
+			type: "SingleTrigger"
 		}
 	}
 }
