@@ -304,6 +304,11 @@ module.exports = {
 			{
 				this.actions.trigger("raid", { number: raidInfo.viewerCount, user: raidInfo.displayName });
 			})
+
+			this.chatClient.onCommunitySub((channel, user, subInfo) =>
+			{
+				this.actions.trigger("giftedSub", { number: subInfo.count, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
+			});
 		},
 
 		async retryWebsocketWorkaround()
@@ -383,14 +388,15 @@ module.exports = {
 				this.retryWebsocketWorkaround();
 			});
 
-			this.castMateWebsocket.on('unexpected-response', (request, response) => {
+			this.castMateWebsocket.on('unexpected-response', (request, response) =>
+			{
 				this.logger.error(`Unexpected Response!`);
 				console.log(response);
 				this.retryWebsocketWorkaround();
 				if (response.status == 200)
 				{
 					this.logger.info(`It's the mysterious 200 response!`);
-					
+
 				}
 			})
 		},
@@ -439,8 +445,9 @@ module.exports = {
 			{
 				if (message.isGift)
 				{
-					this.logger.info(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
-					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
+					/*this.logger.info(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
+					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });*/
+					return; //Handle gifted subs elsewhere
 				}
 				else
 				{
@@ -792,18 +799,27 @@ module.exports = {
 		},
 		subscribe: {
 			name: "Subscription",
-			description: "Fires for when a user subscribes.",
-			type: "NumberTrigger"
+			description: "Fires for when a user subscribes. Based on total number of months subscribed.",
+			type: "NumberTrigger",
+			numberText: "Months Subbed"
+		},
+		giftedSub: {
+			name: "Gifted Subs",
+			description: "Fires for when a user subscribes. Based on the number of subs gifted..",
+			type: "NumberTrigger",
+			numberText: "Subs Gifted"
 		},
 		bits: {
-			name: "Bits",
-			description: "Fires for when a user gives bits",
-			type: "NumberTrigger"
+			name: "Cheered",
+			description: "Fires for when a user cheers with bits",
+			type: "NumberTrigger",
+			numberText: "Bits Cheered"
 		},
 		raid: {
 			name: "Raid",
 			description: "Fires when a raid start",
-			type: "NumberTrigger"
+			type: "NumberTrigger",
+			numberText: "Raiders"
 		}
 	},
 	actions: {

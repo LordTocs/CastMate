@@ -34,7 +34,8 @@ module.exports = {
 		kofiDonation: {
 			name: "Kofi Donation",
 			description: "Fires when you receive a Kofi Donation",
-			type: "NumberTrigger"
+			type: "NumberTrigger",
+			numberText: "Currency Given"
 		},
 	}
 }

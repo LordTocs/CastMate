@@ -1,5 +1,23 @@
 <template>
   <v-container fluid>
+    <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
+      <div class="d-flex flex-column mx-4">
+        <v-btn
+          color="primary"
+          fab
+          dark
+          class="my-1 align-self-center"
+          @click="save"
+          :disabled="!dirty"
+        >
+          <v-icon>mdi-content-save</v-icon>
+        </v-btn>
+      </div>
+
+      <div class="flex-grow-1">
+        <h1>{{ profileName }}</h1>
+      </div>
+    </v-sheet>
     <!--v-row>
       <v-col>
         <conditions-editor v-model="profile.conditions" />

@@ -6,6 +6,13 @@
     :value="value"
     @input="(v) => $emit('input', v)"
   />
+  <number-command-trigger
+    v-else-if="trigger.type == 'NumberTrigger'"
+    :trigger="trigger"
+    :triggerKey="triggerKey"
+    :value="value"
+    @input="(v) => $emit('input', v)"
+  />
   <!--multi-command-trigger
     v-else-if="trigger.type == 'NumberTrigger'"
     :trigger="trigger"
@@ -23,15 +30,15 @@
 </template>
 
 <script>
-import MultiCommandTrigger from "./MultiCommandTrigger.vue";
+import NumberCommandTrigger from "./NumberCommandTrigger.vue";
 import SingleCommandTrigger from "./SingleCommandTrigger.vue";
 import NamedCommandTrigger from "./NamedCommandTrigger.vue";
 
 export default {
   components: {
-    MultiCommandTrigger,
     SingleCommandTrigger,
     NamedCommandTrigger,
+	NumberCommandTrigger
   },
   computed: {
     commands() {
