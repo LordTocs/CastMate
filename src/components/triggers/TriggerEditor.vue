@@ -13,32 +13,34 @@
     :value="value"
     @input="(v) => $emit('input', v)"
   />
-  <!--multi-command-trigger
-    v-else-if="trigger.type == 'NumberTrigger'"
+  <enum-command-trigger
+    v-else-if="trigger.type == 'EnumTrigger'"
     :trigger="trigger"
-	:triggerKey="triggerKey"
+    :triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
   />
   <single-command-trigger
     v-else-if="trigger.type == 'SingleTrigger'"
     :trigger="trigger"
-	:triggerKey="triggerKey"
+    :triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
-  /-->
+  />
 </template>
 
 <script>
 import NumberCommandTrigger from "./NumberCommandTrigger.vue";
 import SingleCommandTrigger from "./SingleCommandTrigger.vue";
 import NamedCommandTrigger from "./NamedCommandTrigger.vue";
+import EnumCommandTrigger from "./EnumCommandTrigger.vue";
 
 export default {
   components: {
     SingleCommandTrigger,
     NamedCommandTrigger,
-	NumberCommandTrigger
+    NumberCommandTrigger,
+    EnumCommandTrigger,
   },
   computed: {
     commands() {

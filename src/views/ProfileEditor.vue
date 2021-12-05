@@ -81,6 +81,7 @@ export default {
       profile: {},
       saveSnack: false,
       fab: false,
+      dirty: false,
     };
   },
   methods: {

@@ -790,7 +790,11 @@ module.exports = {
 		redemption: {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
-			type: "CommandTrigger"
+			type: "EnumTrigger",
+			async enum()
+			{
+				return Object.keys(this.rewardsDefinitions.data || {});
+			}
 		},
 		follow: {
 			name: "Follow",

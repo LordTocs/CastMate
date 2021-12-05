@@ -6,6 +6,8 @@ const logger = require('../utils/logger');
 const { NumberTriggerHandler } = require("../actions/number-trigger-handler");
 const { CommandTriggerHandler } = require("../actions/command-trigger-handler");
 const { SingleTriggerHandler } = require("../actions/single-trigger-handler");
+
+const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
 class Plugin
 {
 	constructor(config)
@@ -80,6 +82,29 @@ class Plugin
 			else if (triggerSpec.type == 'SingleTrigger')
 			{
 				this.triggers[triggerName].handler = new SingleTriggerHandler(triggerName)
+			}
+			else if (triggerSpec.type == 'EnumTrigger')
+			{
+				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'enum')
+
+				if (triggerSpec.enum instanceof Function)
+				{
+					this.triggers[triggerName].enum = triggerSpec.enum.bind(this.pluginObj);
+
+					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, (...args) =>
+					{
+						return this.triggers[triggerName].enum(...args);
+					});
+				}
+				else if (triggerSpec.enum instanceof AsyncFunction)
+				{
+					this.triggers[triggerName].enum = triggerSpec.enum.bind(this.pluginObj);
+
+					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, async (...args) =>
+					{
+						return await this.triggers[triggerName].enum(...args);
+					});
+				}
 			}
 		}
 
@@ -221,7 +246,19 @@ class Plugin
 			secrets[secretsKey].type = secrets[secretsKey].type.name;
 		}
 
-		//Todo: State.
+		//triggers
+
+		let triggers = {};
+
+		for (let triggerName in this.triggers)
+		{
+			triggers[triggerName] = { ...this.triggers[triggerName] }
+
+			if (triggers[triggerName].enum instanceof Function || triggers[triggerName].enum instanceof AsyncFunction)
+			{
+				triggers[triggerName].enum = `${this.name}_trigger_${triggerName}_enum`;
+			}
+		}
 
 		return {
 			name: this.name,
@@ -229,7 +266,7 @@ class Plugin
 			icon: this.icon,
 			settings,
 			secrets,
-			triggers: this.triggers,
+			triggers,
 			actions,
 			ipcMethods: Object.keys(this.ipcMethods),
 			...this.settingsView ? { settingsView: this.settingsView } : {}

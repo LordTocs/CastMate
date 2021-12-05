@@ -7,6 +7,7 @@
       :search-input.sync="search"
       :items="automations"
       label="Automation"
+      clearable
     />
     <v-btn
       fab
