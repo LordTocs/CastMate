@@ -10,7 +10,8 @@ module.exports = {
 		this.gamestateIntegration = new CSGameState({ createServer: false });
 		this.installWebhook()
 
-		this.gamestateIntegration.on('player.team', (team) => {
+		this.gamestateIntegration.on('player.team', (team) =>
+		{
 			this.state.csgoTeam = team;
 		})
 
@@ -58,7 +59,8 @@ module.exports = {
 			this.state.csgoAssists = assists;
 		})
 
-		this.gamestateIntegration.on('round.win_team', (winTeam) => {
+		this.gamestateIntegration.on('round.win_team', (winTeam) =>
+		{
 
 			if (winTeam == this.state.csgoTeam)
 			{
@@ -99,11 +101,13 @@ module.exports = {
 		csgoDeath: {
 			name: "CSGO Death",
 			type: "NumberTrigger",
+			numberText: "Deaths",
 			key: "deaths",
 		},
 		csgoKill: {
 			name: "CSGO Death",
 			type: "NumberTrigger",
+			numberText: "Kills",
 			key: "kills",
 		},
 		csgoBombPlant: {
