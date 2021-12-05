@@ -863,11 +863,17 @@ module.exports = {
 			icon: "mdi-advertisements",
 			color: "#5E5172",
 			data: {
-				type: Number,
+				type: String,
+				enum: ["30 Seconds", "60 Seconds", "90 Seconds"]
 			},
 			async handler(duration)
 			{
-				await this.channelTwitchClient.helix.channels.startChannelCommercial(this.channelId, duration);
+				const lookup = {
+					"30 Seconds": 30,
+					"60 Seconds": 60,
+					"90 Seconds": 90,
+				}
+				await this.channelTwitchClient.helix.channels.startChannelCommercial(this.channelId, lookup[duration]);
 			}
 		},
 		streamMarker: {
