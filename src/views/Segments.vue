@@ -28,15 +28,11 @@
               :value="segment.tags"
               @change="(t) => updateTags(i, t)"
             />
-            On Start
-            <sequence-editor
-              :value="segment.sequence"
-              @input="(a) => updateSequence(i, a)"
+            <automation-selector
+              :value="segment.automation"
+              @change="(a) => updateAutomation(i, a)"
             />
           </v-card-text>
-          <v-card-actions>
-            <add-action-popover @select="(v) => addAction(i, v)" />
-          </v-card-actions>
           <v-card-actions>
             <v-btn color="primary" @click="activate(i)">
               <v-icon> mdi-play </v-icon> Activate
@@ -67,22 +63,24 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
-import SequenceEditor from "../components/sequences/SequenceEditor.vue";
-import AddActionPopover from "../components/actions/AddActionPopover.vue";
+import AutomationSelector from "../components/automations/AutomationSelector.vue";
 import CategorySearch from "../components/data/CategorySearch.vue";
 import TagSelect from "../components/data/TagSelect.vue";
 import { mapIpcs } from "../utils/ipcMap";
 
-import { ipcRenderer } from "electron";
-
 export default {
-  components: { SequenceEditor, AddActionPopover, CategorySearch, TagSelect },
+  components: {
+    AutomationSelector,
+    CategorySearch,
+    TagSelect,
+  },
   computed: {
     ...mapGetters("segments", ["segments"]),
   },
   methods: {
     ...mapActions("segments", ["updateSegment", "addSegment", "removeSegment"]),
     ...mapIpcs("twitch", ["updateStreamInfo"]),
+    ...mapIpcs("core", ["runAutomation"]),
     async activate(index) {
       if (!this.segments[index]) return;
 
@@ -90,8 +88,8 @@ export default {
 
       this.updateStreamInfo(segment);
 
-      if (segment.sequence.length > 0) {
-        ipcRenderer.invoke("pushToQueue", segment.sequence);
+      if (segment.automation) {
+        this.runAutomation(segment.automation);
       }
     },
     async updateTitle(index, title) {
@@ -102,8 +100,8 @@ export default {
       const segment = { ...this.segments[index], goLive };
       await this.updateSegment({ index, segment });
     },
-    async updateSequence(index, sequence) {
-      const segment = { ...this.segments[index], sequence };
+    async updateAutomation(index, automation) {
+      const segment = { ...this.segments[index], automation };
       await this.updateSegment({ index, segment });
     },
     async updateCategory(index, category) {
@@ -112,11 +110,6 @@ export default {
     },
     async updateTags(index, tags) {
       const segment = { ...this.segments[index], tags };
-      await this.updateSegment({ index, segment });
-    },
-    async addAction(index, action) {
-      const segment = { ...this.segments[index] };
-      segment.sequence.push({ [action]: null });
       await this.updateSegment({ index, segment });
     },
   },

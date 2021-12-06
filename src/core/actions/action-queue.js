@@ -63,9 +63,7 @@ class ActionQueue
 
 		ipcMain.handle('core_runAutomation', async (event, automationName, context) =>
 		{
-			const automation = this.automations.get(automationName);
-
-			this.startAutomation(automation, context)
+			this.startAutomation(automationName, context)
 		})
 	}
 
