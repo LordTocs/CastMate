@@ -30,7 +30,7 @@
             />
             <automation-selector
               :value="segment.automation"
-              @change="(a) => updateAutomation(i, a)"
+              @input="(a) => updateAutomation(i, a)"
             />
           </v-card-text>
           <v-card-actions>

@@ -2,11 +2,11 @@
   <v-card-actions>
     <v-combobox
       :value="value"
-      @change="(v) => $emit('change', v)"
+      @change="(v) => $emit('input', v)"
       :loading="isLoading"
       :search-input.sync="search"
       :items="automations"
-      label="Automation"
+      :label="label"
       clearable
     />
     <v-btn
@@ -48,6 +48,7 @@ import NamedItemModal from "../dialogs/NamedItemModal.vue";
 export default {
   props: {
     value: {},
+	label: { type: String, default: () => "Automation"}
   },
   components: {
     NamedItemModal,

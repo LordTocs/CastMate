@@ -33,7 +33,7 @@
       <template v-slot:item.automation="props">
         <automation-selector
           :value="props.item.automation"
-          @change="(v) => changeAutomation(props.item.key, v)"
+          @input="(v) => changeAutomation(props.item.key, v)"
         />
       </template>
 
