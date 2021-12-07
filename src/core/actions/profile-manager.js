@@ -19,6 +19,9 @@ class ProfileManager
 
 		this.conditions = {};
 
+		this.activeProfiles = [];
+		this.inactiveProfiles = [];
+
 	}
 
 	async load()
@@ -123,12 +126,41 @@ class ProfileManager
 		//Tell the action queue what our merged triggers are.
 		this.actions.setTriggers(this.triggers);
 
+		for (let p of this.activeProfiles)
+		{
+			if (inactiveProfiles.includes(p))
+			{
+				//Active profile is now inactive.
+				if (p.onDeactivate)
+				{
+					this.actions.startAutomation(p.onDeactivate, {});
+				}
+			}
+		}
+
+		for (let p of this.inactiveProfiles)
+		{
+			if (activeProfiles.includes(p))
+			{
+				//Inactive profile is now active
+				if (p.onDeactivate)
+				{
+					this.actions.startAutomation(p.onActivate, {});
+				}
+			}
+		}
+
+		this.inactiveProfiles = inactiveProfiles;
+		this.activeProfiles = activeProfiles;
+
 		//Notify any plugins of profile changes.
 		for (let plugin of this.plugins.plugins)
 		{
 			if (plugin.onProfilesChanged)
 				plugin.onProfilesChanged(activeProfiles, inactiveProfiles);
 		}
+
+
 	}
 }
 
