@@ -31,6 +31,7 @@
             <automation-selector
               :value="segment.automation"
               @input="(a) => updateAutomation(i, a)"
+              label="Segment Start Automation"
             />
           </v-card-text>
           <v-card-actions>
