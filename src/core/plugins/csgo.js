@@ -105,7 +105,7 @@ module.exports = {
 			key: "deaths",
 		},
 		csgoKill: {
-			name: "CSGO Death",
+			name: "CSGO Kill",
 			type: "NumberTrigger",
 			numberText: "Kills",
 			key: "kills",
