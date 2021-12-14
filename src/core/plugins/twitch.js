@@ -752,11 +752,6 @@ module.exports = {
 			name: "Bot Name",
 			description: "The chat bot's Name"
 		},
-		twitchCategory: {
-			type: String,
-			name: "Twitch Category",
-			description: "Change profiles based on the stream's twitch category"
-		},
 		subscribers: {
 			type: Number,
 			name: "Twitch Subscribers",
