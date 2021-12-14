@@ -2,39 +2,27 @@
 const { ipcRenderer } = require("electron");
 import Vue from 'vue';
 
-class IPCClient
-{
-	async getCombinedState()
-	{
-		return await ipcRenderer.invoke("getCombinedState");
-	}
-}
-
 export default {
 	namespaced: true,
-	state()
-	{
+	state() {
 		return {
 			inited: false,
 			plugins: [],
 			client: null,
 			paths: {},
 			tags: [],
-			combinedState: {}
+			stateLookup: {}
 		}
 	},
 	getters: {
 		paths: state => state.paths,
 		plugins: state => state.plugins,
 		inited: state => state.inited,
-		client: state => state.client,
 		tags: state => state.tags,
-		combinedState: state => state.combinedState,
-		actions: state =>
-		{
+		stateLookup: state => state.stateLookup,
+		actions: state => {
 			let result = {};
-			for (let plugin of state.plugins)
-			{
+			for (let plugin of state.plugins) {
 				Object.assign(result, plugin.actions)
 			}
 			//Special Injected Actions, these don't map to a plugin action.
@@ -65,54 +53,64 @@ export default {
 			}
 			return result;
 		},
-		triggers: state =>
-		{
+		triggers: state => {
 			let result = {};
-			for (let plugin of state.plugins)
-			{
+			for (let plugin of state.plugins) {
 				Object.assign(result, plugin.triggers)
 			}
+			return result;
+		},
+		stateSchemas: state => {
+			const result = {};
+
+			for (let plugin of state.plugins)
+			{
+				result[plugin.name] = plugin.stateSchemas;
+			}
+
 			return result;
 		}
 	},
 	mutations: {
-		setInited(state)
-		{
+		setInited(state) {
 			state.inited = true;
 		},
-		setPlugins(state, plugins)
-		{
+		setPlugins(state, plugins) {
 			state.plugins = plugins;
 		},
-		setClient(state, client)
-		{
-			state.client = client;
-		},
-		setPaths(state, paths)
-		{
+		setPaths(state, paths) {
 			state.paths = paths
 		},
-		setTags(state, tags)
-		{
+		setTags(state, tags) {
 			state.tags = tags;
 		},
-		applyState(state, update)
-		{
-			for (let key in update)
-			{
-				Vue.set(state.combinedState, key, update[key]);
+		applyState(state, update) {
+			for (let pluginKey in update) {
+				if (!state.stateLookup[pluginKey]) {
+					Vue.set(state.stateLookup, pluginKey, {});
+				}
+				for (let stateKey in update[pluginKey]) {
+					Vue.set(state.stateLookup[pluginKey], stateKey, update[pluginKey][stateKey]);
+				}
 			}
 		},
-		removeState(state, varName)
-		{
-			Vue.delete(state.combinedState, varName);
+		removeState(state, removal) {
+			for (let pluginKey in removal)
+			{
+				if (!this.stateLookup[pluginKey])
+					continue;
+				
+				Vue.delete(state.stateLookup[pluginKey], removal[pluginKey]);
+
+				if (Object.keys(state.stateLookup[pluginKey]) == 0)
+				{
+					Vue.delete(state.stateLookup, pluginKey);
+				}
+			}
 		}
 	},
 	actions: {
-		async init({ commit })
-		{
-			commit('setClient', new IPCClient());
-
+		async init({ commit }) {
 			await ipcRenderer.invoke("waitForInit");
 			commit('setInited');
 
@@ -125,14 +123,13 @@ export default {
 			const tags = await ipcRenderer.invoke('twitch_getAllTags');
 			commit('setTags', tags);
 
-			commit('applyState', await ipcRenderer.invoke("getCombinedState"));
+			commit('applyState', await ipcRenderer.invoke("getStateLookup"));
 		},
-		stateUpdate({ commit }, update)
-		{
+		stateUpdate({ commit }, update) {
+			console.log("applyState", update);
 			commit('applyState', update);
 		},
-		removeState({ commit }, varName)
-		{
+		removeState({ commit }, varName) {
 			commit('removeState', varName);
 		}
 	}

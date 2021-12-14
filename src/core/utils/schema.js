@@ -1,5 +1,6 @@
 const { ipcMain } = require("electron");
 const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
+const _cloneDeep = require('lodash/cloneDeep');
 
 export function cleanSchemaForIPC(rootName, schema)
 {
@@ -79,5 +80,31 @@ export function makeIPCEnumFunctions(thisObj, rootName, schema)
 		createIPCFunction(thisObj, rootName + "_enumQuery", schema.enumQuery);
 	}
 
+
+}
+
+export function constructDefaultSchema(schema)
+{
+	if (schema.type == "Object")
+	{
+		const result = {};
+		for (let prop in schema.properties)
+		{
+			const value = constructDefaultSchema(schema.properties[prop])
+			if (value !== null)
+			{
+				result[prop] = value;
+			}
+		}
+		return result;
+	}
+	else if (schema.default)
+	{
+		return _cloneDeep(schema.default)
+	}
+	else
+	{
+		return null;
+	}
 
 }

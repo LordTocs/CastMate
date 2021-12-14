@@ -1,5 +1,5 @@
 const { reactify } = require("./reactive");
-const { cleanSchemaForIPC, makeIPCEnumFunctions } = require("./schema");
+const { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } = require("./schema");
 const _ = require('lodash');
 const { ipcMain } = require("electron");
 const logger = require('../utils/logger');
@@ -152,10 +152,13 @@ class Plugin
 		this.pluginObj.logger = logger;
 
 		//Create all the state.
+		this.stateSchemas = {};
 		this.pluginObj.state = {};
 		for (let stateKey in config.state)
 		{
-			this.pluginObj.state[stateKey] = null;
+			this.stateSchemas[stateKey] = config.state[stateKey];
+			makeIPCEnumFunctions(this.pluginObj, this.name + "_state_" + stateKey, this.stateSchemas[stateKey]);
+			this.pluginObj.state[stateKey] = constructDefaultSchema(config.state[stateKey]);
 		}
 		reactify(this.pluginObj.state);
 	}
@@ -217,6 +220,12 @@ class Plugin
 	{
 		let actions = {};
 
+		const cleanStateSchemas = {};
+		for (let stateName in this.stateSchemas)
+		{
+			cleanStateSchemas[stateName] = cleanSchemaForIPC(this.name + "_state_" + stateName, this.stateSchemas[stateName])
+		}
+
 		for (let actionKey in this.actions)
 		{
 			actions[actionKey] = {
@@ -264,10 +273,12 @@ class Plugin
 			name: this.name,
 			uiName: this.uiName,
 			icon: this.icon,
+			color: this.color,
 			settings,
 			secrets,
 			triggers,
 			actions,
+			stateSchemas: cleanStateSchemas,
 			ipcMethods: Object.keys(this.ipcMethods),
 			...this.settingsView ? { settingsView: this.settingsView } : {}
 		}

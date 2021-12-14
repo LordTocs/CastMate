@@ -9,7 +9,6 @@ export default {
 	{
 		return {
 			variables: {},
-			variableValues: {},
 		}
 	},
 	getters: {

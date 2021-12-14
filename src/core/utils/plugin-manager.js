@@ -4,10 +4,8 @@ const { reactiveCopy, Watcher, deleteReactiveProperty } = require('./reactive');
 const { ipcMain } = require("electron");
 const _ = require('lodash');
 
-class PluginManager
-{
-	async load(ipcSender)
-	{
+class PluginManager {
+	async load(ipcSender) {
 		let pluginFiles = [
 			//"inputs",
 			"hue",
@@ -29,100 +27,91 @@ class PluginManager
 
 		this.combinedState = {};
 
-		for (let plugin of this.plugins)
-		{
+		for (let plugin of this.plugins) {
 			reactiveCopy(this.combinedState, plugin.pluginObj.state);
 		}
 
+		this.stateLookup = {};
+
+		for (let plugin of this.plugins) {
+			this.stateLookup[plugin.name] = {};
+			reactiveCopy(this.stateLookup[plugin.name], plugin.pluginObj.state)
+		}
+
 		this.combinedTemplateFunctions = {}
-		for (let plugin of this.plugins)
-		{
+		for (let plugin of this.plugins) {
 			Object.assign(this.combinedTemplateFunctions, plugin.templateFunctions);
 		}
 
 		this.ipcSender = ipcSender;
 	}
 
-	setupReactivity()
-	{
-		for (let stateKey in this.combinedState)
-		{
-			let watcher = new Watcher(() =>
-			{
-				this.webServices.websocketServer.broadcast(JSON.stringify({
-					state: {
-						[stateKey]: this.combinedState[stateKey]
+	createStateWatcher(pluginName, stateKey, reactiveObj) {
+		const watcher = new Watcher(() => {
+			this.webServices.websocketServer.broadcast(JSON.stringify({
+				state: {
+					[pluginName]: {
+						[stateKey]: reactiveObj[stateKey]
 					}
-				}))
-
-				if (this.ipcSender)
-				{
-					this.ipcSender.send('state-update', { [stateKey]: this.combinedState[stateKey] });
 				}
+			}))
 
-			}, { fireImmediately: false })
+			if (this.ipcSender) {
+				this.ipcSender.send('state-update', {
+					[pluginName]: {
+						[stateKey]: reactiveObj[stateKey]
+					}
+				});
+			}
 
+		}, { fireImmediately: false })
 
-			manualDependency(this.combinedState, watcher, stateKey);
+		manualDependency(reactiveObj, watcher, stateKey);
+	}
+
+	setupReactivity() {
+		for (let pluginName in this.stateLookup) {
+			for (let stateKey in this.stateLookup[pluginName]) {
+				this.createStateWatcher(pluginName, stateKey, this.stateLookup[pluginName])
+			}
 		}
 	}
 
-	updateReactivity(pluginObj)
-	{
-		reactiveCopy(this.combinedState, pluginObj.state, (newKey) =>
-		{
-			let watcher = new Watcher(() =>
-			{
-				this.webServices.websocketServer.broadcast(JSON.stringify({
-					state: {
-						[newKey]: this.combinedState[newKey]
+	updateReactivity(pluginObj) {
+		reactiveCopy(this.stateLookup[pluginObj.name], pluginObj.state, (newKey) => {
+			this.createStateWatcher(pluginObj.name, newKey, this.stateLookup[pluginObj.name])
+
+			if (this.ipcSender) {
+				this.ipcSender.send('state-update', {
+					[pluginObj.name]: {
+						[stateKey]: this.stateLookup[pluginObj.name][stateKey]
 					}
-				}))
-
-				if (this.ipcSender)
-				{
-					this.ipcSender.send('state-update', { [newKey]: this.combinedState[newKey] });
-				}
-			}, { fireImmediately: false })
-
-			manualDependency(this.combinedState, watcher, newKey);
-
-			if (this.ipcSender)
-			{
-				this.ipcSender.send('state-update', { [newKey]: this.combinedState[newKey] });
+				});
 			}
 		});
 	}
 
-	removeReactiveValue(valueName)
-	{
-		deleteReactiveProperty(this.combinedState, valueName);
-		this.ipcSender.send('state-removal', valueName);
+	removeReactiveValue(pluginName, stateKey) {
+		this.ipcSender.send('state-removal', { [pluginName]: stateKey });
 	}
 
-	async init(settings, secrets, actions, profiles, webServices)
-	{
-		for (let plugin of this.plugins)
-		{
-			try
-			{
+	async init(settings, secrets, actions, profiles, webServices) {
+		for (let plugin of this.plugins) {
+			try {
 				await plugin.init(settings, secrets, actions, profiles, webServices, this);
 			}
-			catch (err)
-			{
+			catch (err) {
 				console.error(err);
 			}
 		}
 
-		ipcMain.handle("getPlugins", async () =>
-		{
+		ipcMain.handle("getPlugins", async () => {
 			let pluginInfo = this.plugins.map((plugin) => plugin.getUIDescription());
 			return pluginInfo;
 		})
 
-		ipcMain.handle("getCombinedState", async () => 
-		{
-			return _.cloneDeep(this.combinedState);
+		ipcMain.handle("getStateLookup", async () => {
+			return _.cloneDeep(this.stateLookup);
 		})
 	}
 }

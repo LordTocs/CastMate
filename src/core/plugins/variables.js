@@ -80,7 +80,7 @@ module.exports = {
 					//This variable is gone, destroy it.
 					this.logger.info(`Deleting Variable ${variableName}`);
 					deleteReactiveProperty(this.state, variableName);
-					this.plugins.removeReactiveValue(variableName);
+					this.plugins.removeReactiveValue(this.name, variableName);
 					needsDependencyUpdate = true;
 					delete this.variableSpecs[variableName];
 				}
