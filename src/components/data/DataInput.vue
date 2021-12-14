@@ -13,7 +13,6 @@
       v-if="schema.type == 'Number' && !schema.slider"
       :allowTemplate="!!schema.template"
       :label="schema.name || label"
-      class="pt-5"
     />
     <v-slider
       v-else-if="schema.type == 'Number' && schema.slider"
