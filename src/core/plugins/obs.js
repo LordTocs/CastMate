@@ -7,48 +7,38 @@ module.exports = {
 	uiName: "OBS",
 	icon: "mdi-broadcast",
 	color: "#607A7F",
-	async init()
-	{
+	async init() {
 		this.obs = new OBSWebSocket();
 		this.connectOBS();
-		this.obs.on("SwitchScenes", data =>
-		{
+		this.obs.on("SwitchScenes", data => {
 			this.state.obsScene = data.sceneName;
 		})
-		this.obs.on("ConnectionClosed", () =>
-		{
+		this.obs.on("ConnectionClosed", () => {
 			setTimeout(() => { this.connectOBS() }, 5000);
 		});
-		this.obs.on("StreamStarted", () =>
-		{
+		this.obs.on("StreamStarted", () => {
 			this.state.obsStreaming = true;
 		})
-		this.obs.on("StreamStopped", () =>
-		{
+		this.obs.on("StreamStopped", () => {
 			this.state.obsStreaming = false;
 		})
-		this.obs.on("StreamStatus", (data) =>
-		{
+		this.obs.on("StreamStatus", (data) => {
 			this.state.obsStreaming = data.streaming;
 			this.state.obsRecording = data.recording;
 		});
 
-		this.obs.on("RecordingStarted", () =>
-		{
+		this.obs.on("RecordingStarted", () => {
 			this.state.obsRecording = true;
 		})
-		this.obs.on("RecordingStopped", () =>
-		{
+		this.obs.on("RecordingStopped", () => {
 			this.state.obsRecording = false;
 		})
 	},
 	methods: {
-		async connectOBS()
-		{
+		async connectOBS() {
 			let port = this.settings.port || 4444;
 
-			try
-			{
+			try {
 				await this.obs.connect({
 					address: `localhost:${port}`,
 					password: this.secrets.password
@@ -60,10 +50,8 @@ module.exports = {
 				return;
 			}
 		},
-		async getAllSources()
-		{
-			try
-			{
+		async getAllSources() {
+			try {
 				const result = await this.obs.send("GetSourcesList");
 				return result.sources;
 			}
@@ -71,11 +59,23 @@ module.exports = {
 			{
 				return [];
 			}
+		},
+		async getAllScenes() {
+			try {
+				console.log("Getting Scenes");
+				const result = await this.obs.send('GetSceneList');
+				const sceneitems = result.scenes.map((s) => s.name);
+				console.log(sceneitems);
+				return sceneitems;
+			}
+			catch (err) {
+				console.error(err);
+				return [];
+			}
 		}
 	},
 	ipcMethods: {
-		async refereshAllBrowsers()
-		{
+		async refereshAllBrowsers() {
 			const sources = await this.getAllSources();
 
 			const browsers = sources.filter((s) => s.typeId == "browser_source");
@@ -93,7 +93,10 @@ module.exports = {
 		obsScene: {
 			type: String,
 			name: "Obs Scene",
-			description: "Currently Active OBS Scene"
+			description: "Currently Active OBS Scene",
+			async enum() {
+				return await this.getAllScenes();
+			}
 		},
 		obsStreaming: {
 			type: Boolean,
@@ -118,27 +121,13 @@ module.exports = {
 					scene: {
 						type: String,
 						template: true,
-						async enum()
-						{
-							try
-							{
-								console.log("Getting Scenes");
-								const result = await this.obs.send('GetSceneList');
-								const sceneitems = result.scenes.map((s) => s.name);
-								console.log(sceneitems);
-								return sceneitems;
-							}
-							catch (err)
-							{
-								console.error(err);
-								return [];
-							}
+						async enum() {
+							return await this.getAllScenes();
 						}
 					}
 				}
 			},
-			async handler(sceneData, context)
-			{
+			async handler(sceneData, context) {
 				await this.obs.send('SetCurrentScene', {
 					'scene-name': await template(sceneData.scene, context)
 				})
@@ -168,8 +157,7 @@ module.exports = {
 					}
 				}
 			},
-			async handler(filterData, context)
-			{
+			async handler(filterData, context) {
 				const sourceName = await template(filterData.sourceName, context);
 				const filterName = await template(filterData.filterName, context);
 
@@ -200,8 +188,7 @@ module.exports = {
 					},
 				}
 			},
-			async handler(textData, context)
-			{
+			async handler(textData, context) {
 				const sourceName = await template(textData.sourceName, context);
 
 				await this.obs.send('SetTextGDIPlusProperties', {
