@@ -6,6 +6,7 @@
       'all-group': isAll,
       'single-group': !isAny && !isAll,
       'my-2': true,
+      'rounded': true,
     }"
     v-if="value"
   >
@@ -39,7 +40,13 @@
         <v-icon> mdi-close </v-icon>
       </v-btn>
     </div>
-    <div class="group-content">
+    <draggable
+      :list="value.operands"
+      class="group-content"
+      handle=".boolean-handle"
+      group="boolean-expressions"
+      :component-data="getDraggableData()"
+    >
       <div v-for="(expr, i) in value.operands" :key="i">
         <boolean-group
           v-if="expr.operands"
@@ -54,13 +61,14 @@
           @delete="(v) => deleteOperand(i)"
         />
       </div>
-    </div>
+    </draggable>
   </v-sheet>
 </template>
 
 <script>
 import _cloneDeep from "lodash/cloneDeep";
 import BooleanExpression from "./BooleanExpression.vue";
+import Draggable from "vuedraggable";
 export default {
   name: "BooleanGroup",
   props: {
@@ -69,6 +77,7 @@ export default {
   },
   components: {
     BooleanExpression,
+    Draggable,
   },
   computed: {
     operations() {
@@ -109,6 +118,18 @@ export default {
       newValue.operands.splice(index, 1);
       this.$emit("input", newValue);
     },
+    dragChanged(newArray) {
+      const newValue = _cloneDeep(this.value);
+      newValue.operands = newArray;
+      this.$emit("input", newValue);
+    },
+    getDraggableData() {
+      return {
+        on: {
+          inputChanged: this.dragChanged,
+        },
+      };
+    },
   },
 };
 </script>
@@ -125,31 +146,36 @@ export default {
 }
 
 .group-handle {
-  width: 20px;
+  display: flex;
 }
 
 .group-content {
   padding-left: 20px;
   padding-right: 5px;
+  min-height: 20px;
 }
 
 .any-group {
-  border-color: green !important;
+  border-color: #7CB342 !important;
 }
 
 .all-group {
-  border-color: blue !important;
+  border-color: #0288D1 !important;
+}
+
+.single-group {
+  border-color: #393939;
 }
 
 .any-group > .group-header {
-  background-color: green;
+  background-color: #7CB342;
 }
 
 .all-group > .group-header {
-  background-color: blue;
+  background-color: #0288D1;
 }
 
 .single-group > .group-header {
-  background-color: #2f2f2f;
+  background-color: #393939;
 }
 </style>
