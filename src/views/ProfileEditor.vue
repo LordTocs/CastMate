@@ -20,20 +20,32 @@
     <v-container fluid>
       <v-row>
         <v-col>
-          <v-card>
+          <v-card v-if="profile">
+            <v-card-title> Profile Activation </v-card-title>
+            <v-card-subtitle>
+              These conditions dictate whether this profile is active.
+            </v-card-subtitle>
             <v-card-text>
-              <automation-selector v-model="profile.onActivate" label="Activation Automation" />
-              <automation-selector v-model="profile.onDeactivate" label="Deactivation Automation" />
+              <boolean-group v-model="profile.conditions" :hasHandle="false" />
+            </v-card-text>
+            <v-card-subtitle>
+              These automations get run when a profile becomes active and
+              becomes inactive.
+            </v-card-subtitle>
+            <v-card-text>
+              <automation-selector
+                v-model="profile.onActivate"
+                label="Activation Automation"
+              />
+              <automation-selector
+                v-model="profile.onDeactivate"
+                label="Deactivation Automation"
+              />
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
       <!--v-row>
-      <v-col>
-        <conditions-editor v-model="profile.conditions" />
-      </v-col>
-    </v-row>
-    <v-row>
       <v-col>
         <rewards-editor v-model="profile.rewards" />
       </v-col>
@@ -61,6 +73,8 @@ import YAML from "yaml";
 import fs from "fs";
 import path from "path";
 import { mapActions, mapGetters } from "vuex";
+import BooleanExpression from "../components/conditionals/BooleanExpression.vue";
+import BooleanGroup from '../components/conditionals/BooleanGroup.vue';
 
 export default {
   components: {
@@ -69,6 +83,8 @@ export default {
     RewardsEditor,
     AutomationSelector,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
+    BooleanExpression,
+    BooleanGroup,
   },
   computed: {
     ...mapGetters("ipc", ["paths", "plugins"]),
