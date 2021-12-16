@@ -150,14 +150,13 @@ class ActionQueue
 			return false;
 		}
 
-		const automationTable = this.triggerMappings[name];
-
-		if (!automationTable)
+		const triggerMappings = this.triggerMappings[name];
+		if (!triggerMappings)
 		{
 			return false;
 		}
 
-		return triggerHandler.handle(this, this.triggerMappings[name], options);
+		return triggerHandler.handle(this, triggerMappings, options);
 	}
 
 
