@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="d-flex flex-row">
+  <div class="d-flex flex-row">
     <div class="state-select mx-1">
       <state-selector
         :value="value ? value.state : null"
@@ -43,7 +43,7 @@
         v-else
       />
     </div>
-  </v-sheet>
+  </div>
 </template>
 
 <script>
