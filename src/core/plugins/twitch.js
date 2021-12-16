@@ -432,12 +432,12 @@ module.exports = {
 				}
 
 				this.actions.trigger("redemption", {
-					name: redemption.rewardName,
+					enum: redemption.rewardName,
 					message,
 					filteredMessage: this.filterMessage(message),
 					user: redemption.userDisplayName,
 					userId: redemption.userId,
-					...{ userColor: this.colorCache[redemption.userId] }
+					//...{ userColor: this.colorCache[redemption.userId] }
 				});
 			});
 
