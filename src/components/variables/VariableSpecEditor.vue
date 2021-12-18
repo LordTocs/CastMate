@@ -10,8 +10,8 @@
       @change="(v) => updateSubValue('type', v)"
       label="Variable Type"
       :items="[
-        { name: 'Number', value: 'number' },
-        { name: 'Text', value: 'string' },
+        { name: 'Number', value: 'Number' },
+        { name: 'Text', value: 'String' },
       ]"
       item-text="name"
       item-value="value"

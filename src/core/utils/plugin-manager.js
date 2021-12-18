@@ -78,13 +78,18 @@ class PluginManager {
 	}
 
 	updateReactivity(pluginObj) {
+		console.log("updateReactivity " + pluginObj.name);
+		if (!this.stateLookup[pluginObj.name])
+		{
+			this.stateLookup[pluginObj.name] = {};
+		}
 		reactiveCopy(this.stateLookup[pluginObj.name], pluginObj.state, (newKey) => {
 			this.createStateWatcher(pluginObj.name, newKey, this.stateLookup[pluginObj.name])
 
 			if (this.ipcSender) {
 				this.ipcSender.send('state-update', {
 					[pluginObj.name]: {
-						[stateKey]: this.stateLookup[pluginObj.name][stateKey]
+						[newKey]: this.stateLookup[pluginObj.name][newKey]
 					}
 				});
 			}

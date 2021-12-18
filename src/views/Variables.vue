@@ -34,7 +34,7 @@
         large
         right
         bottom
-        @click="$refs.createDlg.open('', { type: 'number', default: 0 })"
+        @click="$refs.createDlg.open('', { type: 'Number', default: 0 })"
       >
         <v-icon> mdi-plus </v-icon>
       </v-btn>
@@ -53,7 +53,7 @@ export default {
   components: { ConfirmDialog, VariableSpecModal },
   computed: {
     ...mapGetters("variables", ["variables"]),
-    ...mapGetters("ipc", ["combinedState"]),
+    ...mapGetters("ipc", ["stateLookup"]),
     variableHeaders() {
       return [
         { text: "Variable Name", value: "name" },
@@ -66,7 +66,7 @@ export default {
     variableTable() {
       return Object.keys(this.variables).map((varName) => ({
         name: varName,
-        value: this.combinedState[varName],
+        value: this.stateLookup.variables[varName],
         default: this.variables[varName].default,
         type: this.variables[varName].type,
       }));
@@ -82,7 +82,7 @@ export default {
       this.updateVariable({
         variableName: "",
         variableSpec: {
-          type: "number",
+          type: "Number",
           default: 0,
         },
       });

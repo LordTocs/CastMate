@@ -15,6 +15,7 @@ class Plugin
 		this.pluginObj = {};
 
 		this.name = config.name;
+		this.pluginObj.name = config.name;
 		this.uiName = config.uiName || config.name;
 		this.color = config.color;
 		this.icon = config.icon;
