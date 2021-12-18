@@ -104,21 +104,22 @@ export default {
       }
     },
     updateAction(index, value) {
-      let newValue = [...this.value];
+      let newValue = _cloneDeep(this.value);
 
       newValue[index] = value;
 
       this.$emit("input", newValue);
     },
     deleteAction(index) {
-      let newValue = [...this.value];
+      let newValue = _cloneDeep(this.value);
 
       newValue.splice(index, 1);
 
       this.$emit("input", newValue);
     },
     newActionGroup() {
-      let newValue = [...this.value, {}];
+      let newValue = _cloneDeep(this.value);
+      newValue.push({})
 
       this.$emit("input", newValue);
     },
@@ -234,7 +235,7 @@ export default {
 
         //TODO: Validate JSON
 
-        const newValue = [...this.value];
+        let newValue = _cloneDeep(this.value);
 
         let insertIdx = newValue.length;
         //If we have a current selection, overwrite it.
@@ -265,7 +266,7 @@ export default {
         return;
       }
 
-      let newValue = [...this.value];
+      let newValue = _cloneDeep(this.value);
 
       let removed = 0;
       for (let idx of this.selected) {

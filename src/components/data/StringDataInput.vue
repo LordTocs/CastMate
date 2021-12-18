@@ -4,6 +4,7 @@
     :value="value"
     @input="(v) => $emit('input', v)"
     :label="schema.name || dataName"
+    :clearable="!schema.required"
   />
   <enum-input
     :value="value"
@@ -13,6 +14,7 @@
     @input="(v) => $emit('input', v)"
     @change="(v) => $emit('change', v)"
     :label="schema.name || dataName"
+    :clearable="!schema.required"
   />
 </template>
 

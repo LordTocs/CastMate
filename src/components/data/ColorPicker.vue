@@ -6,6 +6,9 @@
         <v-tab :key="1"> <v-icon> mdi-brightness-5 </v-icon> </v-tab>
         <v-tab :key="2"> <v-icon> mdi-code-braces </v-icon> </v-tab>
       </v-tabs>
+      <v-btn icon v-if="clearable" @click="$emit('input', undefined)">
+        <v-icon> mdi-close </v-icon>
+      </v-btn>
     </v-toolbar>
     <v-tabs-items :value="santizedMode">
       <v-tab-item>
@@ -103,6 +106,7 @@ export default {
   props: {
     value: {},
     schema: {},
+    clearable: { type: Boolean, default: () => false },
   },
   computed: {
     santizedMode() {
@@ -114,14 +118,25 @@ export default {
   },
   methods: {
     changeHue(newHue) {
-
-      this.$emit("input", { ...this.value, ...newHue, mode: this.value?.mode || 'color' });
+      this.$emit("input", {
+        ...this.value,
+        ...newHue,
+        mode: this.value?.mode || "color",
+      });
     },
     changeTemp(newTemp) {
-      this.$emit("input", { ...this.value, ...newTemp, mode: this.value?.mode || 'temp' });
+      this.$emit("input", {
+        ...this.value,
+        ...newTemp,
+        mode: this.value?.mode || "temp",
+      });
     },
     changeBri(newBri) {
-      this.$emit("input", { ...this.value, bri: newBri, mode: this.value?.mode || 'color' });
+      this.$emit("input", {
+        ...this.value,
+        bri: newBri,
+        mode: this.value?.mode || "color",
+      });
     },
     changeMode(newMode) {
       this.$emit("input", { ...this.value, mode: indexToMode[newMode] });

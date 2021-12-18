@@ -9,6 +9,7 @@
     :search-input.sync="search"
     @input="(v) => $emit('input', v)"
     @change="(v) => $emit('change', v)"
+    :clearable="clearable"
   />
   <v-select
     v-else
@@ -27,8 +28,9 @@ export default {
   props: {
     value: {},
     enum: {},
-    queryMode: { type: Boolean, default: false },
+    queryMode: { type: Boolean, default: () => false },
     label: { type: String },
+    clearable: { type: Boolean, default: () => false}
   },
   computed: {
     isAutocomplete() {

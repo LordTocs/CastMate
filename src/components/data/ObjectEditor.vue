@@ -25,6 +25,7 @@ export default {
       if (value !== "" && value !== undefined) {
         newValue[key] = value;
       } else {
+        console.log("Deleting Key", key);
         delete newValue[key];
       }
 
