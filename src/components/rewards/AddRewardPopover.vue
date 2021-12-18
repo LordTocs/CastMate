@@ -13,15 +13,10 @@
       <v-card-title> Add Reward To Profile </v-card-title>
       <v-divider />
       <v-card-text>
-        <v-select
-          :value="null"
+        <v-autocomplete
+          :value="valueHolder"
           label="Channel Point Reward"
-          @change="
-            (v) => {
-              $emit('input', v);
-              menu = false;
-            }
-          "
+          @change="select"
           :items="remainingRewards"
           item-value="name"
           item-text="name"
@@ -44,10 +39,27 @@ export default {
       return this.rewards.filter((k) => !filterRewards.includes(k.name));
     },
   },
+  methods: {
+    select(value) {
+      if (value) {
+        this.valueHolder = value;
+        this.$emit("input", value);
+        this.menu = false;
+      }
+    },
+  },
   data() {
     return {
+      valueHolder: null,
       menu: false,
     };
+  },
+  watch: {
+    menu() {
+      if (!this.menu) {
+        this.valueHolder = null;
+      }
+    },
   },
 };
 </script>

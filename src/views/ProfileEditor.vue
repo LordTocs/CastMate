@@ -45,11 +45,11 @@
           </v-card>
         </v-col>
       </v-row>
-      <!--v-row>
-      <v-col>
-        <rewards-editor v-model="profile.rewards" />
-      </v-col>
-    </v-row-->
+      <v-row>
+        <v-col>
+          <rewards-editor v-model="profile.rewards" />
+        </v-col>
+      </v-row>
       <v-row v-for="plugin in triggerPlugins" :key="plugin.name">
         <v-col>
           <profile-plugin v-if="profile" :plugin="plugin" v-model="profile" />
@@ -74,7 +74,7 @@ import fs from "fs";
 import path from "path";
 import { mapActions, mapGetters } from "vuex";
 import BooleanExpression from "../components/conditionals/BooleanExpression.vue";
-import BooleanGroup from '../components/conditionals/BooleanGroup.vue';
+import BooleanGroup from "../components/conditionals/BooleanGroup.vue";
 
 export default {
   components: {
