@@ -1,6 +1,7 @@
 <template>
   <div class="swatch" :style="{ backgroundColor: cssColor }">
       <v-icon v-if="value.mode == 'template'"> mdi-code-braces </v-icon>
+      <v-icon v-else> mdi-lightbulb-on-outline </v-icon>
   </div>
 </template>
 
@@ -35,13 +36,14 @@ export default {
 <style scoped>
 .swatch {
   display: inline-block;
-  width: 1em;
-  height: 1em;
+  padding: 3px;
   border-radius: 0.05em;
   border-style: solid;
   border-width: 1px;
   border-color: #efefef;
   color: white;
+  line-height: 1;
+
 }
 
 </style>
