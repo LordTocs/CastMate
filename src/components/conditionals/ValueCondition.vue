@@ -62,12 +62,28 @@ export default {
     operators() {
       return [
         {
+          key: "lessThanEq",
+          icon: "mdi-less-than-or-equal",
+        },
+        {
+          key: "lessThan",
+          icon: "mdi-less-than",
+        },
+        {
           key: "equal",
           icon: "mdi-equal",
         },
         {
           key: "notEqual",
           icon: "mdi-not-equal-variant",
+        },
+        {
+          key: "greaterThan",
+          icon: "mdi-greater-than",
+        },
+        {
+          key: "greaterThanEq",
+          icon: "mdi-greater-than-or-equal",
         },
       ];
     },
