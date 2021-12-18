@@ -73,7 +73,7 @@ class ProfileManager
 			//create a new watcher
 			profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
 			this.recombine();
-			dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
+			dependOnAllConditions(profile.conditions, this.plugins.stateLookup, profile.watcher);
 		}
 	}
 
@@ -96,7 +96,7 @@ class ProfileManager
 		
 		this.recombine();
 
-		dependOnAllConditions(profile.conditions, this.plugins.combinedState.__reactivity__, profile.watcher);
+		dependOnAllConditions(profile.conditions, this.plugins.stateLookup, profile.watcher);
 	}
 
 	//Load in a new profile.
@@ -117,7 +117,7 @@ class ProfileManager
 	//Recalculate which profiles are active.
 	recombine()
 	{
-		let [activeProfiles, inactiveProfiles] = _.partition(this.profiles, (profile) => evalConditional(profile.conditions, this.plugins.combinedState));
+		let [activeProfiles, inactiveProfiles] = _.partition(this.profiles, (profile) => evalConditional(profile.conditions, this.plugins.stateLookup));
 
 		logger.info(`Combining Profiles: ${activeProfiles.map(p => p.filename).join(', ')}`);
 
@@ -159,8 +159,6 @@ class ProfileManager
 			if (plugin.onProfilesChanged)
 				plugin.onProfilesChanged(activeProfiles, inactiveProfiles);
 		}
-
-
 	}
 }
 

@@ -27,6 +27,8 @@ class Profile
 		this.watchers = [];
 		this.onReload = onReload;
 		this.rewards = [];
+		this.onDeactivate = null;
+		this.onActivate = null;
 	}
 
 	async reload()
@@ -47,6 +49,8 @@ class Profile
 		this.triggers = profileConfig.triggers || {};
 		this.conditions = profileConfig.conditions || {};
 		this.config = profileConfig;
+		this.onActivate = profileConfig.onActivate;
+		this.onDeactivate = profileConfig.onDeactivate;
 	}
 
 	async handleFileChanged(filename)
