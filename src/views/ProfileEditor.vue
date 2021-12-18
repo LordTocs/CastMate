@@ -141,7 +141,7 @@ export default {
   watch: {
     profile: {
       deep: true,
-      handler(oldVal, newVal) {
+      handler(newVal, oldVal) {
         if (oldVal != null) {
           this.dirty = true;
         }
