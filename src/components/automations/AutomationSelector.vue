@@ -8,7 +8,19 @@
       :items="automations"
       :label="label"
       clearable
-    />
+    >
+      <template v-slot:selection="{ item }">
+        <v-chip
+          class="ma-2"
+          color="red"
+          text-color="white"
+          v-if="!hasAutomation(item)"
+        >
+          MISSING
+        </v-chip>
+        <span>{{ item }} </span>
+      </template>
+    </v-combobox>
     <v-btn
       fab
       small
@@ -48,7 +60,7 @@ import NamedItemModal from "../dialogs/NamedItemModal.vue";
 export default {
   props: {
     value: {},
-	label: { type: String, default: () => "Automation"}
+    label: { type: String, default: () => "Automation" },
   },
   components: {
     NamedItemModal,
@@ -98,6 +110,9 @@ export default {
       this.$emit("change", name);
 
       await this.refreshAutomations();
+    },
+    hasAutomation(automation) {
+      return this.automations.includes(automation);
     },
   },
   async mounted() {
