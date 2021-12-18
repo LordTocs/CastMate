@@ -9,17 +9,14 @@ module.exports = {
 	uiName: "Variables",
 	icon: "mdi-variable",
 	color: "#D3934A",
-	async init()
-	{
+	async init() {
 		this.variableSpecs = {};
 		this.logger.info(`Watching ${variablesFilePath}`);
 		this.variableSettingsReloader = new HotReloader(variablesFilePath,
-			() =>
-			{
+			() => {
 				this.loadVariables();
 			},
-			() =>
-			{
+			() => {
 				this.logger.error('Oh no there was a variable file error.')
 			});
 
@@ -27,44 +24,36 @@ module.exports = {
 
 	},
 	methods: {
-		loadVariables()
-		{
+		loadVariables() {
 			const variableData = this.variableSettingsReloader.data;
 
 			this.logger.info("Reloading Variables...");
 			let needsDependencyUpdate = false;
 
-			for (let variableName in variableData)
-			{
+			for (let variableName in variableData) {
 				let variableSpec = variableData[variableName];
 
 				let defaultValue = variableSpec.default;
 
-				if (defaultValue == undefined)
-				{
-					if (variableSpec.type && variableSpec.type == "string")
-					{
+				if (defaultValue == undefined) {
+					if (variableSpec.type && variableSpec.type == "string") {
 						defaultValue = "";
 					}
-					else
-					{
+					else {
 						defaultValue = 0;
 					}
 				}
 
-				if (variableName in this.variableSpecs)
-				{
+				if (variableName in this.variableSpecs) {
 					//Already have this variable.
-					if (this.variableSpecs[variableName].type != variableSpec.type)
-					{
+					if (this.variableSpecs[variableName].type != variableSpec.type) {
 						//We need to update the type and thus the default value.
 						this.logger.info(`Variable ${variableName} type has changed, resetting to default.`)
 						this.variableSpecs[variableName].type = variableSpec.type;
 						this.state[variableName] = defaultValue;
 					}
 				}
-				else
-				{
+				else {
 					//This is a new variable.
 					this.logger.info(`New Variable ${variableName}`);
 					this.variableSpecs[variableName] = variableSpec;
@@ -73,10 +62,8 @@ module.exports = {
 				}
 			}
 
-			for (let variableName in this.variableSpecs)
-			{
-				if (!(variableName in variableData))
-				{
+			for (let variableName in this.variableSpecs) {
+				if (!(variableName in variableData)) {
 					//This variable is gone, destroy it.
 					this.logger.info(`Deleting Variable ${variableName}`);
 					deleteReactiveProperty(this.state, variableName);
@@ -86,21 +73,17 @@ module.exports = {
 				}
 			}
 
-			if (needsDependencyUpdate)
-			{
+			if (needsDependencyUpdate) {
 				this.profiles.redoDependencies();
 			}
 		},
-		createVariable(name, value)
-		{
+		createVariable(name, value) {
 			this.state[name] = value
 			createReactiveProperty(this.state, name);
 			this.plugins.updateReactivity(this);
 		},
-		async handleTemplateNumber(value, context)
-		{
-			if (typeof value === 'string' || value instanceof String)
-			{
+		async handleTemplateNumber(value, context) {
+			if (typeof value === 'string' || value instanceof String) {
 				return Number(await evalTemplate(value, context))
 			}
 			return value;
@@ -118,12 +101,17 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					name: { type: String, name: "Variable Name" },
+					name: {
+						type: String,
+						name: "Variable Name",
+						async enum() {
+							return Object.keys(this.state)
+						}
+					},
 					value: { type: Number, template: true, name: "Set Value" },
 				}
 			},
-			async handler(variableData, context)
-			{
+			async handler(variableData, context) {
 				if (!variableData.name)
 					return;
 
@@ -132,8 +120,7 @@ module.exports = {
 
 				//Set the value
 				let setValue = variableData.set;
-				if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number)
-				{
+				if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number) {
 					setValue = await this.handleTemplateNumber(setValue, context);
 				}
 				this.logger.info(`Setting ${variableData.name} to ${setValue}`);
@@ -147,12 +134,17 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					name: { type: String, name: "Variable Name" },
+					name: {
+						type: String,
+						name: "Variable Name",
+						async enum() {
+							return Object.keys(this.state)
+						}
+					},
 					offset: { type: Number, template: true, name: "Offset Value" },
 				}
 			},
-			async handler(variableData, context)
-			{
+			async handler(variableData, context) {
 				if (!variableData.name)
 					return;
 
