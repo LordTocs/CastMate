@@ -32,7 +32,7 @@ export default {
       return this.plugins.find((p) => p.name == this.value.state.plugin);
     },
     handleColor() {
-      if (!this.valuePlugin) return "#1f1f1f";
+      if (!this.valuePlugin) return "#2f2f2f";
       return this.valuePlugin.color;
     },
   },

@@ -6,7 +6,7 @@
       'all-group': isAll,
       'single-group': !isAny && !isAll,
       'my-2': true,
-      'rounded': true,
+      rounded: true,
     }"
     v-if="value"
   >
@@ -18,24 +18,30 @@
         <v-select
           v-if="isAll || isAny"
           :items="operations"
+          item-value="key"
+          item-text="text"
           :value="value.operator"
           @input="(v) => setSubValue('operator', v)"
         />
       </div>
-      <v-btn
-        icon
-        @click="setOperand(value.operands.length, { operator: 'equal' })"
-      >
-        <v-icon> mdi-plus </v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click="
-          setOperand(value.operands.length, { operator: 'Any', operands: [] })
-        "
-      >
-        <v-icon> mdi-plus </v-icon>
-      </v-btn>
+      <div class="d-flex flex-column mx-3">
+        <v-btn
+          small
+          :class="{ 'my-1': true, 'light-green': isAny, 'light-blue': isAll, 'darken-4': true }"
+          @click="setOperand(value.operands.length, { operator: 'equal' })"
+        >
+          <v-icon> mdi-plus </v-icon> Add Value
+        </v-btn>
+        <v-btn
+          small
+          :class="{ 'my-1': true, 'light-green': isAny, 'light-blue': isAll, 'darken-4': true }"
+          @click="
+            setOperand(value.operands.length, { operator: 'any', operands: [] })
+          "
+        >
+          <v-icon> mdi-format-list-group </v-icon> Add Group
+        </v-btn>
+      </div>
       <v-btn icon @click="$emit('delete')" v-if="hasHandle">
         <v-icon> mdi-close </v-icon>
       </v-btn>
@@ -81,19 +87,28 @@ export default {
   },
   computed: {
     operations() {
-      return ["Any", "All"];
+      return [
+        {
+          key: "all",
+          text: "All - All conditions must be met"
+        },
+        {
+          key: "any",
+          text: "Any - Only one condition must be met"
+        },
+      ]
     },
     isAny() {
       return (
         this.value &&
-        this.value.operator == "Any" &&
+        this.value.operator == "any" &&
         this.value.operands.length > 1
       );
     },
     isAll() {
       return (
         this.value &&
-        this.value.operator == "All" &&
+        this.value.operator == "all" &&
         this.value.operands.length > 1
       );
     },
@@ -151,16 +166,16 @@ export default {
 
 .group-content {
   padding-left: 20px;
-  padding-right: 5px;
-  min-height: 20px;
+  padding-right: 20px;
+  min-height: 35px;
 }
 
 .any-group {
-  border-color: #7CB342 !important;
+  border-color: #7cb342 !important;
 }
 
 .all-group {
-  border-color: #0288D1 !important;
+  border-color: #0288d1 !important;
 }
 
 .single-group {
@@ -168,11 +183,11 @@ export default {
 }
 
 .any-group > .group-header {
-  background-color: #7CB342;
+  background-color: #7cb342;
 }
 
 .all-group > .group-header {
-  background-color: #0288D1;
+  background-color: #0288d1;
 }
 
 .single-group > .group-header {
