@@ -45,7 +45,7 @@
           </v-card>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row v-if="profile">
         <v-col>
           <rewards-editor v-model="profile.rewards" />
         </v-col>
