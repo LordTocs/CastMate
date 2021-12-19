@@ -16,6 +16,9 @@
         </v-icon>
         <v-icon small @click="deleteVar(item.name)"> mdi-delete </v-icon>
       </template>
+      <template v-slot:footer.prepend>
+        <v-btn @click="$refs.createDlg.open('', { type: 'Number', default: 0 })"> New Variable </v-btn>
+      </template>
     </v-data-table>
     <confirm-dialog ref="deleteDlg" />
     <variable-spec-modal ref="editDlg" />
@@ -26,19 +29,6 @@
       :showSave="false"
     />
     <div style="height: 5rem" />
-    <v-fab-transition>
-      <v-btn
-        color="primary"
-        fixed
-        fab
-        large
-        right
-        bottom
-        @click="$refs.createDlg.open('', { type: 'Number', default: 0 })"
-      >
-        <v-icon> mdi-plus </v-icon>
-      </v-btn>
-    </v-fab-transition>
   </v-container>
 </template>
 
