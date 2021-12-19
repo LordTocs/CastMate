@@ -16,7 +16,7 @@
       <template v-slot:item.key="props">
         <v-edit-dialog
           @open="openRename(props.item.key)"
-          @save="renameCommand(props.item.key, rename.toLowerCase())"
+          @save="renameCommand(props.item.key, rename)"
         >
           {{ props.item.key }}
           <template v-slot:input>

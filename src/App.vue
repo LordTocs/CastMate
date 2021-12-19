@@ -30,7 +30,7 @@
           </v-list-item-content>
         </v-list-item>
 
-		<v-list-item link to="/automations">
+        <v-list-item link to="/automations">
           <v-list-item-icon>
             <v-icon>mdi-timeline</v-icon>
           </v-list-item-icon>
@@ -50,7 +50,7 @@
           </v-list-item-content>
         </v-list-item>
 
-		<v-list-item link to="/variables">
+        <v-list-item link to="/variables">
           <v-list-item-icon>
             <v-icon>mdi-variable</v-icon>
           </v-list-item-icon>
@@ -166,8 +166,8 @@ export default {
   methods: {
     ...mapActions("ipc", ["init"]),
     ...mapActions("rewards", ["loadRewards"]),
-	...mapActions("segments", ["loadSegments"]),
-	...mapActions("variables", ["loadVariables"]),
+    ...mapActions("segments", ["loadSegments"]),
+    ...mapActions("variables", ["loadVariables"]),
     openSoundsFolder() {
       shell.openPath(path.join(this.paths.userFolder, "sounds"));
     },
@@ -175,8 +175,8 @@ export default {
   async mounted() {
     await this.init();
     await this.loadRewards();
-	await this.loadSegments();
-	await this.loadVariables();
+    await this.loadSegments();
+    await this.loadVariables();
     this.loaded = true;
   },
 };
