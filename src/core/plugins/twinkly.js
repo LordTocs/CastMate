@@ -1,5 +1,4 @@
-const { template } = require('../utils/template');
-const Twinkly = require('twinkly-api');
+const { evalTemplate } = require('../utils/template');
 const axios = require('axios');
 const crypto = require('crypto')
 const Color = require('color');
@@ -17,16 +16,18 @@ function randomBytes(num) {
 module.exports = {
     name: "twinkly",
     uiName: "Twinkly",
+    icon: "mdi-string-lights",
+    color: "#7F743F",
     async init() {
-        //this.twinkly = new Twinkly(this.settings.twinklyIP);
         this.logger.info('Twinkly Effects');
 
-        const movies = await this.getAllMovies();
+        if (this.settings.twinklyIP) {
+            const movies = await this.getAllMovies();
 
-        for (let movie of movies.movies) {
-            this.logger.info(`${movie.name}: ${movie.id}`);
+            for (let movie of movies.movies) {
+                this.logger.info(`${movie.name}: ${movie.id}`);
+            }
         }
-
     },
     methods: {
         getBaseUrl() {
@@ -147,8 +148,12 @@ module.exports = {
         async setMovie(movieId) {
             return await this.postApi('movies/current', { id: movieId });
         },
-        async setColor(cssColor) {
-            const color = Color(cssColor);
+        async setColor(hsb) {
+            const color = Color({
+                h: hsb.hue,
+                s: hsb.sat,
+                v: hsb.bri
+            });
 
             const rgb = color.rgb();
             this.postApi('led/color', {
@@ -164,29 +169,73 @@ module.exports = {
         async getAllMovies() {
             const resp = await this.getApi('movies');
             return resp.data;
-        }
+        },
+        async handleTemplateNumber(value, context) {
+            if (typeof value === 'string' || value instanceof String) {
+                return await evalTemplate(value, context)
+            }
+            return value;
+        },
+        async resolveHSBK(hsbk, context) {
+            const result = {};
+
+            if ("bri" in hsbk && (hsbk.mode == 'color' || hsbk.mode == "template")) {
+                result.bri = await this.handleTemplateNumber(hsbk.bri, context);
+            }
+            if ("sat" in hsbk && (hsbk.mode == 'color' || hsbk.mode == "template")) {
+                result.sat = await this.handleTemplateNumber(hsbk.sat, context);
+            }
+            if ("hue" in hsbk && (hsbk.mode == 'color' || hsbk.mode == "template")) {
+                result.hue = await this.handleTemplateNumber(hsbk.hue, context);
+            }
+
+            return result;
+        },
     },
     settings: {
         twinklyIP: { type: String }
     },
     secrets: {
-        password: { type: String }
     },
     state: {},
     actions: {
         twinklyMovie: {
             name: "Twinkly Movie",
-            description: "Change Twinkly mode.",
+            description: "Play a twinkly movie.",
             color: "#607A7F",
+            icon: "mdi-string-lights",
             data: {
                 type: Object,
                 properties: {
-                    movie: { type: Number },
+                    movie: {
+                        type: String,
+                        async enum() {
+                            try {
+                                const movies = await this.getAllMovies();
+                                return movies.movies.map(m => m.name);
+                            }
+                            catch
+                            {
+                                return [];
+                            }
+                        }
+                    },
                 }
             },
             async handler(twinklyData, context) {
                 this.logger.info("Changing twinkly movie to " + twinklyData.movie);
-                await this.setMovie(twinklyData.movie);
+
+                const movies = await this.getAllMovies();
+                if (!movies.movies)
+                {
+                    return;
+                }
+
+                const movie = movies.movies.find(m => m.name == twinklyData.movie);
+                if (!movie)
+                    return;
+                
+                await this.setMovie(movie.id);
                 await this.setMode('movie')
             },
         },
@@ -194,17 +243,18 @@ module.exports = {
             name: "Twinkly Color",
             description: "Change Twinkly to a solid color.",
             color: "#607A7F",
+            icon: "mdi-string-lights",
             data: {
                 type: Object,
                 properties: {
-                    color: { type: "TemplateString" },
+                    hsbk: { type: "LightColor", name: "Color", tempRange: [2000, 6500] },
                 }
             },
             async handler(twinklyData, context) {
                 this.logger.info("Changing twinkly color to " + twinklyData.color);
-                await this.setColor(await template(twinklyData.color, context))
+                await this.setColor(await this.resolveHSBK(twinklyData.hsbk, context))
                 await this.setMode('color')
             },
         },
-    }
+    },
 }
