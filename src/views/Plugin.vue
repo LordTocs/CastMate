@@ -14,7 +14,7 @@
             <data-input
               v-for="settingKey in settingsKeys"
               :key="settingKey"
-              :schema="plugin.settings[settingKey]"
+              :schema="addRequired(plugin.settings[settingKey])"
               :label="settingKey"
               :value="
                 settings[pluginName] ? settings[pluginName][settingKey] : null
@@ -34,7 +34,7 @@
             <data-input
               v-for="secretKey in secretKeys"
               :key="secretKey"
-              :schema="plugin.secrets[secretKey]"
+              :schema="addRequired(plugin.secrets[secretKey])"
               :label="secretKey"
               :value="getSecretValue(secretKey)"
               @input="(v) => setSecretsValue(secretKey, v)"
@@ -120,6 +120,9 @@ export default {
       } else {
         this.secrets[this.pluginName][key] = value;
       }
+    },
+    addRequired(schema) {
+      return { ...schema, required: true };
     },
     async save() {
       let newSettingsYaml = YAML.stringify(this.settings);
