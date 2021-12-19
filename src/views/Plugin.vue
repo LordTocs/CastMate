@@ -23,7 +23,7 @@
         v-bind:is="settingsComponent"
         style="margin-bottom: 18px"
       />
-      <v-row v-if="settingsKeys.length > 0">
+      <v-row v-if="settings && settingsKeys.length > 0">
         <v-col>
           <v-card>
             <v-card-title> Settings </v-card-title>
@@ -34,16 +34,14 @@
                 :key="settingKey"
                 :schema="addRequired(plugin.settings[settingKey])"
                 :label="settingKey"
-                :value="
-                  settings[pluginName] ? settings[pluginName][settingKey] : null
-                "
+                :value="settings[settingKey]"
                 @input="(v) => setSettingsValue(settingKey, v)"
               />
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
-      <v-row v-if="secretKeys.length > 0">
+      <v-row v-if="secrets && secretKeys.length > 0">
         <v-col>
           <v-card>
             <v-card-title> Secrets </v-card-title>
@@ -54,7 +52,7 @@
                 :key="secretKey"
                 :schema="addRequired(plugin.secrets[secretKey])"
                 :label="secretKey"
-                :value="getSecretValue(secretKey)"
+                :value="secrets[secretKey]"
                 @input="(v) => setSecretsValue(secretKey, v)"
               />
             </v-card-text>
@@ -116,40 +114,74 @@ export default {
       return () => import(`../components/plugins/${viewName}`);
     },
     setSettingsValue(key, value) {
-      if (!this.settings[this.pluginName]) {
-        this.$set(this.settings, this.pluginName, {});
-        this.$set(this.settings[this.pluginName], key, value);
-      } else {
-        this.settings[this.pluginName][key] = value;
-      }
-    },
-    getSecretValue(key) {
-      return this.secrets[this.pluginName]
-        ? this.secrets[this.pluginName][key]
-        : null;
+      this.$set(this.settings, key, value);
     },
     setSecretsValue(key, value) {
-      if (!this.secrets[this.pluginName]) {
-        this.$set(this.secrets, this.pluginName, {});
-        this.$set(this.secrets[this.pluginName], key, value);
-      } else {
-        this.secrets[this.pluginName][key] = value;
-      }
+      this.$set(this.secrets, key, value);
     },
     addRequired(schema) {
       return { ...schema, required: true };
     },
+    async load() {
+      const fullSettingsText = await fs.promises.readFile(
+        this.paths.settingsFilePath,
+        "utf-8"
+      );
+      const fullSettings = YAML.parse(fullSettingsText) || {};
+
+      this.settings = fullSettings[this.pluginName] || {};
+
+      const fullSecretsText = await fs.promises.readFile(
+        this.paths.secretsFilePath,
+        "utf-8"
+      );
+      const fullSecrets = YAML.parse(fullSecretsText) || {};
+
+      this.secrets = fullSecrets[this.pluginName] || {};
+    },
     async save() {
-      let newSettingsYaml = YAML.stringify(this.settings);
+      const fullSettingsText = await fs.promises.readFile(
+        this.paths.settingsFilePath,
+        "utf-8"
+      );
+      const fullSettings = YAML.parse(fullSettingsText) || {};
+
+      fullSettings[this.pluginName] = this.settings;
+
+      let newSettingsYaml = YAML.stringify(fullSettings);
 
       await fs.promises.writeFile(this.paths.settingsFilePath, newSettingsYaml);
 
-      let newSecretsYaml = YAML.stringify(this.secrets);
+      const fullSecretsText = await fs.promises.readFile(
+        this.paths.secretsFilePath,
+        "utf-8"
+      );
+      const fullSecrets = YAML.parse(fullSecretsText) || {};
+
+      fullSecrets[this.pluginName] = this.secrets;
+
+      let newSecretsYaml = YAML.stringify(fullSecrets);
 
       await fs.promises.writeFile(this.paths.secretsFilePath, newSecretsYaml);
 
       this.saveSnack = true;
       this.dirty = false;
+    },
+    async routeGuard(next) {
+      if (!this.dirty) {
+        return next();
+      }
+      if (
+        await this.$refs.saveDlg.open(
+          "Unsaved Changes",
+          "Do you want to save your changes?",
+          "Save Changes",
+          "Discard Changes"
+        )
+      ) {
+        await this.save();
+      }
+      return next();
     },
   },
   components: {
@@ -183,39 +215,25 @@ export default {
         }
       },
     },
+    pluginName: {
+      async handler() {
+        this.secrets = null;
+        this.settings = null;
+        this.dirty = false;
+        this.load();
+      },
+    },
   },
   async mounted() {
-    const fullSettingsText = await fs.promises.readFile(
-      this.paths.settingsFilePath,
-      "utf-8"
-    );
-    const fullSettings = YAML.parse(fullSettingsText) || {};
-
-    this.settings = fullSettings;
-
-    const fullSecretsText = await fs.promises.readFile(
-      this.paths.secretsFilePath,
-      "utf-8"
-    );
-    const fullSecrets = YAML.parse(fullSecretsText) || {};
-
-    this.secrets = fullSecrets;
+    await this.load();
   },
   async beforeRouteLeave(to, from, next) {
-    if (!this.dirty) {
-      return next();
-    }
-    if (
-      await this.$refs.saveDlg.open(
-        "Unsaved Changes",
-        "Do you want to save your changes?",
-        "Save Changes",
-        "Discard Changes"
-      )
-    ) {
-      await this.save();
-    }
-    return next();
+    await this.routeGuard(next);
+    this.dirty = false;
+  },
+  async beforeRouteUpdate(to, from, next) {
+    await this.routeGuard(next);
+    this.dirty = false;
   },
 };
 </script>
