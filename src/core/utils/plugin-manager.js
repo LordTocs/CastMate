@@ -19,13 +19,15 @@ class PluginManager {
 			"twitch",
 			"variables",
 			"websocket",
-			"aoe3",
+			//"aoe3",
+			"aoe4",
+			"twinkly",
 		]
 
-		//Todo: This relative require is weird.
-		this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));
+        //Todo: This relative require is weird.
+        this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));
 
-		this.combinedState = {};
+        this.combinedState = {};
 
 		for (let plugin of this.plugins) {
 			reactiveCopy(this.combinedState, plugin.pluginObj.state);
