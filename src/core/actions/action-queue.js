@@ -198,7 +198,7 @@ class ActionQueue
 
 			if (subAction == 'delay')
 			{
-				await sleep(action.delay.delay);
+				await sleep(action.delay * 1000);
 			}
 		}
 	}

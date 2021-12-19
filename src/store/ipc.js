@@ -2,6 +2,35 @@
 const { ipcRenderer } = require("electron");
 import Vue from 'vue';
 
+const builtInPlugin = {
+	name: 'castmate',
+	uiName: 'CastMate',
+	color: '#8DC1C0',
+	icon: 'mdi-alpha-c-box',
+	actions: {
+		delay: {
+			name: "Delay",
+			color: '#8DC1C0',
+			icon: "mdi-timer-sand",
+			data: { type: "Number" },
+			description: "Puts a delay after the current action",
+		},
+		timestamp: {
+			name: "Timestamp",
+			color: '#8DC1C0',
+			icon: "mdi-clock-outline",
+			data: { type: "Number" },
+			description: "Delays execution of this action until a certain time after the start of this action list."
+		}
+	},
+	settings: {},
+	secrets: {},
+	triggers: {},
+	stateSchemas: {},
+	ipcMethods: [],
+}
+
+
 export default {
 	namespaced: true,
 	state() {
@@ -16,7 +45,7 @@ export default {
 	},
 	getters: {
 		paths: state => state.paths,
-		plugins: state => state.plugins,
+		plugins: state => [...state.plugins, builtInPlugin],
 		inited: state => state.inited,
 		tags: state => state.tags,
 		stateLookup: state => state.stateLookup,
@@ -25,32 +54,8 @@ export default {
 			for (let plugin of state.plugins) {
 				Object.assign(result, plugin.actions)
 			}
-			//Special Injected Actions, these don't map to a plugin action.
-			result.delay = {
-				name: "Delay",
-				data: { type: "Number" },
-				description: "Puts a delay after the current action",
-			};
-			result.beforeDelay = {
-				name: "Delay (Before)",
-				data: { type: "Number" },
-				description: "Puts a delay before the current action",
-			};
-			result.import = {
-				name: "Play a Sequence",
-				data: {
-					type: "FilePath",
-					path: './sequences/',
-					basePath: './'
-				},
-				description: "Plays a Sequence",
-				color: "#7C4275"
-			}
-			result.timestamp = {
-				name: "Timestamp",
-				data: { type: "Number" },
-				description: "Delays execution of this action until a certain time after the start of this action list."
-			}
+
+			Object.assign(result, builtInPlugin.actions);
 			return result;
 		},
 		triggers: state => {
@@ -63,8 +68,7 @@ export default {
 		stateSchemas: state => {
 			const result = {};
 
-			for (let plugin of state.plugins)
-			{
+			for (let plugin of state.plugins) {
 				result[plugin.name] = plugin.stateSchemas;
 			}
 
@@ -95,15 +99,13 @@ export default {
 			}
 		},
 		removeState(state, removal) {
-			for (let pluginKey in removal)
-			{
+			for (let pluginKey in removal) {
 				if (!this.stateLookup[pluginKey])
 					continue;
-				
+
 				Vue.delete(state.stateLookup[pluginKey], removal[pluginKey]);
 
-				if (Object.keys(state.stateLookup[pluginKey]) == 0)
-				{
+				if (Object.keys(state.stateLookup[pluginKey]) == 0) {
 					Vue.delete(state.stateLookup, pluginKey);
 				}
 			}
