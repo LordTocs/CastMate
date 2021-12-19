@@ -1,70 +1,85 @@
 <template>
-  <v-container fluid>
-    <component
-      v-if="hasSettingsComponent"
-      v-bind:is="settingsComponent"
-      style="margin-bottom: 18px"
-    />
-    <v-row v-if="settingsKeys.length > 0">
-      <v-col>
-        <v-card>
-          <v-card-title> Settings </v-card-title>
+  <div>
+    <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
+      <div class="d-flex flex-column mx-4">
+        <v-btn
+          color="primary"
+          fab
+          dark
+          class="my-1 align-self-center"
+          @click="save"
+          :disabled="!dirty"
+        >
+          <v-icon>mdi-content-save</v-icon>
+        </v-btn>
+      </div>
+      <div class="flex-grow-1">
+        <h1>{{ plugin.uiName || plugin.name }}</h1>
+      </div>
+    </v-sheet>
+    <v-container fluid>
+      <component
+        v-if="hasSettingsComponent"
+        v-bind:is="settingsComponent"
+        style="margin-bottom: 18px"
+      />
+      <v-row v-if="settingsKeys.length > 0">
+        <v-col>
+          <v-card>
+            <v-card-title> Settings </v-card-title>
 
-          <v-card-text>
-            <data-input
-              v-for="settingKey in settingsKeys"
-              :key="settingKey"
-              :schema="addRequired(plugin.settings[settingKey])"
-              :label="settingKey"
-              :value="
-                settings[pluginName] ? settings[pluginName][settingKey] : null
-              "
-              @input="(v) => setSettingsValue(settingKey, v)"
-            />
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-row v-if="secretKeys.length > 0">
-      <v-col>
-        <v-card>
-          <v-card-title> Secrets </v-card-title>
+            <v-card-text>
+              <data-input
+                v-for="settingKey in settingsKeys"
+                :key="settingKey"
+                :schema="addRequired(plugin.settings[settingKey])"
+                :label="settingKey"
+                :value="
+                  settings[pluginName] ? settings[pluginName][settingKey] : null
+                "
+                @input="(v) => setSettingsValue(settingKey, v)"
+              />
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-row v-if="secretKeys.length > 0">
+        <v-col>
+          <v-card>
+            <v-card-title> Secrets </v-card-title>
 
-          <v-card-text v-if="showSecrets">
-            <data-input
-              v-for="secretKey in secretKeys"
-              :key="secretKey"
-              :schema="addRequired(plugin.secrets[secretKey])"
-              :label="secretKey"
-              :value="getSecretValue(secretKey)"
-              @input="(v) => setSecretsValue(secretKey, v)"
-            />
-          </v-card-text>
-          <v-card-text v-else>
-            <v-skeleton-loader
-              boilerplate
-              type="text"
-              v-for="secretKey in secretKeys"
-              :key="secretKey"
-            ></v-skeleton-loader>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn @click="showSecrets = !showSecrets">
-              {{ showSecrets ? "Hide Secrets" : "Show Secrets " }}
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-fab-transition>
-      <v-btn color="primary" fab large fixed bottom right @click="save">
-        <v-icon> mdi-content-save </v-icon>
-      </v-btn>
-    </v-fab-transition>
-    <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
-      Saved
-    </v-snackbar>
-  </v-container>
+            <v-card-text v-if="showSecrets">
+              <data-input
+                v-for="secretKey in secretKeys"
+                :key="secretKey"
+                :schema="addRequired(plugin.secrets[secretKey])"
+                :label="secretKey"
+                :value="getSecretValue(secretKey)"
+                @input="(v) => setSecretsValue(secretKey, v)"
+              />
+            </v-card-text>
+            <v-card-text v-else>
+              <v-skeleton-loader
+                boilerplate
+                type="text"
+                v-for="secretKey in secretKeys"
+                :key="secretKey"
+              ></v-skeleton-loader>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn @click="showSecrets = !showSecrets">
+                {{ showSecrets ? "Hide Secrets" : "Show Secrets " }}
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
+        Saved
+      </v-snackbar>
+    </v-container>
+    <confirm-dialog ref="saveDlg" />
+  </div>
 </template>
 
 <script>
@@ -134,19 +149,40 @@ export default {
       await fs.promises.writeFile(this.paths.secretsFilePath, newSecretsYaml);
 
       this.saveSnack = true;
+      this.dirty = false;
     },
   },
   components: {
     DataInput,
     Level,
+    ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   data() {
     return {
       showSecrets: false,
-      settings: {},
-      secrets: {},
+      settings: null,
+      secrets: null,
       saveSnack: false,
+      dirty: false,
     };
+  },
+  watch: {
+    settings: {
+      deep: true,
+      handler(newSettings, oldSettings) {
+        if (oldSettings) {
+          this.dirty = true;
+        }
+      },
+    },
+    secrets: {
+      deep: true,
+      handler(newSecrets, oldSecrets) {
+        if (oldSecrets) {
+          this.dirty = true;
+        }
+      },
+    },
   },
   async mounted() {
     const fullSettingsText = await fs.promises.readFile(
@@ -164,6 +200,22 @@ export default {
     const fullSecrets = YAML.parse(fullSecretsText) || {};
 
     this.secrets = fullSecrets;
+  },
+  async beforeRouteLeave(to, from, next) {
+    if (!this.dirty) {
+      return next();
+    }
+    if (
+      await this.$refs.saveDlg.open(
+        "Unsaved Changes",
+        "Do you want to save your changes?",
+        "Save Changes",
+        "Discard Changes"
+      )
+    ) {
+      await this.save();
+    }
+    return next();
   },
 };
 </script>
