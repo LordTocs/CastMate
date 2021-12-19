@@ -7,7 +7,7 @@ const _ = require('lodash');
 class PluginManager {
 	async load(ipcSender) {
 		let pluginFiles = [
-			//"inputs",
+			"inputs",
 			"hue",
 			"notifications",
 			"obs",
