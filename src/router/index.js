@@ -10,12 +10,18 @@ import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
 import Segments from '../views/Segments.vue';
 import Variables from '../views/Variables.vue';
+import Landing from '../views/Landing.vue';
 
 Vue.use(VueRouter)
 
 const routes = [
 	{
 		path: '/',
+		name: "CastMate",
+		component: Landing
+	},
+	{
+		path: '/segments',
 		name: "Segments",
 		component: Segments
 	},
