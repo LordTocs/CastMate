@@ -24,7 +24,7 @@ export default {
 	actions: {
 		async loadSegments({ commit, rootGetters })
 		{
-			const segments = YAML.parse(await fs.promises.readFile(rootGetters['ipc/paths'].segmentsFilePath, 'utf-8')) || {};
+			const segments = YAML.parse(await fs.promises.readFile(rootGetters['ipc/paths'].segmentsFilePath, 'utf-8')) || [];
 			commit('setSegments', segments);
 		},
 		async updateSegment({ commit, getters, rootGetters }, { index, segment })
