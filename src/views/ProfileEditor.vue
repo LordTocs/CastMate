@@ -136,7 +136,12 @@ export default {
       "utf-8"
     );
 
-    this.profile = YAML.parse(fileData);
+    const profile = YAML.parse(fileData);
+    if (!profile.conditions) {
+      profile.conditions = { operation: "any", operands: [] };
+    }
+
+    this.profile = profile;
   },
   watch: {
     profile: {
