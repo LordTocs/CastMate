@@ -14,9 +14,15 @@ module.exports = {
 			let result = {};
 			for (let stateKey of msg.state)
 			{
-				if (stateKey in this.plugins.combinedState)
+
+				if (this.plugins.stateLookup[stateKey.plugin] && (stateKey.state in this.plugins.stateLookup[stateKey.plugin]))
 				{
-					result[stateKey] = this.plugins.combinedState[stateKey];
+					if (!(stateKey.plugin in result))
+					{
+						result[stateKey.plugin] = {};
+					}
+
+					result[stateKey.plugin][stateKey.state] = this.plugins.stateLookup[stateKey.plugin][stateKey.state];
 				}
 			}
 			connection.send(JSON.stringify({ state: result }));

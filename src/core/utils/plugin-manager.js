@@ -27,12 +27,6 @@ class PluginManager {
         //Todo: This relative require is weird.
         this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));
 
-        this.combinedState = {};
-
-		for (let plugin of this.plugins) {
-			reactiveCopy(this.combinedState, plugin.pluginObj.state);
-		}
-
 		this.stateLookup = {};
 
 		for (let plugin of this.plugins) {

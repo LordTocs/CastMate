@@ -120,9 +120,7 @@ class ActionQueue
 	async pushToQueue(automation, context)
 	{
 		//Build our complete context.
-		let completeContext = { ...context, ...this.plugins.combinedTemplateFunctions };
-		//Reactively copy in combinedState incase it's mutated mid action.
-		reactiveCopy(completeContext, this.plugins.combinedState);
+		let completeContext = { ...context, ...this.plugins.combinedTemplateFunctions, ...this.plugins.stateLookup };
 
 		this._prepAutomation(automation);
 
