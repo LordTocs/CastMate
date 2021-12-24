@@ -99,6 +99,8 @@ export default {
       );
 
       await this.getFiles();
+
+      this.$router.push(`/profiles/${name}`)
     },
     async tryDelete(name) {
       if (

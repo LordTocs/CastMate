@@ -13,7 +13,7 @@
       <v-data-table
         :headers="automationHeaders"
         :items="automationFiles"
-		:search="search"
+        :search="search"
         @click:row="(item) => $router.push(`/automations/${item.name}`)"
       >
         <template v-slot:item.actions="{ item }">
@@ -92,6 +92,8 @@ export default {
       };
 
       await fs.promises.writeFile(filePath, YAML.stringify(automation));
+
+      this.$router.push(`/automations/${name}`)
 
       //Todo open path.
     },
