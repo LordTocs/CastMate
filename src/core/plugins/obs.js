@@ -11,27 +11,28 @@ module.exports = {
 		this.obs = new OBSWebSocket();
 		this.connectOBS();
 		this.obs.on("SwitchScenes", data => {
-			this.state.obsScene = data.sceneName;
+			this.state.scene = data.sceneName;
 		})
 		this.obs.on("ConnectionClosed", () => {
+			this.state.connected = false;
 			setTimeout(() => { this.connectOBS() }, 5000);
 		});
 		this.obs.on("StreamStarted", () => {
-			this.state.obsStreaming = true;
+			this.state.streaming = true;
 		})
 		this.obs.on("StreamStopped", () => {
-			this.state.obsStreaming = false;
+			this.state.streaming = false;
 		})
 		this.obs.on("StreamStatus", (data) => {
-			this.state.obsStreaming = data.streaming;
-			this.state.obsRecording = data.recording;
+			this.state.streaming = data.streaming;
+			this.state.recording = data.recording;
 		});
 
 		this.obs.on("RecordingStarted", () => {
-			this.state.obsRecording = true;
+			this.state.recording = true;
 		})
 		this.obs.on("RecordingStopped", () => {
-			this.state.obsRecording = false;
+			this.state.recording = false;
 		})
 	},
 	methods: {
@@ -44,9 +45,11 @@ module.exports = {
 					password: this.secrets.password
 				})
 				let result = await this.obs.send("GetCurrentScene");
-				this.state.obsScene = result.name;
+				this.state.scene = result.name;
 				this.logger.info("OBS connected!");
+				this.state.connected = true;
 			} catch {
+				this.state.connected = false;
 				return;
 			}
 		},
@@ -90,7 +93,7 @@ module.exports = {
 		password: { type: String }
 	},
 	state: {
-		obsScene: {
+		scene: {
 			type: String,
 			name: "Obs Scene",
 			description: "Currently Active OBS Scene",
@@ -98,15 +101,20 @@ module.exports = {
 				return await this.getAllScenes();
 			}
 		},
-		obsStreaming: {
+		streaming: {
 			type: Boolean,
 			name: "Obs Streaming",
 			description: "Is OBS currently Streaming?"
 		},
-		obsRecording: {
+		recording: {
 			type: Boolean,
 			name: "Obs Recording",
 			description: "Is OBS currently Recording?"
+		},
+		connected: {
+			type: Boolean,
+			name: "Obs Connected",
+			description: "Is castmate connected to OBS."
 		}
 	},
 	actions: {
