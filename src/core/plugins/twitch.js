@@ -137,6 +137,7 @@ module.exports = {
 				this.logger.info("Failed to complete auth.");
 				this.logger.info(`  Channel Auth ${this.channelAuth ? this.channelAuth.isAuthed : 'None'}`)
 				this.logger.info(`  Bot     Auth ${this.botAuth ? this.botAuth.isAuthed : 'None'}`)
+				this.state.isAuthed = false;
 				return;
 			}
 
@@ -151,6 +152,8 @@ module.exports = {
 				this.logger.error(`Failed to Auth`);
 				this.logger.error(`${err}`);
 			}
+
+			this.state.isAuthed = true;
 
 			try
 			{
@@ -656,7 +659,7 @@ module.exports = {
 
 		async getAllTags()
 		{
-			if (!this.channelAuth || !this.channelAuth.isAuthed)
+			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.channelTwitchClient)
 				return [];
 
 			const pageniator = this.channelTwitchClient.helix.tags.getAllStreamTagsPaginated();
@@ -759,6 +762,11 @@ module.exports = {
 		followers: {
 			type: Number,
 			name: "Twitch Followers"
+		},
+		isAuthed: {
+			type: Boolean,
+			name: "Is Authed",
+			description: "True if the user is completely authenticated."
 		}
 	},
 	triggers: {
