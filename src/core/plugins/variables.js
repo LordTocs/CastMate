@@ -119,7 +119,7 @@ module.exports = {
 					return;
 
 				//Set the value
-				let setValue = variableData.set;
+				let setValue = variableData.value;
 				if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number) {
 					setValue = await this.handleTemplateNumber(setValue, context);
 				}
