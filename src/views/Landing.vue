@@ -2,9 +2,9 @@
   <v-container fluid>
     <v-row>
       <v-col>
-        <v-card height="100%">
+        <v-card height="100%" class="d-flex flex-column">
           <v-card-title> Twitch </v-card-title>
-          <v-card-text v-if="!stateLookup.twitch.isAuthed">
+          <v-card-text class="flex-grow-1" v-if="!stateLookup.twitch.isAuthed">
             <v-alert dense outlined border="left" type="warning">
               <v-row align="center">
                 <v-col class="grow">
@@ -25,7 +25,7 @@
               </v-row>
             </v-alert>
           </v-card-text>
-          <v-card-text v-else>
+          <v-card-text class="flex-grow-1" v-else>
             <v-row>
               <v-col>
                 <strong> Channel: </strong>
@@ -45,9 +45,9 @@
         </v-card>
       </v-col>
       <v-col>
-        <v-card height="100%">
+        <v-card height="100%" class="d-flex flex-column">
           <v-card-title> OBS </v-card-title>
-          <v-card-text v-if="!stateLookup.obs.connected">
+          <v-card-text class="flex-grow-1" v-if="!stateLookup.obs.connected">
             <v-alert dense outlined border="left" type="warning">
               <v-row align="center">
                 <v-col class="grow">
@@ -67,7 +67,7 @@
               </v-row>
             </v-alert>
           </v-card-text>
-          <v-card-text v-else>
+          <v-card-text class="flex-grow-1" v-else>
             <strong> Streaming: </strong> {{ stateLookup.obs.streaming }} <br />
             <strong> Recording: </strong> {{ stateLookup.obs.recording }} <br />
           </v-card-text>
