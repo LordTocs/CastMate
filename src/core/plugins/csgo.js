@@ -12,7 +12,7 @@ module.exports = {
 
 		this.gamestateIntegration.on('player.team', (team) =>
 		{
-			this.state.csgoTeam = team;
+			this.state.team = team;
 		})
 
 		this.gamestateIntegration.on('round.bomb', (bombState) =>
@@ -33,12 +33,12 @@ module.exports = {
 
 		this.gamestateIntegration.on("player.state.health", (health) =>
 		{
-			this.state.csgoHealth = health;
+			this.state.health = health;
 		});
 
 		this.gamestateIntegration.on('player.match_stats.kills', (kills) =>
 		{
-			this.state.csgoKills = kills;
+			this.state.kills = kills;
 			if (kills > 0) 
 			{
 				this.actions.trigger('csgoKill', { kills });
@@ -47,7 +47,7 @@ module.exports = {
 
 		this.gamestateIntegration.on('player.match_stats.deaths', (deaths) =>
 		{
-			this.state.csgoDeaths = deaths;
+			this.state.deaths = deaths;
 			if (deaths > 0)
 			{
 				this.actions.trigger('csgoDeath', { deaths });
@@ -56,13 +56,13 @@ module.exports = {
 
 		this.gamestateIntegration.on('player.match_stats.assists', (assists) =>
 		{
-			this.state.csgoAssists = assists;
+			this.state.assists = assists;
 		})
 
 		this.gamestateIntegration.on('round.win_team', (winTeam) =>
 		{
 
-			if (winTeam == this.state.csgoTeam)
+			if (winTeam == this.state.team)
 			{
 				this.actions.trigger('csgoRoundWin', {});
 			}
@@ -92,46 +92,48 @@ module.exports = {
 	actions: {
 	},
 	state: {
-		csgoHealth: { type: Number, name: "Health" },
-		csgoKills: { type: Number, name: "Kills" },
-		csgoDeaths: { type: Number, name: "Deaths" },
-		csgoAssists: { type: Number, name: "Assists" },
+		health: { type: Number, name: "Health" },
+		kills: { type: Number, name: "Kills" },
+		deaths: { type: Number, name: "Deaths" },
+		assists: { type: Number, name: "Assists" },
 	},
 	triggers: {
 		csgoDeath: {
-			name: "CSGO Death",
+			name: "Death",
 			type: "NumberTrigger",
 			numberText: "Deaths",
 			key: "deaths",
+			description: "Triggered on when you die in CS:GO"
 		},
 		csgoKill: {
-			name: "CSGO Kill",
+			name: "Kill",
 			type: "NumberTrigger",
 			numberText: "Kills",
 			key: "kills",
+			description: "Triggered when you get a kill in CS:GO"
 		},
 		csgoBombPlant: {
-			name: "CSGO Bomb Planted",
-			description: "Triggers when a bomb is planted.",
-			type: "SingleTrigger"
+			name: "Bomb Planted",
+			type: "SingleTrigger",
+			description: "Triggered when the bomb is planted"
 		},
 		csgoBombDefused: {
-			name: "CSGO Bomb Defused",
-			description: "Triggers when a bomb is defused.",
-			type: "SingleTrigger"
+			name: "Bomb Defused",
+			type: "SingleTrigger",
+			description: "Triggered when the bomb is defused."
 		},
 		csgoBombExploded: {
-			name: "CSGO Bomb Exploded",
+			name: "Bomb Exploded",
 			description: "Triggers when a bomb is exploded.",
-			type: "SingleTrigger"
+			type: "SingleTrigger",
 		},
 		csgoRoundLoss: {
-			name: "CSGO Round Loss",
+			name: "Round Loss",
 			description: "Triggers when the round is lost.",
 			type: "SingleTrigger"
 		},
 		csgoRoundWin: {
-			name: "CSGO Round Win",
+			name: "Round Win",
 			description: "Triggers when the round is won.",
 			type: "SingleTrigger"
 		}

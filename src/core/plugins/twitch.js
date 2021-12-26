@@ -812,7 +812,7 @@ module.exports = {
 		},
 		giftedSub: {
 			name: "Gifted Subs",
-			description: "Fires for when a user subscribes. Based on the number of subs gifted..",
+			description: "Fires for when a user gifts subs. Based on the number of subs gifted..",
 			type: "NumberTrigger",
 			numberText: "Subs Gifted"
 		},
