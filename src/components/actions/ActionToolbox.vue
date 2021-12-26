@@ -3,7 +3,10 @@
     <v-list-group v-for="plugin in actionPlugins" :key="plugin.name" no-action>
       <template v-slot:activator>
         <v-list-item-content>
-          <v-list-item-title v-text="plugin.uiName"></v-list-item-title>
+          <v-list-item-title>
+            <v-icon v-if="plugin.icon"> {{ plugin.icon }} </v-icon>
+            {{ plugin.uiName }}
+          </v-list-item-title>
         </v-list-item-content>
       </template>
 
@@ -43,7 +46,7 @@
 <script>
 import { mapGetters } from "vuex";
 import Draggable from "vuedraggable";
-import { constructDefaultSchema } from '../../utils/objects';
+import { constructDefaultSchema } from "../../utils/objects";
 
 export default {
   components: { Draggable },
@@ -59,7 +62,9 @@ export default {
 
       for (let plugin of this.actionPlugins) {
         pluginLists[plugin.name] = Object.keys(plugin.actions).map(
-          (actionKey) => ({ [actionKey]: constructDefaultSchema(plugin.actions[actionKey].data) })
+          (actionKey) => ({
+            [actionKey]: constructDefaultSchema(plugin.actions[actionKey].data),
+          })
         );
       }
 

@@ -2,13 +2,13 @@
   <v-expansion-panels>
     <v-expansion-panel>
       <v-expansion-panel-header>
-        <!--todo icon-->{{ plugin.uiName }}
+        <span class="text-h6">
+          <v-icon v-if="plugin.icon"> {{ plugin.icon }} </v-icon>
+          {{ plugin.uiName }} Triggers</span
+        >
       </v-expansion-panel-header>
       <v-expansion-panel-content>
-        <v-row
-          v-for="triggerKey in triggerKeys"
-          :key="triggerKey"
-        >
+        <v-row v-for="triggerKey in triggerKeys" :key="triggerKey">
           <v-col>
             <trigger-editor
               :triggerKey="triggerKey"

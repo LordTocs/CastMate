@@ -91,7 +91,7 @@
             :key="plugin.name"
           >
             <v-list-item-icon>
-              <v-icon> mdi-view-dashboard </v-icon>
+              <v-icon> {{ plugin.icon ? plugin.icon : "mdi-view-dashboard" }} </v-icon>
             </v-list-item-icon>
             <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
           </v-list-item>
