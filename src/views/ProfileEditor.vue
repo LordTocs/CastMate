@@ -138,7 +138,7 @@ export default {
 
     const profile = YAML.parse(fileData);
     if (!profile.conditions) {
-      profile.conditions = { operation: "any", operands: [] };
+      profile.conditions = { operator: "any", operands: [] };
     }
 
     this.profile = profile;

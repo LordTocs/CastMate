@@ -40,11 +40,13 @@ export default {
 			client: null,
 			paths: {},
 			tags: [],
-			stateLookup: {}
+			stateLookup: {},
+			activeProfiles: [],
 		}
 	},
 	getters: {
 		paths: state => state.paths,
+		activeProfiles: state => state.activeProfiles,
 		plugins: state => [...state.plugins, builtInPlugin],
 		inited: state => state.inited,
 		tags: state => state.tags,
@@ -88,6 +90,9 @@ export default {
 		setTags(state, tags) {
 			state.tags = tags;
 		},
+		setActiveProfiles(state, activeProfiles) {
+			state.activeProfiles = activeProfiles;
+		},
 		applyState(state, update) {
 			for (let pluginKey in update) {
 				if (!state.stateLookup[pluginKey]) {
@@ -126,6 +131,8 @@ export default {
 			commit('setTags', tags);
 
 			commit('applyState', await ipcRenderer.invoke("getStateLookup"));
+
+			commit('setActiveProfiles', await ipcRenderer.invoke('core_getActiveProfiles'));
 		},
 		stateUpdate({ commit }, update) {
 			console.log("applyState", update);
@@ -133,6 +140,9 @@ export default {
 		},
 		removeState({ commit }, varName) {
 			commit('removeState', varName);
+		},
+		setActiveProfiles({ commit }, activeProfiles) {
+			commit('setActiveProfiles', activeProfiles);
 		}
 	}
 }

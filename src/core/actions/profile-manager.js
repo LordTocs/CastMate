@@ -7,10 +7,11 @@ const { sleep } = require("../utils/sleep");
 const path = require('path');
 const { userFolder } = require("../utils/configuration");
 const logger = require("../utils/logger");
+const { ipcMain } = require("electron");
 
 class ProfileManager
 {
-	constructor(actions, plugins)
+	constructor(actions, plugins, ipcSender)
 	{
 		this.actions = actions;
 		this.profiles = [];
@@ -22,6 +23,9 @@ class ProfileManager
 		this.activeProfiles = [];
 		this.inactiveProfiles = [];
 
+		this.ipcSender = ipcSender;
+
+		ipcMain.handle("core_getActiveProfiles", () => this.activeProfiles.map(p => p.name));
 	}
 
 	async load()
@@ -152,6 +156,8 @@ class ProfileManager
 
 		this.inactiveProfiles = inactiveProfiles;
 		this.activeProfiles = activeProfiles;
+
+		this.ipcSender.send('profiles-active', activeProfiles.map(p => p.name))
 
 		//Notify any plugins of profile changes.
 		for (let plugin of this.plugins.plugins)

@@ -29,3 +29,7 @@ ipcRenderer.on('state-removal', (event, arg) =>
 {
 	store.dispatch(`ipc/removeState`, arg);
 })
+
+ipcRenderer.on('profiles-active', (event, arg) => {
+	store.dispatch(`ipc/setActiveProfiles`, arg);
+})

@@ -55,7 +55,7 @@ async function initInternal()
 
 	plugins.setupReactivity();
 
-	const profiles = new ProfileManager(actions, plugins);
+	const profiles = new ProfileManager(actions, plugins, mainWindowSender);
 
 	//Let loose the web server
 	webServices.start();

@@ -77,18 +77,25 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col>
+        <active-profiles-card />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
+import ActiveProfilesCard from "../components/profiles/ActiveProfilesCard.vue";
 import { mapIpcs } from '../utils/ipcMap';
 export default {
+  components: { ActiveProfilesCard },
   computed: {
     ...mapGetters("ipc", ["stateLookup"]),
   },
   methods: {
-    ...mapIpcs("obs", "refereshAllBrowsers")
+    ...mapIpcs("obs", ["refereshAllBrowsers"])
   }
 };
 </script>
