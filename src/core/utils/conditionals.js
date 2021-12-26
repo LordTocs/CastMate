@@ -2,6 +2,12 @@
 
 function checkOr(list, data)
 {
+	if (!list || list.length == 0) {
+		
+		console.log("empty or")
+		return true;
+		
+	}
 	for (let subCondition of list)
 	{
 		if (checkConditions(subCondition, data))
@@ -14,6 +20,8 @@ function checkOr(list, data)
 
 function checkAnd(list, data)
 {
+	if (!list || list.length == 0)
+		return true;
 	for (let subCondition of list)
 	{
 		if (!checkConditions(subCondition, data))

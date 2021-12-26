@@ -21,9 +21,10 @@ class Profile
 	constructor(filename, manager, onReload)
 	{
 		this.filename = filename;
+		this.name = path.basename(filename, ".yaml");
 		this.manager = manager;
 		this.triggers = {};
-		this.conditions = {};
+		this.conditions = { operator: 'any', operands: []};
 		this.watchers = [];
 		this.onReload = onReload;
 		this.rewards = [];
@@ -47,7 +48,7 @@ class Profile
 		}
 
 		this.triggers = profileConfig.triggers || {};
-		this.conditions = profileConfig.conditions || {};
+		this.conditions = profileConfig.conditions || { operator: 'any', operands: []};
 		this.config = profileConfig;
 		this.onActivate = profileConfig.onActivate;
 		this.onDeactivate = profileConfig.onDeactivate;
