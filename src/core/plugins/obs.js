@@ -9,6 +9,8 @@ module.exports = {
 	color: "#607A7F",
 	async init() {
 		this.obs = new OBSWebSocket();
+		this.state.recording = false;
+		this.state.streaming = false;
 		this.connectOBS();
 		this.obs.on("SwitchScenes", data => {
 			this.state.scene = data.sceneName;

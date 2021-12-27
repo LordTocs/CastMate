@@ -67,6 +67,8 @@ module.exports = {
 
 		this.colorCache = {};
 
+		this.state.viewers = 0;
+
 		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
 		//this.filter.addWords(...badwordList.words);
 	},
@@ -687,7 +689,8 @@ module.exports = {
 		},
 		viewers: {
 			type: Number,
-			name: "Twitch Viewers"
+			name: "Twitch Viewers",
+			default: 0,
 		},
 		isAuthed: {
 			type: Boolean,
