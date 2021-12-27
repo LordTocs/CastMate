@@ -74,7 +74,6 @@ class PluginManager {
 	}
 
 	updateReactivity(pluginObj) {
-		console.log("updateReactivity " + pluginObj.name);
 		if (!this.stateLookup[pluginObj.name])
 		{
 			this.stateLookup[pluginObj.name] = {};
