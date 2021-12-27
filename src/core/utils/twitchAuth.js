@@ -1,5 +1,4 @@
 const qs = require('querystring');
-const { AccessToken } = require('twitch-auth');
 const { BrowserWindow } = require('electron');
 const logger = require('./logger');
 
@@ -103,11 +102,13 @@ class ElectronAuthManager {
 					}
 					else if (respParams.access_token)
 					{
-						this._accessToken = new AccessToken({
-							access_token: respParams.access_token,
+						this._accessToken = {
+							accessToken: respParams.access_token,
 							scope: scopes,
-							refresh_token: ''
-						})
+							refresh_token: null,
+                            expiresIn: null,
+                            obtainmentTimestamp: Date.now(),
+						};
 
                         this._currentScopes = new Set(scopes);
 
@@ -198,11 +199,13 @@ class ElectronAuthManager {
                         callback({ cancel: true });
                     } else if (respParams.access_token) {
                         logger.info("Access Token Success");
-                        this._accessToken = new AccessToken({
-                            access_token: respParams.access_token,
-                            scope: scopes,
-                            refresh_token: ''
-                        })
+                        this._accessToken = {
+							accessToken: respParams.access_token,
+							scope: scopes,
+							refresh_token: null,
+                            expiresIn: null,
+                            obtainmentTimestamp: Date.now(),
+						};
 
                         this._currentScopes = new Set(scopes);
 

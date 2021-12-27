@@ -34,6 +34,7 @@
                 {{ stateLookup.twitch.botName }}
               </v-col>
               <v-col>
+                <strong> Viewers: </strong> {{ stateLookup.twitch.viewers}} <br />
                 <strong> Followers: </strong> {{ stateLookup.twitch.followers}} <br />
                 <strong> Subscribers: </strong> {{ stateLookup.twitch.subscribers}} <br />
               </v-col>
