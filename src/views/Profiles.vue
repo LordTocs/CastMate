@@ -112,7 +112,7 @@ export default {
       if (
         await this.$refs.deleteDlg.open(
           "Confirm",
-          "Are you sure you want to delete this profile?"
+          `Are you sure you want to delete ${name}?`
         )
       ) {
         const filePath = path.join(

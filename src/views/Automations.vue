@@ -23,6 +23,9 @@
           <v-btn fab small class="mx-1" @click.stop="tryDelete(item.name)">
             <v-icon small> mdi-delete </v-icon>
           </v-btn>
+          <v-btn fab small class="mx-1" @click.stop="tryDuplicate(item.name)">
+            <v-icon small> mdi-content-copy </v-icon>
+          </v-btn>
         </template>
 
         <template v-slot:footer.prepend>
@@ -38,6 +41,7 @@
         @created="createNewAutomation"
       />
       <confirm-dialog ref="deleteDlg" />
+      <named-item-confirmation ref="duplicateDlg" />
     </v-card>
   </v-container>
 </template>
@@ -49,9 +53,10 @@ import YAML from "yaml";
 import { mapGetters } from "vuex";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
+import NamedItemConfirmation from "../components/dialogs/NamedItemConfirmation.vue";
 
 export default {
-  components: { ConfirmDialog, NamedItemModal },
+  components: { ConfirmDialog, NamedItemModal, NamedItemConfirmation },
   computed: {
     ...mapGetters("ipc", ["inited", "paths"]),
     automationHeaders() {
@@ -101,7 +106,7 @@ export default {
       if (
         await this.$refs.deleteDlg.open(
           "Confirm",
-          "Are you sure you want to delete this automation?"
+          `Are you sure you want to delete ${name}?`
         )
       ) {
         const filePath = path.join(
@@ -123,6 +128,30 @@ export default {
         }
       }
     },
+    async tryDuplicate(name) {
+      if (await this.$refs.duplicateDlg.open(`Duplicate ${name}?`, `New Automation Name`, "Duplicate", "Cancel"))
+      {
+        const filePath = path.join(
+          this.paths.userFolder,
+          "automations",
+          name + ".yaml"
+        );
+
+        const newName = this.$refs.duplicateDlg.name
+
+        const destPath = path.join(this.paths.userFolder,
+          "automations",
+          newName + ".yaml")
+
+        if (!fs.existsSync(filePath)) {
+          return;
+        }
+
+        await fs.promises.copyFile(filePath, destPath);
+
+        this.$router.push(`/automations/${newName}`);
+      }
+    }
   },
   data() {
     return {
