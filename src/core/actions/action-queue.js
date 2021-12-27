@@ -3,6 +3,7 @@ const { Mutex } = require("async-mutex");
 const { reactiveCopy } = require("../utils/reactive.js");
 const logger = require('../utils/logger');
 const { ipcMain } = require("electron");
+const _ = require('lodash');
 
 class ActionQueue
 {
@@ -120,7 +121,17 @@ class ActionQueue
 	async pushToQueue(automation, context)
 	{
 		//Build our complete context.
-		let completeContext = { ...context, ...this.plugins.combinedTemplateFunctions, ...this.plugins.stateLookup };
+		let completeContext = { ...context };
+		_.merge(completeContext, this.plugins.templateFunctions);
+		//merge won't work with reactive props, manually go deep here.
+		for (let pluginKey in this.plugins.stateLookup)
+		{
+			if (!(pluginKey in completeContext))
+			{
+				completeContext[pluginKey] = {};
+			}
+			reactiveCopy(completeContext[pluginKey], this.plugins.stateLookup[pluginKey]);
+		}
 
 		this._prepAutomation(automation);
 

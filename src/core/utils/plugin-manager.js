@@ -34,9 +34,9 @@ class PluginManager {
 			reactiveCopy(this.stateLookup[plugin.name], plugin.pluginObj.state)
 		}
 
-		this.combinedTemplateFunctions = {}
+		this.templateFunctions = {};
 		for (let plugin of this.plugins) {
-			Object.assign(this.combinedTemplateFunctions, plugin.templateFunctions);
+			this.templateFunctions[plugin.name] = plugin.templateFunctions;
 		}
 
 		this.ipcSender = ipcSender;

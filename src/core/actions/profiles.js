@@ -47,6 +47,12 @@ class Profile
 			throw err;
 		}
 
+		if (!profileConfig)
+		{
+			logger.error(`Profile file ${this.filename} is empty!`)
+			profileConfig = {};
+		}
+
 		this.triggers = profileConfig.triggers || {};
 		this.conditions = profileConfig.conditions || { operator: 'any', operands: []};
 		this.config = profileConfig;
