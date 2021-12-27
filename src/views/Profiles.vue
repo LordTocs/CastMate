@@ -29,6 +29,9 @@
           <v-btn fab small class="mx-1" @click.stop="tryDelete(item.name)">
             <v-icon small> mdi-delete </v-icon>
           </v-btn>
+          <v-btn fab small class="mx-1" @click.stop="tryDuplicate(item.name)">
+            <v-icon small> mdi-content-copy </v-icon>
+          </v-btn>
         </template>
 
         <template v-slot:footer.prepend>
@@ -41,6 +44,7 @@
         label="Profile Name"
         @created="createNewProfile"
       />
+      <named-item-confirmation ref="duplicateDlg" />
       <confirm-dialog ref="deleteDlg" />
     </v-card>
   </v-container>
@@ -53,10 +57,12 @@ import YAML from "yaml";
 import { mapGetters } from "vuex";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
+import NamedItemConfirmation from "../components/dialogs/NamedItemConfirmation.vue";
 export default {
   components: {
     NamedItemModal,
     ConfirmDialog,
+    NamedItemConfirmation
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
@@ -100,7 +106,7 @@ export default {
 
       await this.getFiles();
 
-      this.$router.push(`/profiles/${name}`)
+      this.$router.push(`/profiles/${name}`);
     },
     async tryDelete(name) {
       if (
@@ -128,6 +134,30 @@ export default {
         }
       }
     },
+    async tryDuplicate(name) {
+      if (await this.$refs.duplicateDlg.open(`Duplicate ${name}?`, `New Profile Name`, "Duplicate", "Cancel"))
+      {
+        const filePath = path.join(
+          this.paths.userFolder,
+          "profiles",
+          name + ".yaml"
+        );
+
+        const newName = this.$refs.duplicateDlg.name
+
+        const destPath = path.join(this.paths.userFolder,
+          "profiles",
+          newName + ".yaml")
+
+        if (!fs.existsSync(filePath)) {
+          return;
+        }
+
+        await fs.promises.copyFile(filePath, destPath);
+
+        this.$router.push(`/profiles/${newName}`);
+      }
+    }
   },
   async mounted() {
     await this.getFiles();
