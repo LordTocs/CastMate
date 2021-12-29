@@ -35,7 +35,8 @@ module.exports = {
 			type: Number,
 			name: "Global Volume",
 			description: "Global Volume control.",
-			slider: [0.0, 1.0]
+			slider: [0.0, 1.0],
+			default: 1.0,
 		}
 	},
 	secrets: {
