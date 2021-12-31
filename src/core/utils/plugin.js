@@ -144,6 +144,7 @@ class Plugin
 		for (let funcKey in config.ipcMethods)
 		{
 			this.ipcMethods[funcKey] = config.ipcMethods[funcKey].bind(this.pluginObj);
+			this.pluginObj[funcKey] = this.ipcMethods[funcKey];
 			ipcMain.handle(`${this.name}_${funcKey}`, async (event, ...args) =>
 			{
 				return await this.ipcMethods[funcKey](...args);
