@@ -52,7 +52,12 @@
       </v-row>
       <v-row v-for="plugin in triggerPlugins" :key="plugin.name">
         <v-col>
-          <profile-plugin v-if="profile" :plugin="plugin" v-model="profile" />
+          <plugin-triggers
+            v-if="profile"
+            :plugin="plugin"
+            :value="profile.triggers[plugin.name] || {}"
+            @input="(v) => $set(profile.triggers, plugin.name, v)"
+          />
         </v-col>
       </v-row>
       <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
@@ -65,7 +70,7 @@
 </template>
 
 <script>
-import ProfilePlugin from "../components/profiles/ProfilePlugin.vue";
+import PluginTriggers from "../components/profiles/PluginTriggers.vue";
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import AutomationSelector from "../components/automations/AutomationSelector.vue";
@@ -78,7 +83,7 @@ import BooleanGroup from "../components/conditionals/BooleanGroup.vue";
 
 export default {
   components: {
-    ProfilePlugin,
+    PluginTriggers,
     ConditionsEditor,
     RewardsEditor,
     AutomationSelector,

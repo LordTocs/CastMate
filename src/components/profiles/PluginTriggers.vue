@@ -12,8 +12,8 @@
           <v-col>
             <trigger-editor
               :triggerKey="triggerKey"
-              :trigger="triggers[triggerKey]"
-              :value="(value.triggers || {})[triggerKey]"
+              :trigger="plugin.triggers[triggerKey]"
+              :value="value[triggerKey]"
               @input="(v) => setTrigger(triggerKey, v)"
             />
           </v-col>
@@ -40,7 +40,7 @@ export default {
   methods: {
     setTrigger(triggerKey, newValue) {
       const result = { ...this.value };
-      result.triggers[triggerKey] = newValue;
+      result[triggerKey] = newValue;
 
       this.$emit("input", result);
     },
