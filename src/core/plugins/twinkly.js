@@ -20,14 +20,6 @@ module.exports = {
     color: "#7F743F",
     async init() {
         this.logger.info('Twinkly Effects');
-
-        if (this.settings.twinklyIP) {
-            const movies = await this.getAllMovies();
-
-            for (let movie of movies.movies) {
-                this.logger.info(`${movie.name}: ${movie.id}`);
-            }
-        }
     },
     methods: {
         getBaseUrl() {
