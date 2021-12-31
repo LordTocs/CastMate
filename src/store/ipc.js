@@ -128,7 +128,7 @@ export default {
 			commit('setActiveProfiles', await ipcRenderer.invoke('core_getActiveProfiles'));
 		},
 		stateUpdate({ commit }, update) {
-			console.log("applyState", update);
+			//console.log("applyState", update);
 			commit('applyState', update);
 		},
 		removeState({ commit }, varName) {
