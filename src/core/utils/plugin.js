@@ -67,10 +67,17 @@ class Plugin
 		this.secrets = config.secrets || [];
 		this.triggers = {};
 
+		this.pluginObj.triggers = {};
+
 		for (let triggerName in config.triggers)
 		{
 			const triggerSpec = config.triggers[triggerName];
 			this.triggers[triggerName] = { ...triggerSpec };
+
+			const triggerFunc = function (context) {
+				return this.actions.trigger(this.name ,triggerName, context || {})
+			}
+			this.pluginObj.triggers[triggerName] = triggerFunc.bind(this.pluginObj);
 
 			if (triggerSpec.type == 'NumberTrigger')
 			{

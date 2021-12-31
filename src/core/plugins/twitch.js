@@ -248,35 +248,35 @@ module.exports = {
 				}
 
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
-					if (this.actions.trigger('modchat', context)) {
+					if (this.triggers.modchat(context)) {
 						return;
 					}
 				}
 
 				if (msgInfo.userInfo.isVip) {
-					if (this.actions.trigger('vipchat', context)) {
+					if (this.triggers.vipchat(context)) {
 						return;
 					}
 				}
 
 				if (msgInfo.userInfo.isSubscriber) {
-					if (this.actions.trigger('subchat', context)) {
+					if (this.triggers.subchat(context)) {
 						return;
 					}
 				}
 
-				if (this.actions.trigger('chat', context)) {
+				if (this.triggers.chat(context)) {
 					return;
 				}
 
 			});
 
 			this.chatClient.onRaid((channel, user, raidInfo) => {
-				this.actions.trigger("raid", { number: raidInfo.viewerCount, user: raidInfo.displayName });
+				this.triggers.raid({ number: raidInfo.viewerCount, user: raidInfo.displayName });
 			})
 
 			this.chatClient.onCommunitySub((channel, user, subInfo) => {
-				this.actions.trigger("giftedSub", { number: subInfo.count, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
+				this.triggers.giftedSub({ number: subInfo.count, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
 			});
 		},
 
@@ -335,7 +335,7 @@ module.exports = {
 					this.followerCache.add(message.userId);
 
 					this.logger.info(`followed by ${message.userDisplayName}`);
-					this.actions.trigger('follow', { user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
+					this.triggers.follow({ user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
 
 					let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
 					this.state.followers = follows.total;
@@ -366,7 +366,7 @@ module.exports = {
 				this.logger.info(`Bits: ${message.bits}`);
 
 
-				this.actions.trigger("bits", {
+				this.triggers.bits({
 					number: message.bits,
 					user: message.userName,
 					userId: message.userId,
@@ -383,7 +383,7 @@ module.exports = {
 					message = "";
 				}
 
-				this.actions.trigger("redemption", {
+				this.triggers.redemption("redemption", {
 					enum: redemption.rewardName,
 					message,
 					filteredMessage: this.filterMessage(message),
@@ -402,7 +402,7 @@ module.exports = {
 				else {
 					let months = message.months ? message.months : 0;
 					this.logger.info(`Sub ${message.userDisplayName} : ${months}`);
-					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, userId: message.userId, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
+					this.triggers.subscribe({ number: months, user: message.userDisplayName, userId: message.userId, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
 				}
 
 				await this.querySubscribers();
@@ -446,8 +446,7 @@ module.exports = {
 		},
 
 		async ensureChannelRewards() {
-			if (!this.state.isAffiliate)
-			{
+			if (!this.state.isAffiliate) {
 				this.logger.info("Channel isn't affiliate, skipping channel rewards");
 				return;
 			}
