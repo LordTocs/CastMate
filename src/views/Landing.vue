@@ -73,7 +73,7 @@
             <strong> Recording: </strong> {{ stateLookup.obs.recording }} <br />
           </v-card-text>
           <v-card-actions>
-            <v-btn @click="refereshAllBrowsers"> Refresh Browsers </v-btn>
+            <v-btn @click="() => refereshAllBrowsers()"> Refresh Browsers </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
