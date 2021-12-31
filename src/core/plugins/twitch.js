@@ -99,6 +99,8 @@ module.exports = {
 
 			await this.completeAuth();
 
+			await this.getAllTags();
+
 		},
 
 		async shutdown() {
@@ -594,6 +596,9 @@ module.exports = {
 		},
 
 		async getAllTags() {
+			if (this.tagCache)
+				return this.tagCache;
+
 			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.channelTwitchClient)
 				return [];
 
@@ -608,7 +613,9 @@ module.exports = {
 				}
 			}
 
-			return pojoTags;
+			this.tagCache = pojoTags;
+
+			return this.tagCache;
 		},
 
 		async updateStreamInfo(info) {

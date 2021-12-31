@@ -39,7 +39,6 @@ export default {
 			plugins: [],
 			client: null,
 			paths: {},
-			tags: [],
 			stateLookup: {},
 			activeProfiles: [],
 		}
@@ -49,7 +48,6 @@ export default {
 		activeProfiles: state => state.activeProfiles,
 		plugins: state => [...state.plugins, builtInPlugin],
 		inited: state => state.inited,
-		tags: state => state.tags,
 		stateLookup: state => state.stateLookup,
 		actions: state => {
 			let result = {};
@@ -87,9 +85,6 @@ export default {
 		setPaths(state, paths) {
 			state.paths = paths
 		},
-		setTags(state, tags) {
-			state.tags = tags;
-		},
 		setActiveProfiles(state, activeProfiles) {
 			state.activeProfiles = activeProfiles;
 		},
@@ -126,9 +121,6 @@ export default {
 
 			const paths = await ipcRenderer.invoke('getPaths');
 			commit('setPaths', paths);
-
-			const tags = await ipcRenderer.invoke('twitch_getAllTags');
-			commit('setTags', tags);
 
 			commit('applyState', await ipcRenderer.invoke("getStateLookup"));
 

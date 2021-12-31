@@ -5,6 +5,7 @@
     item-text="name"
     item-value="id"
     label="Tags"
+    :loading="loading"
     :value="value"
     :search-input.sync="search"
     @change="changed"
@@ -25,19 +26,22 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { mapIpcs } from '../../utils/ipcMap';
 export default {
   props: {
     value: {},
   },
   data() {
     return {
+      tags: [],
       search: null,
+      loading: false,
     };
   },
   computed: {
-    ...mapGetters("ipc", ["tags"]),
   },
   methods: {
+    ...mapIpcs("twitch", ["getAllTags"]),
     remove(item) {
       const newValue = [...this.value];
 
@@ -54,6 +58,11 @@ export default {
       this.search = null;
     },
   },
+  async mounted() {
+    this.loading = true;
+    this.tags = await this.getAllTags();
+    this.loading = false;
+  }
 };
 </script>
 
