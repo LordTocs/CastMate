@@ -106,7 +106,11 @@ class PluginManager {
 		}
 
 		ipcMain.handle("getPlugins", async () => {
-			let pluginInfo = this.plugins.map((plugin) => plugin.getUIDescription());
+			const pluginInfo = {};
+			for (let plugin of this.plugins)
+			{
+				pluginInfo[plugin.name] = plugin.getUIDescription();
+			}``
 			return pluginInfo;
 		})
 

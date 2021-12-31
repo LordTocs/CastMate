@@ -2,8 +2,8 @@
   <data-input
     :value="value"
     @input="(v) => $emit('input', v)"
-    :schema="actions[actionKey].data"
-    :label="actions[actionKey].name || actionKey"
+    :schema="schema"
+    :label="label"
   />
 </template>
 
@@ -14,11 +14,22 @@ import DataInput from "../data/DataInput.vue";
 export default {
   props: {
     value: {},
-    actionKey: {},
+    plugin: { type: String },
+    actionKey: { type: String },
   },
   components: { DataInput },
   computed: {
-    ...mapGetters("ipc", ["actions"]),
+    ...mapGetters("ipc", ["plugins"]),
+    actionSpec() {
+      const plugin = this.plugins[this.plugin];
+      return plugin.actions[this.actionKey];
+    },
+    label() {
+      return this.actionSpec.name || this.actionKey;
+    },
+    schema() {
+      return this.actionSpec.data;
+    },
   },
 };
 </script>

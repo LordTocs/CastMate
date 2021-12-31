@@ -145,9 +145,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["inited", "plugins", "paths"]),
+    ...mapGetters("ipc", ["inited", "pluginList", "paths"]),
     uiPlugins() {
-      return this.plugins
+      return this.pluginList
         .filter(
           (p) =>
             p.settingsView ||

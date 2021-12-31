@@ -29,7 +29,7 @@ export default {
     valuePlugin() {
       if (!this.value || !this.value.state || !this.value.state.plugin)
         return null;
-      return this.plugins.find((p) => p.name == this.value.state.plugin);
+      return this.plugins[this.value.state.plugin];
     },
     handleColor() {
       if (!this.valuePlugin) return "#2f2f2f";

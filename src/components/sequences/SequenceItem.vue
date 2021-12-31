@@ -32,8 +32,9 @@
       >
         <action-editor
           :actionKey="actionKey"
+          :plugin="actionPlugin"
           :value="actionData"
-          @input="(v) => updateAction(actionKey, v)"
+          @input="(v) => updateActionData(v)"
         />
       </v-card-text>
     </v-expand-transition>
@@ -56,25 +57,32 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["actions"]),
+    ...mapGetters("ipc", ["plugins"]),
     actionKey() {
-      return Object.keys(this.value)[0];
+      return this.value ? this.value.action : undefined;
+    },
+    actionPlugin() {
+      return this.value ? this.value.plugin : undefined;
     },
     actionData() {
-      return this.value[this.actionKey];
+      return this.value ? this.value.data : undefined;
     },
     actionDefinition() {
-      return this.actions[this.actionKey];
+      const plugin = this.plugins[this.actionPlugin];
+      if (plugin) {
+        return plugin.actions[this.actionKey];
+      }
+      return undefined;
     },
     actionColor() {
-      return this.actionDefinition.color || "grey darken-2";
+      return this.actionDefinition?.color || "grey darken-2";
     },
   },
   methods: {
-    updateAction(key, value) {
+    updateActionData(newData) {
       let newValue = { ...this.value };
 
-      newValue[key] = value;
+      newValue.data = newData;
 
       this.$emit("input", newValue);
     },

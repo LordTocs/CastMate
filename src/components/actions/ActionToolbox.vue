@@ -51,9 +51,9 @@ import { constructDefaultSchema } from "../../utils/objects";
 export default {
   components: { Draggable },
   computed: {
-    ...mapGetters("ipc", ["actions", "plugins"]),
+    ...mapGetters("ipc", ["actions", "pluginList"]),
     actionPlugins() {
-      return this.plugins.filter(
+      return this.pluginList.filter(
         (plugin) => Object.keys(plugin.actions).length > 0
       );
     },
@@ -63,7 +63,9 @@ export default {
       for (let plugin of this.actionPlugins) {
         pluginLists[plugin.name] = Object.keys(plugin.actions).map(
           (actionKey) => ({
-            [actionKey]: constructDefaultSchema(plugin.actions[actionKey].data),
+            plugin: plugin.name,
+            action: actionKey,
+            data: constructDefaultSchema(plugin.actions[actionKey].data),
           })
         );
       }

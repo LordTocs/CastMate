@@ -25,7 +25,6 @@
 
 <script>
 import TriggerEditor from "../triggers/TriggerEditor.vue";
-import { mapGetters } from "vuex";
 
 export default {
   components: { TriggerEditor },
@@ -34,7 +33,6 @@ export default {
     value: {},
   },
   computed: {
-    ...mapGetters("ipc", ["plugins", "triggers"]),
     triggerKeys() {
       return Object.keys(this.plugin.triggers || {});
     },

@@ -123,9 +123,6 @@ export default {
 
       this.$emit("input", newValue);
     },
-    testSequence() {
-      ipcRenderer.invoke("pushToQueue", this.value);
-    },
     rectOverlap(r1, r2) {
       return (
         r1.left < r2.right &&

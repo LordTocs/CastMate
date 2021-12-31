@@ -46,7 +46,8 @@ export default {
 	getters: {
 		paths: state => state.paths,
 		activeProfiles: state => state.activeProfiles,
-		plugins: state => [...state.plugins, builtInPlugin],
+		plugins: state => ({ ...state.plugins, castmate: builtInPlugin }),
+		pluginList: state => Object.keys(state.plugins).map(name => state.plugins[name]),
 		inited: state => state.inited,
 		stateLookup: state => state.stateLookup,
 		actions: state => {

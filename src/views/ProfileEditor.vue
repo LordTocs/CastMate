@@ -87,12 +87,12 @@ export default {
     BooleanGroup,
   },
   computed: {
-    ...mapGetters("ipc", ["paths", "plugins"]),
+    ...mapGetters("ipc", ["paths", "pluginList"]),
     profileName() {
       return this.$route.params.profile;
     },
     triggerPlugins() {
-      return this.plugins.filter((p) => Object.keys(p.triggers).length > 0);
+      return this.pluginList.filter((p) => Object.keys(p.triggers).length > 0);
     },
   },
   data() {

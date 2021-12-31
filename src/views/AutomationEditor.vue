@@ -78,7 +78,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["paths", "plugins"]),
+    ...mapGetters("ipc", ["paths"]),
     automationName() {
       return this.$route.params.automation;
     },
