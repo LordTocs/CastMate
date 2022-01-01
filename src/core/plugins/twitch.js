@@ -383,7 +383,7 @@ module.exports = {
 					message = "";
 				}
 
-				this.triggers.redemption("redemption", {
+				this.triggers.redemption({
 					enum: redemption.rewardName,
 					message,
 					filteredMessage: this.filterMessage(message),
@@ -395,8 +395,6 @@ module.exports = {
 
 			await this.pubSubClient.onSubscription(this.channelId, async (message) => {
 				if (message.isGift) {
-					/*this.logger.info(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
-					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });*/
 					return; //Handle gifted subs elsewhere
 				}
 				else {
