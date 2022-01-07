@@ -39,7 +39,7 @@
         @delete="deleteAction(i)"
       />
       <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
-      <div slot="footer" style="font-size: 0">...</div>
+      <div slot="footer" style="font-size: 0; height: 120px;">...</div>
     </draggable>
   </div>
 </template>
