@@ -377,14 +377,14 @@ module.exports = {
 			});
 
 			await this.pubSubClient.onRedemption(this.channelId, (redemption) => {
-				this.logger.info(`Redemption: ${redemption.rewardId} ${redemption.rewardName}`);
+				this.logger.info(`Redemption: ${redemption.rewardId} ${redemption.rewardTitle}`);
 				let message = redemption.message;
 				if (!message) {
 					message = "";
 				}
 
 				this.triggers.redemption({
-					enum: redemption.rewardName,
+					reward: redemption.rewardTitle,
 					message,
 					filteredMessage: this.filterMessage(message),
 					user: redemption.userDisplayName,
@@ -732,6 +732,7 @@ module.exports = {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
 			type: "EnumTrigger",
+			key: "reward",
 			async enum() {
 				return Object.keys(this.rewardsDefinitions.data || {});
 			}

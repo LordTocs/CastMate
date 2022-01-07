@@ -93,7 +93,7 @@ class Plugin
 			}
 			else if (triggerSpec.type == 'EnumTrigger')
 			{
-				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'enum')
+				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'value')
 
 				if (triggerSpec.enum instanceof Function)
 				{
