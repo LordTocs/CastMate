@@ -9,11 +9,11 @@
       <v-chip
         class="mr-2"
         v-if="item"
-        :color="getPlugin(item.plugin).color"
+        :color="plugins[item.plugin].color"
         outlined
         small
       >
-        {{ getPlugin(item.plugin).uiName }}
+        {{ plugins[item.plugin].uiName }}
       </v-chip>
       <span v-if="item">
         {{ item.key }}

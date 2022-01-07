@@ -57,7 +57,7 @@ export default {
   },
   components: { StateSelector, DataInput },
   computed: {
-    ...mapGetters("ipc", ["stateSchemas", "stateLookup"]),
+    ...mapGetters("ipc", ["plugins", "stateLookup"]),
     ...mapGetters("variables", ["variables"]),
     operators() {
       return [
@@ -91,10 +91,9 @@ export default {
       if (!this.value || !this.value.state) return undefined;
 
       let schema;
-      if (this.stateSchemas[this.value.state.plugin])
-        schema =
-          this.stateSchemas[this.value.state.plugin][this.value.state.key];
-      if (!schema) schema = this.variables[this.value.state.key];
+      const plugin = this.plugins[this.value.state.plugin];
+      if (plugin) schema = _cloneDeep(plugin.stateSchemas[this.value.state.key]);
+      if (!schema) schema = _cloneDeep(this.variables[this.value.state.key]);
       if (schema) schema.required = true;
 
       return schema;
