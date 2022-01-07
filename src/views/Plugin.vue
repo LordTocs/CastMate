@@ -94,7 +94,7 @@ export default {
       return this.$route.params.pluginName;
     },
     plugin() {
-      return this.plugins.find((p) => p.name == this.pluginName);
+      return this.plugins[this.pluginName];
     },
     settingsKeys() {
       return Object.keys(this.plugin.settings);
