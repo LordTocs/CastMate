@@ -227,7 +227,7 @@ module.exports = {
 	secrets: {
 	},
 	actions: {
-		hueLight: {
+		color: {
 			name: "Hue Light",
 			description: "Changes HUE lights.",
 			icon: "mdi-lightbulb-on-outline",
@@ -257,10 +257,12 @@ module.exports = {
 
 					state.on(lightData.on);
 				}
-				const mode = lightData.hsbk.mode || 'color';
+				
 
 				if ("hsbk" in lightData)
 				{
+					const mode = lightData.hsbk.mode || 'color';
+
 					if ("bri" in lightData.hsbk && (mode == 'color' || mode == "template"))
 					{
 						lightData.hsbk.bri = await this.handleTemplateNumber(lightData.hsbk.bri, context);
@@ -307,7 +309,7 @@ module.exports = {
 
 			}
 		},
-		hueScene: {
+		scene: {
 			name: "Hue Scene",
 			description: "Changes HUE lights to a hue scene",
 			icon: "mdi-lightbulb-on-outline",
