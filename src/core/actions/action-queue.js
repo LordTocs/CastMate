@@ -57,9 +57,9 @@ class ActionQueue {
 		let timeSinceStart = 0;
 
 		for (let a of actions) {
-			if (a.timestamp) {
-				a.beforeDelay = a.timestamp - timeSinceStart;
-				timeSinceStart = a.timestamp;
+			if (a.plugin == 'castmate' && a.action == "timestamp") {
+				a.beforeDelay = a.data - timeSinceStart;
+				timeSinceStart = a.data;
 			}
 		}
 	}
@@ -157,7 +157,7 @@ class ActionQueue {
 		if (pluginActions) {
 			if (action.action in pluginActions) {
 				pluginActions[action.action].handler(action.data, context).catch((reason) => {
-					console.error(`${subAction} threw Exception!`);
+					console.error(`${action.plugin}${action.action} threw Exception!`);
 					console.error(reason);
 				});
 			}
