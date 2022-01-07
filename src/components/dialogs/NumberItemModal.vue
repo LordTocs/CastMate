@@ -57,7 +57,7 @@ export default {
       this.dialog = false;
     },
     async create() {
-      if (!this.number) return;
+      if (this.number === null || this.number === undefined) return;
 
       this.dialog = false;
       this.$emit("created", this.number);
