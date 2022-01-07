@@ -26,6 +26,9 @@
           <v-btn fab small class="mx-1" @click.stop="tryDuplicate(item.name)">
             <v-icon small> mdi-content-copy </v-icon>
           </v-btn>
+          <v-btn fab small class="mx-1" @click.stop="tryRename(item.name)">
+            <v-icon small> mdi-pencil </v-icon>
+          </v-btn>
         </template>
 
         <template v-slot:footer.prepend>
@@ -151,8 +154,33 @@ export default {
 
         this.$router.push(`/automations/${newName}`);
       }
+    },
+    async tryRename(name) {
+      if (await this.$refs.duplicateDlg.open(`Rename ${name}?`, `New Automation Name`, "Rename", "Cancel"))
+      {
+        const filePath = path.join(
+          this.paths.userFolder,
+          "automations",
+          name + ".yaml"
+        );
+
+        const newName = this.$refs.duplicateDlg.name
+
+        const newPath = path.join(this.paths.userFolder,
+          "automations",
+          newName + ".yaml")
+
+        if (!fs.existsSync(filePath)) {
+          return;
+        }
+
+        await fs.promises.rename(filePath, newPath);
+
+        await this.getFiles();
+      }
     }
   },
+
   data() {
     return {
       search: "",
