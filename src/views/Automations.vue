@@ -95,6 +95,7 @@ export default {
       }
 
       const automation = {
+        version: "1.0",
         description: "",
         actions: [],
       };

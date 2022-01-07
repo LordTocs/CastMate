@@ -96,6 +96,7 @@ export default {
     },
     async createNewProfile(name) {
       let newYaml = YAML.stringify({
+        version: "1.0",
         triggers: {},
         variables: {},
         rewards: [],
