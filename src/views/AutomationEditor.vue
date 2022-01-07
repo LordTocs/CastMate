@@ -33,7 +33,10 @@
           </div>
 
           <div class="flex-grow-1">
-            <h1>{{ automationName }}</h1>
+            <div class="d-flex">
+              <h1 class="flex-grow-1">{{ automationName }}</h1>
+              <v-switch v-model="automation.sync" label="Synchronous" />
+            </div>
             <v-text-field
               v-if="automation"
               v-model="automation.description"
