@@ -4,11 +4,11 @@
     :value="value"
     :items="enumItems"
     :loading="loading"
-    cache-items
     :label="label"
     :search-input.sync="search"
     @input="(v) => $emit('input', v)"
     @change="(v) => $emit('change', v)"
+    @focus="fetchItems"
     :clearable="clearable"
   />
   <v-select
@@ -30,7 +30,8 @@ export default {
     enum: {},
     queryMode: { type: Boolean, default: () => false },
     label: { type: String },
-    clearable: { type: Boolean, default: () => false}
+    clearable: { type: Boolean, default: () => false },
+    context: {},
   },
   computed: {
     isAutocomplete() {
@@ -51,6 +52,18 @@ export default {
         ? arr.filter((i) => i.toLowerCase().includes(search.toLowerCase()))
         : arr;
     },
+    async fetchItems() {
+      if (this.isAutocomplete && !this.queryMode) {
+        this.loading = true;
+
+        const items = await ipcRenderer.invoke(this.enum, this.context);
+
+        this.allItems = items;
+        this.enumItems = items;
+
+        this.loading = false;
+      }
+    },
   },
   watch: {
     async search(newValue) {
@@ -60,22 +73,18 @@ export default {
       if (this.isAutocomplete) {
         this.enumItems = this.filterArray(newValue, this.allItems);
       } else {
-        const items = await ipcRenderer.invoke(this.enum, newValue);
+        const items = await ipcRenderer.invoke(
+          this.enum,
+          newValue,
+          this.context
+        );
         this.enumItems = items;
       }
       this.loading = false;
     },
   },
   async mounted() {
-    if (this.isAutocomplete && !this.queryMode) {
-      this.loading = true;
-
-      const items = await ipcRenderer.invoke(this.enum);
-      this.allItems = items;
-      this.enumItems = items;
-
-      this.loading = false;
-    }
+    await this.fetchItems();
   },
 };
 </script>

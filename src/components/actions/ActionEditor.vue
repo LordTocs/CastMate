@@ -4,6 +4,7 @@
     @input="(v) => $emit('input', v)"
     :schema="schema"
     :label="label"
+    :context="value"
   />
 </template>
 

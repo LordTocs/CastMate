@@ -47,7 +47,7 @@ function createIPCFunction(thisObj, name, func)
 	else if (func instanceof AsyncFunction)
 	{
 		const enumFunc = func.bind(thisObj);
-		ipcMain.handle(name, async (...args) =>
+		ipcMain.handle(name, async (event, ...args) =>
 		{
 			return await enumFunc(...args);
 		})
@@ -55,7 +55,7 @@ function createIPCFunction(thisObj, name, func)
 	else if (func instanceof Function)
 	{
 		const enumFunc = func.bind(thisObj);
-		ipcMain.handle(name, (...args) =>
+		ipcMain.handle(name, (event, ...args) =>
 		{
 			return enumFunc(...args);
 		})

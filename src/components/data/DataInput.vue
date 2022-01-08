@@ -4,6 +4,7 @@
     :value="value"
     @input="handleInput"
     v-if="schema.type == 'Object' && schema.properties"
+    :context="context"
   />
   <number-input
     :value="value"
@@ -32,6 +33,7 @@
     v-else-if="schema.type == 'String'"
     :dataName="schema.name || label"
     :schema="schema"
+    :context="context"
   />
   <v-switch
     v-else-if="schema.type == 'Boolean'"
@@ -89,6 +91,7 @@ export default {
     schema: {},
     value: {},
     label: {},
+    context: {},
   },
   methods: {
     handleInput(v) {

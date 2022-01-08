@@ -6,6 +6,7 @@
       :schema="schema[propertyKey]"
       :value="value ? value[propertyKey] : null"
       @input="(v) => updateObject(propertyKey, v)"
+      :context="context"
     />
   </div>
 </template>
@@ -17,6 +18,7 @@ export default {
   props: {
     value: {},
     schema: {},
+    context: {},
   },
   methods: {
     updateObject(key, value) {

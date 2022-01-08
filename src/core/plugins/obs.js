@@ -65,6 +65,16 @@ module.exports = {
 				return [];
 			}
 		},
+		async getSourceFilters(sourceName) {
+			try {
+				const result = await this.obs.send("GetSourceFilters", { sourceName });
+				return result.filters.map(s => s.name);
+			}
+			catch
+			{
+				return [];
+			}
+		},
 		async getAllScenes() {
 			try {
 				console.log("Getting Scenes");
@@ -120,7 +130,7 @@ module.exports = {
 		}
 	},
 	actions: {
-		obsScene: {
+		scene: {
 			name: "OBS Scene",
 			description: "Change the OBS scene.",
 			icon: "mdi-swap-horizontal-bold",
@@ -143,7 +153,7 @@ module.exports = {
 				})
 			},
 		},
-		obsFilter: {
+		filter: {
 			name: "OBS Filter",
 			description: "Enable/Disable OBS filter",
 			icon: "mdi-eye",
@@ -155,11 +165,19 @@ module.exports = {
 						type: String,
 						template: true,
 						name: "Source Name",
+						async enum() {
+							return (await this.getAllSources()).map(s => s.name);
+						}
 					},
 					filterName: {
 						type: String,
 						template: true,
 						name: "Filter Name",
+						async enum(context) {
+							console.log(context)
+							this.logger.info('Fetching filters for ' + context.sourceName);
+							return await this.getSourceFilters(context.sourceName);
+						}
 					},
 					filterEnabled: {
 						type: Boolean,
@@ -178,7 +196,7 @@ module.exports = {
 				})
 			}
 		},
-		obsText: {
+		text: {
 			name: "OBS Text",
 			description: "Change the text in a GDI+ text element.",
 			icon: "mdi-form-textbox",

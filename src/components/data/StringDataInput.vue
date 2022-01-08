@@ -15,6 +15,7 @@
     @change="(v) => $emit('change', v)"
     :label="schema.name || dataName"
     :clearable="!schema.required"
+    :context="context"
   />
 </template>
 
@@ -28,6 +29,7 @@ export default {
     value: {},
     schema: {},
     dataName: { type: String },
+    context: {},
   },
 };
 </script>
