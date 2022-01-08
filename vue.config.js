@@ -1,8 +1,9 @@
+const path = require('path');
+
 module.exports = {
 	configureWebpack: {
-		devtool: 'source-map'
+		devtool: 'source-map',
 	},
-
 	pluginOptions: {
 		electronBuilder: {
 			externals: [
@@ -33,6 +34,12 @@ module.exports = {
 					repo: "CastMate"
 				}],
 				productName: "CastMate",
+				extraFiles: [
+					{
+						from: "web",
+						to: "web",
+					}
+				]
 			},
 			mainProcessWatch: ['src/core/**'],
 		}
