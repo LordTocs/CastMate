@@ -107,9 +107,11 @@ export default {
 
       await fs.promises.writeFile(filePath, YAML.stringify(automation));
 
-      this.$emit("change", name);
+      this.$emit("input", name);
 
-      await this.refreshAutomations();
+      setTimeout(async () => {
+        await this.refreshAutomations();
+      }, 1000);
     },
     hasAutomation(automation) {
       return this.automations.includes(automation);
