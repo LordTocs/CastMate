@@ -23,7 +23,9 @@ const builtInPlugin = {
 			description: "Delays execution of this action until a certain time after the start of this action list."
 		}
 	},
-	settings: {},
+	settings: {
+		port: { type: "Number", default: 80, name: "Internal Webserver Port" }
+	},
 	secrets: {},
 	triggers: {},
 	stateSchemas: {},
