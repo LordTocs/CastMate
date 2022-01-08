@@ -46,6 +46,7 @@
         </v-card>
       </v-col>
     </v-row>
+    <div style="height: 120px" />
     <v-fab-transition>
       <v-btn
         color="primary"
