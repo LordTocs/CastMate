@@ -35,6 +35,8 @@ module.exports = {
 
 				let defaultValue = variableSpec.default;
 
+
+
 				if (defaultValue == undefined) {
 					if (variableSpec.type && variableSpec.type == "string") {
 						defaultValue = "";
@@ -42,6 +44,9 @@ module.exports = {
 					else {
 						defaultValue = 0;
 					}
+				}
+				if (variableSpec.type == "Number") {
+					defaultValue = Number(defaultValue);
 				}
 
 				if (variableName in this.variableSpecs) {
@@ -94,7 +99,7 @@ module.exports = {
 	secrets: {
 	},
 	actions: {
-		setVariable: {
+		set: {
 			name: "Set Variable",
 			icon: "mdi-variable",
 			color: "#D3934A",
@@ -127,7 +132,7 @@ module.exports = {
 				this.state[variableData.name] = setValue;
 			}
 		},
-		incVariable: {
+		inc: {
 			name: "Increment Variable",
 			icon: "mdi-variable",
 			color: "#D3934A",
