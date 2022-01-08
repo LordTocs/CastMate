@@ -9,8 +9,7 @@ const nodeHueApi = require('node-hue-api');
 // and https://github.com/peter-murray/node-hue-api/blob/82b24674dbf2bc74cf1776af15344de81d10696a/lib/api/http/endpoints/groups.js
 // We then execute this endpoint instead.
 const fakeSetGroupStateEndpoint = {
-	getRequest(parameters)
-	{
+	getRequest(parameters) {
 		let data = {
 			method: 'PUT',
 			json: true,
@@ -26,15 +25,12 @@ const fakeSetGroupStateEndpoint = {
 
 		return data;
 	},
-	getErrorHandler()
-	{
-		return (err) =>
-		{
+	getErrorHandler() {
+		return (err) => {
 			console.error(err);
 		}
 	},
-	getPostProcessing()
-	{
+	getPostProcessing() {
 		return null;
 	},
 	successCode: 200
@@ -51,113 +47,94 @@ const { sleep } = require("../utils/sleep.js");
 const fs = require("fs");
 const path = require('path');
 const { userFolder } = require('../utils/configuration');
+const axios = require("axios");
 
 module.exports = {
 	name: "hue",
 	uiName: "HUE Lights",
 	icon: "mdi-lightbulb-on-outline",
 	color: "#7F743F",
-	async init()
-	{
+	async init() {
 		this.groupCache = {};
 
-		if (!await this.discoverBridge())
-		{
+		if (!await this.discoverBridge()) {
 			return false;
 		}
 
-		if (!(await this.loadKey()))
-		{
+		if (!(await this.loadKey())) {
 			return false;
 		}
 
-		if (!await this.initApi())
-		{
+		if (!await this.initApi()) {
 			return false;
 		}
 
 		return true;
 	},
 	ipcMethods: {
-		async getHubStatus()
-		{
+		async getHubStatus() {
 			return !!this.hue;
 		},
-		async searchForHub()
-		{
+		async searchForHub() {
 			return await this.forceAuth();
 		}
 	},
 	methods: {
-		async forceAuth()
-		{
+		async forceAuth() {
 			this.hue = null;
 
-			if (!await this.discoverBridge())
-			{
+			if (!await this.discoverBridge()) {
 				return false;
 			}
 
-			if (!(await this.createUser()))
-			{
+			if (!(await this.createUser())) {
 				console.error("Unable to create new hue user. Abandoning");
 				return false;
 			}
 
-			if (!(await this.initApi()))
-			{
+			if (!(await this.initApi())) {
 				return false;
 			}
 
 			return true;
 		},
-		async discoverBridge()
-		{
-			const results = await discovery.nupnpSearch();
+		async discoverBridge() {
+			const resp = await axios.get("https://discovery.meethue.com/");
+			const results = resp.data;
 
-			if (results.length == 0)
-			{
+			if (results.length == 0) {
 				console.error("Couldn't find hue bridge");
 				return false;
 			}
-			else
-			{
-				this.bridgeIp = results[0].ipaddress;
+			else {
+				this.bridgeIp = results[0].internalipaddress;
 				return true;
 			}
 		},
-		async loadKey()
-		{
-			try
-			{
+		async loadKey() {
+			try {
 				this.hueUser = JSON.parse(fs.readFileSync(path.join(userFolder, "secrets/hue.json"), "utf-8"));
 				return true;
 			}
-			catch (err)
-			{
+			catch (err) {
 				return false;
 			}
 		},
-		async createUser()
-		{
+		async createUser() {
 			//Connect to hue bridge (unauthenticated)
 			let unauthenticatedApi = null;
-			try
-			{
+			try {
 				unauthenticatedApi = await hueApi.createLocal(this.bridgeIp).connect();
 			}
-			catch (err)
-			{
+			catch (err) {
 				console.error("Unable to connect to bridge to create user");
 				return false;
 			}
 
 			//Try to create user 5 times to allow for hue bridge button to be pressed.
 			const retries = 5;
-			for (let i = 0; i < retries; ++i)
-			{
-				try
-				{
+			for (let i = 0; i < retries; ++i) {
+				try {
 					let user = await unauthenticatedApi.users.createUser("CastMate", os.userInfo().username)
 
 					this.hueUser = {
@@ -169,13 +146,11 @@ module.exports = {
 
 					return true;
 				}
-				catch (err)
-				{
+				catch (err) {
 					this.logger.error("The link button on the bridge was not pressed. Press and try again.");
 				}
 
-				if (i != retries - 1)
-				{
+				if (i != retries - 1) {
 					this.logger.info("Trying again in 5 seconds...");
 					await sleep(5000);
 				}
@@ -183,31 +158,24 @@ module.exports = {
 
 			return false;
 		},
-		async initApi()
-		{
-			try
-			{
+		async initApi() {
+			try {
 				this.hue = await hueApi.createLocal(this.bridgeIp).connect(this.hueUser.username);
 				return true;
 			}
-			catch (err)
-			{
+			catch (err) {
 				console.error("Unable to connect with user to bridge. Abandoning");
 				return false;
 			}
 		},
-		async handleTemplateNumber(value, context)
-		{
-			if (typeof value === 'string' || value instanceof String)
-			{
+		async handleTemplateNumber(value, context) {
+			if (typeof value === 'string' || value instanceof String) {
 				return await evalTemplate(value, context)
 			}
 			return value;
 		},
-		async getGroupByName(name)
-		{
-			if (this.groupCache[name])
-			{
+		async getGroupByName(name) {
+			if (this.groupCache[name]) {
 				return this.groupCache[name];
 			}
 
@@ -241,8 +209,7 @@ module.exports = {
 					group: { type: String, template: true, name: "HUE Light Group" },
 				}
 			},
-			async handler(lightData, context)
-			{
+			async handler(lightData, context) {
 				lightData = { ...lightData };
 
 				let groupName = lightData.group || this.settings.defaultGroup;
@@ -251,39 +218,33 @@ module.exports = {
 
 				this.logger.info(`Hue Lights: ${JSON.stringify(lightData)}`)
 
-				if ("on" in lightData)
-				{
+				if ("on" in lightData) {
 					lightData.on = await this.handleTemplateNumber(lightData.on, context);
 
 					state.on(lightData.on);
 				}
-				
 
-				if ("hsbk" in lightData)
-				{
+
+				if ("hsbk" in lightData) {
 					const mode = lightData.hsbk.mode || 'color';
 
-					if ("bri" in lightData.hsbk && (mode == 'color' || mode == "template"))
-					{
+					if ("bri" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.bri = await this.handleTemplateNumber(lightData.hsbk.bri, context);
 
 						state.bri(lightData.hsbk.bri / 100 * 254);
 					}
-					if ("sat" in lightData.hsbk && (mode == 'color' || mode == "template"))
-					{
+					if ("sat" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.sat = await this.handleTemplateNumber(lightData.hsbk.sat, context);
 
 						state.sat(lightData.hsbk.sat / 100 * 254);
 					}
-					if ("hue" in lightData.hsbk && (mode == 'color' || mode == "template"))
-					{
+					if ("hue" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.hue = await this.handleTemplateNumber(lightData.hsbk.hue, context);
 
 						//Hue is 0-360
 						state.hue(Math.floor((lightData.hsbk.hue / 360) * 65535))
 					}
-					if ("temp" in lightData.hsbk && (mode == 'temp' || mode == "template"))
-					{
+					if ("temp" in lightData.hsbk && (mode == 'temp' || mode == "template")) {
 						lightData.hsbk.temp = await this.handleTemplateNumber(lightData.hsbk.temp, context);
 
 						//Convert kelvin to mired. https://en.wikipedia.org/wiki/Mired
@@ -291,8 +252,7 @@ module.exports = {
 					}
 				}
 
-				if ("transition" in lightData)
-				{
+				if ("transition" in lightData) {
 					lightData.transition = await this.handleTemplateNumber(lightData.transition, context);
 
 					state.transitionInMillis(lightData.transition * 1000)
@@ -321,8 +281,7 @@ module.exports = {
 					group: { type: String, name: "HUE Light Group" },
 				}
 			},
-			async handler(sceneData)
-			{
+			async handler(sceneData) {
 				let scene = sceneData.scene;
 				let groupName = sceneData.group || this.settings.defaultGroup;
 
