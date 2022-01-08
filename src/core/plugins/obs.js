@@ -17,7 +17,12 @@ module.exports = {
 		})
 		this.obs.on("ConnectionClosed", () => {
 			this.state.connected = false;
-			setTimeout(() => { this.connectOBS() }, 5000);
+			if (!this.forceStop) {
+				setTimeout(() => { this.connectOBS() }, 5000);
+			}
+			else {
+				this.forceStop = false;
+			}
 		});
 		this.obs.on("StreamStarted", () => {
 			this.state.streaming = true;
@@ -37,13 +42,19 @@ module.exports = {
 			this.state.recording = false;
 		})
 	},
+	async onSettingsReload() {
+		this.forceStop = true;
+		await this.obs.disconnect();
+		await this.connectOBS();
+	},
 	methods: {
 		async connectOBS() {
-			let port = this.settings.port || 4444;
+			const port = this.settings.port || 4444;
+			const hostname = this.settings.hostname || "localhost"
 
 			try {
 				await this.obs.connect({
-					address: `localhost:${port}`,
+					address: `${hostname}:${port}`,
 					password: this.secrets.password
 				})
 				let result = await this.obs.send("GetCurrentScene");
@@ -99,10 +110,11 @@ module.exports = {
 		}
 	},
 	settings: {
-		port: { type: Number }
+		hostname: { type: String, name: "Host Name" },
+		port: { type: Number, name: "Port" }
 	},
 	secrets: {
-		password: { type: String }
+		password: { type: String, name: "Websocket Password" }
 	},
 	state: {
 		scene: {
