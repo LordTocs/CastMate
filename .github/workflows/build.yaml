@@ -24,8 +24,6 @@ jobs:
           node-version: "16"
       - name: "Install Node Gyp"
         run: "npm install --global node-gyp"
-      - name: "Install production tools"
-        run: "npm install --global --production windows-build-tools"
       - name: "Install Node Packages"
         run: "npm install"
       - name: "Rebuild for Electron"
