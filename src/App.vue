@@ -9,8 +9,8 @@
       <v-spacer></v-spacer>
     </v-app-bar>
 
-    <v-navigation-drawer app v-model="navDrawer" v-if="loaded">
-      <v-list-item>
+    <v-navigation-drawer app v-model="navDrawer" style="-webkit-app-region: no-drag;" v-if="loaded">
+      <v-list-item link to="/">
         <v-list-item-content>
           <v-list-item-title class="title"> CastMate </v-list-item-title>
           <!--v-list-item-subtitle> subtext </v-list-item-subtitle-->
@@ -20,22 +20,43 @@
       <v-divider></v-divider>
 
       <v-list dense nav>
-        <v-list-item link to="/">
+        <v-list-item link to="/segments">
           <v-list-item-icon>
-            <v-icon>mdi-file-document-outline</v-icon>
+            <v-icon>mdi-tag</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
             <v-list-item-title> Segments </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+
+        <v-list-item link to="/automations">
+          <v-list-item-icon>
+            <v-icon>mdi-timeline</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Automations </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
         <v-list-item link to="/profiles">
           <v-list-item-icon>
-            <v-icon>mdi-file-document-outline</v-icon>
+            <v-icon>mdi-card-account-details-outline</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
             <v-list-item-title> Profiles </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item link to="/variables">
+          <v-list-item-icon>
+            <v-icon>mdi-variable</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Variables </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
@@ -70,7 +91,7 @@
             :key="plugin.name"
           >
             <v-list-item-icon>
-              <v-icon> mdi-view-dashboard </v-icon>
+              <v-icon> {{ plugin.icon ? plugin.icon : "mdi-view-dashboard" }} </v-icon>
             </v-list-item-icon>
             <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
           </v-list-item>
@@ -124,9 +145,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["inited", "plugins", "paths"]),
+    ...mapGetters("ipc", ["inited", "pluginList", "paths"]),
     uiPlugins() {
-      return this.plugins
+      return this.pluginList
         .filter(
           (p) =>
             p.settingsView ||
@@ -145,7 +166,8 @@ export default {
   methods: {
     ...mapActions("ipc", ["init"]),
     ...mapActions("rewards", ["loadRewards"]),
-	...mapActions("segments", ["loadSegments"]),
+    ...mapActions("segments", ["loadSegments"]),
+    ...mapActions("variables", ["loadVariables"]),
     openSoundsFolder() {
       shell.openPath(path.join(this.paths.userFolder, "sounds"));
     },
@@ -153,7 +175,8 @@ export default {
   async mounted() {
     await this.init();
     await this.loadRewards();
-	await this.loadSegments();
+    await this.loadSegments();
+    await this.loadVariables();
     this.loaded = true;
   },
 };

@@ -1,10 +1,10 @@
 const { ElectronAuthManager } = require("../utils/twitchAuth");
 
-const { ApiClient } = require("twitch");
+const { ApiClient } = require("@twurple/api");
 
-const { ChatClient } = require("twitch-chat-client");
+const { ChatClient } = require("@twurple/chat");
 
-const { PubSubClient, BasicPubSubClient } = require("twitch-pubsub-client");
+const { PubSubClient, BasicPubSubClient } = require("@twurple/pubsub");
 
 const { template } = require('../utils/template');
 const { evalTemplate } = require('../utils/template');
@@ -17,13 +17,12 @@ const { rewardsFilePath } = require("../utils/configuration");
 const { WebSocket } = require('ws');
 
 const axios = require('axios');
+const logger = require("../utils/logger");
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
-function dateInterval(date1, date2)
-{
-	if (date1 > date2)
-	{ // swap
+function dateInterval(date1, date2) {
+	if (date1 > date2) { // swap
 		var result = dateInterval(date2, date1);
 		result.years = -result.years;
 		result.months = -result.months;
@@ -37,13 +36,11 @@ function dateInterval(date1, date2)
 		days: date2.getDate() - date1.getDate(),
 		hours: date2.getHours() - date1.getHours()
 	};
-	if (result.hours < 0)
-	{
+	if (result.hours < 0) {
 		result.days--;
 		result.hours += 24;
 	}
-	if (result.days < 0)
-	{
+	if (result.days < 0) {
 		result.months--;
 		// days = days left in date1's month, 
 		//   plus days that have passed in date2's month
@@ -51,8 +48,7 @@ function dateInterval(date1, date2)
 		copy1.setDate(32);
 		result.days = 32 - date1.getDate() - copy1.getDate() + date2.getDate();
 	}
-	if (result.months < 0)
-	{
+	if (result.months < 0) {
 		result.years--;
 		result.months += 12;
 	}
@@ -62,38 +58,37 @@ function dateInterval(date1, date2)
 module.exports = {
 	name: "twitch",
 	uiName: "Twitch",
-	async init()
-	{
+	icon: "mdi-twitch",
+	color: "#5E5172",
+	async init() {
 		this.logger.info("Starting Twitch");
 
 		await this.doInitialAuth();
 
 		this.colorCache = {};
 
+		this.state.viewers = 0;
+
 		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
 		//this.filter.addWords(...badwordList.words);
 	},
 	methods: {
-		filterMessage(message)
-		{
+		filterMessage(message) {
 			if (!message || message.length < 2)
 				return message;
 
 			if (!this.filter)
 				return "";
 
-			try
-			{
+			try {
 				return this.filter.clean(message)
 			}
-			catch (err)
-			{
+			catch (err) {
 				return ""
 			}
 		},
 
-		async doInitialAuth()
-		{
+		async doInitialAuth() {
 			let clientId = this.secrets.apiClientId || "qnybd4aoxlom3u3wjbsstsp5yd2sdl"
 
 			this.channelAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Channel" })
@@ -104,22 +99,20 @@ module.exports = {
 
 			await this.completeAuth();
 
+			await this.getAllTags();
+
 		},
 
-		async shutdown()
-		{
-			if (this.chatClient)
-			{
+		async shutdown() {
+			if (this.chatClient) {
 				await this.chatClient.quit();
 			}
 
-			if (this.basePubSubClient)
-			{
+			if (this.basePubSubClient) {
 				this.basePubSubClient.disconnect();
 			}
 
-			if (this.castMateWebsocket)
-			{
+			if (this.castMateWebsocket) {
 				//Flag so the automatic reconnect does not run
 				this.castMateWebsocketReconnect = false;
 				this.castMateWebsocket.terminate();
@@ -127,71 +120,64 @@ module.exports = {
 			}
 		},
 
-		async completeAuth()
-		{
-			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.botAuth || !this.botAuth.isAuthed)
-			{
+		async completeAuth() {
+			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.botAuth || !this.botAuth.isAuthed) {
+				this.logger.info("Failed to complete auth.");
+				this.logger.info(`  Channel Auth ${this.channelAuth ? this.channelAuth.isAuthed : 'None'}`)
+				this.logger.info(`  Bot     Auth ${this.botAuth ? this.botAuth.isAuthed : 'None'}`)
+				this.state.isAuthed = false;
 				return;
 			}
 
 			await this.shutdown();
 
-			try
-			{
+			try {
 				await this.doAuth();
 			}
-			catch (err)
-			{
+			catch (err) {
 				this.logger.error(`Failed to Auth`);
 				this.logger.error(`${err}`);
 			}
 
-			try
-			{
+			this.state.isAuthed = true;
+
+			try {
 				await this.setupChatTriggers();
 			}
-			catch (err)
-			{
+			catch (err) {
 				this.logger.error(`Failed to setup Chat Triggers`);
 				this.logger.error(`${err}`);
 			}
 
-			try
-			{
+			try {
 				await this.setupCastMateWebsocketWorkaround();
 			}
-			catch (err)
-			{
+			catch (err) {
 				this.logger.error(`Failed to setup Websocket Workaround`);
 				this.logger.error(`${err}`);
 			}
 
-			try
-			{
+			try {
 				await this.setupPubSubTriggers();
 			}
-			catch (err)
-			{
+			catch (err) {
 				this.logger.error(`Failed to set up PubSub Triggers`);
 				this.logger.error(`${err}`);
 			}
 
 			await this.initConditions();
 
-			try
-			{
+			try {
 				await this.initChannelRewards();
 			}
-			catch (err)
-			{
+			catch (err) {
 				this.logger.error(`Failed to setup Channel Rewards`);
 				this.logger.error(`${err}`);
 			}
 		},
 
-		async doAuth()
-		{
-			this.chatAuthProvider = null;//this.channelAuth.createAuthProvider()
+		async doAuth() {
+			this.chatAuthProvider = null;
 
 			this.channelTwitchClient = new ApiClient({
 				authProvider: this.channelAuth,
@@ -202,20 +188,20 @@ module.exports = {
 			});
 
 			//Get the IDs
-			let channel = await this.channelTwitchClient.kraken.users.getMe();
-			this.state.channelName = channel.name;
+			let channel = await this.channelTwitchClient.users.getMe(false);
+			this.state.channelName = channel.displayName;
+			this.state.isAffiliate = channel.broadcasterType.length > 0;
 			this.channelId = await channel.id;
-			let bot = await this.botTwitchClient.kraken.users.getMe();
+
+			let bot = await this.botTwitchClient.users.getMe(false);
 			this.botId = await bot.id;
-			this.state.botName = bot.name;
+			this.state.botName = bot.displayName;
 		},
 
-		parseMessage(message)
-		{
+		parseMessage(message) {
 			let firstSpace = message.indexOf(' ');
 
-			if (firstSpace == -1)
-			{
+			if (firstSpace == -1) {
 				return { command: message.toLowerCase(), args: [], string: "" }
 			}
 
@@ -228,14 +214,14 @@ module.exports = {
 			return { command, args, string };
 		},
 
-		async setupChatTriggers()
-		{
-			this.chatClient = new ChatClient(this.botAuth, { channels: [this.state.channelName] });
+		async setupChatTriggers() {
+			this.chatClient = new ChatClient({ authProvider: this.botAuth, channels: [this.state.channelName] });
 			await this.chatClient.connect();
 
+			this.logger.info(`Connected to Chat`);
+
 			//Setup triggers
-			this.chatClient.onMessage(async (channel, user, message, msgInfo) =>
-			{
+			this.chatClient.onMessage(async (channel, user, message, msgInfo) => {
 				if (this.colorCache)
 					this.colorCache[msgInfo.userInfo.userId] = msgInfo.userInfo.color;
 
@@ -251,7 +237,7 @@ module.exports = {
 				let parsed = this.parseMessage(message);
 
 				const context = {
-					name: parsed.command,
+					command: parsed.command,
 					user,
 					userId: msgInfo.userInfo.userId,
 					args: parsed.args,
@@ -261,59 +247,77 @@ module.exports = {
 					filteredMessage: this.filterMessage(message)
 				}
 
-				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster)
-				{
-					if (this.actions.trigger('modchat', context))
-					{
+				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
+					if (this.triggers.modchat(context)) {
 						return;
 					}
 				}
 
-				if (msgInfo.userInfo.isVip)
-				{
-					if (this.actions.trigger('vipchat', context))
-					{
+				if (msgInfo.userInfo.isVip) {
+					if (this.triggers.vipchat(context)) {
 						return;
 					}
 				}
 
-				if (msgInfo.userInfo.isSubscriber)
-				{
-					if (this.actions.trigger('subchat', context))
-					{
+				if (msgInfo.userInfo.isSubscriber) {
+					if (this.triggers.subchat(context)) {
 						return;
 					}
 				}
 
-				if (this.actions.trigger('chat', context))
-				{
+				if (this.triggers.chat(context)) {
 					return;
 				}
 
 			});
 
-			this.chatClient.onRaid((channel, user, raidInfo) =>
-			{
-				this.actions.trigger("raid", { number: raidInfo.viewerCount, user: raidInfo.displayName });
+			this.chatClient.onRaid((channel, user, raidInfo) => {
+				this.triggers.raid({ number: raidInfo.viewerCount, user: raidInfo.displayName });
 			})
+
+			this.chatClient.onCommunitySub((channel, user, subInfo) => {
+				this.triggers.giftedSub({ number: subInfo.count, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
+			});
 		},
 
-		async setupCastMateWebsocketWorkaround() 
-		{
+		async retryWebsocketWorkaround() {
+			if (this.castMateWebsocket) {
+				this.castMateWebsocket.terminate();
+			}
+
+			this.castMateWebsocket = null;
+
+			//Retry connection in 5 seconds.
+			if (this.castMateWebsocketReconnect) {
+				this.logger.info(`Connection to castmate websocket failed, retrying in 5 seconds...`);
+				setTimeout(() => {
+					this.setupCastMateWebsocketWorkaround().catch(err => {
+						this.logger.error(`Exception on socket reconnect.`);
+						this.logger.error(`${err}`);
+						this.retryWebsocketWorkaround();
+					})
+				}, 5000);
+			}
+		},
+
+		async setupCastMateWebsocketWorkaround() {
 			this.followerCache = new Set();
 
 			this.castMateWebsocketReconnect = true;
+
 			this.castMateWebsocket = new WebSocket('wss://castmate-websocket.herokuapp.com', {
 				headers: {
 					Authorization: `Bearer ${this.channelAuth._accessToken.accessToken}`,
 				}
 			});
 
-			this.castMateWebsocket.on('message', async (data) =>
-			{
+			this.castMateWebsocket.on('open', () => {
+				this.logger.info(`Connection to castmate websocket open`);
+			})
+
+			this.castMateWebsocket.on('message', async (data) => {
 				let message = null;
-				try
-				{
+				try {
 					message = JSON.parse(data);
 				}
 				catch
@@ -324,48 +328,45 @@ module.exports = {
 				if (!message)
 					return;
 
-				if (message.event == "follow")
-				{
+				if (message.event == "follow") {
 					if (this.followerCache.has(message.userId))
 						return;
 
 					this.followerCache.add(message.userId);
 
 					this.logger.info(`followed by ${message.userDisplayName}`);
-					this.actions.trigger('follow', { user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
+					this.triggers.follow({ user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
 
-					let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
+					let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
 					this.state.followers = follows.total;
 				}
 			});
 
-			this.castMateWebsocket.on('close', () =>
-			{
-				this.castMateWebsocket = null;
-
-				//Retry connection in 5 seconds.
-				if (this.castMateWebsocketReconnect)
-				{
-					setTimeout(() =>
-					{
-						this.setupCastMateWebsocketWorkaround();
-					}, 5000);
-				}
+			this.castMateWebsocket.on('close', () => {
+				this.retryWebsocketWorkaround();
 			});
+
+			this.castMateWebsocket.on('unexpected-response', (request, response) => {
+				this.logger.error(`Unexpected Response!`);
+				console.log(response);
+				this.retryWebsocketWorkaround();
+				if (response.status == 200) {
+					this.logger.info(`It's the mysterious 200 response!`);
+
+				}
+			})
 		},
 
-		async setupPubSubTriggers()
-		{
+		async setupPubSubTriggers() {
 			this.basePubSubClient = new BasicPubSubClient();
 			this.pubSubClient = new PubSubClient(this.basePubSubClient);
-			await this.pubSubClient.registerUserListener(this.channelTwitchClient, this.channelId);
+			await this.pubSubClient.registerUserListener(this.channelAuth, this.channelId);
 
-			await this.pubSubClient.onBits(this.channelId, (message) =>
-			{
+			await this.pubSubClient.onBits(this.channelId, (message) => {
 				this.logger.info(`Bits: ${message.bits}`);
 
 
-				this.actions.trigger("bits", {
+				this.triggers.bits({
 					number: message.bits,
 					user: message.userName,
 					userId: message.userId,
@@ -375,85 +376,89 @@ module.exports = {
 				});
 			});
 
-			await this.pubSubClient.onRedemption(this.channelId, (redemption) =>
-			{
-				this.logger.info(`Redemption: ${redemption.rewardId} ${redemption.rewardName}`);
+			await this.pubSubClient.onRedemption(this.channelId, (redemption) => {
+				this.logger.info(`Redemption: ${redemption.rewardId} ${redemption.rewardTitle}`);
 				let message = redemption.message;
-				if (!message)
-				{
+				if (!message) {
 					message = "";
 				}
 
-				this.actions.trigger("redemption", {
-					name: redemption.rewardName,
+				this.triggers.redemption({
+					reward: redemption.rewardTitle,
 					message,
 					filteredMessage: this.filterMessage(message),
 					user: redemption.userDisplayName,
 					userId: redemption.userId,
-					...{ userColor: this.colorCache[redemption.userId] }
+					//...{ userColor: this.colorCache[redemption.userId] }
 				});
 			});
 
-			await this.pubSubClient.onSubscription(this.channelId, async (message) =>
-			{
-				if (message.isGift)
-				{
-					this.logger.info(`Gifted sub ${message.gifterDisplayName} -> ${message.userDisplayName}`);
-					this.actions.trigger('subscribe', { name: "gift", gifter: message.gifterDisplayName, user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
+			await this.pubSubClient.onSubscription(this.channelId, async (message) => {
+				if (message.isGift) {
+					return; //Handle gifted subs elsewhere
 				}
-				else
-				{
+				else {
 					let months = message.months ? message.months : 0;
 					this.logger.info(`Sub ${message.userDisplayName} : ${months}`);
-					this.actions.trigger('subscribe', { number: months, user: message.userDisplayName, userId: message.userId, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
+					this.triggers.subscribe({ number: months, user: message.userDisplayName, userId: message.userId, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
 				}
 
-				this.state.subscribers = await this.channelTwitchClient.kraken.channels.getChannelSubscriptionCount(this.channelId);
+				await this.querySubscribers();
+			});
+
+			await this.pubSubClient.onCustomTopic(this.channelId, "video-playback-by-id", async (msg) => {
+				this.state.viewers = ("viewers" in msg.data ? msg.data.viewers : 0);
+				//console.log("video playback", msg.data);
 			});
 		},
 
-		async initConditions()
-		{
-			let stream = await this.channelTwitchClient.helix.streams.getStreamByUserId(this.channelId);
-
-			if (stream)
-			{
-				let game = await stream.getGame();
-
-				this.state.twitchCategory = game.name;
+		async querySubscribers() {
+			try {
+				const subscribers = await this.channelTwitchClient.subscriptions.getSubscriptions(this.channelId);
+				this.state.subscribers = subscribers.total;
 			}
+			catch
+			{
+				this.state.subscribers = 0;
+			}
+		},
 
-			this.state.subscribers = await this.channelTwitchClient.kraken.channels.getChannelSubscriptionCount(this.channelId);
-			let follows = await this.channelTwitchClient.helix.users.getFollows({ followedUser: this.channelId });
+		async queryFollows() {
+			let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
 			this.state.followers = follows.total;
 		},
 
-		async initChannelRewards()
-		{
+		async initConditions() {
+
+			await this.querySubscribers();
+			await this.queryFollows();
+		},
+
+		async initChannelRewards() {
 			this.rewardsDefinitions = new HotReloader(rewardsFilePath,
-				() =>
-				{
+				() => {
 					this.ensureChannelRewards()
 				},
 				() => { })
 			await this.ensureChannelRewards();
 		},
 
-		async ensureChannelRewards()
-		{
-			let rewards = await this.channelTwitchClient.helix.channelPoints.getCustomRewards(this.channelId, true);
+		async ensureChannelRewards() {
+			if (!this.state.isAffiliate) {
+				this.logger.info("Channel isn't affiliate, skipping channel rewards");
+				return;
+			}
+
+			let rewards = await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true);
 
 			let handledRewards = new Set();
 
-			for (let reward of rewards)
-			{
-				if (!(reward.title in this.rewardsDefinitions.data))
-				{
+			for (let reward of rewards) {
+				if (!(reward.title in this.rewardsDefinitions.data)) {
 					//Not in the file, delete it.
-					await this.channelTwitchClient.helix.channelPoints.deleteCustomReward(this.channelId, reward.id);
+					await this.channelTwitchClient.channelPoints.deleteCustomReward(this.channelId, reward.id);
 				}
-				else
-				{
+				else {
 					//Existing Reward
 					handledRewards.add(reward.title)
 
@@ -477,9 +482,8 @@ module.exports = {
 					if (reward.maxRedemptionsPerUserPerStream != rewardDef.maxRedemptionsPerUserPerStream)
 						needsUpdate = true;
 
-					if (needsUpdate)
-					{
-						await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, {
+					if (needsUpdate) {
+						await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, {
 							prompt: rewardDef.description,
 							cost: rewardDef.cost,
 							userInputRequired: !!rewardDef.inputRequired,
@@ -493,8 +497,7 @@ module.exports = {
 			}
 
 			//Check for new rewards
-			for (let rewardKey in this.rewardsDefinitions.data)
-			{
+			for (let rewardKey in this.rewardsDefinitions.data) {
 				if (handledRewards.has(rewardKey))
 					continue;
 
@@ -504,9 +507,8 @@ module.exports = {
 				//inputRequired: false
 				//skipQueue: true
 				//Create the new reward.
-				try
-				{
-					await this.channelTwitchClient.helix.channelPoints.createCustomReward(this.channelId, {
+				try {
+					await this.channelTwitchClient.channelPoints.createCustomReward(this.channelId, {
 						title: rewardKey,
 						prompt: rewardDef.description,
 						cost: rewardDef.cost,
@@ -516,69 +518,56 @@ module.exports = {
 						maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
 						maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
 					})
-				} catch (err)
-				{
+				} catch (err) {
 					this.logger.error(`Error creating channel reward: ${rewardKey}. Message: ${err}`);
 				}
 			}
 		},
 
-		async switchChannelRewards(activeRewards, inactiveRewards)
-		{
-			if (!this.channelId)
+		async switchChannelRewards(activeRewards, inactiveRewards) {
+			if (!this.channelId || !this.state.isAffiliate)
 				return;
 
-			let rewards = await this.channelTwitchClient.helix.channelPoints.getCustomRewards(this.channelId, true);
+			let rewards = await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true);
 
-			for (let reward of rewards)
-			{
-				if (!reward.isEnabled && activeRewards.has(reward.title))
-				{
-					await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: true });
+			for (let reward of rewards) {
+				if (!reward.isEnabled && activeRewards.has(reward.title)) {
+					await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: true });
 				}
-				else if (reward.isEnabled && inactiveRewards.has(reward.title))
-				{
-					await this.channelTwitchClient.helix.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: false });
+				else if (reward.isEnabled && inactiveRewards.has(reward.title)) {
+					await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: false });
 				}
 			}
 		}
 	},
 	ipcMethods: {
-		async getAuthStatus()
-		{
+		async getAuthStatus() {
 			return {
 				bot: this.botAuth ? this.state.botName : null,
 				channel: this.channelAuth ? this.state.channelName : false,
 			}
 		},
 
-		async doBotAuth()
-		{
+		async doBotAuth() {
 			let result = await this.botAuth.doAuth(true);
-			if (result)
-			{
+			if (result) {
 				await this.completeAuth();
 			}
 		},
 
-		async doChannelAuth()
-		{
+		async doChannelAuth() {
 			let result = await this.channelAuth.doAuth(true);
-			if (result)
-			{
+			if (result) {
 				await this.completeAuth();
 			}
 		},
 
-		async searchCategories(query = "")
-		{
-			try
-			{
-				const categories = await this.channelTwitchClient.helix.search.searchCategories(query);
+		async searchCategories(query = "") {
+			try {
+				const categories = await this.channelTwitchClient.search.searchCategories(query);
 				const pojoCategories = [];
 
-				for (let cat of categories.data)
-				{
+				for (let cat of categories.data) {
 					pojoCategories.push({
 						id: cat.id,
 						name: cat.name,
@@ -588,54 +577,54 @@ module.exports = {
 
 				return pojoCategories;
 			}
-			catch (err)
-			{
+			catch (err) {
 				console.error(err);
 			}
 		},
 
-		async getCategoryById(id)
-		{
-			const category = await this.channelTwitchClient.helix.games.getGameById(id);
-			if (category)
-			{
+		async getCategoryById(id) {
+			if (!this.channelTwitchClient)
+				return null;
+			const category = await this.channelTwitchClient.games.getGameById(id);
+			if (category) {
 				return { name: category.name, id: category.id, boxArtUrl: category.boxArtUrl };
 			}
 			return null;
 		},
 
-		async getAllTags()
-		{
-			if (!this.channelAuth || !this.channelAuth.isAuthed)
+		async getAllTags() {
+			if (this.tagCache)
+				return this.tagCache;
+
+			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.channelTwitchClient)
 				return [];
 
-			const pageniator = this.channelTwitchClient.helix.tags.getAllStreamTagsPaginated();
+			const pageniator = this.channelTwitchClient.tags.getAllStreamTagsPaginated();
 
 			const tags = await pageniator.getAll();
 			const pojoTags = []
 
-			for (let tag of tags)
-			{
-				if (!tag.isAuto)
-				{
+			for (let tag of tags) {
+				if (!tag.isAuto) {
 					pojoTags.push({ id: tag.id, name: tag.getName("en-us") })
 				}
 			}
 
-			return pojoTags;
+			this.tagCache = pojoTags;
+
+			return this.tagCache;
 		},
 
-		async updateStreamInfo(info)
-		{
+		async updateStreamInfo(info) {
 			console.log(this.channelId);
 
-			await this.channelTwitchClient.helix.channels.updateChannelInfo(this.channelId, {
+			await this.channelTwitchClient.channels.updateChannelInfo(this.channelId, {
 				title: info.title,
 				gameId: info.category,
 			})
 
 			//Awaiting fix from d-fisher
-			//await this.channelTwitchClient.helix.streams.replaceStreamTags(this.channelId, info.tags);
+			//await this.channelTwitchClient.streams.replaceStreamTags(this.channelId, info.tags);
 
 			await axios.put(`https://api.twitch.tv/helix/streams/tags?broadcaster_id=${this.channelId}`, {
 				tag_ids: info.tags
@@ -647,27 +636,21 @@ module.exports = {
 			})
 		}
 	},
-	async onProfileLoad(profile, config)
-	{
+	async onProfileLoad(profile, config) {
 		profile.rewards = config.rewards || [];
 	},
-	async onProfilesChanged(activeProfiles, inactiveProfiles)
-	{
+	async onProfilesChanged(activeProfiles, inactiveProfiles) {
 		let activeRewards = new Set();
 		let inactiveRewards = new Set();
 		//Handle rewards
-		for (let activeProf of activeProfiles)
-		{
-			for (let reward of activeProf.rewards)
-			{
+		for (let activeProf of activeProfiles) {
+			for (let reward of activeProf.rewards) {
 				activeRewards.add(reward);
 			}
 		}
 
-		for (let inactiveProf of inactiveProfiles)
-		{
-			for (let reward of inactiveProf.rewards)
-			{
+		for (let inactiveProf of inactiveProfiles) {
+			for (let reward of inactiveProf.rewards) {
 				inactiveRewards.add(reward);
 			}
 		}
@@ -676,14 +659,12 @@ module.exports = {
 		//Hackily reach inside twitch plugin.
 		this.switchChannelRewards(activeRewards, inactiveRewards);
 	},
-	async onSettingsReload()
-	{
+	async onSettingsReload() {
 		await this.shutdown();
 
 		await this.doInitialAuth();
 	},
-	async onSecretsReload()
-	{
+	async onSecretsReload() {
 		await this.shutdown();
 
 		await this.doInitialAuth();
@@ -702,11 +683,6 @@ module.exports = {
 			name: "Bot Name",
 			description: "The chat bot's Name"
 		},
-		twitchCategory: {
-			type: String,
-			name: "Twitch Category",
-			description: "Change profiles based on the stream's twitch category"
-		},
 		subscribers: {
 			type: Number,
 			name: "Twitch Subscribers",
@@ -714,106 +690,149 @@ module.exports = {
 		followers: {
 			type: Number,
 			name: "Twitch Followers"
+		},
+		viewers: {
+			type: Number,
+			name: "Twitch Viewers",
+			default: 0,
+		},
+		isAuthed: {
+			type: Boolean,
+			name: "Is Authed",
+			description: "True if the user is completely authenticated."
+		},
+		isAffiliate: {
+			type: Boolean,
+			name: "Is Affiliate",
+			description: "True if the user is at least affiliate"
 		}
 	},
 	triggers: {
 		chat: {
 			name: "Chat",
 			description: "Fires when any user chats.",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		subchat: {
 			name: "Sub Chat",
 			description: "Fires for only subscribed user chats",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		vipchat: {
 			name: "VIP Chat",
 			description: "Fires for only VIP user chats",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		modchat: {
 			name: "Mod Chat",
 			description: "Fires for when a mod or the broadcaster chats",
-			type: "NameAction"
+			type: "CommandTrigger"
 		},
 		redemption: {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
-			type: "NameAction"
+			type: "EnumTrigger",
+			key: "reward",
+			async enum() {
+				return Object.keys(this.rewardsDefinitions.data || {});
+			}
 		},
 		follow: {
 			name: "Follow",
 			description: "Fires for when a user follows.",
-			type: "SingleAction"
+			type: "SingleTrigger"
 		},
 		subscribe: {
 			name: "Subscription",
-			description: "Fires for when a user subscribes.",
-			type: "NumberAction"
+			description: "Fires for when a user subscribes. Based on total number of months subscribed.",
+			type: "NumberTrigger",
+			numberText: "Months Subbed"
+		},
+		giftedSub: {
+			name: "Gifted Subs",
+			description: "Fires for when a user gifts subs. Based on the number of subs gifted..",
+			type: "NumberTrigger",
+			numberText: "Subs Gifted"
 		},
 		bits: {
-			name: "Bits",
-			description: "Fires for when a user gives bits",
-			type: "NumberAction"
+			name: "Cheered",
+			description: "Fires for when a user cheers with bits",
+			type: "NumberTrigger",
+			numberText: "Bits Cheered"
 		},
 		raid: {
 			name: "Raid",
 			description: "Fires when a raid start",
-			type: "NumberAction"
+			type: "NumberTrigger",
+			numberText: "Raiders"
 		}
 	},
 	actions: {
-		say: {
-			name: "Say",
-			description: "Uses the bot to send a twitch chat message",
+		sendChat: {
+			name: "Chat",
+			description: "Sends a message in twitch chat.",
+			icon: "mdi-chat",
 			color: "#5E5172",
 			data: {
-				type: "TemplateString"
+				type: String,
+				template: true,
 			},
-			async handler(message, context)
-			{
+			async handler(message, context) {
 				await this.chatClient.say(this.state.channelName.toLowerCase(), await template(message, context));
 			}
 		},
 		streamTitle: {
 			name: "Change Stream Title",
 			description: "Change the stream title",
+			icon: "mdi-cursor-text",
 			color: "#5E5172",
 			data: {
-				type: "TemplateString"
+				type: String,
+				template: true,
 			},
-			async handler(message, context)
-			{
-				await this.channelTwitchClient.helix.channels.updateChannelInfo(this.channelId, {
+			async handler(message, context) {
+				await this.channelTwitchClient.channels.updateChannelInfo(this.channelId, {
 					title: await template(message, context)
 				})
 			}
 		},
-		multiSay: {
-			name: "Multi Say",
-			description: "Uses the bot to send an array of twitch chat messages",
+		runAd: {
+			name: "Run Ad",
+			description: "Run an ad",
+			icon: "mdi-advertisements",
 			color: "#5E5172",
 			data: {
-				type: "TemplateString"
+				type: String,
+				enum: ["30 Seconds", "60 Seconds", "90 Seconds"]
 			},
-			async handler(message, context)
-			{
-				let msgArray = await evalTemplate(message, context)
-				for (let msg of msgArray)
-				{
-					await this.chatClient.say(this.state.channelName.toLowerCase(), msg);
+			async handler(duration) {
+				const lookup = {
+					"30 Seconds": 30,
+					"60 Seconds": 60,
+					"90 Seconds": 90,
 				}
+				await this.channelTwitchClient.channels.startChannelCommercial(this.channelId, lookup[duration]);
+			}
+		},
+		streamMarker: {
+			name: "Place Stream Marker",
+			description: "Places a marker in the stream for use in the video editor",
+			icon: "mdi-map-marker-star",
+			color: "#5E5172",
+			data: {
+				type: String,
+				template: true,
+			},
+			async handler(message, context) {
+				await this.channelTwitchClient.streams.createStreamMarker(this.channelId, await template(message, context));
 			}
 		}
 	},
 	templateFunctions: {
-		async followAge(user)
-		{
-			const follow = await this.channelTwitchClient.helix.users.getFollowFromUserToBroadcaster(user, this.channelId);
+		async followAge(user) {
+			const follow = await this.channelTwitchClient.users.getFollowFromUserToBroadcaster(user, this.channelId);
 
-			if (!follow)
-			{
+			if (!follow) {
 				return "Not Following";
 			}
 
@@ -822,28 +841,23 @@ module.exports = {
 
 			let result = "";
 
-			if (diff.years > 0)
-			{
+			if (diff.years > 0) {
 				result += ` ${diff.years} year${diff.years > 1 ? 's' : ''}`;
 			}
 
-			if (diff.months > 0)
-			{
+			if (diff.months > 0) {
 				result += ` ${diff.months} month${diff.months > 1 ? 's' : ''}`;
 			}
 
-			if (diff.days > 0)
-			{
+			if (diff.days > 0) {
 				result += ` ${diff.days} day${diff.days > 1 ? 's' : ''}`;
 			}
 
-			if (diff.hours > 0)
-			{
+			if (diff.hours > 0) {
 				result += ` ${diff.hours} hour${diff.hours > 1 ? 's' : ''}`
 			}
 
-			if (result.length == 0)
-			{
+			if (result.length == 0) {
 				result = "Just Followed";
 			}
 

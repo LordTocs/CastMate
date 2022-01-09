@@ -1,18 +1,14 @@
 <template>
-  <v-row>
-    <v-col
-      cols="12"
-      md="3"
+  <div>
+    <data-input
       v-for="propertyKey in Object.keys(schema)"
       :key="propertyKey"
-    >
-      <data-input
-        :schema="schema[propertyKey]"
-        :value="value ? value[propertyKey] : null"
-        @input="(v) => updateObject(propertyKey, v)"
-      />
-    </v-col>
-  </v-row>
+      :schema="schema[propertyKey]"
+      :value="value ? value[propertyKey] : null"
+      @input="(v) => updateObject(propertyKey, v)"
+      :context="context"
+    />
+  </div>
 </template>
 
 <script>
@@ -22,14 +18,16 @@ export default {
   props: {
     value: {},
     schema: {},
+    context: {},
   },
   methods: {
     updateObject(key, value) {
       let newValue = this.value ? { ...this.value } : {};
 
-      if (value != "" && value != undefined) {
+      if (value !== "" && value !== undefined) {
         newValue[key] = value;
       } else {
+        console.log("Deleting Key", key);
         delete newValue[key];
       }
 
@@ -40,4 +38,7 @@ export default {
 </script>
 
 <style scoped>
+.object-row {
+  flex: 1;
+}
 </style>

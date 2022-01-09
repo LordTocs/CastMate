@@ -3,77 +3,66 @@ const CSGameState = require('cs-gamestate');
 module.exports = {
 	name: "csgo",
 	uiName: "Counter Strike",
-	async init()
-	{
+	icon: "mdi-pistol",
+	color: "#6E72AD",
+	async init() {
 		this.gamestateIntegration = new CSGameState({ createServer: false });
 		this.installWebhook()
 
 		this.gamestateIntegration.on('player.team', (team) => {
-			this.state.csgoTeam = team;
+			this.state.team = team;
 		})
 
-		this.gamestateIntegration.on('round.bomb', (bombState) =>
-		{
-			switch (bombState)
-			{
+		this.gamestateIntegration.on('round.bomb', (bombState) => {
+			switch (bombState) {
 				case 'planted':
-					this.actions.trigger('csgoBombPlant', {});
+					this.triggers.kill()
 					break;
 				case 'defused':
-					this.actions.trigger('csgoBombDefused', {});
+					this.triggers.bombDefused()
 					break;
 				case 'exploded':
-					this.actions.trigger('csgoBombExploded', {});
+					this.triggers.bombExploded()
 					break;
 			}
 		});
 
-		this.gamestateIntegration.on("player.state.health", (health) =>
-		{
-			this.state.csgoHealth = health;
+		this.gamestateIntegration.on("player.state.health", (health) => {
+			this.state.health = health;
 		});
 
-		this.gamestateIntegration.on('player.match_stats.kills', (kills) =>
-		{
-			this.state.csgoKills = kills;
-			if (kills > 0) 
-			{
-				this.actions.trigger('csgoKill', {});
+		this.gamestateIntegration.on('player.match_stats.kills', (kills) => {
+			this.state.kills = kills;
+			if (kills > 0) {
+				this.triggers.kill({ kills })
 			}
 		})
 
-		this.gamestateIntegration.on('player.match_stats.deaths', (deaths) =>
-		{
-			this.state.csgoDeaths = deaths;
-			if (deaths > 0)
-			{
-				this.actions.trigger('csgoDeath', {});
+		this.gamestateIntegration.on('player.match_stats.deaths', (deaths) => {
+			this.state.deaths = deaths;
+			if (deaths > 0) {
+				this.triggers.death({ deaths });
 			}
 		})
 
-		this.gamestateIntegration.on('player.match_stats.assists', (assists) =>
-		{
-			this.state.csgoAssists = assists;
+		this.gamestateIntegration.on('player.match_stats.assists', (assists) => {
+			this.state.assists = assists;
 		})
 
 		this.gamestateIntegration.on('round.win_team', (winTeam) => {
 
-			if (winTeam == this.state.csgoTeam)
-			{
-				this.actions.trigger('csgoRoundWin', {});
+			if (winTeam == this.state.team) {
+				this.triggers.roundWin();
 			}
-			else
-			{
-				this.actions.trigger('csgoRoundLoss', {});
+			else {
+				this.triggers.roundLoss();
 			}
 		});
 	},
 	methods: {
-		async installWebhook()
-		{
+		async installWebhook() {
 			const routes = this.webServices.routes;
-			routes.post(`/csgo`, (req, res) =>
-			{
+			routes.post(`/csgo`, (req, res) => {
 				this.gamestateIntegration.parse(req.body);
 
 				res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -88,44 +77,50 @@ module.exports = {
 	actions: {
 	},
 	state: {
-		csgoHealth: { type: Number, name: "Health" },
-		csgoKills: { type: Number, name: "Kills" },
-		csgoDeaths: { type: Number, name: "Deaths" },
-		csgoAssists: { type: Number, name: "Assists" },
+		health: { type: Number, name: "Health" },
+		kills: { type: Number, name: "Kills" },
+		deaths: { type: Number, name: "Deaths" },
+		assists: { type: Number, name: "Assists" },
 	},
 	triggers: {
-		csgoDeath: {
-			name: "CSGO Death",
-			type: "NumberAction"
+		death: {
+			name: "Death",
+			type: "NumberTrigger",
+			numberText: "Deaths",
+			key: "deaths",
+			description: "Triggered on when you die in CS:GO"
 		},
-		csgoKill: {
-			name: "CSGO Death",
-			type: "NumberAction"
+		kill: {
+			name: "Kill",
+			type: "NumberTrigger",
+			numberText: "Kills",
+			key: "kills",
+			description: "Triggered when you get a kill in CS:GO"
 		},
-		csgoBombPlant: {
-			name: "CSGO Bomb Planted",
-			description: "Triggers when a bomb is planted.",
-			type: "NameAction"
+		bombPlant: {
+			name: "Bomb Planted",
+			type: "SingleTrigger",
+			description: "Triggered when the bomb is planted"
 		},
-		csgoBombDefused: {
-			name: "CSGO Bomb Defused",
-			description: "Triggers when a bomb is defused.",
-			type: "NameAction"
+		bombDefused: {
+			name: "Bomb Defused",
+			type: "SingleTrigger",
+			description: "Triggered when the bomb is defused."
 		},
-		csgoBombExploded: {
-			name: "CSGO Bomb Exploded",
+		bombExploded: {
+			name: "Bomb Exploded",
 			description: "Triggers when a bomb is exploded.",
-			type: "NameAction"
+			type: "SingleTrigger",
 		},
-		csgoRoundLoss: {
-			name: "CSGO Round Loss",
+		roundLoss: {
+			name: "Round Loss",
 			description: "Triggers when the round is lost.",
-			type: "NumberAction"
+			type: "SingleTrigger"
 		},
-		csgoRoundWin: {
-			name: "CSGO Round Win",
+		roundWin: {
+			name: "Round Win",
 			description: "Triggers when the round is won.",
-			type: "NumberAction"
+			type: "SingleTrigger"
 		}
 	}
 }

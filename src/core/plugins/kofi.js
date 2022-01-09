@@ -5,6 +5,8 @@ const { userFolder } = require('../utils/configuration');
 module.exports = {
 	name: "kofi",
 	uiName: "Kofi",
+	icon: "mdi-currency-usd",
+	color: "#72AADB",
 	async init()
 	{
 		this.installWebhook();
@@ -23,7 +25,7 @@ module.exports = {
 				let data = JSON.parse(req.body.data);
 				if (data.type == "Donation")
 				{
-					this.actions.trigger('kofiDonation', {
+					this.triggers.donation({
 						number: Number(data.amount),
 						currency: data.currency,
 						user: data.from_name,
@@ -41,10 +43,11 @@ module.exports = {
 		}
 	},
 	triggers: {
-		kofiDonation: {
+		donation: {
 			name: "Kofi Donation",
 			description: "Fires when you receive a Kofi Donation",
-			type: "NumberAction"
+			type: "NumberTrigger",
+			numberText: "Currency Given"
 		},
 	},
 	state: {

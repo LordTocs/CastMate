@@ -7,8 +7,7 @@ const { userFolder } = require("./configuration");
 const path = require("path");
 const logger = require("./logger");
 
-async function createWebServices(settings, secrets, plugins)
-{
+async function createWebServices(settings, secrets, plugins) {
 	let app = express();
 	let routes = express.Router();
 
@@ -25,26 +24,20 @@ async function createWebServices(settings, secrets, plugins)
 
 	let websocketServer = new websocket.server();
 
-	websocketServer.on('connect', function (connection)
-	{
-		connection.on('message', function (data)
-		{
-			if (data.utf8Data)
-			{
+	websocketServer.on('connect', function (connection) {
+		connection.on('message', function (data) {
+			if (data.utf8Data) {
 				let msg = JSON.parse(data.utf8Data);
 
-				for (let plugin of plugins.plugins)
-				{
-					if (plugin.onWebsocketMessage)
-					{
+				for (let plugin of plugins.plugins) {
+					if (plugin.onWebsocketMessage) {
 						plugin.onWebsocketMessage(msg, connection);
 					}
 				}
 			}
 		});
 
-		connection.on('close', function ()
-		{
+		connection.on('close', function () {
 		});
 	});
 
@@ -52,16 +45,14 @@ async function createWebServices(settings, secrets, plugins)
 
 	let hostname = await publicIp.v4();
 
-	return {
+	const result = {
 		app,
 		routes,
 		websocketServer,
 		hostname,
 		port: port,
-		start: () =>
-		{
-			server.listen(port, () =>
-			{
+		start: () => {
+			server.listen(port, () => {
 				logger.info(`Started Internal Webserver on port ${port}`);
 				app.use(express.static("./web"));
 				app.use("/user", express.static(path.join(userFolder, "data"), {
@@ -69,14 +60,32 @@ async function createWebServices(settings, secrets, plugins)
 				}));
 			});
 		},
-		startWebsockets: () =>
-		{
+		startWebsockets: () => {
 			websocketServer.mount({
 				httpServer: server,
 				autoAcceptConnections: true
 			});
+		},
+		updatePort: (newPort) => {
+			server.close(() => {
+				websocketServer.unmount()
+
+				result.port = newPort;
+
+				server.listen(newPort, () => {
+					logger.info(`Started Internal Webserver on port ${newPort}`);
+					websocketServer.mount({
+						httpServer: server,
+						autoAcceptConnections: true
+					});
+				})
+			})
+		},
+		stop: () => {
+			server.close();
 		}
 	}
+	return result;
 }
 
 module.exports = { createWebServices };

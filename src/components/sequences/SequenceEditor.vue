@@ -1,32 +1,45 @@
 <template>
-  <div>
-    <div style="display: flex; flex-direction: row">
-      <div
-        style="
-          min-width: 96px;
-          display: flex;
-          flex-direction: row;
-          justify-content: center;
-        "
-      >
-        <v-btn @click="testSequence" color="primary">
-          <v-icon> mdi-play </v-icon>
-        </v-btn>
-      </div>
-    </div>
+  <div
+    class="drag-area"
+    ref="dragArea"
+    @mousedown="startDrag"
+    @keyup.delete.self="doDelete"
+    tabindex="0"
+    @copy="copy"
+    @paste="paste"
+    @cut="cut"
+  >
+    <div
+      v-if="dragBox.dragging"
+      ref="selectRect"
+      class="select-rect"
+      :style="{
+        left: dragLeft + 'px',
+        top: dragTop + 'px',
+        width: dragWidth + 'px',
+        height: dragHeight + 'px',
+      }"
+    />
     <draggable
       :list="value"
       handle=".handle"
-      tag="v-timeline"
+      group="actions"
+      style="flex: 1"
+      class="sequence-container"
       :component-data="getDraggableData()"
+      as="drag-select"
     >
       <sequence-item
         v-for="(action, i) in value"
         :key="i"
+        ref="sequenceItems"
+        :selected="selected.includes(i)"
         :value="action"
         @input="(v) => updateAction(i, v)"
         @delete="deleteAction(i)"
       />
+      <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
+      <div slot="footer" style="font-size: 0; height: 120px;">...</div>
     </draggable>
   </div>
 </template>
@@ -35,51 +48,273 @@
 import SequenceItem from "./SequenceItem.vue";
 import Draggable from "vuedraggable";
 import { ipcRenderer } from "electron";
+import _cloneDeep from "lodash/cloneDeep";
 export default {
   components: { SequenceItem, Draggable },
   props: {
     value: {},
   },
+  data() {
+    return {
+      selected: [],
+      dragBox: {
+        dragging: false,
+        startX: 0,
+        startY: 0,
+        endX: 0,
+        endY: 0,
+      },
+    };
+  },
+  computed: {
+    dragTop() {
+      return this.dragBox.endY < this.dragBox.startY
+        ? this.dragBox.endY
+        : this.dragBox.startY;
+    },
+    dragLeft() {
+      return this.dragBox.endX < this.dragBox.startX
+        ? this.dragBox.endX
+        : this.dragBox.startX;
+    },
+    dragWidth() {
+      return Math.abs(this.dragBox.endX - this.dragBox.startX);
+    },
+    dragHeight() {
+      return Math.abs(this.dragBox.endY - this.dragBox.startY);
+    },
+  },
   methods: {
     getDraggableData() {
       return {
         on: {
-          change: this.changed,
+          inputChanged: this.changed,
+          start: this.onDragStart,
         },
         attrs: {
-          dense: true,
-          "align-top": true,
+          /*dense: true,
+          "align-top": true,*/
         },
       };
     },
     changed(arr) {
-      this.$emit("input", arr);
+      console.log(arr);
+      if (arr instanceof Array) {
+        this.$emit("input", arr);
+      }
     },
     updateAction(index, value) {
-      let newValue = [...this.value];
+      let newValue = _cloneDeep(this.value);
 
       newValue[index] = value;
 
       this.$emit("input", newValue);
     },
     deleteAction(index) {
-      let newValue = [...this.value];
+      let newValue = _cloneDeep(this.value);
 
       newValue.splice(index, 1);
 
       this.$emit("input", newValue);
     },
     newActionGroup() {
-      let newValue = [...this.value, {}];
+      let newValue = _cloneDeep(this.value);
+      newValue.push({})
 
       this.$emit("input", newValue);
     },
-    testSequence() {
-      ipcRenderer.invoke("pushToQueue", this.value);
+    rectOverlap(r1, r2) {
+      return (
+        r1.left < r2.right &&
+        r1.right > r2.left &&
+        r1.top < r2.bottom &&
+        r1.bottom > r2.top
+      );
     },
+    onDragStart() {
+      this.selected = [];
+      this.abandonDrag();
+    },
+    doDrag() {
+      const areaRect = this.$refs.dragArea.getBoundingClientRect();
+      const dragRect = {
+        top: areaRect.top + this.dragTop,
+        left: areaRect.left + this.dragLeft,
+        bottom: areaRect.top + this.dragTop + this.dragHeight,
+        right: areaRect.left + this.dragLeft + this.dragWidth,
+      };
+
+      const newSelection = [];
+
+      for (let itemId in this.$refs.sequenceItems) {
+        const item = this.$refs.sequenceItems[itemId];
+        const itemRect = item.getBoundingClientRect
+          ? item.getBoundingClientRect()
+          : item.$el.getBoundingClientRect();
+
+        if (this.rectOverlap(dragRect, itemRect)) {
+          newSelection.push(Number(itemId));
+        }
+      }
+
+      this.selected = newSelection;
+    },
+    startDrag(e) {
+      let containerRect = this.$refs.dragArea.getBoundingClientRect();
+      const x = e.clientX - containerRect.left;
+      const y = e.clientY - containerRect.top;
+
+      this.dragBox.startX = x;
+      this.dragBox.startY = y;
+      this.dragBox.endX = x;
+      this.dragBox.endY = y;
+      this.dragBox.dragging = true;
+
+      this.doDrag();
+
+      document.addEventListener("mousemove", this.drag);
+    },
+    drag(e) {
+      let containerRect = this.$refs.dragArea.getBoundingClientRect();
+      const x = e.clientX - containerRect.left;
+      const y = e.clientY - containerRect.top;
+
+      this.dragBox.endX = x;
+      this.dragBox.endY = y;
+
+      this.doDrag();
+    },
+    stopDrag(e) {
+      if (!this.dragBox.dragging) return;
+      let containerRect = this.$refs.dragArea.getBoundingClientRect();
+      const x = e.clientX - containerRect.left;
+      const y = e.clientY - containerRect.top;
+
+      this.doDrag();
+
+      this.abandonDrag();
+    },
+    abandonDrag() {
+      this.dragBox.dragging = false;
+      this.dragBox.startX = 0;
+      this.dragBox.startY = 0;
+      this.dragBox.endX = 0;
+      this.dragBox.endY = 0;
+      this.dragBox.dragging = false;
+
+      document.removeEventListener("mousemove", this.drag);
+    },
+    copy(event) {
+      console.log("Copy!");
+
+      if (this.selected.length == 0) return;
+
+      const clipData = [];
+
+      for (let idx of this.selected) {
+        clipData.push(_cloneDeep(this.value[idx]));
+      }
+
+      event.clipboardData.setData("application/json", JSON.stringify(clipData));
+      event.preventDefault();
+    },
+    paste(event) {
+      console.log("Paste!");
+
+      let paste = (event.clipboardData || window.clipboardData).getData(
+        "application/json"
+      );
+
+      try {
+        const pasteData = JSON.parse(paste);
+
+        if (!(pasteData instanceof Array)) return;
+
+        //TODO: Validate JSON
+
+        let newValue = _cloneDeep(this.value);
+
+        let insertIdx = newValue.length;
+        //If we have a current selection, overwrite it.
+        if (this.selected.length != 0) {
+          insertIdx = this.selected[0];
+
+          let removed = 0;
+          for (let idx of this.selected) {
+            newValue.splice(idx - removed, 1);
+            removed += 1;
+          }
+        }
+
+        newValue.splice(insertIdx, 0, ...pasteData);
+        this.$emit("input", newValue);
+      } catch {
+        console.log("error pasting");
+      } finally {
+        event.preventDefault();
+      }
+    },
+    cut(event) {
+      this.copy(event);
+      this.doDelete();
+    },
+    doDelete() {
+      if (this.selected.length == 0) {
+        return;
+      }
+
+      let newValue = _cloneDeep(this.value);
+
+      let removed = 0;
+      for (let idx of this.selected) {
+        newValue.splice(idx - removed, 1);
+        removed += 1;
+      }
+
+      this.$emit("input", newValue);
+
+      this.selected = [];
+    },
+    clearSelection() {
+      this.selected = [];
+    },
+  },
+  mounted() {
+    document.addEventListener("mouseup", this.stopDrag);
+    //document.addEventListener("touchend", this.stopDrag);
+
+    //this.$refs.dragArea.addEventListener("copy", this.copy);
+
+    //console.log("Bound copy event!");
+  },
+  destroyed() {
+    document.removeEventListener("mouseup", this.stopDrag);
+    //document.removeEventListener("touchend", this.stopDrag);
+
+    //this.$refs.dragArea.removeEventListener("copy", this.copy);
   },
 };
 </script>
 
-<style>
+<style scoped>
+.sequence-container {
+  padding: 16px;
+}
+
+.drag-area {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.drag-area:focus {
+  outline: none !important;
+}
+
+.select-rect {
+  position: absolute;
+  border-width: 1px;
+  border-color: red;
+  border-style: solid;
+}
 </style>

@@ -1,10 +1,45 @@
 <template>
-  <v-select
+  <v-combobox
+    :items="stateList"
     :value="value"
+    item-text="key"
     @change="(v) => $emit('input', v)"
-    :label="label"
-    :items="stateNames"
-  />
+  >
+    <template v-slot:item="{ item }">
+      <v-chip
+        class="mr-2"
+        v-if="item"
+        :color="plugins[item.plugin].color"
+        outlined
+        small
+      >
+        {{ plugins[item.plugin].uiName }}
+      </v-chip>
+      <span v-if="item">
+        {{ item.key }}
+      </span>
+      <span v-if="item && stateLookup[item.plugin][item.key]" class="text--secondary ml-2">
+        ({{ stateLookup[item.plugin][item.key] }})
+      </span>
+    </template>
+    <template v-slot:selection="{ item }">
+      <v-chip
+        class="mr-2"
+        v-if="item"
+        :color="plugins[item.plugin].color"
+        outlined
+        small
+      >
+        {{ plugins[item.plugin].uiName }}
+      </v-chip>
+      <span v-if="item">
+        {{ item.key }}
+      </span>
+      <span v-if="item && stateLookup[item.plugin][item.key]" class="text--secondary ml-2">
+        ({{ stateLookup[item.plugin][item.key] }})
+      </span>
+    </template>
+  </v-combobox>
 </template>
 
 <script>
@@ -14,18 +49,17 @@ export default {
     value: {},
     label: {},
   },
-  data() {
-    return {
-      stateNames: [],
-    };
-  },
   computed: {
-    ...mapGetters("ipc", ["client"]),
-  },
-  async mounted() {
-    let state = await this.client.getCombinedState();
-
-    this.stateNames = Object.keys(state);
+    ...mapGetters("ipc", ["stateLookup", "plugins"]),
+    stateList() {
+      const stateList = [];
+      for (let pluginName of Object.keys(this.stateLookup)) {
+        for (let stateKey of Object.keys(this.stateLookup[pluginName])) {
+          stateList.push({ plugin: pluginName, key: stateKey });
+        }
+      }
+      return stateList;
+    },
   },
 };
 </script>

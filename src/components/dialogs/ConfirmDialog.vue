@@ -24,14 +24,14 @@
           text
           class="body-2 font-weight-bold"
           @click.native="cancel"
-          >Cancel</v-btn
+          >{{ rejectText }}</v-btn
         >
         <v-btn
           color="primary"
           class="body-2 font-weight-bold"
           outlined
           @click.native="agree"
-          >OK</v-btn
+          >{{ confirmText }}</v-btn
         >
       </v-card-actions>
     </v-card>
@@ -49,6 +49,8 @@ export default {
       reject: null,
       message: null,
       title: null,
+      confirmText: null,
+      rejectText: null,
       options: {
         color: "grey lighten-3",
         width: 400,
@@ -59,10 +61,12 @@ export default {
   },
 
   methods: {
-    open(title, message, options) {
+    open(title, message, confirmText, rejectText, options) {
       this.dialog = true;
       this.title = title;
       this.message = message;
+      this.confirmText = confirmText || "OK";
+      this.rejectText = rejectText || "Cancel";
       this.options = Object.assign(this.options, options);
       return new Promise((resolve, reject) => {
         this.resolve = resolve;

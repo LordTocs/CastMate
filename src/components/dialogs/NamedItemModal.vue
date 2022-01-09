@@ -6,7 +6,7 @@
           {{ header }}
         </v-toolbar-title>
       </v-toolbar>
-      <v-form @submit="create">
+      <v-form @submit.prevent="create">
         <v-card-text>
           <v-text-field v-model="name" :label="label" />
         </v-card-text>

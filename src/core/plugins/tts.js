@@ -5,6 +5,8 @@ const say = require("say");
 module.exports = {
 	name: "tts",
 	uiName: "Text to Speech",
+	icon: "mdi-account-voice",
+	color: "#717287",
 	async init()
 	{
 
@@ -12,9 +14,11 @@ module.exports = {
 	actions: {
 		tts: {
 			name: "Text to Speech",
+			icon: "mdi-account-voice",
 			color: "#717287",
 			data: {
-				type: "TemplateString"
+				type: String,
+				template: true,
 			},
 			async handler(data, context)
 			{

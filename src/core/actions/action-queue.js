@@ -3,268 +3,207 @@ const { Mutex } = require("async-mutex");
 const { reactiveCopy } = require("../utils/reactive.js");
 const logger = require('../utils/logger');
 const { ipcMain } = require("electron");
-const { loadActionable } = require('./profiles');
+const _ = require('lodash');
 
+class ActionQueue {
+	constructor(plugins, automations) {
+		this.triggerMappings = {};
+		this.triggerHandlers = {};
 
-function isActionable(actionable)
-{
-	if (actionable instanceof Array)
-	{
-		return true;
-	}
-	else if ("actions" in actionable)
-	{
-		return true;
-	}
-	else if ("oneOf" in actionable)
-	{
-		return true;
-	}
-	return false;
-}
+		this.automations = automations;
 
-function getActionArray(actionDef)
-{
-	if (actionDef instanceof Array)
-	{
-		return actionDef;
-	}
-	else if ("oneOf" in actionDef)
-	{
-		return actionDef.oneOf[Math.floor(Math.random() * actionDef.oneOf.length)];
-	}
-	return null;
-}
-
-class ActionQueue
-{
-	constructor(plugins)
-	{
-		this.triggers = {};
+		//Queue of automations to run synchronously.
 		this.queue = [];
-		this.currentAction = null;
+		this.syncAutomationPromise = null;
 		this.queueMutex = new Mutex();
 
-		//Convert plugins into action lookup table
 		this.actions = {};
-		for (let plugin of plugins.plugins)
-		{
-			for (let actionKey in plugin.actions)
-			{
-				this.actions[actionKey] = plugin.actions[actionKey];
+		for (let plugin of plugins.plugins) {
+			this.actions[plugin.name] = {}
+			for (let actionKey in plugin.actions) {
+				this.actions[plugin.name][actionKey] = plugin.actions[actionKey];
+			}
+
+			this.triggerHandlers[plugin.name] = {};
+			for (let triggerName in plugin.triggers) {
+				this.triggerHandlers[plugin.name][triggerName] = plugin.triggers[triggerName].handler
 			}
 		}
 
 		this.plugins = plugins;
 
-		ipcMain.handle('pushToQueue', async (event, actions) =>
-		{
-			const dummySet = new Set();
+		ipcMain.handle('core_runActions', async (event, actions, context) => {
+			const automation = { actions, sync: false };
 
-			const actionable = { actions, sync: false }
-
-			loadActionable(actionable, dummySet)
-
-			this.convertOffsets(actionable.actions);
-
-			this.pushToQueue(actionable, {
+			this.pushToQueue(automation, context || {
+				//Some dummy data.
 				user: "Test User",
 				userColor: "#4411FF",
 				message: "Test Message From User",
 				filteredMessage: "Test Message From User",
 			})
 		})
+
+		ipcMain.handle('core_runAutomation', async (event, automationName, context) => {
+			this.startAutomation(automationName, context)
+		})
 	}
 
-	setTriggers(triggers)
-	{
-		this.triggers = triggers;
+	setTriggers(triggers) {
+		this.triggerMappings = triggers;
 	}
 
-	convertOffsets(actions)
-	{
+	convertOffsets(actions) {
 		let timeSinceStart = 0;
 
-		for (let a of actions)
-		{
-			if (a.timestamp)
-			{
-				a.beforeDelay = a.timestamp - timeSinceStart;
-				timeSinceStart = a.timestamp;
+		for (let a of actions) {
+			if (a.plugin == 'castmate' && a.action == "timestamp") {
+				a.beforeDelay = a.data - timeSinceStart;
+				timeSinceStart = a.data;
 			}
 		}
 	}
 
-	async pushToQueue(actionDef, context)
-	{
-		let actionArray = null;
-		let isSync = false;
+	async startAutomation(automationName, context) {
+		const automation = this.automations.get(automationName)
 
-
-		let completeContext = { ...context, ...this.plugins.combinedTemplateFunctions };
-		reactiveCopy(completeContext, this.plugins.combinedState);
-
-
-		if ("actions" in actionDef)
-		{
-			actionArray = getActionArray(actionDef.actions);
-			isSync = !!actionDef.sync;
-		}
-		else
-		{
-			actionArray = getActionArray(actionDef);
+		if (!automation) {
+			logger.error(`Missing Automation: ${automationName}`);
 		}
 
-		if (!(actionArray instanceof Array))
-		{
-			console.error("Action Array wasn't an array. Aborting");
-			return;
+		this.pushToQueue(automation, context);
+	}
+
+	_prepAutomation(automation) {
+		if (!(automation.actions instanceof Array)) {
+			logger.error("Automations must have an actions array.");
+			return false;
 		}
 
-		if (actionArray.length == 0)
-		{
-			console.error("Action array is empty!");
-			return;
+		if (automation.actions.length == 0) {
+			logger.error("Automations shouldn't be empty.");
+			return false;
 		}
 
-		this.convertOffsets(actionArray);
+		automation.sync = !!automation.sync; //ensure that sync exists and is a bool.
 
-		if (isSync)
-		{
+		this.convertOffsets(automation.actions);
+	}
+
+	async pushToQueue(automation, context) {
+		//Build our complete context.
+		let completeContext = { ...context };
+		_.merge(completeContext, this.plugins.templateFunctions);
+		//merge won't work with reactive props, manually go deep here.
+		for (let pluginKey in this.plugins.stateLookup) {
+			if (!(pluginKey in completeContext)) {
+				completeContext[pluginKey] = {};
+			}
+			reactiveCopy(completeContext[pluginKey], this.plugins.stateLookup[pluginKey]);
+		}
+
+		this._prepAutomation(automation);
+
+		if (automation.sync) {
 			//Push to the queue
 			let release = await this.queueMutex.acquire();
-			for (let action of actionArray)
-			{
-				this.queue.push({ action, context: completeContext });
-			}
+			this.queue.push({ automation, context: completeContext });
 			release();
 
 			this._runStartOfQueue();
 		}
-		else
-		{
-			this._runActions(actionArray, completeContext);
+		else {
+			this._runAutomation(automation, completeContext);
 		}
 	}
 
-	trigger(name, options)
-	{
-		let event = this.triggers[name];
+	trigger(plugin, name, options) {
+		const pluginHandlers = this.triggerHandlers[plugin];
+		if (!pluginHandlers) {
+			return false;
+		}
+		let triggerHandler = this.triggerHandlers[plugin][name];
 
-		if (!event)
-		{
+		if (!triggerHandler) {
+			return false;
+		}
+		const triggerPluginMappings = this.triggerMappings[plugin];
+		if (!triggerPluginMappings) {
+			return false;
+		}
+		const triggerMappings = this.triggerMappings[plugin][name];
+		if (!triggerMappings) {
 			return false;
 		}
 
-		if ("number" in options)
-		{
-			logger.info(`Fired ${name} : ${options.number}`)
-			//Handle a numberlike event action
-			let selected = null;
-			for (let key in event)
-			{
-				let keyNumber = Number(key);
-				if (isNaN(keyNumber))
-					continue;
-				if (options.number >= keyNumber)
-					selected = event[key];
-			}
-			if (selected && isActionable(selected))
-			{
-				this.pushToQueue(selected, options);
-				return true;
-			}
-			else if (selected)
-			{
-				console.error("Selected wasn't actionable.");
-			}
-		}
-		else if ("name" in options)
-		{
-			logger.info(`Fired ${name} : ${options.name}`)
-			//Handle a namelike event
-			let namedEvent = event[options.name];
-			if (namedEvent && isActionable(namedEvent))
-			{
-				this.pushToQueue(namedEvent, options);
-				return true;
-			}
-		}
-		if (isActionable(event))
-		{
-			logger.info(`Fired ${name}`)
-			this.pushToQueue(event, options);
-			return true;
-		}
+		return triggerHandler.handle(this, triggerMappings, options);
 	}
 
 
-	async _runActions(actionArray, context)
-	{
-		for (let action of actionArray)
-		{
+	async _runAutomation(automation, context) {
+		for (let action of automation.actions) {
 			await this._runAction(action, context);
 		}
 	}
 
 
-	async _runAction(action, context)
-	{
-		//Hardcoded wait
-		if (action.beforeDelay)
-		{
+	async _runAction(action, context) {
+		//Before delay is used by our offset calculations so it must stay.
+		if (action.beforeDelay) {
 			await sleep(action.beforeDelay * 1000);
 		}
 
-		for (let subAction in action)
-		{
-			if (subAction in this.actions)
-			{
-				this.actions[subAction].handler(action[subAction], context).catch((reason) =>
-				{
-					console.error(`${subAction} threw Exception!`);
+		const pluginActions = this.actions[action.plugin];
+		if (pluginActions) {
+			if (action.action in pluginActions) {
+				pluginActions[action.action].handler(action.data, context).catch((reason) => {
+					console.error(`${action.plugin}${action.action} threw Exception!`);
 					console.error(reason);
 				});
 			}
 		}
 
-		if (action.delay)
-		{
-			await sleep(action.delay * 1000);
+		if (action.plugin === "castmate") {
+			if (action.action === "automation") {
+				const subAutomationName = action.automation.automation;
+				const subAutomation = this.automations.get(subAutomationName);
+				this._prepAutomation(subAutomation);
+				await this._runAutomation(subAutomation);
+			}
+
+			if (action.action === "delay") {
+				await sleep(action.delay * 1000);
+			}
 		}
 	}
 
-	async _runNext()
-	{
-		if (this.queue.length > 0)
-		{
+	async _runNext() {
+		if (this.queue.length > 0) {
 			let release = await this.queueMutex.acquire();
-			let front = this.queue.shift();
-			let frontPromise = this._runAction(front.action, front.context);
-			this.currentAction = frontPromise;
-			this.currentAction.then(() => this._runNext());
+			let frontAutomation = this.queue.shift();
+			let frontPromise = this._runAutomation(frontAutomation.automation, frontAutomation.context);
+			this.syncAutomationPromise = frontPromise;
+			this.syncAutomationPromise.then(() => this._runNext());
 			release();
 		}
-		else
-		{
-			this.currentAction = null;
+		else {
+			this.syncAutomationPromise = null;
 		}
 	}
 
-	async _runStartOfQueue()
-	{
-		if (this.currentAction)
+	async _runStartOfQueue() {
+		if (this.syncAutomationPromise)
 			return;
 
 		if (this.queue.length == 0)
 			return;
 
-		logger.info("Starting new synchronous chain");
+		logger.info("Starting new synchronous automation chain");
 		let release = await this.queueMutex.acquire();
-		let front = this.queue.shift();
-		let frontPromise = this._runAction(front.action, front.context);
-		this.currentAction = frontPromise;
-		this.currentAction.then(() => this._runNext());
+		let frontAutomation = this.queue.shift();
+		let frontPromise = this._runAutomation(frontAutomation.automation, frontAutomation.context);
+		this.syncAutomationPromise = frontPromise;
+		this.syncAutomationPromise.then(() => this._runNext());
 		release();
 	}
 }

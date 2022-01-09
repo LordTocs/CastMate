@@ -4,185 +4,75 @@ const path = require("path");
 const { userFolder } = require("../utils/configuration");
 const logger = require("../utils/logger");
 
-function loadFile(filename, fileset, root = userFolder)
-{
-	const adjustedFilename = path.join(root, filename);
-	let contents = fs.readFileSync(adjustedFilename, "utf-8");
-	let pojo = YAML.parse(contents);
-	fileset.add(adjustedFilename);
-	return pojo;
-}
-
-function loadActionable(actionable, fileset)
-{
-	if (actionable instanceof Array)
-	{
-		for (let i = 0; i < actionable.length; ++i)
-		{
-			let action = actionable[i];
-			if ("import" in action)
-			{
-				try
-				{
-					let actionsInsert = loadFile(action["import"], fileset);
-					if (!(actionsInsert instanceof Array))
-					{
-						logger.error(`Imports in the middle of action arrays must be arrays themselves.`);
-						throw new Error("Imports in the middle of action arrays must be arrays themselves");
-					}
-
-					//Handle recursive imports
-					loadActionable(actionsInsert, fileset);
-
-					actionable.splice(i, 1, ...actionsInsert);
-
-					i += actionsInsert.length - 1;
-				}
-				catch (err)
-				{
-					logger.error(`Unable to load file ${action["import"]}`);
-					throw err;
-				}
-			}
-		}
-	}
-	else if ("actions" in actionable)
-	{
-		loadActionable(actionable.actions, fileset);
-	}
-	else if ("oneOf" in actionable)
-	{
-		for (let subActions of actionable.oneOf)
-		{
-			loadActionable(subActions, fileset);
-		}
-	}
-}
-
-function loadTrigger(triggerObj, fileset)
-{
-	for (let trigger in triggerObj)
-	{
-		if (trigger == "imports")
-			continue;
-
-		loadActionable(triggerObj[trigger], fileset)
-	}
-
-	if ("imports" in triggerObj)
-	{
-		let importFiles = triggerObj.imports;
-		if (!(importFiles instanceof Array))
-		{
-			throw new Error("'imports' expects an array of filenames");
-		}
-
-		for (let filename of importFiles)
-		{
-			try
-			{
-				let importedTriggers = loadFile(filename, fileset);
-				for (let trigger in importedTriggers)
-				{
-					loadActionable(importedTriggers[trigger], fileset);
-				}
-				Object.assign(triggerObj, importedTriggers);
-			}
-			catch (err)
-			{
-				logger.error(`Unable to load file ${filename}`);
-				throw err;
-			}
-		}
-
-		delete triggerObj.imports;
-	}
-}
-
-class Profile
-{
-	constructor(filename, onReload)
-	{
+class Profile {
+	constructor(filename, manager, onReload) {
 		this.filename = filename;
+		this.name = path.basename(filename, ".yaml");
+		this.manager = manager;
 		this.triggers = {};
-		this.conditions = {};
+		this.conditions = { operator: 'any', operands: [] };
 		this.watchers = [];
 		this.onReload = onReload;
 		this.rewards = [];
-		this.dependencies = null;
-		try
-		{
-			this.reload();
-		}
-		catch (err)
-		{
-			//Catch this error here, so initial construction of profiles doesn't error out.
-			//Otherwise it will break hotreloading if the profile is fixed.
-			logger.error(`Initial Loading of ${filename} failed.`);
-		}
+		this.onDeactivate = null;
+		this.onActivate = null;
 	}
 
-	reload()
-	{
-		let fileset = new Set();
-		this.dependencies = fileset;
-
+	async reload() {
 		logger.info(`Loading Profile: ${this.filename}`);
-		let profileConfig;
-		try
-		{
-			profileConfig = loadFile(this.filename, fileset, ".");
 
-			if (profileConfig.triggers)
-			{
-				for (let trigger in profileConfig.triggers)
-				{
-					loadTrigger(profileConfig.triggers[trigger], fileset);
-				}
-			}
+		let profileConfig;
+		try {
+			profileConfig = YAML.parse(await fs.promises.readFile(this.filename, 'utf-8'))
 		}
-		catch (err)
-		{
+		catch (err) {
 			logger.error(`Unable to load file ${this.filename}`);
 			throw err;
 		}
 
-		this.triggers = profileConfig.triggers;
-		this.conditions = profileConfig.conditions || {};
+		if (!profileConfig) {
+			logger.error(`Profile file ${this.filename} is empty!`)
+			profileConfig = {};
+		}
+
+		this.triggers = profileConfig.triggers || {};
+		this.conditions = profileConfig.conditions || { operator: 'any', operands: [] };
 		this.config = profileConfig;
+		this.onActivate = profileConfig.onActivate;
+		this.onDeactivate = profileConfig.onDeactivate;
 	}
 
-	async handleFileChanged(filename)
-	{
-		if (this.dependencies.has(filename))
-		{
-			this.reload();
+	async handleFileChanged(filename) {
+		if (this.filename == filename) {
+			await this.reload();
 			this.onReload(this);
 		}
 	}
 }
 
-Profile.mergeTriggers = function (profiles)
-{
+Profile.mergeTriggers = function (profiles) {
 	let combined = {};
 
-	for (let profile of profiles)
-	{
-		for (let trigger in profile.triggers)
-		{
-			if (!(trigger in combined))
-			{
-				combined[trigger] = {};
+	for (let profile of profiles) {
+		for (let plugin in profile.triggers) {
+			if (!(plugin in combined)) {
+				combined[plugin] = {};
 			}
 
-			for (let subTrigger in profile.triggers[trigger])
-			{
-				combined[trigger][subTrigger] = profile.triggers[trigger][subTrigger];
+			for (let trigger in profile.triggers[plugin]) {
+				if (!(trigger in combined[plugin])) {
+					combined[plugin][trigger] = {};
+				}
+
+				for (let subTrigger in profile.triggers[plugin][trigger]) {
+					combined[plugin][trigger][subTrigger] = profile.triggers[plugin][trigger][subTrigger];
+				}
 			}
 		}
+
 	}
 
 	return combined;
 }
 
-module.exports = { Profile, loadActionable };
+module.exports = { Profile };

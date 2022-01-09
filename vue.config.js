@@ -1,11 +1,27 @@
+const path = require('path');
+
 module.exports = {
 	configureWebpack: {
-		devtool: 'source-map'
+		devtool: 'source-map',
 	},
-
 	pluginOptions: {
 		electronBuilder: {
-			externals: ["win32-api", "ffi-napi", "ref-napi", "node-gyp-build", "@peter-murray/hue-bridge-model", "node-hue-api", "jsdom", "canvas", "chokidar", 'twitch', 'twitch-chat-client', 'twitch-pubsub-client', 'twitch-webhooks'],
+			externals: [
+				"win32-api",
+				"ffi-napi",
+				"ref-napi",
+				"node-gyp-build",
+				"@peter-murray/hue-bridge-model",
+				"node-hue-api",
+				"jsdom",
+				"canvas",
+				"chokidar",
+				'@twurple/api',
+				'@twurple/chat',
+				'@twurple/auth',
+				'@twurple/pubsub',
+				'ws'
+			],
 			nodeIntegration: true,
 			builderOptions: {
 				nsis: {
@@ -18,6 +34,12 @@ module.exports = {
 					repo: "CastMate"
 				}],
 				productName: "CastMate",
+				extraFiles: [
+					{
+						from: "web",
+						to: "web",
+					}
+				]
 			},
 			mainProcessWatch: ['src/core/**'],
 		}

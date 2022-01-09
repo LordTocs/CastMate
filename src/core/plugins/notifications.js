@@ -4,6 +4,8 @@ const { template } = require('../utils/template');
 module.exports = {
 	name: "notifications",
 	uiName: "Notifications",
+	icon: "mdi-alert-box-outline",
+	color: "#CC63A2",
 	async init()
 	{
 
@@ -19,12 +21,15 @@ module.exports = {
 	actions: {
 		notification: {
 			name: "Notification",
+			description: "Shows a notification in the OBS browser",
+			icon: "mdi-alert-box-outline",
+			color: "#CC63A2",
 			data: {
 				type: Object,
 				properties: {
-					header: { type: "TemplateString", name: "Header" },
-					text: { type: "TemplateString", name: "Text" },
-					color: { type: "TemplateString", name: "Color" },
+					header: { type: String, template: true, name: "Header" },
+					text: { type: String, template: true, name: "Text" },
+					color: { type: String, template: true, name: "Color" },
 				}
 			},
 			async handler(notificationData, context)
