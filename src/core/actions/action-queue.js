@@ -165,14 +165,14 @@ class ActionQueue {
 
 		if (action.plugin === "castmate") {
 			if (action.action === "automation") {
-				const subAutomationName = action.automation.automation;
+				const subAutomationName = action.data.automation;
 				const subAutomation = this.automations.get(subAutomationName);
 				this._prepAutomation(subAutomation);
 				await this._runAutomation(subAutomation);
 			}
 
 			if (action.action === "delay") {
-				await sleep(action.delay * 1000);
+				await sleep(action.data * 1000);
 			}
 		}
 	}
