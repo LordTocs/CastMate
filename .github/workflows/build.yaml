@@ -22,12 +22,13 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "16"
-      - name: "Install Node-Gyp"
-        run: "npm install -g node-gyp"
-      - name: "Rebuild for Electron"
-        run: "npm run rebuild"
+      - name: "Clear Node-Gyp Cache"
+        shell: powershell
+        run: Remove-Item '~/AppData/Local/node-gyp' -Recurse
       - name: "Install Node Packages"
         run: "npm install"
+      - name: "Rebuild for Electron"
+        run: "npm run rebuild"
       - name: "Build"
         run: "npm run electron:build -- -p always"
         env:
