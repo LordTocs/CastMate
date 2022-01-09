@@ -16,6 +16,7 @@ module.exports = {
 				"jsdom",
 				"canvas",
 				"chokidar",
+				"@nut-tree/nut-js",
 				'@twurple/api',
 				'@twurple/chat',
 				'@twurple/auth',

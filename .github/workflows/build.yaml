@@ -22,8 +22,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "16"
-      - name: "Install Node Gyp"
-        run: "npm install --global node-gyp"
       - name: "Install Node Packages"
         run: "npm install"
       - name: "Rebuild for Electron"
