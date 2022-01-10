@@ -48,6 +48,7 @@ const fs = require("fs");
 const path = require('path');
 const { userFolder } = require('../utils/configuration');
 const axios = require("axios");
+const _cloneDeep = require("lodash/cloneDeep")
 
 module.exports = {
 	name: "hue",
@@ -210,13 +211,13 @@ module.exports = {
 				}
 			},
 			async handler(lightData, context) {
-				lightData = { ...lightData };
+				lightData = _cloneDeep(lightData);
 
 				let groupName = lightData.group || this.settings.defaultGroup;
 
 				let state = new lightstates.GroupLightState();
 
-				this.logger.info(`Hue Lights: ${JSON.stringify(lightData)}`)
+				
 
 				if ("on" in lightData) {
 					lightData.on = await this.handleTemplateNumber(lightData.on, context);
@@ -251,6 +252,8 @@ module.exports = {
 						state.ct(1000000 / lightData.hsbk.temp);
 					}
 				}
+
+				this.logger.info(`Hue Lights: ${JSON.stringify(lightData)}`)
 
 				if ("transition" in lightData) {
 					lightData.transition = await this.handleTemplateNumber(lightData.transition, context);
