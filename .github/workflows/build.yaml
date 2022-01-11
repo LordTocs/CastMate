@@ -24,8 +24,8 @@ jobs:
           node-version: "16"
       - name: "Install Node Packages"
         run: "npm install"
-      - name: "Rebuild for Electron"
-        run: "npm run rebuild"
+      #- name: "Rebuild for Electron"
+      #  run: "npm run rebuild"
       - name: "Build"
         run: "npm run electron:build -- -p always"
         env:
