@@ -98,10 +98,8 @@ module.exports = {
 		},
 		async getAllScenes() {
 			try {
-				console.log("Getting Scenes");
 				const result = await this.obs.send('GetSceneList');
 				const sceneitems = result.scenes.map((s) => s.name);
-				console.log(sceneitems);
 				return sceneitems;
 			}
 			catch (err) {
