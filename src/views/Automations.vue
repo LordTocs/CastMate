@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-card color="grey darken-2">
+    <v-card class="linktable-card" color="grey darken-2">
       <v-card-title>
         <v-text-field
           v-model="search"
@@ -195,4 +195,20 @@ export default {
 </script>
 
 <style>
+.linktable-card tbody tr:nth-of-type(even) {
+  background-color: #424242;
+}
+
+.linktable-card tbody tr:nth-of-type(odd) {
+  background-color: #424242;
+}
+
+.linktable-card .v-data-table-header {
+  background-color: #424242;
+  color: white;
+}
+
+.linktable-card .v-data-footer {
+  background-color: #424242;
+}
 </style>
