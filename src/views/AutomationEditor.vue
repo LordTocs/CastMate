@@ -35,7 +35,21 @@
           <div class="flex-grow-1">
             <div class="d-flex">
               <h1 class="flex-grow-1">{{ automationName }}</h1>
-              <v-switch v-if="automation" v-model="automation.sync" label="Synchronous" />
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <div v-bind="attrs" v-on="on" style="width: min-content">
+                    <v-switch
+                      v-if="automation"
+                      v-model="automation.sync"
+                      label="Synchronous"
+                    />
+                  </div>
+                </template>
+                <span
+                  >This automation will queue behind other Synchronous
+                  automations and wait to play.</span
+                >
+              </v-tooltip>
             </div>
             <v-text-field
               v-if="automation"
