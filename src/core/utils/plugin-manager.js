@@ -14,7 +14,6 @@ class PluginManager {
 			"sounds",
 			"minecraft",
 			"csgo",
-			"tts",
 			"kofi",
 			"twitch",
 			"variables",
