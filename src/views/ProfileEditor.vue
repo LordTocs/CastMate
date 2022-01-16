@@ -22,6 +22,28 @@
       <v-container fluid>
         <v-row>
           <v-col>
+            <v-card>
+              <v-card-title> Triggers </v-card-title>
+              <v-card-subtitle>
+                Triggers are events you can bind automations to. Chat commands,
+                follows, channelpoints, etc...
+              </v-card-subtitle>
+              <v-card-text v-if="profile">
+                <v-row v-for="plugin in triggerPlugins" :key="plugin.name">
+                  <v-col>
+                    <plugin-triggers
+                      :plugin="plugin"
+                      :value="profile.triggers[plugin.name] || {}"
+                      @input="(v) => $set(profile.triggers, plugin.name, v)"
+                    />
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
             <v-card v-if="profile">
               <v-card-title> Profile Activation </v-card-title>
               <v-card-subtitle>
@@ -53,16 +75,6 @@
         <v-row v-if="profile">
           <v-col>
             <rewards-editor v-model="profile.rewards" />
-          </v-col>
-        </v-row>
-        <v-row v-for="plugin in triggerPlugins" :key="plugin.name">
-          <v-col>
-            <plugin-triggers
-              v-if="profile"
-              :plugin="plugin"
-              :value="profile.triggers[plugin.name] || {}"
-              @input="(v) => $set(profile.triggers, plugin.name, v)"
-            />
           </v-col>
         </v-row>
         <v-snackbar v-model="saveSnack" :timeout="1000" color="green">

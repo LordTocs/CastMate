@@ -1,6 +1,6 @@
 <template>
-  <v-expansion-panels>
-    <v-expansion-panel>
+  <v-expansion-panels >
+    <v-expansion-panel class="grey darken-3">
       <v-expansion-panel-header>
         <span class="text-h6">
           <v-icon v-if="plugin.icon"> {{ plugin.icon }} </v-icon>

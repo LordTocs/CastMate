@@ -1,5 +1,5 @@
 <template>
-  <v-card color="grey darken-2">
+  <v-card color="#323232">
     <v-card-title>
       {{ triggerName }}
       <v-spacer />

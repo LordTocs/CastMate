@@ -1,5 +1,5 @@
 <template>
-  <v-card color="grey darken-2">
+  <v-card class="trigger-card" color="#323232">
     <v-card-title>
       {{ triggerName }}
       <v-spacer />
@@ -8,7 +8,6 @@
       {{ trigger.description }}
     </v-card-text>
     <v-data-table
-      color="grey darken-2"
       :headers="headers"
       :items="commandList"
       :search="search"
@@ -139,20 +138,4 @@ export default {
 </script>
 
 <style>
-tbody tr:nth-of-type(even) {
-  background-color: #424242;
-}
-
-tbody tr:nth-of-type(odd) {
-  background-color: #424242;
-}
-
-.v-data-table-header {
-  background-color: #424242;
-  color: white;
-}
-
-.v-data-footer {
-  background-color: #424242;
-}
 </style>
