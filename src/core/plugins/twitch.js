@@ -92,7 +92,7 @@ module.exports = {
 			let clientId = this.secrets.apiClientId || "qnybd4aoxlom3u3wjbsstsp5yd2sdl"
 
 			this.channelAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Channel" })
-			this.botAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Bot" })
+			this.botAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Bot", scopes: ["chat:edit", "chat:read"] })
 
 			await this.channelAuth.trySilentAuth();
 			await this.botAuth.trySilentAuth();
