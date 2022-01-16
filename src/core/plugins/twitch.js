@@ -104,6 +104,9 @@ module.exports = {
 		},
 
 		async shutdown() {
+			this.state.botName = null;
+			this.state.channelName = null;
+
 			if (this.chatClient) {
 				await this.chatClient.quit();
 			}

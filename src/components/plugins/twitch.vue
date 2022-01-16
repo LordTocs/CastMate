@@ -42,19 +42,27 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import { mapIpcs } from "../../utils/ipcMap";
 
 export default {
   data() {
     return {
       channelWorking: false,
-      channelName: null,
-      botName: null,
       botWorking: false,
     };
   },
+  computed: {
+    ...mapGetters("ipc", ["stateLookup"]),
+    botName() {
+      return this.stateLookup.twitch.botName;
+    },
+    channelName() {
+      return this.stateLookup.twitch.channelName;
+    },
+  },
   methods: {
-    ...mapIpcs("twitch", ["doChannelAuth", "doBotAuth", "getAuthStatus"]),
+    ...mapIpcs("twitch", ["doChannelAuth", "doBotAuth"]),
     async startChannelAuth() {
       this.channelWorking = true;
       if (await this.doChannelAuth()) {
@@ -69,11 +77,6 @@ export default {
       }
       this.botWorking = false;
     },
-  },
-  async mounted() {
-    let { bot, channel } = await this.getAuthStatus();
-    this.botName = bot;
-    this.channelName = channel;
   },
 };
 </script>
