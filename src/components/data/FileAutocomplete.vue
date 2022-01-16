@@ -11,6 +11,8 @@
     :clearable="clearable"
     item-text="basename"
     item-value="path"
+    @copy.stop=""
+    @paste.stop=""
   >
   </v-autocomplete>
 </template>

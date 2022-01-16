@@ -3,6 +3,8 @@
     v-if="!schema.enum"
     :value="value"
     @input="(v) => $emit('input', v)"
+    @copy.stop=""
+    @paste.stop=""
     :label="schema.name || dataName"
     :clearable="!schema.required"
   />
