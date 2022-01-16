@@ -46,10 +46,11 @@
         <v-btn @click="$refs.addCommandModal.open()"> Add Automation </v-btn>
       </template>
     </v-data-table>
-    <number-item-modal
+    <trigger-command-modal
       ref="addCommandModal"
       header="Create Trigger Value Automation Mapping"
       label="Amount"
+      :trigger="trigger"
       @created="createNewCommand"
     />
     <confirm-dialog ref="deleteDlg" />
@@ -58,18 +59,18 @@
 
 <script>
 import { mapGetters, mapMutations } from "vuex";
-import NumberItemModal from "../dialogs/NumberItemModal.vue";
 import AutomationSelector from "../automations/AutomationSelector.vue";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
 import { changeObjectKey } from "../../utils/objects";
 import NumberInput from "../data/NumberInput.vue";
+import TriggerCommandModal from './TriggerCommandModal.vue';
 
 export default {
   components: {
-    NumberItemModal,
     ConfirmDialog,
     AutomationSelector,
     NumberInput,
+    TriggerCommandModal,
   },
   props: {
     trigger: {},
@@ -124,15 +125,15 @@ export default {
     openRename(commandKey) {
       this.rename = commandKey;
     },
-    createNewCommand(commandkey) {
-      const commandNumber = Number(commandkey);
+    createNewCommand({ key, automation}) {
+      const commandNumber = Number(key);
 
-      if (isNaN(commandkey)) return;
+      if (isNaN(commandNumber)) return;
 
       if (this.value && commandNumber in this.value) return;
 
       const result = { ...this.value };
-      result[commandNumber] = { automation: null };
+      result[commandNumber] = { automation };
 
       this.$emit("input", result);
     },

@@ -53,10 +53,11 @@
         <v-btn @click="$refs.addCommandModal.open()"> Add Command </v-btn>
       </template>
     </v-data-table>
-    <named-item-modal
+    <trigger-command-modal
       ref="addCommandModal"
       header="Create New Command"
       label="Command"
+      :trigger="trigger"
       @created="createNewCommand"
     />
     <confirm-dialog ref="deleteDlg" />
@@ -65,13 +66,13 @@
 
 <script>
 import { mapGetters, mapMutations } from "vuex";
-import NamedItemModal from "../dialogs/NamedItemModal.vue";
 import AutomationSelector from "../automations/AutomationSelector.vue";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
 import { changeObjectKey } from "../../utils/objects";
+import TriggerCommandModal from './TriggerCommandModal.vue';
 
 export default {
-  components: { NamedItemModal, ConfirmDialog, AutomationSelector },
+  components: { ConfirmDialog, AutomationSelector, TriggerCommandModal },
   props: {
     trigger: {},
     triggerKey: { type: String },
@@ -109,11 +110,11 @@ export default {
     openRename(commandKey) {
       this.rename = commandKey;
     },
-    createNewCommand(commandkey) {
-      if (this.value && commandkey in this.value) return;
+    createNewCommand({key, automation}) {
+      if (this.value && key in this.value) return;
 
       const result = { ...this.value };
-      result[commandkey] = { automation: null };
+      result[key] = { automation };
 
       this.$emit("input", result);
     },
