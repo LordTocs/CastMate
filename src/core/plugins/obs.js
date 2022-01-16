@@ -86,6 +86,16 @@ module.exports = {
 				return [];
 			}
 		},
+		async getSceneSources(sceneName) {
+			try {
+				const result = await this.obs.send("GetSceneItemList", { sceneName });
+				return result.sceneItems.map(s => s.sourceName);
+			}
+			catch
+			{
+				return [];
+			}
+		},
 		async getAllScenes() {
 			try {
 				console.log("Getting Scenes");
@@ -207,6 +217,43 @@ module.exports = {
 					filterEnabled: !!filterData.filterEnabled
 				})
 			}
+		},
+		source: {
+			name: "Source Visibility",
+			description: "Change a OBS source's visibilty",
+			icon: "mdi-swap-horizontal-bold",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+					scene: {
+						type: String,
+						template: true,
+						async enum() {
+							return await this.getAllScenes();
+						}
+					},
+					source: {
+						type: String,
+						template: true,
+						async enum(context) {
+							this.logger.info('Fetching sources for ' + context.scene);
+							return await this.getSceneSources(context.scene);
+						}
+					},
+					enabled: {
+						type: Boolean,
+						name: "Source Visible"
+					}
+				}
+			},
+			async handler(data, context) {
+				await this.obs.send('SetSceneItemRender', {
+					'scene-name': await template(data.scene, context),
+					'source': await template(data.source, context),
+					'render': data.enabled,
+				})
+			},
 		},
 		text: {
 			name: "OBS Text",
