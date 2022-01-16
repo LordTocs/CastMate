@@ -7,7 +7,7 @@
     <v-card-text>
       {{ trigger.description }}
     </v-card-text>
-    <automation-selector :value="value" @input="(v) => $emit('input', v)" />
+    <automation-selector :value="value.automation" @input="(v) => $emit('input', { automation: v } )" />
   </v-card>
 </template>
 

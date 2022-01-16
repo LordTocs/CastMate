@@ -75,6 +75,11 @@ class ActionQueue {
 	}
 
 	_prepAutomation(automation) {
+		if (!automation)
+		{
+			logger.error("Automation missing!");
+		}
+
 		if (!(automation.actions instanceof Array)) {
 			logger.error("Automations must have an actions array.");
 			return false;
