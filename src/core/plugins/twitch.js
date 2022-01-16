@@ -119,6 +119,8 @@ module.exports = {
 				//Flag so the automatic reconnect does not run
 				this.castMateWebsocketReconnect = false;
 				this.castMateWebsocket.terminate();
+				clearInterval(this.castMateWebsocketPinger);
+				this.castMateWebsocketPinger = null;
 				this.castMateWebsocket = null;
 			}
 		},
@@ -286,6 +288,9 @@ module.exports = {
 		async retryWebsocketWorkaround() {
 			if (this.castMateWebsocket) {
 				this.castMateWebsocket.terminate();
+
+				clearInterval(this.castMateWebsocketPinger);
+				this.castMateWebsocketPinger = null;
 			}
 
 			this.castMateWebsocket = null;
@@ -358,6 +363,10 @@ module.exports = {
 
 				}
 			})
+
+			this.castMateWebsocketPinger = setInterval(() => {
+				this.castMateWebsocket.ping()
+			}, 30000);
 		},
 
 		async setupPubSubTriggers() {
