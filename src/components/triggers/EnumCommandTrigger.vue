@@ -1,5 +1,5 @@
 <template>
-  <v-card color="grey darken-2">
+  <v-card class="trigger-card" color="#323232">
     <v-card-title>
       {{ triggerName }}
       <v-spacer />
@@ -8,7 +8,6 @@
       {{ trigger.description }}
     </v-card-text>
     <v-data-table
-      color="grey darken-2"
       :headers="headers"
       :items="commandList"
       :search="search"
@@ -46,10 +45,11 @@
         <v-btn @click="$refs.addCommandModal.open()"> Add Command </v-btn>
       </template>
     </v-data-table>
-    <named-item-modal
+    <trigger-command-modal
       ref="addCommandModal"
       header="Create New Command"
       label="Command"
+      :trigger="trigger"
       @created="createNewCommand"
     />
     <confirm-dialog ref="deleteDlg" />
@@ -58,14 +58,14 @@
 
 <script>
 import { mapGetters, mapMutations } from "vuex";
-import NamedItemModal from "../dialogs/NamedItemModal.vue";
 import AutomationSelector from "../automations/AutomationSelector.vue";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
 import { changeObjectKey } from "../../utils/objects";
 import EnumInput from "../data/EnumInput.vue";
+import TriggerCommandModal from './TriggerCommandModal.vue';
 
 export default {
-  components: { NamedItemModal, ConfirmDialog, AutomationSelector, EnumInput },
+  components: { ConfirmDialog, AutomationSelector, EnumInput, TriggerCommandModal },
   props: {
     trigger: {},
     triggerKey: { type: String },
@@ -103,11 +103,11 @@ export default {
     openRename(commandKey) {
       this.rename = commandKey;
     },
-    createNewCommand(commandkey) {
-      if (this.value && commandkey in this.value) return;
+    createNewCommand({key, automation}) {
+      if (this.value && key in this.value) return;
 
       const result = { ...this.value };
-      result[commandkey] = { automation: null };
+      result[key] = { automation: automation };
 
       this.$emit("input", result);
     },
@@ -139,20 +139,4 @@ export default {
 </script>
 
 <style>
-tbody tr:nth-of-type(even) {
-  background-color: #424242;
-}
-
-tbody tr:nth-of-type(odd) {
-  background-color: #424242;
-}
-
-.v-data-table-header {
-  background-color: #424242;
-  color: white;
-}
-
-.v-data-footer {
-  background-color: #424242;
-}
 </style>

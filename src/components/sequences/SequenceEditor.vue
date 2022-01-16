@@ -8,6 +8,7 @@
     @copy="copy"
     @paste="paste"
     @cut="cut"
+    @blur="blur"
   >
     <div
       v-if="dragBox.dragging"
@@ -39,7 +40,7 @@
         @delete="deleteAction(i)"
       />
       <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
-      <div slot="footer" style="font-size: 0; height: 120px;">...</div>
+      <div slot="footer" style="font-size: 0; height: 120px">...</div>
     </draggable>
   </div>
 </template>
@@ -119,7 +120,7 @@ export default {
     },
     newActionGroup() {
       let newValue = _cloneDeep(this.value);
-      newValue.push({})
+      newValue.push({});
 
       this.$emit("input", newValue);
     },
@@ -225,6 +226,10 @@ export default {
         "application/json"
       );
 
+      if (!paste || paste.length == 0) {
+        return;
+      }
+
       try {
         const pasteData = JSON.parse(paste);
 
@@ -248,8 +253,10 @@ export default {
 
         newValue.splice(insertIdx, 0, ...pasteData);
         this.$emit("input", newValue);
-      } catch {
+      } catch (err) {
         console.log("error pasting");
+        console.log("Data: ", paste);
+        console.log(err);
       } finally {
         event.preventDefault();
       }
@@ -257,6 +264,9 @@ export default {
     cut(event) {
       this.copy(event);
       this.doDelete();
+    },
+    blur() {
+      this.clearSelection();
     },
     doDelete() {
       if (this.selected.length == 0) {

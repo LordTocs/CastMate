@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-card color="grey darken-2">
+    <v-card class="linktable-card"  color="grey darken-2">
       <v-card-title>
         <v-text-field
           v-model="search"

@@ -1,5 +1,5 @@
 <template>
-  <v-card color="grey darken-2">
+  <v-card color="#323232">
     <v-card-title>
       {{ triggerName }}
       <v-spacer />
@@ -7,7 +7,7 @@
     <v-card-text>
       {{ trigger.description }}
     </v-card-text>
-    <automation-selector :value="value" @input="(v) => $emit('input', v)" />
+    <automation-selector :value="value ? value.automation : null" @input="(v) => $emit('input', { automation: v } )" />
   </v-card>
 </template>
 

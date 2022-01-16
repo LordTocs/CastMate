@@ -8,7 +8,10 @@
       </v-toolbar>
       <v-form @submit.prevent="create">
         <v-card-text>
-          <number-input v-model="number" :label="label" />
+          <number-input v-model="key" :label="label" v-if="trigger.type == 'NumberTrigger'"/>
+          <v-text-field v-model="key" :label="label" v-else-if="trigger.type == 'CommandTrigger'"/>
+          <enum-input v-model="key" :label="label" :enum="trigger.enum" v-else-if="trigger.type == 'EnumTrigger'" />
+          <automation-selector v-model="automation" />
         </v-card-text>
         <v-card-actions class="pt-3">
           <v-spacer></v-spacer>
@@ -35,32 +38,37 @@
 </template>
 
 <script>
+import AutomationSelector from '../automations/AutomationSelector.vue';
+import EnumInput from '../data/EnumInput.vue';
 import NumberInput from '../data/NumberInput.vue';
 export default {
-  components: { NumberInput },
+  components: { NumberInput, EnumInput, AutomationSelector },
   props: {
     header: { type: String, default: () => "Create" },
     label: { type: String, default: () => "Name" },
+    trigger: {},
   },
   data() {
     return {
-      number: null,
+      key: null,
+      automation: null,
       dialog: false,
     };
   },
   methods: {
     open() {
-      this.number = null;
+      this.key = null;
+      this.automation = null;
       this.dialog = true;
     },
     cancel() {
       this.dialog = false;
     },
     async create() {
-      if (this.number === null || this.number === undefined) return;
+      if (this.key === null || this.key === undefined) return;
 
       this.dialog = false;
-      this.$emit("created", this.number);
+      this.$emit("created", { key: this.key, automation: this.automation });
     },
   },
 };

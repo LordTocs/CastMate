@@ -3,7 +3,7 @@
     :color="actionColor"
     :class="{ expanded, shrunk: !expanded, 'sequence-item': true, selected }"
   >
-    <div style="font-size: 0; user-select: auto">...</div>
+    <div style="font-size: 0; user-select: text">...</div>
     <v-card-title
       v-if="actionDefinition"
       class="handle"
@@ -121,6 +121,9 @@ export default {
   margin-top: 16px;
   border-width: 3px;
   border-style: solid;
-  user-select: none;
+}
+
+.sequence-item i::selection {
+  background: rgba(0,0,0,0);
 }
 </style>

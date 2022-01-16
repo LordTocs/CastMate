@@ -5,6 +5,8 @@
     :value="value"
     @change="handleInput"
     :clearable="clearable"
+    @copy.stop=""
+    @paste.stop=""
   />
 </template>
 

@@ -2,7 +2,7 @@ const qs = require('querystring');
 const { BrowserWindow } = require('electron');
 const logger = require('./logger');
 
-const scopes = [
+const defaultScopes = [
 	"analytics:read:extensions",
 	"analytics:read:games",
 	"bits:read",
@@ -29,16 +29,15 @@ const scopes = [
 	"channel:moderate",
 
 	"chat:edit",
-	"chat:read",
-	"whispers:read",
-	"whispers:edit"
+	"chat:read"
 ]
 
 class ElectronAuthManager {
-    constructor({ clientId, redirectUri, name }) {
+    constructor({ clientId, redirectUri, name, scopes }) {
         this._clientId = clientId;
         this._redirectUri = redirectUri;
         this.name = name;
+        this.scopes = scopes || defaultScopes
     }
 
     get clientId() {
@@ -65,7 +64,7 @@ class ElectronAuthManager {
                 response_type: "token",
                 client_id: this._clientId,
                 redirect_uri: this._redirectUri,
-                scope: scopes.join(' ')
+                scope: this.scopes.join(' ')
             }
 
             const authUrl = `https://id.twitch.tv/oauth2/authorize?${qs.stringify(params)}`
@@ -104,13 +103,13 @@ class ElectronAuthManager {
 					{
 						this._accessToken = {
 							accessToken: respParams.access_token,
-							scope: scopes,
+							scope: this.scopes,
 							refresh_token: null,
                             expiresIn: null,
                             obtainmentTimestamp: Date.now(),
 						};
 
-                        this._currentScopes = new Set(scopes);
+                        this._currentScopes = new Set(this.scopes);
 
 						logger.info("  Auth Success");
 						resolve(this._accessToken);

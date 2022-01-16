@@ -191,7 +191,10 @@ module.exports = {
 		}
 	},
 	settings: {
-		defaultGroup: { type: String }
+		defaultGroup: {
+			type: String,
+			name: "Default HUE Group"
+		}
 	},
 	secrets: {
 	},
@@ -217,7 +220,7 @@ module.exports = {
 
 				let state = new lightstates.GroupLightState();
 
-				
+
 
 				if ("on" in lightData) {
 					lightData.on = await this.handleTemplateNumber(lightData.on, context);

@@ -92,7 +92,7 @@ module.exports = {
 			let clientId = this.secrets.apiClientId || "qnybd4aoxlom3u3wjbsstsp5yd2sdl"
 
 			this.channelAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Channel" })
-			this.botAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Bot" })
+			this.botAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Bot", scopes: ["chat:edit", "chat:read"] })
 
 			await this.channelAuth.trySilentAuth();
 			await this.botAuth.trySilentAuth();
@@ -104,6 +104,9 @@ module.exports = {
 		},
 
 		async shutdown() {
+			this.state.botName = null;
+			this.state.channelName = null;
+
 			if (this.chatClient) {
 				await this.chatClient.quit();
 			}
@@ -116,6 +119,8 @@ module.exports = {
 				//Flag so the automatic reconnect does not run
 				this.castMateWebsocketReconnect = false;
 				this.castMateWebsocket.terminate();
+				clearInterval(this.castMateWebsocketPinger);
+				this.castMateWebsocketPinger = null;
 				this.castMateWebsocket = null;
 			}
 		},
@@ -283,6 +288,9 @@ module.exports = {
 		async retryWebsocketWorkaround() {
 			if (this.castMateWebsocket) {
 				this.castMateWebsocket.terminate();
+
+				clearInterval(this.castMateWebsocketPinger);
+				this.castMateWebsocketPinger = null;
 			}
 
 			this.castMateWebsocket = null;
@@ -355,6 +363,10 @@ module.exports = {
 
 				}
 			})
+
+			this.castMateWebsocketPinger = setInterval(() => {
+				this.castMateWebsocket.ping()
+			}, 30000);
 		},
 
 		async setupPubSubTriggers() {

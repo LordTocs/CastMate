@@ -1,55 +1,69 @@
 <template>
   <div class="editor-base">
-    <div class="editor-area">
-      <div class="editor-area-scrollable">
-        <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
-          <div class="d-flex flex-column mx-4">
-            <v-btn
-              color="primary"
-              fab
-              dark
-              class="my-1 align-self-center"
-              @click="saveAutomation"
-              :disabled="!dirty"
-            >
-              <v-icon>mdi-content-save</v-icon>
-            </v-btn>
+    <div class="d-flex flex-grow-1 flex-column">
+      <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
+        <div class="d-flex flex-column mx-4">
+          <v-btn
+            color="primary"
+            fab
+            dark
+            class="my-1 align-self-center"
+            @click="saveAutomation"
+            :disabled="!dirty"
+          >
+            <v-icon>mdi-content-save</v-icon>
+          </v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="primary"
+                fab
+                dark
+                class="my-1 align-self-center"
+                @click="preview"
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+            </template>
+            <span>Preview Automation</span>
+          </v-tooltip>
+        </div>
+
+        <div class="flex-grow-1">
+          <div class="d-flex">
+            <h1 class="flex-grow-1">{{ automationName }}</h1>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  color="primary"
-                  fab
-                  dark
-                  class="my-1 align-self-center"
-                  @click="preview"
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon>mdi-play</v-icon>
-                </v-btn>
+                <div v-bind="attrs" v-on="on" style="width: min-content">
+                  <v-switch
+                    v-if="automation"
+                    v-model="automation.sync"
+                    label="Synchronous"
+                  />
+                </div>
               </template>
-              <span>Preview Automation</span>
+              <span
+                >This automation will queue behind other Synchronous automations
+                and wait to play.</span
+              >
             </v-tooltip>
           </div>
-
-          <div class="flex-grow-1">
-            <div class="d-flex">
-              <h1 class="flex-grow-1">{{ automationName }}</h1>
-              <v-switch v-if="automation" v-model="automation.sync" label="Synchronous" />
-            </div>
-            <v-text-field
-              v-if="automation"
-              v-model="automation.description"
-              label="Description"
-            />
-          </div>
-        </v-sheet>
+          <v-text-field
+            v-if="automation"
+            v-model="automation.description"
+            label="Description"
+          />
+        </div>
+      </v-sheet>
+      <flex-scroller class="flex-grow-1">
         <sequence-editor
           v-if="automation"
           v-model="automation.actions"
           style="flex: 1"
         />
-      </div>
+      </flex-scroller>
     </div>
     <div class="editor-toolbox">
       <action-toolbox />
@@ -67,12 +81,14 @@ import path from "path";
 import YAML from "yaml";
 import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
+import FlexScroller from '../components/layout/FlexScroller.vue';
 
 export default {
   components: {
     ActionToolbox,
     SequenceEditor,
     ConfirmDialog,
+    FlexScroller
   },
   data() {
     return {
@@ -144,22 +160,6 @@ export default {
   display: flex;
   flex-direction: row;
   height: 100%;
-}
-.editor-area {
-  flex: 1;
-  position: relative;
-}
-
-.editor-area-scrollable {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: auto;
-  /*padding-right: 20px;*/
-  display: flex;
-  flex-direction: column;
 }
 
 .editor-toolbox {
