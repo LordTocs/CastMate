@@ -1,5 +1,7 @@
 const axios = require('axios');
 const https = require('https');
+const fs = require('fs');
+const _ = require('lodash');
 
 module.exports = {
     name: "aoe4",
@@ -35,7 +37,6 @@ module.exports = {
             "Mongols",
             "Rus"
         ]
-
     },
     state: {
         aoe4Map: {
@@ -79,6 +80,16 @@ module.exports = {
             const randomCiv = civNames[Math.floor(Math.random() * civNames.length)];
             return randomCiv;
         },
+        async loadCamelFact() {
+            return fs.promises.readFile('user/data/camel-facts.json', (err, data) => {
+                if (err) throw err;
+            }).then(JSON.parse)
+        },
+
+        async getCamelFact() {
+            let camelFacts = await this.loadCamelFact();
+            return _.sample(camelFacts["facts"]);
+        }
     },
     templateFunctions: {
         async getMatchInfo(profileID) {
@@ -120,6 +131,9 @@ module.exports = {
         getRandomCiv() {
             return this.getRandomCiv();
         },
+        getCamelFact() {
+            return this.getCamelFact();
+        },
 
         get5RandomCivs() {
             let civs = [];
@@ -133,6 +147,42 @@ module.exports = {
             }
             let civString = `Civ Poll Options: ${civs[0]}, ${civs[1]}, ${civs[2]}, ${civs[3]}, ${civs[4]}`
             return civString;
+        },
+        async giveFreeElo(playerName) {
+            if (!playerName.length) {
+                return "Enter a player name to gift them extra Elo!";
+            }
+            const agent = new https.Agent({
+                rejectUnauthorized: false
+            });
+
+            let response = await axios.get('https://aoeiv.net/api/leaderboard', {
+                httpsAgent: agent,
+                params: {
+                    game: "aoe4",
+                    leaderboard_id: 17,
+                    search: playerName
+                }
+            })
+
+            if (response.data.leaderboard && response.data.leaderboard.length) {
+                let result = response.data.leaderboard.find((player) => {
+                    return player.name.toLowerCase() === playerName.toLowerCase();
+                });
+                result = (result || response.data.leaderboard[0]);
+
+                let formattedResult = {};
+                formattedResult.userName = result.name;
+                formattedResult.originalElo = parseInt(result.rating);
+                formattedResult.newElo = parseInt(result.rating) + 500;
+
+                let playerStatString = `⚔️ ${formattedResult.userName} ⚔️ Original ELO: ${formattedResult.originalElo} - New Elo: ${formattedResult.newElo}...thanks FitzBro, I'll definitely be subscribing to your Twitch!`;
+
+                console.log(playerStatString);
+                return playerStatString;
+            } else {
+                return "Could not find player.";
+            }
         },
 
         async getAoe4PlayerStat(playerName) {
