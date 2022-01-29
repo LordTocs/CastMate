@@ -158,7 +158,7 @@ class ElectronAuthManager {
                 response_type: "token",
                 client_id: this._clientId,
                 redirect_uri: this._redirectUri,
-                scope: scopes.join(' '),
+                scope: this.scopes.join(' '),
                 ...forceAuth ? { force_verify: true } : {}
             }
 
@@ -200,13 +200,13 @@ class ElectronAuthManager {
                         logger.info("Access Token Success");
                         this._accessToken = {
 							accessToken: respParams.access_token,
-							scope: scopes,
+							scope: this.scopes,
 							refresh_token: null,
                             expiresIn: null,
                             obtainmentTimestamp: Date.now(),
 						};
 
-                        this._currentScopes = new Set(scopes);
+                        this._currentScopes = new Set(this.scopes);
 
                         //todo return this sucker.
                         resolve(this._accessToken);
