@@ -5,6 +5,8 @@ const { template } = require('../utils/template');
 module.exports = {
 	name: "minecraft",
 	uiName: "Minecraft",
+	icon: "mdi-minecraft",
+	color: "#66A87B",
 	async init()
 	{
 		this.startConnectLoop();
@@ -57,8 +59,13 @@ module.exports = {
 	actions: {
 		mineCmd: {
 			name: "Minecraft Command",
+			icon: "mdi-minecraft",
+			color: "#66A87B",
 			data: {
-				type: "TemplateString",
+				type: Object,
+				properties: {
+					command: { type: String, template: true }
+				}
 			},
 			async handler(command, context)
 			{

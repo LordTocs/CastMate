@@ -2,17 +2,26 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Profiles from "../views/Profiles.vue";
 import ProfileEditor from "../views/ProfileEditor.vue";
-import CommandFileEditor from "../views/CommandFileEditor.vue";
-import SequenceEditor from "../views/SequenceEditor.vue";
+
+import Automations from "../views/Automations.vue";
+import AutomationEditor from "../views/AutomationEditor.vue";
+
 import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
 import Segments from '../views/Segments.vue';
+import Variables from '../views/Variables.vue';
+import Landing from '../views/Landing.vue';
 
 Vue.use(VueRouter)
 
 const routes = [
 	{
 		path: '/',
+		name: "CastMate",
+		component: Landing
+	},
+	{
+		path: '/segments',
 		name: "Segments",
 		component: Segments
 	},
@@ -21,20 +30,26 @@ const routes = [
 		name: "Profiles",
 		component: Profiles
 	},
+
+	{
+		path: "/variables",
+		name: "Variables",
+		component: Variables,
+	},
 	{
 		path: "/profiles/:profile",
 		name: "Profile Editor",
 		component: ProfileEditor
 	},
 	{
-		path: "/commandFiles/:commandFile",
-		name: "Command File Editor",
-		component: CommandFileEditor
+		path: "/automations",
+		name: "Automations",
+		component: Automations,
 	},
 	{
-		path: "/sequences/:sequence",
-		name: "Sequence Editor",
-		component: SequenceEditor
+		path: "/automations/:automation",
+		name: "Automation Editor",
+		component: AutomationEditor,
 	},
 	{
 		path: "/plugins/:pluginName",

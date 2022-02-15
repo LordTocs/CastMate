@@ -1,17 +1,11 @@
 
 
-function checkValue(key, value, data)
-{
-	if (key in data)
-	{
-		return data[key] == value;
-	}
-
-	return false;
-}
-
 function checkOr(list, data)
 {
+	if (!list || list.length == 0) {
+		return true;
+	}
+	
 	for (let subCondition of list)
 	{
 		if (checkConditions(subCondition, data))
@@ -24,6 +18,8 @@ function checkOr(list, data)
 
 function checkAnd(list, data)
 {
+	if (!list || list.length == 0)
+		return true;
 	for (let subCondition of list)
 	{
 		if (!checkConditions(subCondition, data))
@@ -34,31 +30,65 @@ function checkAnd(list, data)
 	return true;
 }
 
+function checkValue(value, data)
+{
+	let lhs = null;
+	if (value.state)
+	{
+		if(data[value.state.plugin])
+		{
+			lhs = data[value.state.plugin][value.state.key]
+		} 
+	}
+	const rhs = value.compare;
+
+	//console.log(`Checking ${value.state.plugin}.${value.state.key} (${lhs}) ${value.operator} ${rhs}`);
+
+	if (value.operator == 'lessThan')
+	{
+		return lhs < rhs;
+	}
+	else if (value.operator == 'lessThanEq')
+	{
+		return lhs <= rhs;
+	}
+	else if (value.operator == 'equal')
+	{
+		return lhs == rhs;
+	}
+	else if (value.operator == 'notEqual')
+	{
+		return lhs != rhs;
+	}
+	else if (value.operator == 'greaterThan')
+	{
+		return lhs > rhs;
+	}
+	else if (value.operator == 'greaterThanEq')
+	{
+		return lhs >= rhs;
+	}
+	return false;
+}
+
 function checkConditions(conditional, data)
 {
-	if ("or" in conditional)
+	if ("operands" in conditional)
 	{
-		return checkOr(conditional.or, data);
-	}
-	else if ("not" in conditional)
-	{
-		return !checkConditions(conditional.not, data)
-	}
-	else if ("and" in conditional)
-	{
-		return checkAnd(conditional.and, data);
-	}
-	else
-	{
-		for (let key in conditional)
+		if (conditional.operator == 'all')
 		{
-			if (!checkValue(key, conditional[key], data))
-			{
-				return false;
-			}
+			return checkAnd(conditional.operands, data);
 		}
-		return true;
+		else if (conditional.operator == 'any')
+		{
+			return checkOr(conditional.operands, data);
+		}
 	}
+	else if ("operator" in conditional)
+	{
+		return checkValue(conditional, data);
+	}
+	return false;
 }
 
 function evalConditional(conditional, data)
@@ -71,39 +101,30 @@ function manualDependency(obj, watcher, name)
 	obj.__reactivity__[name].dependency.addSubscriber(watcher);
 }
 
-function dependOnAllConditions(conditional, reactivity, watcher)
+function dependOnAllConditions(conditional, state, watcher)
 {
-	if (!reactivity)
+	if (!state)
 		return;
 
-	if ("or" in conditional)
+	if ("operands" in conditional)
 	{
-		for (let clause of conditional.or)
+		for (let clause of conditional.operands)
 		{
-			dependOnAllConditions(clause);
+			dependOnAllConditions(clause, state, watcher);
 		}
-	}
-	else if ("and" in conditional)
-	{
-		for (let clause of conditional.and)
-		{
-			dependOnAllConditions(clause);
-		}
-	}
-	else if ("not" in conditional)
-	{
-		dependOnAllConditions(conditional.not);
 	}
 	else
 	{
-		for (let key in conditional)
-		{
-			if (!(key in reactivity))
-				continue;
+		const key = conditional.state ? conditional.state.key : undefined;
+		const plugin = conditional.state ? conditional.state.plugin : undefined;
+		if (!state[plugin] || !key)
+			return;
 
+		const reactivity = state[plugin].__reactivity__
+		if (reactivity)
+		{
 			reactivity[key].dependency.addSubscriber(watcher);
 		}
-		return true;
 	}
 }
 

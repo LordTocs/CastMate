@@ -1,24 +1,47 @@
 <template>
-  <multi-command-trigger
-    v-if="trigger.type == 'NameAction' || trigger.type == 'NumberAction'"
+  <named-command-trigger
+    v-if="trigger.type == 'CommandTrigger'"
     :trigger="trigger"
+    :triggerKey="triggerKey"
+    :value="value"
+    @input="(v) => $emit('input', v)"
+  />
+  <number-command-trigger
+    v-else-if="trigger.type == 'NumberTrigger'"
+    :trigger="trigger"
+    :triggerKey="triggerKey"
+    :value="value"
+    @input="(v) => $emit('input', v)"
+  />
+  <enum-command-trigger
+    v-else-if="trigger.type == 'EnumTrigger'"
+    :trigger="trigger"
+    :triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
   />
   <single-command-trigger
-    v-else-if="trigger.type == 'SingleAction'"
+    v-else-if="trigger.type == 'SingleTrigger'"
     :trigger="trigger"
+    :triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
   />
 </template>
 
 <script>
-import MultiCommandTrigger from "./MultiCommandTrigger.vue";
+import NumberCommandTrigger from "./NumberCommandTrigger.vue";
 import SingleCommandTrigger from "./SingleCommandTrigger.vue";
+import NamedCommandTrigger from "./NamedCommandTrigger.vue";
+import EnumCommandTrigger from "./EnumCommandTrigger.vue";
 
 export default {
-  components: { MultiCommandTrigger, SingleCommandTrigger },
+  components: {
+    SingleCommandTrigger,
+    NamedCommandTrigger,
+    NumberCommandTrigger,
+    EnumCommandTrigger,
+  },
   computed: {
     commands() {
       if (!this.value) {
@@ -28,9 +51,9 @@ export default {
     },
   },
   props: {
-    value: {},
     triggerKey: { type: String },
     trigger: {},
+    value: {},
   },
 };
 </script>

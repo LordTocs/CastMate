@@ -25,7 +25,8 @@
 		$(document).ready(function ()
 		{
 			const urlParams = new URLSearchParams(window.location.search);
-			const variableName = urlParams.get('variable');
+			const pluginName = urlParams.get('plugin');
+			const stateName = urlParams.get('state');
 			const title = urlParams.get('title');
 
 			function updateDom()
@@ -45,14 +46,14 @@
 			castmate.on("connected", () =>
 			{
 				console.log("Connected!!")
-				castmate.requestVariables(variableName);
+				castmate.requestVariables({ plugin: pluginName, state: stateName});
 			});
 
 			castmate.on("state", (state) =>
 			{
-				if (variableName in state)
+				if (pluginName in state && stateName in state[pluginName])
 				{
-					value = state[variableName];
+					value = state[pluginName][stateName];
 				}
 				updateDom();
 			});

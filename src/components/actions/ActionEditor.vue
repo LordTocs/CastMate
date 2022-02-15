@@ -1,27 +1,11 @@
 <template>
-  <div class="action-card">
-    <div class="action-card-body" v-if="actions[actionKey]">
-      <table style="width: 100%">
-        <data-input
-          :value="value"
-          @input="(v) => $emit('input', v)"
-          :schema="actions[actionKey].data"
-          :label="actions[actionKey].name || actionKey"
-        />
-      </table>
-    </div>
-    <div class="action-card-body" v-else-if="actionKey == 'import'">
-      <div style="width: 100%">
-        <data-input
-          :value="value"
-          @input="(v) => $emit('input', v)"
-          label="Import"
-          :schema="{ type: 'String' }"
-        />
-      </div>
-    </div>
-    <div v-else>Unknown Action Key: {{ actionKey }}</div>
-  </div>
+  <data-input
+    :value="value"
+    @input="(v) => $emit('input', v)"
+    :schema="schema"
+    :label="label"
+    :context="value"
+  />
 </template>
 
 <script>
@@ -31,11 +15,22 @@ import DataInput from "../data/DataInput.vue";
 export default {
   props: {
     value: {},
-    actionKey: {},
+    plugin: { type: String },
+    actionKey: { type: String },
   },
   components: { DataInput },
   computed: {
-    ...mapGetters("ipc", ["actions"]),
+    ...mapGetters("ipc", ["plugins"]),
+    actionSpec() {
+      const plugin = this.plugins[this.plugin];
+      return plugin.actions[this.actionKey];
+    },
+    label() {
+      return this.actionSpec.name || this.actionKey;
+    },
+    schema() {
+      return this.actionSpec.data;
+    },
   },
 };
 </script>

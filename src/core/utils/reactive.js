@@ -2,17 +2,13 @@
 
 //https://medium.com/vue-mastery/the-best-explanation-of-javascript-reactivity-fea6112dd80d
 
-class Dependency
-{
-	constructor()
-	{
+class Dependency {
+	constructor() {
 		this.subscribers = [];
 	}
 
-	addSubscriber(watcher)
-	{
-		if (this.subscribers.includes(watcher))
-		{
+	addSubscriber(watcher) {
+		if (this.subscribers.includes(watcher)) {
 			return;
 		}
 
@@ -20,28 +16,22 @@ class Dependency
 		watcher.dependencies.push(this);
 	}
 
-	removeSubscriber(watcher)
-	{
+	removeSubscriber(watcher) {
 		let idx = this.subscribers.findIndex((w) => w == watcher);
 
-		if (idx != -1)
-		{
+		if (idx != -1) {
 			this.subscribers.splice(idx, 1);
 		}
 	}
 
-	notify()
-	{
-		for (let subscriber of this.subscribers)
-		{
+	notify() {
+		for (let subscriber of this.subscribers) {
 			subscriber.update();
 		}
 	}
 
-	depend()
-	{
-		if (Dependency.target)
-		{
+	depend() {
+		if (Dependency.target) {
 			this.addSubscriber(Dependency.target)
 		}
 	}
@@ -50,15 +40,12 @@ class Dependency
 Dependency.target = null;
 
 
-class Watcher
-{
-	constructor(func, { fireImmediately = true })
-	{
+class Watcher {
+	constructor(func, { fireImmediately = true }) {
 		this.func = func;
 		this.dependencies = [];
 
-		if (fireImmediately)
-		{
+		if (fireImmediately) {
 			//Todo: Solve async eval race condition with async_hooks package.
 			Dependency.target = this;
 			this.func();
@@ -66,15 +53,12 @@ class Watcher
 		}
 	}
 
-	update()
-	{
+	update() {
 		this.func();
 	}
 
-	unsubscribe()
-	{
-		for (let dep of this.dependencies)
-		{
+	unsubscribe() {
+		for (let dep of this.dependencies) {
 			dep.removeSubscriber(this);
 		}
 
@@ -82,15 +66,13 @@ class Watcher
 	}
 }
 
-function createReactiveProperty(obj, key)
-{
+function createReactiveProperty(obj, key) {
 	let observable = {
 		dependency: new Dependency(),
 		internalValue: obj[key],
 	};
 
-	if (!obj.__reactivity__)
-	{
+	if (!obj.__reactivity__) {
 		Object.defineProperty(obj, "__reactivity__", {
 			enumerable: false,
 			writable: true,
@@ -101,35 +83,39 @@ function createReactiveProperty(obj, key)
 	obj.__reactivity__[key] = observable;
 
 	Object.defineProperty(obj, key, {
-		get()
-		{
+		get() {
 			observable.dependency.depend();
 			return observable.internalValue;
 		},
-		set(value)
-		{
-			observable.internalValue = value;
-			observable.dependency.notify();
-		}
+		set(value) {
+			if (observable.internalValue !== value) {
+				observable.internalValue = value;
+				observable.dependency.notify();
+			}
+		},
+		configurable: true
 	})
 }
 
-function reactify(obj)
-{
-	for (let key in obj)
-	{
+function deleteReactiveProperty(obj, key) {
+	if (!obj.__reactivity__)
+		return;
+
+	delete obj.__reactivity__[key];
+	delete obj[key];
+}
+
+function reactify(obj) {
+	for (let key in obj) {
 		createReactiveProperty(obj, key);
 	}
 }
 
-function reactiveCopy(target, obj, onNewKey = null)
-{
+function reactiveCopy(target, obj, onNewKey = null) {
 	let sourceReactivity = obj.__reactivity__;
 
-	for (let key in obj)
-	{
-		if (!target.__reactivity__)
-		{
+	for (let key in obj) {
+		if (!target.__reactivity__) {
 			Object.defineProperty(target, "__reactivity__", {
 				enumerable: false,
 				writable: true,
@@ -144,24 +130,24 @@ function reactiveCopy(target, obj, onNewKey = null)
 
 		Object.defineProperty(target, key, {
 			enumerable: true,
-			get()
-			{
+			get: () => {
 				sourceReactivity[key].dependency.depend();
 				return sourceReactivity[key].internalValue;
 			},
-			set(value)
-			{
-				sourceReactivity[key].internalValue = value;
-				sourceReactivity[key].dependency.notify();
-			}
+			set: (value) => {
+				if (sourceReactivity[key].internalValue !== value) {
+					sourceReactivity[key].internalValue = value;
+					sourceReactivity[key].dependency.notify();
+				}
+			},
+			configurable: true
 		})
 
-		if (onNewKey)
-		{
+		if (onNewKey) {
 			onNewKey(key);
 		}
 	}
 }
 
-module.exports = { Watcher, reactify, reactiveCopy, createReactiveProperty }
+module.exports = { Watcher, reactify, reactiveCopy, createReactiveProperty, deleteReactiveProperty }
 

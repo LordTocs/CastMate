@@ -1,38 +1,43 @@
 const qs = require('querystring');
-const { AccessToken } = require('twitch-auth');
 const { BrowserWindow } = require('electron');
 const logger = require('./logger');
 
-const scopes = [
-    "analytics:read:extensions",
-    "analytics:read:games",
-    "bits:read",
-    "channel:edit:commercial",
-    "channel:read:hype_train",
-    "channel:read:subscriptions",
-    "channel:read:redemptions",
-    "channel:manage:redemptions",
-    "channel:manage:broadcast",
-    "channel_subscriptions",
-    "clips:edit",
-    "user:edit",
-    "user_read",
-    "user:edit:broadcast",
-    "user:edit:follows",
-    "user:read:broadcast",
-    "user:read:email",
-    "channel:moderate",
-    "chat:edit",
-    "chat:read",
-    "whispers:read",
-    "whispers:edit"
+const defaultScopes = [
+	"analytics:read:extensions",
+	"analytics:read:games",
+	"bits:read",
+
+	"channel:edit:commercial",
+	"channel:manage:broadcast",
+	"channel:manage:redemptions",
+
+	"channel_subscriptions",
+
+	"channel:read:hype_train",
+	"channel:read:subscriptions",
+	"channel:read:redemptions",
+	//"channel:manage:polls",
+
+	"clips:edit",
+
+	"user:edit",
+	"user:read:email",
+
+	"user:edit:broadcast",
+	"user:read:broadcast",
+
+	"channel:moderate",
+
+	"chat:edit",
+	"chat:read"
 ]
 
 class ElectronAuthManager {
-    constructor({ clientId, redirectUri, name }) {
+    constructor({ clientId, redirectUri, name, scopes }) {
         this._clientId = clientId;
         this._redirectUri = redirectUri;
         this.name = name;
+        this.scopes = scopes || defaultScopes
     }
 
     get clientId() {
@@ -59,7 +64,7 @@ class ElectronAuthManager {
                 response_type: "token",
                 client_id: this._clientId,
                 redirect_uri: this._redirectUri,
-                scope: scopes.join(' ')
+                scope: this.scopes.join(' ')
             }
 
             const authUrl = `https://id.twitch.tv/oauth2/authorize?${qs.stringify(params)}`
@@ -77,58 +82,72 @@ class ElectronAuthManager {
 
             let window = new BrowserWindow(windowOptions);
 
-            window.webContents.session.webRequest.onBeforeRequest((details, callback) => {
-                const url = new URL(details.url);
-                const matchUrl = url.origin + url.pathname;
+			logger.info(`Doing Silent Auth ${this.name}`);
+			window.webContents.session.webRequest.onBeforeRequest((details, callback) =>
+			{
+				const url = new URL(details.url);
+				const matchUrl = url.origin + url.pathname;
+				logger.info(`  -${matchUrl}`);
+				if (matchUrl == this._redirectUri)
+				{
+					const respParams = qs.parse(details.url.substr(details.url.indexOf('#') + 1));
 
-                logger.info(`Silent ${this.name} BeforeRequest`, matchUrl);
-                if (matchUrl == this._redirectUri) {
-                    const respParams = qs.parse(details.url.substr(details.url.indexOf('#') + 1));
-                    logger.info("RedirectUri Detected");
-                    if (respParams.error || respParams.access_token) {
-                        window.destroy();
-                    }
+					if (respParams.error)
+					{
+						//todo error!
+						logger.info(`  Auth Error: ${respParams.error}`);
+						window.destroy();
+						reject(respParams.error);
+					}
+					else if (respParams.access_token)
+					{
+						this._accessToken = {
+							accessToken: respParams.access_token,
+							scope: this.scopes,
+							refresh_token: null,
+                            expiresIn: null,
+                            obtainmentTimestamp: Date.now(),
+						};
 
-                    if (respParams.error) {
-                        //todo error!
-                        reject(respParams.error);
-                    } else if (respParams.access_token) {
-                        this._accessToken = new AccessToken({
-                            access_token: respParams.access_token,
-                            scope: scopes,
-                            refresh_token: ''
-                        })
+                        this._currentScopes = new Set(this.scopes);
 
-                        this._currentScopes = new Set(scopes);
+						logger.info("  Auth Success");
+						resolve(this._accessToken);
+						window.destroy();
+					}
+					else
+					{
+						logger.info("  Weird Extra Case");
+						for (let key in respParams)
+						{
+							logger.info(`  ${key}:${respParams[key]}`);
+						}
+					}
+					callback({ cancel: true });
+				}
+				else if (matchUrl.includes('jquery'))
+				{
+					//Hacky, assume that if we're loading jquery we've failed auth.
+					logger.info("  We've *probably* failed auth because scopes have changed.");
+					resolve(false)
+					window.destroy();
+					callback({ cancel: true });
+				}
+				else if (matchUrl == "https://www.twitch.tv/login")
+				{
+					logger.info("  No Signin Cookies");
+					resolve(false);
+					callback({ cancel: true });
+					window.destroy();
+				}
+				else
+				{
+					callback({});
+				}
+			});
 
-                        //todo return this sucker.
-                        resolve(this._accessToken);
-                        logger.info("Resolved");
-                    }
-                    callback({ cancel: true });
-                } else if (matchUrl == "https://www.twitch.tv/login") {
-                    resolve(false);
-                    callback({ cancel: true });
-                    window.destroy();
-                } else {
-                    callback({});
-                }
-            });
-
-            window.loadURL(authUrl)
-                // .then(() =>
-                // {
-                // 	let fullUrl = window.webContents.getURL();
-                // 	const url = new URL(fullUrl);
-                // 	const matchUrl = url.origin + url.pathname;
-
-            // 	if (matchUrl == "https://id.twitch.tv/oauth2/authorize")
-            // 	{
-            // 		resolve(false);
-            // 		window.destroy();
-            // 	}
-            // });
-        });
+			window.loadURL(authUrl);
+		});
 
         return promise;
     }
@@ -139,7 +158,7 @@ class ElectronAuthManager {
                 response_type: "token",
                 client_id: this._clientId,
                 redirect_uri: this._redirectUri,
-                scope: scopes.join(' '),
+                scope: this.scopes.join(' '),
                 ...forceAuth ? { force_verify: true } : {}
             }
 
@@ -179,13 +198,15 @@ class ElectronAuthManager {
                         callback({ cancel: true });
                     } else if (respParams.access_token) {
                         logger.info("Access Token Success");
-                        this._accessToken = new AccessToken({
-                            access_token: respParams.access_token,
-                            scope: scopes,
-                            refresh_token: ''
-                        })
+                        this._accessToken = {
+							accessToken: respParams.access_token,
+							scope: this.scopes,
+							refresh_token: null,
+                            expiresIn: null,
+                            obtainmentTimestamp: Date.now(),
+						};
 
-                        this._currentScopes = new Set(scopes);
+                        this._currentScopes = new Set(this.scopes);
 
                         //todo return this sucker.
                         resolve(this._accessToken);

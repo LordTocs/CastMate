@@ -6,6 +6,8 @@ const _ = require('lodash');
 module.exports = {
     name: "aoe4",
     uiName: "Age Of Empires 4",
+    icon: "mdi-crown",
+	color: "#619DB7",
     async init() {
         this.maps = [
             "Dry Arabia",
@@ -187,7 +189,7 @@ module.exports = {
 
         async getAoe4PlayerStat(playerName) {
             if (!playerName.length) {
-                playerName = "FitzBro";
+                playerName = this.aoeUsername;
             }
 
             const agent = new https.Agent({
@@ -250,6 +252,7 @@ module.exports = {
         },
     },
     settings: {
+        aoeUsername: { type: String },
         enabled: { type: Boolean }
     }
 }

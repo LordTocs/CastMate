@@ -14,7 +14,7 @@
 </template>
 
 <script>
-const { remote } = require("electron");
+import { getCurrentWindow } from "@electron/remote";
 
 export default {
   props: {
@@ -22,25 +22,22 @@ export default {
   },
   data() {
     return {
-      isMaximized: this.getCurrentWindow().isMaximized(),
+      isMaximized: getCurrentWindow().isMaximized(),
     };
   },
   methods: {
-    getCurrentWindow() {
-      return remote.getCurrentWindow();
-    },
     close() {
-      const window = this.getCurrentWindow();
+      const window = getCurrentWindow();
       window.close();
     },
     minimize() {
-      const window = this.getCurrentWindow();
+      const window = getCurrentWindow();
       if (window.minimizable) {
         window.minimize();
       }
     },
     toggleMaximize() {
-      const window = this.getCurrentWindow();
+      const window = getCurrentWindow();
       if (window.isMaximized()) {
         this.restore();
         this.isMaximized = window.isMaximized();
@@ -50,11 +47,11 @@ export default {
       }
     },
     restore() {
-      const window = this.getCurrentWindow();
+      const window = getCurrentWindow();
       window.unmaximize();
     },
     maximize() {
-      const window = this.getCurrentWindow();
+      const window = getCurrentWindow();
       if (window.maximizable) {
         window.maximize();
       }

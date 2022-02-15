@@ -4,6 +4,8 @@ const _ = require('lodash');
 module.exports = {
 	name: "websocket",
 	uiName: "Websocket",
+	icon: "mdi-code-json",
+	color: "#CE9E77",
 	async onWebsocketMessage(msg, connection)
 	{
 		//Broadcast state out over the websocket.
@@ -12,9 +14,15 @@ module.exports = {
 			let result = {};
 			for (let stateKey of msg.state)
 			{
-				if (stateKey in this.plugins.combinedState)
+
+				if (this.plugins.stateLookup[stateKey.plugin] && (stateKey.state in this.plugins.stateLookup[stateKey.plugin]))
 				{
-					result[stateKey] = this.plugins.combinedState[stateKey];
+					if (!(stateKey.plugin in result))
+					{
+						result[stateKey.plugin] = {};
+					}
+
+					result[stateKey.plugin][stateKey.state] = this.plugins.stateLookup[stateKey.plugin][stateKey.state];
 				}
 			}
 			connection.send(JSON.stringify({ state: result }));
@@ -58,10 +66,13 @@ module.exports = {
 	actions: {
 		websocket: {
 			name: "Websocket Broadcast",
+			icon: "mdi-code-json",
+			color: "#CE9E77",
 			data: {
 				type: Object
 			},
-			async handler(websocketData, context) {
+			async handler(websocketData, context)
+			{
 
 				let data = _.cloneDeep(websocketData);
 

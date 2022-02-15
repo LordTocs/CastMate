@@ -1,104 +1,121 @@
 
 const { ipcRenderer } = require("electron");
+import Vue from 'vue';
 
-class IPCClient
-{
-	async getCombinedState()
-	{
-		return await ipcRenderer.invoke("getCombinedState");
-	}
+const builtInPlugin = {
+	name: 'castmate',
+	uiName: 'CastMate',
+	color: '#8DC1C0',
+	icon: 'mdi-alpha-c-box',
+	actions: {
+		delay: {
+			name: "Delay",
+			color: '#8DC1C0',
+			icon: "mdi-timer-sand",
+			data: { type: "Number" },
+			description: "Puts a delay after the current action",
+		},
+		timestamp: {
+			name: "Timestamp",
+			color: '#8DC1C0',
+			icon: "mdi-clock-outline",
+			data: { type: "Number" },
+			description: "Delays execution of this action until a certain time after the start of this action list."
+		}
+	},
+	settings: {
+		port: { type: "Number", default: 80, name: "Internal Webserver Port" }
+	},
+	secrets: {},
+	triggers: {},
+	stateSchemas: {},
+	ipcMethods: [],
 }
+
 
 export default {
 	namespaced: true,
-	state()
-	{
+	state() {
 		return {
 			inited: false,
 			plugins: [],
 			client: null,
 			paths: {},
-			tags: [],
+			stateLookup: {},
+			activeProfiles: [],
 		}
 	},
 	getters: {
 		paths: state => state.paths,
-		plugins: state => state.plugins,
+		activeProfiles: state => state.activeProfiles,
+		plugins: state => ({ ...state.plugins, castmate: builtInPlugin }),
+		pluginList: state => [...Object.keys(state.plugins).map(name => state.plugins[name]), builtInPlugin],
 		inited: state => state.inited,
-		client: state => state.client,
-		tags: state => state.tags,
-		actions: state =>
-		{
+		stateLookup: state => state.stateLookup,
+		actions: state => {
 			let result = {};
-			for (let plugin of state.plugins)
-			{
+			for (let plugin of state.plugins) {
 				Object.assign(result, plugin.actions)
 			}
-			//Special Injected Actions, these don't map to a plugin action.
-			result.delay = {
-				name: "Delay",
-				data: { type: "Number" },
-				description: "Puts a delay after the current action",
-			};
-			result.beforeDelay = {
-				name: "Delay (Before)",
-				data: { type: "Number" },
-				description: "Puts a delay before the current action",
-			};
-			result.import = {
-				name: "Play a Sequence",
-				data: {
-					type: "FilePath",
-					path: './sequences/',
-					basePath: './'
-				},
-				description: "Plays a Sequence",
-				color: "#7C4275"
-			}
-			result.timestamp = {
-				name: "Timestamp",
-				data: { type: "Number" },
-				description: "Delays execution of this action until a certain time after the start of this action list."
+
+			Object.assign(result, builtInPlugin.actions);
+			return result;
+		},
+		triggers: state => {
+			let result = {};
+			for (let plugin of state.plugins) {
+				Object.assign(result, plugin.triggers)
 			}
 			return result;
 		},
-		triggers: state =>
-		{
-			let result = {};
-			for (let plugin of state.plugins)
-			{
-				Object.assign(result, plugin.triggers)
+		stateSchemas: state => {
+			const result = {};
+
+			for (let plugin of state.plugins) {
+				result[plugin.name] = plugin.stateSchemas;
 			}
+
 			return result;
 		}
 	},
 	mutations: {
-		setInited(state)
-		{
+		setInited(state) {
 			state.inited = true;
 		},
-		setPlugins(state, plugins)
-		{
+		setPlugins(state, plugins) {
 			state.plugins = plugins;
 		},
-		setClient(state, client)
-		{
-			state.client = client;
-		},
-		setPaths(state, paths)
-		{
+		setPaths(state, paths) {
 			state.paths = paths
 		},
-		setTags(state, tags)
-		{
-			state.tags = tags;
+		setActiveProfiles(state, activeProfiles) {
+			state.activeProfiles = activeProfiles;
+		},
+		applyState(state, update) {
+			for (let pluginKey in update) {
+				if (!state.stateLookup[pluginKey]) {
+					Vue.set(state.stateLookup, pluginKey, {});
+				}
+				for (let stateKey in update[pluginKey]) {
+					Vue.set(state.stateLookup[pluginKey], stateKey, update[pluginKey][stateKey]);
+				}
+			}
+		},
+		removeState(state, removal) {
+			for (let pluginKey in removal) {
+				if (!this.stateLookup[pluginKey])
+					continue;
+
+				Vue.delete(state.stateLookup[pluginKey], removal[pluginKey]);
+
+				if (Object.keys(state.stateLookup[pluginKey]) == 0) {
+					Vue.delete(state.stateLookup, pluginKey);
+				}
+			}
 		}
 	},
 	actions: {
-		async init({ commit })
-		{
-			commit('setClient', new IPCClient());
-
+		async init({ commit }) {
 			await ipcRenderer.invoke("waitForInit");
 			commit('setInited');
 
@@ -108,8 +125,19 @@ export default {
 			const paths = await ipcRenderer.invoke('getPaths');
 			commit('setPaths', paths);
 
-			const tags = await ipcRenderer.invoke('twitch_getAllTags');
-			commit('setTags', tags);
+			commit('applyState', await ipcRenderer.invoke("getStateLookup"));
+
+			commit('setActiveProfiles', await ipcRenderer.invoke('core_getActiveProfiles'));
 		},
+		stateUpdate({ commit }, update) {
+			//console.log("applyState", update);
+			commit('applyState', update);
+		},
+		removeState({ commit }, varName) {
+			commit('removeState', varName);
+		},
+		setActiveProfiles({ commit }, activeProfiles) {
+			commit('setActiveProfiles', activeProfiles);
+		}
 	}
 }

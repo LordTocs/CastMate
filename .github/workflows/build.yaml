@@ -21,9 +21,11 @@ jobs:
       - name: "Install Node"
         uses: actions/setup-node@v2
         with:
-          node-version: "14"
+          node-version: "16"
       - name: "Install Node Packages"
         run: "npm install"
+      #- name: "Rebuild for Electron"
+      #  run: "npm run rebuild"
       - name: "Build"
         run: "npm run electron:build -- -p always"
         env:

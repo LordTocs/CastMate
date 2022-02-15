@@ -8,8 +8,11 @@
     :search-input.sync="search"
     cache-items
     :label="label"
+    :clearable="clearable"
     item-text="basename"
     item-value="path"
+    @copy.stop=""
+    @paste.stop=""
   >
   </v-autocomplete>
 </template>
@@ -27,6 +30,7 @@ export default {
     ext: { type: Array, default: () => [] },
     recursive: { type: Boolean, default: () => false },
     basePath: { type: String, default: () => null },
+    clearable: { type: Boolean, default: () => false },
     value: {},
   },
   computed: {

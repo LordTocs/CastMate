@@ -1,8 +1,13 @@
 const { reactify } = require("./reactive");
-const { cleanSchemaForIPC } = require("./schema");
+const { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } = require("./schema");
 const _ = require('lodash');
 const { ipcMain } = require("electron");
 const logger = require('../utils/logger');
+const { NumberTriggerHandler } = require("../actions/number-trigger-handler");
+const { CommandTriggerHandler } = require("../actions/command-trigger-handler");
+const { SingleTriggerHandler } = require("../actions/single-trigger-handler");
+
+const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
 class Plugin
 {
 	constructor(config)
@@ -10,8 +15,10 @@ class Plugin
 		this.pluginObj = {};
 
 		this.name = config.name;
+		this.pluginObj.name = config.name;
 		this.uiName = config.uiName || config.name;
 		this.color = config.color;
+		this.icon = config.icon;
 		logger.info(`Loading Plugin: ${config.name}`);
 		this.initFunc = config.init;
 		//Bind the init func to the pluginObj
@@ -58,7 +65,57 @@ class Plugin
 
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];
-		this.triggers = config.triggers || [];
+		this.triggers = {};
+
+		this.pluginObj.triggers = {};
+
+		for (let triggerName in config.triggers)
+		{
+			const triggerSpec = config.triggers[triggerName];
+			this.triggers[triggerName] = { ...triggerSpec };
+
+			const triggerFunc = function (context) {
+				return this.actions.trigger(this.name ,triggerName, context || {})
+			}
+			this.pluginObj.triggers[triggerName] = triggerFunc.bind(this.pluginObj);
+
+			if (triggerSpec.type == 'NumberTrigger')
+			{
+				this.triggers[triggerName].handler = new NumberTriggerHandler(triggerName, triggerSpec.key || 'number')
+			}
+			else if (triggerSpec.type == 'CommandTrigger')
+			{
+				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
+			}
+			else if (triggerSpec.type == 'SingleTrigger')
+			{
+				this.triggers[triggerName].handler = new SingleTriggerHandler(triggerName)
+			}
+			else if (triggerSpec.type == 'EnumTrigger')
+			{
+				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'value')
+
+				if (triggerSpec.enum instanceof Function)
+				{
+					this.triggers[triggerName].enum = triggerSpec.enum.bind(this.pluginObj);
+
+					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, (...args) =>
+					{
+						return this.triggers[triggerName].enum(...args);
+					});
+				}
+				else if (triggerSpec.enum instanceof AsyncFunction)
+				{
+					this.triggers[triggerName].enum = triggerSpec.enum.bind(this.pluginObj);
+
+					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, async (...args) =>
+					{
+						return await this.triggers[triggerName].enum(...args);
+					});
+				}
+			}
+		}
+
 		this.actions = {};
 
 		//Pass the methods onto the plugin object for use.
@@ -75,6 +132,10 @@ class Plugin
 			{
 				action.handler = action.handler.bind(this.pluginObj);
 			}
+			if (action.data)
+			{
+				makeIPCEnumFunctions(this.pluginObj, this.name + "_action_" + actionKey, action.data);
+			}
 			this.actions[actionKey] = action;
 		}
 
@@ -90,6 +151,7 @@ class Plugin
 		for (let funcKey in config.ipcMethods)
 		{
 			this.ipcMethods[funcKey] = config.ipcMethods[funcKey].bind(this.pluginObj);
+			this.pluginObj[funcKey] = this.ipcMethods[funcKey];
 			ipcMain.handle(`${this.name}_${funcKey}`, async (event, ...args) =>
 			{
 				return await this.ipcMethods[funcKey](...args);
@@ -99,10 +161,13 @@ class Plugin
 		this.pluginObj.logger = logger;
 
 		//Create all the state.
+		this.stateSchemas = {};
 		this.pluginObj.state = {};
 		for (let stateKey in config.state)
 		{
-			this.pluginObj.state[stateKey] = null;
+			this.stateSchemas[stateKey] = config.state[stateKey];
+			makeIPCEnumFunctions(this.pluginObj, this.name + "_state_" + stateKey, this.stateSchemas[stateKey]);
+			this.pluginObj.state[stateKey] = constructDefaultSchema(config.state[stateKey]);
 		}
 		reactify(this.pluginObj.state);
 	}
@@ -164,13 +229,20 @@ class Plugin
 	{
 		let actions = {};
 
+		const cleanStateSchemas = {};
+		for (let stateName in this.stateSchemas)
+		{
+			cleanStateSchemas[stateName] = cleanSchemaForIPC(this.name + "_state_" + stateName, this.stateSchemas[stateName])
+		}
+
 		for (let actionKey in this.actions)
 		{
 			actions[actionKey] = {
 				name: this.actions[actionKey].name,
 				description: this.actions[actionKey].description,
-				data: cleanSchemaForIPC(this.actions[actionKey].data),
+				data: cleanSchemaForIPC(this.name + "_action_" + actionKey, this.actions[actionKey].data),
 				color: this.actions[actionKey].color,
+				icon: this.actions[actionKey].icon,
 			}
 		}
 
@@ -192,15 +264,30 @@ class Plugin
 			secrets[secretsKey].type = secrets[secretsKey].type.name;
 		}
 
-		//Todo: State.
+		//triggers
+
+		let triggers = {};
+
+		for (let triggerName in this.triggers)
+		{
+			triggers[triggerName] = { ...this.triggers[triggerName] }
+
+			if (triggers[triggerName].enum instanceof Function || triggers[triggerName].enum instanceof AsyncFunction)
+			{
+				triggers[triggerName].enum = `${this.name}_trigger_${triggerName}_enum`;
+			}
+		}
 
 		return {
 			name: this.name,
 			uiName: this.uiName,
+			icon: this.icon,
+			color: this.color,
 			settings,
 			secrets,
-			triggers: this.triggers,
+			triggers,
 			actions,
+			stateSchemas: cleanStateSchemas,
 			ipcMethods: Object.keys(this.ipcMethods),
 			...this.settingsView ? { settingsView: this.settingsView } : {}
 		}

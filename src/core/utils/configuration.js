@@ -9,6 +9,7 @@ const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));
 const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
 const rewardsFilePath = path.resolve(path.join(userFolder, "rewards.yaml"));
 const segmentsFilePath = path.resolve(path.join(userFolder, "segments.yaml"));
+const variablesFilePath = path.resolve(path.join(userFolder, "variables.yaml"));
 
 
 function ensureFolder(path)
@@ -34,15 +35,15 @@ function ensureUserFolder()
 	ensureFolder(path.join(userFolder, "data"));
 	ensureFolder(path.join(userFolder, "profiles"));
 	ensureFolder(path.join(userFolder, "secrets"));
-
-	ensureFolder(path.join(userFolder, "sequences"));
 	ensureFolder(path.join(userFolder, "sounds"));
-	ensureFolder(path.join(userFolder, "commands"));
+
+	ensureFolder(path.join(userFolder, "automations"));
 
 	ensureFile(rewardsFilePath);
 	ensureFile(secretsFilePath);
 	ensureFile(settingsFilePath);
 	ensureFile(segmentsFilePath);
+	ensureFile(variablesFilePath);
 }
 
 ipcMain.handle("getPaths", async () =>
@@ -53,6 +54,7 @@ ipcMain.handle("getPaths", async () =>
 		settingsFilePath,
 		rewardsFilePath,
 		segmentsFilePath,
+		variablesFilePath,
 	};
 })
 
@@ -63,5 +65,6 @@ module.exports = {
 
 	secretsFilePath,
 	settingsFilePath,
-	rewardsFilePath
+	rewardsFilePath,
+	variablesFilePath,
 }

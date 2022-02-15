@@ -28,7 +28,7 @@
 </template>
 
 <script>
-const { mapIpcs } = require("../../utils/ipcMap");
+import { mapIpcs } from "../../utils/ipcMap";
 
 export default {
   data() {
@@ -38,7 +38,7 @@ export default {
     };
   },
   methods: {
-    ...mapIpcs("lights", ["searchForHub"]),
+    ...mapIpcs("hue", ["searchForHub", "getHubStatus"]),
     async startSearchForHub() {
       this.connecting = true;
       if (await this.searchForHub()) {

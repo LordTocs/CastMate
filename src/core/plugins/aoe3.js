@@ -7,30 +7,39 @@ const { userFolder } = require('../utils/configuration');
 const { JSDOM } = jsdom
 
 module.exports = {
-    name: "aoe3",
-    uiName: "Age Of Empires",
-    async init() {
-        if (this.settings.enabled) {
-            this.scrapePlayerStats();
-            this.scrapeGameStats();
-        }
-    },
-    methods: {
-        async scrapePlayerStats() {
-            // let now = new Date();
-            // if ((now.getTime() - cache.time.getTime()) / 1000 > (60 * 30))
-            let result = [];
-            for (let i = 1; i < 15; i++) {
-                try {
-                    let response = await axios.get("https://api.ageofempires.com/api/AgeIII/GetRLLeaderboard?board=1&page=" + i);
-                    result.push(response.data.items);
-                    // cache.time = new Date();
-                    // return cache.url;
-                } catch (err) {
-                    console.error(err)
-                    throw new Error('Error fetching official AOE player stats page: ' + i);
-                }
-            }
+	name: "aoe3",
+	uiName: "Age Of Empires",
+	icon: "mdi-crown",
+	color: "#619DB7",
+	async init()
+	{
+		if (this.settings.enabled)
+		{
+			this.scrapePlayerStats();
+			this.scrapeGameStats();
+		}
+	},
+	methods: {
+		async scrapePlayerStats()
+		{
+			// let now = new Date();
+			// if ((now.getTime() - cache.time.getTime()) / 1000 > (60 * 30))
+			let result = [];
+			for (let i = 1; i < 15; i++)
+			{
+				try
+				{
+					let response = await axios.get("https://api.ageofempires.com/api/AgeIII/GetRLLeaderboard?board=1&page=" + i);
+					result.push(response.data.items);
+					// cache.time = new Date();
+					// return cache.url;
+				}
+				catch (err)
+				{
+					console.error(err)
+					throw new Error('Error fetching official AOE player stats page: ' + i);
+				}
+			}
 
             const aoeJSON = JSON.stringify(result.flatMap(_ => _));
             // write result to json
