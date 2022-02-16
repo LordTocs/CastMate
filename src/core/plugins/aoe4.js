@@ -178,7 +178,7 @@ module.exports = {
                 formattedResult.originalElo = parseInt(result.rating);
                 formattedResult.newElo = parseInt(result.rating) + 500;
 
-                let playerStatString = `⚔️ ${formattedResult.userName} ⚔️ Original ELO: ${formattedResult.originalElo} - New Elo: ${formattedResult.newElo}...thanks FitzBro, I'll definitely be subscribing to your Twitch!`;
+                let playerStatString = `⚔️ ${formattedResult.userName} ⚔️ Original ELO: ${formattedResult.originalElo} - New Elo: ${formattedResult.newElo}...thanks ${this.settings.aoeUsername}, I'll definitely be subscribing to your Twitch!`;
 
                 console.log(playerStatString);
                 return playerStatString;
