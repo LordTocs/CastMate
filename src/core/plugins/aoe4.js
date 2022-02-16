@@ -7,7 +7,7 @@ module.exports = {
     name: "aoe4",
     uiName: "Age Of Empires 4",
     icon: "mdi-crown",
-	color: "#619DB7",
+    color: "#619DB7",
     async init() {
         this.maps = [
             "Dry Arabia",
@@ -188,8 +188,8 @@ module.exports = {
         },
 
         async getAoe4PlayerStat(playerName) {
-            if (!playerName.length) {
-                playerName = this.aoeUsername;
+            if (!playerName || !playerName.length) {
+                playerName = this.settings.aoeUsername;
             }
 
             const agent = new https.Agent({
