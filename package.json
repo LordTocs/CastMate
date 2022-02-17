@@ -49,6 +49,7 @@
     "public-ip": "^4.0.4",
     "rcon": "^1.1.0",
     "recursive-readdir": "^2.2.2",
+    "regedit": "^5.0.0",
     "regenerator-runtime": "^0.13.9",
     "say": "^0.16.0",
     "vue": "^2.6.14",

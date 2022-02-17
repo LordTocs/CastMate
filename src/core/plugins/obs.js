@@ -1,6 +1,18 @@
 const e = require('express');
 const OBSWebSocket = require('obs-websocket-js'); // For more info: https://www.npmjs.com/package/obs-websocket-js
 const { template } = require('../utils/template');
+const { app } = require("electron");
+const ChildProcess = require("child_process")
+const regedit = require("regedit");
+
+
+if (app.isPackaged) {
+	console.log("Setting External VBS Location", regedit.setExternalVBSLocation('resources/regedit/vbs'));
+}
+else {
+	console.log("Setting External VBS Location", regedit.setExternalVBSLocation('./node_modules/regedit/vbs'));
+}
+
 
 module.exports = {
 	name: "obs",
@@ -11,6 +23,9 @@ module.exports = {
 		this.obs = new OBSWebSocket();
 		this.state.recording = false;
 		this.state.streaming = false;
+
+
+
 		this.connectOBS();
 		this.obs.on("SwitchScenes", data => {
 			this.state.scene = data.sceneName;
@@ -41,6 +56,9 @@ module.exports = {
 		this.obs.on("RecordingStopped", () => {
 			this.state.recording = false;
 		})
+
+
+		this.installDir = this.settings.installDirOverride || await this.lookupInstallDir();
 	},
 	async onSettingsReload() {
 		this.forceStop = true;
@@ -48,6 +66,23 @@ module.exports = {
 		await this.connectOBS();
 	},
 	methods: {
+		lookupInstallDir() {
+			return new Promise((resolve, reject) => {
+				regedit.list("HKLM\\SOFTWARE\\OBS Studio", (err, result) => {
+					if (err)
+						return reject(err);
+
+					try {
+						const obsPath = result["HKLM\\SOFTWARE\\OBS Studio"].values[''].value;
+						resolve(obsPath);
+					}
+					catch
+					{
+						resolve(undefined)
+					}
+				})
+			})
+		},
 		async connectOBS() {
 			const port = this.settings.port || 4444;
 			const hostname = this.settings.hostname || "localhost"
@@ -115,6 +150,34 @@ module.exports = {
 			const browsers = sources.filter((s) => s.typeId == "browser_source");
 
 			await Promise.all(browsers.map(browser => this.obs.send('RefreshBrowserSource', { sourceName: browser.name })));
+		},
+		async openOBS() {
+			
+			return await new Promise((resolve, reject) => {
+				const startCmd = `Start-Process "${this.installDir}\\bin\\64bit\\obs64.exe" -Verb runAs`
+				this.logger.info(`Opening OBS ${startCmd}`);
+
+				if (!this.installDir)
+					return resolve(false);
+				
+				try {
+					ChildProcess.exec(startCmd, { shell: "powershell.exe", cwd: this.installDir }, (err, stdout, stderr) => {
+						console.log(stdout);
+						console.error(stderr);
+						if (err) {
+							console.error(err);
+							return resolve(false);
+						}
+						resolve(true);
+					});
+				}
+				catch (err) {
+					console.error("Error Spawning:", err);
+					return reject(err);
+				}
+
+			})
+
 		}
 	},
 	settings: {
