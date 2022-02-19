@@ -77,7 +77,14 @@ export default {
       this.dialog = true;
     },
     save() {
-      this.updateReward({rewardName: this.reward.name, newReward: this.rewardEdit});
+      if (this.reward.name != this.rewardEdit.name) {
+        console.log("Detected Rename! ", this.reward.name, this.rewardEdit.name);
+        this.$emit("rename", this.rewardEdit.name);
+      }
+      this.updateReward({
+        rewardName: this.reward.name,
+        newReward: this.rewardEdit,
+      });
       this.dialog = false;
     },
     deleteMe() {
@@ -90,6 +97,7 @@ export default {
     create() {
       this.createReward(this.rewardEdit);
       this.dialog = false;
+      this.$emit("created", this.rewardEdit.name);
     },
   },
 };

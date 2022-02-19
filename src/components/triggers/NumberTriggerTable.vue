@@ -6,13 +6,23 @@
     @input="(v) => $emit('input', v)"
   >
     <template v-slot:label="labelProps">
-      {{ labelProps.item.key }} → {{ getNextNumber(labelProps.item.key, labelProps.commandList) }}
+      {{ labelProps.item.key }} →
+      {{ getNextNumber(labelProps.item.key, labelProps.commandList) }}
     </template>
     <template v-slot:selector="selectProps">
       <number-input
         :value="selectProps.value"
         @input="selectProps.valueInput"
         label="Command"
+        single-line
+        counter
+      />
+    </template>
+    <template v-slot:new-selector="selectProps">
+      <number-input
+        :value="selectProps.value"
+        @input="selectProps.valueInput"
+        :label="selectProps.label"
         single-line
         counter
       />

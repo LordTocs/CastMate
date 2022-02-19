@@ -27,6 +27,13 @@
     :value="value"
     @input="(v) => $emit('input', v)"
   />
+  <reward-trigger-table
+    v-else-if="trigger.type == 'RewardTrigger'"
+    :trigger="trigger"
+    :triggerKey="triggerKey"
+    :value="value"
+    @input="(v) => $emit('input', v)"
+  />
 </template>
 
 <script>
@@ -34,6 +41,7 @@ import NumberTriggerTable from "./NumberTriggerTable.vue";
 import SingleAutomationTrigger from "./SingleAutomationTrigger.vue";
 import CommandTriggerTable from "./CommandTriggerTable.vue";
 import EnumTriggerTable from "./EnumTriggerTable.vue";
+import RewardTriggerTable from "./RewardTriggerTable.vue";
 
 export default {
   components: {
@@ -41,6 +49,7 @@ export default {
     CommandTriggerTable,
     NumberTriggerTable,
     EnumTriggerTable,
+    RewardTriggerTable,
   },
   props: {
     triggerKey: { type: String },

@@ -649,7 +649,8 @@ module.exports = {
 		}
 	},
 	async onProfileLoad(profile, config) {
-		profile.rewards = config.rewards || [];
+		const redemptionTriggers = config ? (config.triggers ? (config.triggers.twitch ? (config.triggers.twitch.redemption) : null) : null) : null;
+		profile.rewards = redemptionTriggers ? Object.keys(redemptionTriggers) : [];
 	},
 	async onProfilesChanged(activeProfiles, inactiveProfiles) {
 		let activeRewards = new Set();
@@ -661,15 +662,16 @@ module.exports = {
 			}
 		}
 
-		for (let inactiveProf of inactiveProfiles) {
-			for (let reward of inactiveProf.rewards) {
-				inactiveRewards.add(reward);
+		for (let rewardKey in this.rewardsDefinitions.data)
+		{
+			if (!activeRewards.has(rewardKey))
+			{
+				inactiveRewards.add(rewardKey);
 			}
 		}
 
 		//Set all the reward states.
-		//Hackily reach inside twitch plugin.
-		this.switchChannelRewards(activeRewards, inactiveRewards);
+		await this.switchChannelRewards(activeRewards, inactiveRewards);
 	},
 	async onSettingsReload() {
 		await this.shutdown();
@@ -743,11 +745,8 @@ module.exports = {
 		redemption: {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
-			type: "EnumTrigger",
+			type: "RewardTrigger",
 			key: "reward",
-			async enum() {
-				return Object.keys(this.rewardsDefinitions.data || {});
-			}
 		},
 		follow: {
 			name: "Follow",

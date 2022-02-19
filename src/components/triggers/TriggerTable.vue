@@ -3,6 +3,13 @@
     <v-card-title>
       {{ triggerName }}
       <v-spacer />
+      <v-text-field
+        v-model="search"
+        append-icon="mdi-magnify"
+        label="Filter"
+        single-line
+        hide-details
+      />
     </v-card-title>
     <v-card-text>
       {{ trigger.description }}
@@ -11,18 +18,17 @@
       <template v-slot:item.key="props">
         <v-edit-dialog
           @open="openRename(props.item.key)"
-          @save="renameCommand(props.item.key, rename)"
+          @close="renameCommand(props.item.key, rename)"
         >
           <slot name="label" :item="props.item" :commandList="commandList">
-              {{ props.item.key }}
+            {{ props.item.key }}
           </slot>
           <template v-slot:input>
-            <!--enum-input v-model="rename" label="Command" :enum="trigger.enum" /-->
             <slot
               name="selector"
+              :item="props.item"
               :value="rename"
               :valueInput="(newValue) => (rename = newValue)"
-              :trigger="trigger"
             />
           </template>
         </v-edit-dialog>
@@ -51,7 +57,17 @@
       label="Command"
       :trigger="trigger"
       @created="createNewCommand"
-    />
+    >
+      <template v-slot:new-selector="selectProps">
+        <slot
+          name="new-selector"
+          :value="selectProps.value"
+          :valueInput="selectProps.valueInput"
+          :label="selectProps.label"
+        >
+        </slot>
+      </template>
+    </trigger-command-modal>
     <confirm-dialog ref="deleteDlg" />
   </v-card>
 </template>
@@ -63,7 +79,11 @@ import { changeObjectKey } from "../../utils/objects";
 import TriggerCommandModal from "./TriggerCommandModal.vue";
 
 export default {
-  components: { ConfirmDialog, AutomationSelector, TriggerCommandModal },
+  components: {
+    ConfirmDialog,
+    AutomationSelector,
+    TriggerCommandModal,
+  },
   props: {
     trigger: {},
     triggerKey: { type: String },
@@ -128,7 +148,10 @@ export default {
       }
     },
     renameCommand(oldKey, newKey) {
-      console.log("renameCommand", oldKey, newKey);
+      console.log("Renaming Command: ", oldKey, newKey, !newKey);
+
+      if (!newKey) return;
+
       const result = changeObjectKey(this.value, oldKey, newKey);
       this.$emit("input", result);
     },

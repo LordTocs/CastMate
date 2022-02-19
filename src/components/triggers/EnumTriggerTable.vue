@@ -13,7 +13,15 @@
         :value="selectProps.value"
         @input="selectProps.valueInput"
         label="Command"
-        :enum="selectProps.trigger.enum"
+        :enum="trigger.enum"
+      />
+    </template>
+    <template v-slot:new-selector="selectProps">
+      <enum-input
+        :value="selectProps.value"
+        @input="selectProps.valueInput"
+        :label="selectProps.label"
+        :enum="trigger.enum"
       />
     </template>
   </trigger-table>

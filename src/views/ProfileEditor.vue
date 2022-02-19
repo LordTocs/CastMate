@@ -72,11 +72,6 @@
             </v-card>
           </v-col>
         </v-row>
-        <v-row v-if="profile">
-          <v-col>
-            <rewards-editor v-model="profile.rewards" />
-          </v-col>
-        </v-row>
         <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
           Saved
         </v-snackbar>

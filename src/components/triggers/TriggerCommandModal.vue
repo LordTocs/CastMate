@@ -8,9 +8,9 @@
       </v-toolbar>
       <v-form @submit.prevent="create">
         <v-card-text>
-          <number-input v-model="key" :label="label" v-if="trigger.type == 'NumberTrigger'"/>
-          <v-text-field v-model="key" :label="label" v-else-if="trigger.type == 'CommandTrigger'"/>
-          <enum-input v-model="key" :label="label" :enum="trigger.enum" v-else-if="trigger.type == 'EnumTrigger'" />
+          <slot name="new-selector" :value="key" :valueInput="(v) => key = v" :label="label">
+            <number-input v-model="key" :label="label" />
+          </slot>
           <automation-selector v-model="automation" />
         </v-card-text>
         <v-card-actions class="pt-3">
