@@ -161,7 +161,7 @@ module.exports = {
 					return resolve(false);
 				
 				try {
-					ChildProcess.exec(startCmd, { shell: "powershell.exe", cwd: this.installDir }, (err, stdout, stderr) => {
+					ChildProcess.exec(startCmd, { shell: "powershell.exe", cwd: `${this.installDir}\\bin\\64bit\\` }, (err, stdout, stderr) => {
 						console.log(stdout);
 						console.error(stderr);
 						if (err) {
