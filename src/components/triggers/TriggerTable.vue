@@ -7,22 +7,22 @@
     <v-card-text>
       {{ trigger.description }}
     </v-card-text>
-    <v-data-table
-      :headers="headers"
-      :items="commandList"
-      :search="search"
-    >
+    <v-data-table :headers="headers" :items="commandList" :search="search">
       <template v-slot:item.key="props">
         <v-edit-dialog
           @open="openRename(props.item.key)"
           @save="renameCommand(props.item.key, rename)"
         >
-          {{ props.item.key }}
+          <slot name="label" :item="props.item" :commandList="commandList">
+              {{ props.item.key }}
+          </slot>
           <template v-slot:input>
-            <enum-input
-              v-model="rename"
-              label="Command"
-              :enum="trigger.enum"
+            <!--enum-input v-model="rename" label="Command" :enum="trigger.enum" /-->
+            <slot
+              name="selector"
+              :value="rename"
+              :valueInput="(newValue) => (rename = newValue)"
+              :trigger="trigger"
             />
           </template>
         </v-edit-dialog>
@@ -57,15 +57,13 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
 import AutomationSelector from "../automations/AutomationSelector.vue";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
 import { changeObjectKey } from "../../utils/objects";
-import EnumInput from "../data/EnumInput.vue";
-import TriggerCommandModal from './TriggerCommandModal.vue';
+import TriggerCommandModal from "./TriggerCommandModal.vue";
 
 export default {
-  components: { ConfirmDialog, AutomationSelector, EnumInput, TriggerCommandModal },
+  components: { ConfirmDialog, AutomationSelector, TriggerCommandModal },
   props: {
     trigger: {},
     triggerKey: { type: String },
@@ -103,7 +101,7 @@ export default {
     openRename(commandKey) {
       this.rename = commandKey;
     },
-    createNewCommand({key, automation}) {
+    createNewCommand({ key, automation }) {
       if (this.value && key in this.value) return;
 
       const result = { ...this.value };
@@ -139,4 +137,20 @@ export default {
 </script>
 
 <style>
+.trigger-card tbody tr:nth-of-type(even) {
+  background-color: #323232;
+}
+
+.trigger-card tbody tr:nth-of-type(odd) {
+  background-color: #323232;
+}
+
+.trigger-card .v-data-table-header {
+  background-color: #323232;
+  color: white;
+}
+
+.trigger-card .v-data-footer {
+  background-color: #323232;
+}
 </style>
