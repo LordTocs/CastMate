@@ -16,6 +16,14 @@
         single-line
       ></v-text-field>
     </template>
+    <template v-slot:new-selector="selectProps">
+      <v-text-field
+        :value="selectProps.value"
+        @input="selectProps.valueInput"
+        :label="selectProps.label"
+        single-line
+      />
+    </template>
   </trigger-table>
 </template>
 
