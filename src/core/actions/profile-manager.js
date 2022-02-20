@@ -72,7 +72,6 @@ class ProfileManager
 		});
 
 		this.profileWatcher.on('ready', async () => {
-			console.log(this.asyncLoadingPromises);
 			await Promise.all(this.asyncLoadingPromises);
 
 			console.log("All Profiles Loaded.")
