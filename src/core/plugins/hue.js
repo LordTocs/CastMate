@@ -175,6 +175,26 @@ module.exports = {
 			}
 			return value;
 		},
+		async getGroupNames() {
+			try {
+				return (await this.hue.groups.getAll()).map(g => g.name)
+			}
+			catch(err)
+			{
+				console.error(err);
+				return []
+			}
+		},
+		async getSceneNames() {
+			try {
+				return (await this.hue.scenes.getAll()).map(s => s.name)
+			}
+			catch(err)
+			{
+				console.error(err);
+				return []
+			}
+		},
 		async getGroupByName(name) {
 			if (this.groupCache[name]) {
 				return this.groupCache[name];
@@ -210,7 +230,14 @@ module.exports = {
 					on: { type: Boolean, name: "Light Switch" },
 					hsbk: { type: "LightColor", name: "Color", tempRange: [2000, 6500] },
 					transition: { type: Number, template: true, name: "Transition Time" },
-					group: { type: String, template: true, name: "HUE Light Group" },
+					group: {
+						type: String,
+						template: true,
+						name: "HUE Light Group",
+						async enum() {
+							return await this.getGroupNames()
+						}
+					},
 				}
 			},
 			async handler(lightData, context) {
@@ -283,8 +310,22 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					scene: { type: String, name: "Scene" },
-					group: { type: String, name: "HUE Light Group" },
+					scene: { 
+						type: String, 
+						name: "Scene",
+						template: true,
+						async enum() {
+							return await this.getSceneNames();
+						}
+					 },
+					group: {
+						type: String,
+						template: true,
+						name: "HUE Light Group",
+						async enum() {
+							return await this.getGroupNames()
+						}
+					},
 				}
 			},
 			async handler(sceneData) {
