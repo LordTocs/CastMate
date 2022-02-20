@@ -1,7 +1,79 @@
 const nodeHueApi = require('node-hue-api');
 
-//node-hue-api is dumb and rate limits setGroupState()
+class HUEStateTracker
+{
+	constructor()
+	{
+		this.lastState = {};
+	}
 
+	getGroupColorState(group, requestedState)
+	{
+		let state = new lightstates.GroupLightState();
+		if (!this.lastState[group])
+		{
+			this.lastState[group] = {};
+		}
+		const lastState = this.lastState[group];
+
+		if (requestedState.on != undefined)
+		{
+			if (lastState.on != requestedState.on)
+			{
+				state.on(requestedState.on);
+				lastState.on = requestedState.on;
+			}
+		}
+		if (requestedState.bri != undefined)
+		{
+			if (lastState.bri != requestedState.bri)
+			{
+				state.bri(requestedState.bri);
+				lastState.bri = requestedState.bri;
+			}
+		}
+		if (requestedState.sat != undefined)
+		{
+			if (lastState.sat != requestedState.sat)
+			{
+				state.sat(requestedState.sat);
+				lastState.sat = requestedState.sat;
+			}
+		}
+		if (requestedState.hue != undefined)
+		{
+			if (lastState.hue != requestedState.hue)
+			{
+				state.hue(requestedState.hue);
+				lastState.hue = requestedState.hue;
+				delete lastState.ct;
+			}
+		}
+		if (requestedState.ct != undefined)
+		{
+			if (lastState.temp != requestedState.ct)
+			{
+				state.ct(requestedState.ct);
+				lastState.ct = requestedState.ct;
+				delete lastState.hue;
+				delete lastState.sat;
+			}
+		}
+		if (requestedState.transition != undefined)
+		{
+			state.transitionInMillis(requestedState.transition * 1000);
+		}
+		return state;
+	}
+
+	clearGroupState(group)
+	{
+		this.lastState[group] = {};
+	}
+}
+
+
+//node-hue-api is dumb and rate limits setGroupState()
 //Rate limiting isn't flat for hue bridges, 
 // the less individual state parameter changes you send the more total state updates you can send.
 // Since node-hue-api doesn't let you disable the rate limiter We create a fake endpoint similar to those in
@@ -57,6 +129,7 @@ module.exports = {
 	color: "#7F743F",
 	async init() {
 		this.groupCache = {};
+		this.stateTracker = new HUEStateTracker();
 
 		if (!await this.discoverBridge()) {
 			return false;
@@ -245,14 +318,15 @@ module.exports = {
 
 				let groupName = lightData.group || this.settings.defaultGroup;
 
-				let state = new lightstates.GroupLightState();
+				
 
 
+				const requestedState = {};
 
 				if ("on" in lightData) {
 					lightData.on = await this.handleTemplateNumber(lightData.on, context);
 
-					state.on(lightData.on);
+					requestedState.on = !!lightData.on;
 				}
 
 
@@ -262,24 +336,24 @@ module.exports = {
 					if ("bri" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.bri = await this.handleTemplateNumber(lightData.hsbk.bri, context);
 
-						state.bri(lightData.hsbk.bri / 100 * 254);
+						requestedState.bri = lightData.hsbk.bri / 100 * 254;
 					}
 					if ("sat" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.sat = await this.handleTemplateNumber(lightData.hsbk.sat, context);
 
-						state.sat(lightData.hsbk.sat / 100 * 254);
+						requestedState.sat = lightData.hsbk.sat / 100 * 254;
 					}
 					if ("hue" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.hue = await this.handleTemplateNumber(lightData.hsbk.hue, context);
 
 						//Hue is 0-360
-						state.hue(Math.floor((lightData.hsbk.hue / 360) * 65535))
+						requestedState.hue = Math.floor((lightData.hsbk.hue / 360) * 65535);
 					}
 					if ("temp" in lightData.hsbk && (mode == 'temp' || mode == "template")) {
 						lightData.hsbk.temp = await this.handleTemplateNumber(lightData.hsbk.temp, context);
 
 						//Convert kelvin to mired. https://en.wikipedia.org/wiki/Mired
-						state.ct(1000000 / lightData.hsbk.temp);
+						requestedState.ct = (1000000 / lightData.hsbk.temp);
 					}
 				}
 
@@ -288,8 +362,10 @@ module.exports = {
 				if ("transition" in lightData) {
 					lightData.transition = await this.handleTemplateNumber(lightData.transition, context);
 
-					state.transitionInMillis(lightData.transition * 1000)
+					requestedState.transition = (lightData.transition * 1000);
 				}
+
+				let state = this.stateTracker.getGroupColorState(groupName, requestedState);
 
 				let group = await this.hue.groups.getGroupByName(groupName);//await this.getGroupByName(groupName)
 
@@ -313,7 +389,6 @@ module.exports = {
 					scene: { 
 						type: String, 
 						name: "Scene",
-						template: true,
 						async enum() {
 							return await this.getSceneNames();
 						}
@@ -331,6 +406,8 @@ module.exports = {
 			async handler(sceneData) {
 				let scene = sceneData.scene;
 				let groupName = sceneData.group || this.settings.defaultGroup;
+
+				this.stateTracker.clearGroupState(groupName);
 
 				let sceneObj = await this.hue.scenes.getSceneByName(scene);
 
