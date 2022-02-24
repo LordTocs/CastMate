@@ -34,6 +34,13 @@
     :value="value"
     @input="(v) => $emit('input', v)"
   />
+  <timer-trigger-table
+    v-else-if="trigger.type == 'TimerTrigger'"
+    :trigger="trigger"
+    :triggerKey="triggerKey"
+    :value="value"
+    @input="(v) => $emit('input', v)"
+  />
 </template>
 
 <script>
@@ -42,6 +49,7 @@ import SingleAutomationTrigger from "./SingleAutomationTrigger.vue";
 import CommandTriggerTable from "./CommandTriggerTable.vue";
 import EnumTriggerTable from "./EnumTriggerTable.vue";
 import RewardTriggerTable from "./RewardTriggerTable.vue";
+import TimerTriggerTable from './TimerTriggerTable.vue';
 
 export default {
   components: {
@@ -50,6 +58,7 @@ export default {
     NumberTriggerTable,
     EnumTriggerTable,
     RewardTriggerTable,
+    TimerTriggerTable,
   },
   props: {
     triggerKey: { type: String },
