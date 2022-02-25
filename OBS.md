@@ -4,14 +4,17 @@
 
 * CastMate relies on the [OBS Websocket Plugin](https://github.com/obsproject/obs-websocket/releases/tag/4.9.1) [^1] Install this plugin.
 
-* Go to the Tools -> WebSockets Server Settings 
-![Tools -> Websockets Server Settings](docs/images/websocketSettings.png?raw=true)
+* Go to the Tools -> WebSockets Server Settings
 
-* Inside this dialog, note the port and set a password. 
-![Websockets Server Settings Dialog](docs/images/websocket.png?raw=true)
+  ![Tools -> Websockets Server Settings](docs/images/websocketSettings.png?raw=true)
+
+* Inside this dialog, note the port and set a password.
+
+  ![Websockets Server Settings Dialog](docs/images/websocket.png?raw=true)
 
 * In CastMate, under the Plugins fold on the left. Select OBS. From there set the Host Name to `127.0.0.1`, the port to match the dialog in OBS, and after hitting `Show Secrets` enter the password you chose in the OBS dialog.
-![CastMate OBS Settings](docs/images/castmate-obs.png?raw=true) 
+
+  ![CastMate OBS Settings](docs/images/castmate-obs.png?raw=true) 
 
 ## Browser Sources
 
