@@ -25,8 +25,7 @@
       fab
       small
       class="mx-1"
-      as="router-link"
-      :to="`/automations/${value}`"
+      @click.stop="$refs.automationDlg.open()"
       :disabled="!value"
     >
       <v-icon small> mdi-pencil </v-icon>
@@ -40,6 +39,7 @@
     >
       <v-icon small> mdi-plus </v-icon>
     </v-btn>
+    <automation-quick-edit-dialog ref="automationDlg" :automationName="value"/>
     <named-item-modal
       ref="addModal"
       header="Create New Automation"
@@ -56,6 +56,7 @@ import path from "path";
 import YAML from "yaml";
 import { mapGetters } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
+import AutomationQuickEditDialog from './AutomationQuickEditDialog.vue';
 
 export default {
   props: {
@@ -64,6 +65,7 @@ export default {
   },
   components: {
     NamedItemModal,
+    AutomationQuickEditDialog,
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),

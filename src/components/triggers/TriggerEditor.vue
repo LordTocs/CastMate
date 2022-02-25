@@ -1,27 +1,41 @@
 <template>
-  <named-command-trigger
+  <command-trigger-table
     v-if="trigger.type == 'CommandTrigger'"
     :trigger="trigger"
     :triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
   />
-  <number-command-trigger
+  <number-trigger-table
     v-else-if="trigger.type == 'NumberTrigger'"
     :trigger="trigger"
     :triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
   />
-  <enum-command-trigger
+  <enum-trigger-table
     v-else-if="trigger.type == 'EnumTrigger'"
     :trigger="trigger"
     :triggerKey="triggerKey"
     :value="value"
     @input="(v) => $emit('input', v)"
   />
-  <single-command-trigger
+  <single-automation-trigger
     v-else-if="trigger.type == 'SingleTrigger'"
+    :trigger="trigger"
+    :triggerKey="triggerKey"
+    :value="value"
+    @input="(v) => $emit('input', v)"
+  />
+  <reward-trigger-table
+    v-else-if="trigger.type == 'RewardTrigger'"
+    :trigger="trigger"
+    :triggerKey="triggerKey"
+    :value="value"
+    @input="(v) => $emit('input', v)"
+  />
+  <timer-trigger-table
+    v-else-if="trigger.type == 'TimerTrigger'"
     :trigger="trigger"
     :triggerKey="triggerKey"
     :value="value"
@@ -30,25 +44,21 @@
 </template>
 
 <script>
-import NumberCommandTrigger from "./NumberCommandTrigger.vue";
-import SingleCommandTrigger from "./SingleCommandTrigger.vue";
-import NamedCommandTrigger from "./NamedCommandTrigger.vue";
-import EnumCommandTrigger from "./EnumCommandTrigger.vue";
+import NumberTriggerTable from "./NumberTriggerTable.vue";
+import SingleAutomationTrigger from "./SingleAutomationTrigger.vue";
+import CommandTriggerTable from "./CommandTriggerTable.vue";
+import EnumTriggerTable from "./EnumTriggerTable.vue";
+import RewardTriggerTable from "./RewardTriggerTable.vue";
+import TimerTriggerTable from './TimerTriggerTable.vue';
 
 export default {
   components: {
-    SingleCommandTrigger,
-    NamedCommandTrigger,
-    NumberCommandTrigger,
-    EnumCommandTrigger,
-  },
-  computed: {
-    commands() {
-      if (!this.value) {
-        return [];
-      }
-      return Object.keys(this.value).filter((key) => key != "imports");
-    },
+    SingleAutomationTrigger,
+    CommandTriggerTable,
+    NumberTriggerTable,
+    EnumTriggerTable,
+    RewardTriggerTable,
+    TimerTriggerTable,
   },
   props: {
     triggerKey: { type: String },
@@ -59,16 +69,4 @@ export default {
 </script>
 
 <style>
-.trigger-editor {
-  text-align: left;
-  background-color: #efefef;
-}
-
-.trigger-editor:not(:last-child) {
-  margin-bottom: 1.5rem;
-}
-
-.command-editor {
-  margin-bottom: 1rem;
-}
 </style>

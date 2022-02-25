@@ -5,18 +5,28 @@
         <v-card-title> Twitch Channel Account </v-card-title>
         <v-card-subtitle> Twitch Account of your Channel </v-card-subtitle>
         <v-card-text>
-          <span v-if="channelName">
+          <span v-if="channelName" class="text-h5">
+            <v-avatar> <img :src="stateLookup.twitch.channelProfileUrl" :alt="channelName" /> </v-avatar>
             {{ channelName }}
           </span>
           <span v-else> Not Signed In </span>
         </v-card-text>
         <v-card-actions>
           <v-btn
-            color="purple"
+            color="#9147FF"
             :loading="channelWorking"
             @click="startChannelAuth"
+            v-if="!channelName"
           >
             Sign In
+          </v-btn>
+          <v-btn
+            color="#5B4B72"
+            :loading="channelWorking"
+            @click="startChannelAuth"
+            v-else
+          >
+            Sign In Again
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -26,14 +36,28 @@
         <v-card-title> Twitch Bot Account </v-card-title>
         <v-card-subtitle> Twitch Account of your Chat Bot </v-card-subtitle>
         <v-card-text>
-          <span v-if="botName">
+           <span v-if="botName" class="text-h5">
+            <v-avatar> <img :src="stateLookup.twitch.botProfileUrl" :alt="botName" /> </v-avatar>
             {{ botName }}
           </span>
           <span v-else> Not Signed In </span>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="purple" :loading="botWorking" @click="startBotAuth">
+          <v-btn
+            color="#9147FF"
+            :loading="botWorking"
+            @click="startBotAuth"
+            v-if="!botName"
+          >
             Sign In
+          </v-btn>
+          <v-btn
+            color="#5B4B72"
+            :loading="botWorking"
+            @click="startBotAuth"
+            v-else
+          >
+            Sign In Again
           </v-btn>
         </v-card-actions>
       </v-card>

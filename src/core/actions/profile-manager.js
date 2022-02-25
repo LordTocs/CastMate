@@ -33,11 +33,19 @@ class ProfileManager
 		//Setup file watching to hot reload any profile yaml files.
 		this.profileWatcher = chokidar.watch(path.join(userFolder, 'profiles/'));
 
+		this.isLoading = true;
+		this.asyncLoadingPromises = [];
+
 		this.profileWatcher.on('add', async (path) =>
 		{
 			logger.info(`Profile Added: ${path}`);
-			await sleep(50); //Sleep because js is weird and we can accidentally load old files!
-			await this.loadProfile(path);
+			
+			const loadPromise = this.loadProfile(path);
+			if (this.isLoading)
+			{
+				this.asyncLoadingPromises.push(loadPromise);
+			}
+			await loadPromise;
 		});
 		this.profileWatcher.on('change', async (path) =>
 		{
@@ -62,6 +70,16 @@ class ProfileManager
 
 			this.recombine();
 		});
+
+		this.profileWatcher.on('ready', async () => {
+			await Promise.all(this.asyncLoadingPromises);
+
+			console.log("All Profiles Loaded.")
+
+			this.isLoading = false;
+			
+			this.recombine();
+		})
 	}
 
 	//Force all profiles to re-calculate their dependencies on reactive state.
@@ -84,11 +102,13 @@ class ProfileManager
 	async handleProfileLoaded(profile)
 	{
 		//Notify any plugins that a profile has loaded.
+		const onProfileLoadPromises = [];
 		for (let plugin of this.plugins.plugins)
 		{
 			if (plugin.onProfileLoad)
-				plugin.onProfileLoad(profile, profile.config);
+				onProfileLoadPromises.push(plugin.onProfileLoad(profile, profile.config));
 		}
+		await Promise.all(onProfileLoadPromises);
 
 		
 		//Setup the state watcher used for profile conditions.
@@ -99,7 +119,8 @@ class ProfileManager
 		profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
 		
 		this.recombine();
-
+		
+		
 		dependOnAllConditions(profile.conditions, this.plugins.stateLookup, profile.watcher);
 	}
 
@@ -111,6 +132,8 @@ class ProfileManager
 			this.handleProfileLoaded(profile);
 		});
 
+		await sleep(50); //Sleep because js is weird and we can accidentally load old files!
+
 		await profile.reload();
 
 		this.profiles.push(profile)
@@ -121,9 +144,16 @@ class ProfileManager
 	//Recalculate which profiles are active.
 	recombine()
 	{
+		if (this.isLoading)
+		{
+			//Don't recombine during initial load this causes async issues!
+			return;
+		}
+
 		let [activeProfiles, inactiveProfiles] = _.partition(this.profiles, (profile) => evalConditional(profile.conditions, this.plugins.stateLookup));
 
-		logger.info(`Combining Profiles: ${activeProfiles.map(p => p.filename).join(', ')}`);
+		logger.info(`Combining Profiles: ${activeProfiles.map(p => p.name).join(', ')}`);
+
 
 		this.triggers = Profile.mergeTriggers(activeProfiles);
 

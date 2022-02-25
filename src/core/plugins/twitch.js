@@ -94,8 +94,7 @@ module.exports = {
 			this.channelAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Channel" })
 			this.botAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Bot", scopes: ["chat:edit", "chat:read"] })
 
-			await this.channelAuth.trySilentAuth();
-			await this.botAuth.trySilentAuth();
+			await Promise.all([this.channelAuth.trySilentAuth(), await this.botAuth.trySilentAuth()]);
 
 			await this.completeAuth();
 
@@ -126,24 +125,29 @@ module.exports = {
 		},
 
 		async completeAuth() {
-			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.botAuth || !this.botAuth.isAuthed) {
+			await this.shutdown();
+
+			try {
+				await this.createApiClients();
+			}
+			catch (err) {
+				this.logger.error(`Failed to create api clients`);
+				this.logger.error(`${err}`);
+			}
+
+			if (!this.channelAuth || !this.channelAuth.isAuthed)
+			{
 				this.logger.info("Failed to complete auth.");
-				this.logger.info(`  Channel Auth ${this.channelAuth ? this.channelAuth.isAuthed : 'None'}`)
-				this.logger.info(`  Bot     Auth ${this.botAuth ? this.botAuth.isAuthed : 'None'}`)
+				this.logger.info("  Channel Is Not Authed.");
 				this.state.isAuthed = false;
 				return;
 			}
 
-			await this.shutdown();
-
-			try {
-				await this.doAuth();
+			if (!this.botAuth || !this.botAuth.isAuthed)
+			{
+				this.logger.info("No bot account authed.");
 			}
-			catch (err) {
-				this.logger.error(`Failed to Auth`);
-				this.logger.error(`${err}`);
-			}
-
+			
 			this.state.isAuthed = true;
 
 			try {
@@ -181,26 +185,57 @@ module.exports = {
 			}
 		},
 
-		async doAuth() {
+		async createApiClients() {
 			this.chatAuthProvider = null;
 
-			this.channelTwitchClient = new ApiClient({
-				authProvider: this.channelAuth,
-			});
+			if (this.channelAuth && this.channelAuth.isAuthed)
+			{
+				
+				this.channelTwitchClient = new ApiClient({
+					authProvider: this.channelAuth,
+				});
 
-			this.botTwitchClient = new ApiClient({
-				authProvider: this.botAuth
-			});
+				let channel = await this.channelTwitchClient.users.getMe(false);
+				this.state.channelName = channel.displayName;
+				this.state.channelProfileUrl = channel.profilePictureUrl;
+				this.channelId = await channel.id;
 
-			//Get the IDs
-			let channel = await this.channelTwitchClient.users.getMe(false);
-			this.state.channelName = channel.displayName;
-			this.state.isAffiliate = channel.broadcasterType.length > 0;
-			this.channelId = await channel.id;
+				this.state.isAffiliate = channel.broadcasterType.length > 0;
+				
+				this.chatAuthProvider = this.channelAuth;
+				this.logger.info(`Channel Signed in As ${channel.displayName}`);
+			}
+			else
+			{
+				this.state.channelName = null;
+				this.state.channelProfileUrl = null;
+				
+				this.state.isAffiliate = false;
 
-			let bot = await this.botTwitchClient.users.getMe(false);
-			this.botId = await bot.id;
-			this.state.botName = bot.displayName;
+				this.channelId = null;
+
+				this.logger.info(`Channel Not Signed In`);
+			}
+
+			if (this.botAuth && this.botAuth.isAuthed)
+			{
+				this.botTwitchClient = new ApiClient({
+					authProvider: this.botAuth,
+				});
+
+				let bot = await this.botTwitchClient.users.getMe(false);
+
+				this.state.botName = bot.displayName;
+				this.state.botProfileUrl = bot.profilePictureUrl;
+				this.chatAuthProvider = this.botAuth;
+				this.logger.info(`Bot Signed in As ${bot.displayName}`);
+			}
+			else
+			{
+				this.state.botName = null;
+				this.state.botProfileUrl = null;
+				this.logger.info(`Bot Not Signed In`);
+			}
 		},
 
 		parseMessage(message) {
@@ -220,7 +255,7 @@ module.exports = {
 		},
 
 		async setupChatTriggers() {
-			this.chatClient = new ChatClient({ authProvider: this.botAuth, channels: [this.state.channelName] });
+			this.chatClient = new ChatClient({ authProvider: this.chatAuthProvider, channels: [this.state.channelName] });
 			await this.chatClient.connect();
 
 			this.logger.info(`Connected to Chat`);
@@ -561,17 +596,21 @@ module.exports = {
 		},
 
 		async doBotAuth() {
-			let result = await this.botAuth.doAuth(true);
+			let result = await this.botAuth.dAuth(true);
 			if (result) {
 				await this.completeAuth();
+				return true;
 			}
+			return false;
 		},
 
 		async doChannelAuth() {
 			let result = await this.channelAuth.doAuth(true);
 			if (result) {
 				await this.completeAuth();
+				return true;
 			}
+			return false;
 		},
 
 		async searchCategories(query = "") {
@@ -649,7 +688,8 @@ module.exports = {
 		}
 	},
 	async onProfileLoad(profile, config) {
-		profile.rewards = config.rewards || [];
+		const redemptionTriggers = config ? (config.triggers ? (config.triggers.twitch ? (config.triggers.twitch.redemption) : null) : null) : null;
+		profile.rewards = redemptionTriggers ? Object.keys(redemptionTriggers) : [];
 	},
 	async onProfilesChanged(activeProfiles, inactiveProfiles) {
 		let activeRewards = new Set();
@@ -661,15 +701,16 @@ module.exports = {
 			}
 		}
 
-		for (let inactiveProf of inactiveProfiles) {
-			for (let reward of inactiveProf.rewards) {
-				inactiveRewards.add(reward);
+		for (let rewardKey in this.rewardsDefinitions.data)
+		{
+			if (!activeRewards.has(rewardKey))
+			{
+				inactiveRewards.add(rewardKey);
 			}
 		}
 
 		//Set all the reward states.
-		//Hackily reach inside twitch plugin.
-		this.switchChannelRewards(activeRewards, inactiveRewards);
+		await this.switchChannelRewards(activeRewards, inactiveRewards);
 	},
 	async onSettingsReload() {
 		await this.shutdown();
@@ -690,10 +731,18 @@ module.exports = {
 			name: "Twitch Channel Name",
 			description: "The active channel's Name"
 		},
+		channelProfileUrl: {
+			type: String,
+			name: "Twitch Channel Profile Picture URL"
+		},
 		botName: {
 			type: String,
 			name: "Bot Name",
 			description: "The chat bot's Name"
+		},
+		botProfileUrl: {
+			type: String,
+			name: "Twitch Channel Profile Picture URL"
 		},
 		subscribers: {
 			type: Number,
@@ -743,11 +792,8 @@ module.exports = {
 		redemption: {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
-			type: "EnumTrigger",
+			type: "RewardTrigger",
 			key: "reward",
-			async enum() {
-				return Object.keys(this.rewardsDefinitions.data || {});
-			}
 		},
 		follow: {
 			name: "Follow",
