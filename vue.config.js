@@ -35,6 +35,15 @@ module.exports = {
 					repo: "CastMate"
 				}],
 				productName: "CastMate",
+				extraResources: [
+					{
+						"from": "node_modules/regedit/vbs",
+						"to": "regedit/vbs",
+						"filter": [
+							"**/*"
+						]
+					}
+				],
 				extraFiles: [
 					{
 						from: "web",

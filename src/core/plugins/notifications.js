@@ -3,7 +3,7 @@ const { template } = require('../utils/template');
 
 module.exports = {
 	name: "notifications",
-	uiName: "Notifications",
+	uiName: "Alerts",
 	icon: "mdi-alert-box-outline",
 	color: "#CC63A2",
 	async init()
@@ -13,15 +13,16 @@ module.exports = {
 	settings: {
 		defaultColor: {
 			type: String,
-			description: "Default color for a notification."
+			name: "Default Alert Color",
+			description: "Default color for a Alert."
 		}
 	},
 	secrets: {
 	},
 	actions: {
 		notification: {
-			name: "Notification",
-			description: "Shows a notification in the OBS browser",
+			name: "Alert",
+			description: "Shows an Alert in the OBS browser",
 			icon: "mdi-alert-box-outline",
 			color: "#CC63A2",
 			data: {

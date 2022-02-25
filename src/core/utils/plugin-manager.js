@@ -14,8 +14,9 @@ class PluginManager {
 			"sounds",
 			"twitch",
 			"minecraft",
-			"csgo",
+			"time",
 			"kofi",
+			"csgo",
 			"variables",
 			"websocket",
 			//"aoe3",
@@ -23,8 +24,8 @@ class PluginManager {
 			"twinkly",
 		]
 
-        //Todo: This relative require is weird.
-        this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));
+		//Todo: This relative require is weird.
+		this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));
 
 		this.stateLookup = {};
 
@@ -73,8 +74,7 @@ class PluginManager {
 	}
 
 	updateReactivity(pluginObj) {
-		if (!this.stateLookup[pluginObj.name])
-		{
+		if (!this.stateLookup[pluginObj.name]) {
 			this.stateLookup[pluginObj.name] = {};
 		}
 		reactiveCopy(this.stateLookup[pluginObj.name], pluginObj.state, (newKey) => {
@@ -106,10 +106,9 @@ class PluginManager {
 
 		ipcMain.handle("getPlugins", async () => {
 			const pluginInfo = {};
-			for (let plugin of this.plugins)
-			{
+			for (let plugin of this.plugins) {
 				pluginInfo[plugin.name] = plugin.getUIDescription();
-			}``
+			} ``
 			return pluginInfo;
 		})
 

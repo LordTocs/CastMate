@@ -69,11 +69,12 @@
             </v-alert>
           </v-card-text>
           <v-card-text class="flex-grow-1" v-else>
-            <strong> Streaming: </strong> {{ stateLookup.obs.streaming }} <br />
-            <strong> Recording: </strong> {{ stateLookup.obs.recording }} <br />
+            <strong> Streaming: </strong> <v-icon>{{ stateLookup.obs.streaming ? "mdi-record" : "mdi-pause" }} </v-icon> <br />
+            <strong> Recording: </strong> <v-icon>{{ stateLookup.obs.recording ? "mdi-record" : "mdi-pause" }} </v-icon> <br />
           </v-card-text>
           <v-card-actions>
-            <v-btn @click="() => refereshAllBrowsers()"> Refresh Browsers </v-btn>
+            <v-btn v-if="stateLookup.obs.connected" @click="() => refereshAllBrowsers()"> Refresh Browsers </v-btn>
+            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()"> Launch OBS </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -96,7 +97,7 @@ export default {
     ...mapGetters("ipc", ["stateLookup"]),
   },
   methods: {
-    ...mapIpcs("obs", ["refereshAllBrowsers"])
+    ...mapIpcs("obs", ["refereshAllBrowsers", "openOBS"])
   }
 };
 </script>

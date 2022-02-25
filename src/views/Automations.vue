@@ -195,6 +195,10 @@ export default {
 </script>
 
 <style>
+.linktable-card tbody tr {
+  cursor: pointer;
+}
+
 .linktable-card tbody tr:nth-of-type(even) {
   background-color: #424242;
 }

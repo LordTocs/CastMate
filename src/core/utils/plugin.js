@@ -91,6 +91,14 @@ class Plugin
 			{
 				this.triggers[triggerName].handler = new SingleTriggerHandler(triggerName)
 			}
+			else if (triggerSpec.type == 'RewardTrigger')
+			{
+				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
+			}
+			else if (triggerSpec.type == 'TimerTrigger')
+			{
+				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
+			}
 			else if (triggerSpec.type == 'EnumTrigger')
 			{
 				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'value')

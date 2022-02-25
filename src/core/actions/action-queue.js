@@ -37,10 +37,11 @@ class ActionQueue {
 
 			this.pushToQueue(automation, context || {
 				//Some dummy data.
-				user: "Test User",
+				user: "LordTocs",
 				userColor: "#4411FF",
-				message: "Test Message From User",
-				filteredMessage: "Test Message From User",
+				userId: "27082158",
+				message: "Thanks for using CastMate.",
+				filteredMessage: "Thanks for using CastMate.",
 			})
 		})
 

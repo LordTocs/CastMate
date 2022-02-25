@@ -1,5 +1,6 @@
-const { Rcon } = require('rcon-client');
+const Rcon = require('rcon');
 const { template } = require('../utils/template');
+const { sleep } = require("../utils/sleep.js");
 
 
 module.exports = {
@@ -7,37 +8,55 @@ module.exports = {
 	uiName: "Minecraft",
 	icon: "mdi-minecraft",
 	color: "#66A87B",
-	async init()
-	{
+	async init() {
 		this.startConnectLoop();
 	},
 	methods: {
-		async tryConnect()
-		{
-			try
-			{
-				this.rcon = await Rcon.connect({
-					host: this.settings.host,
-					port: this.settings.port,
-					password: this.secrets.password
-				});
+		tryConnect() {
+			return new Promise((resolve, reject) => {
+				try {
+					this.rcon = new Rcon(
+						this.settings.host,
+						Number(this.settings.port),
+						this.secrets.password,
+					);
 
-				this.rcon.on('end', () =>
-				{
-					this.startConnectLoop();
-				})
+					this.logger.info(`Trying MC Connection ${this.settings.host}:${this.settings.port}`)
 
-				return true;
-			}
-			catch (err)
-			{
-				return false;
-			}
+					this.rcon.connect();
+
+					this.rcon.on('auth', () => {
+						this.logger.info("Connected to Minecraft!");
+						resolve(true);
+					})
+
+					this.rcon.on('response', (str) => {
+						this.logger.info (`MC Resp: ${str}`)
+					})
+
+					this.rcon.on('end', async () => {
+						this.logger.info("Minecraft Connection Ended.");
+						await sleep(5000);
+						this.tryConnect();
+						resolve(false)
+					})
+
+					this.rcon.on("error", (err) => {
+						this.logger.info("Error!");
+						this.logger.error(String(err));
+						resolve(false);
+					})
+				}
+				catch (err) {
+					this.logger.error(err);
+					resolve(false)
+				}
+			});
 		},
 
-		async startConnectLoop()
-		{
+		async startConnectLoop() {
 			this.rcon = null;
+			
 
 			if (!this.settings.host)
 				return;
@@ -46,7 +65,8 @@ module.exports = {
 			if (!this.secrets.password)
 				return;
 
-			while (!(await this.tryConnect()));
+			this.logger.info("Starting MC Connection Loop");
+			await this.tryConnect();
 		}
 	},
 	settings: {
@@ -67,16 +87,21 @@ module.exports = {
 					command: { type: String, template: true }
 				}
 			},
-			async handler(command, context)
-			{
-				if (!this.rcon)
-				{
+			async handler(command, context) {
+				if (!this.rcon) {
 					return;
 				}
-				let fullCommand = await template(command, context);
-				this.logger.info(`MCRCON Send:  ${fullCommand}`);
-				let result = await this.rcon.send(fullCommand);
-				this.logger.info(`MCRCON Recv:  ${result}`);
+				try {
+					this.logger.info("MCRCON START " + command.command)
+					let fullCommand = await template(command.command, context);
+					this.logger.info(`MCRCON Send:  ${fullCommand}`);
+					let result = await this.rcon.send(fullCommand);
+					this.logger.info(`MCRCON Recv:  ${result}`);
+				}
+				catch(err)
+				{
+					this.logger.error(err);
+				}
 			}
 		}
 	}
