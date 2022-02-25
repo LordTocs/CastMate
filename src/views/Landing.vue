@@ -74,7 +74,7 @@
           </v-card-text>
           <v-card-actions>
             <v-btn v-if="stateLookup.obs.connected" @click="() => refereshAllBrowsers()"> Refresh Browsers </v-btn>
-            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()"> Open OBS </v-btn>
+            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()"> Launch OBS </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
