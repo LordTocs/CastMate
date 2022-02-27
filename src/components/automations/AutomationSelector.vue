@@ -59,6 +59,7 @@ import NamedItemModal from "../dialogs/NamedItemModal.vue";
 import AutomationQuickEditDialog from './AutomationQuickEditDialog.vue';
 
 export default {
+  name: "automation-selector",
   props: {
     value: {},
     label: { type: String, default: () => "Automation" },

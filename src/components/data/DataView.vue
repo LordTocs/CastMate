@@ -6,7 +6,8 @@
       schema.type == 'String' ||
       schema.type == 'Number' ||
       schema.type == 'Boolean' ||
-      schema.type == 'FilePath'
+      schema.type == 'FilePath' ||
+      schema.type == 'Automation'
     "
   >
     <span v-if="schema.name || label"> {{ schema.name || label }}: </span>

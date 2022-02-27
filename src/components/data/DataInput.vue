@@ -68,6 +68,11 @@
     :schema="schema"
     :clearable="!schema.required"
   />
+  <automation-selector
+    :value="value"
+    @input="handleInput"
+    v-else-if="schema.type == 'Automation'"
+  />
 </template>
 
 <script>
@@ -85,6 +90,7 @@ export default {
     FileAutocomplete,
     StringDataInput,
     ColorPicker,
+    AutomationSelector: () => import('../automations/AutomationSelector.vue'),
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {
