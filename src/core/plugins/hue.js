@@ -1,73 +1,57 @@
 const nodeHueApi = require('node-hue-api');
 
-class HUEStateTracker
-{
-	constructor()
-	{
+class HUEStateTracker {
+	constructor() {
 		this.lastState = {};
 	}
 
-	getGroupColorState(group, requestedState)
-	{
+	getGroupColorState(group, requestedState) {
 		let state = new lightstates.GroupLightState();
-		if (!this.lastState[group])
-		{
+		if (!this.lastState[group]) {
 			this.lastState[group] = {};
 		}
 		const lastState = this.lastState[group];
 
-		if (requestedState.on != undefined)
-		{
-			if (lastState.on != requestedState.on)
-			{
+		if (requestedState.on != undefined) {
+			if (lastState.on != requestedState.on) {
 				state.on(requestedState.on);
 				lastState.on = requestedState.on;
 			}
 		}
-		if (requestedState.bri != undefined)
-		{
-			if (lastState.bri != requestedState.bri)
-			{
+		if (requestedState.bri != undefined) {
+			if (lastState.bri != requestedState.bri) {
 				state.bri(requestedState.bri);
 				lastState.bri = requestedState.bri;
 			}
 		}
-		if (requestedState.sat != undefined)
-		{
-			if (lastState.sat != requestedState.sat)
-			{
+		if (requestedState.sat != undefined) {
+			if (lastState.sat != requestedState.sat) {
 				state.sat(requestedState.sat);
 				lastState.sat = requestedState.sat;
 			}
 		}
-		if (requestedState.hue != undefined)
-		{
-			if (lastState.hue != requestedState.hue)
-			{
+		if (requestedState.hue != undefined) {
+			if (lastState.hue != requestedState.hue) {
 				state.hue(requestedState.hue);
 				lastState.hue = requestedState.hue;
 				delete lastState.ct;
 			}
 		}
-		if (requestedState.ct != undefined)
-		{
-			if (lastState.temp != requestedState.ct)
-			{
+		if (requestedState.ct != undefined) {
+			if (lastState.temp != requestedState.ct) {
 				state.ct(requestedState.ct);
 				lastState.ct = requestedState.ct;
 				delete lastState.hue;
 				delete lastState.sat;
 			}
 		}
-		if (requestedState.transition != undefined)
-		{
+		if (requestedState.transition != undefined) {
 			state.transitionInMillis(requestedState.transition * 1000);
 		}
 		return state;
 	}
 
-	clearGroupState(group)
-	{
+	clearGroupState(group) {
 		this.lastState[group] = {};
 	}
 }
@@ -130,6 +114,10 @@ module.exports = {
 	async init() {
 		this.groupCache = {};
 		this.stateTracker = new HUEStateTracker();
+
+		this.stateResetter = setInterval(() => {
+			this.stateTracker.lastState = {};
+		}, 60000);
 
 		if (!await this.discoverBridge()) {
 			return false;
@@ -252,8 +240,7 @@ module.exports = {
 			try {
 				return (await this.hue.groups.getAll()).map(g => g.name)
 			}
-			catch(err)
-			{
+			catch (err) {
 				console.error(err);
 				return []
 			}
@@ -262,8 +249,7 @@ module.exports = {
 			try {
 				return (await this.hue.scenes.getAll()).map(s => s.name)
 			}
-			catch(err)
-			{
+			catch (err) {
 				console.error(err);
 				return []
 			}
@@ -318,7 +304,7 @@ module.exports = {
 
 				let groupName = lightData.group || this.settings.defaultGroup;
 
-				
+
 
 
 				const requestedState = {};
@@ -386,13 +372,13 @@ module.exports = {
 			data: {
 				type: Object,
 				properties: {
-					scene: { 
-						type: String, 
+					scene: {
+						type: String,
 						name: "Scene",
 						async enum() {
 							return await this.getSceneNames();
 						}
-					 },
+					},
 					group: {
 						type: String,
 						template: true,
