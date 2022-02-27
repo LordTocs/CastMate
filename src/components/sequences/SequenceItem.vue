@@ -121,6 +121,7 @@ export default {
   margin-top: 16px;
   border-width: 3px;
   border-style: solid;
+  user-select: none;
 }
 
 .sequence-item i::selection {

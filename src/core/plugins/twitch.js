@@ -135,19 +135,17 @@ module.exports = {
 				this.logger.error(`${err}`);
 			}
 
-			if (!this.channelAuth || !this.channelAuth.isAuthed)
-			{
+			if (!this.channelAuth || !this.channelAuth.isAuthed) {
 				this.logger.info("Failed to complete auth.");
 				this.logger.info("  Channel Is Not Authed.");
 				this.state.isAuthed = false;
 				return;
 			}
 
-			if (!this.botAuth || !this.botAuth.isAuthed)
-			{
+			if (!this.botAuth || !this.botAuth.isAuthed) {
 				this.logger.info("No bot account authed.");
 			}
-			
+
 			this.state.isAuthed = true;
 
 			try {
@@ -188,9 +186,8 @@ module.exports = {
 		async createApiClients() {
 			this.chatAuthProvider = null;
 
-			if (this.channelAuth && this.channelAuth.isAuthed)
-			{
-				
+			if (this.channelAuth && this.channelAuth.isAuthed) {
+
 				this.channelTwitchClient = new ApiClient({
 					authProvider: this.channelAuth,
 				});
@@ -201,15 +198,14 @@ module.exports = {
 				this.channelId = await channel.id;
 
 				this.state.isAffiliate = channel.broadcasterType.length > 0;
-				
+
 				this.chatAuthProvider = this.channelAuth;
 				this.logger.info(`Channel Signed in As ${channel.displayName}`);
 			}
-			else
-			{
+			else {
 				this.state.channelName = null;
 				this.state.channelProfileUrl = null;
-				
+
 				this.state.isAffiliate = false;
 
 				this.channelId = null;
@@ -217,8 +213,7 @@ module.exports = {
 				this.logger.info(`Channel Not Signed In`);
 			}
 
-			if (this.botAuth && this.botAuth.isAuthed)
-			{
+			if (this.botAuth && this.botAuth.isAuthed) {
 				this.botTwitchClient = new ApiClient({
 					authProvider: this.botAuth,
 				});
@@ -230,8 +225,7 @@ module.exports = {
 				this.chatAuthProvider = this.botAuth;
 				this.logger.info(`Bot Signed in As ${bot.displayName}`);
 			}
-			else
-			{
+			else {
 				this.state.botName = null;
 				this.state.botProfileUrl = null;
 				this.logger.info(`Bot Not Signed In`);
@@ -324,8 +318,10 @@ module.exports = {
 			if (this.castMateWebsocket) {
 				this.castMateWebsocket.terminate();
 
-				clearInterval(this.castMateWebsocketPinger);
-				this.castMateWebsocketPinger = null;
+				if (this.castMateWebsocketPinger) {
+					clearInterval(this.castMateWebsocketPinger);
+					this.castMateWebsocketPinger = null;
+				}
 			}
 
 			this.castMateWebsocket = null;
@@ -356,6 +352,10 @@ module.exports = {
 
 			this.castMateWebsocket.on('open', () => {
 				this.logger.info(`Connection to castmate websocket open`);
+
+				this.castMateWebsocketPinger = setInterval(() => {
+					this.castMateWebsocket.ping()
+				}, 30000);
 			})
 
 			this.castMateWebsocket.on('message', async (data) => {
@@ -386,6 +386,7 @@ module.exports = {
 			});
 
 			this.castMateWebsocket.on('close', () => {
+
 				this.retryWebsocketWorkaround();
 			});
 
@@ -399,9 +400,7 @@ module.exports = {
 				}
 			})
 
-			this.castMateWebsocketPinger = setInterval(() => {
-				this.castMateWebsocket.ping()
-			}, 30000);
+
 		},
 
 		async setupPubSubTriggers() {
@@ -701,10 +700,8 @@ module.exports = {
 			}
 		}
 
-		for (let rewardKey in this.rewardsDefinitions.data)
-		{
-			if (!activeRewards.has(rewardKey))
-			{
+		for (let rewardKey in this.rewardsDefinitions.data) {
+			if (!activeRewards.has(rewardKey)) {
 				inactiveRewards.add(rewardKey);
 			}
 		}

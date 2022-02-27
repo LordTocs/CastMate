@@ -21,7 +21,19 @@ const builtInPlugin = {
 			icon: "mdi-clock-outline",
 			data: { type: "Number" },
 			description: "Delays execution of this action until a certain time after the start of this action list."
-		}
+		},
+		automation: {
+			name: "Automation",
+			color: '#8DC1C0',
+			icon: "mdi-cog",
+			data: {
+				type: "Object",
+				properties: {
+					automation: { type: "Automation", required: true },
+				},
+			},
+			description: "Runs another automation inside this one."
+		},
 	},
 	settings: {
 		port: { type: "Number", default: 80, name: "Internal Webserver Port" }

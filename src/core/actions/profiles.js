@@ -60,13 +60,33 @@ Profile.mergeTriggers = function (profiles) {
 			}
 
 			for (let trigger in profile.triggers[plugin]) {
-				if (!(trigger in combined[plugin])) {
-					combined[plugin][trigger] = {};
+				if ("automation" in profile.triggers[plugin][trigger])
+				{
+					//We're a single auto here.
+					if (!(trigger in combined[plugin])) {
+						combined[plugin][trigger] = [];
+					}
+
+					combined[plugin][trigger].push(profile.triggers[plugin][trigger]);
+				}
+				else
+				{
+					if (!(trigger in combined[plugin])) {
+						combined[plugin][trigger] = {};
+					}
+
+					//We're a sub trigger auto here.
+					for (let subTrigger in profile.triggers[plugin][trigger]) {
+						if (!combined[plugin][trigger][subTrigger])
+						{
+							combined[plugin][trigger][subTrigger] = [];
+						}
+						combined[plugin][trigger][subTrigger].push(profile.triggers[plugin][trigger][subTrigger]);
+					}
 				}
 
-				for (let subTrigger in profile.triggers[plugin][trigger]) {
-					combined[plugin][trigger][subTrigger] = profile.triggers[plugin][trigger][subTrigger];
-				}
+				// else subtrigger merge
+
 			}
 		}
 
