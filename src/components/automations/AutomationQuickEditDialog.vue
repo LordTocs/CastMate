@@ -22,9 +22,13 @@
         <v-toolbar-title class="font-weight-bold grey--text">
           {{ automationName }}
         </v-toolbar-title>
+        <v-spacer />
+        <v-btn as="router-link" :to="`/automations/${automationName}`">
+          Full Editor
+        </v-btn>
       </v-toolbar>
       <v-card-text style="height: 70vh">
-        <div class="d-flex flex-row" style="height: 100%;">
+        <div class="d-flex flex-row" style="height: 100%">
           <flex-scroller class="flex-grow-1">
             <sequence-editor
               v-if="automation"
