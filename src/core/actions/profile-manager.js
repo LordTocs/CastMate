@@ -154,7 +154,6 @@ class ProfileManager
 
 		logger.info(`Combining Profiles: ${activeProfiles.map(p => p.name).join(', ')}`);
 
-
 		this.triggers = Profile.mergeTriggers(activeProfiles);
 
 		//Tell the action queue what our merged triggers are.

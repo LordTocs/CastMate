@@ -75,6 +75,14 @@ class ActionQueue {
 		this.pushToQueue(automation, context);
 	}
 
+	async startAutomationArray(automations, context)
+	{
+		for (let automation of automations)
+		{
+			this.startAutomation(automation, context);
+		}
+	}
+
 	_prepAutomation(automation) {
 		if (!automation)
 		{

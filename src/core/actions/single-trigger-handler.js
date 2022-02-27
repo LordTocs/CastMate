@@ -9,9 +9,8 @@ class SingleTriggerHandler
 
 	handle(queue, automationTable, data)
 	{
-		queue.startAutomation(automationTable.automation, data);
+		queue.startAutomationArray(automationTable.map(a => a.automation), data);
 		return true;
-		
 	}
 }
 

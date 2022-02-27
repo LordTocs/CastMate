@@ -18,12 +18,16 @@ class CommandTriggerHandler
 			return;
 		}
 
-		const automation = automationTable[key];
+		const automations = automationTable[key];
 		
-		if (automation)
+		if (automations)
 		{
-			logger.info(`Triggered ${this.name} Command ${key} - ${automation.automation}`);
-			queue.startAutomation(automation.automation, data);
+			logger.info(`Triggered ${this.name} Command ${key}`);
+			for (let automation of automations)
+			{
+				logger.info(`  - ${automation.automation}`);
+			}
+			queue.startAutomationArray(automations.map(a => a.automation), data);
 			return true;
 		}
 		else
