@@ -249,7 +249,7 @@ module.exports = {
 		},
 
 		async setupChatTriggers() {
-			this.chatClient = new ChatClient({ authProvider: this.chatAuthProvider, channels: [this.state.channelName] });
+			this.chatClient = new ChatClient({ authProvider: this.chatAuthProvider, channels: [this.state.channelName, ...(this.settings.auxiliaryChannel ? [this.settings.auxiliaryChannel] : [])] });
 			await this.chatClient.connect();
 
 			this.logger.info(`Connected to Chat`);
@@ -718,6 +718,9 @@ module.exports = {
 		await this.shutdown();
 
 		await this.doInitialAuth();
+	},
+	settings: {
+		auxiliaryChannel: { type: String, name: "Auxiliary Chat Channel" },
 	},
 	secrets: {
 		apiClientId: { type: String },
