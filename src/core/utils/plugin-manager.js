@@ -16,7 +16,7 @@ class PluginManager {
 			"minecraft",
 			"time",
 			"kofi",
-			"csgo",
+			//"csgo",
 			"variables",
 			"websocket",
 			//"aoe3",
