@@ -12,12 +12,7 @@ class HUEStateTracker {
 		}
 		const lastState = this.lastState[group];
 
-		if (requestedState.on != undefined) {
-			if (lastState.on != requestedState.on) {
-				state.on(requestedState.on);
-				lastState.on = requestedState.on;
-			}
-		}
+		
 		if (requestedState.bri != undefined) {
 			if (lastState.bri != requestedState.bri) {
 				state.bri(requestedState.bri);
@@ -45,8 +40,17 @@ class HUEStateTracker {
 				delete lastState.sat;
 			}
 		}
+		if (requestedState.on != undefined) {
+			if (lastState.on != requestedState.on) {
+				state.on(requestedState.on);
+				lastState.on = requestedState.on;
+				if (!requestedState.on) {
+					this.lastState[group] = {};
+				}
+			}
+		}
 		if (requestedState.transition != undefined) {
-			state.transitionInMillis(requestedState.transition * 1000);
+			state.transitionInMillis(requestedState.transition);
 		}
 		return state;
 	}
@@ -104,7 +108,8 @@ const fs = require("fs");
 const path = require('path');
 const { userFolder } = require('../utils/configuration');
 const axios = require("axios");
-const _cloneDeep = require("lodash/cloneDeep")
+const _cloneDeep = require("lodash/cloneDeep");
+const { request } = require('websocket');
 
 module.exports = {
 	name: "hue",
@@ -242,6 +247,7 @@ module.exports = {
 			}
 			catch (err) {
 				console.error(err);
+				this.logger.error(err);
 				return []
 			}
 		},
@@ -250,6 +256,7 @@ module.exports = {
 				return (await this.hue.scenes.getAll()).map(s => s.name)
 			}
 			catch (err) {
+				this.logger.error(err);
 				console.error(err);
 				return []
 			}
