@@ -7,7 +7,7 @@
           Connect to HUE hub for light control
         </v-card-subtitle>
         <v-card-text>
-          <span v-if="isConnected"> Already connect to HUE hub </span>
+          <span v-if="isConnected"> Already connected to HUE hub. </span>
           <span v-else>
             Push the button on your HUE Bridge, then you have about 30 seconds
             to click connect below
@@ -15,11 +15,20 @@
         </v-card-text>
         <v-card-actions>
           <v-btn
+            v-if="!isConnected"
             color="primary"
             :loading="connecting"
             @click="startSearchForHub"
           >
-            Connect to HUE
+            Connect to HUE Hub
+          </v-btn>
+          <v-btn
+            v-else
+            color="secondary"
+            :loading="connecting"
+            @click="startSearchForHub"
+          >
+            Reconnect to HUE Hub
           </v-btn>
         </v-card-actions>
       </v-card>
