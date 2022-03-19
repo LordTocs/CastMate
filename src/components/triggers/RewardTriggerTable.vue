@@ -44,9 +44,9 @@ export default {
     triggerKey: { type: String },
     value: {},
   },
-  computed: {
+  computed: { 
     existingRewards() {
-      return Object.keys(this.value);
+      return this.value ? Object.keys(this.value) : [];
     },
   },
   methods: {

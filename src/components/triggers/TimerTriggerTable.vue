@@ -29,11 +29,6 @@ export default {
     triggerKey: { type: String },
     value: {},
   },
-  computed: {
-    existingRewards() {
-      return Object.keys(this.value);
-    },
-  },
   methods: {
     renameCommand(oldKey, newKey) {
       console.log("Renaming Command", oldKey, newKey);
