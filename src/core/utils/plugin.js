@@ -168,6 +168,15 @@ class Plugin
 
 		this.pluginObj.logger = logger;
 
+		for (let settingsKey in this.settings)
+		{
+			makeIPCEnumFunctions(this.pluginObj, this.name + "_settings_" + settingsKey, this.settings[settingsKey]);
+		}
+		for (let secretsKey in this.secrets)
+		{
+			makeIPCEnumFunctions(this.pluginObj, this.name + "_settings_" + secretsKey, this.secrets[secretsKey]);
+		}
+
 		//Create all the state.
 		this.stateSchemas = {};
 		this.pluginObj.state = {};
@@ -259,8 +268,7 @@ class Plugin
 		//convert all types to strings
 		for (let settingsKey in this.settings)
 		{
-			settings[settingsKey] = { ...this.settings[settingsKey] };
-			settings[settingsKey].type = settings[settingsKey].type.name;
+			settings[settingsKey] = cleanSchemaForIPC(this.name + "_settings_" + settingsKey, this.settings[settingsKey]);
 		}
 
 		let secrets = {};
@@ -268,8 +276,7 @@ class Plugin
 		//convert all types to strings
 		for (let secretsKey in this.secrets)
 		{
-			secrets[secretsKey] = { ...this.secrets[secretsKey] };
-			secrets[secretsKey].type = secrets[secretsKey].type.name;
+			secrets[secretsKey] = cleanSchemaForIPC(this.name + "_secrets_" + secretsKey, this.secrets[secretsKey]);
 		}
 
 		//triggers

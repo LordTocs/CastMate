@@ -279,7 +279,10 @@ module.exports = {
 	settings: {
 		defaultGroup: {
 			type: String,
-			name: "Default HUE Group"
+			name: "Default HUE Group",
+			async enum() {
+				return await this.getGroupNames()
+			}
 		}
 	},
 	secrets: {
