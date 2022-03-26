@@ -122,6 +122,9 @@ export default {
   methods: {
     ...mapIpcs("obs", ["refereshAllBrowsers", "openOBS"]),
   },
+  mounted() {
+    this.trackAnalytic("accessDashboard");
+  }
 };
 </script>
 

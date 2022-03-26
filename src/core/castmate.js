@@ -69,6 +69,8 @@ async function initInternal() {
 
 	await profiles.load();
 
+	analytics.track("openApp");
+
 	webServices.startWebsockets();
 }
 
