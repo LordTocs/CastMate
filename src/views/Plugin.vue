@@ -54,6 +54,7 @@
                 :label="secretKey"
                 :value="secrets[secretKey]"
                 @input="(v) => setSecretsValue(secretKey, v)"
+                secret
               />
             </v-card-text>
             <v-card-text v-else>

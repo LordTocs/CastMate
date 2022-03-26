@@ -7,6 +7,7 @@
     @paste.stop=""
     :label="schema.name || dataName"
     :clearable="!schema.required"
+    :type="!secret ? 'text' : 'password'"
   />
   <enum-input
     :value="value"
@@ -32,6 +33,7 @@ export default {
     schema: {},
     dataName: { type: String },
     context: {},
+    secret: { type: Boolean, default: () => false },
   },
 };
 </script>
