@@ -103,10 +103,14 @@ export default {
         return;
       }
 
+      //TODO: Remove duplication!!
       const automation = {
+        version: "1.0",
         description: "",
         actions: [],
       };
+
+      this.trackAnalytic("newAutomation", { name });
 
       await fs.promises.writeFile(filePath, YAML.stringify(automation));
 

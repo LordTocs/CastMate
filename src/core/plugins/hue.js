@@ -12,7 +12,7 @@ class HUEStateTracker {
 		}
 		const lastState = this.lastState[group];
 
-		
+
 		if (requestedState.bri != undefined) {
 			if (lastState.bri != requestedState.bri) {
 				state.bri(requestedState.bri);
@@ -228,6 +228,7 @@ module.exports = {
 		async initApi() {
 			try {
 				this.hue = await hueApi.createLocal(this.bridgeIp).connect(this.hueUser.username);
+				this.analytics.set({ usesHue: true });
 				return true;
 			}
 			catch (err) {

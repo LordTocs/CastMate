@@ -55,6 +55,7 @@ export default {
 			paths: {},
 			stateLookup: {},
 			activeProfiles: [],
+			analyticsId: null,
 		}
 	},
 	getters: {
@@ -64,6 +65,7 @@ export default {
 		pluginList: state => [...Object.keys(state.plugins).map(name => state.plugins[name]), builtInPlugin],
 		inited: state => state.inited,
 		stateLookup: state => state.stateLookup,
+		analyticsId: state => state.analyticsId,
 		actions: state => {
 			let result = {};
 			for (let plugin of state.plugins) {
@@ -102,6 +104,9 @@ export default {
 		},
 		setActiveProfiles(state, activeProfiles) {
 			state.activeProfiles = activeProfiles;
+		},
+		setAnalyticsId(state, id) {
+			state.analyticsId = id;
 		},
 		applyState(state, update) {
 			for (let pluginKey in update) {
@@ -150,6 +155,9 @@ export default {
 		},
 		setActiveProfiles({ commit }, activeProfiles) {
 			commit('setActiveProfiles', activeProfiles);
-		}
+		},
+		setAnalyticsId({ commit }, id) {
+			commit('setAnalyticsId', id);
+		},
 	}
 }

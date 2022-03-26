@@ -148,6 +148,13 @@ module.exports = {
 
 			this.state.isAuthed = true;
 
+			//Set some analytics
+			this.analytics.setUserId(this.channelId);
+
+			if (this.botId) {
+				this.analytics.set({ botId: this.botId });
+			}
+
 			try {
 				await this.setupChatTriggers();
 			}
@@ -197,6 +204,7 @@ module.exports = {
 				this.state.channelProfileUrl = channel.profilePictureUrl;
 				this.channelId = await channel.id;
 
+
 				this.state.isAffiliate = channel.broadcasterType.length > 0;
 
 				this.chatAuthProvider = this.channelAuth;
@@ -223,11 +231,13 @@ module.exports = {
 				this.state.botName = bot.displayName;
 				this.state.botProfileUrl = bot.profilePictureUrl;
 				this.chatAuthProvider = this.botAuth;
+				this.botId = await bot.id;
 				this.logger.info(`Bot Signed in As ${bot.displayName}`);
 			}
 			else {
 				this.state.botName = null;
 				this.state.botProfileUrl = null;
+				this.botId = null;
 				this.logger.info(`Bot Not Signed In`);
 			}
 		},

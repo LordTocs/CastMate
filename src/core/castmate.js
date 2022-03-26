@@ -1,4 +1,5 @@
 import { AutomationManager } from "./automations/automation-manager.js";
+import { Analytics } from "./utils/analytics.js";
 import logger from "./utils/logger.js";
 
 const { getMainWindowSender } = require("./utils/ipcUtil.js");
@@ -62,7 +63,9 @@ async function initInternal() {
 	//Let loose the web server
 	webServices.start();
 
-	await plugins.init(settings, secrets, actions, profiles, webServices);
+	const analytics = new Analytics(mainWindowSender);
+
+	await plugins.init(settings, secrets, actions, profiles, webServices, analytics);
 
 	await profiles.load();
 

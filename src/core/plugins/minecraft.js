@@ -27,11 +27,12 @@ module.exports = {
 
 					this.rcon.on('auth', () => {
 						this.logger.info("Connected to Minecraft!");
+						this.analytics.set({ usesMinecraft: true });
 						resolve(true);
 					})
 
 					this.rcon.on('response', (str) => {
-						this.logger.info (`MC Resp: ${str}`)
+						this.logger.info(`MC Resp: ${str}`)
 					})
 
 					this.rcon.on('end', async () => {
@@ -56,7 +57,7 @@ module.exports = {
 
 		async startConnectLoop() {
 			this.rcon = null;
-			
+
 
 			if (!this.settings.host)
 				return;
@@ -98,8 +99,7 @@ module.exports = {
 					let result = await this.rcon.send(fullCommand);
 					this.logger.info(`MCRCON Recv:  ${result}`);
 				}
-				catch(err)
-				{
+				catch (err) {
 					this.logger.error(err);
 				}
 			}

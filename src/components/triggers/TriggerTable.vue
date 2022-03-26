@@ -127,6 +127,8 @@ export default {
       const result = { ...this.value };
       result[key] = { automation: automation };
 
+      this.trackAnalytic("createCommand", { trigger: this.triggerName });
+
       this.$emit("input", result);
     },
     changeAutomation(commandKey, automationName) {
@@ -144,6 +146,7 @@ export default {
         //Delete the command
         const result = { ...this.value };
         delete result[commandKey];
+        this.trackAnalytic("deleteCommand", { trigger: this.triggerName });
         this.$emit("input", result);
       }
     },

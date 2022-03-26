@@ -34,14 +34,22 @@
                 {{ stateLookup.twitch.botName }}
               </v-col>
               <v-col>
-                <strong> Viewers: </strong> {{ stateLookup.twitch.viewers}} <br />
-                <strong> Followers: </strong> {{ stateLookup.twitch.followers}} <br />
-                <strong> Subscribers: </strong> {{ stateLookup.twitch.subscribers}} <br />
+                <strong> Viewers: </strong> {{ stateLookup.twitch.viewers }}
+                <br />
+                <strong> Followers: </strong>
+                {{ stateLookup.twitch.followers }} <br />
+                <strong> Subscribers: </strong>
+                {{ stateLookup.twitch.subscribers }} <br />
               </v-col>
             </v-row>
           </v-card-text>
           <v-card-actions v-if="stateLookup.twitch.isAuthed">
-            <v-btn :href="`https://www.twitch.tv/dashboard/${stateLookup.twitch.channelName}`" target="_blank"> Twitch Dashboard </v-btn>
+            <v-btn
+              :href="`https://www.twitch.tv/dashboard/${stateLookup.twitch.channelName}`"
+              target="_blank"
+            >
+              Twitch Dashboard
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -69,12 +77,27 @@
             </v-alert>
           </v-card-text>
           <v-card-text class="flex-grow-1" v-else>
-            <strong> Streaming: </strong> <v-icon>{{ stateLookup.obs.streaming ? "mdi-record" : "mdi-pause" }} </v-icon> <br />
-            <strong> Recording: </strong> <v-icon>{{ stateLookup.obs.recording ? "mdi-record" : "mdi-pause" }} </v-icon> <br />
+            <strong> Streaming: </strong>
+            <v-icon
+              >{{ stateLookup.obs.streaming ? "mdi-record" : "mdi-pause" }}
+            </v-icon>
+            <br />
+            <strong> Recording: </strong>
+            <v-icon
+              >{{ stateLookup.obs.recording ? "mdi-record" : "mdi-pause" }}
+            </v-icon>
+            <br />
           </v-card-text>
           <v-card-actions>
-            <v-btn v-if="stateLookup.obs.connected" @click="() => refereshAllBrowsers()"> Refresh Browsers </v-btn>
-            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()"> Launch OBS </v-btn>
+            <v-btn
+              v-if="stateLookup.obs.connected"
+              @click="() => refereshAllBrowsers()"
+            >
+              Refresh Browsers
+            </v-btn>
+            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()">
+              Launch OBS
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -84,21 +107,23 @@
         <active-profiles-card />
       </v-col>
     </v-row>
+    Test: {{ testValue }}
   </v-container>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
 import ActiveProfilesCard from "../components/profiles/ActiveProfilesCard.vue";
-import { mapIpcs } from '../utils/ipcMap';
+import { mapIpcs } from "../utils/ipcMap";
 export default {
   components: { ActiveProfilesCard },
   computed: {
     ...mapGetters("ipc", ["stateLookup"]),
+    testValue() { return process.env.VUE_APP_TEST; }
   },
   methods: {
-    ...mapIpcs("obs", ["refereshAllBrowsers", "openOBS"])
-  }
+    ...mapIpcs("obs", ["refereshAllBrowsers", "openOBS"]),
+  },
 };
 </script>
 

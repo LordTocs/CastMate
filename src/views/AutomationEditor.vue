@@ -116,6 +116,8 @@ export default {
         YAML.stringify(this.automation)
       );
       this.dirty = false;
+
+      this.trackAnalytic("saveAutomation", { name: this.automationName });
     },
     async preview() {
       await this.runActions(this.automation.actions);
@@ -125,6 +127,8 @@ export default {
     let fileData = await fs.promises.readFile(this.filePath, "utf-8");
 
     this.automation = YAML.parse(fileData);
+
+    this.trackAnalytic("accessAutomation", { name: this.automationName });
   },
   watch: {
     automation: {

@@ -133,6 +133,8 @@ export default {
         newYaml
       );
 
+      this.trackAnalytic("saveProfile", { name: this.profileName });
+
       this.saveSnack = true;
       this.dirty = false;
     },
@@ -146,6 +148,8 @@ export default {
         await fs.promises.unlink(
           path.join(this.paths.userFolder, `profiles/${this.profileName}.yaml`)
         );
+
+        this.trackAnalytic("deleteProfile", { name: this.profileName });
 
         this.$router.push("/");
       }
@@ -161,6 +165,8 @@ export default {
     if (!profile.conditions) {
       profile.conditions = { operator: "any", operands: [] };
     }
+
+    this.trackAnalytic("accessProfile", { name: this.profileName });
 
     this.profile = profile;
   },

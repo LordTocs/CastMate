@@ -189,7 +189,7 @@ class Plugin
 		reactify(this.pluginObj.state);
 	}
 
-	async init(settings, secrets, actions, profiles, webServices, plugins)
+	async init(settings, secrets, actions, profiles, webServices, analytics, plugins)
 	{
 		let pluginSettings = settings.data[this.name] || {};
 		let pluginSecrets = secrets.data[this.name] || {};
@@ -200,6 +200,7 @@ class Plugin
 		this.pluginObj.actions = actions;
 		this.pluginObj.profiles = profiles;
 		this.pluginObj.plugins = plugins;
+		this.pluginObj.analytics = analytics;
 
 		if (this.initFunc)
 		{
