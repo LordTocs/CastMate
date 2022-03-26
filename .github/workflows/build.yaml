@@ -26,6 +26,8 @@ jobs:
         run: "npm install"
       #- name: "Rebuild for Electron"
       #  run: "npm run rebuild"
+      - name: "Generate ENV file"
+        run: "export VUE_APP_MIXPANEL_PROJECT_TOKEN=${{ secrets.MIXPANEL_PROJECT_TOKEN }}"
       - name: "Build"
         run: "npm run electron:build -- -p always"
         env:
