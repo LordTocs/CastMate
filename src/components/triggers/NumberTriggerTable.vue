@@ -13,7 +13,7 @@
       <number-input
         :value="selectProps.value"
         @input="selectProps.valueInput"
-        label="Command"
+        :label="trigger.triggerUnit || 'Command'"
         single-line
         counter
       />

@@ -86,14 +86,14 @@ module.exports = {
 		death: {
 			name: "Death",
 			type: "NumberTrigger",
-			numberText: "Deaths",
+			triggerUnit: "Deaths",
 			key: "deaths",
 			description: "Triggered on when you die in CS:GO"
 		},
 		kill: {
 			name: "Kill",
 			type: "NumberTrigger",
-			numberText: "Kills",
+			triggerUnit: "Kills",
 			key: "kills",
 			description: "Triggered when you get a kill in CS:GO"
 		},

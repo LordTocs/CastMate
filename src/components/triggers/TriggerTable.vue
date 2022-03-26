@@ -53,8 +53,8 @@
     </v-data-table>
     <trigger-command-modal
       ref="addCommandModal"
-      header="Create New Command"
-      label="Command"
+      :header="`Setup New Trigger`"
+      :label="triggerUnit"
       :trigger="trigger"
       @created="createNewCommand"
     >
@@ -106,12 +106,15 @@ export default {
           key,
         }));
     },
+    triggerUnit() {
+      return this.trigger ? this.trigger.triggerUnit || 'Command' : 'Command';
+    },
     triggerName() {
       return this.trigger ? this.trigger.name : this.triggerKey;
     },
     headers() {
       return [
-        { text: "Command", value: "key" },
+        { text: this.triggerUnit, value: "key" },
         { text: "Automation", value: "automation" },
         { text: "Actions", value: "actions", sortable: false, align: "right" },
       ];

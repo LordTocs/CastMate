@@ -12,7 +12,7 @@
       <enum-input
         :value="selectProps.value"
         @input="selectProps.valueInput"
-        label="Command"
+        :label="trigger.triggerUnit || 'Command'"
         :enum="trigger.enum"
       />
     </template>

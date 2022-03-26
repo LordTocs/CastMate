@@ -107,7 +107,6 @@
         <active-profiles-card />
       </v-col>
     </v-row>
-    Test: {{ testValue }}
   </v-container>
 </template>
 
@@ -119,7 +118,6 @@ export default {
   components: { ActiveProfilesCard },
   computed: {
     ...mapGetters("ipc", ["stateLookup"]),
-    testValue() { return process.env.VUE_APP_TEST; }
   },
   methods: {
     ...mapIpcs("obs", ["refereshAllBrowsers", "openOBS"]),

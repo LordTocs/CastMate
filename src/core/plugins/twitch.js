@@ -804,6 +804,7 @@ module.exports = {
 			description: "Fires for when a channel point reward is redeemed",
 			type: "RewardTrigger",
 			key: "reward",
+			triggerUnit: "Channel Reward"
 		},
 		follow: {
 			name: "Follow",
@@ -814,25 +815,25 @@ module.exports = {
 			name: "Subscription",
 			description: "Fires for when a user subscribes. Based on total number of months subscribed.",
 			type: "NumberTrigger",
-			numberText: "Months Subbed"
+			triggerUnit: "Months Subbed"
 		},
 		giftedSub: {
 			name: "Gifted Subs",
 			description: "Fires for when a user gifts subs. Based on the number of subs gifted..",
 			type: "NumberTrigger",
-			numberText: "Subs Gifted"
+			triggerUnit: "Subs Gifted"
 		},
 		bits: {
 			name: "Cheered",
 			description: "Fires for when a user cheers with bits",
 			type: "NumberTrigger",
-			numberText: "Bits Cheered"
+			triggerUnit: "Bits Cheered"
 		},
 		raid: {
 			name: "Raid",
 			description: "Fires when a raid start",
 			type: "NumberTrigger",
-			numberText: "Raiders"
+			triggerUnit: "Raiders"
 		}
 	},
 	actions: {
