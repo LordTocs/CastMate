@@ -103,6 +103,16 @@
             <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
           </v-list-item>
         </v-list-group>
+
+        <v-list-item link to="/about">
+          <v-list-item-icon>
+            <v-icon>mdi-information-outline</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> About </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
