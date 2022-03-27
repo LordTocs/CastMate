@@ -139,7 +139,7 @@
 import { mapGetters, mapActions } from "vuex";
 import SystemBar from "./components/layout/SystemBar.vue";
 import path from "path";
-import { shell } from "electron";
+import { ipcRenderer, shell } from "electron";
 
 export default {
   components: {
@@ -180,14 +180,12 @@ export default {
     },
   },
   async mounted() {
-    console.log("Starting Init");
-    this.init().then(async () => {
-      console.log("Init Finished");
-      await this.loadRewards();
-      await this.loadSegments();
-      await this.loadVariables();
-      this.loaded = true;
-    });
+    await this.init();
+    await this.loadRewards();
+    await this.loadSegments();
+    await this.loadVariables();
+    this.loaded = true;
+    ipcRenderer.invoke("updater.checkForUpdates");
   },
 };
 </script>

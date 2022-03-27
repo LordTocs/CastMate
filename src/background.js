@@ -141,6 +141,8 @@ ipcMain.handle("updater.cancelUpdate", async () => {
 		updateContext.cancelToken.cancel();
 });
 
+ipcMain.handle("updater.checkForUpdates", doUpdateCheck);
+
 autoUpdater.on("download-progress", (progress) => {
 	console.log("Progress", progress);
 });
@@ -183,7 +185,7 @@ app.on('ready', async () => {
 	initCastMate()
 	createWindow()
 	//autoUpdater.checkForUpdatesAndNotify();
-	doUpdateCheck();
+	//doUpdateCheck();
 })
 
 
