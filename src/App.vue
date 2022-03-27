@@ -9,7 +9,12 @@
       <v-spacer></v-spacer>
     </v-app-bar>
 
-    <v-navigation-drawer app v-model="navDrawer" style="-webkit-app-region: no-drag;" v-if="loaded">
+    <v-navigation-drawer
+      app
+      v-model="navDrawer"
+      style="-webkit-app-region: no-drag"
+      v-if="loaded"
+    >
       <v-list-item link to="/">
         <v-list-item-content>
           <v-list-item-title class="title"> CastMate </v-list-item-title>
@@ -91,7 +96,9 @@
             :key="plugin.name"
           >
             <v-list-item-icon>
-              <v-icon> {{ plugin.icon ? plugin.icon : "mdi-view-dashboard" }} </v-icon>
+              <v-icon>
+                {{ plugin.icon ? plugin.icon : "mdi-view-dashboard" }}
+              </v-icon>
             </v-list-item-icon>
             <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
           </v-list-item>
@@ -173,11 +180,14 @@ export default {
     },
   },
   async mounted() {
-    await this.init();
-    await this.loadRewards();
-    await this.loadSegments();
-    await this.loadVariables();
-    this.loaded = true;
+    console.log("Starting Init");
+    this.init().then(async () => {
+      console.log("Init Finished");
+      await this.loadRewards();
+      await this.loadSegments();
+      await this.loadVariables();
+      this.loaded = true;
+    });
   },
 };
 </script>

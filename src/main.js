@@ -16,6 +16,8 @@ Vue.use(VueMixpanel, {
 Vue.component('v-timeline', VTimeline);
 Vue.use(VueMask)
 
+console.log("Main!");
+
 new Vue({
     router,
     render: h => h(App),
