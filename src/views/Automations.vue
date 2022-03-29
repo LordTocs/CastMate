@@ -102,7 +102,9 @@ export default {
 
       await fs.promises.writeFile(filePath, YAML.stringify(automation));
 
-      this.$router.push(`/automations/${name}`)
+      this.$router.push(`/automations/${name}`);
+
+      this.trackAnalytic("newAutomation", { name });
 
       //Todo open path.
     },
@@ -125,6 +127,8 @@ export default {
 
         await fs.promises.unlink(filePath);
 
+        this.trackAnalytic("deleteAutomation", { name });
+
         const idx = this.automationFiles.findIndex((af) => af.name == name);
 
         if (idx != -1) {
@@ -133,19 +137,27 @@ export default {
       }
     },
     async tryDuplicate(name) {
-      if (await this.$refs.duplicateDlg.open(`Duplicate ${name}?`, `New Automation Name`, "Duplicate", "Cancel"))
-      {
+      if (
+        await this.$refs.duplicateDlg.open(
+          `Duplicate ${name}?`,
+          `New Automation Name`,
+          "Duplicate",
+          "Cancel"
+        )
+      ) {
         const filePath = path.join(
           this.paths.userFolder,
           "automations",
           name + ".yaml"
         );
 
-        const newName = this.$refs.duplicateDlg.name
+        const newName = this.$refs.duplicateDlg.name;
 
-        const destPath = path.join(this.paths.userFolder,
+        const destPath = path.join(
+          this.paths.userFolder,
           "automations",
-          newName + ".yaml")
+          newName + ".yaml"
+        );
 
         if (!fs.existsSync(filePath)) {
           return;
@@ -153,23 +165,33 @@ export default {
 
         await fs.promises.copyFile(filePath, destPath);
 
+        this.trackAnalytic("duplicateAutomation", { name });
+
         this.$router.push(`/automations/${newName}`);
       }
     },
     async tryRename(name) {
-      if (await this.$refs.duplicateDlg.open(`Rename ${name}?`, `New Automation Name`, "Rename", "Cancel"))
-      {
+      if (
+        await this.$refs.duplicateDlg.open(
+          `Rename ${name}?`,
+          `New Automation Name`,
+          "Rename",
+          "Cancel"
+        )
+      ) {
         const filePath = path.join(
           this.paths.userFolder,
           "automations",
           name + ".yaml"
         );
 
-        const newName = this.$refs.duplicateDlg.name
+        const newName = this.$refs.duplicateDlg.name;
 
-        const newPath = path.join(this.paths.userFolder,
+        const newPath = path.join(
+          this.paths.userFolder,
           "automations",
-          newName + ".yaml")
+          newName + ".yaml"
+        );
 
         if (!fs.existsSync(filePath)) {
           return;
@@ -179,7 +201,7 @@ export default {
 
         await this.getFiles();
       }
-    }
+    },
   },
 
   data() {

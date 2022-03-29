@@ -1,5 +1,7 @@
 ## Setup
 
+Pull Requests are on hold until a CLA can be worked out.
+
 We're currently developing on node 16.13.1.
 
 This project relies on VUE CLI you need to run `npm install -g @vue/cli`

@@ -30,3 +30,4 @@ jobs:
         run: "npm run electron:build -- -p always"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VUE_APP_MIXPANEL_PROJECT_TOKEN: ${{ secrets.MIXPANEL_PROJECT_TOKEN }}

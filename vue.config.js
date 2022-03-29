@@ -4,6 +4,10 @@ module.exports = {
 	configureWebpack: {
 		devtool: 'source-map',
 	},
+	pages: {
+		index: 'src/main.js',
+		updater: 'src/updater/main.js'
+	},
 	pluginOptions: {
 		electronBuilder: {
 			externals: [

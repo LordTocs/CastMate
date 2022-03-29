@@ -97,6 +97,7 @@ module.exports = {
 				this.state.scene = result.name;
 				this.logger.info("OBS connected!");
 				this.state.connected = true;
+				this.analytics.set({ usesOBS: true });
 			} catch {
 				this.state.connected = false;
 				return;

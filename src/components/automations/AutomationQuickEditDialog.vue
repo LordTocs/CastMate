@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" width="80%" @keydown.esc="cancel">
+  <v-dialog persistent v-model="dialog" width="80%" @keydown.esc="cancel" @click:outside="cancel">
     <v-card>
       <v-toolbar dense flat>
         <v-tooltip bottom>
@@ -115,6 +115,7 @@ export default {
         YAML.stringify(this.automation)
       );
       this.dirty = false;
+      this.trackAnalytic("saveAutomation", { name: this.automationName });
     },
     async askToSave() {
       if (!this.dirty) return;

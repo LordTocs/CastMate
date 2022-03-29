@@ -36,13 +36,11 @@ module.exports = {
                 this.creds = resp.data;
                 this.credsExpiry = new Date().getTime() + ((this.creds.authentication_token_expires_in * 1000) - 5000)
 
-                this.logger.info(this.creds.authentication_token)
-
                 const resp2 = await this.postApi('verify', {
                     "challenge-response": this.creds["challenge-response"]
                 });
 
-                this.logger.info(`Successfully verified ${JSON.stringify(resp2.data)}`);
+                this.analytics.set({ usesTwinkly: true });
 
             } catch (err) {
                 this.logger.error('Twinkly Auth Error');

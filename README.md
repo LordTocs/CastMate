@@ -48,13 +48,11 @@ Download from GitHub releases: https://www.github.com/LordTocs/CastMate/releases
 
 ## Contributing
 
-Pull requests are welcome! See [here](DEVELOPERS.md) for developer info
+Pull Requests are on hold until a CLA can be worked out.
 
 ## Support
 
 - [LordTocs' Twitch](https://www.twitch.tv/lordtocs)
 - [LordTocs' YouTube](https://www.youtube.com/channel/UCe4uXUoF5MkKvhgy514FCuA)
-- [FitzBro's Twitch](https://www.twitch.tv/fitzbro)
-- [FitzBro's YouTube](https://www.youtube.com/c/FitzBro)
-- [FitzBro's Twitter](https://twitter.com/fitzbro_gaming)
+
 

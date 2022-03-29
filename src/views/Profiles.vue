@@ -108,6 +108,8 @@ export default {
         "utf-8"
       );
 
+      this.trackAnalytic("newProfile", { name });
+
       await this.getFiles();
 
       this.$router.push(`/profiles/${name}`);
@@ -130,6 +132,8 @@ export default {
         }
 
         await fs.promises.unlink(filePath);
+
+        this.trackAnalytic("deleteProfile", { name });
 
         const idx = this.profiles.findIndex((af) => af.name == name);
 
@@ -156,6 +160,8 @@ export default {
         if (!fs.existsSync(filePath)) {
           return;
         }
+
+        this.trackAnalytic("duplicateProfile", { name });
 
         await fs.promises.copyFile(filePath, destPath);
 

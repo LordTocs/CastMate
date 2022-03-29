@@ -11,6 +11,7 @@ import Rewards from "../views/Rewards.vue";
 import Segments from '../views/Segments.vue';
 import Variables from '../views/Variables.vue';
 import Landing from '../views/Landing.vue';
+import About from '../views/About.vue';
 
 Vue.use(VueRouter)
 
@@ -19,6 +20,11 @@ const routes = [
 		path: '/',
 		name: "CastMate",
 		component: Landing
+	},
+	{
+		path: '/about',
+		name: "About",
+		component: About,
 	},
 	{
 		path: '/segments',

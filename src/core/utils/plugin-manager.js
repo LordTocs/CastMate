@@ -16,7 +16,7 @@ class PluginManager {
 			"minecraft",
 			"time",
 			"kofi",
-			"csgo",
+			//"csgo",
 			"variables",
 			"websocket",
 			//"aoe3",
@@ -94,10 +94,10 @@ class PluginManager {
 		this.ipcSender.send('state-removal', { [pluginName]: stateKey });
 	}
 
-	async init(settings, secrets, actions, profiles, webServices) {
+	async init(settings, secrets, actions, profiles, webServices, analytics) {
 		for (let plugin of this.plugins) {
 			try {
-				await plugin.init(settings, secrets, actions, profiles, webServices, this);
+				await plugin.init(settings, secrets, actions, profiles, webServices, analytics, this);
 			}
 			catch (err) {
 				console.error(err);

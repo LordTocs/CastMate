@@ -79,6 +79,7 @@ module.exports = {
 			description: "Fires at a regular interval",
 			type: "TimerTrigger",
 			key: "timer",
+			triggerUnit: "Interval"
 		}
 	}
 }

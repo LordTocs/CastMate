@@ -54,6 +54,7 @@
                 :label="secretKey"
                 :value="secrets[secretKey]"
                 @input="(v) => setSecretsValue(secretKey, v)"
+                secret
               />
             </v-card-text>
             <v-card-text v-else>
@@ -164,6 +165,8 @@ export default {
 
       await fs.promises.writeFile(this.paths.secretsFilePath, newSecretsYaml);
 
+      this.trackAnalytic("saveSettings", { name: this.pluginName });
+
       this.saveSnack = true;
       this.dirty = false;
     },
@@ -226,6 +229,7 @@ export default {
   },
   async mounted() {
     await this.load();
+    this.trackAnalytic("accessSettings", { name: this.pluginName });
   },
   async beforeRouteLeave(to, from, next) {
     await this.routeGuard(next);

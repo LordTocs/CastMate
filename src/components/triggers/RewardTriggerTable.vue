@@ -16,7 +16,7 @@
       <reward-selector
         :value="selectProps.value"
         @input="selectProps.valueInput"
-        label="Reward"
+        :label="trigger.triggerUnit || 'Reward'"
         :existingRewards="existingRewards.filter(r => r != selectProps.item.key)"
       />
     </template>
@@ -44,9 +44,9 @@ export default {
     triggerKey: { type: String },
     value: {},
   },
-  computed: {
+  computed: { 
     existingRewards() {
-      return Object.keys(this.value);
+      return this.value ? Object.keys(this.value) : [];
     },
   },
   methods: {

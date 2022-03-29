@@ -93,6 +93,8 @@ export default {
       if (segment.automation) {
         this.runAutomation(segment.automation);
       }
+
+      this.trackAnalytic("activateSegment");
     },
     async updateTitle(index, title) {
       const segment = { ...this.segments[index], title };

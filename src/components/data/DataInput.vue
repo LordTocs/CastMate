@@ -5,6 +5,7 @@
     @input="handleInput"
     v-if="schema.type == 'Object' && schema.properties"
     :context="context"
+    :secret="secret"
   />
   <number-input
     :value="value"
@@ -13,6 +14,7 @@
     :allowTemplate="!!schema.template"
     :label="schema.name || label"
     :clearable="!schema.required"
+    :secret="secret"
   />
 
   <v-slider
@@ -34,6 +36,7 @@
     :dataName="schema.name || label"
     :schema="schema"
     :context="context"
+    :secret="secret"
   />
   <v-switch
     v-else-if="schema.type == 'Boolean'"
@@ -90,7 +93,7 @@ export default {
     FileAutocomplete,
     StringDataInput,
     ColorPicker,
-    AutomationSelector: () => import('../automations/AutomationSelector.vue'),
+    AutomationSelector: () => import("../automations/AutomationSelector.vue"),
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {
@@ -98,6 +101,7 @@ export default {
     value: {},
     label: {},
     context: {},
+    secret: { type: Boolean, default: () => false },
   },
   methods: {
     handleInput(v) {

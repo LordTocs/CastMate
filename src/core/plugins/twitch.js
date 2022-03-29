@@ -148,6 +148,13 @@ module.exports = {
 
 			this.state.isAuthed = true;
 
+			//Set some analytics
+			this.analytics.setUserId(this.channelId);
+
+			if (this.botId) {
+				this.analytics.set({ botId: this.botId });
+			}
+
 			try {
 				await this.setupChatTriggers();
 			}
@@ -197,6 +204,7 @@ module.exports = {
 				this.state.channelProfileUrl = channel.profilePictureUrl;
 				this.channelId = await channel.id;
 
+
 				this.state.isAffiliate = channel.broadcasterType.length > 0;
 
 				this.chatAuthProvider = this.channelAuth;
@@ -223,11 +231,13 @@ module.exports = {
 				this.state.botName = bot.displayName;
 				this.state.botProfileUrl = bot.profilePictureUrl;
 				this.chatAuthProvider = this.botAuth;
+				this.botId = await bot.id;
 				this.logger.info(`Bot Signed in As ${bot.displayName}`);
 			}
 			else {
 				this.state.botName = null;
 				this.state.botProfileUrl = null;
+				this.botId = null;
 				this.logger.info(`Bot Not Signed In`);
 			}
 		},
@@ -794,6 +804,7 @@ module.exports = {
 			description: "Fires for when a channel point reward is redeemed",
 			type: "RewardTrigger",
 			key: "reward",
+			triggerUnit: "Channel Reward"
 		},
 		follow: {
 			name: "Follow",
@@ -804,25 +815,25 @@ module.exports = {
 			name: "Subscription",
 			description: "Fires for when a user subscribes. Based on total number of months subscribed.",
 			type: "NumberTrigger",
-			numberText: "Months Subbed"
+			triggerUnit: "Months Subbed"
 		},
 		giftedSub: {
 			name: "Gifted Subs",
 			description: "Fires for when a user gifts subs. Based on the number of subs gifted..",
 			type: "NumberTrigger",
-			numberText: "Subs Gifted"
+			triggerUnit: "Subs Gifted"
 		},
 		bits: {
 			name: "Cheered",
 			description: "Fires for when a user cheers with bits",
 			type: "NumberTrigger",
-			numberText: "Bits Cheered"
+			triggerUnit: "Bits Cheered"
 		},
 		raid: {
 			name: "Raid",
 			description: "Fires when a raid start",
 			type: "NumberTrigger",
-			numberText: "Raiders"
+			triggerUnit: "Raiders"
 		}
 	},
 	actions: {

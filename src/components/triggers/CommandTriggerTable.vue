@@ -12,7 +12,7 @@
       <v-text-field
         :value="selectProps.value"
         @input="selectProps.valueInput"
-        label="Command"
+        :label="trigger.triggerUnit || 'Command'"
         single-line
       ></v-text-field>
     </template>

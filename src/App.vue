@@ -9,7 +9,12 @@
       <v-spacer></v-spacer>
     </v-app-bar>
 
-    <v-navigation-drawer app v-model="navDrawer" style="-webkit-app-region: no-drag;" v-if="loaded">
+    <v-navigation-drawer
+      app
+      v-model="navDrawer"
+      style="-webkit-app-region: no-drag"
+      v-if="loaded"
+    >
       <v-list-item link to="/">
         <v-list-item-content>
           <v-list-item-title class="title"> CastMate </v-list-item-title>
@@ -91,11 +96,23 @@
             :key="plugin.name"
           >
             <v-list-item-icon>
-              <v-icon> {{ plugin.icon ? plugin.icon : "mdi-view-dashboard" }} </v-icon>
+              <v-icon>
+                {{ plugin.icon ? plugin.icon : "mdi-view-dashboard" }}
+              </v-icon>
             </v-list-item-icon>
             <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
           </v-list-item>
         </v-list-group>
+
+        <v-list-item link to="/about">
+          <v-list-item-icon>
+            <v-icon>mdi-information-outline</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> About </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -132,7 +149,7 @@
 import { mapGetters, mapActions } from "vuex";
 import SystemBar from "./components/layout/SystemBar.vue";
 import path from "path";
-import { shell } from "electron";
+import { ipcRenderer, shell } from "electron";
 
 export default {
   components: {
@@ -178,6 +195,7 @@ export default {
     await this.loadSegments();
     await this.loadVariables();
     this.loaded = true;
+    ipcRenderer.invoke("updater.checkForUpdates");
   },
 };
 </script>
