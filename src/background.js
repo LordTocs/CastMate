@@ -151,22 +151,20 @@ autoUpdater.on("update-downloaded", () => {
 	autoUpdater.quitAndInstall();
 });
 
+autoUpdater.on("update-available", async (updateInfo) => {
+	const info = {
+		releaseDate: updateInfo.releaseDate,
+		releaseName: updateInfo.releaseName,
+		releaseNotes: updateInfo.releaseNotes,
+		version: updateInfo.version
+	}
+
+	await createUpdaterWindow(info);
+})
+
 async function doUpdateCheck() {
 	autoUpdater.autoDownload = false;
 	const result = await autoUpdater.checkForUpdates();
-
-	if (!result)
-		return;
-
-
-	const updateInfo = {
-		releaseDate: result.updateInfo.releaseDate,
-		releaseName: result.updateInfo.releaseName,
-		releaseNotes: result.updateInfo.releaseNotes,
-		version: result.updateInfo.version
-	}
-
-	await createUpdaterWindow(updateInfo);
 }
 
 

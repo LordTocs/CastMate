@@ -605,7 +605,7 @@ module.exports = {
 		},
 
 		async doBotAuth() {
-			let result = await this.botAuth.dAuth(true);
+			let result = await this.botAuth.doAuth(true);
 			if (result) {
 				await this.completeAuth();
 				return true;
