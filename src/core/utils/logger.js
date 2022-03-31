@@ -4,7 +4,10 @@ const { userFolder } = require('./configuration');
 
 const logger = winston.createLogger({
 	level: 'info',
-	format: winston.format.json(),
+	format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json(),
+  ),
 	transports: [
 		//
 		// - Write all logs with level `error` and below to `error.log`
