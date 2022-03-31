@@ -28,13 +28,13 @@ A profile contains a set of automations that are meant to be grouped together ba
 
 A profile is also where automations are mapped to the triggers that start them. A profile can contain many sets of triggers and automations which are all enabled or disabled together as a group.
 
-Profiles are activated automatically based conditions such as the active OBS scene, the value of a variable, the number of viewers, or any combination of hundreds of other possibilities.
+Profiles are activated automatically based conditions such as the active OBS scene, the value of a variable, the number of viewers, or hundreds of other combinations of conditions.
 
 ![CastMate UI Profiles](docs/images/profile.png?raw=true)
 
 The possibilities are endless, so here are some ideas to get you started:
 
--   Create a text-to-speech channel point redemtion that's only available as long as the stream has less than some number of viewers.
+-   Create a text-to-speech channel point redemption that's only available as long as the stream has less than some number of viewers.
 -   A "Stream Ending" profile which automatically pastes social media links to chat when your "End Stream" scene is active in OBS.
 -   Create a nearby enemy gunfire sound effect that's only available during specific games (so it can't be used during an ASMR stream, for example). Alternatively, make a jump scare sound effect cost triple during ASMR.
 -   Have a song request channel redemption that's only available during a Music stream segment.
