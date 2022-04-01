@@ -70,9 +70,11 @@ class ActionQueue {
 
 		if (!automation) {
 			logger.error(`Missing Automation: ${automationName}`);
+			return false;
 		}
 
 		this.pushToQueue(automation, context);
+		return true;
 	}
 
 	async startAutomationArray(automations, context)

@@ -1,4 +1,4 @@
-const { reactify } = require("./reactive");
+const { reactify, reactiveCopy } = require("./reactive");
 const { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } = require("./schema");
 const _ = require('lodash');
 const { ipcMain } = require("electron");
@@ -8,10 +8,11 @@ const { CommandTriggerHandler } = require("../actions/command-trigger-handler");
 const { SingleTriggerHandler } = require("../actions/single-trigger-handler");
 
 const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
-class Plugin
-{
-	constructor(config)
-	{
+
+
+
+class Plugin {
+	constructor(config) {
 		this.pluginObj = {};
 
 		this.name = config.name;
@@ -22,44 +23,22 @@ class Plugin
 		logger.info(`Loading Plugin: ${config.name}`);
 		this.initFunc = config.init;
 		//Bind the init func to the pluginObj
-		if (this.initFunc)
-		{
+		if (this.initFunc) {
 			this.initFunc = this.initFunc.bind(this.pluginObj);
 		}
 
-		this.onSettingsReload = config.onSettingsReload;
-		if (this.onSettingsReload)
-		{
-			this.onSettingsReload = this.onSettingsReload.bind(this.pluginObj);
-		}
+		this._bindFunction(config, "onSettingsReload");
+		this._bindFunction(config, "onSecretsReload");
 
-		this.onProfilesChanged = config.onProfilesChanged;
+		this._bindFunction(config, "onProfilesChanged");
+		this._bindFunction(config, "onProfileLoad");
 
-		if (this.onProfilesChanged)
-		{
-			this.onProfilesChanged = this.onProfilesChanged.bind(this.pluginObj);
-		}
+		this._bindFunction(config, "onWebsocketMessage");
 
-		this.onProfileLoad = config.onProfileLoad;
-
-		if (this.onProfileLoad)
-		{
-			this.onProfileLoad = this.onProfileLoad.bind(this.pluginObj);
-		}
-
-		this.onSecretsReload = config.onSecretsReload;
-
-		if (this.onSecretsReload)
-		{
-			this.onSecretsReload = this.onSecretsReload.bind(this.pluginObj);
-		}
-
-		this.onWebsocketMessage = config.onWebsocketMessage;
-
-		if (this.onWebsocketMessage)
-		{
-			this.onWebsocketMessage = this.onWebsocketMessage.bind(this.pluginObj);
-		}
+		this._bindFunction(config, "onAutomationCreated");
+		this._bindFunction(config, "onAutomationDeleted");
+		this._bindFunction(config, "onAutomationUpdated");
+		
 
 		this.settingsView = config.settingsView;
 
@@ -67,57 +46,47 @@ class Plugin
 		this.secrets = config.secrets || [];
 		this.triggers = {};
 
+
 		this.pluginObj.triggers = {};
 
-		for (let triggerName in config.triggers)
-		{
+		for (let triggerName in config.triggers) {
 			const triggerSpec = config.triggers[triggerName];
 			this.triggers[triggerName] = { ...triggerSpec };
 
 			const triggerFunc = function (context) {
-				return this.actions.trigger(this.name ,triggerName, context || {})
+				return this.actions.trigger(this.name, triggerName, context || {})
 			}
 			this.pluginObj.triggers[triggerName] = triggerFunc.bind(this.pluginObj);
 
-			if (triggerSpec.type == 'NumberTrigger')
-			{
+			if (triggerSpec.type == 'NumberTrigger') {
 				this.triggers[triggerName].handler = new NumberTriggerHandler(triggerName, triggerSpec.key || 'number')
 			}
-			else if (triggerSpec.type == 'CommandTrigger')
-			{
+			else if (triggerSpec.type == 'CommandTrigger') {
 				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
 			}
-			else if (triggerSpec.type == 'SingleTrigger')
-			{
+			else if (triggerSpec.type == 'SingleTrigger') {
 				this.triggers[triggerName].handler = new SingleTriggerHandler(triggerName)
 			}
-			else if (triggerSpec.type == 'RewardTrigger')
-			{
+			else if (triggerSpec.type == 'RewardTrigger') {
 				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
 			}
-			else if (triggerSpec.type == 'TimerTrigger')
-			{
+			else if (triggerSpec.type == 'TimerTrigger') {
 				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
 			}
-			else if (triggerSpec.type == 'EnumTrigger')
-			{
+			else if (triggerSpec.type == 'EnumTrigger') {
 				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'value')
 
-				if (triggerSpec.enum instanceof Function)
-				{
+				if (triggerSpec.enum instanceof Function) {
 					this.triggers[triggerName].enum = triggerSpec.enum.bind(this.pluginObj);
 
-					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, (...args) =>
-					{
+					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, (...args) => {
 						return this.triggers[triggerName].enum(...args);
 					});
 				}
-				else if (triggerSpec.enum instanceof AsyncFunction)
-				{
+				else if (triggerSpec.enum instanceof AsyncFunction) {
 					this.triggers[triggerName].enum = triggerSpec.enum.bind(this.pluginObj);
 
-					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, async (...args) =>
-					{
+					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, async (...args) => {
 						return await this.triggers[triggerName].enum(...args);
 					});
 				}
@@ -127,70 +96,66 @@ class Plugin
 		this.actions = {};
 
 		//Pass the methods onto the plugin object for use.
-		if (config.methods)
-		{
+		if (config.methods) {
 			Object.assign(this.pluginObj, config.methods);
 		}
 
 		//Bind all the action handlers to the pluginObj so 'this' works correctly.
-		for (let actionKey in config.actions)
-		{
+		for (let actionKey in config.actions) {
 			let action = config.actions[actionKey];
-			if (action.handler)
-			{
+			if (action.handler) {
 				action.handler = action.handler.bind(this.pluginObj);
 			}
-			if (action.data)
-			{
+			if (action.data) {
 				makeIPCEnumFunctions(this.pluginObj, this.name + "_action_" + actionKey, action.data);
 			}
 			this.actions[actionKey] = action;
 		}
 
 		this.templateFunctions = {};
-		for (let funcKey in config.templateFunctions)
-		{
+		for (let funcKey in config.templateFunctions) {
 			let func = config.templateFunctions[funcKey];
 			func = func.bind(this.pluginObj);
 			this.templateFunctions[funcKey] = func;
 		}
 
 		this.ipcMethods = {}
-		for (let funcKey in config.ipcMethods)
-		{
+		for (let funcKey in config.ipcMethods) {
 			this.ipcMethods[funcKey] = config.ipcMethods[funcKey].bind(this.pluginObj);
 			this.pluginObj[funcKey] = this.ipcMethods[funcKey];
-			ipcMain.handle(`${this.name}_${funcKey}`, async (event, ...args) =>
-			{
+			ipcMain.handle(`${this.name}_${funcKey}`, async (event, ...args) => {
 				return await this.ipcMethods[funcKey](...args);
 			})
 		}
 
+		this.publicMethods = {}
+		for (let funcKey in config.publicMethods) {
+			this.publicMethods[funcKey] = config.publicMethods[funcKey].bind(this.pluginObj);
+		}
+
 		this.pluginObj.logger = logger;
 
-		for (let settingsKey in this.settings)
-		{
+		for (let settingsKey in this.settings) {
 			makeIPCEnumFunctions(this.pluginObj, this.name + "_settings_" + settingsKey, this.settings[settingsKey]);
 		}
-		for (let secretsKey in this.secrets)
-		{
+		for (let secretsKey in this.secrets) {
 			makeIPCEnumFunctions(this.pluginObj, this.name + "_settings_" + secretsKey, this.secrets[secretsKey]);
 		}
 
 		//Create all the state.
 		this.stateSchemas = {};
 		this.pluginObj.state = {};
-		for (let stateKey in config.state)
-		{
+		for (let stateKey in config.state) {
 			this.stateSchemas[stateKey] = config.state[stateKey];
 			makeIPCEnumFunctions(this.pluginObj, this.name + "_state_" + stateKey, this.stateSchemas[stateKey]);
 			this.pluginObj.state[stateKey] = constructDefaultSchema(config.state[stateKey]);
 		}
 		reactify(this.pluginObj.state);
+		this.state = {};
+		reactiveCopy(this.state, this.pluginObj.state);
 	}
 
-	async init(settings, secrets, actions, profiles, webServices, analytics, plugins)
-	{
+	async init(settings, secrets, actions, profiles, webServices, analytics, plugins) {
 		let pluginSettings = settings.data[this.name] || {};
 		let pluginSecrets = secrets.data[this.name] || {};
 
@@ -202,59 +167,47 @@ class Plugin
 		this.pluginObj.plugins = plugins;
 		this.pluginObj.analytics = analytics;
 
-		if (this.initFunc)
-		{
-			try
-			{
+		if (this.initFunc) {
+			try {
 				await this.initFunc();
-			} catch (err)
-			{
+			} catch (err) {
 				// TODO: Throw exception to UI
 				logger.error(`Error loading ${this.name} plugin. Error Msg: ${err}.`)
 			}
 		}
 	}
 
-	async updateSettings(newSettings, oldSettings)
-	{
+	async updateSettings(newSettings, oldSettings) {
 		let newPluginSettings = newSettings[this.name] || {};
 		this.pluginObj.settings = newPluginSettings;
-		if (this.onSettingsReload)
-		{
+		if (this.onSettingsReload) {
 			let oldPluginSettings = oldSettings[this.name] || {};
-			if (!_.isEqual(newPluginSettings, oldPluginSettings))
-			{
+			if (!_.isEqual(newPluginSettings, oldPluginSettings)) {
 				this.onSettingsReload(newPluginSettings, oldPluginSettings);
 			}
 		}
 	}
 
-	async updateSecrets(newSecrets, oldSecrets)
-	{
+	async updateSecrets(newSecrets, oldSecrets) {
 		let newPluginSecrets = newSecrets[this.name] || {};
 		this.pluginObj.secrets = newPluginSecrets;
-		if (this.onSecretsReload)
-		{
+		if (this.onSecretsReload) {
 			let oldPluginSecrets = oldSecrets[this.name] || {};
-			if (!_.isEqual(newPluginSecrets, oldPluginSecrets))
-			{
+			if (!_.isEqual(newPluginSecrets, oldPluginSecrets)) {
 				this.onSettingsReload(newPluginSecrets, oldPluginSecrets);
 			}
 		}
 	}
 
-	getUIDescription()
-	{
+	getUIDescription() {
 		let actions = {};
 
 		const cleanStateSchemas = {};
-		for (let stateName in this.stateSchemas)
-		{
+		for (let stateName in this.stateSchemas) {
 			cleanStateSchemas[stateName] = cleanSchemaForIPC(this.name + "_state_" + stateName, this.stateSchemas[stateName])
 		}
 
-		for (let actionKey in this.actions)
-		{
+		for (let actionKey in this.actions) {
 			actions[actionKey] = {
 				name: this.actions[actionKey].name,
 				description: this.actions[actionKey].description,
@@ -267,16 +220,14 @@ class Plugin
 		let settings = {};
 
 		//convert all types to strings
-		for (let settingsKey in this.settings)
-		{
+		for (let settingsKey in this.settings) {
 			settings[settingsKey] = cleanSchemaForIPC(this.name + "_settings_" + settingsKey, this.settings[settingsKey]);
 		}
 
 		let secrets = {};
 
 		//convert all types to strings
-		for (let secretsKey in this.secrets)
-		{
+		for (let secretsKey in this.secrets) {
 			secrets[secretsKey] = cleanSchemaForIPC(this.name + "_secrets_" + secretsKey, this.secrets[secretsKey]);
 		}
 
@@ -284,12 +235,10 @@ class Plugin
 
 		let triggers = {};
 
-		for (let triggerName in this.triggers)
-		{
+		for (let triggerName in this.triggers) {
 			triggers[triggerName] = { ...this.triggers[triggerName] }
 
-			if (triggers[triggerName].enum instanceof Function || triggers[triggerName].enum instanceof AsyncFunction)
-			{
+			if (triggers[triggerName].enum instanceof Function || triggers[triggerName].enum instanceof AsyncFunction) {
 				triggers[triggerName].enum = `${this.name}_trigger_${triggerName}_enum`;
 			}
 		}
@@ -309,6 +258,12 @@ class Plugin
 		}
 	}
 
+	_bindFunction(config, name) {
+		if (!config[name])
+			return;
+
+		this[name] = config[name].bind(this.pluginObj);
+	}
 }
 
 module.exports = {

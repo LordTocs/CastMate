@@ -18,7 +18,10 @@
       <span v-if="item">
         {{ item.key }}
       </span>
-      <span v-if="item && stateLookup[item.plugin][item.key]" class="text--secondary ml-2">
+      <span
+        v-if="item && stateLookup[item.plugin][item.key]"
+        class="text--secondary ml-2"
+      >
         ({{ stateLookup[item.plugin][item.key] }})
       </span>
     </template>
@@ -35,7 +38,10 @@
       <span v-if="item">
         {{ item.key }}
       </span>
-      <span v-if="item && stateLookup[item.plugin][item.key]" class="text--secondary ml-2">
+      <span
+        v-if="item && stateLookup[item.plugin][item.key]"
+        class="text--secondary ml-2"
+      >
         ({{ stateLookup[item.plugin][item.key] }})
       </span>
     </template>
@@ -50,12 +56,15 @@ export default {
     label: {},
   },
   computed: {
-    ...mapGetters("ipc", ["stateLookup", "plugins"]),
+    ...mapGetters("ipc", ["stateLookup", "plugins", "stateSchemas"]),
     stateList() {
       const stateList = [];
       for (let pluginName of Object.keys(this.stateLookup)) {
         for (let stateKey of Object.keys(this.stateLookup[pluginName])) {
-          stateList.push({ plugin: pluginName, key: stateKey });
+          //If it's not in the stateSchemas it's a variable, so we always include it.
+          if (!this.stateSchemas[pluginName][stateKey] || !this.stateSchemas[pluginName][stateKey].hidden) {
+            stateList.push({ plugin: pluginName, key: stateKey });
+          }
         }
       }
       return stateList;

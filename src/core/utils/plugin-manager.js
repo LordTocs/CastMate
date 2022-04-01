@@ -4,6 +4,22 @@ const { reactiveCopy, Watcher, deleteReactiveProperty } = require('./reactive');
 const { ipcMain } = require("electron");
 const _ = require('lodash');
 
+function createEventBroadcast(name) {
+	return function (...args) {
+		for (plugin of this.plugins) {
+			if (plugin[name]) {
+				try {
+					plugin[name](...args);
+				}
+				catch
+				{
+
+				}
+			}
+		}
+	}
+}
+
 class PluginManager {
 	async load(ipcSender) {
 		let pluginFiles = [
@@ -19,6 +35,7 @@ class PluginManager {
 			//"csgo",
 			"variables",
 			"websocket",
+			"bitbuttons",
 			//"aoe3",
 			"aoe4",
 			"twinkly",
@@ -40,6 +57,14 @@ class PluginManager {
 		}
 
 		this.ipcSender = ipcSender;
+
+		this.onAutomationCreated = createEventBroadcast("onAutomationCreated");
+		this.onAutomationDeleted = createEventBroadcast("onAutomationDeleted");
+		this.onAutomationUpdated = createEventBroadcast("onAutomationUpdated");
+	}
+
+	getPlugin(name) {
+		return this.plugins.find((p) => p.name == name);
 	}
 
 	createStateWatcher(pluginName, stateKey, reactiveObj) {

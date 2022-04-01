@@ -85,8 +85,9 @@ export default {
 		stateSchemas: state => {
 			const result = {};
 
-			for (let plugin of state.plugins) {
-				result[plugin.name] = plugin.stateSchemas;
+			for (let pluginKey in state.plugins) {
+				const plugin = state.plugins[pluginKey];
+				result[pluginKey] = plugin.stateSchemas;
 			}
 
 			return result;

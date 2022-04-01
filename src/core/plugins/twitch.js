@@ -410,6 +410,10 @@ module.exports = {
 				}
 			})
 
+			this.castMateWebsocket.on('error', (err) => {
+                //Empty function to prevent unhandled exceptions rippling up somewhere else in the process.
+            });
+
 
 		},
 
@@ -696,6 +700,14 @@ module.exports = {
 			})
 		}
 	},
+	publicMethods: {
+		//TODO: REMOVE BEFORE PUBLIC PLUGIN RELEASE. REMOVE REMOVE REMOVE
+		getAccessToken() {
+			if (this.channelAuth && this.channelAuth.isAuthed)
+				return this.channelAuth._accessToken.accessToken;
+			return null;
+		}
+	},
 	async onProfileLoad(profile, config) {
 		const redemptionTriggers = config ? (config.triggers ? (config.triggers.twitch ? (config.triggers.twitch.redemption) : null) : null) : null;
 		profile.rewards = redemptionTriggers ? Object.keys(redemptionTriggers) : [];
@@ -770,12 +782,20 @@ module.exports = {
 		isAuthed: {
 			type: Boolean,
 			name: "Is Authed",
-			description: "True if the user is completely authenticated."
+			description: "True if the user is completely authenticated.",
+			hidden: true
 		},
 		isAffiliate: {
 			type: Boolean,
 			name: "Is Affiliate",
-			description: "True if the user is at least affiliate"
+			description: "True if the user is at least affiliate",
+			hidden: true
+		},
+		//DO SOMETHING ABOUT THIS BEFORE PUBLIC PLUGINS
+		accessToken: {
+			type: String,
+			name: "Access Token",
+			hidden: true
 		}
 	},
 	triggers: {

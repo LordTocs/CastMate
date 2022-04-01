@@ -47,7 +47,7 @@ async function initInternal() {
 			console.error("Error loading secrets", err);
 		});
 
-	const automations = new AutomationManager();
+	const automations = new AutomationManager(plugins);
 	await automations.load();
 
 	const actions = new ActionQueue(plugins, automations);
