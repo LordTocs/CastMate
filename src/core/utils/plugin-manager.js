@@ -22,6 +22,7 @@ class PluginManager {
 			//"aoe3",
 			"aoe4",
 			"twinkly",
+      "streamdeck"
 		]
 
 		//Todo: This relative require is weird.

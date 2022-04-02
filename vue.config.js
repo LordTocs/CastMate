@@ -25,7 +25,8 @@ module.exports = {
 				'@twurple/chat',
 				'@twurple/auth',
 				'@twurple/pubsub',
-				'ws'
+				'ws',
+        '@elgato-stream-deck/node'
 			],
 			nodeIntegration: true,
 			builderOptions: {
