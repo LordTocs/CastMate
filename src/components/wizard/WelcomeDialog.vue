@@ -91,10 +91,10 @@
         <span class="text-h5">
           CastMate uses a profile system to set up "Triggers". Triggers let you
           set what should happen when certain events occurs. Events such as a
-          chat command, a raid, someone follows, or someone subscribes. To get
-          started setting up a chat command first create a profile.
+          chat command, a raid, someone follows, or someone subscribes.
         </span>
-        <img src="../../assets/triggers.png" />
+        <img src="../../assets/triggers.png" style="width: 98%; height: auto"/>
+        <hr class="my-2"/>
         <span class="text-h5">
           CastMate uses "Automations" to determine what should happen when a
           trigger is activated. Automations are a sequence of actions. Actions
