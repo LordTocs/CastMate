@@ -294,6 +294,11 @@ module.exports = {
 					filteredMessage: this.filterMessage(message)
 				}
 
+				if (msgInfo.tags.get('first-msg') !== '0')
+				{
+					this.triggers.firstTimeChat(context);
+				}
+
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
 					if (this.triggers.modchat(context)) {
 						return;
@@ -812,6 +817,11 @@ module.exports = {
 		follow: {
 			name: "Follow",
 			description: "Fires for when a user follows.",
+			type: "SingleTrigger"
+		},
+		firstTimeChat: {
+			name: "First Time Chatter",
+			description: "Fires for when a user chats for the very first time in the channel.",
 			type: "SingleTrigger"
 		},
 		subscribe: {
