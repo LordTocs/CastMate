@@ -107,15 +107,17 @@
         <active-profiles-card />
       </v-col>
     </v-row>
+    <welcome-dialog ref="welcomeDlg" />
   </v-container>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
 import ActiveProfilesCard from "../components/profiles/ActiveProfilesCard.vue";
+import WelcomeDialog from "../components/wizard/WelcomeDialog.vue";
 import { mapIpcs } from "../utils/ipcMap";
 export default {
-  components: { ActiveProfilesCard },
+  components: { ActiveProfilesCard, WelcomeDialog },
   computed: {
     ...mapGetters("ipc", ["stateLookup"]),
   },
@@ -124,7 +126,7 @@ export default {
   },
   mounted() {
     this.trackAnalytic("accessDashboard");
-  }
+  },
 };
 </script>
 

@@ -25,8 +25,6 @@ module.exports = {
 		this.state.recording = false;
 		this.state.streaming = false;
 
-
-
 		this.connectOBS();
 		this.obs.on("SwitchScenes", data => {
 			this.state.scene = data.sceneName;
@@ -58,10 +56,22 @@ module.exports = {
 			this.state.recording = false;
 		})
 
+		this.lastPassword = null;
+		this.lastHostname = null;
+		this.lastPort = null;
+
 
 		this.installDir = this.settings.installDirOverride || await this.lookupInstallDir();
 	},
 	async onSettingsReload() {
+		const port = this.settings.port || 4444;
+		const hostname = this.settings.hostname || "localhost"
+		const password = this.secrets.password;
+
+		if (this.lastPort === port && this.lastHostname === hostname && this.lastPassword === password) {
+			return;
+		}
+
 		this.forceStop = true;
 		await this.obs.disconnect();
 		await this.connectOBS();
@@ -84,24 +94,32 @@ module.exports = {
 				})
 			})
 		},
-		async connectOBS() {
-			const port = this.settings.port || 4444;
-			const hostname = this.settings.hostname || "localhost"
+		async tryConnect(hostname, port, password) {
+			this.lastHostname = hostname;
+			this.lastPort = port;
+			this.lastPassword = password;
 
 			try {
 				await this.obs.connect({
 					address: `${hostname}:${port}`,
-					password: this.secrets.password
+					password: password
 				})
 				let result = await this.obs.send("GetCurrentScene");
 				this.state.scene = result.name;
 				this.logger.info("OBS connected!");
 				this.state.connected = true;
 				this.analytics.set({ usesOBS: true });
+				return true;
 			} catch {
 				this.state.connected = false;
-				return;
+				return false;
 			}
+		},
+		async connectOBS() {
+			const port = this.settings.port || 4444;
+			const hostname = this.settings.hostname || "localhost"
+			const password = this.secrets.password;
+			await this.tryConnect(hostname, port, password);
 		},
 		async getAllSources() {
 			try {
@@ -153,15 +171,20 @@ module.exports = {
 
 			await Promise.all(browsers.map(browser => this.obs.send('RefreshBrowserSource', { sourceName: browser.name })));
 		},
+		async tryConnectSettings(hostname, port, password) {
+			this.forceStop = true;
+			await this.obs.disconnect();
+			return await this.tryConnect(hostname, port, password);
+		},
 		async openOBS() {
-			
+
 			return await new Promise((resolve, reject) => {
 				const startCmd = `Start-Process "${this.installDir}\\bin\\64bit\\obs64.exe" -Verb runAs`
 				this.logger.info(`Opening OBS ${startCmd}`);
 
 				if (!this.installDir)
 					return resolve(false);
-				
+
 				try {
 					ChildProcess.exec(startCmd, { shell: "powershell.exe", cwd: `${this.installDir}\\bin\\64bit\\` }, (err, stdout, stderr) => {
 						console.log(stdout);
