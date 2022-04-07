@@ -129,6 +129,7 @@ export default {
         if (result)
         {
             this.connected = true;
+            await this.save();
         }
     }
   },
