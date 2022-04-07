@@ -150,9 +150,12 @@ module.exports = {
 
 			//Set some analytics
 			this.analytics.setUserId(this.channelId);
+			this.analytics.set({
+				$first_name: this.state.channelName,
+			});
 
 			if (this.botId) {
-				this.analytics.set({ botId: this.botId });
+				this.analytics.set({ botId: this.botId, $last_name: this.state.botName });
 			}
 
 			try {
