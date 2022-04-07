@@ -150,9 +150,12 @@ module.exports = {
 
 			//Set some analytics
 			this.analytics.setUserId(this.channelId);
+			this.analytics.set({
+				$first_name: this.state.channelName,
+			});
 
 			if (this.botId) {
-				this.analytics.set({ botId: this.botId });
+				this.analytics.set({ botId: this.botId, $last_name: this.state.botName });
 			}
 
 			try {
@@ -289,6 +292,11 @@ module.exports = {
 					userColor: msgInfo.userInfo.color,
 					message,
 					filteredMessage: this.filterMessage(message)
+				}
+
+				if (msgInfo.tags.get('first-msg') !== '0')
+				{
+					this.triggers.firstTimeChat(context);
 				}
 
 				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
@@ -809,6 +817,11 @@ module.exports = {
 		follow: {
 			name: "Follow",
 			description: "Fires for when a user follows.",
+			type: "SingleTrigger"
+		},
+		firstTimeChat: {
+			name: "First Time Chatter",
+			description: "Fires for when a user chats for the very first time in the channel.",
 			type: "SingleTrigger"
 		},
 		subscribe: {
