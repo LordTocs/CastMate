@@ -24,22 +24,23 @@ Automations are used to sequence multiple actions together. For example, synchro
 
 ### Profiles
 
-A profile contains a set of automations that are meant to be grouped together based on when they are needed. For example, a Minecraft profile might contain a set of triggers and automations which are only available when the streamer is playing Minecraft, or a "Stream Starting" profile might only be active when a specific scene is active in OBS. Multiple profiles can be active at once.
+A profile is meant to group automations and triggers together based on context. For example, a Minecraft profile might contain a set of commands which are only available to viewers when the streamer is playing Minecraft, or a "Stream Starting" profile might only be active when a specific scene is active in OBS. Multiple profiles can be active at once.
 
-A profile is also where automations are mapped to the triggers that start them. A profile can contain many sets of triggers and automations which are all enabled or disabled together as a group.
-
-Profiles are activated automatically based conditions such as the active OBS scene, the value of a variable, the number of viewers, or hundreds of other combinations of conditions.
+Profiles can be activated automatically based on conditions such as the number of viewers, the currently active OBS scene, the value of a custom variable, various states within CastMate itself, and much more. Multiple conditions can be combined together using logical expressions like AND, OR, EQUAL, GREATER THAN, etc.
 
 ![CastMate UI Profiles](docs/images/profile.png?raw=true)
 
 The possibilities are endless, so here are some ideas to get you started:
 
--   Create a text-to-speech channel point redemption that's only available as long as the stream has less than some number of viewers.
--   A "Stream Ending" profile which automatically pastes social media links to chat when your "End Stream" scene is active in OBS.
--   Create a nearby enemy gunfire sound effect that's only available during specific games (so it can't be used during an ASMR stream, for example). Alternatively, make a jump scare sound effect cost triple during ASMR.
--   Have a song request channel redemption that's only available during a Music stream segment.
--   Create an alternate versions of a channel point redemption that costs more to redeem when the number of viewers is higher, to encourage engagement during slow streams and to reduce spam during active streams.
--   Set up a channel point redemption that is only visible when there are exactly 69 viewers, which can only be redeemed once per stream or once per viewer.
+-   Create alternate versions of a channel point redemption that costs more to redeem when the number of viewers is higher, to encourage engagement during slow streams and to reduce spam during active streams.
+-   Allow text-to-speech with channel points, but only if the stream has less than some number of viewers.
+-   A "Stream Ending" profile which automatically starts sending social media links to chat while your "End Stream" scene is active in OBS.
+-   Automatically run ads whenever your "Be Right Back" scene is active.
+-   Have a jump scare sound effect that automatically costs triple during specific stream segments.
+-   Let viewers troll you with a command that plays different sounds based on the game, like enemy footsteps during a shooter or creepers during minecraft.
+-   Make a song request channel point redemption that's only available during a Music stream segment.
+-   Set up a "First" channel point redemption item that can only be claimed once per stream.
+-   Set up a channel point redemption that is only visible when there are exactly 69 viewers. Nice.
 
 ## Setup
 
