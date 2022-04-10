@@ -69,3 +69,4 @@ Feedback and bug reports are greatly appreciated! Please don't hesitate to reach
 
 -   [LordTocs' Twitch](https://www.twitch.tv/lordtocs)
 -   [LordTocs' YouTube](https://www.youtube.com/channel/UCe4uXUoF5MkKvhgy514FCuA)
+-   [LordTocs' Discord](https://discord.gg/txt4DUzYJM)

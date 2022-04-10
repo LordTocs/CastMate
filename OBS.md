@@ -24,7 +24,7 @@
 
 ## Browser Sources
 
-_Note: a future version of OBS will improve the process for adding alerts and emotes to an overlay. Until then, the process is somewhat esoteric._
+_Note: a future version will improve the process for adding alerts and emotes to an overlay. Until then, the process is somewhat esoteric._
 
 ### Emotes
 
