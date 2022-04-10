@@ -153,6 +153,7 @@ module.exports = {
 			this.analytics.set({
 				$first_name: this.state.channelName,
 			});
+			this.analytics.track("twitchAuth");
 
 			if (this.botId) {
 				this.analytics.set({ botId: this.botId, $last_name: this.state.botName });
