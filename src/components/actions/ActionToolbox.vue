@@ -13,6 +13,7 @@
       <draggable
         :list="pluginActionLists[plugin.name]"
         :group="{ name: 'actions', pull: 'clone', put: false }"
+        :sort="false"
         :component-data="{ attrs: { 'no-action': true } }"
       >
         <v-list-item
