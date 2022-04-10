@@ -18,6 +18,7 @@
         <v-list-item
           v-for="actionKey in Object.keys(plugin.actions)"
           :key="actionKey"
+          style="cursor: grab"
         >
           <v-list-item-avatar :color="plugin.actions[actionKey].color">
             <v-icon>
@@ -30,10 +31,10 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title>{{
+            <v-list-item-title style="user-select: none">{{
               plugin.actions[actionKey].name
             }}</v-list-item-title>
-            <v-list-item-subtitle>
+            <v-list-item-subtitle style="user-select: none">
               {{ plugin.actions[actionKey].description }}
             </v-list-item-subtitle>
           </v-list-item-content>
