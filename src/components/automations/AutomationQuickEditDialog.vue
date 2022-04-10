@@ -1,5 +1,11 @@
 <template>
-  <v-dialog persistent v-model="dialog" width="80%" @keydown.esc="cancel" @click:outside="cancel">
+  <v-dialog
+    persistent
+    v-model="dialog"
+    width="80%"
+    @keydown.esc="cancel"
+    @click:outside="cancel"
+  >
     <v-card>
       <v-toolbar dense flat>
         <v-tooltip bottom>
@@ -134,7 +140,13 @@ export default {
     async open() {
       let fileData = await fs.promises.readFile(this.filePath, "utf-8");
 
-      this.automation = YAML.parse(fileData);
+      const automation = YAML.parse(fileData);
+
+      if (automation.actions) {
+        automation.actions = automation.actions.filter((a) => a != null);
+      }
+
+      this.automation = automation;
 
       this.dialog = true;
     },

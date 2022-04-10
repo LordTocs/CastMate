@@ -81,14 +81,14 @@ import path from "path";
 import YAML from "yaml";
 import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
-import FlexScroller from '../components/layout/FlexScroller.vue';
+import FlexScroller from "../components/layout/FlexScroller.vue";
 
 export default {
   components: {
     ActionToolbox,
     SequenceEditor,
     ConfirmDialog,
-    FlexScroller
+    FlexScroller,
   },
   data() {
     return {
@@ -126,7 +126,14 @@ export default {
   async mounted() {
     let fileData = await fs.promises.readFile(this.filePath, "utf-8");
 
-    this.automation = YAML.parse(fileData);
+    const automation = YAML.parse(fileData);
+    
+    //Filter nulls because we wound up with one and that was scary.
+    if (automation.actions) {
+      automation.actions = automation.actions.filter(a => a != null);
+    }
+
+    this.automation = automation;
 
     this.trackAnalytic("accessAutomation", { name: this.automationName });
   },
