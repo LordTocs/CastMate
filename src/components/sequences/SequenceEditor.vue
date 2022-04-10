@@ -30,6 +30,19 @@
       :component-data="getDraggableData()"
       as="drag-select"
     >
+      <v-card
+        slot="header"
+        v-if="!value || !value.length"
+        elevation="2"
+        outlined
+        shaped
+      >
+        <v-card-text>
+          <p class="text-center text-h6" style="user-select: none">
+            Click &amp; Drag Actions from the Toolbox on the right.
+          </p>
+        </v-card-text>
+      </v-card>
       <sequence-item
         v-for="(action, i) in value"
         :key="i"
