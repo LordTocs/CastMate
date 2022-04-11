@@ -83,6 +83,8 @@ import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
 
+import { loadAutomation, saveAutomation } from '../utils/automationUtils';
+
 export default {
   components: {
     ActionToolbox,
@@ -111,10 +113,8 @@ export default {
   methods: {
     ...mapIpcs("core", ["runActions"]),
     async saveAutomation() {
-      await fs.promises.writeFile(
-        this.filePath,
-        YAML.stringify(this.automation)
-      );
+      await saveAutomation(this.filePath, this.automation);
+
       this.dirty = false;
 
       this.trackAnalytic("saveAutomation", { name: this.automationName });
@@ -124,16 +124,7 @@ export default {
     },
   },
   async mounted() {
-    let fileData = await fs.promises.readFile(this.filePath, "utf-8");
-
-    const automation = YAML.parse(fileData);
-    
-    //Filter nulls because we wound up with one and that was scary.
-    if (automation.actions) {
-      automation.actions = automation.actions.filter(a => a != null);
-    }
-
-    this.automation = automation;
+    this.automation = await loadAutomation(this.filePath);
 
     this.trackAnalytic("accessAutomation", { name: this.automationName });
   },

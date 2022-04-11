@@ -15,11 +15,13 @@
         :group="{ name: 'actions', pull: 'clone', put: false }"
         :sort="false"
         :component-data="{ attrs: { 'no-action': true } }"
+        draggable=".is-draggable"
       >
         <v-list-item
           v-for="actionKey in Object.keys(plugin.actions)"
           :key="actionKey"
           style="cursor: grab"
+          class="is-draggable"
         >
           <v-list-item-avatar :color="plugin.actions[actionKey].color">
             <v-icon>

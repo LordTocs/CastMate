@@ -26,34 +26,38 @@
       handle=".handle"
       group="actions"
       style="flex: 1"
+      draggable=".is-draggable"
       class="sequence-container"
       :component-data="getDraggableData()"
-      as="drag-select"
     >
-      <v-card
-        slot="header"
-        v-if="!value || !value.length"
-        elevation="2"
-        outlined
-        shaped
-      >
-        <v-card-text>
-          <p class="text-center text-h6" style="user-select: none">
-            Click &amp; Drag Actions from the Toolbox on the right.
-          </p>
-        </v-card-text>
-      </v-card>
+      <div slot="header">
+        <v-card
+          elevation="2"
+          outlined
+          shaped
+          v-if="!(value && value.length > 0)"
+        >
+          <v-card-text>
+            <p class="text-center text-h6" style="user-select: none">
+              Click &amp; Drag Actions from the Toolbox on the right.
+            </p>
+          </v-card-text>
+        </v-card>
+      </div>
       <sequence-item
         v-for="(action, i) in value"
-        :key="i"
+        :key="action.id"
         ref="sequenceItems"
+        class="is-draggable"
         :selected="selected.includes(i)"
         :value="action"
         @input="(v) => updateAction(i, v)"
         @delete="deleteAction(i)"
       />
       <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
-      <div slot="footer" style="font-size: 0; height: 120px">...</div>
+      <template v-slot:footer>
+        <div style="font-size: 0; height: 120px">...</div>
+      </template>
     </draggable>
   </div>
 </template>
@@ -63,6 +67,7 @@ import SequenceItem from "./SequenceItem.vue";
 import Draggable from "vuedraggable";
 import { ipcRenderer } from "electron";
 import _cloneDeep from "lodash/cloneDeep";
+import { nanoid } from "nanoid/non-secure";
 export default {
   components: { SequenceItem, Draggable },
   props: {
@@ -246,6 +251,10 @@ export default {
       try {
         const pasteData = JSON.parse(paste);
 
+        for (let action of pasteData) {
+          action.id = nanoid();
+        }
+
         if (!(pasteData instanceof Array)) return;
 
         //TODO: Validate JSON
@@ -322,6 +331,7 @@ export default {
 <style scoped>
 .sequence-container {
   padding: 16px;
+  padding-bottom: 0;
 }
 
 .drag-area {
