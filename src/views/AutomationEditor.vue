@@ -81,14 +81,16 @@ import path from "path";
 import YAML from "yaml";
 import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
-import FlexScroller from '../components/layout/FlexScroller.vue';
+import FlexScroller from "../components/layout/FlexScroller.vue";
+
+import { loadAutomation, saveAutomation } from '../utils/automationUtils';
 
 export default {
   components: {
     ActionToolbox,
     SequenceEditor,
     ConfirmDialog,
-    FlexScroller
+    FlexScroller,
   },
   data() {
     return {
@@ -111,10 +113,8 @@ export default {
   methods: {
     ...mapIpcs("core", ["runActions"]),
     async saveAutomation() {
-      await fs.promises.writeFile(
-        this.filePath,
-        YAML.stringify(this.automation)
-      );
+      await saveAutomation(this.filePath, this.automation);
+
       this.dirty = false;
 
       this.trackAnalytic("saveAutomation", { name: this.automationName });
@@ -124,9 +124,7 @@ export default {
     },
   },
   async mounted() {
-    let fileData = await fs.promises.readFile(this.filePath, "utf-8");
-
-    this.automation = YAML.parse(fileData);
+    this.automation = await loadAutomation(this.filePath);
 
     this.trackAnalytic("accessAutomation", { name: this.automationName });
   },

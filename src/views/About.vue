@@ -10,18 +10,24 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
+        <v-btn color="primary" @click="$refs.welcomeDlg.open()">
+          First Time Setup
+        </v-btn>
         <v-btn color="primary" @click="checkForUpdates">
           Check For Updates
         </v-btn>
       </v-card-actions>
     </v-card>
+    <welcome-dialog ref="welcomeDlg" />
   </v-container>
 </template>
 
 <script>
 import { app } from "@electron/remote";
 import { ipcRenderer } from "electron";
+import WelcomeDialog from '../components/wizard/WelcomeDialog.vue';
 export default {
+  components: { WelcomeDialog },
   data() {
     return {
       version: null,

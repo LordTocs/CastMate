@@ -1,5 +1,11 @@
 <template>
-  <v-dialog persistent v-model="dialog" width="80%" @keydown.esc="cancel" @click:outside="cancel">
+  <v-dialog
+    persistent
+    v-model="dialog"
+    width="80%"
+    @keydown.esc="cancel"
+    @click:outside="cancel"
+  >
     <v-card>
       <v-toolbar dense flat>
         <v-tooltip bottom>
@@ -75,6 +81,7 @@ import FlexScroller from "../layout/FlexScroller.vue";
 import ActionToolbox from "../actions/ActionToolbox.vue";
 import SequenceEditor from "../sequences/SequenceEditor.vue";
 import { mapIpcs } from "../../utils/ipcMap";
+import { loadAutomation, saveAutomation } from '../../utils/automationUtils';
 
 export default {
   components: { ConfirmDialog, FlexScroller, ActionToolbox, SequenceEditor },
@@ -110,10 +117,7 @@ export default {
       this.dialog = false;
     },
     async saveAutomation() {
-      await fs.promises.writeFile(
-        this.filePath,
-        YAML.stringify(this.automation)
-      );
+      await saveAutomation(this.filePath, this.automation);
       this.dirty = false;
       this.trackAnalytic("saveAutomation", { name: this.automationName });
     },
@@ -132,9 +136,7 @@ export default {
       }
     },
     async open() {
-      let fileData = await fs.promises.readFile(this.filePath, "utf-8");
-
-      this.automation = YAML.parse(fileData);
+      this.automation = await loadAutomation(this.filePath);
 
       this.dialog = true;
     },

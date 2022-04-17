@@ -51,7 +51,7 @@ const analyticsMixin = {
 			if (!id)
 				return;
 
-			this.$mixpanel.people.set(id, { ...data }, { $ignore_time: true });
+			this.$mixpanel.people.set(id, { }, { });
 		}
 	}
 }

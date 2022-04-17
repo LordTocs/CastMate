@@ -33,6 +33,18 @@ module.exports = {
 	methods: {
 		getFullFilepath(filename) {
 			return path.resolve(path.join(userFolder, 'sounds', filename));
+		},
+		playAudioFile(filename, volume) {
+			if (!this.audioWindowSender) {
+				this.logger.error("Audio Window Not Available");
+				return;
+			}
+			const globalVolume = this.settings.globalVolume != undefined ? (this.settings.globalVolume / 100) : 1.0;
+
+			this.audioWindowSender.send('play-sound', {
+				source: filename,
+				volume: (volume != undefined ? (volume / 100) : 1.0) * globalVolume
+			});
 		}
 	},
 	settings: {
@@ -74,17 +86,8 @@ module.exports = {
 			icon: "mdi-volume-high",
 			color: "#62894F",
 			async handler(soundData) {
-				if (this.audioWindowSender) {
-					const globalVolume = this.settings.globalVolume != undefined ? (this.settings.globalVolume / 100) : 1.0;
-					this.audioWindowSender.send('play-sound', {
-						source: this.getFullFilepath(soundData.sound),
-						volume: ("volume" in soundData ? (soundData.volume / 100) : 1.0) * globalVolume
-					});
-				}
-				else {
-					this.logger.error("Audio Window Not Available");
-				}
-			}
+				this.playAudioFile(this.getFullFilepath(soundData.sound), soundData.volume);
+			},
 		},
 		tts: {
 			name: "Text to Speech",
@@ -111,30 +114,19 @@ module.exports = {
 				}
 			},
 			async handler(data, context) {
-				if (this.audioWindowSender) {
-					const message = await template(data.message, context);
-					this.logger.info(`Speaking: ${message}`);
-					const soundPath = path.join(app.getPath("temp"), this.idgen() + ".wav");
-					say.export(message, undefined, undefined, soundPath, (err) => {
-						if (err)
-						{
-							this.logger.error(String(err));
-							return;
-						}
+				const message = await template(data.message, context);
+				this.logger.info(`Speaking: ${message}`);
+				const soundPath = path.join(app.getPath("temp"), this.idgen() + ".wav");
+				say.export(message, undefined, undefined, soundPath, (err) => {
+					if (err) {
+						this.logger.error(String(err));
+						return;
+					}
 
-						this.logger.info(`Exporting to ${soundPath}`);
+					//this.logger.info(`Exporting to ${soundPath}`);
 
-						const globalVolume = this.settings.globalVolume != undefined ? (this.settings.globalVolume / 100) : 1.0;
-						
-						this.audioWindowSender.send('play-sound', {
-							source: soundPath,
-							volume: ("volume" in data ? (data.volume / 100) : 1.0) * globalVolume
-						});
-					});
-				}
-				else {
-					this.logger.error("Audio Window Not Available");
-				}
+					this.playAudioFile(soundPath, data.volume);
+				});
 			}
 		}
 	}

@@ -48,7 +48,7 @@
       </template>
 
       <template v-slot:footer.prepend>
-        <v-btn @click="$refs.addCommandModal.open()"> Add Command </v-btn>
+        <v-btn @click="$refs.addCommandModal.open()"> Add Trigger </v-btn>
       </template>
     </v-data-table>
     <trigger-command-modal
