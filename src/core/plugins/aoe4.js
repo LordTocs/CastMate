@@ -196,30 +196,24 @@ module.exports = {
                 rejectUnauthorized: false
             });
 
-            let response = await axios.get('https://aoeiv.net/api/leaderboard', {
+            let response = await axios.get('https://aoe4world.com/api/v0/players/search', {
                 httpsAgent: agent,
                 params: {
-                    game: "aoe4",
-                    leaderboard_id: 17,
-                    search: playerName
+                    query: playerName,
                 }
             })
 
-
-            if (response.data.leaderboard && response.data.leaderboard.length) {
-                let result = response.data.leaderboard.find((player) => {
-                    return player.name.toLowerCase() === playerName.toLowerCase();
-                });
-                result = (result || response.data.leaderboard[0]);
+            if (response.data) {
+                let leaderboard = response.data.players[0].leaderboards.rm_1v1;
 
                 let formattedResult = {};
-                formattedResult.userName = result.name;
-                formattedResult.elo = result.rating;
-                formattedResult.rank = result.rank;
-                formattedResult.winPercent = ((result.wins / result.games) * 100).toFixed(2);
-                formattedResult.wins = result.wins;
-                formattedResult.losses = result.losses;
-                formattedResult.streak = result.streak;
+                formattedResult.userName = response.data.players[0].name;
+                formattedResult.elo = leaderboard.rating;
+                formattedResult.rank = leaderboard.rank;
+                formattedResult.winPercent = leaderboard.win_rate;
+                formattedResult.wins = leaderboard.wins_count;
+                formattedResult.losses = leaderboard.losses_count;
+                formattedResult.streak = leaderboard.streak;
 
                 let playerStatString = `⚔️ ${formattedResult.userName} ⚔️ Rank: ${formattedResult.rank} - Elo: ${formattedResult.elo} - Win Rate: ${formattedResult.winPercent}% - W/L: ${formattedResult.wins}/${formattedResult.losses} - Streak: ${formattedResult.streak}`;
 
