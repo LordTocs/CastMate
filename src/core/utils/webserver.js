@@ -25,6 +25,7 @@ async function createWebServices(settings, secrets, plugins) {
 	let websocketServer = new websocket.server();
 
 	websocketServer.on('connect', function (connection) {
+    console.log("New connection!");
 		connection.on('message', function (data) {
 			if (data.utf8Data) {
 				let msg = JSON.parse(data.utf8Data);
