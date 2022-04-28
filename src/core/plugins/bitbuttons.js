@@ -121,7 +121,7 @@ module.exports = {
 
             //Retry connection in 5 seconds.
             if (this.reconnect) {
-                this.logger.info(`Connection to bitbuttons websocket failed, retrying in 5 seconds...`);
+                this.logger.info(`Connection to bitbuttons websocket (${process.env.VUE_APP_BITBUTTONS_URL}) failed, retrying in 5 seconds...`);
                 setTimeout(() => {
                     this.connect().catch(err => {
                         this.logger.error(`Exception on socket reconnect.`);
@@ -155,14 +155,14 @@ module.exports = {
 
             this.reconnect = true;
 
-            this.websocket = new WebSocket('ws://localhost:8777', {
+            this.websocket = new WebSocket(process.env.VUE_APP_BITBUTTONS_URL, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 }
             });
 
             this.websocket.on('open', () => {
-                this.logger.info(`Connection to BitButtons open`);
+                this.logger.info(`Connection to BitButtons open (${process.env.VUE_APP_BITBUTTONS_URL})`);
 
                 this.requestSocket = new RequestSocket(this.websocket);
 
@@ -170,7 +170,9 @@ module.exports = {
                 this.requestSocket.handle("runAutomation", (automation, context) => this.runAutomation(automation, context));
 
                 this.websocketPinger = setInterval(() => {
-                    this.websocket.ping()
+                    if (this.websocket.readyState == 1) {
+                        this.websocket.ping()
+                    }
                 }, 30000);
             })
 
