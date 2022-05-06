@@ -69,6 +69,9 @@
       <action-toolbox />
     </div>
     <confirm-dialog ref="saveDlg" />
+    <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
+      Saved
+    </v-snackbar>
   </div>
 </template>
 
@@ -78,7 +81,7 @@ import SequenceEditor from "../components/sequences/SequenceEditor.vue";
 import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
-import { loadAutomation, saveAutomation } from '../utils/fileTools';
+import { loadAutomation, saveAutomation } from "../utils/fileTools";
 
 export default {
   components: {
@@ -91,6 +94,7 @@ export default {
     return {
       automation: null,
       dirty: false,
+      saveSnack: false,
     };
   },
   computed: {
@@ -103,6 +107,7 @@ export default {
     async saveAutomation() {
       await saveAutomation(this.automationName, this.automation);
       this.dirty = false;
+      this.saveSnack = true;
     },
     async preview() {
       await this.runActions(this.automation.actions);
