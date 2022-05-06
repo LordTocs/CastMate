@@ -323,22 +323,26 @@ module.exports = {
 
 			});
 
-			this.chatClient.onRaid((channel, user, raidInfo) => {
-				this.triggers.raid({ number: raidInfo.viewerCount, user: raidInfo.displayName });
+			this.chatClient.onRaid((channel, user, raidInfo, msgInfo) => {
+				this.triggers.raid({
+					number: raidInfo.viewerCount,
+					user: raidInfo.displayName,
+					userId: msgInfo.userInfo.userId
+				});
 			})
 
 			//See here https://twurple.js.org/docs/examples/chat/sub-gift-spam.html
 			const giftCounts = new Map();
 
 			this.chatClient.onCommunitySub((channel, user, subInfo) => {
-				const previousGiftCount = giftCounts.get(user) ?? 0;
+				const previousGiftCount = giftCounts.get(user) || 0;
 				giftCounts.set(user, previousGiftCount + subInfo.count);
 				this.triggers.giftedSub({ number: subInfo.count, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
 			});
 
-			this.chatClient.onSubGift((channel, user, subInfo) => {
+			this.chatClient.onSubGift((channel, recipient, subInfo) => {
 				const user = subInfo.gifter;
-				const previousGiftCount = giftCounts.get(user) ?? 0;
+				const previousGiftCount = giftCounts.get(user) || 0;
 				if (previousGiftCount > 0) {
 					giftCounts.set(user, previousGiftCount - 1);
 				}
@@ -928,8 +932,8 @@ module.exports = {
 		}
 	},
 	templateFunctions: {
-		async followAge(user) {
-			const follow = await this.channelTwitchClient.users.getFollowFromUserToBroadcaster(user, this.channelId);
+		async followAge(userId) {
+			const follow = await this.channelTwitchClient.users.getFollowFromUserToBroadcaster(userId, this.channelId);
 
 			if (!follow) {
 				return "Not Following";
@@ -961,8 +965,13 @@ module.exports = {
 			}
 
 			return result;
+		},
+		async getStreamCategory(userId) {
+			const channelInfo = await this.channelTwitchClient.channels.getChannelInfoById(userId);
+			return channelInfo.gameName;
 		}
 	},
+
 	settingsView: 'twitch.vue'
 }
 
