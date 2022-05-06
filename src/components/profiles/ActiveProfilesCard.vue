@@ -2,6 +2,11 @@
   <v-card>
     <v-card-title> Active Profiles </v-card-title>
     <v-card-text>
+      <div>
+        You don't have any profiles. Profiles are CastMate's way of organizing
+        triggers.
+        <v-btn> Create A Profile </v-btn>
+      </div>
       <v-chip
         v-for="profileName in activeProfiles"
         :key="profileName"
@@ -19,11 +24,21 @@
 </template>
 
 <script>
+import { getAllProfiles } from '../../utils/fileTools';
 import { mapGetters } from "vuex";
 
 export default {
   computed: {
-    ...mapGetters("ipc", ["activeProfiles"]),
+    ...mapGetters("ipc", ["activeProfiles", "paths"]),
+  },
+  data() {
+    return {
+      hasProfiles: true,
+    };
+  },
+  async mounted() {
+    let profiles = await getAllProfiles();
+    this.hasProfiles = profiles.length > 0;
   },
 };
 </script>

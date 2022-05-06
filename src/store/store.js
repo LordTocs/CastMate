@@ -36,6 +36,8 @@ ipcRenderer.on('profiles-active', (event, arg) => {
 	store.dispatch(`ipc/setActiveProfiles`, arg);
 })
 
+
+
 const analyticsMixin = {
 	methods: {
 		trackAnalytic(eventName, data) {

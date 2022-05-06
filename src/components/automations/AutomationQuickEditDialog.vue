@@ -81,7 +81,7 @@ import FlexScroller from "../layout/FlexScroller.vue";
 import ActionToolbox from "../actions/ActionToolbox.vue";
 import SequenceEditor from "../sequences/SequenceEditor.vue";
 import { mapIpcs } from "../../utils/ipcMap";
-import { loadAutomation, saveAutomation } from '../../utils/automationUtils';
+import { loadAutomation, saveAutomation } from '../../utils/fileTools';
 
 export default {
   components: { ConfirmDialog, FlexScroller, ActionToolbox, SequenceEditor },
@@ -117,9 +117,8 @@ export default {
       this.dialog = false;
     },
     async saveAutomation() {
-      await saveAutomation(this.filePath, this.automation);
+      await saveAutomation(this.automationName, this.automation);
       this.dirty = false;
-      this.trackAnalytic("saveAutomation", { name: this.automationName });
     },
     async askToSave() {
       if (!this.dirty) return;
@@ -136,7 +135,7 @@ export default {
       }
     },
     async open() {
-      this.automation = await loadAutomation(this.filePath);
+      this.automation = await loadAutomation(this.automationName);
 
       this.dialog = true;
     },
