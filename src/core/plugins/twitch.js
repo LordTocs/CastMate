@@ -295,8 +295,7 @@ module.exports = {
 					filteredMessage: this.filterMessage(message)
 				}
 
-				if (msgInfo.tags.get('first-msg') !== '0')
-				{
+				if (msgInfo.tags.get('first-msg') !== '0') {
 					this.triggers.firstTimeChat(context);
 				}
 
@@ -328,9 +327,26 @@ module.exports = {
 				this.triggers.raid({ number: raidInfo.viewerCount, user: raidInfo.displayName });
 			})
 
+			//See here https://twurple.js.org/docs/examples/chat/sub-gift-spam.html
+			const giftCounts = new Map();
+
 			this.chatClient.onCommunitySub((channel, user, subInfo) => {
+				const previousGiftCount = giftCounts.get(user) ?? 0;
+				giftCounts.set(user, previousGiftCount + subInfo.count);
 				this.triggers.giftedSub({ number: subInfo.count, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
 			});
+
+			this.chatClient.onSubGift((channel, user, subInfo) => {
+				const user = subInfo.gifter;
+				const previousGiftCount = giftCounts.get(user) ?? 0;
+				if (previousGiftCount > 0) {
+					giftCounts.set(user, previousGiftCount - 1);
+				}
+				else {
+					this.triggers.giftedSub({ number: 1, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
+				}
+			});
+
 		},
 
 		async retryWebsocketWorkaround() {
