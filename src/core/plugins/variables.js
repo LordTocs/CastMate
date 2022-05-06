@@ -32,10 +32,7 @@ module.exports = {
 
 			for (let variableName in variableData) {
 				let variableSpec = variableData[variableName];
-
 				let defaultValue = variableSpec.default;
-
-
 
 				if (defaultValue == undefined) {
 					if (variableSpec.type && variableSpec.type == "string") {
