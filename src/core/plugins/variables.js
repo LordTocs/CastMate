@@ -23,6 +23,14 @@ module.exports = {
 		this.loadVariables();
 
 	},
+	ipcMethods: {
+		setVariableValue(name, value) {
+			if (!(name in this.state))
+				return;
+
+			this.state[name] = value;
+		}
+	},
 	methods: {
 		loadVariables() {
 			const variableData = this.variableSettingsReloader.data;
