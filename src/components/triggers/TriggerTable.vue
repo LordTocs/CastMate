@@ -35,7 +35,7 @@
       </template>
 
       <template v-slot:item.automation="props">
-        <automation-selector
+        <automation-input
           :value="props.item.automation"
           @input="(v) => changeAutomation(props.item.key, v)"
         />
@@ -77,12 +77,14 @@ import AutomationSelector from "../automations/AutomationSelector.vue";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
 import { changeObjectKey } from "../../utils/objects";
 import TriggerCommandModal from "./TriggerCommandModal.vue";
+import AutomationInput from '../automations/AutomationInput.vue';
 
 export default {
   components: {
     ConfirmDialog,
     AutomationSelector,
     TriggerCommandModal,
+    AutomationInput,
   },
   props: {
     trigger: {},

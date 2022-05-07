@@ -164,12 +164,16 @@ export async function automationExists(automationName) {
     }
 }
 
-export async function createNewAutomation(automationName) {
-    let newYaml = YAML.stringify({
+export function generateEmptyAutomation() {
+    return {
         version: "1.0",
         description: "",
         actions: [],
-    });
+    }
+}
+
+export async function createNewAutomation(automationName) {
+    let newYaml = YAML.stringify(generateEmptyAutomation());
 
     await fs.promises.writeFile(
         getAutomationPath(automationName),
@@ -236,8 +240,7 @@ export async function saveAutomation(automationName, automationData) {
 
     const newData = _.cloneDeep(automationData);
 
-    for (let action of newData.actions)
-    {
+    for (let action of newData.actions) {
         delete action.id;
     }
 
