@@ -55,6 +55,7 @@ Profile.mergeTriggers = function (profiles) {
 
 	for (let profile of profiles) {
 		for (let plugin in profile.triggers) {
+			//Ensure the plugin is in the combined.
 			if (!(plugin in combined)) {
 				combined[plugin] = {};
 			}
