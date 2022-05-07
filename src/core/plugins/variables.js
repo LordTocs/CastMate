@@ -23,6 +23,14 @@ module.exports = {
 		this.loadVariables();
 
 	},
+	ipcMethods: {
+		setVariableValue(name, value) {
+			if (!(name in this.state))
+				return;
+
+			this.state[name] = value;
+		}
+	},
 	methods: {
 		loadVariables() {
 			const variableData = this.variableSettingsReloader.data;
@@ -32,10 +40,7 @@ module.exports = {
 
 			for (let variableName in variableData) {
 				let variableSpec = variableData[variableName];
-
 				let defaultValue = variableSpec.default;
-
-
 
 				if (defaultValue == undefined) {
 					if (variableSpec.type && variableSpec.type == "string") {

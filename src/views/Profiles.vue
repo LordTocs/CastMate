@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-card class="linktable-card"  color="grey darken-2">
+    <v-card class="linktable-card" color="grey darken-2">
       <v-card-title>
         <v-text-field
           v-model="search"
@@ -61,11 +61,18 @@ import { mapGetters } from "vuex";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
 import NamedItemConfirmation from "../components/dialogs/NamedItemConfirmation.vue";
+import {
+  createNewProfile,
+  deleteProfile,
+  duplicateProfile,
+  getAllProfiles,
+  renameProfile,
+} from "../utils/fileTools";
 export default {
   components: {
     NamedItemModal,
     ConfirmDialog,
-    NamedItemConfirmation
+    NamedItemConfirmation,
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
@@ -84,34 +91,11 @@ export default {
   },
   methods: {
     async getFiles() {
-      let profiles = await fs.promises.readdir(
-        path.join(this.paths.userFolder, "profiles")
-      );
-
-      profiles = profiles.filter((f) => path.extname(f) == ".yaml");
-
-      this.profiles = profiles.map((f) => ({
-        name: path.basename(f, ".yaml"),
-      }));
+      this.profiles = (await getAllProfiles()).map((f) => ({ name: f }));
     },
     async createNewProfile(name) {
-      let newYaml = YAML.stringify({
-        version: "1.0",
-        triggers: {},
-        variables: {},
-        rewards: [],
-      });
-
-      await fs.promises.writeFile(
-        path.join(this.paths.userFolder, `profiles/${name}.yaml`),
-        newYaml,
-        "utf-8"
-      );
-
-      this.trackAnalytic("newProfile", { name });
-
+      await createNewProfile(name);
       await this.getFiles();
-
       this.$router.push(`/profiles/${name}`);
     },
     async tryDelete(name) {
@@ -121,19 +105,7 @@ export default {
           `Are you sure you want to delete ${name}?`
         )
       ) {
-        const filePath = path.join(
-          this.paths.userFolder,
-          "profiles",
-          name + ".yaml"
-        );
-
-        if (!fs.existsSync(filePath)) {
-          return;
-        }
-
-        await fs.promises.unlink(filePath);
-
-        this.trackAnalytic("deleteProfile", { name });
+        await deleteProfile(name);
 
         const idx = this.profiles.findIndex((af) => af.name == name);
 
@@ -143,55 +115,34 @@ export default {
       }
     },
     async tryDuplicate(name) {
-      if (await this.$refs.duplicateDlg.open(`Duplicate ${name}?`, `New Profile Name`, "Duplicate", "Cancel"))
-      {
-        const filePath = path.join(
-          this.paths.userFolder,
-          "profiles",
-          name + ".yaml"
-        );
-
-        const newName = this.$refs.duplicateDlg.name
-
-        const destPath = path.join(this.paths.userFolder,
-          "profiles",
-          newName + ".yaml")
-
-        if (!fs.existsSync(filePath)) {
-          return;
-        }
-
-        this.trackAnalytic("duplicateProfile", { name });
-
-        await fs.promises.copyFile(filePath, destPath);
+      if (
+        await this.$refs.duplicateDlg.open(
+          `Duplicate ${name}?`,
+          `New Profile Name`,
+          "Duplicate",
+          "Cancel"
+        )
+      ) {
+        const newName = this.$refs.duplicateDlg.name;
+        await duplicateProfile(name, newName);
 
         this.$router.push(`/profiles/${newName}`);
       }
     },
     async tryRename(name) {
-      if (await this.$refs.duplicateDlg.open(`Rename ${name}?`, `New Profile Name`, "Rename", "Cancel"))
-      {
-        const filePath = path.join(
-          this.paths.userFolder,
-          "profiles",
-          name + ".yaml"
-        );
-
-        const newName = this.$refs.duplicateDlg.name
-
-        const newPath = path.join(this.paths.userFolder,
-          "profiles",
-          newName + ".yaml")
-
-        if (!fs.existsSync(filePath)) {
-          return;
-        }
-
-        await fs.promises.rename(filePath, newPath);
+      if (
+        await this.$refs.duplicateDlg.open(
+          `Rename ${name}?`,
+          `New Profile Name`,
+          "Rename",
+          "Cancel"
+        )
+      ) {
+        await renameProfile(name, this.$refs.duplicateDlg.name);
 
         await this.getFiles();
       }
-    }
+    },
   },
   async mounted() {
     await this.getFiles();

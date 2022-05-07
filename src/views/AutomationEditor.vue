@@ -69,21 +69,19 @@
       <action-toolbox />
     </div>
     <confirm-dialog ref="saveDlg" />
+    <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
+      Saved
+    </v-snackbar>
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import ActionToolbox from "../components/actions/ActionToolbox.vue";
 import SequenceEditor from "../components/sequences/SequenceEditor.vue";
-import fs from "fs";
-import path from "path";
-import YAML from "yaml";
 import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
-
-import { loadAutomation, saveAutomation } from '../utils/automationUtils';
+import { loadAutomation, saveAutomation } from "../utils/fileTools";
 
 export default {
   components: {
@@ -96,35 +94,27 @@ export default {
     return {
       automation: null,
       dirty: false,
+      saveSnack: false,
     };
   },
   computed: {
-    ...mapGetters("ipc", ["paths"]),
     automationName() {
       return this.$route.params.automation;
-    },
-    filePath() {
-      return path.join(
-        this.paths.userFolder,
-        `automations/${this.automationName}.yaml`
-      );
     },
   },
   methods: {
     ...mapIpcs("core", ["runActions"]),
     async saveAutomation() {
-      await saveAutomation(this.filePath, this.automation);
-
+      await saveAutomation(this.automationName, this.automation);
       this.dirty = false;
-
-      this.trackAnalytic("saveAutomation", { name: this.automationName });
+      this.saveSnack = true;
     },
     async preview() {
       await this.runActions(this.automation.actions);
     },
   },
   async mounted() {
-    this.automation = await loadAutomation(this.filePath);
+    this.automation = await loadAutomation(this.automationName);
 
     this.trackAnalytic("accessAutomation", { name: this.automationName });
   },

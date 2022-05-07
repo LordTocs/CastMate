@@ -57,6 +57,13 @@ import { mapGetters } from "vuex";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
 import NamedItemConfirmation from "../components/dialogs/NamedItemConfirmation.vue";
+import {
+  createNewAutomation,
+  deleteAutomation,
+  duplicateAutomation,
+  getAllAutomations,
+  renameAutomation,
+} from "../utils/fileTools";
 
 export default {
   components: { ConfirmDialog, NamedItemModal, NamedItemConfirmation },
@@ -71,42 +78,14 @@ export default {
   },
   methods: {
     async getFiles() {
-      let automationFiles = await fs.promises.readdir(
-        path.join(this.paths.userFolder, "automations")
-      );
-
-      automationFiles = automationFiles.filter(
-        (f) => path.extname(f) == ".yaml"
-      );
-
-      this.automationFiles = automationFiles.map((f) => ({
-        name: path.basename(f, ".yaml"),
+      const automations = await getAllAutomations();
+      this.automationFiles = automations.map((f) => ({
+        name: f,
       }));
     },
     async createNewAutomation(name) {
-      const filePath = path.join(
-        this.paths.userFolder,
-        "automations",
-        name + ".yaml"
-      );
-
-      if (fs.existsSync(filePath)) {
-        return;
-      }
-
-      const automation = {
-        version: "1.0",
-        description: "",
-        actions: [],
-      };
-
-      await fs.promises.writeFile(filePath, YAML.stringify(automation));
-
+      await createNewAutomation(name);
       this.$router.push(`/automations/${name}`);
-
-      this.trackAnalytic("newAutomation", { name });
-
-      //Todo open path.
     },
     async tryDelete(name) {
       if (
@@ -115,19 +94,7 @@ export default {
           `Are you sure you want to delete ${name}?`
         )
       ) {
-        const filePath = path.join(
-          this.paths.userFolder,
-          "automations",
-          name + ".yaml"
-        );
-
-        if (!fs.existsSync(filePath)) {
-          return;
-        }
-
-        await fs.promises.unlink(filePath);
-
-        this.trackAnalytic("deleteAutomation", { name });
+        await deleteAutomation(name);
 
         const idx = this.automationFiles.findIndex((af) => af.name == name);
 
@@ -145,27 +112,8 @@ export default {
           "Cancel"
         )
       ) {
-        const filePath = path.join(
-          this.paths.userFolder,
-          "automations",
-          name + ".yaml"
-        );
-
         const newName = this.$refs.duplicateDlg.name;
-
-        const destPath = path.join(
-          this.paths.userFolder,
-          "automations",
-          newName + ".yaml"
-        );
-
-        if (!fs.existsSync(filePath)) {
-          return;
-        }
-
-        await fs.promises.copyFile(filePath, destPath);
-
-        this.trackAnalytic("duplicateAutomation", { name });
+        await duplicateAutomation(name, newName);
 
         this.$router.push(`/automations/${newName}`);
       }
@@ -179,25 +127,8 @@ export default {
           "Cancel"
         )
       ) {
-        const filePath = path.join(
-          this.paths.userFolder,
-          "automations",
-          name + ".yaml"
-        );
-
         const newName = this.$refs.duplicateDlg.name;
-
-        const newPath = path.join(
-          this.paths.userFolder,
-          "automations",
-          newName + ".yaml"
-        );
-
-        if (!fs.existsSync(filePath)) {
-          return;
-        }
-
-        await fs.promises.rename(filePath, newPath);
+        await renameAutomation(name, newName);
 
         await this.getFiles();
       }
