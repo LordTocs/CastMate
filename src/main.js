@@ -9,15 +9,13 @@ import VueMixpanel from 'vue-mixpanel';
 
 Vue.config.productionTip = false;
 
-
 Vue.use(VueMixpanel, {
     token: process.env.VUE_APP_MIXPANEL_PROJECT_TOKEN,
     debug: (process.env.NODE_ENV !== 'production' && !process.env.DEV_ANALYTICS)
 });
 
-
-
 Vue.component('v-timeline', VTimeline);
+
 Vue.use(VueMask)
 
 console.log("Main!");

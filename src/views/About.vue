@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { app } from "@electron/remote";
+import { app } from "@electron/remote/main";
 import { ipcRenderer } from "electron";
 import WelcomeDialog from '../components/wizard/WelcomeDialog.vue';
 export default {

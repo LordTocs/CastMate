@@ -1,11 +1,15 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, shell, ipcRenderer, ipcMain } from 'electron'
+import { app, protocol, shell, ipcRenderer, ipcMain, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import { initCastMate } from './core/castmate'
 import { autoUpdater, CancellationToken } from 'electron-updater';
 import path from 'path';
+
+import * as remoteMain from '@electron/remote/main';
+
+
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 autoUpdater.autoInstallOnAppQuit = false;
@@ -19,7 +23,7 @@ if (process.env.WEBPACK_DEV_SERVER_URL) {
 	);
 }
 
-require('@electron/remote/main').initialize()
+remoteMain.initialize();
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
 	{ scheme: 'app', privileges: { secure: true, standard: true } }
@@ -43,6 +47,8 @@ async function createWindow() {
 		},
 		frame: false
 	})
+
+	remoteMain.enable(win.webContents);
 
 	if (process.env.WEBPACK_DEV_SERVER_URL) {
 		// Load the url of the dev server if in development mode
@@ -70,6 +76,8 @@ async function createWindow() {
 		shell.openExternal(url);
 	});
 
+
+
 	mainWindow = win;
 }
 
@@ -88,6 +96,8 @@ async function createUpdaterWindow(updateData) {
 		},
 		frame: false
 	})
+
+	remoteMain.enable(win.webContents);
 
 	const params = new URLSearchParams(updateData)
 
@@ -111,6 +121,8 @@ async function createUpdaterWindow(updateData) {
 		e.preventDefault();
 		shell.openExternal(url);
 	});
+
+
 }
 
 // Quit when all windows are closed.
