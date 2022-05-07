@@ -34,7 +34,7 @@
     "color": "^4.0.2",
     "core-js": "^3.6.5",
     "cs-gamestate": "^2.2.3",
-    "electron": "^16.2.5",
+    "electron": "^18.2.0",
     "electron-rebuild": "^3.2.7",
     "electron-serve": "^1.1.0",
     "electron-updater": "^4.6.1",
