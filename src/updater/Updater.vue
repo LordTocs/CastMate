@@ -40,10 +40,9 @@
 <script>
 import FlexScroller from "../components/layout/FlexScroller.vue";
 import SystemBar from "../components/layout/SystemBar.vue";
-import VueMarkdown from "vue-markdown-render";
 import { ipcRenderer } from 'electron';
 export default {
-  components: { SystemBar, FlexScroller, VueMarkdown },
+  components: { SystemBar, FlexScroller },
   data() {
     return {
       releaseDate: null,
