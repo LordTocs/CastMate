@@ -11,7 +11,7 @@
           <slot name="new-selector" :value="key" :valueInput="(v) => key = v" :label="label">
             <number-input v-model="key" :label="label" />
           </slot>
-          <automation-selector v-model="automation" />
+          <automation-input v-model="automation" />
         </v-card-text>
         <v-card-actions class="pt-3">
           <v-spacer></v-spacer>
@@ -38,11 +38,12 @@
 </template>
 
 <script>
+import AutomationInput from '../automations/AutomationInput.vue';
 import AutomationSelector from '../automations/AutomationSelector.vue';
 import EnumInput from '../data/EnumInput.vue';
 import NumberInput from '../data/NumberInput.vue';
 export default {
-  components: { NumberInput, EnumInput, AutomationSelector },
+  components: { NumberInput, EnumInput, AutomationSelector, AutomationInput },
   props: {
     header: { type: String, default: () => "Create" },
     label: { type: String, default: () => "Name" },
