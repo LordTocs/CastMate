@@ -37,7 +37,7 @@
 
         <v-list-item link to="/automations">
           <v-list-item-icon>
-            <v-icon>mdi-timeline</v-icon>
+            <v-icon>mdi-flash</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>

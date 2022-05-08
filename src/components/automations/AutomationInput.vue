@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="d-flex flex-row" v-if="isEmpty">
-      <v-btn @click="editInline" class="mx-2"> Edit Actions </v-btn>
+      <v-btn @click="editInline" class="mx-2" color="blue darken-1">
+        <v-icon> mdi-flash </v-icon> Add Actions
+      </v-btn>
       <v-menu
         v-model="automationPopover"
         :close-on-content-click="false"
@@ -9,7 +11,7 @@
         class="mx-2"
       >
         <template v-slot:activator="{ on, attrs }">
-          <v-btn v-bind="attrs" v-on="on"> Choose Existing Automation </v-btn>
+          <v-btn v-bind="attrs" v-on="on"> Existing Automation </v-btn>
         </template>
 
         <v-card>
@@ -22,8 +24,9 @@
     </div>
     <div class="d-flex flex-row" v-else-if="hasInlineActions">
       <v-btn @click="editInline">
-        <v-icon> mdi-pencil </v-icon> Edit Actions
+        <v-icon> mdi-flash </v-icon> Edit Actions
       </v-btn>
+      <action-mini-preview :automation="value" />
     </div>
     <automation-selector
       v-else-if="hasAutomationReference"
@@ -40,10 +43,15 @@
 
 <script>
 import { generateEmptyAutomation } from "../../utils/fileTools";
+import ActionMiniPreview from "../actions/ActionMiniPreview.vue";
 import AutomationSelector from "./AutomationSelector.vue";
 import InlineAutomationEditDialog from "./InlineAutomationEditDialog.vue";
 export default {
-  components: { AutomationSelector, InlineAutomationEditDialog },
+  components: {
+    AutomationSelector,
+    InlineAutomationEditDialog,
+    ActionMiniPreview,
+  },
   props: {
     value: {},
   },
