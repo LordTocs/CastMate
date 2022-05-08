@@ -2,10 +2,12 @@
   <v-container fluid>
     <v-card class="linktable-card" color="grey darken-2">
       <v-card-title>
+        <v-btn @click="$refs.addProfileModal.open()" class="mx-3"> Add Profile </v-btn>
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
           label="Filter"
+          class="py-0 my-0"
           single-line
           hide-details
         />
@@ -14,6 +16,7 @@
         :headers="profileHeaders"
         :items="profiles"
         :search="search"
+        :items-per-page="-1"
         @click:row="(item) => $router.push(`/profiles/${item.name}`)"
       >
         <template v-slot:item.actions="{ item }">

@@ -2,9 +2,11 @@
   <v-container fluid>
     <v-card class="linktable-card" color="grey darken-2">
       <v-card-title>
+        <v-btn @click="$refs.addAutomationModal.open()" class="mx-3"> Add Automation </v-btn>
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
+          class="my-0 py-0"
           label="Filter"
           single-line
           hide-details
@@ -14,6 +16,7 @@
         :headers="automationHeaders"
         :items="automationFiles"
         :search="search"
+        :items-per-page="-1"
         @click:row="(item) => $router.push(`/automations/${item.name}`)"
       >
         <template v-slot:item.actions="{ item }">
