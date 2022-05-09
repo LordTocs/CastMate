@@ -14,22 +14,15 @@
     <v-card-text>
       {{ trigger.description }}
     </v-card-text>
-    <v-data-table :headers="headers" :items="commandList" :search="search">
-      <template v-slot:item.key="props">
+    <v-data-table :headers="headers" :items="value" :search="search">
+      <template v-slot:item.config="props">
         <v-edit-dialog
-          @open="openRename(props.item.key)"
-          @close="renameCommand(props.item.key, rename)"
+          @open="openReconfig(props.item.id)"
+          @close="doReconfig(props.item.id)"
         >
-          <slot name="label" :item="props.item" :commandList="commandList">
-            {{ props.item.key }}
-          </slot>
+          <data-view :schema="trigger.config" :value="props.item.config" />
           <template v-slot:input>
-            <slot
-              name="selector"
-              :item="props.item"
-              :value="rename"
-              :valueInput="(newValue) => (rename = newValue)"
-            />
+            <data-input :schema="trigger.config" v-model="reconfig" />
           </template>
         </v-edit-dialog>
       </template>
@@ -37,12 +30,12 @@
       <template v-slot:item.automation="props">
         <automation-input
           :value="props.item.automation"
-          @input="(v) => changeAutomation(props.item.key, v)"
+          @input="(v) => changeAutomation(props.item.id, v)"
         />
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <v-btn fab small class="mx-1" @click="tryDelete(item.key)">
+        <v-btn fab small class="mx-1" @click="tryDelete(item.id)">
           <v-icon small> mdi-delete </v-icon>
         </v-btn>
       </template>
@@ -54,22 +47,12 @@
     <trigger-command-modal
       ref="addCommandModal"
       :header="`Setup New Trigger`"
-      :label="triggerUnit"
       :trigger="trigger"
       @created="createNewCommand"
-    >
-      <template v-slot:new-selector="selectProps">
-        <slot
-          name="new-selector"
-          :value="selectProps.value"
-          :valueInput="selectProps.valueInput"
-          :label="selectProps.label"
-        >
-        </slot>
-      </template>
-    </trigger-command-modal>
+    />
     <confirm-dialog ref="deleteDlg" />
   </v-card>
+  
 </template>
 
 <script>
@@ -77,7 +60,10 @@ import AutomationSelector from "../automations/AutomationSelector.vue";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
 import { changeObjectKey } from "../../utils/objects";
 import TriggerCommandModal from "./TriggerCommandModal.vue";
-import AutomationInput from '../automations/AutomationInput.vue';
+import AutomationInput from "../automations/AutomationInput.vue";
+import DataView from "../data/DataView.vue";
+import DataInput from "../data/DataInput.vue";
+import _cloneDeep from "lodash/cloneDeep";
 
 export default {
   components: {
@@ -85,6 +71,8 @@ export default {
     AutomationSelector,
     TriggerCommandModal,
     AutomationInput,
+    DataView,
+    DataInput
   },
   props: {
     trigger: {},
@@ -93,55 +81,56 @@ export default {
   },
   data() {
     return {
-      rename: null,
+      reconfig: null,
       search: "",
     };
   },
   computed: {
-    commandList() {
-      const triggerObj = this.value;
-      if (!triggerObj) return [];
-      return Object.keys(triggerObj)
-        .filter((key) => key != "imports")
-        .map((key) => ({
-          ...triggerObj[key],
-          key,
-        }));
-    },
-    triggerUnit() {
-      return this.trigger ? this.trigger.triggerUnit || 'Command' : 'Command';
-    },
     triggerName() {
       return this.trigger ? this.trigger.name : this.triggerKey;
     },
     headers() {
       return [
-        { text: this.triggerUnit, value: "key" },
+        { text: "Config", value: "config" },
         { text: "Automation", value: "automation" },
-        { text: "Actions", value: "actions", sortable: false, align: "right" },
+        { text: "Options", value: "actions", sortable: false, align: "right" },
       ];
     },
   },
   methods: {
-    openRename(commandKey) {
-      this.rename = commandKey;
+    getMapping(id) {
+      return this.value.find((m) => m.id == id);
     },
-    createNewCommand({ key, automation }) {
-      if (this.value && key in this.value) return;
+    openReconfig(id) {
+      const mapping = this.getMapping(id);
+      console.log(mapping);
+      this.reconfig = _cloneDeep(mapping.config);
+    },
+    doReconfig(id) {
+      console.log("Reconfig " + id + " : " + this.reconfig);
+      const result = [...this.value];
+      const idx = result.findIndex((m) => m.id == id);
+      result[idx].config = this.reconfig;
 
-      const result = { ...this.value };
-      result[key] = { automation: automation };
+      this.$emit("input", result);
+    },
+    createNewCommand(command) {
+      console.log("Creating new command", command);
+      const result = [...(this.value ? this.value : []), command];
 
       this.trackAnalytic("createCommand", { trigger: this.triggerName });
 
       this.$emit("input", result);
     },
-    changeAutomation(commandKey, automationName) {
-      const result = { ...this.value };
-      result[commandKey] = { automation: automationName };
+    changeAutomation(id, automation) {
+      const result = [...this.value];
+      const idx = result.findIndex((m) => m.id == id);
+
+      result[idx].automation = automation;
+
       this.$emit("input", result);
     },
-    async tryDelete(commandKey) {
+    async tryDelete(id) {
       if (
         await this.$refs.deleteDlg.open(
           "Confirm",
@@ -149,19 +138,13 @@ export default {
         )
       ) {
         //Delete the command
-        const result = { ...this.value };
-        delete result[commandKey];
+        const result = [...this.value];
+        const idx = result.findIndex((m) => m.id == id);
+        result.splice(idx, 1);
+
         this.trackAnalytic("deleteCommand", { trigger: this.triggerName });
         this.$emit("input", result);
       }
-    },
-    renameCommand(oldKey, newKey) {
-      console.log("Renaming Command: ", oldKey, newKey, !newKey);
-
-      if (!newKey) return;
-
-      const result = changeObjectKey(this.value, oldKey, newKey);
-      this.$emit("input", result);
     },
   },
 };

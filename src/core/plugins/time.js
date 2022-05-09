@@ -74,12 +74,12 @@ module.exports = {
 		},
 	},
 	triggers: {
-		timers: {
+		/*timers: {
 			name: "Timer",
 			description: "Fires at a regular interval",
 			type: "TimerTrigger",
 			key: "timer",
 			triggerUnit: "Interval"
-		}
+		}*/
 	}
 }

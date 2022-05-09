@@ -3,7 +3,7 @@ const { template } = require('../utils/template');
 const path = require("path");
 const { userFolder } = require("../utils/configuration");
 const say = require("say");
-const nanoid = require("nanoid");
+const nanoid = require("nanoid/non-secure");
 
 module.exports = {
 	name: "sounds",

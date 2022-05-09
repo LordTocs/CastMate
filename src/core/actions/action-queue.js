@@ -18,6 +18,7 @@ class ActionQueue {
 		this.queueMutex = new Mutex();
 
 		this.actions = {};
+
 		for (let plugin of plugins.plugins) {
 			this.actions[plugin.name] = {}
 			for (let actionKey in plugin.actions) {
@@ -26,7 +27,17 @@ class ActionQueue {
 
 			this.triggerHandlers[plugin.name] = {};
 			for (let triggerName in plugin.triggers) {
-				this.triggerHandlers[plugin.name][triggerName] = plugin.triggers[triggerName].handler
+
+				const pluginTrigger = plugin.triggers[triggerName];
+				this.triggerHandlers[plugin.name][triggerName] = async (context, ...args) => {
+
+					const mappings = this.triggerMappings[plugin.name][triggerName];
+					for (let mapping of mappings) {
+						if (!pluginTrigger.internalHandler || await pluginTrigger.internalHandler(mapping.config, context, ...args)) {
+							this.startAutomation(mapping.automation, context)
+						}
+					}
+				}
 			}
 		}
 
@@ -67,8 +78,7 @@ class ActionQueue {
 
 	async startAutomation(automationObj, context) {
 		let automation = null;
-		if (typeof automationObj == 'string' || automationObj instanceof String)
-		{
+		if (typeof automationObj == 'string' || automationObj instanceof String) {
 			automation = this.automations.get(automationObj);
 
 			if (!automation) {
@@ -76,13 +86,11 @@ class ActionQueue {
 				return;
 			}
 		}
-		else
-		{
+		else {
 			automation = automationObj;
 			//TODO: Validate automation object here.
 
-			if (!automation)
-			{
+			if (!automation) {
 				logger.error(`Invalid automation object!`);
 				return;
 			}
@@ -91,17 +99,14 @@ class ActionQueue {
 		this.pushToQueue(automation, context);
 	}
 
-	async startAutomationArray(automations, context)
-	{
-		for (let automation of automations)
-		{
+	async startAutomationArray(automations, context) {
+		for (let automation of automations) {
 			this.startAutomation(automation, context);
 		}
 	}
 
 	_prepAutomation(automation) {
-		if (!automation)
-		{
+		if (!automation) {
 			logger.error("Automation missing!");
 		}
 
@@ -147,26 +152,20 @@ class ActionQueue {
 		}
 	}
 
-	trigger(plugin, name, options) {
+	trigger(plugin, name, context, ...args) {
 		const pluginHandlers = this.triggerHandlers[plugin];
+
 		if (!pluginHandlers) {
 			return false;
 		}
+		
 		let triggerHandler = this.triggerHandlers[plugin][name];
 
 		if (!triggerHandler) {
 			return false;
 		}
-		const triggerPluginMappings = this.triggerMappings[plugin];
-		if (!triggerPluginMappings) {
-			return false;
-		}
-		const triggerMappings = this.triggerMappings[plugin][name];
-		if (!triggerMappings) {
-			return false;
-		}
 
-		return triggerHandler.handle(this, triggerMappings, options);
+		return triggerHandler(context, ...args);
 	}
 
 

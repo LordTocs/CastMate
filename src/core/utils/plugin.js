@@ -69,7 +69,8 @@ class Plugin
 
 		this.pluginObj.triggers = {};
 
-		for (let triggerName in config.triggers)
+
+		/*for (let triggerName in config.triggers)
 		{
 			const triggerSpec = config.triggers[triggerName];
 			this.triggers[triggerName] = { ...triggerSpec };
@@ -122,7 +123,9 @@ class Plugin
 					});
 				}
 			}
-		}
+		}*/
+
+		this.setupTriggers(config);
 
 		this.actions = {};
 
@@ -215,6 +218,32 @@ class Plugin
 		}
 	}
 
+	setupTriggers(config) {
+		for (let triggerName in config.triggers)
+		{
+			const triggerSpec = config.triggers[triggerName];
+
+			const triggerObj = {
+				name: triggerSpec.name,
+				description: triggerSpec.description || "",
+				context: triggerSpec.context || { },
+			}
+
+			if (triggerSpec.config)
+			{
+				triggerObj.config = triggerSpec.config;
+				triggerObj.internalHandler = triggerSpec.handler.bind(this.pluginObj);
+			}
+			
+			this.triggers[triggerName] = triggerObj;
+
+			const triggerFunc = function (context, ...args) {
+				return this.actions.trigger(this.name, triggerName, context || {}, args)
+			}
+			this.pluginObj.triggers[triggerName] = triggerFunc.bind(this.pluginObj);
+		}
+	}
+
 	async updateSettings(newSettings, oldSettings)
 	{
 		let newPluginSettings = newSettings[this.name] || {};
@@ -288,10 +317,21 @@ class Plugin
 		{
 			triggers[triggerName] = { ...this.triggers[triggerName] }
 
-			if (triggers[triggerName].enum instanceof Function || triggers[triggerName].enum instanceof AsyncFunction)
+			if (triggers[triggerName].config)
 			{
-				triggers[triggerName].enum = `${this.name}_trigger_${triggerName}_enum`;
+				triggers[triggerName].config = cleanSchemaForIPC(this.name + "_triggers_config_" + triggerName, triggers[triggerName].config);
 			}
+
+			const contextSchema = cleanSchemaForIPC(this.name + "_triggers_context_" + triggerName, {
+				type: Object,
+				properties: triggers[triggerName].context || {}
+			});
+
+			triggers[triggerName].context = contextSchema.properties;
+
+
+			delete triggers[triggerName].internalHandler
+			delete triggers[triggerName].handler
 		}
 
 		return {

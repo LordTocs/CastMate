@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import TriggerEditor from "../triggers/TriggerEditor.vue";
+import TriggerEditor from '../triggers/TriggerEditor.vue';
 
 export default {
   components: { TriggerEditor },

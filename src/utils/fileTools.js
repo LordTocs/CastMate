@@ -110,6 +110,26 @@ export async function duplicateProfile(profileName, duplicateName) {
 }
 
 export async function saveProfile(profileName, profileData) {
+    let data = _.cloneDeep(profileData);
+
+    for (let pluginName in data.triggers) {
+        for (let triggerName in data.triggers[pluginName])
+        {
+            const triggerArray = data.triggers[pluginName][triggerName];
+            for (let trigger of triggerArray)
+            {
+                delete trigger.id;
+                if (trigger.automation instanceof Object)
+                {
+                    for (let action of trigger.automation.actions)
+                    {
+                        delete action.id;
+                    }
+                }
+            }
+        }
+    }
+
     let newYaml = YAML.stringify(profileData);
 
     await fs.promises.writeFile(
@@ -128,6 +148,24 @@ export async function loadProfile(profileName) {
     //Handle default conditions
     if (!data.conditions) {
         data.conditions = { operator: "any", operands: [] };
+    }
+
+    for (let pluginName in data.triggers) {
+        for (let triggerName in data.triggers[pluginName])
+        {
+            const triggerArray = data.triggers[pluginName][triggerName];
+            for (let trigger of triggerArray)
+            {
+                trigger.id = nanoid();
+                if (trigger.automation instanceof Object)
+                {
+                    for (let action of trigger.automation.actions)
+                    {
+                        action.id = nanoid();
+                    }
+                }
+            }
+        }
     }
 
     return data;

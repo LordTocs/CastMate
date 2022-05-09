@@ -8,9 +8,7 @@
       </v-toolbar>
       <v-form @submit.prevent="create">
         <v-card-text>
-          <slot name="new-selector" :value="key" :valueInput="(v) => key = v" :label="label">
-            <number-input v-model="key" :label="label" />
-          </slot>
+          <data-input :schema="trigger.config" v-model="config" />
           <automation-input v-model="automation" />
         </v-card-text>
         <v-card-actions class="pt-3">
@@ -27,7 +25,7 @@
             color="primary"
             class="body-2 font-weight-bold"
             outlined
-            @click.native="create"
+            @click.native="() => create()"
           >
             Create
           </v-btn>
@@ -38,12 +36,20 @@
 </template>
 
 <script>
-import AutomationInput from '../automations/AutomationInput.vue';
-import AutomationSelector from '../automations/AutomationSelector.vue';
-import EnumInput from '../data/EnumInput.vue';
-import NumberInput from '../data/NumberInput.vue';
+import AutomationInput from "../automations/AutomationInput.vue";
+import AutomationSelector from "../automations/AutomationSelector.vue";
+import DataInput from "../data/DataInput.vue";
+import EnumInput from "../data/EnumInput.vue";
+import NumberInput from "../data/NumberInput.vue";
+import { nanoid } from "nanoid/non-secure";
 export default {
-  components: { NumberInput, EnumInput, AutomationSelector, AutomationInput },
+  components: {
+    NumberInput,
+    EnumInput,
+    AutomationSelector,
+    AutomationInput,
+    DataInput,
+  },
   props: {
     header: { type: String, default: () => "Create" },
     label: { type: String, default: () => "Name" },
@@ -51,25 +57,30 @@ export default {
   },
   data() {
     return {
-      key: null,
+      config: null,
       automation: null,
       dialog: false,
     };
   },
   methods: {
     open() {
-      this.key = null;
+      this.config = null;
       this.automation = null;
       this.dialog = true;
     },
     cancel() {
       this.dialog = false;
     },
-    async create() {
-      if (this.key === null || this.key === undefined) return;
+    create() {
+      //if (this.key === null || this.key === undefined) return;
+      //Todo validate config here. Perhaps use @lordtocs/schema
 
       this.dialog = false;
-      this.$emit("created", { key: this.key, automation: this.automation });
+      this.$emit("created", {
+        id: nanoid(),
+        config: this.config,
+        automation: this.automation,
+      });
     },
   },
 };

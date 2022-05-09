@@ -55,39 +55,16 @@ Profile.mergeTriggers = function (profiles) {
 
 	for (let profile of profiles) {
 		for (let plugin in profile.triggers) {
-			//Ensure the plugin is in the combined.
 			if (!(plugin in combined)) {
 				combined[plugin] = {};
 			}
 
 			for (let trigger in profile.triggers[plugin]) {
-				if ("automation" in profile.triggers[plugin][trigger])
-				{
-					//We're a single auto here.
-					if (!(trigger in combined[plugin])) {
-						combined[plugin][trigger] = [];
-					}
-
-					combined[plugin][trigger].push(profile.triggers[plugin][trigger]);
+				
+				if (!(trigger in combined[plugin])) {
+					combined[plugin][trigger] = [];
 				}
-				else
-				{
-					if (!(trigger in combined[plugin])) {
-						combined[plugin][trigger] = {};
-					}
-
-					//We're a sub trigger auto here.
-					for (let subTrigger in profile.triggers[plugin][trigger]) {
-						if (!combined[plugin][trigger][subTrigger])
-						{
-							combined[plugin][trigger][subTrigger] = [];
-						}
-						combined[plugin][trigger][subTrigger].push(profile.triggers[plugin][trigger][subTrigger]);
-					}
-				}
-
-				// else subtrigger merge
-
+				combined[plugin][trigger] = combined[plugin][trigger].concat(profile.triggers[plugin][trigger]);
 			}
 		}
 

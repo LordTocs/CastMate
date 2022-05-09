@@ -39,7 +39,11 @@
     :secret="secret"
   />
   <div v-else-if="schema.type == 'Boolean'" class="d-flex flex-row">
-    <div v-if="schema.leftLabel" style="margin-top: 20px; margin-bottom: 8px; height: 24px;" class="d-flex align-center mr-2">
+    <div
+      v-if="schema.leftLabel"
+      style="margin-top: 20px; margin-bottom: 8px; height: 24px"
+      class="d-flex align-center mr-2"
+    >
       <label class="v-label">{{ schema.leftLabel }} </label>
     </div>
     <v-switch :input-value="value" @change="handleInput">
@@ -76,6 +80,18 @@
     @input="handleInput"
     v-else-if="schema.type == 'Automation'"
   />
+  <reward-selector
+    v-else-if="schema.type == 'ChannelPointReward'"
+    :value="value"
+    @input="handleInput"
+    :label="schema.name || label"
+  />
+  <range-input
+    v-else-if="schema.type == 'Range'"
+    :value="value"
+    @input="handleInput"
+    :label="schema.name || label"
+  />
 </template>
 
 <script>
@@ -83,7 +99,9 @@ import NumberInput from "./NumberInput.vue";
 import ColorPicker from "./ColorPicker.vue";
 import FileAutocomplete from "./FileAutocomplete.vue";
 import StringDataInput from "./StringDataInput.vue";
+import RewardSelector from "../rewards/RewardSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
+import RangeInput from "./RangeInput.vue";
 
 export default {
   name: "data-input",
@@ -94,6 +112,8 @@ export default {
     StringDataInput,
     ColorPicker,
     AutomationSelector: () => import("../automations/AutomationSelector.vue"),
+    RewardSelector,
+    RangeInput,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {

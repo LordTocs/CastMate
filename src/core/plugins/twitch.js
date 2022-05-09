@@ -18,6 +18,7 @@ const { WebSocket } = require('ws');
 
 const axios = require('axios');
 const logger = require("../utils/logger");
+const { inRange } = require("../utils/range");
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -299,7 +300,9 @@ module.exports = {
 					this.triggers.firstTimeChat(context);
 				}
 
-				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
+				this.triggers.chat(context, msgInfo.userInfo);
+
+				/*if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
 					if (this.triggers.modchat(context)) {
 						return;
 					}
@@ -319,7 +322,7 @@ module.exports = {
 
 				if (this.triggers.chat(context)) {
 					return;
-				}
+				}*/
 
 			});
 
@@ -811,9 +814,69 @@ module.exports = {
 		chat: {
 			name: "Chat",
 			description: "Fires when any user chats.",
-			type: "CommandTrigger"
+			type: "CommandTrigger",
+			config: {
+				type: Object,
+				properties: {
+					command: { type: String },
+					match: { type: String, enum: ["Start", "Anywhere"], default: "Start", preview: false },
+					permissions: {
+						type: Object,
+						properties: {
+							viewer: { type: Boolean, name: "Viewer", default: true, required: true },
+							sub: { type: Boolean, name: "Subscriber", default: true, required: true },
+							vip: { type: Boolean, name: "VIP", default: true, required: true },
+							mod: { type: Boolean, name: "Moderator", default: true, required: true },
+							streamer: { type: Boolean, name: "Streamer", default: true, required: true },
+						},
+						preview: false,
+					},
+				}
+			},
+			context: {
+				command: { type: String },
+				user: { type: String },
+				userId: { type: String },
+				args: { type: String },
+				argString: { type: String },
+				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String },
+			},
+			handler(config, context, userInfo) {
+				if (config.match == "Start") {
+					if (context.command != config.command) {
+						return false;
+					}
+				}
+				if (config.match == "Anywhere") {
+					if (context.message.contains(config.command)) {
+						return false;
+					}
+				}
+
+				if (config.permissions) {
+					if (config.permissions.viewer) {
+						return true;
+					}
+					if (userInfo.isMod && config.permissions.mod) {
+						return true;
+					}
+					if (userInfo.isVip && config.permissions.vip) {
+						return true;
+					}
+					if (userInfo.isSubscriber && config.permissions.sub) {
+						return true;
+					}
+					if (userInfo.isBroadcaster && config.permissions.streamer) {
+						return true;
+					}
+				}
+
+				return false;
+			}
 		},
-		subchat: {
+		/*subchat: {
 			name: "Sub Chat",
 			description: "Fires for only subscribed user chats",
 			type: "CommandTrigger"
@@ -827,47 +890,139 @@ module.exports = {
 			name: "Mod Chat",
 			description: "Fires for when a mod or the broadcaster chats",
 			type: "CommandTrigger"
-		},
+		},*/
 		redemption: {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
 			type: "RewardTrigger",
 			key: "reward",
-			triggerUnit: "Channel Reward"
+			triggerUnit: "Channel Reward",
+			config: {
+				type: Object,
+				properties: {
+					reward: { type: "ChannelPointReward" },
+				},
+			},
+			context: {
+				reward: { type: String },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String }
+			},
+			handler(config, context) {
+				return context.reward == config.reward;
+			}
 		},
 		follow: {
 			name: "Follow",
 			description: "Fires for when a user follows.",
-			type: "SingleTrigger"
+			type: "SingleTrigger",
+			context: {
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
 		},
 		firstTimeChat: {
 			name: "First Time Chatter",
 			description: "Fires for when a user chats for the very first time in the channel.",
-			type: "SingleTrigger"
+			type: "SingleTrigger",
+			context: {
+				command: { type: String },
+				user: { type: String },
+				userId: { type: String },
+				args: { type: String },
+				argString: { type: String },
+				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String },
+			},
 		},
 		subscribe: {
 			name: "Subscription",
 			description: "Fires for when a user subscribes. Based on total number of months subscribed.",
 			type: "NumberTrigger",
-			triggerUnit: "Months Subbed"
+			triggerUnit: "Months Subbed",
+			config: {
+				type: Object,
+				properties: {
+					months: { type: "Range", name: "Month Range" },
+				},
+			},
+			context: {
+				months: { type: Number },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
+			handler(config, context) {
+				return inRange(context.months, config.months);
+			}
 		},
 		giftedSub: {
 			name: "Gifted Subs",
 			description: "Fires for when a user gifts subs. Based on the number of subs gifted..",
 			type: "NumberTrigger",
-			triggerUnit: "Subs Gifted"
+			triggerUnit: "Subs Gifted",
+			config: {
+				type: Object,
+				properties: {
+					subs: { type: "Range", name: "Subs Gifted" },
+				},
+			},
+			context: {
+				subs: { type: Number },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
+			handler(config, context) {
+				return inRange(context.subs, config.subs);
+			}
 		},
 		bits: {
 			name: "Cheered",
 			description: "Fires for when a user cheers with bits",
 			type: "NumberTrigger",
-			triggerUnit: "Bits Cheered"
+			triggerUnit: "Bits Cheered",
+			config: {
+				type: Object,
+				properties: {
+					bits: { type: "Range", name: "Bits Cheered" },
+				},
+			},
+			context: {
+				bits: { type: Number },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
+			handler(config, context) {
+				return inRange(context.bits, config.bits);
+			}
 		},
 		raid: {
 			name: "Raid",
 			description: "Fires when a raid start",
 			type: "NumberTrigger",
-			triggerUnit: "Raiders"
+			triggerUnit: "Raiders",
+			config: {
+				type: Object,
+				properties: {
+					raiders: { type: "Range", name: "Viewers" },
+				},
+			},
+			context: {
+				raiders: { type: Number },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
+			handler(config, context) {
+				return inRange(context.raiders, config.raiders);
+			}
 		}
 	},
 	actions: {
