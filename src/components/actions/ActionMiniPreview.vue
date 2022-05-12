@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-row align-center mx-3 preview">
+  <div class="d-flex flex-row align-center preview" v-if="automation">
     <action-mini-icon
       v-for="action in clampedActions"
       :key="action.id"
