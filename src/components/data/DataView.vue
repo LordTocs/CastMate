@@ -10,15 +10,15 @@
       schema.type == 'Automation'
     "
   >
-    <span v-if="schema.name || label"> {{ schema.name || label }}: </span>
+    <span class="text--secondary" v-if="schema.name || label"> {{ schema.name || label }}: </span>
     {{ value }}
   </p>
   <p v-else-if="schema.type == 'LightColor'">
-    <span v-if="schema.name || label"> {{ schema.name || label }}: </span>
+    <span class="text--secondary" v-if="schema.name || label"> {{ schema.name || label }}: </span>
     <color-swatch :value="value" />
   </p>
   <p v-else-if="schema.type == 'ChannelPointReward'">
-    {{ value }}
+    <span class="text--secondary" v-if="schema.name || label"> {{ schema.name || label }}: </span>{{ value }}
     <!--reward-edit-button :rewardName="value" /-->
   </p>
   <div v-else-if="schema.type == 'Object' && schema.properties">
@@ -30,7 +30,7 @@
     />
   </div>
   <p v-else-if="schema.type == 'Range' && value">
-    {{ value.min ? value.min : `-∞` }} ⟶ {{ value.max ? value.max : `∞` }}
+    <span class="text--secondary" v-if="schema.name || label"> {{ schema.name || label }}: </span>{{ value.min ? value.min : `-∞` }} ⟶ {{ value.max ? value.max : `∞` }}
   </p>
 </template>
 
