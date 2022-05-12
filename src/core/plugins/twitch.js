@@ -812,14 +812,14 @@ module.exports = {
 	},
 	triggers: {
 		chat: {
-			name: "Chat",
+			name: "Chat Command",
 			description: "Fires when any user chats.",
 			type: "CommandTrigger",
 			config: {
 				type: Object,
 				properties: {
-					command: { type: String },
-					match: { type: String, enum: ["Start", "Anywhere"], default: "Start", preview: false },
+					command: { type: String, name: "Command" },
+					match: { type: String, enum: ["Start", "Anywhere"], default: "Start", preview: false, name: "Match" },
 					permissions: {
 						type: Object,
 						properties: {
