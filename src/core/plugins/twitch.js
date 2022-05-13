@@ -916,7 +916,7 @@ module.exports = {
 			}
 		},
 		follow: {
-			name: "Follow",
+			name: "New Follower",
 			description: "Fires for when a user follows.",
 			type: "SingleTrigger",
 			context: {
@@ -962,7 +962,7 @@ module.exports = {
 			}
 		},
 		giftedSub: {
-			name: "Gifted Subs",
+			name: "Gifted Subscription",
 			description: "Fires for when a user gifts subs. Based on the number of subs gifted..",
 			type: "NumberTrigger",
 			triggerUnit: "Subs Gifted",
@@ -983,7 +983,7 @@ module.exports = {
 			}
 		},
 		bits: {
-			name: "Cheered",
+			name: "Bits Cheered",
 			description: "Fires for when a user cheers with bits",
 			type: "NumberTrigger",
 			triggerUnit: "Bits Cheered",
@@ -1004,7 +1004,7 @@ module.exports = {
 			}
 		},
 		raid: {
-			name: "Raid",
+			name: "Incoming Raid",
 			description: "Fires when a raid start",
 			type: "NumberTrigger",
 			triggerUnit: "Raiders",
