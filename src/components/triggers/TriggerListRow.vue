@@ -10,6 +10,19 @@
       />
     </td>
     <td>
+      <v-chip
+        class="ma-2"
+        outlined
+        v-if="
+          typeof mapping.automation == 'string' ||
+          mapping.automation instanceof String
+        "
+      >
+        <v-icon left> mdi-flash </v-icon>
+        {{ mapping.automation }}
+      </v-chip>
+    </td>
+    <td>
       <automation-preview :automation="mapping.automation" />
     </td>
     <td class="text-right">

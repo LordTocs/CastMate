@@ -1,9 +1,5 @@
 <template>
   <div class="d-flex flex-row" v-if="automation">
-    <v-chip class="ma-2" outlined v-if="!isInline">
-      <v-icon left> mdi-flash </v-icon>
-      {{ automation }}
-    </v-chip>
     <action-mini-preview
       :automation="isInline ? automation : loadedAutomation"
     />

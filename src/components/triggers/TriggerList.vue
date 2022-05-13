@@ -17,7 +17,7 @@
               :key="pluginKey"
               :style="{ backgroundColor: plugins[pluginKey].color }"
             >
-              <td colspan="4" class="text-h4">
+              <td colspan="5" class="text-h4">
                 <v-icon v-text="plugins[pluginKey].icon" x-large />
                 {{ plugins[pluginKey].uiName }} Triggers
               </td>
@@ -30,7 +30,7 @@
                 :key="`${pluginKey}_${triggerKey}`"
                 class="divider-row"
               >
-                <td colspan="4" class="text-center">
+                <td colspan="5" class="text-center">
                   {{ plugins[pluginKey].triggers[triggerKey].name }}
                 </td>
               </tr>
