@@ -1,5 +1,5 @@
 <template>
-  <v-list class="action-list" dense>
+  <v-list color="grey darken-4" class="action-list" dense>
     <v-list-group v-for="plugin in actionPlugins" :key="plugin.name" no-action>
       <template v-slot:activator>
         <v-list-item-content>
