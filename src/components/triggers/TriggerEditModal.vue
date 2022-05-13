@@ -1,32 +1,36 @@
 <template>
-  <v-dialog v-model="dialog" width="50%" persistent>
+  <v-dialog v-model="dialog" width="85%" persistent>
     <v-card>
       <v-toolbar dense flat>
         <v-toolbar-title class="text-body-2 font-weight-bold grey--text">
           {{ header }}
         </v-toolbar-title>
-      </v-toolbar>
-      <v-card-text>
         <trigger-selector
           :value="localTriggerType"
           @input="changeTriggerType"
+          label=""
         />
-        <data-input
-          v-if="
-            localTriggerType &&
-            plugins[localTriggerType.pluginKey].triggers[
-              localTriggerType.triggerKey
-            ].config
-          "
-          :schema="
-            plugins[localTriggerType.pluginKey].triggers[
-              localTriggerType.triggerKey
-            ].config
-          "
-          v-model="localMapping.config"
-        />
-        <automation-input v-if="localMapping" v-model="localMapping.automation" />
-      </v-card-text>
+      </v-toolbar>
+      <div class="d-flex flex-row">
+        <flex-scroller style="width: 300px" color="grey darken-4" innerClass="px-4">
+          <data-input
+            v-if="
+              localTriggerType &&
+              plugins[localTriggerType.pluginKey].triggers[
+                localTriggerType.triggerKey
+              ].config
+            "
+            :schema="
+              plugins[localTriggerType.pluginKey].triggers[
+                localTriggerType.triggerKey
+              ].config
+            "
+            v-model="localMapping.config"
+          />
+        </flex-scroller>
+        <automation-full-input class="flex-grow-1" />
+      </div>
+
       <v-card-actions>
         <v-spacer />
         <v-btn color="primary" @click="apply"> Apply </v-btn>
@@ -42,8 +46,17 @@ import DataInput from "../data/DataInput.vue";
 import TriggerSelector from "./TriggerSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
 import AutomationInput from "../automations/AutomationInput.vue";
+import AutomationFullInput from "../automations/AutomationFullInput.vue";
+import FlexScroller from "../layout/FlexScroller.vue";
+
 export default {
-  components: { TriggerSelector, DataInput, AutomationInput },
+  components: {
+    TriggerSelector,
+    DataInput,
+    AutomationInput,
+    AutomationFullInput,
+    FlexScroller,
+  },
   props: {
     mapping: {},
     header: { type: String, default: () => "Add Trigger" },

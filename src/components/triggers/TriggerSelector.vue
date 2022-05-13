@@ -7,6 +7,7 @@
     item-text="triggerKey"
     @change="(v) => $emit('input', v)"
     :value-comparator="comparator"
+    hide-details
   >
     <template v-slot:item="{ item }">
       <v-list-item-title v-if="item">
