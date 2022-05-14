@@ -44,12 +44,12 @@
         </template>
 
         <v-list>
-          <v-list-item>
+          <v-list-item link>
             <v-list-item-title @click="$refs.editModal.open()">
               Edit
             </v-list-item-title>
           </v-list-item>
-          <v-list-item @click="tryDelete()">
+          <v-list-item link @click="tryDelete()">
             <v-list-item-title> Delete </v-list-item-title>
           </v-list-item>
           <!--v-list-item>
