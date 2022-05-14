@@ -2,6 +2,7 @@
   <div class="d-flex flex-row" v-if="automation">
     <action-mini-preview
       :automation="isInline ? automation : loadedAutomation"
+      :maxActions="maxActions"
     />
   </div>
 </template>
@@ -13,6 +14,7 @@ export default {
   components: { ActionMiniPreview },
   props: {
     automation: {},
+    maxActions: { type: Number, default: () => 5 },
   },
   data() {
     return {
