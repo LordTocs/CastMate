@@ -301,29 +301,6 @@ module.exports = {
 				}
 
 				this.triggers.chat(context, msgInfo.userInfo);
-
-				/*if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
-					if (this.triggers.modchat(context)) {
-						return;
-					}
-				}
-
-				if (msgInfo.userInfo.isVip) {
-					if (this.triggers.vipchat(context)) {
-						return;
-					}
-				}
-
-				if (msgInfo.userInfo.isSubscriber) {
-					if (this.triggers.subchat(context)) {
-						return;
-					}
-				}
-
-				if (this.triggers.chat(context)) {
-					return;
-				}*/
-
 			});
 
 			this.chatClient.onRaid((channel, user, raidInfo, msgInfo) => {
@@ -788,15 +765,15 @@ module.exports = {
 		},
 		subscribers: {
 			type: Number,
-			name: "Twitch Subscribers",
+			name: "Number of Twitch Subscribers",
 		},
 		followers: {
 			type: Number,
-			name: "Twitch Followers"
+			name: "Number of Twitch Followers"
 		},
 		viewers: {
 			type: Number,
-			name: "Twitch Viewers",
+			name: "Number of Twitch Viewers",
 			default: 0,
 		},
 		isAuthed: {
@@ -814,7 +791,6 @@ module.exports = {
 		chat: {
 			name: "Chat Command",
 			description: "Fires when any user chats.",
-			type: "CommandTrigger",
 			config: {
 				type: Object,
 				properties: {
@@ -843,14 +819,15 @@ module.exports = {
 				message: { type: String },
 				filteredMessage: { type: String },
 			},
-			handler(config, context, userInfo) {
+			handler(config, context, mapping, userInfo) {
 				if (config.match == "Start") {
-					if (context.command != config.command) {
+					if (context.command != config.command.toLowerCase()) {
 						return false;
 					}
 				}
 				if (config.match == "Anywhere") {
-					if (context.message.contains(config.command)) {
+					console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
+					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
 					}
 				}
@@ -876,27 +853,9 @@ module.exports = {
 				return false;
 			}
 		},
-		/*subchat: {
-			name: "Sub Chat",
-			description: "Fires for only subscribed user chats",
-			type: "CommandTrigger"
-		},
-		vipchat: {
-			name: "VIP Chat",
-			description: "Fires for only VIP user chats",
-			type: "CommandTrigger"
-		},
-		modchat: {
-			name: "Mod Chat",
-			description: "Fires for when a mod or the broadcaster chats",
-			type: "CommandTrigger"
-		},*/
 		redemption: {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
-			type: "RewardTrigger",
-			key: "reward",
-			triggerUnit: "Channel Reward",
 			config: {
 				type: Object,
 				properties: {
@@ -943,8 +902,6 @@ module.exports = {
 		subscribe: {
 			name: "Subscription",
 			description: "Fires for when a user subscribes. Based on total number of months subscribed.",
-			type: "NumberTrigger",
-			triggerUnit: "Months Subbed",
 			config: {
 				type: Object,
 				properties: {
@@ -964,8 +921,6 @@ module.exports = {
 		giftedSub: {
 			name: "Gifted Subscription",
 			description: "Fires for when a user gifts subs. Based on the number of subs gifted..",
-			type: "NumberTrigger",
-			triggerUnit: "Subs Gifted",
 			config: {
 				type: Object,
 				properties: {
@@ -985,8 +940,6 @@ module.exports = {
 		bits: {
 			name: "Bits Cheered",
 			description: "Fires for when a user cheers with bits",
-			type: "NumberTrigger",
-			triggerUnit: "Bits Cheered",
 			config: {
 				type: Object,
 				properties: {
@@ -1006,8 +959,6 @@ module.exports = {
 		raid: {
 			name: "Incoming Raid",
 			description: "Fires when a raid start",
-			type: "NumberTrigger",
-			triggerUnit: "Raiders",
 			config: {
 				type: Object,
 				properties: {

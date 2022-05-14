@@ -36,6 +36,16 @@ class Profile {
 		}
 
 		this.triggers = profileConfig.triggers || {};
+
+		//Label all the triggers with their origin profile
+		for (let pluginKey in this.triggers) {
+			for (let triggerKey in this.triggers[pluginKey]) {
+				for (let mapping of this.triggers[pluginKey][triggerKey]) {
+					mapping.profile = this.name;
+				}
+			}
+		}
+
 		this.conditions = profileConfig.conditions || { operator: 'any', operands: [] };
 		this.config = profileConfig;
 		this.onActivate = profileConfig.onActivate;
@@ -60,7 +70,7 @@ Profile.mergeTriggers = function (profiles) {
 			}
 
 			for (let trigger in profile.triggers[plugin]) {
-				
+
 				if (!(trigger in combined[plugin])) {
 					combined[plugin][trigger] = [];
 				}
