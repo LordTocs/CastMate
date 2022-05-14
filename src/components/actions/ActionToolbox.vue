@@ -16,6 +16,7 @@
         :sort="false"
         :component-data="{ attrs: { 'no-action': true } }"
         draggable=".is-draggable"
+        :clone="cloneAction"
       >
         <v-list-item
           v-for="actionKey in Object.keys(plugin.actions)"
@@ -51,6 +52,8 @@
 import { mapGetters } from "vuex";
 import Draggable from "vuedraggable";
 import { constructDefaultSchema } from "../../utils/objects";
+import { nanoid } from "nanoid/non-secure";
+import _cloneDeep from "lodash/cloneDeep";
 
 export default {
   components: { Draggable },
@@ -75,6 +78,13 @@ export default {
       }
 
       return pluginLists;
+    },
+  },
+  methods: {
+    cloneAction(original) {
+      const copy = _cloneDeep(original);
+      copy.id = nanoid();
+      return copy;
     },
   },
 };
