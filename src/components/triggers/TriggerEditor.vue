@@ -1,20 +1,6 @@
 <template>
-  <command-trigger-table
-    v-if="trigger.type == 'CommandTrigger'"
-    :trigger="trigger"
-    :triggerKey="triggerKey"
-    :value="value"
-    @input="(v) => $emit('input', v)"
-  />
-  <number-trigger-table
-    v-else-if="trigger.type == 'NumberTrigger'"
-    :trigger="trigger"
-    :triggerKey="triggerKey"
-    :value="value"
-    @input="(v) => $emit('input', v)"
-  />
-  <enum-trigger-table
-    v-else-if="trigger.type == 'EnumTrigger'"
+  <trigger-table
+    v-if="!!trigger.config"
     :trigger="trigger"
     :triggerKey="triggerKey"
     :value="value"
@@ -27,38 +13,16 @@
     :value="value"
     @input="(v) => $emit('input', v)"
   />
-  <reward-trigger-table
-    v-else-if="trigger.type == 'RewardTrigger'"
-    :trigger="trigger"
-    :triggerKey="triggerKey"
-    :value="value"
-    @input="(v) => $emit('input', v)"
-  />
-  <timer-trigger-table
-    v-else-if="trigger.type == 'TimerTrigger'"
-    :trigger="trigger"
-    :triggerKey="triggerKey"
-    :value="value"
-    @input="(v) => $emit('input', v)"
-  />
 </template>
 
 <script>
-import NumberTriggerTable from "./NumberTriggerTable.vue";
+import TriggerTable from "./TriggerTable.vue";
 import SingleAutomationTrigger from "./SingleAutomationTrigger.vue";
-import CommandTriggerTable from "./CommandTriggerTable.vue";
-import EnumTriggerTable from "./EnumTriggerTable.vue";
-import RewardTriggerTable from "./RewardTriggerTable.vue";
-import TimerTriggerTable from './TimerTriggerTable.vue';
 
 export default {
   components: {
     SingleAutomationTrigger,
-    CommandTriggerTable,
-    NumberTriggerTable,
-    EnumTriggerTable,
-    RewardTriggerTable,
-    TimerTriggerTable,
+    TriggerTable
   },
   props: {
     triggerKey: { type: String },

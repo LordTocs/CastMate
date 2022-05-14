@@ -43,12 +43,12 @@ module.exports = {
 		}
 	},
 	triggers: {
-		donation: {
+		/*donation: {
 			name: "Kofi Donation",
 			description: "Fires when you receive a Kofi Donation",
 			type: "NumberTrigger",
 			triggerUnit: "Currency Given"
-		},
+		},*/
 	},
 	state: {
 		kofiTotal: {

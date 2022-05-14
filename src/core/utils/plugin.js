@@ -3,11 +3,7 @@ const { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } = requ
 const _ = require('lodash');
 const { ipcMain } = require("electron");
 const logger = require('../utils/logger');
-const { NumberTriggerHandler } = require("../actions/number-trigger-handler");
-const { CommandTriggerHandler } = require("../actions/command-trigger-handler");
-const { SingleTriggerHandler } = require("../actions/single-trigger-handler");
 
-const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
 class Plugin
 {
 	constructor(config)
@@ -69,60 +65,7 @@ class Plugin
 
 		this.pluginObj.triggers = {};
 
-		for (let triggerName in config.triggers)
-		{
-			const triggerSpec = config.triggers[triggerName];
-			this.triggers[triggerName] = { ...triggerSpec };
-
-			const triggerFunc = function (context) {
-				return this.actions.trigger(this.name ,triggerName, context || {})
-			}
-			this.pluginObj.triggers[triggerName] = triggerFunc.bind(this.pluginObj);
-
-			if (triggerSpec.type == 'NumberTrigger')
-			{
-				this.triggers[triggerName].handler = new NumberTriggerHandler(triggerName, triggerSpec.key || 'number')
-			}
-			else if (triggerSpec.type == 'CommandTrigger')
-			{
-				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
-			}
-			else if (triggerSpec.type == 'SingleTrigger')
-			{
-				this.triggers[triggerName].handler = new SingleTriggerHandler(triggerName)
-			}
-			else if (triggerSpec.type == 'RewardTrigger')
-			{
-				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
-			}
-			else if (triggerSpec.type == 'TimerTrigger')
-			{
-				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'command')
-			}
-			else if (triggerSpec.type == 'EnumTrigger')
-			{
-				this.triggers[triggerName].handler = new CommandTriggerHandler(triggerName, triggerSpec.key || 'value')
-
-				if (triggerSpec.enum instanceof Function)
-				{
-					this.triggers[triggerName].enum = triggerSpec.enum.bind(this.pluginObj);
-
-					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, (...args) =>
-					{
-						return this.triggers[triggerName].enum(...args);
-					});
-				}
-				else if (triggerSpec.enum instanceof AsyncFunction)
-				{
-					this.triggers[triggerName].enum = triggerSpec.enum.bind(this.pluginObj);
-
-					ipcMain.handle(`${this.name}_trigger_${triggerName}_enum`, async (...args) =>
-					{
-						return await this.triggers[triggerName].enum(...args);
-					});
-				}
-			}
-		}
+		this.setupTriggers(config);
 
 		this.actions = {};
 
@@ -215,6 +158,32 @@ class Plugin
 		}
 	}
 
+	setupTriggers(config) {
+		for (let triggerName in config.triggers)
+		{
+			const triggerSpec = config.triggers[triggerName];
+
+			const triggerObj = {
+				name: triggerSpec.name,
+				description: triggerSpec.description || "",
+				context: triggerSpec.context || { },
+			}
+
+			if (triggerSpec.config)
+			{
+				triggerObj.config = triggerSpec.config;
+				triggerObj.internalHandler = triggerSpec.handler.bind(this.pluginObj);
+			}
+			
+			this.triggers[triggerName] = triggerObj;
+
+			const triggerFunc = function (context, ...args) {
+				return this.actions.trigger(this.name, triggerName, context || {}, args)
+			}
+			this.pluginObj.triggers[triggerName] = triggerFunc.bind(this.pluginObj);
+		}
+	}
+
 	async updateSettings(newSettings, oldSettings)
 	{
 		let newPluginSettings = newSettings[this.name] || {};
@@ -288,10 +257,21 @@ class Plugin
 		{
 			triggers[triggerName] = { ...this.triggers[triggerName] }
 
-			if (triggers[triggerName].enum instanceof Function || triggers[triggerName].enum instanceof AsyncFunction)
+			if (triggers[triggerName].config)
 			{
-				triggers[triggerName].enum = `${this.name}_trigger_${triggerName}_enum`;
+				triggers[triggerName].config = cleanSchemaForIPC(this.name + "_triggers_config_" + triggerName, triggers[triggerName].config);
 			}
+
+			const contextSchema = cleanSchemaForIPC(this.name + "_triggers_context_" + triggerName, {
+				type: Object,
+				properties: triggers[triggerName].context || {}
+			});
+
+			triggers[triggerName].context = contextSchema.properties;
+
+
+			delete triggers[triggerName].internalHandler
+			delete triggers[triggerName].handler
 		}
 
 		return {

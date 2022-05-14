@@ -35,7 +35,7 @@ async function createWindow() {
 	// Create the browser window.
 	const win = new BrowserWindow({
 		width: 1600,
-		height: 1080,
+		height: 900,
 		icon: 'src/assets/icons/icon.png',
 		webPreferences: {
 

@@ -9,13 +9,32 @@
       @change="(v) => $emit('change', v)"
       clearable
     />
-    <reward-edit-button
-      :rewardName="value"
-      @rename="(name) => $emit('input', name)"
+    <v-menu bottom right>
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn dark icon v-bind="attrs" v-on="on">
+          <v-icon>mdi-dots-vertical</v-icon>
+        </v-btn>
+      </template>
+
+      <v-list>
+        <v-list-item link :disabled="!value">
+          <v-list-item-title @click="$refs.editModal.open()">
+            Edit Reward
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="$refs.createModal.open()" link :disabled="!!value">
+          <v-list-item-title> Create New Reward </v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+
+    <reward-edit-modal
+      ref="editModal"
+      title="Edit Channel Point Reward"
+      :reward="currentReward"
+      @rename="(v) => $emit('input', v)"
+      :showDelete="false"
     />
-    <v-btn fab small class="mx-1" :disabled="!!value" @click.stop="$refs.createModal.open()">
-      <v-icon> mdi-plus </v-icon>
-    </v-btn>
 
     <reward-edit-modal
       ref="createModal"
@@ -42,6 +61,9 @@ export default {
   },
   computed: {
     ...mapGetters("rewards", ["rewards"]),
+    currentReward() {
+      return this.rewards.find((r) => r.name == this.value);
+    },
   },
   data() {
     return {
@@ -53,10 +75,14 @@ export default {
     filterRewards(query) {
       let result = this.rewards.map((r) => r.name);
 
-      result = result.filter((reward) => !this.existingRewards.includes(reward));
+      result = result.filter(
+        (reward) => !this.existingRewards.includes(reward)
+      );
 
       if (query) {
-        result = result.filter((a) => a.toLowerCase().includes(query.toLowerCase()));
+        result = result.filter((a) =>
+          a.toLowerCase().includes(query.toLowerCase())
+        );
       }
 
       this.items = result;

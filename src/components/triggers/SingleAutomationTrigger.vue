@@ -7,14 +7,14 @@
     <v-card-text>
       {{ trigger.description }}
     </v-card-text>
-    <automation-selector :value="value ? value.automation : null" @input="(v) => $emit('input', { automation: v } )" />
+    <automation-input :value="value ? value.automation : null" @input="(v) => $emit('input', [{ automation: v }] )"/>
   </v-card>
 </template>
 
 <script>
-import AutomationSelector from "../automations/AutomationSelector.vue";
+import AutomationInput from "../automations/AutomationInput.vue";
 export default {
-  components: { AutomationSelector },
+  components: { AutomationInput },
   computed: {
     triggerName() {
       return this.trigger ? this.trigger.name : this.triggerKey;

@@ -57,9 +57,6 @@
 </template>
 
 <script>
-import fs from "fs";
-import path from "path";
-import YAML from "yaml";
 import { mapGetters } from "vuex";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
