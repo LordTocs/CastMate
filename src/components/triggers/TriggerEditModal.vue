@@ -5,20 +5,20 @@
         <v-toolbar-title class="font-weight-bold grey--text">
           {{ header }}
         </v-toolbar-title>
-        <trigger-selector
-          :value="localTriggerType"
-          label=""
-          @input="changeTriggerType"
-          class="mx-4 flex-grow-0"
-          style="width: 400px"
-        />
       </v-toolbar>
       <div class="d-flex flex-row">
         <flex-scroller
-          style="width: 300px"
+          style="width: 350px"
           color="grey darken-4"
           innerClass="px-2"
         >
+          <trigger-selector
+            :value="localTriggerType"
+            label=""
+            @input="changeTriggerType"
+            class="flex-grow-0"
+            style="width: 400px"
+          />
           <v-sheet outlined rounded class="px-2 py-2 my-2">
             <template v-if="localTriggerType">
               <p class="my-2">
