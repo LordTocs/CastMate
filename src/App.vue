@@ -80,7 +80,11 @@
         <v-divider></v-divider>
         <v-list-group n-action>
           <template v-slot:activator>
-            <v-list-item-title>Plugins</v-list-item-title>
+            <v-list-item-icon>
+              <v-icon>mdi-cog</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-title> Settings</v-list-item-title>
           </template>
 
           <v-list-item
