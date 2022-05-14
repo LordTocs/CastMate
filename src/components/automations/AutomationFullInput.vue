@@ -20,7 +20,49 @@
             </template>
             <span>Preview Automation</span>
           </v-tooltip>
-          <v-btn> Use Existing Automation </v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <div v-bind="attrs" v-on="on" style="width: min-content">
+                <v-switch
+                  :value="value ? value.sync : null"
+                  @input="changeSync"
+                  class="my-0"
+                  label="Synchronous"
+                />
+              </div>
+            </template>
+            <span
+              >This automation will queue behind other Synchronous automations
+              and wait to play.</span
+            >
+          </v-tooltip>
+          <v-spacer />
+          <v-menu
+            v-model="automationPopover"
+            :close-on-content-click="false"
+            offset-y
+            class="mx-2"
+            v-if="!value || isInline"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on">Use Existing Automation </v-btn>
+            </template>
+
+            <v-card class="px-2">
+              <automation-selector
+                :value="automationFile"
+                @input="selectAutomationPopover"
+                :showButtons="false"
+              />
+            </v-card>
+          </v-menu>
+          <automation-selector
+            :value="automationFile"
+            @input="selectAutomationPopover"
+            :showButtons="false"
+            class="my-0"
+            v-else
+          />
         </v-sheet>
         <flex-scroller class="flex-grow-1">
           <sequence-editor
@@ -47,8 +89,15 @@ import {
   saveAutomation,
 } from "../../utils/fileTools";
 import _cloneDeep from "lodash/cloneDeep";
+import AutomationSelector from "./AutomationSelector.vue";
+import { mapIpcs } from "../../utils/ipcMap";
 export default {
-  components: { ActionToolbox, SequenceEditor, FlexScroller },
+  components: {
+    ActionToolbox,
+    SequenceEditor,
+    FlexScroller,
+    AutomationSelector,
+  },
   props: {
     value: {},
   },
@@ -64,34 +113,72 @@ export default {
       }
       return [];
     },
+    automationFile() {
+      return this.isInline ? null : this.value;
+    },
   },
   data() {
     return {
       loadedAutomation: null,
       dirty: false,
+      automationPopover: false,
     };
   },
   methods: {
-    preview() {},
+    ...mapIpcs("core", ["runActions"]),
+    preview() {
+      this.runActions(this.actions);
+    },
     async loadAutomation() {
       if (this.isInline) return;
       this.loadedAutomation = await loadAutomation(this.value);
       this.dirty = false;
     },
+    async saveAutomation() {
+      if (this.isInline) return;
+      await saveAutomation(this.value, this.loadedAutomation);
+      this.dirty = false
+    },
+    clearLoadedAutomation() {
+      this.loadedAutomation = null;
+      this.dirty = false;
+    },
     updateActions(newActions) {
       if (!this.value) {
         //Assume inline.
+        console.log("new edit");
         const newAuto = generateEmptyAutomation();
         newAuto.actions = newActions;
         this.$emit("input", newAuto);
       } else if (this.isInline) {
+        console.log("inline edit");
         const newAuto = _cloneDeep(this.value);
         newAuto.actions = newActions;
         this.$emit("input", newAuto);
       } else {
-        this.loadAutomation.actions = newActions;
+        console.log("saved edit");
+        this.loadedAutomation.actions = newActions;
         this.dirty = true;
       }
+    },
+    changeSync(newSync) {
+      if (!this.value) {
+        //Assume inline.
+        const newAuto = generateEmptyAutomation();
+        newAuto.sync = newSync;
+        this.$emit("input", newAuto);
+      } else if (this.isInline) {
+        const newAuto = _cloneDeep(this.value);
+        newAuto.sync = newSync;
+        this.$emit("input", newAuto);
+      } else {
+        this.loadedAutomation.sync = newSync;
+        this.dirty = true;
+      }
+    },
+    selectAutomationPopover(v) {
+      this.$emit("input", v);
+      this.automationPopover = false;
     },
   },
   async mounted() {
@@ -101,7 +188,11 @@ export default {
   },
   watch: {
     value() {
-      if (!this.isInline && this.value) {
+      if (!this.value) {
+        console.log("Clearing via watch");
+        this.clearLoadedAutomation();
+      }
+      else if (!this.isInline && this.value) {
         console.log("Loading via watch");
         this.loadAutomation();
       }

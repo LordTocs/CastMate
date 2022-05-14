@@ -10,7 +10,10 @@
       />
     </v-card-title>
     <v-card-text v-if="triggerPlugins">
-      <v-simple-table style="white-space: nowrap; width: 100%">
+      <v-simple-table
+        style="white-space: nowrap; width: 100%"
+        v-if="triggerPlugins.length > 0"
+      >
         <tbody>
           <template v-for="pluginKey in triggerPlugins">
             <tr
@@ -50,6 +53,12 @@
           </template>
         </tbody>
       </v-simple-table>
+      <v-alert dense outlined border="left" type="warning" class="mx-8" v-else>
+        <p class="text-center text-h5 my-4">
+          This profile doesn't have any triggers.
+          <v-btn color="warning" outlined @click="$refs.addModal.open()"> Add Trigger </v-btn>
+        </p>
+      </v-alert>
     </v-card-text>
     <v-card-actions>
       <v-btn @click="$refs.addModal.open()"> Add Trigger </v-btn>
@@ -124,18 +133,16 @@ export default {
     deleteMappingInternal(newValue, pluginKey, triggerKey, index) {
       newValue[pluginKey][triggerKey].splice(index, 1);
 
-      if (newValue[pluginKey][triggerKey].length == 0)
-      {
+      if (newValue[pluginKey][triggerKey].length == 0) {
         delete newValue[pluginKey][triggerKey];
-        if (Object.keys(newValue[pluginKey]).length == 0)
-        {
-          delete newValue[pluginKey]
+        if (Object.keys(newValue[pluginKey]).length == 0) {
+          delete newValue[pluginKey];
         }
       }
     },
     deleteMapping(pluginKey, triggerKey, index) {
       const newValue = _cloneDeep(this.value);
-      this.deleteMappingInternal(newValue, pluginKey, triggerKey, index); 
+      this.deleteMappingInternal(newValue, pluginKey, triggerKey, index);
       this.$emit("input", newValue);
     },
   },

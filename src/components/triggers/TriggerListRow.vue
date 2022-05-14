@@ -1,15 +1,15 @@
 <template>
   <tr class="no-hover">
-    <td :style="{ backgroundColor: plugins[pluginKey].color }">
+    <td :style="{ backgroundColor: plugins[pluginKey].color }" width="1px">
       {{ plugins[pluginKey].triggers[triggerKey].name || triggerKey }}
     </td>
-    <td>
+    <td width="10%">
       <data-view
         :schema="plugins[pluginKey].triggers[triggerKey].config"
         :value="mapping.config"
       />
     </td>
-    <td>
+    <td width="10%">
       <v-chip
         class="ma-2"
         outlined
@@ -23,15 +23,15 @@
       </v-chip>
     </td>
     <td>
-      <automation-preview :automation="mapping.automation" />
+      <automation-preview ref="preview" :automation="mapping.automation" />
     </td>
-    <td class="text-right">
+    <td class="text-right" width="1px">
       <trigger-edit-modal
         header="Edit Trigger"
         ref="editModal"
         :mapping="mapping"
         :triggerType="{ triggerKey, pluginKey }"
-        @mapping="(tt, mapping) => $emit('mapping', tt, mapping)"
+        @mapping="updateMapping"
       />
       <v-btn dark icon @click="$refs.editModal.open()">
         <v-icon>mdi-pencil</v-icon>
@@ -52,9 +52,6 @@
           <v-list-item link @click="tryDelete()">
             <v-list-item-title> Delete </v-list-item-title>
           </v-list-item>
-          <!--v-list-item>
-            <v-list-item-title> Duplicate </v-list-item-title>
-          </v-list-item-->
         </v-list>
       </v-menu>
     </td>
@@ -90,6 +87,10 @@ export default {
         //Delete the command
         this.$emit("delete");
       }
+    },
+    updateMapping(tt, mapping) {
+      this.$refs.preview.reloadAutomation();
+      this.$emit("mapping", tt, mapping);
     },
   },
 };

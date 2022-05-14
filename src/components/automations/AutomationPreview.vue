@@ -25,14 +25,14 @@ export default {
     },
   },
   methods: {
-    async loadAutomation() {
+    async reloadAutomation() {
+      if (!this.automation || this.isInline) return;
+
       this.loadedAutomation = await loadAutomation(this.automation);
     },
   },
   mounted() {
-    if (this.automation && !this.isInline) {
-      this.loadAutomation(); 
-    }
+    this.reloadAutomation();
   },
   watch: {
     automation() {

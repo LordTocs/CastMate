@@ -7,8 +7,8 @@
         </v-toolbar-title>
         <trigger-selector
           :value="localTriggerType"
+          label=""
           @input="changeTriggerType"
-          label="Trigger"
           class="mx-4 flex-grow-0"
           style="width: 400px"
         />
@@ -35,22 +35,23 @@
               :schema="configSchema"
               v-model="localMapping.config"
             />
-            <p v-else-if="triggerDesc" class="text-centered my-4">
+            <p v-else-if="triggerDesc" class="text-center my-4">
               No Configuration Needed
             </p>
-            <p v-else class="text-centered my-4">Select a Trigger</p>
+            <p v-else class="text-center my-4">Select a Trigger</p>
           </v-sheet>
         </flex-scroller>
         <automation-full-input
           class="flex-grow-1"
           v-if="localMapping"
           v-model="localMapping.automation"
+          ref="automationInput"
         />
       </div>
 
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" @click="apply"> Apply </v-btn>
+        <v-btn color="primary" @click="apply" :disabled="!valid"> Apply </v-btn>
         <v-btn @click="cancel"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
@@ -62,7 +63,6 @@ import { mapGetters } from "vuex";
 import DataInput from "../data/DataInput.vue";
 import TriggerSelector from "./TriggerSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
-import AutomationInput from "../automations/AutomationInput.vue";
 import AutomationFullInput from "../automations/AutomationFullInput.vue";
 import FlexScroller from "../layout/FlexScroller.vue";
 import { constructDefaultSchema } from "../../utils/objects";
@@ -71,7 +71,6 @@ export default {
   components: {
     TriggerSelector,
     DataInput,
-    AutomationInput,
     AutomationFullInput,
     FlexScroller,
   },
@@ -98,6 +97,9 @@ export default {
     configSchema() {
       return this.triggerDesc?.config;
     },
+    valid() {
+      return this.localTriggerType;
+    },
   },
   methods: {
     open() {
@@ -108,7 +110,8 @@ export default {
       this.localTriggerType = _cloneDeep(this.triggerType);
       this.dialog = true;
     },
-    apply() {
+    async apply() {
+      await this.$refs.automationInput.saveAutomation();
       this.$emit("mapping", this.localTriggerType, this.localMapping);
       this.dialog = false;
     },
