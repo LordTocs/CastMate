@@ -86,6 +86,12 @@
     @input="handleInput"
     :label="schema.name || label"
   />
+  <time-input
+    v-else-if="schema.type == 'Duration'"
+    :value="value"
+    @input="handleInput"
+    :label="schema.name || label"
+  />
   <range-input
     v-else-if="schema.type == 'Range'"
     :value="value"
@@ -102,6 +108,7 @@ import StringDataInput from "./StringDataInput.vue";
 import RewardSelector from "../rewards/RewardSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
 import RangeInput from "./RangeInput.vue";
+import TimeInput from "./TimeInput.vue";
 
 export default {
   name: "data-input",
@@ -114,6 +121,7 @@ export default {
     AutomationSelector: () => import("../automations/AutomationSelector.vue"),
     RewardSelector,
     RangeInput,
+    TimeInput,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {

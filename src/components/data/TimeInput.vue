@@ -2,7 +2,7 @@
   <v-text-field
     :value="value"
     @change="(v) => $emit('input', v)"
-    placeholder="00:00 - 23:59"
+    placeholder="hh:mm:ss"
     :label="label"
     v-mask="timeMask"
   />
@@ -23,7 +23,14 @@ export default {
       const toSixty = [/[0-5]/, /[0-9]/];
       if (value.length <= 2) return toSixty;
       if (value.length <= 5) return [...toSixty, ":", ...toSixty];
-      return [/\d*/, ":", ...toSixty, ":", ...toSixty];
+
+      const leadingDigits = value.length - 6;
+      const leadingDigitRegex = [];
+      for (let i = 0; i < leadingDigits; ++i)
+      {
+        leadingDigitRegex.push(/\d/);
+      }
+      return [...leadingDigitRegex, ":", ...toSixty, ":", ...toSixty];
     },
   },
 };

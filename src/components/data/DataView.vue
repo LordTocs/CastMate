@@ -6,7 +6,8 @@
       schema.type == 'Number' ||
       schema.type == 'Boolean' ||
       schema.type == 'FilePath' ||
-      schema.type == 'Automation'
+      schema.type == 'Automation' ||
+      schema.type == 'Duration'
     "
   >
     <span class="text--secondary" v-if="schema.name || label">
