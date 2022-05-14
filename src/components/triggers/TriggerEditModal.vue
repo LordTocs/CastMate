@@ -8,9 +8,9 @@
         <trigger-selector
           :value="localTriggerType"
           @input="changeTriggerType"
-          label=""
-          class="mx-4"
-          style="width: 150px !important"
+          label="Trigger"
+          class="mx-4 flex-grow-0"
+          style="width: 400px"
         />
       </v-toolbar>
       <div class="d-flex flex-row">
@@ -20,39 +20,32 @@
           innerClass="px-2"
         >
           <v-sheet outlined rounded class="px-2 py-2 my-2">
-            <p class="my-2">
-              {{
-                plugins[localTriggerType.pluginKey].triggers[
-                  localTriggerType.triggerKey
-                ].name
-              }}
-            </p>
-            <p class="text--secondary my-1">
-              {{
-                plugins[localTriggerType.pluginKey].triggers[
-                  localTriggerType.triggerKey
-                ].description
-              }}
-            </p>
-            <v-divider />
+            <template v-if="localTriggerType">
+              <p class="my-2">
+                {{ triggerDesc.name }}
+              </p>
+              <p class="text--secondary my-1">
+                {{ triggerDesc.description }}
+              </p>
+              <v-divider />
+            </template>
+
             <data-input
-              v-if="
-                localTriggerType &&
-                plugins[localTriggerType.pluginKey].triggers[
-                  localTriggerType.triggerKey
-                ].config
-              "
-              :schema="
-                plugins[localTriggerType.pluginKey].triggers[
-                  localTriggerType.triggerKey
-                ].config
-              "
+              v-if="triggerDesc && configSchema"
+              :schema="configSchema"
               v-model="localMapping.config"
             />
-            <p v-else class="text--centered py-4">No Configuration Needed</p>
+            <p v-else-if="triggerDesc" class="text-centered my-4">
+              No Configuration Needed
+            </p>
+            <p v-else class="text-centered my-4">Select a Trigger</p>
           </v-sheet>
         </flex-scroller>
-        <automation-full-input class="flex-grow-1" />
+        <automation-full-input
+          class="flex-grow-1"
+          v-if="localMapping"
+          v-model="localMapping.automation"
+        />
       </div>
 
       <v-card-actions>
@@ -72,6 +65,7 @@ import _cloneDeep from "lodash/cloneDeep";
 import AutomationInput from "../automations/AutomationInput.vue";
 import AutomationFullInput from "../automations/AutomationFullInput.vue";
 import FlexScroller from "../layout/FlexScroller.vue";
+import { constructDefaultSchema } from "../../utils/objects";
 
 export default {
   components: {
@@ -95,6 +89,15 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["plugins"]),
+    triggerDesc() {
+      if (!this.localTriggerType) return null;
+      return this.plugins[this.localTriggerType.pluginKey]?.triggers[
+        this.localTriggerType.triggerKey
+      ];
+    },
+    configSchema() {
+      return this.triggerDesc?.config;
+    },
   },
   methods: {
     open() {
@@ -114,7 +117,11 @@ export default {
     },
     changeTriggerType(newType) {
       this.localTriggerType = newType;
-      this.localMapping.config = {}; //TODO: Generate default from schema.
+      this.localMapping.config = constructDefaultSchema(
+        this.plugins[this.localTriggerType.pluginKey].triggers[
+          this.localTriggerType.triggerKey
+        ].config
+      );
     },
   },
 };
