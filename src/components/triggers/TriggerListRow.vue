@@ -23,7 +23,7 @@
       </v-chip>
     </td>
     <td>
-      <automation-preview ref="preview" :automation="mapping.automation" />
+      <automation-preview ref="preview" :automation="mapping.automation" :maxActions="10" />
     </td>
     <td class="text-right" width="1px">
       <trigger-edit-modal
