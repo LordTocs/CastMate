@@ -33,8 +33,13 @@ class ActionQueue {
 
 					const mappings = this.triggerMappings[plugin.name][triggerName];
 					for (let mapping of mappings) {
-						if (!pluginTrigger.internalHandler || await pluginTrigger.internalHandler(mapping.config, context, ...args)) {
-							this.startAutomation(mapping.automation, context)
+						try {
+							if (!pluginTrigger.internalHandler || await pluginTrigger.internalHandler(mapping.config, context, mapping, ...args)) {
+								this.startAutomation(mapping.automation, context)
+							}
+						}
+						catch (err) {
+							logger.error(`Error in trigger Handler ${plugin.name}:${triggerName} - ${err}`);
 						}
 					}
 				}
@@ -158,7 +163,7 @@ class ActionQueue {
 		if (!pluginHandlers) {
 			return false;
 		}
-		
+
 		let triggerHandler = this.triggerHandlers[plugin][name];
 
 		if (!triggerHandler) {
