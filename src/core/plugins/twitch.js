@@ -948,7 +948,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					months: { type: "Range", name: "Month Range" },
+					months: { type: "Range", name: "Months Subbed" },
 				},
 			},
 			context: {
