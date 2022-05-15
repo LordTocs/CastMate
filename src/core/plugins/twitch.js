@@ -794,7 +794,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					command: { type: String, name: "Command" },
+					command: { type: String, name: "Command", filter: true },
 					match: { type: String, enum: ["Start", "Anywhere"], default: "Start", preview: false, name: "Match" },
 					permissions: {
 						type: Object,
@@ -813,7 +813,7 @@ module.exports = {
 				command: { type: String },
 				user: { type: String },
 				userId: { type: String },
-				args: { type: String },
+				args: { type: Array },
 				argString: { type: String },
 				userColor: { type: String },
 				message: { type: String },
@@ -859,7 +859,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					reward: { type: "ChannelPointReward" },
+					reward: { type: "ChannelPointReward", filter: true },
 				},
 			},
 			context: {

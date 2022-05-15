@@ -56,7 +56,9 @@
       <v-alert dense outlined border="left" type="warning" class="mx-8" v-else>
         <p class="text-center text-h5 my-4">
           This profile doesn't have any triggers.
-          <v-btn color="warning" outlined @click="$refs.addModal.open()"> Add Trigger </v-btn>
+          <v-btn color="warning" outlined @click="$refs.addModal.open()">
+            Add Trigger
+          </v-btn>
         </p>
       </v-alert>
     </v-card-text>
@@ -78,6 +80,7 @@ import DataView from "../data/DataView.vue";
 import _cloneDeep from "lodash/cloneDeep";
 import TriggerListRow from "./TriggerListRow.vue";
 import TriggerEditModal from "./TriggerEditModal.vue";
+import { filterSchema } from "../../utils/objects";
 export default {
   components: { DataView, AutomationPreview, TriggerListRow, TriggerEditModal },
   props: {
@@ -91,7 +94,32 @@ export default {
   computed: {
     ...mapGetters("ipc", ["paths", "plugins"]),
     visibleTriggers() {
-      return this.value;
+      const result = {};
+
+      for (let pluginKey in this.value) {
+        for (let triggerKey in this.value[pluginKey]) {
+          for (let triggerMapping of this.value[pluginKey][triggerKey]) {
+            if (
+              filterSchema(
+                triggerMapping.config,
+                this.plugins[pluginKey].triggers[triggerKey].config,
+                this.search,
+                this.plugins[pluginKey].triggers[triggerKey].name
+              )
+            ) {
+              if (!(pluginKey in result)) {
+                result[pluginKey] = {};
+              }
+              if (!(triggerKey in result[pluginKey])) {
+                result[pluginKey][triggerKey] = [];
+              }
+              result[pluginKey][triggerKey].push(triggerMapping);
+            }
+          }
+        }
+      }
+
+      return result;
     },
     triggerPlugins() {
       return Object.keys(this.visibleTriggers);
