@@ -12,6 +12,7 @@
         <td>Type</td>
       </thead>
       <tbody>
+        <template v-if="triggerSpec">
         <tr
           v-for="contextKey in Object.keys(triggerSpec.context)"
           :key="contextKey"
@@ -23,6 +24,7 @@
             {{ triggerSpec.context[contextKey].type }}
           </td>
         </tr>
+        </template>
         <tr>
           <td colspan="2">
             <p class="text-center my-0 text-h6">State</p>
