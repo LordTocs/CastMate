@@ -42,7 +42,8 @@
   <p v-else-if="schema.type == 'Range' && value">
     <span class="text--secondary" v-if="schema.name || label">
       {{ schema.name || label }}: </span
-    >{{ value.min ? value.min : `-∞` }} ⟶ {{ value.max ? value.max : `∞` }}
+    >{{ value.min != undefined && value.min != null ? value.min : `-∞` }} ⟶
+    {{ value.max != undefined && value.max != null ? value.max : `∞` }}
   </p>
 </template>
 
