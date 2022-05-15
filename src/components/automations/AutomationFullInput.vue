@@ -24,7 +24,7 @@
             <template v-slot:activator="{ on, attrs }">
               <div v-bind="attrs" v-on="on" style="width: min-content">
                 <v-switch
-                  :value="value ? value.sync : null"
+                  :value="sync"
                   @input="changeSync"
                   class="my-0"
                   label="Synchronous"
@@ -113,6 +113,14 @@ export default {
       }
       return [];
     },
+    sync() {
+      if (this.isInline) {
+        return this.value.sync;
+      } else if (this.loadedAutomation) {
+        return this.loadedAutomation.sync;
+      }
+      return false;
+    },
     automationFile() {
       return this.isInline ? null : this.value;
     },
@@ -137,7 +145,7 @@ export default {
     async saveAutomation() {
       if (this.isInline) return;
       await saveAutomation(this.value, this.loadedAutomation);
-      this.dirty = false
+      this.dirty = false;
     },
     clearLoadedAutomation() {
       this.loadedAutomation = null;
@@ -191,8 +199,7 @@ export default {
       if (!this.value) {
         console.log("Clearing via watch");
         this.clearLoadedAutomation();
-      }
-      else if (!this.isInline && this.value) {
+      } else if (!this.isInline && this.value) {
         console.log("Loading via watch");
         this.loadAutomation();
       }
