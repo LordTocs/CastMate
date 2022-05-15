@@ -39,10 +39,9 @@ export async function profileExists(profileName) {
 
 export async function createNewProfile(profileName) {
     let newYaml = YAML.stringify({
-        version: "1.0",
+        version: "2.0",
         triggers: {},
-        variables: {},
-        rewards: [],
+        conditions: { operator: 'any', operands: [] }
     });
 
     await fs.promises.writeFile(
@@ -113,16 +112,12 @@ export async function saveProfile(profileName, profileData) {
     let data = _.cloneDeep(profileData);
 
     for (let pluginName in data.triggers) {
-        for (let triggerName in data.triggers[pluginName])
-        {
+        for (let triggerName in data.triggers[pluginName]) {
             const triggerArray = data.triggers[pluginName][triggerName];
-            for (let trigger of triggerArray)
-            {
+            for (let trigger of triggerArray) {
                 delete trigger.id;
-                if (trigger.automation instanceof Object)
-                {
-                    for (let action of trigger.automation.actions)
-                    {
+                if (trigger.automation instanceof Object) {
+                    for (let action of trigger.automation.actions) {
                         delete action.id;
                     }
                 }
@@ -151,16 +146,12 @@ export async function loadProfile(profileName) {
     }
 
     for (let pluginName in data.triggers) {
-        for (let triggerName in data.triggers[pluginName])
-        {
+        for (let triggerName in data.triggers[pluginName]) {
             const triggerArray = data.triggers[pluginName][triggerName];
-            for (let trigger of triggerArray)
-            {
+            for (let trigger of triggerArray) {
                 trigger.id = nanoid();
-                if (trigger.automation instanceof Object)
-                {
-                    for (let action of trigger.automation.actions)
-                    {
+                if (trigger.automation instanceof Object) {
+                    for (let action of trigger.automation.actions) {
                         action.id = nanoid();
                     }
                 }

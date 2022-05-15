@@ -3,6 +3,7 @@ const YAML = require("yaml");
 const path = require("path");
 const { userFolder } = require("../utils/configuration");
 const logger = require("../utils/logger");
+const { migrateProfile } = require("../migration/migrate");
 
 class Profile {
 	constructor(filename, manager, onReload) {
@@ -29,6 +30,8 @@ class Profile {
 			logger.error(`Unable to load file ${this.filename}`);
 			throw err;
 		}
+
+		profileConfig = await migrateProfile(profileConfig, this.filename);
 
 		if (!profileConfig) {
 			logger.error(`Profile file ${this.filename} is empty!`)
