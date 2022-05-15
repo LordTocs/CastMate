@@ -26,7 +26,7 @@ class Analytics {
 
         this.mixpanel.track(eventName, {
             ...this.analyticsId ? { distinct_id: this.analyticsId } : {},
-            ...data
+            ...(data ? data : {})
         });
     }
 

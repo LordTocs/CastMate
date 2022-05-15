@@ -91,6 +91,7 @@ class PluginManager {
 	}
 
 	removeReactiveValue(pluginName, stateKey) {
+		deleteReactiveProperty(this.stateLookup[pluginName], stateKey);
 		this.ipcSender.send('state-removal', { [pluginName]: stateKey });
 	}
 

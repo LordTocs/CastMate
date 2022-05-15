@@ -1,6 +1,22 @@
 <template>
   <v-container fluid>
     <v-data-table :headers="variableHeaders" :items="variableTable">
+      <template v-slot:item.value="props">
+        <v-edit-dialog
+          @open="() => startEditValue(props.item.name)"
+          @close="() => editValue(props.item.name)"
+        >
+          {{ props.item.value }}
+          <template v-slot:input>
+            <v-text-field
+              v-model="valueEdit"
+              label="Value"
+              v-if="props.item.type == 'String'"
+            />
+            <number-input v-else v-model="valueEdit" label="Value" />
+          </template>
+        </v-edit-dialog>
+      </template>
       <template v-slot:item.actions="{ item }">
         <v-icon
           small
@@ -12,12 +28,16 @@
             })
           "
         >
-          mdi-pencil
+          mdi-cog
         </v-icon>
         <v-icon small @click="deleteVar(item.name)"> mdi-delete </v-icon>
       </template>
       <template v-slot:footer.prepend>
-        <v-btn @click="$refs.createDlg.open('', { type: 'Number', default: 0 })"> New Variable </v-btn>
+        <v-btn
+          @click="$refs.createDlg.open('', { type: 'Number', default: 0 })"
+        >
+          New Variable
+        </v-btn>
       </template>
     </v-data-table>
     <confirm-dialog ref="deleteDlg" />
@@ -36,11 +56,13 @@
 import VariableSpecModal from "../components/variables/VariableSpecModal.vue";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import { mapActions, mapGetters } from "vuex";
-
+import { mapIpcs } from "../utils/ipcMap";
+import _cloneDeep from "lodash/cloneDeep";
+import NumberInput from '../components/data/NumberInput.vue';
 //import { mapIpcs } from "../utils/ipcMap";
 
 export default {
-  components: { ConfirmDialog, VariableSpecModal },
+  components: { ConfirmDialog, VariableSpecModal, NumberInput },
   computed: {
     ...mapGetters("variables", ["variables"]),
     ...mapGetters("ipc", ["stateLookup"]),
@@ -62,12 +84,18 @@ export default {
       }));
     },
   },
+  data() {
+    return {
+      valueEdit: null,
+    };
+  },
   methods: {
     ...mapActions("variables", [
       "updateVariable",
       "changeVariableName",
       "removeVariable",
     ]),
+    ...mapIpcs("variables", ["setVariableValue"]),
     addVariable() {
       this.updateVariable({
         variableName: "",
@@ -77,6 +105,13 @@ export default {
         },
       });
     },
+    startEditValue(variableName) {
+      this.valueEdit = _cloneDeep(this.stateLookup.variables[variableName]);
+    },
+    async editValue(variableName) {
+      await this.setVariableValue(variableName, this.valueEdit);
+      this.valueEdit = null;
+    },
     async deleteVar(variableName) {
       if (
         await this.$refs.deleteDlg.open(
@@ -84,7 +119,6 @@ export default {
           "Are you sure you want to delete this variable?"
         )
       ) {
-        console.log("Confirmed!");
         await this.removeVariable({ variableName });
       }
     },

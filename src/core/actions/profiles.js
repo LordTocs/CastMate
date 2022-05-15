@@ -3,6 +3,7 @@ const YAML = require("yaml");
 const path = require("path");
 const { userFolder } = require("../utils/configuration");
 const logger = require("../utils/logger");
+const { migrateProfile } = require("../migration/migrate");
 
 class Profile {
 	constructor(filename, manager, onReload) {
@@ -30,12 +31,24 @@ class Profile {
 			throw err;
 		}
 
+		profileConfig = await migrateProfile(profileConfig, this.filename);
+
 		if (!profileConfig) {
 			logger.error(`Profile file ${this.filename} is empty!`)
 			profileConfig = {};
 		}
 
 		this.triggers = profileConfig.triggers || {};
+
+		//Label all the triggers with their origin profile
+		for (let pluginKey in this.triggers) {
+			for (let triggerKey in this.triggers[pluginKey]) {
+				for (let mapping of this.triggers[pluginKey][triggerKey]) {
+					mapping.profile = this.name;
+				}
+			}
+		}
+
 		this.conditions = profileConfig.conditions || { operator: 'any', operands: [] };
 		this.config = profileConfig;
 		this.onActivate = profileConfig.onActivate;
@@ -60,33 +73,11 @@ Profile.mergeTriggers = function (profiles) {
 			}
 
 			for (let trigger in profile.triggers[plugin]) {
-				if ("automation" in profile.triggers[plugin][trigger])
-				{
-					//We're a single auto here.
-					if (!(trigger in combined[plugin])) {
-						combined[plugin][trigger] = [];
-					}
 
-					combined[plugin][trigger].push(profile.triggers[plugin][trigger]);
+				if (!(trigger in combined[plugin])) {
+					combined[plugin][trigger] = [];
 				}
-				else
-				{
-					if (!(trigger in combined[plugin])) {
-						combined[plugin][trigger] = {};
-					}
-
-					//We're a sub trigger auto here.
-					for (let subTrigger in profile.triggers[plugin][trigger]) {
-						if (!combined[plugin][trigger][subTrigger])
-						{
-							combined[plugin][trigger][subTrigger] = [];
-						}
-						combined[plugin][trigger][subTrigger].push(profile.triggers[plugin][trigger][subTrigger]);
-					}
-				}
-
-				// else subtrigger merge
-
+				combined[plugin][trigger] = combined[plugin][trigger].concat(profile.triggers[plugin][trigger]);
 			}
 		}
 

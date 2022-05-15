@@ -176,7 +176,7 @@ class ProfileManager
 			if (activeProfiles.includes(p))
 			{
 				//Inactive profile is now active
-				if (p.onDeactivate)
+				if (p.onActivate)
 				{
 					this.actions.startAutomation(p.onActivate, {});
 				}

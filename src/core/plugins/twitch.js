@@ -18,6 +18,7 @@ const { WebSocket } = require('ws');
 
 const axios = require('axios');
 const logger = require("../utils/logger");
+const { inRange } = require("../utils/range");
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -153,6 +154,7 @@ module.exports = {
 			this.analytics.set({
 				$first_name: this.state.channelName,
 			});
+			this.analytics.track("twitchAuth");
 
 			if (this.botId) {
 				this.analytics.set({ botId: this.botId, $last_name: this.state.botName });
@@ -294,42 +296,51 @@ module.exports = {
 					filteredMessage: this.filterMessage(message)
 				}
 
-				if (msgInfo.tags.get('first-msg') !== '0')
-				{
+				if (msgInfo.tags.get('first-msg') !== '0') {
 					this.triggers.firstTimeChat(context);
 				}
 
-				if (msgInfo.userInfo.isMod || msgInfo.userInfo.isBroadcaster) {
-					if (this.triggers.modchat(context)) {
-						return;
-					}
-				}
-
-				if (msgInfo.userInfo.isVip) {
-					if (this.triggers.vipchat(context)) {
-						return;
-					}
-				}
-
-				if (msgInfo.userInfo.isSubscriber) {
-					if (this.triggers.subchat(context)) {
-						return;
-					}
-				}
-
-				if (this.triggers.chat(context)) {
-					return;
-				}
-
+				this.triggers.chat(context, msgInfo.userInfo);
 			});
 
-			this.chatClient.onRaid((channel, user, raidInfo) => {
-				this.triggers.raid({ number: raidInfo.viewerCount, user: raidInfo.displayName });
+			this.chatClient.onRaid((channel, user, raidInfo, msgInfo) => {
+				this.triggers.raid({
+					raiders: raidInfo.viewerCount,
+					user: raidInfo.displayName,
+					userId: msgInfo.userInfo.userId
+				});
 			})
 
+			//See here https://twurple.js.org/docs/examples/chat/sub-gift-spam.html
+			const giftCounts = new Map();
+
 			this.chatClient.onCommunitySub((channel, user, subInfo) => {
-				this.triggers.giftedSub({ number: subInfo.count, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
+				const previousGiftCount = giftCounts.get(user) || 0;
+				giftCounts.set(user, previousGiftCount + subInfo.count);
+				this.triggers.giftedSub({
+					subs: subInfo.count,
+					user: subInfo.gifterDisplayName,
+					userId: subInfo.gifterUserId,
+					userColor: this.colorCache[subInfo.gifterUserId]
+				})
 			});
+
+			this.chatClient.onSubGift((channel, recipient, subInfo) => {
+				const user = subInfo.gifter;
+				const previousGiftCount = giftCounts.get(user) || 0;
+				if (previousGiftCount > 0) {
+					giftCounts.set(user, previousGiftCount - 1);
+				}
+				else {
+					this.triggers.giftedSub({
+						subs: 1,
+						user: subInfo.gifterDisplayName,
+						userId: subInfo.gifterUserId,
+						userColor: this.colorCache[subInfo.gifterUserId]
+					})
+				}
+			});
+
 		},
 
 		async retryWebsocketWorkaround() {
@@ -431,12 +442,12 @@ module.exports = {
 
 
 				this.triggers.bits({
-					number: message.bits,
+					bits: message.bits,
 					user: message.userName,
 					userId: message.userId,
 					message: message.message,
 					filteredMessage: this.filterMessage(message.message),
-					...{ userColor: this.colorCache[message.userId] }
+					userColor: this.colorCache[message.userId]
 				});
 			});
 
@@ -464,7 +475,15 @@ module.exports = {
 				else {
 					let months = message.months ? message.months : 0;
 					this.logger.info(`Sub ${message.userDisplayName} : ${months}`);
-					this.triggers.subscribe({ number: months, user: message.userDisplayName, userId: message.userId, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
+					this.triggers.subscribe({
+						months,
+						user: message.userDisplayName,
+						userId: message.userId,
+						prime: message.subPlan == "Prime",
+						userColor: this.colorCache[message.userId],
+						message: message.message,
+						filteredMessage: this.filterMessage(message.message),
+					})
 				}
 
 				await this.querySubscribers();
@@ -706,7 +725,7 @@ module.exports = {
 	},
 	async onProfileLoad(profile, config) {
 		const redemptionTriggers = config ? (config.triggers ? (config.triggers.twitch ? (config.triggers.twitch.redemption) : null) : null) : null;
-		profile.rewards = redemptionTriggers ? Object.keys(redemptionTriggers) : [];
+		profile.rewards = redemptionTriggers ? redemptionTriggers.map(rt => rt.config.reward) : [];
 	},
 	async onProfilesChanged(activeProfiles, inactiveProfiles) {
 		let activeRewards = new Set();
@@ -764,15 +783,15 @@ module.exports = {
 		},
 		subscribers: {
 			type: Number,
-			name: "Twitch Subscribers",
+			name: "Number of Twitch Subscribers",
 		},
 		followers: {
 			type: Number,
-			name: "Twitch Followers"
+			name: "Number of Twitch Followers"
 		},
 		viewers: {
 			type: Number,
-			name: "Twitch Viewers",
+			name: "Number of Twitch Viewers",
 			default: 0,
 		},
 		isAuthed: {
@@ -788,65 +807,197 @@ module.exports = {
 	},
 	triggers: {
 		chat: {
-			name: "Chat",
+			name: "Chat Command",
 			description: "Fires when any user chats.",
-			type: "CommandTrigger"
-		},
-		subchat: {
-			name: "Sub Chat",
-			description: "Fires for only subscribed user chats",
-			type: "CommandTrigger"
-		},
-		vipchat: {
-			name: "VIP Chat",
-			description: "Fires for only VIP user chats",
-			type: "CommandTrigger"
-		},
-		modchat: {
-			name: "Mod Chat",
-			description: "Fires for when a mod or the broadcaster chats",
-			type: "CommandTrigger"
+			config: {
+				type: Object,
+				properties: {
+					command: { type: String, name: "Command", filter: true },
+					match: { type: String, enum: ["Start", "Anywhere"], default: "Start", preview: false, name: "Match" },
+					permissions: {
+						type: Object,
+						properties: {
+							viewer: { type: Boolean, name: "Viewer", default: true, required: true },
+							sub: { type: Boolean, name: "Subscriber", default: true, required: true },
+							vip: { type: Boolean, name: "VIP", default: true, required: true },
+							mod: { type: Boolean, name: "Moderator", default: true, required: true },
+							streamer: { type: Boolean, name: "Streamer", default: true, required: true },
+						},
+						preview: false,
+					},
+				}
+			},
+			context: {
+				command: { type: String },
+				user: { type: String },
+				userId: { type: String },
+				args: { type: Array },
+				argString: { type: String },
+				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String },
+			},
+			handler(config, context, mapping, userInfo) {
+				if (config.match == "Start") {
+					if (context.command != config.command.toLowerCase()) {
+						return false;
+					}
+				}
+				if (config.match == "Anywhere") {
+					console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
+					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
+						return false;
+					}
+				}
+
+				if (config.permissions) {
+					if (config.permissions.viewer) {
+						return true;
+					}
+					if (userInfo.isMod && config.permissions.mod) {
+						return true;
+					}
+					if (userInfo.isVip && config.permissions.vip) {
+						return true;
+					}
+					if (userInfo.isSubscriber && config.permissions.sub) {
+						return true;
+					}
+					if (userInfo.isBroadcaster && config.permissions.streamer) {
+						return true;
+					}
+				}
+
+				return false;
+			}
 		},
 		redemption: {
 			name: "Channel Points Redemption",
 			description: "Fires for when a channel point reward is redeemed",
-			type: "RewardTrigger",
-			key: "reward",
-			triggerUnit: "Channel Reward"
+			config: {
+				type: Object,
+				properties: {
+					reward: { type: "ChannelPointReward", filter: true },
+				},
+			},
+			context: {
+				reward: { type: String },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String }
+			},
+			handler(config, context) {
+				return context.reward == config.reward;
+			}
 		},
 		follow: {
-			name: "Follow",
+			name: "New Follower",
 			description: "Fires for when a user follows.",
-			type: "SingleTrigger"
+			type: "SingleTrigger",
+			context: {
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
 		},
 		firstTimeChat: {
 			name: "First Time Chatter",
 			description: "Fires for when a user chats for the very first time in the channel.",
-			type: "SingleTrigger"
+			type: "SingleTrigger",
+			context: {
+				command: { type: String },
+				user: { type: String },
+				userId: { type: String },
+				args: { type: String },
+				argString: { type: String },
+				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String },
+			},
 		},
 		subscribe: {
 			name: "Subscription",
 			description: "Fires for when a user subscribes. Based on total number of months subscribed.",
-			type: "NumberTrigger",
-			triggerUnit: "Months Subbed"
+			config: {
+				type: Object,
+				properties: {
+					months: { type: "Range", name: "Months Subbed" },
+				},
+			},
+			context: {
+				months: { type: Number },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+				prime: { type: Boolean },
+				message: { type: String },
+				filteredMessage: { type: String },
+			},
+			handler(config, context) {
+				return inRange(context.months, config.months);
+			}
 		},
 		giftedSub: {
-			name: "Gifted Subs",
+			name: "Gifted Subscription",
 			description: "Fires for when a user gifts subs. Based on the number of subs gifted..",
-			type: "NumberTrigger",
-			triggerUnit: "Subs Gifted"
+			config: {
+				type: Object,
+				properties: {
+					subs: { type: "Range", name: "Subs Gifted" },
+				},
+			},
+			context: {
+				subs: { type: Number },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
+			handler(config, context) {
+				return inRange(context.subs, config.subs);
+			}
 		},
 		bits: {
-			name: "Cheered",
+			name: "Bits Cheered",
 			description: "Fires for when a user cheers with bits",
-			type: "NumberTrigger",
-			triggerUnit: "Bits Cheered"
+			config: {
+				type: Object,
+				properties: {
+					bits: { type: "Range", name: "Bits Cheered" },
+				},
+			},
+			context: {
+				bits: { type: Number },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String },
+
+			},
+			handler(config, context) {
+				return inRange(context.bits, config.bits);
+			}
 		},
 		raid: {
-			name: "Raid",
+			name: "Incoming Raid",
 			description: "Fires when a raid start",
-			type: "NumberTrigger",
-			triggerUnit: "Raiders"
+			config: {
+				type: Object,
+				properties: {
+					raiders: { type: "Range", name: "Raiders" },
+				},
+			},
+			context: {
+				raiders: { type: Number },
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
+			handler(config, context) {
+				return inRange(context.raiders, config.raiders);
+			}
 		}
 	},
 	actions: {
@@ -911,8 +1062,8 @@ module.exports = {
 		}
 	},
 	templateFunctions: {
-		async followAge(user) {
-			const follow = await this.channelTwitchClient.users.getFollowFromUserToBroadcaster(user, this.channelId);
+		async followAge(userId) {
+			const follow = await this.channelTwitchClient.users.getFollowFromUserToBroadcaster(userId, this.channelId);
 
 			if (!follow) {
 				return "Not Following";
@@ -944,8 +1095,13 @@ module.exports = {
 			}
 
 			return result;
+		},
+		async getStreamCategory(userId) {
+			const channelInfo = await this.channelTwitchClient.channels.getChannelInfoById(userId);
+			return channelInfo.gameName;
 		}
 	},
+
 	settingsView: 'twitch.vue'
 }
 

@@ -1,39 +1,37 @@
 const fs = require('fs');
 const path = require('path');
 const { userFolder } = require('../utils/configuration');
+const { data } = require('../utils/logger');
+const { inRange } = require('../utils/range');
 
 module.exports = {
 	name: "kofi",
 	uiName: "Kofi",
 	icon: "mdi-currency-usd",
 	color: "#72AADB",
-	async init()
-	{
+	async init() {
 		this.installWebhook();
 		this.state.kofiTotal = 0;
 		if (fs.existsSync(path.join(userFolder, "data/kofiTotal.json"))) {
-			let kofiTotal = JSON.parse(fs.readFileSync(path.join(userFolder, "data/kofiTotal.json"), "utf-8")); 
+			let kofiTotal = JSON.parse(fs.readFileSync(path.join(userFolder, "data/kofiTotal.json"), "utf-8"));
 			this.state.kofiTotal = kofiTotal.total;
 		}
 	},
 	methods: {
-		async installWebhook()
-		{
+		async installWebhook() {
 			const routes = this.webServices.routes;
-			routes.post(`/kofi`, (req, res) =>
-			{
+			routes.post(`/kofi`, (req, res) => {
 				let data = JSON.parse(req.body.data);
-				if (data.type == "Donation")
-				{
+				if (data.type == "Donation") {
 					this.triggers.donation({
-						number: Number(data.amount),
+						amount: Number(data.amount),
 						currency: data.currency,
 						user: data.from_name,
 						message: data.message,
 					});
-						
+
 					this.state.kofiTotal += Number(data.amount);
-					let kofiJSON = {"total": this.state.kofiTotal}
+					let kofiJSON = { "total": this.state.kofiTotal }
 					fs.writeFileSync(path.join(userFolder, "data/kofiTotal.json"), JSON.stringify(kofiJSON));
 				}
 
@@ -46,8 +44,21 @@ module.exports = {
 		donation: {
 			name: "Kofi Donation",
 			description: "Fires when you receive a Kofi Donation",
-			type: "NumberTrigger",
-			triggerUnit: "Currency Given"
+			config: {
+				type: Object,
+				properties: {
+					amount: { type: "Range", name: "Currency Donated" },
+				}
+			},
+			context: {
+				amount: { type: Number },
+				currency: { type: String, name: "Currency" },
+				user: { type: String, name: "Donation Name" },
+				message: { type: String, name: "Donation Message" },
+			},
+			handler(config, context) {
+				return inRange(context.amount, config.amount);
+			}
 		},
 	},
 	state: {

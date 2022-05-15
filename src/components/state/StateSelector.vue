@@ -2,7 +2,6 @@
   <v-combobox
     :items="stateList"
     :value="value"
-    item-text="key"
     @change="(v) => $emit('input', v)"
   >
     <template v-slot:item="{ item }">
@@ -18,7 +17,10 @@
       <span v-if="item">
         {{ item.key }}
       </span>
-      <span v-if="item && stateLookup[item.plugin][item.key]" class="text--secondary ml-2">
+      <span
+        v-if="item && stateLookup[item.plugin][item.key]"
+        class="text--secondary ml-2"
+      >
         ({{ stateLookup[item.plugin][item.key] }})
       </span>
     </template>
@@ -35,7 +37,10 @@
       <span v-if="item">
         {{ item.key }}
       </span>
-      <span v-if="item && stateLookup[item.plugin][item.key]" class="text--secondary ml-2">
+      <span
+        v-if="item && stateLookup[item.plugin][item.key]"
+        class="text--secondary ml-2"
+      >
         ({{ stateLookup[item.plugin][item.key] }})
       </span>
     </template>

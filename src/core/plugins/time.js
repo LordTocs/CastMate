@@ -4,82 +4,124 @@ module.exports = {
 	icon: "mdi-clock-outline",
 	color: "#826262",
 	async init() {
-		this.activeTimers = {};
-	},
-	async onProfileLoad(profile, config) {
-		const timerTriggers = config ? (config.triggers ? (config.triggers.time ? (config.triggers.time.timers) : null) : null) : null;
-		profile.timers = timerTriggers ? Object.keys(timerTriggers).map(k => this.parseTimeString(profile.name, k)) : [];
+		this.activeTimers = [];
 	},
 	async onProfilesChanged(activeProfiles, inactiveProfiles) {
 
-		const timerKeys = new Set();
+		const inUseTimers = [];
 
 		for (let profile of activeProfiles) {
-			for (let timer of profile.timers) {
-				const timerKey = timer.profile + "." + timer.key;
-				timerKeys.add(timerKey)
-				this.startTimer(timer);
+			const timerTriggers = profile.triggers.time ? profile.triggers.time.timer : null;
+
+			if (!timerTriggers)
+				continue;
+
+			for (let timer of timerTriggers) {
+
+				if (!timer.config)
+					continue;
+
+				const timerObj = {
+					profile: profile.name,
+					interval: this.parseTimeStr(timer.config.interval),
+					delay: this.parseTimeStr(timer.config.delay),
+				}
+
+				inUseTimers.push(timerObj);
+
+				this.startTimer(timerObj);
 			}
 		}
 
-		const activeTimerKeys = Object.keys(this.activeTimers)
-		for (let timerKey of activeTimerKeys)
-		{
-			if (!timerKeys.has(timerKey))
-			{
+		for (let i = 0; i < this.activeTimers.length; ++i) {
+			const timerObj = this.activeTimers[i];
+
+			const inUseTimer = inUseTimers.find(at => (at.profile == timerObj.profile
+				&& at.interval == timerObj.interval
+				&& at.delay == timerObj.delay
+			));
+
+			if (!inUseTimer) {
 				//This key has dissapeared. Kill the timer.
-				const timerStore = this.activeTimers[timerKey];
-				if (!timerStore)
+				if (!timerObj)
 					return;
-	
-				if (timerStore.offset)
-					clearTimeout(timerStore.offset);
-				if (timerStore.interval)
-					clearInterval(timerStore.interval);
-	
-				delete this.activeTimers[timerKey];
+
+				if (timerObj.intervalObj)
+					clearTimeout(timerObj.intervalObj);
+				if (timerObj.timeoutObj)
+					clearInterval(timerObj.timeoutObj);
+
+				this.activeTimers.splice(i, 1);
+				--i;
 			}
 		}
 	},
 	methods: {
-		parseTimeString(name, str) {
-			const [intervalStr, offsetStr] = str.split('+')
-			return { profile: name, interval: Number(intervalStr), offset: Number(offsetStr), key: str };
-		},
-		startTimer(timer) {
-			const timerKey = timer.profile + "." + timer.key;
-
-			if (timerKey in this.activeTimers)
-			{
-				return;
+		parseTimeStr(str) {
+			let [hours, minutes, seconds] = str.split(":");
+			if (seconds == undefined) {
+				seconds = minutes;
+				minutes = hours;
+				hours = 0;
 			}
+			if (seconds == undefined) {
+				seconds = minutes;
+				minutes = 0;
+			}
+			return Number(hours) * 60 * 60 + Number(minutes) * 60 + Number(seconds);
+		},
+		startTimer(timerObj) {
 
-			const timerStore = {};
+			const existingTimer = this.activeTimers.find(at => (at.profile == timerObj.profile
+				&& at.interval == timerObj.interval
+				&& at.delay == timerObj.delay
+			));
+
+			if (existingTimer)
+				return;
 
 			const startInterval = () => {
-				timerStore.interval = setInterval(() => this.triggers.timers({ timer: timer.key }), 1000 * timer.interval)
-				timerStore.offset = null;
+				let msInterval = 1000 * timerObj.interval;
+
+				if (msInterval < 100) //Don't process run anything faster than 10 times a second.
+					msInterval = 100;
+
+				timerObj.intervalObj = setInterval(() => {
+					this.triggers.timer({ delay: timerObj.delay, interval: timerObj.interval }, timerObj.profile);
+				}, msInterval)
+
+				timerObj.timeoutObj = null;
 			}
 
-			if (timer.offset == 0)
-			{
+			if (timerObj.delay == 0) {
 				startInterval();
 			}
-			else
-			{
-				timerStore.offset = setTimeout(startInterval, timer.offset * 1000);
+			else {
+				timerObj.timeoutObj = setTimeout(startInterval, timerObj.delay * 1000);
 			}
 
-			this.activeTimers[timerKey] = timerStore
+			this.activeTimers.push(timerObj);
 		},
+
 	},
 	triggers: {
-		timers: {
+		timer: {
 			name: "Timer",
 			description: "Fires at a regular interval",
-			type: "TimerTrigger",
-			key: "timer",
-			triggerUnit: "Interval"
+			config: {
+				type: Object,
+				properties: {
+					delay: { type: "Duration", name: "Delay" },
+					interval: { type: "Duration", name: "Interval" },
+				}
+			},
+			context: {
+				delay: { type: "Duration", name: "Delay" },
+				interval: { type: "Duration", name: "Interval" }
+			},
+			handler(config, context, mapping, profileName) {
+				return this.parseTimeStr(config.delay) == context.delay && this.parseTimeStr(config.interval) == context.interval && mapping.profile == profileName;
+			}
 		}
 	}
 }

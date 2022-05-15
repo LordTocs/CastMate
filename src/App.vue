@@ -25,26 +25,6 @@
       <v-divider></v-divider>
 
       <v-list dense nav>
-        <v-list-item link to="/segments">
-          <v-list-item-icon>
-            <v-icon>mdi-tag</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-content>
-            <v-list-item-title> Segments </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-
-        <v-list-item link to="/automations">
-          <v-list-item-icon>
-            <v-icon>mdi-timeline</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-content>
-            <v-list-item-title> Automations </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-
         <v-list-item link to="/profiles">
           <v-list-item-icon>
             <v-icon>mdi-card-account-details-outline</v-icon>
@@ -52,6 +32,28 @@
 
           <v-list-item-content>
             <v-list-item-title> Profiles </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item link to="/automations">
+          <v-list-item-icon>
+            <v-icon>mdi-flash</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Automations </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-divider></v-divider>
+
+        <v-list-item link to="/segments">
+          <v-list-item-icon>
+            <v-icon>mdi-tag</v-icon>
+          </v-list-item-icon>
+
+          <v-list-item-content>
+            <v-list-item-title> Segments </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
@@ -75,19 +77,14 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item @click="openSoundsFolder">
-          <v-list-item-icon>
-            <v-icon>mdi-folder-music</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-content>
-            <v-list-item-title> Open Sounds Folder </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-
+        <v-divider></v-divider>
         <v-list-group n-action>
           <template v-slot:activator>
-            <v-list-item-title>Plugins</v-list-item-title>
+            <v-list-item-icon>
+              <v-icon>mdi-cog</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-title> Settings</v-list-item-title>
           </template>
 
           <v-list-item
@@ -103,7 +100,16 @@
             <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
           </v-list-item>
         </v-list-group>
+        <v-divider></v-divider>
+        <v-list-item @click="openSoundsFolder">
+          <v-list-item-icon>
+            <v-icon>mdi-folder-music</v-icon>
+          </v-list-item-icon>
 
+          <v-list-item-content>
+            <v-list-item-title> Open Sounds Folder </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
         <v-list-item link to="/about">
           <v-list-item-icon>
             <v-icon>mdi-information-outline</v-icon>

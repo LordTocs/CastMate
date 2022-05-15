@@ -26,7 +26,7 @@
     :step="schema.slider.step"
     color="white"
     @input="handleInput"
-    :append-icon="schema.required ? 'mdi-close' : undefined"
+    :append-icon="!schema.required ? 'mdi-close' : undefined"
     @click:append="$emit('input', undefined)"
   />
   <string-data-input
@@ -38,23 +38,27 @@
     :context="context"
     :secret="secret"
   />
-  <v-switch
-    v-else-if="schema.type == 'Boolean'"
-    :input-value="value"
-    @change="handleInput"
-  >
-    <template v-slot:label>
-      {{ schema.name || label }}
-      <v-btn
-        v-if="!schema.required"
-        icon
-        @click.stop="(v) => $emit('input', undefined)"
-      >
-        <v-icon> mdi-close </v-icon>
-      </v-btn>
-    </template>
-  </v-switch>
-
+  <div v-else-if="schema.type == 'Boolean'" class="d-flex flex-row">
+    <div
+      v-if="schema.leftLabel"
+      style="margin-top: 20px; margin-bottom: 8px; height: 24px"
+      class="d-flex align-center mr-2"
+    >
+      <label class="v-label">{{ schema.leftLabel }} </label>
+    </div>
+    <v-switch :input-value="value" @change="handleInput">
+      <template v-slot:label>
+        {{ schema.name || label }}
+        <v-btn
+          v-if="!schema.required"
+          icon
+          @click.stop="(v) => $emit('input', undefined)"
+        >
+          <v-icon> mdi-close </v-icon>
+        </v-btn>
+      </template>
+    </v-switch>
+  </div>
   <file-autocomplete
     v-else-if="schema.type == 'FilePath'"
     :value="value"
@@ -76,6 +80,24 @@
     @input="handleInput"
     v-else-if="schema.type == 'Automation'"
   />
+  <reward-selector
+    v-else-if="schema.type == 'ChannelPointReward'"
+    :value="value"
+    @input="handleInput"
+    :label="schema.name || label"
+  />
+  <time-input
+    v-else-if="schema.type == 'Duration'"
+    :value="value"
+    @input="handleInput"
+    :label="schema.name || label"
+  />
+  <range-input
+    v-else-if="schema.type == 'Range'"
+    :value="value"
+    @input="handleInput"
+    :label="schema.name || label"
+  />
 </template>
 
 <script>
@@ -83,7 +105,10 @@ import NumberInput from "./NumberInput.vue";
 import ColorPicker from "./ColorPicker.vue";
 import FileAutocomplete from "./FileAutocomplete.vue";
 import StringDataInput from "./StringDataInput.vue";
+import RewardSelector from "../rewards/RewardSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
+import RangeInput from "./RangeInput.vue";
+import TimeInput from "./TimeInput.vue";
 
 export default {
   name: "data-input",
@@ -94,6 +119,9 @@ export default {
     StringDataInput,
     ColorPicker,
     AutomationSelector: () => import("../automations/AutomationSelector.vue"),
+    RewardSelector,
+    RangeInput,
+    TimeInput,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {
