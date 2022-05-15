@@ -8,7 +8,7 @@
       </v-toolbar>
       <div class="d-flex flex-row">
         <flex-scroller
-          style="width: 350px"
+          style="width: 375px"
           color="grey darken-4"
           innerClass="px-2"
         >
@@ -40,6 +40,8 @@
             </p>
             <p v-else class="text-center my-4">Select a Trigger</p>
           </v-sheet>
+          <v-spacer />
+          <trigger-context :triggerSpec="triggerDesc" />
         </flex-scroller>
         <automation-full-input
           class="flex-grow-1"
@@ -66,6 +68,7 @@ import _cloneDeep from "lodash/cloneDeep";
 import AutomationFullInput from "../automations/AutomationFullInput.vue";
 import FlexScroller from "../layout/FlexScroller.vue";
 import { constructDefaultSchema } from "../../utils/objects";
+import TriggerContext from "./TriggerContext.vue";
 
 export default {
   components: {
@@ -73,6 +76,7 @@ export default {
     DataInput,
     AutomationFullInput,
     FlexScroller,
+    TriggerContext,
   },
   props: {
     mapping: {},
