@@ -12,7 +12,7 @@
     <v-card-text v-if="triggerPlugins">
       <v-simple-table
         style="white-space: nowrap; width: 100%"
-        v-if="triggerPlugins.length > 0"
+        v-if="hasTriggers"
       >
         <tbody>
           <template v-for="pluginKey in triggerPlugins">
@@ -99,6 +99,10 @@ export default {
       for (let pluginKey in this.value) {
         for (let triggerKey in this.value[pluginKey]) {
           for (let triggerMapping of this.value[pluginKey][triggerKey]) {
+            if (!this.plugins[pluginKey].triggers[triggerKey]) {
+              console.log("UNKNOWN PLUGIN TRIGGER", pluginKey, triggerKey);
+              continue;
+            }
             if (
               filterSchema(
                 triggerMapping.config,
@@ -123,6 +127,9 @@ export default {
     },
     triggerPlugins() {
       return Object.keys(this.visibleTriggers);
+    },
+    hasTriggers() {
+      return Object.keys(this.value).length > 0;
     },
   },
   methods: {
