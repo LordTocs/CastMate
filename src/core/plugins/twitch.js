@@ -305,7 +305,7 @@ module.exports = {
 
 			this.chatClient.onRaid((channel, user, raidInfo, msgInfo) => {
 				this.triggers.raid({
-					number: raidInfo.viewerCount,
+					raiders: raidInfo.viewerCount,
 					user: raidInfo.displayName,
 					userId: msgInfo.userInfo.userId
 				});
@@ -317,7 +317,12 @@ module.exports = {
 			this.chatClient.onCommunitySub((channel, user, subInfo) => {
 				const previousGiftCount = giftCounts.get(user) || 0;
 				giftCounts.set(user, previousGiftCount + subInfo.count);
-				this.triggers.giftedSub({ number: subInfo.count, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
+				this.triggers.giftedSub({
+					subs: subInfo.count,
+					user: subInfo.gifterDisplayName,
+					userId: subInfo.gifterUserId,
+					userColor: this.colorCache[subInfo.gifterUserId]
+				})
 			});
 
 			this.chatClient.onSubGift((channel, recipient, subInfo) => {
@@ -327,7 +332,12 @@ module.exports = {
 					giftCounts.set(user, previousGiftCount - 1);
 				}
 				else {
-					this.triggers.giftedSub({ number: 1, user: subInfo.gifterDisplayName, userId: subInfo.gifterUserId, userColor: this.colorCache[subInfo.gifterUserId] })
+					this.triggers.giftedSub({
+						subs: 1,
+						user: subInfo.gifterDisplayName,
+						userId: subInfo.gifterUserId,
+						userColor: this.colorCache[subInfo.gifterUserId]
+					})
 				}
 			});
 
@@ -432,12 +442,12 @@ module.exports = {
 
 
 				this.triggers.bits({
-					number: message.bits,
+					bits: message.bits,
 					user: message.userName,
 					userId: message.userId,
 					message: message.message,
 					filteredMessage: this.filterMessage(message.message),
-					...{ userColor: this.colorCache[message.userId] }
+					userColor: this.colorCache[message.userId]
 				});
 			});
 
@@ -465,7 +475,15 @@ module.exports = {
 				else {
 					let months = message.months ? message.months : 0;
 					this.logger.info(`Sub ${message.userDisplayName} : ${months}`);
-					this.triggers.subscribe({ number: months, user: message.userDisplayName, userId: message.userId, prime: message.subPlan == "Prime", ...{ userColor: this.colorCache[message.userId] } })
+					this.triggers.subscribe({
+						months,
+						user: message.userDisplayName,
+						userId: message.userId,
+						prime: message.subPlan == "Prime",
+						userColor: this.colorCache[message.userId],
+						message: message.message,
+						filteredMessage: this.filterMessage(message.message),
+					})
 				}
 
 				await this.querySubscribers();
@@ -707,7 +725,7 @@ module.exports = {
 	},
 	async onProfileLoad(profile, config) {
 		const redemptionTriggers = config ? (config.triggers ? (config.triggers.twitch ? (config.triggers.twitch.redemption) : null) : null) : null;
-		profile.rewards = redemptionTriggers ? Object.keys(redemptionTriggers) : [];
+		profile.rewards = redemptionTriggers ? redemptionTriggers.map(rt => rt.config.reward) : [];
 	},
 	async onProfilesChanged(activeProfiles, inactiveProfiles) {
 		let activeRewards = new Set();
@@ -913,6 +931,9 @@ module.exports = {
 				user: { type: String },
 				userId: { type: String },
 				userColor: { type: String },
+				prime: { type: Boolean },
+				message: { type: String },
+				filteredMessage: { type: String },
 			},
 			handler(config, context) {
 				return inRange(context.months, config.months);
@@ -951,6 +972,9 @@ module.exports = {
 				user: { type: String },
 				userId: { type: String },
 				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String },
+
 			},
 			handler(config, context) {
 				return inRange(context.bits, config.bits);
@@ -962,7 +986,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					raiders: { type: "Range", name: "Viewers" },
+					raiders: { type: "Range", name: "Raiders" },
 				},
 			},
 			context: {
