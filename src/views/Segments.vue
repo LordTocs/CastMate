@@ -28,7 +28,7 @@
               :value="segment.tags"
               @change="(t) => updateTags(i, t)"
             />
-            <automation-selector
+            <automation-input
               :value="segment.automation"
               @input="(a) => updateAutomation(i, a)"
               label="Segment Start Automation"
@@ -65,6 +65,7 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
+import AutomationInput from '../components/automations/AutomationInput.vue';
 import AutomationSelector from "../components/automations/AutomationSelector.vue";
 import CategorySearch from "../components/data/CategorySearch.vue";
 import TagSelect from "../components/data/TagSelect.vue";
@@ -75,6 +76,7 @@ export default {
     AutomationSelector,
     CategorySearch,
     TagSelect,
+    AutomationInput
   },
   computed: {
     ...mapGetters("segments", ["segments"]),

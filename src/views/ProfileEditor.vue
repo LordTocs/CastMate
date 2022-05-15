@@ -61,11 +61,11 @@
                 becomes inactive.
               </v-card-subtitle>
               <v-card-text>
-                <automation-selector
+                <automation-input
                   v-model="profile.onActivate"
                   label="Activation Automation"
                 />
-                <automation-selector
+                <automation-input
                   v-model="profile.onDeactivate"
                   label="Deactivation Automation"
                 />
@@ -88,7 +88,7 @@
 import PluginTriggers from "../components/profiles/PluginTriggers.vue";
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
-import AutomationSelector from "../components/automations/AutomationSelector.vue";
+import AutomationInput from "../components/automations/AutomationInput.vue";
 import { mapActions, mapGetters } from "vuex";
 import BooleanExpression from "../components/conditionals/BooleanExpression.vue";
 import BooleanGroup from "../components/conditionals/BooleanGroup.vue";
@@ -101,7 +101,7 @@ export default {
     PluginTriggers,
     ConditionsEditor,
     RewardsEditor,
-    AutomationSelector,
+    AutomationInput,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
     BooleanExpression,
     BooleanGroup,
