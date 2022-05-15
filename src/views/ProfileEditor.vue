@@ -85,7 +85,6 @@
 </template>
 
 <script>
-import PluginTriggers from "../components/profiles/PluginTriggers.vue";
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import AutomationInput from "../components/automations/AutomationInput.vue";
@@ -98,7 +97,6 @@ import { loadProfile, saveProfile } from "../utils/fileTools";
 
 export default {
   components: {
-    PluginTriggers,
     ConditionsEditor,
     RewardsEditor,
     AutomationInput,
