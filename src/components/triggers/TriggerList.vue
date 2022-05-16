@@ -40,14 +40,20 @@
               <trigger-list-row
                 :pluginKey="pluginKey"
                 :triggerKey="triggerKey"
-                v-for="(mapping, i) in visibleTriggers[pluginKey][triggerKey]"
+                v-for="mapping in visibleTriggers[pluginKey][triggerKey]"
                 :mapping="mapping"
                 :key="mapping.id"
                 @mapping="
                   (tt, mapping) =>
-                    updateMapping(tt, mapping, pluginKey, triggerKey, i)
+                    updateMapping(
+                      tt,
+                      mapping,
+                      pluginKey,
+                      triggerKey,
+                      mapping.id
+                    )
                 "
-                @delete="deleteMapping(pluginKey, triggerKey, i)"
+                @delete="deleteMapping(pluginKey, triggerKey, mapping.id)"
               />
             </template>
           </template>
@@ -133,6 +139,9 @@ export default {
     },
   },
   methods: {
+    getMappingIndex(pluginKey, triggerKey, id) {
+      return this.value[pluginKey][triggerKey].findIndex((m) => m.id == id);
+    },
     addMappingInternal(newValue, triggerType, mapping) {
       if (!(triggerType.pluginKey in newValue)) {
         newValue[triggerType.pluginKey] = {};
@@ -148,8 +157,11 @@ export default {
       this.addMappingInternal(newValue, triggerType, mapping);
       this.$emit("input", newValue);
     },
-    updateMapping(triggerType, mapping, pluginKey, triggerKey, index) {
+    updateMapping(triggerType, mapping, pluginKey, triggerKey, id) {
       const newValue = _cloneDeep(this.value);
+
+      const index = this.getMappingIndex(pluginKey, triggerKey, id);
+
       if (
         triggerType.triggerKey != triggerKey ||
         triggerType.pluginKey != pluginKey
@@ -175,7 +187,9 @@ export default {
         }
       }
     },
-    deleteMapping(pluginKey, triggerKey, index) {
+    deleteMapping(pluginKey, triggerKey, id) {
+      const index = this.getMappingIndex(pluginKey, triggerKey, id);
+
       const newValue = _cloneDeep(this.value);
       this.deleteMappingInternal(newValue, pluginKey, triggerKey, index);
       this.$emit("input", newValue);

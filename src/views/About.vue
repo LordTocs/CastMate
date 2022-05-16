@@ -4,9 +4,24 @@
       <v-card-title> CastMate</v-card-title>
       <v-card-subtitle> v{{ version }} </v-card-subtitle>
       <v-card-text>
-        <a href="https://www.castmate.io/" target="_blank"> CastMate Home Page </a> <br>
-        <a href="https://www.github.com/LordTocs/CastMate" target="_blank"> GitHub </a> <br>
-        <!--a href="Put License Here" target="_blank"> License </a><br-->
+        <a href="https://www.castmate.io/" target="_blank">
+          CastMate Home Page
+        </a>
+        <br />
+        <a href="https://www.github.com/LordTocs/CastMate" target="_blank">
+          GitHub
+        </a>
+        <br />
+        <a href="https://discord.gg/txt4DUzYJM" target="_blank"> Discord </a>
+        <br />
+        <br />
+        <a
+          href="https://github.com/LordTocs/CastMate/blob/main/LICENSE.md"
+          target="_blank"
+        >
+          License
+        </a>
+        <br />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -25,7 +40,7 @@
 <script>
 import { app } from "@electron/remote/main";
 import { ipcRenderer } from "electron";
-import WelcomeDialog from '../components/wizard/WelcomeDialog.vue';
+import WelcomeDialog from "../components/wizard/WelcomeDialog.vue";
 export default {
   components: { WelcomeDialog },
   data() {
