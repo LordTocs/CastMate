@@ -57,7 +57,6 @@ export default {
       const result = [];
       for (let pluginKey in this.stateLookup) {
         for (let stateKey in this.stateLookup[pluginKey]) {
-          console.log("State Vars", pluginKey, stateKey);
           result.push({
             variable: `${pluginKey}.${stateKey}`,
             color: this.plugins[pluginKey].color,
