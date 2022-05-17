@@ -51,6 +51,9 @@ function migrateProfile1_0to2_0(profile, changeTracker) {
             if (triggerKey == 'kofiDonation') {
                 newTriggerKey = 'donation';
             }
+            if (triggerKey == 'modchat' || triggerKey == 'subchat' || triggerKey == 'vipchat') {
+                newTriggerKey = 'chat';
+            }
 
             newProfile.triggers[pluginKey][newTriggerKey] = [];
 
