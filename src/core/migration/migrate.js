@@ -51,8 +51,13 @@ function migrateProfile1_0to2_0(profile, changeTracker) {
             if (triggerKey == 'kofiDonation') {
                 newTriggerKey = 'donation';
             }
+            if (triggerKey == 'modchat' || triggerKey == 'subchat' || triggerKey == 'vipchat') {
+                newTriggerKey = 'chat';
+            }
 
-            newProfile.triggers[pluginKey][newTriggerKey] = [];
+            if (!newProfile.triggers[pluginKey][newTriggerKey]) {
+                newProfile.triggers[pluginKey][newTriggerKey] = [];
+            }
 
             if (triggerKey != "follow" && triggerKey != 'firstTimeChat') {
                 for (let commandKey in profile.triggers[pluginKey][triggerKey]) {
