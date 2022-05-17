@@ -224,6 +224,7 @@ module.exports = {
             }
         },
 
+        //TODO - needs to be updated to new API
         async getAoe4Top3() {
             let response = await axios.post('https://api.ageofempires.com/api/ageiv/Leaderboard', {
                 region: 7,
