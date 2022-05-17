@@ -103,6 +103,10 @@ export default {
       const result = {};
 
       for (let pluginKey in this.value) {
+        if (!this.plugins[pluginKey]) {
+          console.log("UNKNOWN PLUGIN", pluginKey);
+          continue;
+        }
         for (let triggerKey in this.value[pluginKey]) {
           for (let triggerMapping of this.value[pluginKey][triggerKey]) {
             if (!this.plugins[pluginKey].triggers[triggerKey]) {
