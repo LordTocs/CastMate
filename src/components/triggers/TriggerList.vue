@@ -69,7 +69,9 @@
       </v-alert>
     </v-card-text>
     <v-card-actions>
-      <v-btn @click="$refs.addModal.open()"> Add Trigger </v-btn>
+      <v-btn @click="$refs.addModal.open()" color="primary">
+        Add Trigger
+      </v-btn>
     </v-card-actions>
     <trigger-edit-modal
       header="Add Trigger"
