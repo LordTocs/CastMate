@@ -2,7 +2,6 @@
   <v-combobox
     :items="stateList"
     :value="value"
-    item-text="key"
     @change="(v) => $emit('input', v)"
   >
     <template v-slot:item="{ item }">

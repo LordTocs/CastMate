@@ -78,13 +78,18 @@
           </v-card-text>
           <v-card-text class="flex-grow-1" v-else>
             <strong> Streaming: </strong>
-            <v-icon
-              >{{ stateLookup.obs.streaming ? "mdi-record" : "mdi-pause" }}
+            <v-icon :color="stateLookup.obs.streaming ? 'blue' : undefined"
+              >{{
+                stateLookup.obs.streaming
+                  ? "mdi-broadcast"
+                  : "mdi-broadcast-off"
+              }}
             </v-icon>
             <br />
             <strong> Recording: </strong>
             <v-icon
-              >{{ stateLookup.obs.recording ? "mdi-record" : "mdi-pause" }}
+              :color="stateLookup.obs.recording ? 'red' : undefined"
+              >{{ stateLookup.obs.recording ? "mdi-record" : "mdi-record" }}
             </v-icon>
             <br />
           </v-card-text>

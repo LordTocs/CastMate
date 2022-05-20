@@ -22,9 +22,10 @@
       }"
     />
     <draggable
-      :list="value"
+      :value="value"
+      @input="input"
       handle=".handle"
-      group="actions"
+      :group="{ name: 'actions' }"
       style="flex: 1"
       draggable=".is-draggable"
       class="sequence-container"
@@ -107,7 +108,6 @@ export default {
     getDraggableData() {
       return {
         on: {
-          inputChanged: this.changed,
           start: this.onDragStart,
         },
         attrs: {
@@ -116,8 +116,7 @@ export default {
         },
       };
     },
-    changed(arr) {
-      console.log(arr);
+    input(arr) {
       if (arr instanceof Array) {
         this.$emit("input", arr);
       }

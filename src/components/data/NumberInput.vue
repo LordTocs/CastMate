@@ -7,6 +7,7 @@
     :clearable="clearable"
     @copy.stop=""
     @paste.stop=""
+    :placeholder="placeholder"
   />
 </template>
 
@@ -17,6 +18,7 @@ export default {
     label: {},
     allowTemplate: { type: Boolean, default: () => false },
     clearable: { type: Boolean, default: () => false },
+    placeholder: {},
   },
   methods: {
     handleInput(v) {

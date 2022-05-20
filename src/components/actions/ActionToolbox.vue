@@ -1,5 +1,5 @@
 <template>
-  <v-list class="action-list" dense>
+  <v-list color="grey darken-4" class="action-list" dense>
     <v-list-group v-for="plugin in actionPlugins" :key="plugin.name" no-action>
       <template v-slot:activator>
         <v-list-item-content>
@@ -16,6 +16,7 @@
         :sort="false"
         :component-data="{ attrs: { 'no-action': true } }"
         draggable=".is-draggable"
+        :clone="cloneAction"
       >
         <v-list-item
           v-for="actionKey in Object.keys(plugin.actions)"
@@ -51,6 +52,8 @@
 import { mapGetters } from "vuex";
 import Draggable from "vuedraggable";
 import { constructDefaultSchema } from "../../utils/objects";
+import { nanoid } from "nanoid/non-secure";
+import _cloneDeep from "lodash/cloneDeep";
 
 export default {
   components: { Draggable },
@@ -75,6 +78,13 @@ export default {
       }
 
       return pluginLists;
+    },
+  },
+  methods: {
+    cloneAction(original) {
+      const copy = _cloneDeep(original);
+      copy.id = nanoid();
+      return copy;
     },
   },
 };

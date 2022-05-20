@@ -22,7 +22,7 @@
       <v-container fluid>
         <v-row>
           <v-col>
-            <v-card>
+            <!--v-card>
               <v-card-title> Triggers </v-card-title>
               <v-card-subtitle>
                 Triggers are events you can bind automations to. Chat commands,
@@ -39,7 +39,8 @@
                   </v-col>
                 </v-row>
               </v-card-text>
-            </v-card>
+            </v-card-->
+            <trigger-list v-if="profile" v-model="profile.triggers" />
           </v-col>
         </v-row>
         <v-row>
@@ -60,11 +61,11 @@
                 becomes inactive.
               </v-card-subtitle>
               <v-card-text>
-                <automation-selector
+                <automation-input
                   v-model="profile.onActivate"
                   label="Activation Automation"
                 />
-                <automation-selector
+                <automation-input
                   v-model="profile.onDeactivate"
                   label="Deactivation Automation"
                 />
@@ -84,26 +85,26 @@
 </template>
 
 <script>
-import PluginTriggers from "../components/profiles/PluginTriggers.vue";
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
-import AutomationSelector from "../components/automations/AutomationSelector.vue";
+import AutomationInput from "../components/automations/AutomationInput.vue";
 import { mapActions, mapGetters } from "vuex";
 import BooleanExpression from "../components/conditionals/BooleanExpression.vue";
 import BooleanGroup from "../components/conditionals/BooleanGroup.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
+import TriggerList from "../components/triggers/TriggerList.vue";
 import { loadProfile, saveProfile } from "../utils/fileTools";
 
 export default {
   components: {
-    PluginTriggers,
     ConditionsEditor,
     RewardsEditor,
-    AutomationSelector,
+    AutomationInput,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
     BooleanExpression,
     BooleanGroup,
     FlexScroller,
+    TriggerList,
   },
   computed: {
     ...mapGetters("ipc", ["paths", "pluginList"]),

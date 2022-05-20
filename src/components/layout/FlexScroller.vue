@@ -1,13 +1,18 @@
 <template>
   <div class="scroller-outer">
-    <div class="scroller-inner">
+    <v-sheet :color="color" :class="['scroller-inner', innerClass]">
       <slot />
-    </div>
+    </v-sheet>
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  props: {
+    color: {},
+    innerClass: {},
+  },
+};
 </script>
 
 <style scoped>

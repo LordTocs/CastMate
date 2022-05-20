@@ -1,5 +1,5 @@
 <template>
-  <v-card-actions>
+  <div class="d-flex flex-row">
     <v-combobox
       :value="value"
       @change="(v) => $emit('input', v)"
@@ -25,6 +25,7 @@
       fab
       small
       class="mx-1"
+      v-if="showButtons"
       @click.stop="$refs.automationDlg.open()"
       :disabled="!value"
     >
@@ -34,19 +35,20 @@
       fab
       small
       class="mx-1"
+      v-if="showButtons"
       @click="$refs.addModal.open()"
       :disabled="!!value"
     >
       <v-icon small> mdi-plus </v-icon>
     </v-btn>
-    <automation-quick-edit-dialog ref="automationDlg" :automationName="value"/>
+    <automation-quick-edit-dialog ref="automationDlg" :automationName="value" />
     <named-item-modal
       ref="addModal"
       header="Create New Automation"
       label="Name"
       @created="createNewAutomation"
     />
-  </v-card-actions>
+  </div>
 </template>
 
 <script>
@@ -56,13 +58,14 @@ import path from "path";
 import YAML from "yaml";
 import { mapGetters } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
-import AutomationQuickEditDialog from './AutomationQuickEditDialog.vue';
+import AutomationQuickEditDialog from "./AutomationQuickEditDialog.vue";
 
 export default {
   name: "automation-selector",
   props: {
     value: {},
     label: { type: String, default: () => "Automation" },
+    showButtons: { type: Boolean, default: () => true },
   },
   components: {
     NamedItemModal,
