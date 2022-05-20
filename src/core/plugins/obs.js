@@ -57,6 +57,7 @@ module.exports = {
 		});
 		this.obs.on("StreamStarted", () => {
 			this.state.streaming = true;
+			this.analytics.track("goLive");
 		})
 		this.obs.on("StreamStopped", () => {
 			this.state.streaming = false;

@@ -112,11 +112,13 @@ export default {
         automation: null,
       };
       this.localTriggerType = _cloneDeep(this.triggerType);
+      this.trackAnalytic("openTrigger");
       this.dialog = true;
     },
     async apply() {
       await this.$refs.automationInput.saveAutomation();
       this.$emit("mapping", this.localTriggerType, this.localMapping);
+      this.trackAnalytic("saveTrigger", { type: this.localTriggerType });
       this.dialog = false;
     },
     cancel() {
