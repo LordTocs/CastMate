@@ -47,7 +47,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					amount: { type: "Range", name: "Currency Donated" },
+					amount: { type: "Range", name: "Currency Donated", default: { min: 0} },
 				}
 			},
 			context: {
