@@ -89,22 +89,39 @@
       </v-card-text>
       <v-card-text v-if="stage == 'done'">
         <span class="text-h5">
-          CastMate uses a profile system to set up "Triggers". Triggers let you
-          set what should happen when certain events occurs. Events such as a
-          chat command, a raid, someone follows, or someone subscribes.
+          CastMate uses "Triggers" to run automations based on viewer
+          activities. Triggers are grouped together in "Profiles". Profiles can
+          be set to automatically enable and disable the whole group of
+          triggers. To get you started, we've created the main profile for you.
+          <br />
+          <br />
+          Try adding a new trigger to it. When you add a trigger, on the left
+          you can specify when you'd like the automation to run. In the center
+          you can put the actions you'd like to happen. Actions are things like
+          playing a sound, toggling an OBS filter, changing your lights color,
+          or running text to speech.
         </span>
-        <img src="../../assets/triggers.png" style="width: 98%; height: auto"/>
-        <hr class="my-2"/>
-        <span class="text-h5">
-          CastMate uses "Automations" to determine what should happen when a
-          trigger is activated. Automations are a sequence of actions. Actions
-          are things like playing a sound, toggling an OBS filter, changing your
-          lights color, or running text to speech.
-        </span>
+        <p class="text-h5 text-center my-5">
+          For more help join our discord!
+          <v-btn
+            x-large
+            link
+            to="https://discord.gg/txt4DUzYJM"
+            target="_blank"
+            color="#5865F2"
+            class="mx-5"
+          >
+            <v-icon> mdi-discord </v-icon> Discord
+          </v-btn>
+        </p>
+        <hr class="my-3" />
         <img
-          src="../../assets/automation.png"
+          src="../../assets/new-trigger.png"
           style="width: 98%; height: auto"
         />
+        <hr class="my-3" />
+        <img src="../../assets/triggers.png" style="width: 98%; height: auto" />
+        
       </v-card-text>
       <v-card-actions v-if="stage != 'welcome' && stage != 'done'">
         <v-btn small @click="moveNext"> Skip </v-btn>
@@ -115,7 +132,7 @@
       </v-card-actions>
       <v-card-actions v-if="stage == 'done'">
         <v-spacer />
-        <v-btn x-large color="primary" @click="cancel"> Get Creating </v-btn>
+        <v-btn x-large color="primary" @click="finish"> Get Creating </v-btn>
         <v-spacer />
       </v-card-actions>
     </v-card>
@@ -127,6 +144,7 @@ import { mapGetters } from "vuex";
 import Twitch from "../plugins/twitch.vue";
 import ObsSettings from "./ObsSettings.vue";
 import { isFirstRun } from "../../utils/firstRun";
+import { createNewProfile, profileExists } from "../../utils/fileTools";
 export default {
   components: { Twitch, ObsSettings },
   data() {
@@ -155,6 +173,11 @@ export default {
     open() {
       this.dialog = true;
     },
+    async createMainProfile() {
+      if (!(await profileExists("Main"))) {
+        await createNewProfile("Main");
+      }
+    },
     moveNext() {
       if (this.stage == "welcome") {
         this.stage = "twitch";
@@ -166,11 +189,16 @@ export default {
       }
       if (this.stage == "obs") {
         this.stage = "done";
+        this.createMainProfile();
         return;
       }
     },
     cancel() {
       this.dialog = false;
+    },
+    finish() {
+      this.dialog = false;
+      this.$router.push("/profiles/Main");
     },
   },
   async mounted() {

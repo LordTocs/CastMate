@@ -923,7 +923,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					months: { type: "Range", name: "Months Subbed" },
+					months: { type: "Range", name: "Months Subbed", default: { min: 1 } },
 				},
 			},
 			context: {
@@ -945,7 +945,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					subs: { type: "Range", name: "Subs Gifted" },
+					subs: { type: "Range", name: "Subs Gifted", default: { min: 1 } },
 				},
 			},
 			context: {
@@ -964,7 +964,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					bits: { type: "Range", name: "Bits Cheered" },
+					bits: { type: "Range", name: "Bits Cheered", default: { min: 1 } },
 				},
 			},
 			context: {
@@ -986,7 +986,7 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					raiders: { type: "Range", name: "Raiders" },
+					raiders: { type: "Range", name: "Raiders", default: { min: 1 } },
 				},
 			},
 			context: {

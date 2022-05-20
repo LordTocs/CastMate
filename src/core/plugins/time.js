@@ -111,8 +111,8 @@ module.exports = {
 			config: {
 				type: Object,
 				properties: {
-					delay: { type: "Duration", name: "Delay" },
-					interval: { type: "Duration", name: "Interval" },
+					delay: { type: "Duration", name: "Delay", default: "" },
+					interval: { type: "Duration", name: "Interval", default: "" },
 				}
 			},
 			context: {

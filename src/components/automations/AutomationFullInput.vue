@@ -103,10 +103,12 @@ export default {
   },
   computed: {
     isInline() {
-      return this.value instanceof Object;
+      return this.value instanceof Object || !this.value;
     },
     actions() {
-      if (this.isInline) {
+      if (!this.value) {
+        return [];
+      } else if (this.isInline) {
         return this.value.actions;
       } else if (this.loadedAutomation) {
         return this.loadedAutomation.actions;

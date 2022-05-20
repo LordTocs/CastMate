@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { app } from "@electron/remote/main";
+import { app } from "@electron/remote";
 import { ipcRenderer } from "electron";
 import WelcomeDialog from "../components/wizard/WelcomeDialog.vue";
 export default {
@@ -54,6 +54,7 @@ export default {
     },
   },
   mounted() {
+    app
     this.version = app.getVersion();
   },
 };
