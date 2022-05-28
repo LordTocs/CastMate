@@ -86,6 +86,12 @@
     @input="handleInput"
     :label="schema.name || label"
   />
+  <bit-button-selector
+    v-else-if="schema.type == 'BitButtonHook'"
+    :value="value"
+    @input="handleInput"
+    :label="schema.name || label"
+  />
   <time-input
     v-else-if="schema.type == 'Duration'"
     :value="value"
@@ -109,6 +115,7 @@ import RewardSelector from "../rewards/RewardSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
 import RangeInput from "./RangeInput.vue";
 import TimeInput from "./TimeInput.vue";
+import BitButtonSelector from "../bitbuttons/BitButtonSelector.vue";
 
 export default {
   name: "data-input",
@@ -122,6 +129,7 @@ export default {
     RewardSelector,
     RangeInput,
     TimeInput,
+    BitButtonSelector,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {

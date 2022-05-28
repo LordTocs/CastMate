@@ -6,6 +6,7 @@ import vuetify from './plugins/vuetify';
 import { VTimeline } from "vuetify/lib";
 import VueMask from 'v-mask'
 import VueMixpanel from 'vue-mixpanel';
+import SubEmit from './plugins/subemit';
 
 Vue.config.productionTip = false;
 
@@ -17,6 +18,7 @@ Vue.use(VueMixpanel, {
 Vue.component('v-timeline', VTimeline);
 
 Vue.use(VueMask)
+Vue.use(SubEmit);
 
 console.log("Main!");
 

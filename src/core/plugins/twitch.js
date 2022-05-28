@@ -383,8 +383,7 @@ module.exports = {
 				this.logger.info(`Connection to castmate websocket open`);
 
 				this.castMateWebsocketPinger = setInterval(() => {
-					if (this.castMateWebsocket.readyState == 1)
-					{
+					if (this.castMateWebsocket.readyState == 1) {
 						this.castMateWebsocket.ping()
 					}
 				}, 30000);
@@ -432,8 +431,8 @@ module.exports = {
 			})
 
 			this.castMateWebsocket.on('error', (err) => {
-                //Empty function to prevent unhandled exceptions rippling up somewhere else in the process.
-            });
+				//Empty function to prevent unhandled exceptions rippling up somewhere else in the process.
+			});
 
 
 		},
@@ -735,6 +734,12 @@ module.exports = {
 			if (this.channelAuth && this.channelAuth.isAuthed)
 				return this.channelAuth._accessToken.accessToken;
 			return null;
+		},
+		getChannelId() {
+			return this.channelId;
+		},
+		getUserColor(userId) {
+			return this.colorCache[userId];
 		}
 	},
 	async onProfileLoad(profile, config) {
@@ -866,7 +871,6 @@ module.exports = {
 					}
 				}
 				if (config.match == "Anywhere") {
-					console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
 					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
 					}

@@ -8,6 +8,7 @@ const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData')
 const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));
 const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
 const rewardsFilePath = path.resolve(path.join(userFolder, "rewards.yaml"));
+const buttonsFilePath = path.resolve(path.join(userFolder, "buttons.yaml"));
 const segmentsFilePath = path.resolve(path.join(userFolder, "segments.yaml"));
 const variablesFilePath = path.resolve(path.join(userFolder, "variables.yaml"));
 
@@ -40,6 +41,7 @@ function ensureUserFolder()
 	ensureFolder(path.join(userFolder, "automations"));
 
 	ensureFile(rewardsFilePath);
+	ensureFile(buttonsFilePath);
 	ensureFile(secretsFilePath);
 	ensureFile(settingsFilePath);
 	ensureFile(segmentsFilePath);

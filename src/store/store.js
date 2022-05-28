@@ -2,6 +2,7 @@ import ipcModule from './ipc';
 import rewardsModule from './rewards';
 import segmentsModule from './segments';
 import variablesModule from './variables';
+import bitbuttonsModule from './bitbuttons';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
@@ -15,6 +16,7 @@ export const store = new Vuex.Store({
 		rewards: rewardsModule,
 		segments: segmentsModule,
 		variables: variablesModule,
+		bitbuttons: bitbuttonsModule
 	}
 });
 

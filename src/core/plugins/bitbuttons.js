@@ -4,6 +4,9 @@ const { userFolder } = require('../utils/configuration');
 const nanoid = require('nanoid');
 const { WebSocket } = require('ws');
 const { onStateChange } = require('../utils/reactive');
+const HotReloader = require('../utils/hot-reloader');
+const { buttonsFilePath } = require("../utils/configuration");
+const { default: axios } = require('axios');
 
 class RequestSocket {
     constructor(socket) {
@@ -68,7 +71,10 @@ class RequestSocket {
 
     handle(name, func) {
         this.handlers[name] = async (requestId, ...args) => {
-            const result = await func(...args);
+            let result = await func(...args);
+            if (result === undefined) {
+                result = null;
+            }
 
             await this.socket.send(JSON.stringify({
                 responseId: requestId,
@@ -115,6 +121,66 @@ module.exports = {
             this.logger.error("Error connecting to BitButtons");
         }
     },
+    ipcMethods: {
+        getButtonHooks() {
+            return this.buttonHooks || [];
+        },
+        async createButtonHook(hookData) {
+            const channelId = this.twitch.publicMethods.getChannelId();
+            const accessToken = this.twitch.publicMethods.getAccessToken();
+
+            try {
+                this.logger.info(`Creating ButtonHook ${hookData.name} ${hookData.description}`);
+                const newHook = await this.apiClient.post(`/streams/${channelId}/hooks/`, hookData);
+                this.logger.info(`Created ButtonHook ${newHook.data._id}`);
+
+                this.buttonHooks.push(newHook.data);
+                return newHook.data;
+
+            }
+            catch (err) {
+                this.logger.error(`Error Creating Hook, ${err}`);
+                return null;
+            }
+        },
+        async updateButtonHook(hookId, hookData) {
+            const channelId = this.twitch.publicMethods.getChannelId();
+            const accessToken = this.twitch.publicMethods.getAccessToken();
+
+            if (!accessToken) {
+                this.logger.info(`Can't connect to BitButtons, no twitch sign on.`);
+                return;
+            }
+
+            try {
+                const newHook = await this.apiClient.put(`/streams/${channelId}/hooks/${hookId}`, hookData);
+                const idx = this.buttonHooks.findIndex(h => h._id == hookId);
+                this.buttonHooks[idx] = newHook.data;
+                return newHook.data
+            }
+            catch (err) {
+                this.logger.error(`Error Updating Hook, ${err}`);
+            }
+        },
+        async deleteButtonHook(hookId) {
+            const channelId = this.twitch.publicMethods.getChannelId();
+            const accessToken = this.twitch.publicMethods.getAccessToken();
+
+            if (!accessToken) {
+                this.logger.info(`Can't connect to BitButtons, no twitch sign on.`);
+                return;
+            }
+
+            try {
+                await this.apiClient.delete(`/streams/${channelId}/hooks/${hookId}`)
+                const idx = this.buttonHooks.findIndex(h => h._id == hookId);
+                this.buttonHooks.splice(idx, 1);
+            }
+            catch (err) {
+                this.logger.error(`Error Updating Hook, ${err}`);
+            }
+        }
+    },
     methods: {
         async retry() {
             await this.disconnect();
@@ -150,24 +216,37 @@ module.exports = {
 
             if (!accessToken) {
                 this.logger.info(`Can't connect to BitButtons, no twitch sign on.`);
+                this.apiClient = null;
                 return;
             }
 
+            this.apiClient = axios.create({
+                baseURL: process.env.VUE_APP_BITBUTTONS_URL
+            })
+
+            this.apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+            await this.initHookData();
+
             this.reconnect = true;
 
-            this.websocket = new WebSocket(process.env.VUE_APP_BITBUTTONS_URL, {
+            this.websocket = new WebSocket(process.env.VUE_APP_BITBUTTONS_SOCKET_URL, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 }
             });
 
             this.websocket.on('open', () => {
-                this.logger.info(`Connection to BitButtons open (${process.env.VUE_APP_BITBUTTONS_URL})`);
+                this.logger.info(`Connection to BitButtons open (${process.env.VUE_APP_BITBUTTONS_SOCKET_URL})`);
 
                 this.requestSocket = new RequestSocket(this.websocket);
 
-                this.requestSocket.handle("getAutomations", () => this.getAutomations());
-                this.requestSocket.handle("runAutomation", (automation, context) => this.runAutomation(automation, context));
+                this.requestSocket.handle("getHooks", () => this.getActiveHooks());
+                this.requestSocket.handle("runHook", (hookId, context) => {
+                    return this.triggers.buttonHook({ hookId, ...context, userColor: this.twitch.publicMethods.getUserColor(context.userId) })
+                });
+
+                this.requestSocket.call("setActiveHooks", Array.from(this.activeHooks));
 
                 this.websocketPinger = setInterval(() => {
                     if (this.websocket.readyState == 1) {
@@ -193,40 +272,67 @@ module.exports = {
 
 
         },
-        async getAutomations() {
-            return this.actions.automations.getAllAutomations();
+        async initHookData() {
+            await this.loadButtonHooks();
         },
-        async runAutomation(automation, context) {
-            console.log("BitButton Request ", automation);
-            return this.actions.startAutomation(automation, context);
+        async loadButtonHooks() {
+            const channelId = this.twitch.publicMethods.getChannelId();
+            const accessToken = this.twitch.publicMethods.getAccessToken();
+
+            try {
+                const resp = await this.apiClient.get(`/streams/${channelId}/hooks/`);
+
+                this.logger.info(`Loaded Button Hooks (${resp.data.length})`);
+                this.buttonHooks = resp.data;
+            }
+            catch (err) {
+                this.logger.error(`Error loading button hooks ${err}`);
+            }
+        },
+        async getActiveHooks() {
+            return Array.from(this.activeHooks);
+        }
+    },
+    triggers: {
+        buttonHook: {
+            name: "BitButton",
+            description: "Fires when a BitButton is pressed",
+            config: {
+                type: Object,
+                properties: {
+                    hookId: { type: "BitButtonHook", name: "Button Hook" },
+                }
+            },
+            context: {
+                hookId: { type: String },
+                price: { type: Number },
+                user: { type: String },
+                userId: { type: String },
+                userColor: { type: String },
+            },
+            handler(config, context) {
+                return config.hookId == context.hookId;
+            }
+        },
+    },
+    async onProfileLoad(profile, config) {
+        const buttonTriggers = config ? (config.triggers ? (config.triggers.bitbuttons ? (config.triggers.bitbuttons.buttonHook) : null) : null) : null;
+
+        profile.buttonHooks = buttonTriggers ? buttonTriggers.map(rt => rt.config.hookId) : [];
+    },
+    async onProfilesChanged(activeProfiles, inactiveProfiles) {
+        this.activeHooks = new Set();
+
+        //Handle rewards
+        for (let activeProf of activeProfiles) {
+            for (let hookId of activeProf.buttonHooks) {
+                this.activeHooks.add(hookId);
+            }
         }
 
-    },
-    async onAutomationCreated(automationName) {
-        if (!this.requestSocket)
-            return;
-
-        const automation = this.actions.automations.get(automationName);
-        if (!automation)
-            return;
-
-        await this.requestSocket.call('automationCreated', { name: automationName, description: automation.description });
-    },
-    async onAutomationDeleted(automationName) {
-        if (!this.requestSocket)
-            return;
-
-        await this.requestSocket.call('automationDeleted', automationName);
-    },
-    async onAutomationUpdated(automationName) {
-        if (!this.requestSocket)
-            return;
-
-        const automation = this.actions.automations.get(automationName);
-        if (!automation)
-            return;
-
-        await this.requestSocket.call('automationUpdated', { name: automationName, description: automation.description });
+        if (this.requestSocket) {
+            this.requestSocket.call("setActiveHooks", Array.from(this.activeHooks));
+        }
     },
     state: {
         connected: {

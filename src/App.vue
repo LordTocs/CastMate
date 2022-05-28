@@ -191,6 +191,7 @@ export default {
     ...mapActions("rewards", ["loadRewards"]),
     ...mapActions("segments", ["loadSegments"]),
     ...mapActions("variables", ["loadVariables"]),
+    ...mapActions("bitbuttons", ["loadButtonHooks"]),
     openSoundsFolder() {
       shell.openPath(path.join(this.paths.userFolder, "sounds"));
     },
@@ -200,6 +201,7 @@ export default {
     await this.loadRewards();
     await this.loadSegments();
     await this.loadVariables();
+    await this.loadButtonHooks();
     this.loaded = true;
     ipcRenderer.invoke("updater.checkForUpdates");
   },

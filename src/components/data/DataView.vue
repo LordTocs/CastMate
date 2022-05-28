@@ -23,10 +23,16 @@
   </p>
   <p v-else-if="schema.type == 'ChannelPointReward'">
     <span class="text--secondary" v-if="schema.name || label">
-      {{ schema.name || label }}: </span
-    >{{ value }}
+      {{ schema.name || label }}:
+    </span>
+    {{ value }}
     <!--reward-edit-button :rewardName="value" /-->
   </p>
+  <bit-button-view
+    :label="schema.name || label"
+    :hookId="value"
+    v-else-if="schema.type == 'BitButtonHook'"
+  />
   <div
     v-else-if="schema.type == 'Object' && schema.properties"
     :class="[{ 'horizontal-layout': horizontal }]"
@@ -41,17 +47,19 @@
   </div>
   <p v-else-if="schema.type == 'Range' && value">
     <span class="text--secondary" v-if="schema.name || label">
-      {{ schema.name || label }}: </span
-    >{{ value.min != undefined && value.min != null ? value.min : `-∞` }} ⟶
+      {{ schema.name || label }}:
+    </span>
+    {{ value.min != undefined && value.min != null ? value.min : `-∞` }} ⟶
     {{ value.max != undefined && value.max != null ? value.max : `∞` }}
   </p>
 </template>
 
 <script>
+import BitButtonView from "../bitbuttons/BitButtonView.vue";
 import RewardEditButton from "../rewards/RewardEditButton.vue";
 import ColorSwatch from "./ColorSwatch.vue";
 export default {
-  components: { ColorSwatch, RewardEditButton },
+  components: { ColorSwatch, RewardEditButton, BitButtonView },
   name: "data-view",
   props: {
     schema: {},
