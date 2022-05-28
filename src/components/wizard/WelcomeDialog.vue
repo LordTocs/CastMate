@@ -16,7 +16,9 @@
         </h1>
       </v-card-title>
       <v-card-title v-if="stage == 'done'">
-        <h1>You're ready to start creating with CastMate!</h1>
+        <!--DEMO BEGIN: Change done screen for reviewers-->
+        <h1>Thanks for reviewing BitButtons.</h1>
+        <!--DEMO BEGIN: Change done screen for reviewers-->
       </v-card-title>
       <v-card-text v-if="stage == 'welcome'">
         <p class="text-h5 text-center">Thank you for downloading CastMate!</p>
@@ -88,21 +90,21 @@
         <obs-settings />
       </v-card-text>
       <v-card-text v-if="stage == 'done'">
+        <!--DEMO BEGIN: Change done screen for reviewers-->
         <span class="text-h5">
-          CastMate uses "Triggers" to run automations based on viewer
-          activities. Triggers are grouped together in "Profiles". Profiles can
-          be set to automatically enable and disable the whole group of
-          triggers. To get you started, we've created the main profile for you.
+          This special build of CastMate will auto-configure a demo profile for
+          easy testing.
           <br />
           <br />
-          Try adding a new trigger to it. When you add a trigger, on the left
-          you can specify when you'd like the automation to run. In the center
-          you can put the actions you'd like to happen. Actions are things like
-          playing a sound, toggling an OBS filter, changing your lights color,
-          or running text to speech.
+          You will still need to do the extension configuration on
+          <a href="https://www.bitbuttons.com" target="_blank">
+            www.bitbuttons.com</a
+          >. Sign into the dashboard and click "Add New Button". Fill out the
+          form and click "Create". As long as CastMate is running, the buttons you
+          create should show up in the video component.
         </span>
         <p class="text-h5 text-center my-5">
-          For more help join our discord!
+          For more help join our Discord!
           <v-btn
             x-large
             link
@@ -114,14 +116,7 @@
             <v-icon> mdi-discord </v-icon> Discord
           </v-btn>
         </p>
-        <hr class="my-3" />
-        <img
-          src="../../assets/new-trigger.png"
-          style="width: 98%; height: auto"
-        />
-        <hr class="my-3" />
-        <img src="../../assets/triggers.png" style="width: 98%; height: auto" />
-        
+        <!--DEMO END: Change done screen for reviewers-->
       </v-card-text>
       <v-card-actions v-if="stage != 'welcome' && stage != 'done'">
         <v-btn small @click="moveNext"> Skip </v-btn>
@@ -132,7 +127,9 @@
       </v-card-actions>
       <v-card-actions v-if="stage == 'done'">
         <v-spacer />
-        <v-btn x-large color="primary" @click="finish"> Get Creating </v-btn>
+        <!--DEMO BEGIN: Change done screen for reviewers-->
+        <v-btn x-large color="primary" @click="finish"> Go To Profile </v-btn>
+        <!--DEMO END: Change done screen for reviewers-->
         <v-spacer />
       </v-card-actions>
     </v-card>
@@ -144,7 +141,7 @@ import { mapGetters } from "vuex";
 import Twitch from "../plugins/twitch.vue";
 import ObsSettings from "./ObsSettings.vue";
 import { isFirstRun } from "../../utils/firstRun";
-import { createNewProfile, profileExists } from "../../utils/fileTools";
+import { createBitButtonDemo, createNewProfile, profileExists } from "../../utils/fileTools";
 export default {
   components: { Twitch, ObsSettings },
   data() {
@@ -174,8 +171,12 @@ export default {
       this.dialog = true;
     },
     async createMainProfile() {
-      if (!(await profileExists("Main"))) {
-        await createNewProfile("Main");
+      if (!(await profileExists("Demo"))) {
+        await createNewProfile("Demo");
+        //DEMO BEGIN
+        //Insert some test button hooks.
+        await createBitButtonDemo("Demo")
+        //DEMO END
       }
     },
     moveNext() {
@@ -184,7 +185,10 @@ export default {
         return;
       }
       if (this.stage == "twitch") {
-        this.stage = "obs";
+        //DEMO BEGIN: Skip over OBs SETUP
+        this.stage = "done";
+        this.createMainProfile();
+        //DEMO END
         return;
       }
       if (this.stage == "obs") {
@@ -198,7 +202,7 @@ export default {
     },
     finish() {
       this.dialog = false;
-      this.$router.push("/profiles/Main");
+      this.$router.push("/profiles/Demo");
     },
   },
   async mounted() {

@@ -126,7 +126,6 @@ module.exports = {
         },
         async createSpellHook(hookData) {
             const channelId = this.twitch.publicMethods.getChannelId();
-            const accessToken = this.twitch.publicMethods.getAccessToken();
 
             try {
                 this.logger.info(`Creating SpellHook ${hookData.name} ${hookData.description}`);

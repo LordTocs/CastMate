@@ -299,3 +299,82 @@ export async function loadAutomation(automationName) {
 
     return data;
 }
+
+
+////////////////
+///BITBUTTONS///
+////////////////
+
+export async function createBitButtonDemo(profileName) {
+    const profile = await loadProfile(profileName)
+
+    //...
+    if (!profile.triggers)
+        profile.triggers = {};
+    if (!profile.triggers.bitbuttons)
+        profile.triggers.bitbuttons = {};
+    if (!profile.triggers.bitbuttons.buttonHook)
+        profile.triggers.bitbuttons.buttonHook = [];
+
+    const hook1 = await store.dispatch('bitbuttons/createButtonHook', {
+        hookData: {
+            name: "Hey! Listen!",
+            description: "Hey Listen!",
+        }
+    });
+
+    if (!hook1)
+        return;
+
+    const hook2 = await store.dispatch('bitbuttons/createButtonHook', {
+        hookData: {
+            name: "Bonk",
+            description: "Bonk Bonk",
+        }
+    });
+
+    if (!hook2)
+        return;
+
+    profile.triggers.bitbuttons.buttonHook.push({
+        config: {
+            hookId: hook1._id
+        },
+        automation: {
+            version: "1.0",
+            description: "",
+            actions: [
+                {
+                    plugin: "sounds",
+                    action: "sound",
+                    data: {
+                        volume: 100,
+                        sound: "heylisten.mp3"
+                    }
+                }
+            ]
+        }
+    })
+
+    profile.triggers.bitbuttons.buttonHook.push({
+        config: {
+            hookId: hook2._id
+        },
+        automation: {
+            version: "1.0",
+            description: "",
+            actions: [
+                {
+                    plugin: "sounds",
+                    action: "sound",
+                    data: {
+                        volume: 100,
+                        sound: "bonk.mp3"
+                    }
+                }
+            ]
+        }
+    })
+
+    await saveProfile(profileName, profile);
+}
