@@ -33,12 +33,12 @@ class RequestSocket {
                     return;
                 }
                 try {
-                    const result = data.result;
-                    if (result === undefined) {
+                    if (data.failed) {
                         outstandingCall.reject();
-                        return;
                     }
-                    outstandingCall.resolve(result);
+                    else {
+                        outstandingCall.resolve(data.result);
+                    }
                 }
                 catch
                 {
@@ -55,27 +55,25 @@ class RequestSocket {
                     return;
                 }
                 const args = data.args || [];
-                try {
-                    this.handlers[requestName](requestId, ...args);
-                }
-                catch
-                {
-                    await this.socket.send(JSON.stringify({
-                        responseId: requestId,
-                        failed: true,
-                    }))
-                }
+
+                this.handlers[requestName](requestId, ...args);
             }
         })
     }
 
     handle(name, func) {
         this.handlers[name] = async (requestId, ...args) => {
-            let result = await func(...args);
-            if (result === undefined) {
-                result = null;
+            let result;
+            try {
+                result = await func(...args);
             }
-
+            catch (err) {
+                await this.socket.send(JSON.stringify({
+                    responseId: requestId,
+                    failed: true
+                }))
+                return;
+            }
             await this.socket.send(JSON.stringify({
                 responseId: requestId,
                 result
@@ -97,14 +95,13 @@ class RequestSocket {
         })
         return promise;
     }
-
 }
 
 
 module.exports = {
     name: "bitbuttons",
     uiName: "BitButtons",
-    icon: "mdi-currency-usd",
+    icon: "$vuetify.icons.bitbuttons",
     color: "#8DC0C1",
     async init() {
         this.twitch = this.plugins.getPlugin("twitch");
@@ -220,6 +217,8 @@ module.exports = {
                 return;
             }
 
+            this.logger.info(`Using BitButtons URL ${process.env.VUE_APP_BITBUTTONS_URL}`);
+
             this.apiClient = axios.create({
                 baseURL: process.env.VUE_APP_BITBUTTONS_URL
             })
@@ -305,7 +304,7 @@ module.exports = {
             },
             context: {
                 hookId: { type: String },
-                price: { type: Number },
+                bits: { type: Number },
                 user: { type: String },
                 userId: { type: String },
                 userColor: { type: String },
