@@ -17,7 +17,7 @@
       </v-card-title>
       <v-card-title v-if="stage == 'done'">
         <!--DEMO BEGIN: Change done screen for reviewers-->
-        <h1>Thanks for reviewing BitButtons.</h1>
+        <h1>Thanks for reviewing SpellCast</h1>
         <!--DEMO BEGIN: Change done screen for reviewers-->
       </v-card-title>
       <v-card-text v-if="stage == 'welcome'">
@@ -97,13 +97,27 @@
           <br />
           <br />
           You will still need to do the extension configuration on
-          <a href="https://www.bitbuttons.com" target="_blank">
-            www.bitbuttons.com</a
-          >. Sign into the dashboard and click "Add New Button". Fill out the
-          form and click "Create". As long as CastMate is running, the buttons you
-          create should show up in the video component.
+          <a href="https://www.spellcast.gg" target="_blank">
+            www.spellcast.gg</a
+          >. Sign into the dashboard and click "Add New Button". <br />
         </span>
-        <p class="text-h5 text-center my-5">
+        <img
+          src="../../assets/newButton.png"
+          style="display: block; margin: auto"
+        /><br />
+        <span class="text-h5">Fill out the form and click "Create". </span>
+        <br />
+        <img
+          src="../../assets/buttonForm.png"
+          style="display: block; margin: auto"
+        />
+        <span class="text-h5">
+          <br />
+          As long as CastMate is running, the buttons you create should show up
+          in the video component.
+        </span>
+
+        <!--p class="text-h5 text-center my-5">
           For more help join our Discord!
           <v-btn
             x-large
@@ -115,7 +129,7 @@
           >
             <v-icon> mdi-discord </v-icon> Discord
           </v-btn>
-        </p>
+        </p-->
         <!--DEMO END: Change done screen for reviewers-->
       </v-card-text>
       <v-card-actions v-if="stage != 'welcome' && stage != 'done'">
@@ -128,7 +142,14 @@
       <v-card-actions v-if="stage == 'done'">
         <v-spacer />
         <!--DEMO BEGIN: Change done screen for reviewers-->
-        <v-btn x-large color="primary" @click="finish"> Go To Profile </v-btn>
+        <v-btn
+          x-large
+          color="primary"
+          @click="finish"
+          :loading="profileCreating"
+        >
+          Go To Demo Profile
+        </v-btn>
         <!--DEMO END: Change done screen for reviewers-->
         <v-spacer />
       </v-card-actions>
@@ -141,13 +162,18 @@ import { mapGetters } from "vuex";
 import Twitch from "../plugins/twitch.vue";
 import ObsSettings from "./ObsSettings.vue";
 import { isFirstRun } from "../../utils/firstRun";
-import { createBitButtonDemo, createNewProfile, profileExists } from "../../utils/fileTools";
+import {
+  createSpellCastDemo,
+  createNewProfile,
+  profileExists,
+} from "../../utils/fileTools";
 export default {
   components: { Twitch, ObsSettings },
   data() {
     return {
       dialog: false,
       stage: "welcome",
+      profileCreating: false,
     };
   },
   computed: {
@@ -171,13 +197,16 @@ export default {
       this.dialog = true;
     },
     async createMainProfile() {
+      //DEMO BEGIN
+      this.profileCreating = true;
       if (!(await profileExists("Demo"))) {
         await createNewProfile("Demo");
-        //DEMO BEGIN
+
         //Insert some test button hooks.
-        await createBitButtonDemo("Demo")
-        //DEMO END
+        await createSpellCastDemo("Demo");
       }
+      this.profileCreating = false;
+      //DEMO END
     },
     moveNext() {
       if (this.stage == "welcome") {
@@ -185,7 +214,7 @@ export default {
         return;
       }
       if (this.stage == "twitch") {
-        //DEMO BEGIN: Skip over OBs SETUP
+        //DEMO BEGIN: Skip over OBS SETUP
         this.stage = "done";
         this.createMainProfile();
         //DEMO END

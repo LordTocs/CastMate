@@ -53,7 +53,13 @@ module.exports = {
 					{
 						from: "web",
 						to: "web",
+					},
+					//DEMO BEGIN
+					{
+						from: "bundled_assets",
+						to: "bundled_assets",
 					}
+					//DEMO END
 				]
 			},
 			mainProcessWatch: ['src/core/**'],

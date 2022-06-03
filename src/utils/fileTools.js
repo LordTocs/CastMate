@@ -300,43 +300,53 @@ export async function loadAutomation(automationName) {
     return data;
 }
 
-
+//DEMO BEGIN
 ////////////////
-///BITBUTTONS///
+///SPELLCAST///
 ////////////////
 
-export async function createBitButtonDemo(profileName) {
+export async function createSpellCastDemo(profileName) {
     const profile = await loadProfile(profileName)
 
     //...
     if (!profile.triggers)
         profile.triggers = {};
-    if (!profile.triggers.bitbuttons)
-        profile.triggers.bitbuttons = {};
-    if (!profile.triggers.bitbuttons.buttonHook)
-        profile.triggers.bitbuttons.buttonHook = [];
+    if (!profile.triggers.spellcast)
+        profile.triggers.spellcast = {};
+    if (!profile.triggers.spellcast.spellHook)
+        profile.triggers.spellcast.spellHook = [];
 
-    const hook1 = await store.dispatch('bitbuttons/createButtonHook', {
-        hookData: {
-            name: "Hey! Listen!",
-            description: "Hey Listen!",
-        }
-    });
+    const allHooks = store.getters['spellcast/spellHooks'];
+
+    let hook1 = allHooks.find((h) => h.name == "Hello");
+
+    if (!hook1) {
+        hook1 = await store.dispatch('spellcast/createSpellHook', {
+            hookData: {
+                name: "Hello",
+                description: "Say hello to the streamer",
+            }
+        });
+    }
 
     if (!hook1)
         return;
 
-    const hook2 = await store.dispatch('bitbuttons/createButtonHook', {
-        hookData: {
-            name: "Bonk",
-            description: "Bonk Bonk",
-        }
-    });
+    let hook2 = allHooks.find((h) => h.name == "Bonk");
+
+    if (!hook2) {
+        hook2 = await store.dispatch('spellcast/createSpellHook', {
+            hookData: {
+                name: "Bonk",
+                description: "Give streamer a bonk!",
+            }
+        });
+    }
 
     if (!hook2)
         return;
 
-    profile.triggers.bitbuttons.buttonHook.push({
+    profile.triggers.spellcast.spellHook.push({
         config: {
             hookId: hook1._id
         },
@@ -346,17 +356,17 @@ export async function createBitButtonDemo(profileName) {
             actions: [
                 {
                     plugin: "sounds",
-                    action: "sound",
+                    action: "tts",
                     data: {
                         volume: 100,
-                        sound: "heylisten.mp3"
+                        message: "{{ user }} says hello!"
                     }
                 }
             ]
         }
     })
 
-    profile.triggers.bitbuttons.buttonHook.push({
+    profile.triggers.spellcast.spellHook.push({
         config: {
             hookId: hook2._id
         },
@@ -378,3 +388,5 @@ export async function createBitButtonDemo(profileName) {
 
     await saveProfile(profileName, profile);
 }
+
+//DEMO END
