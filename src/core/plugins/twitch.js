@@ -160,6 +160,8 @@ module.exports = {
 				this.analytics.set({ botId: this.botId, $last_name: this.state.botName });
 			}
 
+			await this.webServices.websocketServer.broadcast(JSON.stringify({ channel: { channelId: this.state.channelId, channelName: this.state.channelName } }));
+
 			try {
 				await this.setupChatTriggers();
 			}
@@ -755,6 +757,9 @@ module.exports = {
 		await this.shutdown();
 
 		await this.doInitialAuth();
+	},
+	async onWebsocketConnected(socket) {
+		socket.send(JSON.stringify({ channel: { channelId: this.channelId, channelName: this.state.channelName } }));
 	},
 	settings: {
 		auxiliaryChannel: { type: String, name: "Auxiliary Chat Channel" },

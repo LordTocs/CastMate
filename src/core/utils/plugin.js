@@ -57,6 +57,13 @@ class Plugin
 			this.onWebsocketMessage = this.onWebsocketMessage.bind(this.pluginObj);
 		}
 
+		this.onWebsocketConnected = config.onWebsocketConnected;
+
+		if (this.onWebsocketConnected)
+		{
+			this.onWebsocketConnected = this.onWebsocketConnected.bind(this.pluginObj);
+		}
+
 		this.settingsView = config.settingsView;
 
 		this.settings = config.settings || [];
