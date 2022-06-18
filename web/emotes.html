@@ -28,6 +28,12 @@
 
 			const emoteService = new EmoteService();
 
+			const urlParams = new URLSearchParams(window.location.search);
+			const spawnX = urlParams.get('spawnX');
+			const spawnY = urlParams.get('spawnY');
+			const spawnAngle = urlParams.get('spawnAngle');
+			const spawnSpread = urlParams.get('spawnSpread');
+			
 			var Engine = Matter.Engine,
 				Render = Matter.Render,
 				Runner = Matter.Runner,
@@ -80,13 +86,23 @@
 				let velX = (Math.random() - 0.5) * 0.4;
 				let velY = (Math.random() - 0.5) * 0.4;
 
-				let newBody = Bodies.circle(x, y, 40, {
-					/*render: {
-						sprite: {
-							texture: image
-						}
-					}*/
-				});
+				if (spawnX && spawnY)
+				{
+					x = Number(spawnX);
+					y = Number(spawnY);	
+					console.log("Override Spawn", x, y);
+				}
+
+				if (spawnAngle && spawnSpread)
+				{
+					const angle = Number(spawnAngle) + (Math.random() - 0.5) * Number(spawnSpread);
+
+					console.log("Override Angle", angle);
+					velX = Math.cos(angle * Math.PI / 180) * 0.3;
+					velY = Math.sin(angle * Math.PI / 180) * 0.3;
+				}
+
+				let newBody = Bodies.circle(x, y, 40, {});
 
 				const img = document.createElement('img');
 				img.src = image;
@@ -159,8 +175,6 @@
 				}
 			})
 
-
-			let unicodeRegExp = new RegExp(joypixels.escapeRegExp(joypixels.unicodeCharRegex()), 'gi');
 
 			castmate.on('chat', (chat) => {
 				const emotes = emoteService.parseMessage(chat);
