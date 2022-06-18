@@ -152,6 +152,21 @@ class EmoteService {
         this.thirdPartyLookup = { ...this.bttvLookup, ...this.sevenTVLookup, ...this.ffzLookup };
     }
 
+    findNextEmote(message, code, index)
+    {
+        while (true)
+        {
+            index = message.indexOf(code, index);
+            if (index < 0)
+                return index;
+            if (index + code.length == message.length || /\s/.test(message[index + code.length]))
+            {
+                return index;
+            }
+            index += code.length;
+        }
+    }
+
     parseMessage(chat) {
         const result = [];
 
@@ -174,7 +189,7 @@ class EmoteService {
         }
 
         for (let code in this.thirdPartyLookup) {
-            for (let index = chat.message.indexOf(code); index >= 0; index = chat.message.indexOf(code, index + code.length)) {
+            for (let index = this.findNextEmote(chat.message, code); index >= 0; index = this.findNextEmote(chat.message, code, index + code.length)) {
                 result.push(this.thirdPartyLookup[code]);
             }
         }
