@@ -15,8 +15,8 @@
     :label="schema.name || label"
     :clearable="!schema.required"
     :secret="secret"
+    :unit="schema.unit"
   />
-
   <v-slider
     v-else-if="schema.type == 'Number' && schema.slider"
     :label="schema.name || label"

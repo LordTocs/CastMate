@@ -24,7 +24,7 @@ class AutomationManager
 
 		this.automationWatcher.on('add', async (filePath) =>
 		{
-			logger.info(`Automation Added: ${filePath}`);
+			//logger.info(`Automation Added: ${filePath}`);
 			await sleep(50);
 
 			const automationName = path.basename(filePath, '.yaml')

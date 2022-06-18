@@ -15,8 +15,7 @@ else {
 
 const OBS_ICON_SVG = "M22,12c0,5.523-4.477,10-10,10S2,17.523,2,12S6.477,2,12,2S22,6.477,22,12z M17.802,9.089 c-0.751-0.421-1.557-0.637-2.366-0.678c-0.335,0.62-0.832,1.139-1.438,1.489c-0.598,0.345-1.29,0.525-2.036,0.494 c-0.293-0.012-0.591-0.043-0.865-0.11C9.503,9.832,8.334,8.372,8.352,6.638c0.018-1.872,1.413-3.468,3.213-3.745 c-0.139,0.001-0.274,0.015-0.418,0.024c-2.615,0.43-4.607,2.779-4.569,5.514c0.011,0.861,0.227,1.667,0.596,2.388 c0.705-0.02,1.402,0.151,2.008,0.501c0.598,0.345,1.1,0.855,1.446,1.516c0.136,0.259,0.253,0.511,0.331,0.773 c0.422,1.615-0.258,3.374-1.779,4.231c-1.63,0.92-3.71,0.51-4.85-0.91c0.07,0.12,0.15,0.23,0.23,0.35c1.68,2.05,4.71,2.6,7.06,1.2 c0.74-0.44,1.33-1.03,1.77-1.71c-0.37-0.6-0.57-1.29-0.57-1.99c0-0.69,0.19-1.38,0.59-2.01c0.157-0.247,0.305-0.464,0.488-0.658 c1.186-1.186,3.06-1.482,4.57-0.59c1.612,0.952,2.297,2.958,1.637,4.655c0.069-0.121,0.124-0.245,0.188-0.374 C21.228,13.323,20.189,10.424,17.802,9.089z"
 
-function sliderToDB(slider)
-{
+function sliderToDB(slider) {
 	if (slider == 1.0)
 		return 0.0;
 	else if (slider <= 0.0)
@@ -42,9 +41,20 @@ module.exports = {
 		this.state.recording = false;
 		this.state.streaming = false;
 
+		this.sceneHistory = [];
+
 		this.connectOBS();
 		this.obs.on("SwitchScenes", data => {
 			this.state.scene = data.sceneName;
+
+			if (!this.poppingScene) {
+				this.sceneHistory.push(data.sceneName);
+
+				if (this.sceneHistory.length > 30) {
+					this.sceneHistory.splice(0, 1);
+				}
+			}
+			this.poppingScene = false;
 		})
 		this.obs.on("ConnectionClosed", () => {
 			this.state.connected = false;
@@ -124,6 +134,7 @@ module.exports = {
 				})
 				let result = await this.obs.send("GetCurrentScene");
 				this.state.scene = result.name;
+				this.sceneHistory = [result.name];
 				this.logger.info("OBS connected!");
 				this.state.connected = true;
 				this.analytics.set({ usesOBS: true });
@@ -267,6 +278,7 @@ module.exports = {
 					scene: {
 						type: String,
 						template: true,
+						required: true,
 						async enum() {
 							return await this.getAllScenes();
 						}
@@ -277,6 +289,29 @@ module.exports = {
 				await this.obs.send('SetCurrentScene', {
 					'scene-name': await template(sceneData.scene, context)
 				})
+			},
+		},
+		prevScene: {
+			name: "Previous OBS Scene",
+			description: "Go back to the previous scene.",
+			icon: "mdi-skip-backward",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+				}
+			},
+			async handler(sceneData, context) {
+				
+				this.sceneHistory.pop();
+				const previousScene = this.sceneHistory[this.sceneHistory.length - 1];
+				if (previousScene) {
+					this.poppingScene = true;
+					await this.obs.send('SetCurrentScene', {
+						'scene-name': previousScene
+					})
+				}
+				
 			},
 		},
 		filter: {
@@ -291,6 +326,7 @@ module.exports = {
 						type: String,
 						template: true,
 						name: "Source Name",
+						required: true,
 						async enum() {
 							return (await this.getAllSources()).map(s => s.name);
 						}
@@ -299,6 +335,7 @@ module.exports = {
 						type: String,
 						template: true,
 						name: "Filter Name",
+						required: true,
 						async enum(context) {
 							console.log(context)
 							this.logger.info('Fetching filters for ' + context.sourceName);
@@ -307,7 +344,11 @@ module.exports = {
 					},
 					filterEnabled: {
 						type: Boolean,
-						name: "Filter Enabled"
+						name: "Filter Enabled",
+						required: true,
+						default: true,
+						trueIcon: "mdi-eye-outline",
+						falseIcon: "mdi-eye-off-outline",
 					}
 				}
 			},
@@ -334,6 +375,7 @@ module.exports = {
 						name: "Scene",
 						type: String,
 						template: true,
+						required: true,
 						async enum() {
 							return await this.getAllScenes();
 						}
@@ -342,6 +384,7 @@ module.exports = {
 						name: "Source",
 						type: String,
 						template: true,
+						required: true,
 						async enum(context) {
 							this.logger.info('Fetching sources for ' + context.scene);
 							return await this.getSceneSources(context.scene);
@@ -349,7 +392,11 @@ module.exports = {
 					},
 					enabled: {
 						type: Boolean,
-						name: "Source Visible"
+						name: "Source Visible",
+						required: true,
+						default: true,
+						trueIcon: "mdi-eye-outline",
+						falseIcon: "mdi-eye-off-outline",
 					}
 				}
 			},
@@ -378,6 +425,7 @@ module.exports = {
 						type: String,
 						template: true,
 						name: "Source Name",
+						required: true,
 						async enum() {
 							const sources = await this.getAllSources();
 							const text_sources = sources.filter((s) => (s.typeId == "text_gdiplus_v2"));
@@ -417,6 +465,8 @@ module.exports = {
 						name: "Media Action",
 						type: String,
 						enum: ["Play", "Pause", "Restart", "Stop", "Next", "Previous"],
+						required: true,
+						default: "Play"
 					}
 				}
 			},
@@ -469,6 +519,7 @@ module.exports = {
 						type: String,
 						template: true,
 						name: "Source Name",
+						required: true,
 						async enum() {
 							const sources = await this.getAllSources();
 							return sources.map(s => s.name);
@@ -478,7 +529,7 @@ module.exports = {
 						type: Number,
 						template: true,
 						name: "Volume",
-						default: 20,
+						default: 1.0,
 						required: true,
 						slider: {
 							min: 0,
@@ -519,6 +570,7 @@ module.exports = {
 						type: String,
 						template: true,
 						name: "Source Name",
+						required: true,
 						async enum() {
 							const sources = await this.getAllSources();
 							return sources.map(s => s.name);
@@ -528,8 +580,10 @@ module.exports = {
 						type: Boolean,
 						required: true,
 						name: "Muted",
-						default: false,
-						leftLabel: "Un-Muted"
+						default: true,
+						leftLabel: "Un-Muted",
+						trueIcon: "mdi-volume-high",
+						falseIcon: "mdi-volume-off",
 					}
 				}
 			},
@@ -542,8 +596,7 @@ module.exports = {
 						mute: data.muted,
 					});
 				}
-				catch(err)
-				{
+				catch (err) {
 					this.logger.error(`Error Muting Source ${sourceName}: \n ${err}`);
 				}
 			}

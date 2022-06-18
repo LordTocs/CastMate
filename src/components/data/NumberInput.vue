@@ -8,7 +8,11 @@
     @copy.stop=""
     @paste.stop=""
     :placeholder="placeholder"
-  />
+  >
+    <template v-slot:append v-if="unit">
+      {{ unit.name }}
+    </template>
+  </v-text-field>
 </template>
 
 <script>
@@ -16,6 +20,7 @@ export default {
   props: {
     value: {},
     label: {},
+    unit: {},
     allowTemplate: { type: Boolean, default: () => false },
     clearable: { type: Boolean, default: () => false },
     placeholder: {},

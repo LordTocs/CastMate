@@ -33,12 +33,15 @@ module.exports = {
 						name: "Key",
 						enum() {
 							return keys
-						}
+						},
+						required: true
 					},
 					time: {
 						type: Number,
 						name: "Press Time",
-						default: 0.1
+						default: 0.1,
+						required: true,
+						unit: { name: "Seconds", short: 's' }
 					}
 				}
 			},
@@ -64,6 +67,7 @@ module.exports = {
 					button: {
 						type: String,
 						name: "Mouse Button",
+						required: true,
 						enum() {
 							return buttons;
 						}
@@ -71,7 +75,9 @@ module.exports = {
 					time: {
 						type: Number,
 						name: "Press Time",
-						default: 0.1
+						default: 0.1,
+						required: true,
+						unit: { name: "Seconds", short: 's' }
 					}
 				}
 			},
