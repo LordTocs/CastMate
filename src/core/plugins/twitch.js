@@ -503,16 +503,25 @@ module.exports = {
 			try {
 				const subscribers = await this.channelTwitchClient.subscriptions.getSubscriptions(this.channelId);
 				this.state.subscribers = subscribers.total;
+				//this.state.lastSubscriber = subscribers.data.length > 0 ? subscribers.data[0].userDisplayName : null
 			}
-			catch
-			{
+			catch (err) {
 				this.state.subscribers = 0;
+				console.error(err);
 			}
 		},
 
 		async queryFollows() {
-			let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
-			this.state.followers = follows.total;
+			try {
+				let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
+
+				this.state.followers = follows.total;
+				this.state.lastFollower = follows.data.length > 0 ? follows.data[0].userDisplayName : null;
+			}
+			catch(err)
+			{
+				this.logger.error(`Error Querying Follows ${err}`);
+			}
 		},
 
 		async initConditions() {
@@ -810,7 +819,17 @@ module.exports = {
 			type: Boolean,
 			name: "Is Affiliate",
 			description: "True if the user is at least affiliate"
-		}
+		},
+		lastFollower: {
+			type: String,
+			name: "Last Follower",
+			description: "Name of the person to follow"
+		},
+		/*lastSubscriber: {
+			type: String,
+			name: "Last Subscriber",
+			description: "Name of the person to subscribe"
+		},*/
 	},
 	triggers: {
 		chat: {
@@ -832,7 +851,7 @@ module.exports = {
 						},
 						preview: false,
 					},
-					cooldown: { type: Number, name: "Cooldown", preview: false, unit: { name: "Seconds", short: "s" }}
+					cooldown: { type: Number, name: "Cooldown", preview: false, unit: { name: "Seconds", short: "s" } }
 				}
 			},
 			context: {
@@ -858,12 +877,10 @@ module.exports = {
 					}
 				}
 
-				if (config.cooldown)
-				{
+				if (config.cooldown) {
 					const now = Date.now();
 					const last = this.commandTimes[mapping.id];
-					if ((now - last) < (config.cooldown * 1000))
-					{
+					if ((now - last) < (config.cooldown * 1000)) {
 						return false;
 					}
 					this.commandTimes[mapping.id] = now;
