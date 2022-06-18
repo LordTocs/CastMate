@@ -832,7 +832,7 @@ module.exports = {
 						},
 						preview: false,
 					},
-					cooldown: { type: Number, name: "Cooldown", preview: false }
+					cooldown: { type: Number, name: "Cooldown", preview: false, unit: { name: "Seconds", short: "s" }}
 				}
 			},
 			context: {
