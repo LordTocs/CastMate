@@ -70,6 +70,8 @@ module.exports = {
 
 		this.state.viewers = 0;
 
+		this.commandTimes = {};
+
 		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
 		//this.filter.addWords(...badwordList.words);
 	},
@@ -830,6 +832,7 @@ module.exports = {
 						},
 						preview: false,
 					},
+					cooldown: { type: Number, name: "Cooldown", preview: false }
 				}
 			},
 			context: {
@@ -849,10 +852,21 @@ module.exports = {
 					}
 				}
 				if (config.match == "Anywhere") {
-					console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
+					//console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
 					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
 					}
+				}
+
+				if (config.cooldown)
+				{
+					const now = Date.now();
+					const last = this.commandTimes[mapping.id];
+					if ((now - last) < (config.cooldown * 1000))
+					{
+						return false;
+					}
+					this.commandTimes[mapping.id] = now;
 				}
 
 				if (config.permissions) {
