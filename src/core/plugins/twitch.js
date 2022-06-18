@@ -415,6 +415,7 @@ module.exports = {
 
 					let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
 					this.state.followers = follows.total;
+					this.state.lastFollower = follows.data.length > 0 ? follows.data[0].userDisplayName : null;
 				}
 			});
 
