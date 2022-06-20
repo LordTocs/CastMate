@@ -582,8 +582,8 @@ module.exports = {
 						name: "Muted",
 						default: true,
 						leftLabel: "Un-Muted",
-						trueIcon: "mdi-volume-high",
-						falseIcon: "mdi-volume-off",
+						trueIcon: "mdi-volume-off",
+						falseIcon: "mdi-volume-high",
 					}
 				}
 			},
