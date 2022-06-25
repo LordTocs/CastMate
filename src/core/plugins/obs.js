@@ -190,7 +190,7 @@ module.exports = {
 				console.error(err);
 				return [];
 			}
-		}
+		},
 	},
 	ipcMethods: {
 		async refereshAllBrowsers() {
@@ -328,7 +328,7 @@ module.exports = {
 						name: "Source Name",
 						required: true,
 						async enum() {
-							return (await this.getAllSources()).map(s => s.name);
+							return [...(await this.getAllSources()).map(s => s.name), ...(await this.getAllScenes())];
 						}
 					},
 					filterName: {
