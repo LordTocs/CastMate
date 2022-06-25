@@ -7,12 +7,15 @@
 		integrity="sha512-pi0tSRZdlNRZeANPwdAIHRAYg6gZZV6QlAiyHXn5TYqLzBKE9jlttO/QgYLMhISD6oNv2kPsVelx+n5nw0FqKA=="
 		crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/emoji-toolkit@6.0.1/lib/js/joypixels.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	<script src="js/bridge.js"></script>
+	<script src="js/emotes.js"></script>
 	<style>
 		body {
 			margin: 0;
 			width: 100vw;
 			height: 100vh;
+			overflow: hidden;
 		}
 
 		.matter-body {
@@ -23,6 +26,14 @@
 		$(document).ready(function () {
 			castmate.connect();
 
+			const emoteService = new EmoteService();
+
+			const urlParams = new URLSearchParams(window.location.search);
+			const spawnX = urlParams.get('spawnX');
+			const spawnY = urlParams.get('spawnY');
+			const spawnAngle = urlParams.get('spawnAngle');
+			const spawnSpread = urlParams.get('spawnSpread');
+			
 			var Engine = Matter.Engine,
 				Render = Matter.Render,
 				Runner = Matter.Runner,
@@ -75,13 +86,23 @@
 				let velX = (Math.random() - 0.5) * 0.4;
 				let velY = (Math.random() - 0.5) * 0.4;
 
-				let newBody = Bodies.circle(x, y, 40, {
-					/*render: {
-						sprite: {
-							texture: image
-						}
-					}*/
-				});
+				if (spawnX && spawnY)
+				{
+					x = Number(spawnX);
+					y = Number(spawnY);	
+					console.log("Override Spawn", x, y);
+				}
+
+				if (spawnAngle && spawnSpread)
+				{
+					const angle = Number(spawnAngle) + (Math.random() - 0.5) * Number(spawnSpread);
+
+					console.log("Override Angle", angle);
+					velX = Math.cos(angle * Math.PI / 180) * 0.3;
+					velY = Math.sin(angle * Math.PI / 180) * 0.3;
+				}
+
+				let newBody = Bodies.circle(x, y, 40, {});
 
 				const img = document.createElement('img');
 				img.src = image;
@@ -121,11 +142,11 @@
 					if (body.img) {
 						const width = body.bounds.max.x - body.bounds.min.x;
 						const height = body.bounds.max.y - body.bounds.min.y;
-		
+
 						const x = body.position.x - body.render.sprite.xOffset * width;
 						const y = body.position.y - body.render.sprite.yOffset * height;
 						const transform = `translate(${x}px, ${y}px) rotate(${body.angle}rad)`
-						console.log(transform);
+						//console.log(transform);
 						body.img.style.transform = transform;
 					}
 				}
@@ -133,12 +154,6 @@
 				window.requestAnimationFrame(updateDom);
 			}
 			window.requestAnimationFrame(updateDom);
-
-
-
-			//var boxA = Bodies.rectangle(400, 200, 80, 80);
-			//var ballA = Bodies.circle(380, 100, 40, 10);
-			//var ballB = Bodies.circle(460, 10, 40, 10);
 
 			var ground = Bodies.rectangle(width / 2, height + 40, width, 80, { isStatic: true });
 			var ceiling = Bodies.rectangle(width / 2, -40, width, 80, { isStatic: true });
@@ -148,8 +163,11 @@
 			World.add(engine.world, [ground, ceiling, leftWall, rightWall]);
 
 			Engine.run(engine);
-			//Render.run(render);
 
+			castmate.on('channel', ({ channelId, channelName }) => {
+				console.log("Initing service for ", channelId, channelName);
+				emoteService.init(channelId, channelName);
+			})
 
 			castmate.on('emote', (emote) => {
 				for (let i = 0; i < emote.qty; ++i) {
@@ -157,26 +175,12 @@
 				}
 			})
 
-			let unicodeRegExp = new RegExp(joypixels.escapeRegExp(joypixels.unicodeCharRegex()), 'gi');
 
 			castmate.on('chat', (chat) => {
-				let emojis = [...chat.message.matchAll(unicodeRegExp)];
-				for (let e of emojis) {
-					let shortName = joypixels.shortnameLookup[e];
-					if (shortName) {
-						let url = joypixels.defaultPathPNG + '64' + '/' + joypixels.emojiList[shortName].uc_base + joypixels.fileExtension;
-						spawnImage(url);
-					}
-				}
-
-				console.log(chat);
-
-				for (let emote in chat.emoteOffsets) {
-					let num = chat.emoteOffsets[emote].length;
-					for (let i = 0; i < num; ++i) {
-						console.log("Spawning ", emote);
-						spawnImage(`https://static-cdn.jtvnw.net/emoticons/v1/${emote}/3.0`);
-						//spawnImage(`https://static-cdn.jtvnw.net/emoticons/v2/${emote}/animated/light/3.0`);
+				const emotes = emoteService.parseMessage(chat);
+				if (emotes) {
+					for (let emote of emotes) {
+						spawnImage(emote);
 					}
 				}
 			});

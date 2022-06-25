@@ -37,6 +37,12 @@ async function createWebServices(settings, secrets, plugins) {
 			}
 		});
 
+		for (let plugin of plugins.plugins) {
+			if (plugin.onWebsocketConnected) {
+				plugin.onWebsocketConnected(connection);
+			}
+		}
+
 		connection.on('close', function () {
 		});
 	});

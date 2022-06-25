@@ -12,14 +12,14 @@ const builtInPlugin = {
 			name: "Delay",
 			color: '#8DC1C0',
 			icon: "mdi-timer-sand",
-			data: { type: "Number" },
+			data: { type: "Number", required: true, unit: { name: "Seconds", short: "s" }, },
 			description: "Puts a delay after the current action",
 		},
 		timestamp: {
 			name: "Timestamp",
 			color: '#8DC1C0',
 			icon: "mdi-clock-outline",
-			data: { type: "Number" },
+			data: { type: "Number", required: true, unit: { name: "Seconds", short: "s" }, },
 			description: "Delays execution of this action until a certain time after the start of this action list."
 		},
 		automation: {

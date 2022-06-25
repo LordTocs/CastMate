@@ -4,7 +4,6 @@
     v-else-if="
       schema.type == 'String' ||
       schema.type == 'Number' ||
-      schema.type == 'Boolean' ||
       schema.type == 'FilePath' ||
       schema.type == 'Automation' ||
       schema.type == 'Duration'
@@ -13,7 +12,13 @@
     <span class="text--secondary" v-if="schema.name || label">
       {{ schema.name || label }}:
     </span>
-    {{ value }}
+    {{ value }}{{ schema.unit ? schema.unit.short : "" }}
+  </p>
+  <p v-else-if="schema.type == 'Boolean'">
+    <span class="text--secondary" v-if="schema.name || label">
+      {{ schema.name || label }}:
+    </span>
+    <v-icon> {{ value ? (schema.trueIcon ? schema.trueIcon : 'mdi-check-bold' ) : (schema.falseIcon ? schema.falseIcon : 'mdi-close-bold' ) }} </v-icon>
   </p>
   <p v-else-if="schema.type == 'LightColor'">
     <span class="text--secondary" v-if="schema.name || label">

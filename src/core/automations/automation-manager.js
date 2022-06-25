@@ -21,8 +21,9 @@ class AutomationManager {
 	async load() {
 		this.automationWatcher = chokidar.watch(path.join(userFolder, 'automations/'));
 
-		this.automationWatcher.on('add', async (filePath) => {
-			logger.info(`Automation Added: ${filePath}`);
+		this.automationWatcher.on('add', async (filePath) =>
+		{
+			//logger.info(`Automation Added: ${filePath}`);
 			await sleep(50);
 
 			const automationName = path.basename(filePath, '.yaml')
