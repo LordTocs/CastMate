@@ -86,8 +86,8 @@
     @input="handleInput"
     :label="schema.name || label"
   />
-  <bit-button-selector
-    v-else-if="schema.type == 'BitButtonHook'"
+  <spell-selector
+    v-else-if="schema.type == 'SpellCastHook'"
     :value="value"
     @input="handleInput"
     :label="schema.name || label"
@@ -115,7 +115,7 @@ import RewardSelector from "../rewards/RewardSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
 import RangeInput from "./RangeInput.vue";
 import TimeInput from "./TimeInput.vue";
-import BitButtonSelector from "../bitbuttons/BitButtonSelector.vue";
+import SpellSelector from "../spellcast/SpellSelector.vue";
 
 export default {
   name: "data-input",
@@ -129,7 +129,7 @@ export default {
     RewardSelector,
     RangeInput,
     TimeInput,
-    BitButtonSelector,
+    SpellSelector,
     //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
   },
   props: {

@@ -13,9 +13,9 @@ export default {
     label: {},
   },
   computed: {
-    ...mapGetters("bitbuttons", ["buttonHooks"]),
+    ...mapGetters("spellcast", ["spellHooks"]),
     hook() {
-      return this.buttonHooks.find((b) => b._id == this.hookId);
+      return this.spellHooks.find((b) => b._id == this.hookId);
     },
   },
 };

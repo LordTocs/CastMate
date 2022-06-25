@@ -33,12 +33,12 @@ class RequestSocket {
                     return;
                 }
                 try {
-                    if (data.failed) {
+                    const result = data.result;
+                    if (result === undefined) {
                         outstandingCall.reject();
+                        return;
                     }
-                    else {
-                        outstandingCall.resolve(data.result);
-                    }
+                    outstandingCall.resolve(result);
                 }
                 catch
                 {
@@ -55,25 +55,27 @@ class RequestSocket {
                     return;
                 }
                 const args = data.args || [];
-
-                this.handlers[requestName](requestId, ...args);
+                try {
+                    this.handlers[requestName](requestId, ...args);
+                }
+                catch
+                {
+                    await this.socket.send(JSON.stringify({
+                        responseId: requestId,
+                        failed: true,
+                    }))
+                }
             }
         })
     }
 
     handle(name, func) {
         this.handlers[name] = async (requestId, ...args) => {
-            let result;
-            try {
-                result = await func(...args);
+            let result = await func(...args);
+            if (result === undefined) {
+                result = null;
             }
-            catch (err) {
-                await this.socket.send(JSON.stringify({
-                    responseId: requestId,
-                    failed: true
-                }))
-                return;
-            }
+
             await this.socket.send(JSON.stringify({
                 responseId: requestId,
                 result
@@ -82,7 +84,7 @@ class RequestSocket {
     }
 
     call(name, ...args) {
-        const promise = new Promise(async (resolve, reject) => {
+        const promise = new Promise((resolve, reject) => {
             const data = {
                 name,
                 requestId: this.idGen(),
@@ -91,18 +93,18 @@ class RequestSocket {
 
             this.outstandingCalls[data.requestId] = { resolve, reject };
 
-            await this.socket.send(JSON.stringify(data));
+            this.socket.send(JSON.stringify(data));
         })
         return promise;
     }
+
 }
 
-
 module.exports = {
-    name: "bitbuttons",
-    uiName: "BitButtons",
-    icon: "$vuetify.icons.bitbuttons",
-    color: "#8DC0C1",
+    name: "spellcast",
+    uiName: "SpellCast",
+    icon: "$vuetify.icons.spellcast",
+    color: "#293442",
     async init() {
         this.twitch = this.plugins.getPlugin("twitch");
 
@@ -115,23 +117,23 @@ module.exports = {
             await this.connect();
         }
         catch (err) {
-            this.logger.error("Error connecting to BitButtons");
+            this.logger.error("Error connecting to SpellCast");
         }
     },
     ipcMethods: {
-        getButtonHooks() {
-            return this.buttonHooks || [];
+        getSpellHooks() {
+            return this.spellHooks || [];
         },
-        async createButtonHook(hookData) {
+        async createSpellHook(hookData) {
             const channelId = this.twitch.publicMethods.getChannelId();
             const accessToken = this.twitch.publicMethods.getAccessToken();
 
             try {
-                this.logger.info(`Creating ButtonHook ${hookData.name} ${hookData.description}`);
+                this.logger.info(`Creating SpellHook ${hookData.name} ${hookData.description}`);
                 const newHook = await this.apiClient.post(`/streams/${channelId}/hooks/`, hookData);
-                this.logger.info(`Created ButtonHook ${newHook.data._id}`);
+                this.logger.info(`Created SpellHook ${newHook.data._id}`);
 
-                this.buttonHooks.push(newHook.data);
+                this.spellHooks.push(newHook.data);
                 return newHook.data;
 
             }
@@ -140,38 +142,38 @@ module.exports = {
                 return null;
             }
         },
-        async updateButtonHook(hookId, hookData) {
+        async updateSpellHook(hookId, hookData) {
             const channelId = this.twitch.publicMethods.getChannelId();
             const accessToken = this.twitch.publicMethods.getAccessToken();
 
             if (!accessToken) {
-                this.logger.info(`Can't connect to BitButtons, no twitch sign on.`);
+                this.logger.info(`Can't connect to SpellCast, no twitch sign on.`);
                 return;
             }
 
             try {
                 const newHook = await this.apiClient.put(`/streams/${channelId}/hooks/${hookId}`, hookData);
-                const idx = this.buttonHooks.findIndex(h => h._id == hookId);
-                this.buttonHooks[idx] = newHook.data;
+                const idx = this.spellHooks.findIndex(h => h._id == hookId);
+                this.spellHooks[idx] = newHook.data;
                 return newHook.data
             }
             catch (err) {
                 this.logger.error(`Error Updating Hook, ${err}`);
             }
         },
-        async deleteButtonHook(hookId) {
+        async deleteSpellHook(hookId) {
             const channelId = this.twitch.publicMethods.getChannelId();
             const accessToken = this.twitch.publicMethods.getAccessToken();
 
             if (!accessToken) {
-                this.logger.info(`Can't connect to BitButtons, no twitch sign on.`);
+                this.logger.info(`Can't connect to SpellCast, no twitch sign on.`);
                 return;
             }
 
             try {
                 await this.apiClient.delete(`/streams/${channelId}/hooks/${hookId}`)
-                const idx = this.buttonHooks.findIndex(h => h._id == hookId);
-                this.buttonHooks.splice(idx, 1);
+                const idx = this.spellHooks.findIndex(h => h._id == hookId);
+                this.spellHooks.splice(idx, 1);
             }
             catch (err) {
                 this.logger.error(`Error Updating Hook, ${err}`);
@@ -184,7 +186,7 @@ module.exports = {
 
             //Retry connection in 5 seconds.
             if (this.reconnect) {
-                this.logger.info(`Connection to bitbuttons websocket (${process.env.VUE_APP_BITBUTTONS_URL}) failed, retrying in 5 seconds...`);
+                this.logger.info(`Connection to spellcast websocket (${process.env.VUE_APP_SPELLCAST_URL}) failed, retrying in 5 seconds...`);
                 setTimeout(() => {
                     this.connect().catch(err => {
                         this.logger.error(`Exception on socket reconnect.`);
@@ -212,15 +214,13 @@ module.exports = {
             const accessToken = this.twitch.publicMethods.getAccessToken();
 
             if (!accessToken) {
-                this.logger.info(`Can't connect to BitButtons, no twitch sign on.`);
+                this.logger.info(`Can't connect to SpellCast, no twitch sign on.`);
                 this.apiClient = null;
                 return;
             }
 
-            this.logger.info(`Using BitButtons URL ${process.env.VUE_APP_BITBUTTONS_URL}`);
-
             this.apiClient = axios.create({
-                baseURL: process.env.VUE_APP_BITBUTTONS_URL
+                baseURL: process.env.VUE_APP_SPELLCAST_URL
             })
 
             this.apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
@@ -229,20 +229,20 @@ module.exports = {
 
             this.reconnect = true;
 
-            this.websocket = new WebSocket(process.env.VUE_APP_BITBUTTONS_SOCKET_URL, {
+            this.websocket = new WebSocket(process.env.VUE_APP_SPELLCAST_SOCKET_URL, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 }
             });
 
             this.websocket.on('open', () => {
-                this.logger.info(`Connection to BitButtons open (${process.env.VUE_APP_BITBUTTONS_SOCKET_URL})`);
+                this.logger.info(`Connection to SpellCast open (${process.env.VUE_APP_SPELLCAST_SOCKET_URL})`);
 
                 this.requestSocket = new RequestSocket(this.websocket);
 
                 this.requestSocket.handle("getHooks", () => this.getActiveHooks());
                 this.requestSocket.handle("runHook", (hookId, context) => {
-                    return this.triggers.buttonHook({ hookId, ...context, userColor: this.twitch.publicMethods.getUserColor(context.userId) })
+                    return this.triggers.spellHook({ hookId, ...context, userColor: this.twitch.publicMethods.getUserColor(context.userId) })
                 });
 
                 this.requestSocket.call("setActiveHooks", Array.from(this.activeHooks));
@@ -272,9 +272,9 @@ module.exports = {
 
         },
         async initHookData() {
-            await this.loadButtonHooks();
+            await this.loadSpellHooks();
         },
-        async loadButtonHooks() {
+        async loadSpellHooks() {
             const channelId = this.twitch.publicMethods.getChannelId();
             const accessToken = this.twitch.publicMethods.getAccessToken();
 
@@ -282,7 +282,7 @@ module.exports = {
                 const resp = await this.apiClient.get(`/streams/${channelId}/hooks/`);
 
                 this.logger.info(`Loaded Button Hooks (${resp.data.length})`);
-                this.buttonHooks = resp.data;
+                this.spellHooks = resp.data;
             }
             catch (err) {
                 this.logger.error(`Error loading button hooks ${err}`);
@@ -293,18 +293,18 @@ module.exports = {
         }
     },
     triggers: {
-        buttonHook: {
-            name: "BitButton",
-            description: "Fires when a BitButton is pressed",
+        spellHook: {
+            name: "SpellCast",
+            description: "Fires when a viewer casts a spell",
             config: {
                 type: Object,
                 properties: {
-                    hookId: { type: "BitButtonHook", name: "Button Hook" },
+                    hookId: { type: "SpellCastHook", name: "Spell Hook" },
                 }
             },
             context: {
                 hookId: { type: String },
-                bits: { type: Number },
+                price: { type: Number },
                 user: { type: String },
                 userId: { type: String },
                 userColor: { type: String },
@@ -315,16 +315,16 @@ module.exports = {
         },
     },
     async onProfileLoad(profile, config) {
-        const buttonTriggers = config ? (config.triggers ? (config.triggers.bitbuttons ? (config.triggers.bitbuttons.buttonHook) : null) : null) : null;
+        const buttonTriggers = config ? (config.triggers ? (config.triggers.spellcast ? (config.triggers.spellcast.spellHook) : null) : null) : null;
 
-        profile.buttonHooks = buttonTriggers ? buttonTriggers.map(rt => rt.config.hookId) : [];
+        profile.spellHooks = buttonTriggers ? buttonTriggers.map(rt => rt.config.hookId) : [];
     },
     async onProfilesChanged(activeProfiles, inactiveProfiles) {
         this.activeHooks = new Set();
 
         //Handle rewards
         for (let activeProf of activeProfiles) {
-            for (let hookId of activeProf.buttonHooks) {
+            for (let hookId of activeProf.spellHooks) {
                 this.activeHooks.add(hookId);
             }
         }
@@ -336,7 +336,7 @@ module.exports = {
     state: {
         connected: {
             type: Boolean,
-            name: "Connected To BitButtons",
+            name: "Connected To SpellCast",
             hidden: true,
         }
     }

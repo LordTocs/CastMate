@@ -35,7 +35,7 @@ class PluginManager {
 			//"csgo",
 			"variables",
 			"websocket",
-			"bitbuttons",
+			"spellcast",
 			//"aoe3",
 			"aoe4",
 			"twinkly",

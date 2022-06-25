@@ -28,16 +28,16 @@
       </v-list>
     </v-menu>
 
-    <bit-button-modal
+    <spell-hook-modal
       ref="editModal"
-      title="Edit BitButton Hook"
+      title="Edit Spell Hook"
       :hookId="value"
       :showDelete="false"
     />
 
-    <bit-button-modal
+    <spell-hook-modal
       ref="createModal"
-      title="Create BitButton Hook"
+      title="Create Spell Hook"
       :showSave="false"
       :showCreate="true"
       :showDelete="false"
@@ -48,19 +48,19 @@
 
 <script>
 import { mapGetters } from "vuex";
-import BitButtonModal from "./BitButtonModal.vue";
+import SpellHookModal from "./SpellModal.vue";
 
 export default {
-  components: { BitButtonModal },
+  components: { SpellHookModal },
   props: {
     value: {},
-    label: { type: String, default: () => "BitButton" },
+    label: { type: String, default: () => "SpellHook" },
   },
   computed: {
     currentHook() {
-      return this.buttonHooks.find((b) => b._id == this.value);
+      return this.spellHooks.find((b) => b._id == this.value);
     },
-    ...mapGetters("bitbuttons", ["buttonHooks"]),
+    ...mapGetters("spellcast", ["spellHooks"]),
   },
   data() {
     return {
@@ -70,7 +70,7 @@ export default {
   },
   methods: {
     filterButtons(query) {
-      let result = [...this.buttonHooks];
+      let result = [...this.spellHooks];
 
       if (query) {
         result = result.filter((h) => {
@@ -92,7 +92,7 @@ export default {
     async search(newSearch) {
       await this.filterButtons(newSearch);
     },
-    buttonHooks: {
+    spellHooks: {
       deep: true,
       handler() {
         this.filterButtons();

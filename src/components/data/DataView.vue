@@ -33,10 +33,10 @@
     {{ value }}
     <!--reward-edit-button :rewardName="value" /-->
   </p>
-  <bit-button-view
+  <spell-view
     :label="schema.name || label"
     :hookId="value"
-    v-else-if="schema.type == 'BitButtonHook'"
+    v-else-if="schema.type == 'SpellCastHook'"
   />
   <div
     v-else-if="schema.type == 'Object' && schema.properties"
@@ -60,11 +60,11 @@
 </template>
 
 <script>
-import BitButtonView from "../bitbuttons/BitButtonView.vue";
+import SpellView from "../spellcast/SpellView.vue";
 import RewardEditButton from "../rewards/RewardEditButton.vue";
 import ColorSwatch from "./ColorSwatch.vue";
 export default {
-  components: { ColorSwatch, RewardEditButton, BitButtonView },
+  components: { ColorSwatch, RewardEditButton, SpellView },
   name: "data-view",
   props: {
     schema: {},

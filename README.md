@@ -44,7 +44,6 @@ Download from GitHub releases: https://www.github.com/LordTocs/CastMate/releases
 * OBS Websocket Plugin 5.x - With OBS 28.0.0 the websocket plugin will be bundled automatically with OBS! Reducing our setup overhead!
 * Overlay Editor - Create overlays to show custom alerts and other visual effects. 
 * State Triggers - Run automations when CastMate state triggers.
-* BitButtons - Let viewers trigger automations via bits!
 
 ## Contributing
 

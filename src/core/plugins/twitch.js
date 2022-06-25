@@ -897,10 +897,6 @@ module.exports = {
 					}
 				}
 				if (config.match == "Anywhere") {
-<<<<<<< HEAD
-=======
-					//console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
->>>>>>> tocs
 					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
 					}
