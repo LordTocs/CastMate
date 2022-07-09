@@ -70,6 +70,7 @@ import AutomationSelector from "../components/automations/AutomationSelector.vue
 import CategorySearch from "../components/data/CategorySearch.vue";
 import TagSelect from "../components/data/TagSelect.vue";
 import { mapIpcs } from "../utils/ipcMap";
+import { trackAnalytic } from "../utils/analytics.js";
 
 export default {
   components: {
@@ -96,7 +97,7 @@ export default {
         this.runAutomation(segment.automation);
       }
 
-      this.trackAnalytic("activateSegment");
+      trackAnalytic("activateSegment");
     },
     async updateTitle(index, title) {
       const segment = { ...this.segments[index], title };

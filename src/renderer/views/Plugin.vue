@@ -73,9 +73,7 @@
           </v-card>
         </v-col>
       </v-row>
-      <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
-        Saved
-      </v-snackbar>
+      <v-snackbar v-model="saveSnack" :timeout="1000" color="green"> Saved </v-snackbar>
     </v-container>
     <confirm-dialog ref="saveDlg" />
   </div>
@@ -84,9 +82,9 @@
 <script>
 import { mapGetters } from "vuex";
 import DataInput from "../components/data/DataInput.vue";
-import Level from "@/components/layout/Level.vue";
 import fs from "fs";
 import YAML from "yaml";
+import { trackAnalytic } from "../utils/analytics.js";
 
 export default {
   computed: {
@@ -165,7 +163,7 @@ export default {
 
       await fs.promises.writeFile(this.paths.secretsFilePath, newSecretsYaml);
 
-      this.trackAnalytic("saveSettings", { name: this.pluginName });
+      trackAnalytic("saveSettings", { name: this.pluginName });
 
       this.saveSnack = true;
       this.dirty = false;
@@ -189,7 +187,6 @@ export default {
   },
   components: {
     DataInput,
-    Level,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
   },
   data() {
@@ -229,7 +226,7 @@ export default {
   },
   async mounted() {
     await this.load();
-    this.trackAnalytic("accessSettings", { name: this.pluginName });
+    trackAnalytic("accessSettings", { name: this.pluginName });
   },
   async beforeRouteLeave(to, from, next) {
     await this.routeGuard(next);
@@ -242,5 +239,4 @@ export default {
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

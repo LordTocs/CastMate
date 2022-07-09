@@ -1,14 +1,12 @@
 
 import { store } from '../store/store';
-import Vue from 'vue';
+
+import { ipcRenderer } from 'electron';
 
 export function trackAnalytic(eventName, data) {
     const id = store.getters['ipc/analyticsId'];
 
-    Vue.prototype.$mixpanel.track(eventName, {
-        ...id ? { distinct_id: id } : {},
-        ...data
-    });
+    ipcRenderer.invoke("analytics_track", eventName, data);
 }
 
 export function setAnalytic(data) {
@@ -16,5 +14,5 @@ export function setAnalytic(data) {
     if (!id)
         return;
 
-    Vue.prototype.$mixpanel.people.set(id, {}, {});
+    ipcRenderer.invoke("analytics_set", data);
 }

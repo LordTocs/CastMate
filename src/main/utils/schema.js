@@ -1,6 +1,6 @@
-const { ipcMain } = require("electron");
-const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
-const _cloneDeep = require('lodash/cloneDeep');
+import { ipcMain } from "./electronBridge.js"
+const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor
+import _ from 'lodash'
 
 export function cleanSchemaForIPC(rootName, schema)
 {
@@ -38,7 +38,7 @@ export function cleanSchemaForIPC(rootName, schema)
 	return result;
 }
 
-function createIPCFunction(thisObj, name, func)
+export function createIPCFunction(thisObj, name, func)
 {
 	if (!func)
 	{
@@ -100,7 +100,7 @@ export function constructDefaultSchema(schema)
 	}
 	else if (schema.default)
 	{
-		return _cloneDeep(schema.default)
+		return _.cloneDeep(schema.default)
 	}
 	else
 	{
@@ -108,3 +108,4 @@ export function constructDefaultSchema(schema)
 	}
 
 }
+

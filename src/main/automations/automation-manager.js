@@ -1,13 +1,13 @@
-const chokidar = require("chokidar");
-const path = require('path');
-const { userFolder } = require("../utils/configuration");
-const logger = require("../utils/logger");
-const { sleep } = require("../utils/sleep");
-const YAML = require("yaml");
-const fs = require('fs');
-const { ipcMain } = require("electron");
+import chokidar from "chokidar"
+import path from 'path'
+import { userFolder } from "../utils/configuration.js"
+import logger from "../utils/logger.js"
+import { sleep } from "../utils/sleep.js"
+import YAML from "yaml"
+import fs from 'fs'
+import { ipcMain } from "../utils/electronBridge.js"
 
-class AutomationManager
+export class AutomationManager
 {
 	constructor()
 	{
@@ -54,4 +54,3 @@ class AutomationManager
 	get(automationName) { return this.automations[automationName] }
 }
 
-module.exports = { AutomationManager }

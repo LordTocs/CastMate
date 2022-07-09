@@ -1,15 +1,15 @@
-const { app, ipcMain } = require("electron");
-const path = require('path');
-const fs = require("fs");
+import { app, ipcMain } from "./electronBridge.js"
+import path from 'path'
+import fs from "fs"
 
 const isPortable = process.argv.includes('--portable');
-const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData'), 'user') : './user'));
+export const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData'), 'user') : './user'));
 
-const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));
-const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
-const rewardsFilePath = path.resolve(path.join(userFolder, "rewards.yaml"));
-const segmentsFilePath = path.resolve(path.join(userFolder, "segments.yaml"));
-const variablesFilePath = path.resolve(path.join(userFolder, "variables.yaml"));
+export const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));
+export const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
+export const rewardsFilePath = path.resolve(path.join(userFolder, "rewards.yaml"));
+export const segmentsFilePath = path.resolve(path.join(userFolder, "segments.yaml"));
+export const variablesFilePath = path.resolve(path.join(userFolder, "variables.yaml"));
 
 
 function ensureFolder(path)
@@ -29,7 +29,7 @@ function ensureFile(path)
 }
 
 
-function ensureUserFolder()
+export function ensureUserFolder()
 {
 	ensureFolder(userFolder);
 	ensureFolder(path.join(userFolder, "data"));
@@ -57,14 +57,3 @@ ipcMain.handle("getPaths", async () =>
 		variablesFilePath,
 	};
 })
-
-
-module.exports = {
-	ensureUserFolder,
-	userFolder,
-
-	secretsFilePath,
-	settingsFilePath,
-	rewardsFilePath,
-	variablesFilePath,
-}

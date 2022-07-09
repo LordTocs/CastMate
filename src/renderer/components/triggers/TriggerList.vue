@@ -15,11 +15,8 @@
         v-if="hasTriggers"
       >
         <tbody>
-          <template v-for="pluginKey in triggerPlugins">
-            <tr
-              :key="pluginKey"
-              :style="{ backgroundColor: plugins[pluginKey].color }"
-            >
+          <template v-for="pluginKey in triggerPlugins" :key="pluginKey">
+            <tr :style="{ backgroundColor: plugins[pluginKey].color }">
               <td colspan="5" class="text-h4">
                 <v-icon v-text="plugins[pluginKey].icon" x-large />
                 {{ plugins[pluginKey].uiName }} Triggers
@@ -27,10 +24,10 @@
             </tr>
             <template
               v-for="triggerKey in Object.keys(visibleTriggers[pluginKey])"
+              :key="`${pluginKey}_${triggerKey}`"
             >
               <tr
                 :style="{ backgroundColor: plugins[pluginKey].color }"
-                :key="`${pluginKey}_${triggerKey}`"
                 class="divider-row"
               >
                 <td colspan="5" class="text-center">

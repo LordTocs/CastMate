@@ -1,7 +1,7 @@
 
 const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 
-async function evalTemplate(template, data)
+export async function evalTemplate(template, data)
 {
 	let contextObjs = { ...data };
 
@@ -46,7 +46,7 @@ function skipString(templateStr, parseContext)
 	return true;
 }
 
-async function template(templateStr, data)
+export async function template(templateStr, data)
 {
 	//Extract stuff inbetween {{ }}
 	let resultStr = "";
@@ -94,9 +94,4 @@ async function template(templateStr, data)
 	}
 
 	return resultStr;
-}
-
-module.exports = {
-	evalTemplate,
-	template
 }

@@ -1,24 +1,14 @@
-const { ElectronAuthManager } = require("../utils/twitchAuth");
-
-const { ApiClient } = require("@twurple/api");
-
-const { ChatClient } = require("@twurple/chat");
-
-const { PubSubClient, BasicPubSubClient } = require("@twurple/pubsub");
-
-const { template } = require('../utils/template');
-const { evalTemplate } = require('../utils/template');
-const HotReloader = require("../utils/hot-reloader");
-
-const BadWords = require("bad-words");
-
-const { rewardsFilePath } = require("../utils/configuration");
-
-const { WebSocket } = require('ws');
-
-const axios = require('axios');
-const logger = require("../utils/logger");
-const { inRange } = require("../utils/range");
+import { ElectronAuthManager }from "../utils/twitchAuth.js"
+import { ApiClient }from "@twurple/api"
+import { ChatClient }from "@twurple/chat"
+import { PubSubClient, BasicPubSubClient }from "@twurple/pubsub"
+import { template } from '../utils/template.js'
+import { HotReloader } from "../utils/hot-reloader.js"
+import BadWords from "bad-words"
+import { rewardsFilePath } from "../utils/configuration.js"
+import { WebSocket } from 'ws'
+import axios from 'axios'
+import { inRange } from "../utils/range.js"
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -56,7 +46,7 @@ function dateInterval(date1, date2) {
 	return result;
 }
 
-module.exports = {
+export default {
 	name: "twitch",
 	uiName: "Twitch",
 	icon: "mdi-twitch",

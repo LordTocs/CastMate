@@ -1,20 +1,18 @@
-import { AutomationManager } from "./automations/automation-manager.js";
-import { Analytics } from "./utils/analytics.js";
-import logger from "./utils/logger.js";
+import { AutomationManager } from "./automations/automation-manager.js"
+import { Analytics } from "./utils/analytics.js"
+import logger from "./utils/logger.js"
 
-const { getMainWindowSender } = require("./utils/ipcUtil.js");
-const { ensureUserFolder, secretsFilePath, settingsFilePath } = require("./utils/configuration.js");
-const { ActionQueue } = require("./actions/action-queue.js");
-const { ProfileManager } = require("./actions/profile-manager.js");
-const HotReloader = require('./utils/hot-reloader.js');
-const { createWebServices } = require("./utils/webserver.js");
-const { PluginManager } = require("./utils/plugin-manager.js");
-const { ipcMain } = require("electron");
+import { ensureUserFolder, secretsFilePath, settingsFilePath } from "./utils/configuration.js";
+import { ActionQueue } from "./actions/action-queue.js";
+import { ProfileManager } from "./actions/profile-manager.js";
+import { HotReloader } from './utils/hot-reloader.js';
+import { createWebServices } from "./utils/webserver.js";
+import { PluginManager } from "./utils/plugin-manager.js";
+import { createRequire } from 'node:module'
+import { ipcMain } from "./utils/electronBridge.js";
 
-async function initInternal() {
+async function initInternal(mainWindowSender) {
 	ensureUserFolder();
-
-	const mainWindowSender = await getMainWindowSender();
 
 	let plugins = new PluginManager();
 	await plugins.load(mainWindowSender);
@@ -74,8 +72,9 @@ async function initInternal() {
 	webServices.startWebsockets();
 }
 
-export async function initCastMate() {
-	let initPromise = initInternal();
+
+export async function initCastMate(mainWindowSender) {
+	let initPromise = initInternal(mainWindowSender);
 
 	ipcMain.handle('waitForInit', async () => {
 		return await initPromise;

@@ -38,9 +38,9 @@
 </template>
 
 <script>
-import { app } from "@electron/remote";
 import { ipcRenderer } from "electron";
 import WelcomeDialog from "../components/wizard/WelcomeDialog.vue";
+import { mapIpcs } from "../utils/ipcMap";
 export default {
   components: { WelcomeDialog },
   data() {
@@ -49,13 +49,13 @@ export default {
     };
   },
   methods: {
+    ...mapIpcs("windowFuncs", ["getVersion"]),
     checkForUpdates() {
       ipcRenderer.invoke("updater.checkForUpdates");
     },
   },
   mounted() {
-    app
-    this.version = app.getVersion();
+    this.version = this.getVersion();
   },
 };
 </script>

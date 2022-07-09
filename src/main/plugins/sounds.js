@@ -1,11 +1,12 @@
-const { ipcMain, BrowserWindow, app } = require("electron");
-const { template } = require('../utils/template');
-const path = require("path");
-const { userFolder } = require("../utils/configuration");
-const say = require("say");
-const nanoid = require("nanoid/non-secure");
+import { ipcMain, BrowserWindow, app } from "../utils/electronBridge.js"
+import { template } from '../utils/template.js'
+import path from "path"
+import { userFolder } from "../utils/configuration.js"
+import say from "say"
+import { nanoid } from "nanoid/non-secure"
+//const nanoid = await import("nanoid/non-secure");
 
-module.exports = {
+export default {
 	name: "sounds",
 	uiName: "Sounds",
 	icon: "mdi-volume-high",

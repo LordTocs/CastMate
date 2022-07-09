@@ -1,6 +1,5 @@
 
 const { ipcRenderer } = require("electron");
-import Vue from 'vue';
 
 const builtInPlugin = {
 	name: 'castmate',
@@ -111,10 +110,10 @@ export default {
 		applyState(state, update) {
 			for (let pluginKey in update) {
 				if (!state.stateLookup[pluginKey]) {
-					Vue.set(state.stateLookup, pluginKey, {});
+					state.stateLookup[pluginKey] = {};
 				}
 				for (let stateKey in update[pluginKey]) {
-					Vue.set(state.stateLookup[pluginKey], stateKey, update[pluginKey][stateKey]);
+					state.stateLookup[pluginKey][stateKey] = update[pluginKey][stateKey];
 				}
 			}
 		},
@@ -123,10 +122,10 @@ export default {
 				if (!this.stateLookup[pluginKey])
 					continue;
 
-				Vue.delete(state.stateLookup[pluginKey], removal[pluginKey]);
+				delete state.stateLookup[pluginKey][removal[pluginKey]];
 
 				if (Object.keys(state.stateLookup[pluginKey]) == 0) {
-					Vue.delete(state.stateLookup, pluginKey);
+					delete state.stateLookup[pluginKey];
 				}
 			}
 		}
@@ -136,15 +135,15 @@ export default {
 			await ipcRenderer.invoke("waitForInit");
 			commit('setInited');
 
-			let plugins = await ipcRenderer.invoke('getPlugins');
+			const plugins = await ipcRenderer.invoke('getPlugins');
 			commit('setPlugins', plugins);
 
 			const paths = await ipcRenderer.invoke('getPaths');
 			commit('setPaths', paths);
 
-			commit('applyState', await ipcRenderer.invoke("getStateLookup"));
+			commit('applyState',  await ipcRenderer.invoke("getStateLookup"));
 
-			commit('setActiveProfiles', await ipcRenderer.invoke('core_getActiveProfiles'));
+			commit('setActiveProfiles',  await ipcRenderer.invoke('core_getActiveProfiles'));
 		},
 		stateUpdate({ commit }, update) {
 			//console.log("applyState", update);

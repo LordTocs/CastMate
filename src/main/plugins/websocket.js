@@ -1,7 +1,8 @@
 
-const { template } = require('../utils/template');
-const _ = require('lodash');
-module.exports = {
+import { template } from '../utils/template.js'
+import _ from 'lodash'
+
+export default {
 	name: "websocket",
 	uiName: "Websocket",
 	icon: "mdi-code-json",

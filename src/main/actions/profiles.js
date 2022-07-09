@@ -1,11 +1,10 @@
-const fs = require("fs");
-const YAML = require("yaml");
-const path = require("path");
-const { userFolder } = require("../utils/configuration");
-const logger = require("../utils/logger");
-const { migrateProfile } = require("../migration/migrate");
+import fs from "fs"
+import YAML from "yaml"
+import path from "path"
+import logger from "../utils/logger.js"
+import { migrateProfile } from "../migration/migrate.js"
 
-class Profile {
+export class Profile {
 	constructor(filename, manager, onReload) {
 		this.filename = filename;
 		this.name = path.basename(filename, ".yaml");
@@ -85,5 +84,3 @@ Profile.mergeTriggers = function (profiles) {
 
 	return combined;
 }
-
-module.exports = { Profile };

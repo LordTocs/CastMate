@@ -1,5 +1,5 @@
-const fs = require('fs');
-const YAML = require('yaml');
+import fs from 'fs'
+import YAML from 'yaml'
 
 function getNextCommandKey(trigger, key) {
     const commandKeys = Object.keys(trigger);
@@ -185,7 +185,7 @@ function migrateProfile1_0to2_0(profile, changeTracker) {
     return newProfile;
 }
 
-async function migrateProfile(profile, filename) {
+export async function migrateProfile(profile, filename) {
     const changeTracker = { changed: false }
     profile = migrateProfile1_0to2_0(profile, changeTracker)
 
@@ -197,5 +197,3 @@ async function migrateProfile(profile, filename) {
 
     return profile;
 }
-
-module.exports = { migrateProfile }

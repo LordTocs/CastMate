@@ -91,17 +91,17 @@ function checkConditions(conditional, data)
 	return false;
 }
 
-function evalConditional(conditional, data)
+export function evalConditional(conditional, data)
 {
 	return checkConditions(conditional, data);
 }
 
-function manualDependency(obj, watcher, name)
+export function manualDependency(obj, watcher, name)
 {
 	obj.__reactivity__[name].dependency.addSubscriber(watcher);
 }
 
-function dependOnAllConditions(conditional, state, watcher)
+export function dependOnAllConditions(conditional, state, watcher)
 {
 	if (!state)
 		return;
@@ -127,5 +127,3 @@ function dependOnAllConditions(conditional, state, watcher)
 		}
 	}
 }
-
-module.exports = { evalConditional, dependOnAllConditions, manualDependency }

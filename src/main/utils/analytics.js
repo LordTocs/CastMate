@@ -1,10 +1,19 @@
-const Mixpanel = require('mixpanel');
+import Mixpanel from 'mixpanel'
+import { ipcMain } from './electronBridge.js'
 
-class Analytics {
+export class Analytics {
     constructor(ipcSender) {
         this.analyticsId = null;
 
         this.ipcSender = ipcSender;
+
+        ipcMain.handle("analytics_track", async (eventName, data) => {
+            this.track(eventName, data);
+        })
+
+        ipcMain.handle("analytics_set", async (data) => {
+            this.set(data);
+        })
 
         if (process.env.VUE_APP_MIXPANEL_PROJECT_TOKEN && (process.env.NODE_ENV == 'production' || process.env.DEV_ANALYTICS))
         {
@@ -43,5 +52,3 @@ class Analytics {
         );
     }
 }
-
-module.exports = { Analytics }

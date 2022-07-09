@@ -69,6 +69,7 @@ import AutomationFullInput from "../automations/AutomationFullInput.vue";
 import FlexScroller from "../layout/FlexScroller.vue";
 import { constructDefaultSchema } from "../../utils/objects";
 import TriggerContext from "./TriggerContext.vue";
+import { trackAnalytic } from "../../utils/analytics.js";
 
 export default {
   components: {
@@ -112,13 +113,13 @@ export default {
         automation: null,
       };
       this.localTriggerType = _cloneDeep(this.triggerType);
-      this.trackAnalytic("openTrigger");
+      trackAnalytic("openTrigger");
       this.dialog = true;
     },
     async apply() {
       await this.$refs.automationInput.saveAutomation();
       this.$emit("mapping", this.localTriggerType, this.localMapping);
-      this.trackAnalytic("saveTrigger", { type: this.localTriggerType });
+      trackAnalytic("saveTrigger", { type: this.localTriggerType });
       this.dialog = false;
     },
     cancel() {

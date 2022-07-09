@@ -1,5 +1,3 @@
-const nodeHueApi = require('node-hue-api');
-
 class HUEStateTracker {
 	constructor() {
 		this.lastState = {};
@@ -97,27 +95,95 @@ const fakeSetGroupStateEndpoint = {
 }
 
 
-const discovery = nodeHueApi.discovery;
-const hueApi = nodeHueApi.v3.api;
-const lightstates = nodeHueApi.v3.lightStates;
-const { evalTemplate } = require('../utils/template');
+import { evalTemplate } from '../utils/template.js'
 
-const os = require('os');
-const { sleep } = require("../utils/sleep.js");
-const fs = require("fs");
-const path = require('path');
-const { userFolder } = require('../utils/configuration');
-const axios = require("axios");
-const _cloneDeep = require("lodash/cloneDeep");
-const { request } = require('websocket');
+import * as chromatism from 'chromatism';
+import os from 'os'
+import { sleep } from "../utils/sleep.js"
+import fs from "fs"
+import path from 'path'
+import { userFolder } from '../utils/configuration.js'
+import axios from "axios"
+import _ from "lodash"
 
-module.exports = {
+class HUEApi
+{
+	static async create(ip, key)
+	{
+		const result = new HUEApi();
+		result.api = axios.create({
+			baseURL: `http://${ip}/clip/v2`,
+			headers: {
+				'hue-application-key': key
+			}
+		});
+
+		await result.getGroups();
+
+		return result;
+	}
+
+	async getGroups()
+	{
+		const resp = await this.api.get(`/resource/room`);
+
+		const groups = resp.data.data;
+		this.cachedGroups = groups;
+		this.lastCacheTime = Date.now();
+
+		return groups;
+	}
+
+	async getGroupByName(name)
+	{
+		if ((Date.now() - this.lastCacheTime) > 15 * 1000)
+		{
+			await this.getGroups();
+		}
+
+		const group = this.cachedGroups.find((g) => {
+			g.metadata.name == name
+		})
+
+		return group;
+	}
+
+	async setGroupState(id, state)
+	{
+		const update = {};
+
+		if ("on" in state)
+		{
+			update.on = { on: !!state.on }
+		} 
+		if ("bri" in state)
+		{
+			update.dimming = {
+				brightness: Math.max(Math.min(Number(state.bri),100), 0)
+			}
+		}
+		if ("hue" in state || "sat" in state)
+		{
+			const hue = Math.max(Math.min(Number("hue" in state ? Number(state.hue) : 0), 100), 0);
+			const sat = Math.max(Math.min(Number("sat" in state ? Number(state.sat) : 100), 100), 0);
+			const bri = Math.max(Math.min(Number("bri" in state ? Number(state.bri) : 100), 100), 0);
+			const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
+			update.xy = {
+				x: cie.x,
+				y: cie.y
+			}
+		}
+
+		await this.api.put(`/resource/grouped_light/${id}`, update);
+	}
+}
+
+export default {
 	name: "hue",
 	uiName: "HUE Lights",
 	icon: "mdi-lightbulb-on-outline",
 	color: "#7F743F",
 	async init() {
-		this.groupCache = {};
 		this.stateTracker = new HUEStateTracker();
 
 		this.stateResetter = setInterval(() => {
@@ -188,6 +254,7 @@ module.exports = {
 			}
 		},
 		async createUser() {
+			/*
 			//Connect to hue bridge (unauthenticated)
 			let unauthenticatedApi = null;
 			try {
@@ -221,13 +288,13 @@ module.exports = {
 					this.logger.info("Trying again in 5 seconds...");
 					await sleep(5000);
 				}
-			}
+			}*/
 
 			return false;
 		},
 		async initApi() {
 			try {
-				this.hue = await hueApi.createLocal(this.bridgeIp).connect(this.hueUser.username);
+				this.hue = await HUEApi.create(this.bridgeIp, this.hueUser.username);
 				this.analytics.set({ usesHue: true });
 				return true;
 			}
@@ -244,7 +311,7 @@ module.exports = {
 		},
 		async getGroupNames() {
 			try {
-				return (await this.hue.groups.getAll()).map(g => g.name)
+				return (await this.hue.getGroups()).map(g => g.metadata.name)
 			}
 			catch (err) {
 				console.error(err);
@@ -262,20 +329,6 @@ module.exports = {
 				return []
 			}
 		},
-		async getGroupByName(name) {
-			if (this.groupCache[name]) {
-				return this.groupCache[name];
-			}
-
-			let groups = await this.hue.groups.getGroupByName(name);
-
-			if (groups.length == 0)
-				return;
-
-			this.groupCache[name] = groups[0]
-
-			return groups[0];
-		}
 	},
 	settings: {
 		defaultGroup: {
@@ -311,12 +364,9 @@ module.exports = {
 				}
 			},
 			async handler(lightData, context) {
-				lightData = _cloneDeep(lightData);
+				lightData = _.cloneDeep(lightData);
 
 				let groupName = lightData.group || this.settings.defaultGroup;
-
-
-
 
 				const requestedState = {};
 
@@ -364,7 +414,7 @@ module.exports = {
 
 				let state = this.stateTracker.getGroupColorState(groupName, requestedState);
 
-				let group = await this.hue.groups.getGroupByName(groupName);//await this.getGroupByName(groupName)
+				let group = await this.hue.getGroupByName(groupName);
 
 				if (group.length == 0)
 					return;
@@ -375,7 +425,7 @@ module.exports = {
 
 			}
 		},
-		scene: {
+		/*scene: {
 			name: "Hue Scene",
 			description: "Changes HUE lights to a hue scene",
 			icon: "mdi-lightbulb-on-outline",
@@ -411,11 +461,11 @@ module.exports = {
 				let state = new lightstates.GroupLightState();
 				state.scene(sceneObj[0].id);
 
-				let groups = await this.hue.groups.getGroupByName(groupName);
+				let groups = await this.hue.getGroupByName(groupName);
 
 				await Promise.all(groups.map((group) => this.hue.groups.setGroupState(group.id, state)));
 			}
-		}
+		}*/
 	},
 	settingsView: 'hue.vue'
 }

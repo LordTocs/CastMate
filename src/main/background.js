@@ -1,63 +1,88 @@
-'use strict'
-
-import { app, protocol, shell, ipcRenderer, ipcMain, BrowserWindow } from 'electron'
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import { initCastMate } from './core/castmate'
-import { autoUpdater, CancellationToken } from 'electron-updater';
-import path from 'path';
-
-import * as remoteMain from '@electron/remote/main';
-
-
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
+import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+const { app, shell, ipcMain, BrowserWindow } = require('electron');
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+import installExtension from 'electron-devtools-installer';
+
+import electronUpdater from 'electron-updater';
+const { autoUpdater, CancellationToken } = electronUpdater;
+import path from 'path'
+
+import { initCastMate } from './castmate.js';
 
 autoUpdater.autoInstallOnAppQuit = false;
 autoUpdater.autoDownload = false;
 
-
-if (process.env.WEBPACK_DEV_SERVER_URL) {
+//Setup dev update yaml only if we're in debug mode.
+/*if (isDevelopment) {
 	autoUpdater.updateConfigPath = path.join(
 		__dirname,
 		"../dev-app-update.yml" // change path if needed
 	);
+}*/
+
+// Set application name for Windows 10+ notifications
+if (process.platform === 'win32') app.setAppUserModelId(app.getName())
+
+if (!app.requestSingleInstanceLock()) {
+	app.quit()
+	process.exit(0)
 }
 
-remoteMain.initialize();
+/*
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
 	{ scheme: 'app', privileges: { secure: true, standard: true } }
 ])
+*/
+
+
+
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+
+const ROOT_PATH = {
+	// /dist
+	dist: path.join(__dirname, '../..'),
+	// /dist or /public
+	public: path.join(__dirname, app.isPackaged ? '../..' : '../../../public'),
+}
+
+const preload = path.join(__dirname, '../preload/preload.js')
+const url = `http://${process.env['VITE_DEV_SERVER_HOST']}:${process.env['VITE_DEV_SERVER_PORT']}`
 
 let mainWindow = null;
-
 async function createWindow() {
 	// Create the browser window.
+
+	const indexHtml = path.join(ROOT_PATH.dist, 'index.html')
+
+
 	const win = new BrowserWindow({
 		width: 1600,
 		height: 900,
-		icon: 'src/assets/icons/icon.png',
+		//icon: 'src/assets/icons/icon.png',
 		webPreferences: {
-
 			// Use pluginOptions.nodeIntegration, leave this alone
 			// See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-			nodeIntegration: true, //process.env.ELECTRON_NODE_INTEGRATION,
+			//preload,
+			nodeIntegration: true,
 			enableRemoteModule: true,
 			contextIsolation: false,
 		},
 		frame: false
 	})
 
-	remoteMain.enable(win.webContents);
+	//remoteMain.enable(win.webContents);
 
-	if (process.env.WEBPACK_DEV_SERVER_URL) {
-		// Load the url of the dev server if in development mode
-		await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-		if (!process.env.IS_TEST) win.webContents.openDevTools()
+	if (app.isPackaged) {
+		win.loadFile(indexHtml)
 	} else {
-		createProtocol('app')
-		// Load the index.html when not in development
-		win.loadURL('app://./index.html')
+		win.loadURL(url)
 	}
 
 	win.on("close", () => {
@@ -75,8 +100,6 @@ async function createWindow() {
 		e.preventDefault();
 		shell.openExternal(url);
 	});
-
-
 
 	mainWindow = win;
 }
@@ -97,7 +120,7 @@ async function createUpdaterWindow(updateData) {
 		frame: false
 	})
 
-	remoteMain.enable(win.webContents);
+	//remoteMain.enable(win.webContents);
 
 	const params = new URLSearchParams(updateData)
 
@@ -108,7 +131,7 @@ async function createUpdaterWindow(updateData) {
 		baseUrl = process.env.WEBPACK_DEV_SERVER_URL + "updater";
 		//if (!process.env.IS_TEST) win.webContents.openDevTools()
 	} else {
-		createProtocol('app')
+		//createProtocol('app')
 		// Load the index.html when not in development
 		baseUrl = 'app://./updater.html';
 	}
@@ -125,22 +148,38 @@ async function createUpdaterWindow(updateData) {
 
 }
 
-// Quit when all windows are closed.
-app.on('window-all-closed', () => {
-	// On macOS it is common for applications and their menu bar
-	// to stay active until the user quits explicitly with Cmd + Q
-	if (process.platform !== 'darwin') {
-		app.quit()
-	}
-})
-
-app.on('activate', () => {
-	// On macOS it's common to re-create a window in the app when the
-	// dock icon is clicked and there are no other windows open.
-	if (BrowserWindow.getAllWindows().length === 0) createWindow()
-})
-
 const updateContext = {};
+
+//WINDOW FUNCTIONS
+ipcMain.handle("windowFuncs_minimize", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender);
+	win.minimize();
+})
+
+ipcMain.handle("windowFuncs_maximize", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender);
+	win.maximize();
+})
+
+ipcMain.handle("windowFuncs_restore", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender);
+	win.unmaximize();
+})
+
+ipcMain.handle("windowFuncs_close", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender);
+	win.close();
+})
+
+ipcMain.handle("windowFuncs_isMaximized", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender);
+	return win.isMaximized();
+})
+
+ipcMain.handle("windowFuncs_getVersion", async () => {
+	return app.getVersion();
+})
+
 
 ipcMain.handle("updater.downloadUpdate", async () => {
 	updateContext.cancelToken = new CancellationToken();
@@ -171,7 +210,7 @@ autoUpdater.on("update-available", async (updateInfo) => {
 		version: updateInfo.version
 	}
 
-	await createUpdaterWindow(info);
+	//await createUpdaterWindow(info);
 })
 
 async function doUpdateCheck() {
@@ -183,20 +222,40 @@ async function doUpdateCheck() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', async () => {
+app.whenReady().then(async () => {
 	if (isDevelopment && !process.env.IS_TEST) {
 		// Install Vue Devtools
 		try {
-			await installExtension(VUEJS_DEVTOOLS)
+			await installExtension.default(installExtension.VUEJS_DEVTOOLS)
 		} catch (e) {
 			console.error('Vue Devtools failed to install:', e.toString())
 		}
 	}
-	initCastMate()
-	createWindow()
+	console.log("Starting CastMate Internals!")
+	await createWindow()
+	initCastMate(mainWindow.webContents)
+	
 	//autoUpdater.checkForUpdatesAndNotify();
 	//doUpdateCheck();
 })
+
+
+// Quit when all windows are closed.
+app.on('window-all-closed', () => {
+	// On macOS it is common for applications and their menu bar
+	// to stay active until the user quits explicitly with Cmd + Q
+	if (process.platform !== 'darwin') {
+		app.quit()
+	}
+})
+
+app.on('activate', () => {
+	// On macOS it's common to re-create a window in the app when the
+	// dock icon is clicked and there are no other windows open.
+	if (BrowserWindow.getAllWindows().length === 0) createWindow()
+})
+
+console.log("Background.js");
 
 
 

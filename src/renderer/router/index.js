@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Profiles from "../views/Profiles.vue";
 import ProfileEditor from "../views/ProfileEditor.vue";
 
@@ -13,7 +12,6 @@ import Variables from '../views/Variables.vue';
 import Landing from '../views/Landing.vue';
 import About from '../views/About.vue';
 
-Vue.use(VueRouter)
 
 const routes = [
 	{
@@ -69,7 +67,8 @@ const routes = [
 	}
 ]
 
-const router = new VueRouter({
+const router = createRouter({
+	history: createWebHashHistory(),
 	routes
 })
 

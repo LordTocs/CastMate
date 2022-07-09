@@ -1,10 +1,10 @@
-const { manualDependency } = require('./conditionals');
-const { Plugin } = require('./plugin');
-const { reactiveCopy, Watcher, deleteReactiveProperty } = require('./reactive');
-const { ipcMain } = require("electron");
-const _ = require('lodash');
+import { manualDependency } from './conditionals.js';
+import { Plugin } from './plugin.js'
+import { reactiveCopy, Watcher, deleteReactiveProperty } from './reactive.js'
+import { ipcMain } from "./electronBridge.js"
+import _ from 'lodash'
 
-class PluginManager {
+export class PluginManager {
 	async load(ipcSender) {
 		let pluginFiles = [
 			"inputs",
@@ -25,8 +25,11 @@ class PluginManager {
 		]
 
 		//Todo: This relative require is weird.
-		this.plugins = pluginFiles.map((file) => new Plugin(require(`../plugins/${file}`)));
-
+		this.plugins = [];
+		for (let file of pluginFiles)
+		{
+			this.plugins.push(new Plugin((await import(`../plugins/${file}.js`)).default))
+		}
 		this.stateLookup = {};
 
 		for (let plugin of this.plugins) {
@@ -109,7 +112,7 @@ class PluginManager {
 			const pluginInfo = {};
 			for (let plugin of this.plugins) {
 				pluginInfo[plugin.name] = plugin.getUIDescription();
-			} ``
+			} 
 			return pluginInfo;
 		})
 
@@ -118,5 +121,3 @@ class PluginManager {
 		})
 	}
 }
-
-module.exports = { PluginManager }

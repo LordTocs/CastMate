@@ -1,5 +1,3 @@
-
-
 //https://medium.com/vue-mastery/the-best-explanation-of-javascript-reactivity-fea6112dd80d
 
 class Dependency {
@@ -40,7 +38,7 @@ class Dependency {
 Dependency.target = null;
 
 
-class Watcher {
+export class Watcher {
 	constructor(func, { fireImmediately = true }) {
 		this.func = func;
 		this.dependencies = [];
@@ -66,7 +64,7 @@ class Watcher {
 	}
 }
 
-function createReactiveProperty(obj, key) {
+export function createReactiveProperty(obj, key) {
 	let observable = {
 		dependency: new Dependency(),
 		internalValue: obj[key],
@@ -97,7 +95,7 @@ function createReactiveProperty(obj, key) {
 	})
 }
 
-function deleteReactiveProperty(obj, key) {
+export function deleteReactiveProperty(obj, key) {
 	if (!obj.__reactivity__)
 		return;
 
@@ -105,13 +103,13 @@ function deleteReactiveProperty(obj, key) {
 	delete obj[key];
 }
 
-function reactify(obj) {
+export function reactify(obj) {
 	for (let key in obj) {
 		createReactiveProperty(obj, key);
 	}
 }
 
-function reactiveCopy(target, obj, onNewKey = null) {
+export function reactiveCopy(target, obj, onNewKey = null) {
 	let sourceReactivity = obj.__reactivity__;
 
 	for (let key in obj) {
@@ -148,6 +146,4 @@ function reactiveCopy(target, obj, onNewKey = null) {
 		}
 	}
 }
-
-module.exports = { Watcher, reactify, reactiveCopy, createReactiveProperty, deleteReactiveProperty }
 

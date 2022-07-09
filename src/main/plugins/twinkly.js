@@ -1,7 +1,7 @@
-const { evalTemplate } = require('../utils/template');
-const axios = require('axios');
-const crypto = require('crypto')
-const Color = require('color');
+import { evalTemplate } from '../utils/template.js'
+import axios from 'axios'
+import crypto from 'crypto'
+import Color from 'color'
 
 function randomBytes(num) {
     return new Promise((resolve, reject) => {
@@ -13,7 +13,7 @@ function randomBytes(num) {
 }
 
 
-module.exports = {
+export default {
     name: "twinkly",
     uiName: "Twinkly",
     icon: "mdi-string-lights",

@@ -121,6 +121,8 @@ import { mapGetters } from "vuex";
 import ActiveProfilesCard from "../components/profiles/ActiveProfilesCard.vue";
 import WelcomeDialog from "../components/wizard/WelcomeDialog.vue";
 import { mapIpcs } from "../utils/ipcMap";
+import { trackAnalytic } from "../utils/analytics.js";
+
 export default {
   components: { ActiveProfilesCard, WelcomeDialog },
   computed: {
@@ -130,7 +132,7 @@ export default {
     ...mapIpcs("obs", ["refereshAllBrowsers", "openOBS"]),
   },
   mounted() {
-    this.trackAnalytic("accessDashboard");
+    trackAnalytic("accessDashboard");
   },
 };
 </script>

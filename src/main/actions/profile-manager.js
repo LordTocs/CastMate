@@ -1,15 +1,15 @@
-const { evalConditional, dependOnAllConditions } = require("../utils/conditionals");
-const { Watcher } = require("../utils/reactive");
-const { Profile } = require("./profiles");
-const _ = require('lodash');
-const chokidar = require("chokidar");
-const { sleep } = require("../utils/sleep");
-const path = require('path');
-const { userFolder } = require("../utils/configuration");
-const logger = require("../utils/logger");
-const { ipcMain } = require("electron");
+import { evalConditional, dependOnAllConditions } from "../utils/conditionals.js"
+import { Watcher } from "../utils/reactive.js"
+import { Profile } from "./profiles.js"
+import _ from 'lodash'
+import chokidar from "chokidar"
+import { sleep } from "../utils/sleep.js"
+import path from 'path'
+import { userFolder } from "../utils/configuration.js"
+import logger from "../utils/logger.js"
+import { ipcMain } from "../utils/electronBridge.js"
 
-class ProfileManager
+export class ProfileManager
 {
 	constructor(actions, plugins, ipcSender)
 	{
@@ -196,5 +196,3 @@ class ProfileManager
 		}
 	}
 }
-
-module.exports = { ProfileManager };

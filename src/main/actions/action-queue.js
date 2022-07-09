@@ -1,11 +1,11 @@
-const { sleep } = require("../utils/sleep.js");
-const { Mutex } = require("async-mutex");
-const { reactiveCopy } = require("../utils/reactive.js");
-const logger = require('../utils/logger');
-const { ipcMain } = require("electron");
-const _ = require('lodash');
+import { sleep } from "../utils/sleep.js"
+import { Mutex } from "async-mutex"
+import { reactiveCopy } from "../utils/reactive.js"
+import logger from '../utils/logger.js'
+import { ipcMain } from "../utils/electronBridge.js"
+import _ from 'lodash'
 
-class ActionQueue {
+export class ActionQueue {
 	constructor(plugins, automations) {
 		this.triggerMappings = {};
 		this.triggerHandlers = {};
@@ -241,5 +241,3 @@ class ActionQueue {
 		release();
 	}
 }
-
-module.exports = { ActionQueue }

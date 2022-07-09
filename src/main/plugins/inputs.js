@@ -1,10 +1,10 @@
-const { mouse, keyboard, Key, Button } = require("@nut-tree/nut-js");
-const { sleep } = require('../utils/sleep.js');
+import { mouse, keyboard, Key, Button } from "@nut-tree/nut-js";
+import { sleep } from '../utils/sleep.js';
 
 const keys = Object.keys(Key).filter(v => isNaN(parseInt(v)))
 const buttons = Object.keys(Button).filter(v => isNaN(parseInt(v)));
 
-module.exports = {
+export default {
 	name: "inputs",
 	uiName: "Input Simulation",
 	icon: "mdi-keyboard",

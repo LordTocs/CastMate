@@ -1,9 +1,9 @@
-const axios = require('axios');
-const https = require('https');
-const fs = require('fs');
-const _ = require('lodash');
+import axios from 'axios'
+import https from 'https'
+import fs from 'fs'
+import _ from 'lodash'
 
-module.exports = {
+export default {
     name: "aoe4",
     uiName: "Age Of Empires 4",
     icon: "mdi-crown",

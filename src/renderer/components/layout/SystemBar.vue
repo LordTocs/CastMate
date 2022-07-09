@@ -6,15 +6,15 @@
     <v-icon @click="minimize" class="non-draggable">mdi-minus</v-icon>
     <v-icon @click="toggleMaximize" class="non-draggable">
       {{
-        isMaximized ? "mdi-window-restore" : "mdi-checkbox-blank-outline"
-      }}</v-icon
-    >
+          maximized ? "mdi-window-restore" : "mdi-checkbox-blank-outline"
+      }}
+    </v-icon>
     <v-icon @click="close" class="non-draggable">mdi-close</v-icon>
   </v-system-bar>
 </template>
 
 <script>
-import { getCurrentWindow } from "@electron/remote";
+import { mapIpcs } from "../../utils/ipcMap";
 
 export default {
   props: {
@@ -22,38 +22,19 @@ export default {
   },
   data() {
     return {
-      isMaximized: getCurrentWindow().isMaximized(),
+      maximized: this.isMaximized(),
     };
   },
   methods: {
-    close() {
-      const window = getCurrentWindow();
-      window.close();
-    },
-    minimize() {
-      const window = getCurrentWindow();
-      if (window.minimizable) {
-        window.minimize();
-      }
-    },
+    ...mapIpcs("windowFuncs", ["minimize", "maximize", "isMaximized", "restore", "close"]),
+
     toggleMaximize() {
-      const window = getCurrentWindow();
-      if (window.isMaximized()) {
+      if (this.isMaximized()) {
         this.restore();
-        this.isMaximized = window.isMaximized();
+        this.maximized = isMaximized();
       } else {
         this.maximize();
-        this.isMaximized = window.isMaximized();
-      }
-    },
-    restore() {
-      const window = getCurrentWindow();
-      window.unmaximize();
-    },
-    maximize() {
-      const window = getCurrentWindow();
-      if (window.maximizable) {
-        window.maximize();
+        this.maximized = isMaximized();
       }
     },
   },
@@ -64,6 +45,7 @@ export default {
 .draggable {
   -webkit-app-region: drag;
 }
+
 .non-draggable {
   -webkit-app-region: no-drag;
 }

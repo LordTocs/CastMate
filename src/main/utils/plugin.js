@@ -1,10 +1,10 @@
-const { reactify } = require("./reactive");
-const { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } = require("./schema");
-const _ = require('lodash');
-const { ipcMain } = require("electron");
-const logger = require('../utils/logger');
+import { reactify } from "./reactive.js";
+import { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } from "./schema.js"
+import _ from 'lodash'
+import { ipcMain } from "./electronBridge.js"
+import logger from '../utils/logger.js'
 
-class Plugin
+export class Plugin
 {
 	constructor(config)
 	{
@@ -296,8 +296,4 @@ class Plugin
 		}
 	}
 
-}
-
-module.exports = {
-	Plugin
 }

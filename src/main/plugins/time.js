@@ -1,4 +1,4 @@
-module.exports = {
+export default {
 	name: "time",
 	uiName: "Time",
 	icon: "mdi-clock-outline",

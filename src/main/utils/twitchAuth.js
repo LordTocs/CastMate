@@ -1,6 +1,6 @@
-const qs = require('querystring');
-const { BrowserWindow } = require('electron');
-const logger = require('./logger');
+import qs from 'querystring'
+import { BrowserWindow } from './electronBridge.js'
+import logger from './logger.js'
 
 const defaultScopes = [
 	"analytics:read:extensions",
@@ -32,7 +32,7 @@ const defaultScopes = [
 	"chat:read"
 ]
 
-class ElectronAuthManager {
+export class ElectronAuthManager {
     constructor({ clientId, redirectUri, name, scopes }) {
         this._clientId = clientId;
         this._redirectUri = redirectUri;
@@ -238,5 +238,3 @@ class ElectronAuthManager {
     }
 }
 
-
-module.exports = { ElectronAuthManager };

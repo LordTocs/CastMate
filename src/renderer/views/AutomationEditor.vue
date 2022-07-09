@@ -82,6 +82,7 @@ import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
 import { loadAutomation, saveAutomation } from "../utils/fileTools";
+import { trackAnalytic } from "../utils/analytics.js";
 
 export default {
   components: {
@@ -116,7 +117,7 @@ export default {
   async mounted() {
     this.automation = await loadAutomation(this.automationName);
 
-    this.trackAnalytic("accessAutomation", { name: this.automationName });
+    trackAnalytic("accessAutomation", { name: this.automationName });
   },
   watch: {
     automation: {

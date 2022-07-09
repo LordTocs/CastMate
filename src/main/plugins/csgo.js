@@ -1,6 +1,6 @@
-const CSGameState = require('cs-gamestate');
+import CSGameState from 'cs-gamestate'
 
-module.exports = {
+export default {
 	name: "csgo",
 	uiName: "Counter Strike",
 	icon: "mdi-pistol",

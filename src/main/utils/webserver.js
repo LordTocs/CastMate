@@ -1,13 +1,14 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const websocket = require("websocket");
-const http = require("http");
-const publicIp = require('public-ip');
-const { userFolder } = require("./configuration");
-const path = require("path");
-const logger = require("./logger");
+import express from "express"
+import bodyParser from "body-parser"
+import websocket from "websocket"
+import http from "http"
+import { publicIpv4 } from 'public-ip'
+import { userFolder } from "./configuration.js"
+import path from "path"
+import logger from "./logger.js"
 
-async function createWebServices(settings, secrets, plugins) {
+export async function createWebServices(settings, secrets, plugins) {
+	
 	let app = express();
 	let routes = express.Router();
 
@@ -49,7 +50,7 @@ async function createWebServices(settings, secrets, plugins) {
 
 	let port = settings.port || 80;
 
-	let hostname = await publicIp.v4();
+	let hostname = await publicIpv4();
 
 	const result = {
 		app,
@@ -93,7 +94,3 @@ async function createWebServices(settings, secrets, plugins) {
 	}
 	return result;
 }
-
-module.exports = { createWebServices };
-
-

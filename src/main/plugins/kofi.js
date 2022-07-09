@@ -1,10 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const { userFolder } = require('../utils/configuration');
-const { data } = require('../utils/logger');
-const { inRange } = require('../utils/range');
+import fs from 'fs'
+import path from 'path'
+import { userFolder } from '../utils/configuration.js'
+import { inRange } from '../utils/range.js'
 
-module.exports = {
+export default {
 	name: "kofi",
 	uiName: "Kofi",
 	icon: "mdi-currency-usd",

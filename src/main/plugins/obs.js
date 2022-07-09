@@ -1,9 +1,8 @@
-const e = require('express');
-const OBSWebSocket = require('obs-websocket-js'); // For more info: https://www.npmjs.com/package/obs-websocket-js
-const { template } = require('../utils/template');
-const { app } = require("electron");
-const ChildProcess = require("child_process")
-const regedit = require("regedit");
+import OBSWebSocket from 'obs-websocket-js' // For more info: https://www.npmjs.com/package/obs-websocket-js
+import { template } from '../utils/template.js'
+import { app } from "../utils/electronBridge.js"
+import ChildProcess from "child_process"
+import regedit from "regedit"
 
 if (app.isPackaged) {
 	console.log("Setting External VBS Location", regedit.setExternalVBSLocation('resources/regedit/vbs'));
@@ -31,7 +30,7 @@ function sliderToDB(slider) {
 }
 
 
-module.exports = {
+export default {
 	name: "obs",
 	uiName: "OBS",
 	icon: OBS_ICON_SVG,

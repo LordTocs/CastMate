@@ -1,9 +1,9 @@
-const Rcon = require('rcon');
-const { template } = require('../utils/template');
-const { sleep } = require("../utils/sleep.js");
+import Rcon from 'rcon'
+import { template } from '../utils/template.js'
+import { sleep } from "../utils/sleep.js"
 
 
-module.exports = {
+export default {
 	name: "minecraft",
 	uiName: "Minecraft",
 	icon: "mdi-minecraft",

@@ -1,10 +1,10 @@
-const { createReactiveProperty, deleteReactiveProperty } = require("../utils/reactive.js");
-const { evalTemplate } = require('../utils/template');
-const { variablesFilePath } = require('../utils/configuration.js');
+import { createReactiveProperty, deleteReactiveProperty } from "../utils/reactive.js"
+import { evalTemplate } from '../utils/template.js'
+import { variablesFilePath } from '../utils/configuration.js'
 
-const HotReloader = require('../utils/hot-reloader');
+import { HotReloader } from '../utils/hot-reloader.js'
 
-module.exports = {
+export default {
 	name: "variables",
 	uiName: "Variables",
 	icon: "mdi-variable",

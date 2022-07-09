@@ -9,115 +9,69 @@
       <v-spacer></v-spacer>
     </v-app-bar>
 
-    <v-navigation-drawer
-      app
-      v-model="navDrawer"
-      style="-webkit-app-region: no-drag"
-      v-if="loaded"
-    >
+    <v-navigation-drawer app v-model="navDrawer" style="-webkit-app-region: no-drag" v-if="loaded">
       <v-list-item link to="/">
-        <v-list-item-content>
-          <v-list-item-title class="title"> CastMate </v-list-item-title>
-          <!--v-list-item-subtitle> subtext </v-list-item-subtitle-->
-        </v-list-item-content>
+        <v-list-item-title class="title"> CastMate </v-list-item-title>
+        <!--v-list-item-subtitle> subtext </v-list-item-subtitle-->
       </v-list-item>
 
       <v-divider></v-divider>
 
       <v-list dense nav>
         <v-list-item link to="/profiles">
-          <v-list-item-icon>
-            <v-icon>mdi-card-account-details-outline</v-icon>
-          </v-list-item-icon>
+          <v-list-item-icon icon="mdi-card-account-details-outline" />
 
-          <v-list-item-content>
-            <v-list-item-title> Profiles </v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title> Profiles </v-list-item-title>
         </v-list-item>
 
         <v-list-item link to="/automations">
-          <v-list-item-icon>
-            <v-icon>mdi-flash</v-icon>
-          </v-list-item-icon>
+          <v-list-item-icon icon="mdi-flash" />
 
-          <v-list-item-content>
-            <v-list-item-title> Automations </v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title> Automations </v-list-item-title>
         </v-list-item>
 
         <v-divider></v-divider>
 
         <v-list-item link to="/segments">
-          <v-list-item-icon>
-            <v-icon>mdi-tag</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-content>
-            <v-list-item-title> Segments </v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-icon icon="mdi-tag" />
+          <v-list-item-title> Segments </v-list-item-title>
         </v-list-item>
 
         <v-list-item link to="/variables">
-          <v-list-item-icon>
-            <v-icon>mdi-variable</v-icon>
-          </v-list-item-icon>
+          <v-list-item-icon icon="mdi-variable" />
 
-          <v-list-item-content>
-            <v-list-item-title> Variables </v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title> Variables </v-list-item-title>
         </v-list-item>
 
         <v-list-item link to="/rewards">
-          <v-list-item-icon>
-            <v-icon>mdi-star-circle-outline</v-icon>
-          </v-list-item-icon>
+          <v-list-item-icon icon="mdi-star-circle-outline" />
 
-          <v-list-item-content>
-            <v-list-item-title> Rewards </v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title> Rewards </v-list-item-title>
         </v-list-item>
 
         <v-divider></v-divider>
         <v-list-group n-action>
           <template v-slot:activator>
-            <v-list-item-icon>
-              <v-icon>mdi-cog</v-icon>
-            </v-list-item-icon>
+            <v-list-item-icon icon="mdi-cog" />
 
             <v-list-item-title> Settings</v-list-item-title>
           </template>
 
-          <v-list-item
-            v-for="plugin in uiPlugins"
-            :to="`/plugins/${plugin.name}`"
-            :key="plugin.name"
-          >
-            <v-list-item-icon>
-              <v-icon>
-                {{ plugin.icon ? plugin.icon : "mdi-view-dashboard" }}
-              </v-icon>
-            </v-list-item-icon>
+          <v-list-item v-for="plugin in uiPlugins" :to="`/plugins/${plugin.name}`" :key="plugin.name">
+            <v-list-item-icon :icon="plugin.icon ? plugin.icon : 'mdi-view-dashboard'" />
             <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
           </v-list-item>
         </v-list-group>
         <v-divider></v-divider>
         <v-list-item @click="openSoundsFolder">
-          <v-list-item-icon>
-            <v-icon>mdi-folder-music</v-icon>
-          </v-list-item-icon>
+          <v-list-item-icon icon="mdi-folder-music" />
 
-          <v-list-item-content>
-            <v-list-item-title> Open Sounds Folder </v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title> Open Sounds Folder </v-list-item-title>
         </v-list-item>
         <v-list-item link to="/about">
-          <v-list-item-icon>
-            <v-icon>mdi-information-outline</v-icon>
-          </v-list-item-icon>
+          <v-list-item-icon icon="mdi-information-outline" />
 
-          <v-list-item-content>
-            <v-list-item-title> About </v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title> About </v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -128,23 +82,13 @@
     <v-main style="max-height: 100%" v-else>
       <v-container fluid class="fill-height">
         <v-row align="center" justify="center">
-          <v-col
-            cols="12"
-            sm="4"
-            style="justify-content: center; text-align: center"
-          >
+          <v-col cols="12" sm="4" style="justify-content: center; text-align: center">
             <h1>Loading CastMate</h1>
-            <v-progress-circular
-              indeterminate
-              color="cyan"
-              :size="100"
-              :width="15"
-            />
+            <v-progress-circular indeterminate color="cyan" :size="100" :width="15" />
           </v-col>
         </v-row>
       </v-container>
     </v-main>
-
     <v-footer app>
       <!-- -->
     </v-footer>
@@ -154,8 +98,8 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import SystemBar from "./components/layout/SystemBar.vue";
-import path from "path";
-import { ipcRenderer, shell } from "electron";
+//import path from "path";
+//import { ipcRenderer, shell } from "electron";
 
 export default {
   components: {
@@ -192,7 +136,7 @@ export default {
     ...mapActions("segments", ["loadSegments"]),
     ...mapActions("variables", ["loadVariables"]),
     openSoundsFolder() {
-      shell.openPath(path.join(this.paths.userFolder, "sounds"));
+      //shell.openPath(path.join(this.paths.userFolder, "sounds"));
     },
   },
   async mounted() {
@@ -201,7 +145,7 @@ export default {
     await this.loadSegments();
     await this.loadVariables();
     this.loaded = true;
-    ipcRenderer.invoke("updater.checkForUpdates");
+    //ipcRenderer.invoke("updater.checkForUpdates");
   },
 };
 </script>
@@ -221,12 +165,15 @@ html {
 .v-speed-dial--right {
   right: 32px;
 }
+
 .v-speed-dial--bottom {
   bottom: 32px;
 }
+
 .v-btn--fixed.v-btn--right {
   right: 32px;
 }
+
 .v-btn--fixed.v-btn--bottom {
   bottom: 32px;
 }

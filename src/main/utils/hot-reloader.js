@@ -1,7 +1,7 @@
-const YAML = require('yaml');
-const fs = require("fs");
+import YAML from 'yaml'
+import fs from "fs"
 
-class HotReloader
+export class HotReloader
 {
 	constructor(filename, onChange, onError)
 	{
@@ -36,5 +36,3 @@ class HotReloader
 		return YAML.parse(fs.readFileSync(this.filename, 'utf-8')) || {};
 	}
 }
-
-module.exports = HotReloader;

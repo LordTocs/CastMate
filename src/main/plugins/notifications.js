@@ -1,7 +1,7 @@
-const { template } = require('../utils/template');
+import { template } from '../utils/template.js'
 
 
-module.exports = {
+export default {
 	name: "notifications",
 	uiName: "Alerts",
 	icon: "mdi-alert-box-outline",

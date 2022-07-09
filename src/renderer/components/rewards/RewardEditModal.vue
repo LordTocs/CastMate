@@ -55,6 +55,8 @@
 import RewardEditor from "./RewardEditor.vue";
 import _ from "lodash";
 import { mapActions } from "vuex";
+import { trackAnalytic } from "../../utils/analytics.js";
+
 export default {
   components: { RewardEditor },
   props: {
@@ -85,12 +87,12 @@ export default {
         rewardName: this.reward.name,
         newReward: this.rewardEdit,
       });
-      this.trackAnalytic("saveChannelReward");
+      trackAnalytic("saveChannelReward");
       this.dialog = false;
     },
     deleteMe() {
       this.deleteReward(this.reward.name);
-      this.trackAnalytic("deleteChannelReward");
+      trackAnalytic("deleteChannelReward");
       this.dialog = false;
     },
     cancel() {
@@ -100,7 +102,7 @@ export default {
       this.createReward(this.rewardEdit);
       this.dialog = false;
       this.$emit("created", this.rewardEdit.name);
-      this.trackAnalytic("createChannelReward");
+      trackAnalytic("createChannelReward");
     },
   },
 };
