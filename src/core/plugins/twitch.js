@@ -866,12 +866,13 @@ module.exports = {
 				filteredMessage: { type: String },
 			},
 			handler(config, context, mapping, userInfo) {
-				if (config.match == "Start") {
+				const command = config.command || "";
+				if (command.length > 0 && config.match == "Start") {
 					if (context.command != config.command.toLowerCase()) {
 						return false;
 					}
 				}
-				if (config.match == "Anywhere") {
+				if (command.length > 0 && config.match == "Anywhere") {
 					//console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
 					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
