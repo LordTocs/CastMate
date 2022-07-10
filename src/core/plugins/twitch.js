@@ -1096,6 +1096,19 @@ module.exports = {
 			async handler(message, context) {
 				await this.channelTwitchClient.streams.createStreamMarker(this.channelId, await template(message, context));
 			}
+		},
+		createClip: {
+			name: "Create Clip",
+			description: "Places a marker in the stream for use in the video editor",
+			icon: "mdi-filmstrip",
+			color: "#5E5172",
+			data: {
+				type: Object,
+				properties: {},
+			},
+			async handler() {
+				await this.channelTwitchClient.clips.createClip({ channelId: this.channelId});
+			}
 		}
 	},
 	templateFunctions: {
