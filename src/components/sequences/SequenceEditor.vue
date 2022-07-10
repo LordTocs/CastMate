@@ -164,14 +164,16 @@ export default {
 
       const newSelection = [];
 
-      for (let itemId in this.$refs.sequenceItems) {
-        const item = this.$refs.sequenceItems[itemId];
+      for (let item of this.$refs.sequenceItems) {
+        const id = item.$vnode.key;
+        const itemIdx = this.value.findIndex(a => a.id == id);
+
         const itemRect = item.getBoundingClientRect
           ? item.getBoundingClientRect()
           : item.$el.getBoundingClientRect();
 
         if (this.rectOverlap(dragRect, itemRect)) {
-          newSelection.push(Number(itemId));
+          newSelection.push(itemIdx);
         }
       }
 
