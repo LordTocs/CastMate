@@ -1,43 +1,16 @@
 <template>
-  <div
-    class="drag-area"
-    ref="dragArea"
-    @mousedown="startDrag"
-    @keyup.delete.self="doDelete"
-    tabindex="0"
-    @copy="copy"
-    @paste="paste"
-    @cut="cut"
-    @blur="blur"
-  >
-    <div
-      v-if="dragBox.dragging"
-      ref="selectRect"
-      class="select-rect"
-      :style="{
-        left: dragLeft + 'px',
-        top: dragTop + 'px',
-        width: dragWidth + 'px',
-        height: dragHeight + 'px',
-      }"
-    />
-    <draggable
-      :value="value"
-      @input="input"
-      handle=".handle"
-      :group="{ name: 'actions' }"
-      style="flex: 1"
-      draggable=".is-draggable"
-      class="sequence-container"
-      :component-data="getDraggableData()"
-    >
+  <div class="drag-area" ref="dragArea" @mousedown="startDrag" @keyup.delete.self="doDelete" tabindex="0" @copy="copy"
+    @paste="paste" @cut="cut" @blur="blur">
+    <div v-if="dragBox.dragging" ref="selectRect" class="select-rect" :style="{
+      left: dragLeft + 'px',
+      top: dragTop + 'px',
+      width: dragWidth + 'px',
+      height: dragHeight + 'px',
+    }" />
+    <draggable :value="value" @input="input" handle=".handle" :group="{ name: 'actions' }" style="flex: 1"
+      draggable=".is-draggable" class="sequence-container" :component-data="getDraggableData()">
       <div slot="header">
-        <v-card
-          elevation="2"
-          outlined
-          shaped
-          v-if="!(value && value.length > 0)"
-        >
+        <v-card elevation="2" outlined shaped v-if="!(value && value.length > 0)">
           <v-card-text>
             <p class="text-center text-h6" style="user-select: none">
               Click &amp; Drag Actions from the Toolbox on the right.
@@ -45,16 +18,8 @@
           </v-card-text>
         </v-card>
       </div>
-      <sequence-item
-        v-for="(action, i) in value"
-        :key="action.id"
-        ref="sequenceItems"
-        class="is-draggable"
-        :selected="selected.includes(i)"
-        :value="action"
-        @input="(v) => updateAction(i, v)"
-        @delete="deleteAction(i)"
-      />
+      <sequence-item v-for="(action, i) in value" :key="action.id" ref="sequenceItems" class="is-draggable"
+        :selected="selected.includes(i)" :value="action" @input="(v) => updateAction(i, v)" @delete="deleteAction(i)" />
       <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
       <template v-slot:footer>
         <div style="font-size: 0; height: 120px">...</div>
@@ -164,16 +129,18 @@ export default {
 
       const newSelection = [];
 
-      for (let item of this.$refs.sequenceItems) {
-        const id = item.$vnode.key;
-        const itemIdx = this.value.findIndex(a => a.id == id);
+      if (this.$refs.sequenceItems) {
+        for (let item of this.$refs.sequenceItems) {
+          const id = item.$vnode.key;
+          const itemIdx = this.value.findIndex(a => a.id == id);
 
-        const itemRect = item.getBoundingClientRect
-          ? item.getBoundingClientRect()
-          : item.$el.getBoundingClientRect();
+          const itemRect = item.getBoundingClientRect
+            ? item.getBoundingClientRect()
+            : item.$el.getBoundingClientRect();
 
-        if (this.rectOverlap(dragRect, itemRect)) {
-          newSelection.push(itemIdx);
+          if (this.rectOverlap(dragRect, itemRect)) {
+            newSelection.push(itemIdx);
+          }
         }
       }
 
