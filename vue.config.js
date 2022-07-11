@@ -18,6 +18,7 @@ module.exports = {
 				"ref-struct-di",
 				"win32-api",
 				"win32-def",
+				"ref-union-di",
 				"@waiting/shared-types",
 				"node-addon-api",
 				"get-uv-event-loop-napi-h",		
