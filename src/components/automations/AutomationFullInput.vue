@@ -5,16 +5,7 @@
         <v-sheet color="grey darken-4" class="d-flex flex-row px-2 py-2">
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                color="primary"
-                dark
-                fab
-                small
-                class="mr-4"
-                @click="preview"
-                v-bind="attrs"
-                v-on="on"
-              >
+              <v-btn color="primary" dark fab small class="mr-4" @click="preview" v-bind="attrs" v-on="on">
                 <v-icon>mdi-play</v-icon>
               </v-btn>
             </template>
@@ -23,53 +14,28 @@
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
               <div v-bind="attrs" v-on="on" style="width: min-content">
-                <v-switch
-                  :value="sync"
-                  @input="changeSync"
-                  class="my-0"
-                  label="Synchronous"
-                />
+                <v-switch :value="sync" @input="changeSync" class="my-0" label="Synchronous" />
               </div>
             </template>
-            <span
-              >This automation will queue behind other Synchronous automations
-              and wait to play.</span
-            >
+            <span>This automation will queue behind other Synchronous automations
+              and wait to play.</span>
           </v-tooltip>
           <v-spacer />
-          <v-menu
-            v-model="automationPopover"
-            :close-on-content-click="false"
-            offset-y
-            class="mx-2"
-            v-if="!value || isInline"
-          >
+          <v-menu v-model="automationPopover" :close-on-content-click="false" offset-y class="mx-2"
+            v-if="!value || isInline">
             <template v-slot:activator="{ on, attrs }">
               <v-btn v-bind="attrs" v-on="on">Use Existing Automation </v-btn>
             </template>
 
             <v-card class="px-2">
-              <automation-selector
-                :value="automationFile"
-                @input="selectAutomationPopover"
-                :showButtons="false"
-              />
+              <automation-selector :value="automationFile" @input="selectAutomationPopover" :showButtons="false" />
             </v-card>
           </v-menu>
-          <automation-selector
-            :value="automationFile"
-            @input="selectAutomationPopover"
-            :showButtons="false"
-            class="my-0"
-            v-else
-          />
+          <automation-selector :value="automationFile" @input="selectAutomationPopover" :showButtons="false"
+            class="my-0" v-else />
         </v-sheet>
         <flex-scroller class="flex-grow-1">
-          <sequence-editor
-            :value="actions"
-            @input="updateActions"
-            style="flex: 1"
-          />
+          <sequence-editor :value="actions" @input="updateActions" style="flex: 1" />
         </flex-scroller>
       </div>
       <flex-scroller color="grey darken-4" class="toolbox">
@@ -116,7 +82,9 @@ export default {
       return [];
     },
     sync() {
-      if (this.isInline) {
+      if (!this.value) {
+        return false;
+      } else if (this.isInline) {
         return this.value.sync;
       } else if (this.loadedAutomation) {
         return this.loadedAutomation.sync;

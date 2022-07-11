@@ -866,12 +866,13 @@ module.exports = {
 				filteredMessage: { type: String },
 			},
 			handler(config, context, mapping, userInfo) {
-				if (config.match == "Start") {
+				const command = config.command || "";
+				if (command.length > 0 && config.match == "Start") {
 					if (context.command != config.command.toLowerCase()) {
 						return false;
 					}
 				}
-				if (config.match == "Anywhere") {
+				if (command.length > 0 && config.match == "Anywhere") {
 					//console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
 					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
@@ -1095,6 +1096,19 @@ module.exports = {
 			},
 			async handler(message, context) {
 				await this.channelTwitchClient.streams.createStreamMarker(this.channelId, await template(message, context));
+			}
+		},
+		createClip: {
+			name: "Create Clip",
+			description: "Places a marker in the stream for use in the video editor",
+			icon: "mdi-filmstrip",
+			color: "#5E5172",
+			data: {
+				type: Object,
+				properties: {},
+			},
+			async handler() {
+				await this.channelTwitchClient.clips.createClip({ channelId: this.channelId});
 			}
 		}
 	},
