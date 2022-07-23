@@ -59,6 +59,7 @@ import YAML from "yaml";
 import { mapGetters } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
 import AutomationQuickEditDialog from "./AutomationQuickEditDialog.vue";
+import { trackAnalytic } from "../../utils/analytics.js";
 
 export default {
   name: "automation-selector",
@@ -113,7 +114,7 @@ export default {
         actions: [],
       };
 
-      this.trackAnalytic("newAutomation", { name });
+      trackAnalytic("newAutomation", { name });
 
       await fs.promises.writeFile(filePath, YAML.stringify(automation));
 
