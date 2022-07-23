@@ -1,13 +1,7 @@
 <template>
   <v-app style="max-height: 100vh">
     <system-bar title="CastMate" />
-    <v-app-bar dense app v-if="loaded">
-      <v-app-bar-nav-icon @click="navDrawer = !navDrawer"></v-app-bar-nav-icon>
-
-      <v-toolbar-title> {{ $route.name }}</v-toolbar-title>
-
-      <v-spacer></v-spacer>
-    </v-app-bar>
+    
 
     <v-navigation-drawer app v-model="navDrawer" style="-webkit-app-region: no-drag" v-if="loaded">
       <v-list-item link to="/">
@@ -18,63 +12,35 @@
       <v-divider></v-divider>
 
       <v-list dense nav>
-        <v-list-item link to="/profiles">
-          <v-list-item-icon icon="mdi-card-account-details-outline" />
-
-          <v-list-item-title> Profiles </v-list-item-title>
-        </v-list-item>
-
-        <v-list-item link to="/automations">
-          <v-list-item-icon icon="mdi-flash" />
-
-          <v-list-item-title> Automations </v-list-item-title>
-        </v-list-item>
-
+        <v-list-item link to="/profiles" prepend-icon="mdi-card-account-details-outline" title="Profiles" />
+        <v-list-item link to="/automations" prepend-icon="mdi-flash" title="Automations" />
         <v-divider></v-divider>
-
-        <v-list-item link to="/segments">
-          <v-list-item-icon icon="mdi-tag" />
-          <v-list-item-title> Segments </v-list-item-title>
-        </v-list-item>
-
-        <v-list-item link to="/variables">
-          <v-list-item-icon icon="mdi-variable" />
-
-          <v-list-item-title> Variables </v-list-item-title>
-        </v-list-item>
-
-        <v-list-item link to="/rewards">
-          <v-list-item-icon icon="mdi-star-circle-outline" />
-
-          <v-list-item-title> Rewards </v-list-item-title>
-        </v-list-item>
-
+        <v-list-item link to="/segments" prepend-icon="mdi-tag" title="Segments" />
+        <v-list-item link to="/variables" prepend-icon="mdi-variable" title="Variables" />
+        <v-list-item link to="/rewards" prepend-icon="mdi-star-circle-outline" title="Rewards" />
         <v-divider></v-divider>
         <v-list-group n-action>
-          <template v-slot:activator>
-            <v-list-item-icon icon="mdi-cog" />
-
-            <v-list-item-title> Settings</v-list-item-title>
+          <template v-slot:activator="{ props }">
+            <v-list-item v-bind="props" prepend-icon="mdi-cog" title="Settings" />
           </template>
 
-          <v-list-item v-for="plugin in uiPlugins" :to="`/plugins/${plugin.name}`" :key="plugin.name">
-            <v-list-item-icon :icon="plugin.icon ? plugin.icon : 'mdi-view-dashboard'" />
-            <v-list-item-title> {{ plugin.uiName }}</v-list-item-title>
-          </v-list-item>
+          <v-list-item v-for="plugin in uiPlugins" :to="`/plugins/${plugin.name}`" :key="plugin.name"
+            :prepend-icon="plugin.icon ? plugin.icon : 'mdi-view-dashboard'" :title="plugin.uiName" />
+
         </v-list-group>
         <v-divider></v-divider>
-        <v-list-item @click="openSoundsFolder">
-          <v-list-item-icon icon="mdi-folder-music" />
-
-          <v-list-item-title> Open Sounds Folder </v-list-item-title>
-        </v-list-item>
-        <v-list-item link to="/about">
-          <v-list-item-icon icon="mdi-information-outline" />
-
-          <v-list-item-title> About </v-list-item-title>
-        </v-list-item>
+        <v-list-item @click="openSoundsFolder" prepend-icon="mdi-folder-music" title="Open Sounds Folder" />
+        <v-list-item link to="/about" prepend-icon="mdi-information-outline" title="About" />
       </v-list>
     </v-navigation-drawer>
+
+    <v-app-bar dense app v-if="loaded">
+      <v-app-bar-nav-icon @click="navDrawer = !navDrawer"></v-app-bar-nav-icon>
+
+      <v-toolbar-title> {{ $route.name }}</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+    </v-app-bar>
 
     <v-main style="max-height: 100%" v-if="loaded">
       <router-view></router-view>
@@ -98,8 +64,8 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import SystemBar from "./components/layout/SystemBar.vue";
-//import path from "path";
-//import { ipcRenderer, shell } from "electron";
+import path from "path";
+import { shell } from "electron";
 
 export default {
   components: {
@@ -136,7 +102,7 @@ export default {
     ...mapActions("segments", ["loadSegments"]),
     ...mapActions("variables", ["loadVariables"]),
     openSoundsFolder() {
-      //shell.openPath(path.join(this.paths.userFolder, "sounds"));
+      shell.openPath(path.join(this.paths.userFolder, "sounds"));
     },
   },
   async mounted() {
