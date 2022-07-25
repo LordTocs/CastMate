@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column" style="height: 100%">
-    <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
+    <v-sheet class="py-4 px-4 d-flex">
       <div class="d-flex flex-column mx-4">
         <v-btn
           color="primary"
@@ -22,25 +22,7 @@
       <v-container fluid>
         <v-row>
           <v-col>
-            <!--v-card>
-              <v-card-title> Triggers </v-card-title>
-              <v-card-subtitle>
-                Triggers are events you can bind automations to. Chat commands,
-                follows, channelpoints, etc...
-              </v-card-subtitle>
-              <v-card-text v-if="profile">
-                <v-row v-for="plugin in triggerPlugins" :key="plugin.name">
-                  <v-col>
-                    <plugin-triggers
-                      :plugin="plugin"
-                      :value="profile.triggers[plugin.name] || {}"
-                      @input="(v) => $set(profile.triggers, plugin.name, v)"
-                    />
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card-->
-            <trigger-list v-if="profile" v-model="profile.triggers" />
+            <!--trigger-list v-if="profile" v-model="profile.triggers" /-->
           </v-col>
         </v-row>
         <v-row>
@@ -88,12 +70,11 @@
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import AutomationInput from "../components/automations/AutomationInput.vue";
-import { mapActions, mapGetters } from "vuex";
-import BooleanExpression from "../components/conditionals/BooleanExpression.vue";
+import { mapGetters } from "vuex";
 import BooleanGroup from "../components/conditionals/BooleanGroup.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
 import TriggerList from "../components/triggers/TriggerList.vue";
-import { loadProfile, saveProfile } from "../utils/fileTools";
+import { mapIpcs } from "../utils/ipcMap";
 
 export default {
   components: {
@@ -101,13 +82,12 @@ export default {
     RewardsEditor,
     AutomationInput,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
-    BooleanExpression,
     BooleanGroup,
     FlexScroller,
     TriggerList,
   },
   computed: {
-    ...mapGetters("ipc", ["paths", "pluginList"]),
+    ...mapGetters("ipc", ["pluginList"]),
     profileName() {
       return this.$route.params.profile;
     },
@@ -123,16 +103,17 @@ export default {
     };
   },
   methods: {
-    ...mapActions("profile", ["loadProfile", "saveProfile"]),
+    ...mapIpcs("io", ["getProfile", "saveProfile"]),
     async save() {
-      await saveProfile(this.profileName, this.profile);
+      await this.saveProfile(this.profileName, this.profile);
 
       this.saveSnack = true;
       this.dirty = false;
     },
   },
   async mounted() {
-    this.profile = await loadProfile(this.profileName);
+    this.profile = await this.getProfile(this.profileName);
+    console.log(this.profile);
   },
   watch: {
     profile: {

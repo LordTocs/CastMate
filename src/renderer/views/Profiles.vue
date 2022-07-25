@@ -1,87 +1,16 @@
 <template>
   <v-container fluid>
-    <v-card class="linktable-card" color="grey darken-2">
-      <v-card-title>
-        <v-btn @click="$refs.addProfileModal.open()" class="mx-3"> Add Profile </v-btn>
-        <v-text-field
-          v-model="search"
-          append-icon="mdi-magnify"
-          label="Filter"
-          class="py-0 my-0"
-          single-line
-          hide-details
-        />
-      </v-card-title>
-      <v-data-table
-        :headers="profileHeaders"
-        :items="profiles"
-        :search="search"
-        :items-per-page="-1"
-        @click:row="(item) => $router.push(`/profiles/${item.name}`)"
-      >
-        <template v-slot:item.actions="{ item }">
-          <!--v-btn
-            fab
-            small
-            class="mx-1"
-            as="router-link"
-            :to="`/profiles/${item.name}`"
-          >
-            <v-icon small> mdi-pencil </v-icon>
-          </v-btn-->
-          <v-btn fab small class="mx-1" @click.stop="tryDelete(item.name)">
-            <v-icon small> mdi-delete </v-icon>
-          </v-btn>
-          <v-btn fab small class="mx-1" @click.stop="tryDuplicate(item.name)">
-            <v-icon small> mdi-content-copy </v-icon>
-          </v-btn>
-          <v-btn fab small class="mx-1" @click.stop="tryRename(item.name)">
-            <v-icon small> mdi-pencil </v-icon>
-          </v-btn>
-        </template>
-
-        <template v-slot:footer.prepend>
-          <v-btn @click="$refs.addProfileModal.open()"> Add Profile </v-btn>
-        </template>
-      </v-data-table>
-      <named-item-modal
-        ref="addProfileModal"
-        header="Create New Profile"
-        label="Profile Name"
-        @created="createNewProfile"
-      />
-      <named-item-confirmation ref="duplicateDlg" />
-      <confirm-dialog ref="deleteDlg" />
-    </v-card>
+    <file-table :files="profiles" name="Profile" @nav="onNav"/>
   </v-container>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
-import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
-import NamedItemConfirmation from "../components/dialogs/NamedItemConfirmation.vue";
-import {
-  createNewProfile,
-  deleteProfile,
-  duplicateProfile,
-  getAllProfiles,
-  renameProfile,
-} from "../utils/fileTools";
+import { mapIpcs } from "../utils/ipcMap";
+import FileTable from "../components/table/FileTable.vue";
+
 export default {
   components: {
-    NamedItemModal,
-    ConfirmDialog,
-    NamedItemConfirmation,
-  },
-  computed: {
-    ...mapGetters("ipc", ["paths"]),
-    profileHeaders() {
-      return [
-        { text: "Profile Name", value: "name" },
-        { text: "", value: "actions", sortable: false, align: "right" },
-      ];
-    },
+    FileTable
   },
   data() {
     return {
@@ -90,59 +19,15 @@ export default {
     };
   },
   methods: {
+    ...mapIpcs("io", ["getProfiles"]),
     async getFiles() {
-      this.profiles = (await getAllProfiles()).map((f) => ({ name: f }));
+      this.profiles = await this.getProfiles();
+      console.log(this.profiles);
     },
-    async createNewProfile(name) {
-      await createNewProfile(name);
-      await this.getFiles();
-      this.$router.push(`/profiles/${name}`);
-    },
-    async tryDelete(name) {
-      if (
-        await this.$refs.deleteDlg.open(
-          "Confirm",
-          `Are you sure you want to delete ${name}?`
-        )
-      ) {
-        await deleteProfile(name);
-
-        const idx = this.profiles.findIndex((af) => af.name == name);
-
-        if (idx != -1) {
-          this.profiles.splice(idx, 1);
-        }
-      }
-    },
-    async tryDuplicate(name) {
-      if (
-        await this.$refs.duplicateDlg.open(
-          `Duplicate ${name}?`,
-          `New Profile Name`,
-          "Duplicate",
-          "Cancel"
-        )
-      ) {
-        const newName = this.$refs.duplicateDlg.name;
-        await duplicateProfile(name, newName);
-
-        this.$router.push(`/profiles/${newName}`);
-      }
-    },
-    async tryRename(name) {
-      if (
-        await this.$refs.duplicateDlg.open(
-          `Rename ${name}?`,
-          `New Profile Name`,
-          "Rename",
-          "Cancel"
-        )
-      ) {
-        await renameProfile(name, this.$refs.duplicateDlg.name);
-
-        await this.getFiles();
-      }
-    },
+    onNav(name) {
+      console.log("Naving", name);
+      this.$router.push(`/profiles/${name}`)
+    }
   },
   async mounted() {
     await this.getFiles();

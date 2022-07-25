@@ -2,7 +2,9 @@ import { app, ipcMain } from "./electronBridge.js"
 import path from 'path'
 import fs from "fs"
 
-const isPortable = process.argv.includes('--portable');
+const nodeEnv = process.env.NODE_ENV || 'development'
+const isDevelopment = nodeEnv === 'development';
+const isPortable = process.argv.includes('--portable') || isDevelopment;
 export const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData'), 'user') : './user'));
 
 export const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));

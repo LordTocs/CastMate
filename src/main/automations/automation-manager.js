@@ -5,7 +5,7 @@ import logger from "../utils/logger.js"
 import { sleep } from "../utils/sleep.js"
 import YAML from "yaml"
 import fs from 'fs'
-import { ipcMain } from "../utils/electronBridge.js"
+import { ipcFunc, ipcMain } from "../utils/electronBridge.js"
 
 export class AutomationManager
 {
@@ -13,42 +13,92 @@ export class AutomationManager
 	{
 		this.automations = {};
 
+		this.createIOFuncs();
+
 		ipcMain.handle('core_getAutomations', () => {
 			return Object.keys(this.automations);
 		})
 	}
 
+	createIOFuncs() {
+		ipcFunc("io", "getAutomations", () => {
+			return Object.keys(this.automations);
+		})
+		ipcFunc("io", "getAutomation", (name) => {
+			return this.automations[name];
+		})
+		ipcFunc("io", "saveAutomation", async (name, config) => {
+			try
+			{
+				await fs.promises.writeFile(path.join(userFolder, 'automations/', `${name}.yaml`), YAML.stringify(config), 'utf-8')
+			}
+			catch (err)
+			{
+				logger.error(`Error saving automation. ${err}`);
+			}
+			this.automations[name] = config;
+		})
+		ipcFunc("io", "createAutomation", async (name, config) => {
+			if (name in this.automations)
+			{
+				return;
+			}
+
+			try
+			{
+				await fs.promises.writeFile(path.join(userFolder, 'automations/', `${name}.yaml`), YAML.stringify(config), 'utf-8')
+			}
+			catch (err)
+			{
+				logger.error(`Error saving automation. ${err}`);
+			}
+			this.automations[name] = config;
+		})
+		ipcFunc("io", "deleteAutomation", async (name) => {
+			if (!(name in this.automations))
+				return;
+
+			delete this.automations[name];
+
+			try
+			{
+				await fs.promises.unlink(path.join(userFolder, 'automations/', `${name}.yaml`));
+			}
+			catch(err)
+			{
+				logger.error(`Error deleting automation. ${err}`);
+			}
+		})
+	}
+
 	async load()
 	{
-		this.automationWatcher = chokidar.watch(path.join(userFolder, 'automations/'));
+		const automationFolder = path.join(userFolder, 'automations/');
+		logger.info(`Automation Folder ${automationFolder}`);
+		const files = await fs.promises.readdir(automationFolder);
+		const automationFiles = files.filter(f => path.extname(f) == '.yaml');
+		logger.info(`Loaded ${automationFiles.length}:${files.length} Automations`)
 
-		this.automationWatcher.on('add', async (filePath) =>
+		const automations = await Promise.all(automationFiles.map(async (f) => 
 		{
-			logger.info(`Automation Added: ${filePath}`);
-			await sleep(50);
+			try
+			{
+				const str = await fs.promises.readFile(path.join(userFolder, 'automations/', f), 'utf-8');
+				return { name: path.parse(f).name, config: YAML.parse(str) };
+			}
+			catch(err)
+			{
+				logger.error(`Failed to load automation ${f} : ${err}`);
+			}
+		}));
 
-			const automationName = path.basename(filePath, '.yaml')
-
-			this.automations[automationName] = YAML.parse(await fs.promises.readFile(filePath, 'utf-8'));
-		});
-		this.automationWatcher.on('change', async (filePath) =>
+		for (let a of automations)
 		{
-			logger.info(`Automation Changed: ${filePath}`);
-
-			const automationName = path.basename(filePath, '.yaml')
-		
-			await sleep(50);
-
-			this.automations[automationName] = YAML.parse(await fs.promises.readFile(filePath, 'utf-8'));
-		});
-		this.automationWatcher.on('unlink', (filePath) =>
-		{
-			logger.info(`Automation Removed: ${filePath}`);
-
-			const automationName = path.basename(filePath, '.yaml')
-
-			delete this.automations[automationName];
-		});
+			if (a)
+			{
+				this.automations[a.name] = a.config;
+			}
+		}
 	}
 
 	get(automationName) { return this.automations[automationName] }

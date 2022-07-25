@@ -2,12 +2,13 @@ import { evalConditional, dependOnAllConditions } from "../utils/conditionals.js
 import { Watcher } from "../utils/reactive.js"
 import { Profile } from "./profiles.js"
 import _ from 'lodash'
-import chokidar from "chokidar"
+import YAML from 'yaml'
 import { sleep } from "../utils/sleep.js"
 import path from 'path'
 import { userFolder } from "../utils/configuration.js"
 import logger from "../utils/logger.js"
-import { ipcMain } from "../utils/electronBridge.js"
+import { ipcFunc, ipcMain } from "../utils/electronBridge.js"
+import fs from "fs";
 
 export class ProfileManager
 {
@@ -26,60 +27,109 @@ export class ProfileManager
 		this.ipcSender = ipcSender;
 
 		ipcMain.handle("core_getActiveProfiles", () => this.activeProfiles.map(p => p.name));
+
+		this.createIOFuncs();
+	}
+
+	createIOFuncs() {
+		ipcFunc("io", "getProfiles", () => {
+			return this.profiles.map(p => p.name); 
+		})
+		ipcFunc("io", "getProfile", (name) => {
+			const profile = this.profiles.find((p) => p.name === name);
+			if (!profile)
+			{
+				console.log("Unable to find", name);
+				return undefined;
+			}
+			return profile.config;
+		})
+		ipcFunc("io", "saveProfile", async (name, config) => {
+			const profile = this.profiles.find(p => p.name == name);
+			if (profile)
+			{
+				await profile.saveConfig(config);
+			}
+		})
+		ipcFunc("io", "createProfile", async (name, config) => {
+			const existingProfile = this.profiles.find(p => p.name == name);
+			if (existingProfile)
+				return;
+			
+			const basePath = "";
+			
+			const newProfile = new Profile(path.join(basePath, `${name}.yaml`), this, (profile) =>
+			{
+				this.handleProfileLoaded(profile);
+			});
+
+			await newProfile.saveConfig(config);
+			await handleProfileLoaded(newProfile);
+		});
+		ipcFunc("io", "deleteProfile", async(name) => {
+			const profileIndex = this.profiles.findIndex(p => p.name == name);
+
+			if (profileIndex < 0)
+				return;
+
+			try
+			{
+				await fs.promises.unlink(this.profiles[profileIndex].filename);
+			}
+			catch(err)
+			{
+				logger.error(`Failed to delete profile ${name}: ${err}`);
+			}
+
+			this.profiles[profileIndex].watcher.unsubscribe();
+			this.profiles.splice(profileIndex, 1);
+
+			this.recombine();
+
+			logger.info(`Profile Deleted: ${name}`);
+		})
 	}
 
 	async load()
 	{
 		//Setup file watching to hot reload any profile yaml files.
-		this.profileWatcher = chokidar.watch(path.join(userFolder, 'profiles/'));
-
 		this.isLoading = true;
-		this.asyncLoadingPromises = [];
 
-		this.profileWatcher.on('add', async (path) =>
+		const files = await fs.promises.readdir(path.join(userFolder, 'profiles/'));
+		const profileFiles = files.filter(f => path.extname(f) == '.yaml');
+
+		await Promise.all(profileFiles.map(async (f) => 
 		{
-			logger.info(`Profile Added: ${path}`);
-			
-			const loadPromise = this.loadProfile(path);
-			if (this.isLoading)
+			try
 			{
-				this.asyncLoadingPromises.push(loadPromise);
+				const filename = path.join(userFolder, 'profiles/', f);
+				
+				let profile = new Profile(filename, this, (profile) =>
+				{
+					this.handleProfileLoaded(profile);
+				});
+
+				//Load the config from file and setup the profile object.
+				const str = await fs.promises.readFile(filename, 'utf-8');
+				const config = YAML.parse(str);
+				profile.reloadConfig(config);
+		
+				//Add it to the profile list
+				this.profiles.push(profile)
+
+				//Tell it to notify any plugins of profile loads, recombine any active profiles, and setup any state dependencies
+				await this.handleProfileLoaded(profile);
+
 			}
-			await loadPromise;
-		});
-		this.profileWatcher.on('change', async (path) =>
-		{
-			logger.info(`Profile Changed: ${path}`);
-			let profile = this.profiles.find((p) => p.filename == path);
+			catch(err)
+			{
+				logger.error(`Failed to load profile ${f} : ${err}`);
+			}
+		}));
 
-			if (!profile) return;
+		this.isLoading = false;
 
-			await sleep(50); //Sleep because js is weird and we can accidentally load old files!
-
-			await profile.handleFileChanged(path);
-		});
-		this.profileWatcher.on('unlink', (path) =>
-		{
-			let i = this.profiles.findIndex((p) => p.filename == path);
-			if (i == -1) return;
-
-			logger.info(`Profile Deleted: ${path}`);
-
-			this.profiles[i].watcher.unsubscribe();
-			this.profiles.splice(i, 1);
-
-			this.recombine();
-		});
-
-		this.profileWatcher.on('ready', async () => {
-			await Promise.all(this.asyncLoadingPromises);
-
-			console.log("All Profiles Loaded.")
-
-			this.isLoading = false;
-			
-			this.recombine();
-		})
+		this.recombine();
 	}
 
 	//Force all profiles to re-calculate their dependencies on reactive state.
@@ -110,18 +160,17 @@ export class ProfileManager
 		}
 		await Promise.all(onProfileLoadPromises);
 
-		
 		//Setup the state watcher used for profile conditions.
 		if (profile.watcher)
 		{
+			// Deactivate the old watcher if it exists.
 			profile.watcher.unsubscribe();
 		}
 		profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
-		
-		this.recombine();
-		
-		
 		dependOnAllConditions(profile.conditions, this.plugins.stateLookup, profile.watcher);
+		
+		// Recombine active profiles 
+		this.recombine();
 	}
 
 	//Load in a new profile.

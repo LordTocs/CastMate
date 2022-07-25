@@ -16,9 +16,11 @@ export class Profile {
 		this.rewards = [];
 		this.onDeactivate = null;
 		this.onActivate = null;
+		this.config = {};
 	}
 
-	async reload() {
+	async load()
+	{
 		logger.info(`Loading Profile: ${this.filename}`);
 
 		let profileConfig;
@@ -30,12 +32,38 @@ export class Profile {
 			throw err;
 		}
 
-		profileConfig = await migrateProfile(profileConfig, this.filename);
-
 		if (!profileConfig) {
 			logger.error(`Profile file ${this.filename} is empty!`)
 			profileConfig = {};
 		}
+
+		profileConfig = await migrateProfile(profileConfig, this.filename);
+
+		await this.reloadConfig(profileConfig);
+	}
+
+	async saveConfig(profileConfig)
+	{
+		logger.info(`Saving Profile: ${this.name}`);
+		
+		try {
+			await fs.promises.writeFile(this.filename, YAML.stringify(profileConfig || {}), 'utf-8');
+		}
+		catch (err) {
+			logger.error(`Unable to load file ${this.filename}`);
+			throw err;
+		}
+
+		await this.reloadConfig(profileConfig);
+		this.onReload(this);
+
+	}
+
+	async reloadConfig(profileConfig)
+	{
+		logger.info(`Reloading Profile: ${this.name}`);
+
+		this.config = profileConfig;
 
 		this.triggers = profileConfig.triggers || {};
 
@@ -49,16 +77,9 @@ export class Profile {
 		}
 
 		this.conditions = profileConfig.conditions || { operator: 'any', operands: [] };
-		this.config = profileConfig;
+		
 		this.onActivate = profileConfig.onActivate;
 		this.onDeactivate = profileConfig.onDeactivate;
-	}
-
-	async handleFileChanged(filename) {
-		if (this.filename == filename) {
-			await this.reload();
-			this.onReload(this);
-		}
 	}
 }
 
