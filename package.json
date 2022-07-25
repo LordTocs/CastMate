@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build && electron-builder",
-    "dev": "vite"
+    "dev": "vite -- --portable"
   },
   "main": "src/main/backgroundLoader.cjs",
   "dependencies": {
@@ -47,6 +47,7 @@
     "@jaames/iro": "^5.5.2",
     "@mdi/font": "^6.5.95",
     "@vitejs/plugin-vue": "^2.3.3",
+    "@volar-plugins/prettyhtml": "^1.0.0",
     "electron-builder": "^23.1.0",
     "electron-devtools-installer": "^3.2.0",
     "electron-rebuild": "^3.2.7",
