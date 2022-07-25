@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="d-flex my-2 rounded" color="grey darken-4">
+  <v-sheet class="d-flex my-2 rounded">
     <div
       class="boolean-handle expression-handle rounded-l"
       :style="{ backgroundColor: handleColor }"
@@ -8,8 +8,7 @@
     </div>
     <value-condition
       class="flex-grow-1"
-      :value="value"
-      @input="(v) => $emit('input', v)"
+      v-model="modelObj"
     />
     <v-btn @click="$emit('delete')" icon>
       <v-icon> mdi-close </v-icon>
@@ -19,17 +18,19 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { mapModel } from "../../utils/modelValue";
 import ValueCondition from "./ValueCondition.vue";
 
 export default {
   components: { ValueCondition },
-  props: { value: {} },
+  props: { modelValue: {} },
   computed: {
     ...mapGetters("ipc", ["plugins"]),
+    ...mapModel(),
     valuePlugin() {
-      if (!this.value || !this.value.state || !this.value.state.plugin)
+      if (!this.modelValue || !this.modelValue.state || !this.modelValue.state.plugin)
         return null;
-      return this.plugins[this.value.state.plugin];
+      return this.plugins[this.modelValue.state.plugin];
     },
     handleColor() {
       if (!this.valuePlugin) return "#2f2f2f";

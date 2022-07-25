@@ -8,7 +8,7 @@
       'my-2': true,
       rounded: true,
     }"
-    v-if="value"
+    v-if="modelValue"
   >
     <div class="d-flex group-header">
       <div class="boolean-handle group-handle" v-if="hasHandle">
@@ -19,16 +19,16 @@
           v-if="isAll || isAny"
           :items="operations"
           item-value="key"
-          item-text="text"
-          :value="value.operator"
-          @input="(v) => setSubValue('operator', v)"
+          item-title="text"
+          :model-value="modelValue.operator"
+          @update:model-value="(v) => setSubValue('operator', v)"
         />
       </div>
       <div class="d-flex flex-column mx-3">
         <v-btn
           small
           :class="{ 'my-1': true, 'light-green': isAny, 'light-blue': isAll, 'darken-4': true }"
-          @click="setOperand(value.operands.length, { operator: 'equal' })"
+          @click="setOperand(modelValue.operands.length, { operator: 'equal' })"
         >
           <v-icon> mdi-plus </v-icon> Add Value
         </v-btn>
@@ -36,7 +36,7 @@
           small
           :class="{ 'my-1': true, 'light-green': isAny, 'light-blue': isAll, 'darken-4': true }"
           @click="
-            setOperand(value.operands.length, { operator: 'any', operands: [] })
+            setOperand(modelValue.operands.length, { operator: 'any', operands: [] })
           "
         >
           <v-icon> mdi-format-list-group </v-icon> Add Group
@@ -46,28 +46,28 @@
         <v-icon> mdi-close </v-icon>
       </v-btn>
     </div>
-    <draggable
-      :list="value.operands"
+    <!--draggable
+      :list="modelValue.operands"
       class="group-content"
       handle=".boolean-handle"
       group="boolean-expressions"
       :component-data="getDraggableData()"
-    >
-      <div v-for="(expr, i) in value.operands" :key="i">
+    -->
+      <div v-for="(expr, i) in modelValue.operands" :key="i">
         <boolean-group
           v-if="expr.operands"
-          :value="expr"
-          @input="(v) => setOperand(i, v)"
+          :modelValue="expr"
+          @update:modelValue="(v) => setOperand(i, v)"
           @delete="(v) => deleteOperand(i)"
         />
         <boolean-expression
           v-else
-          :value="expr"
-          @input="(v) => setOperand(i, v)"
+          :modelValue="expr"
+          @update:modelValue="(v) => setOperand(i, v)"
           @delete="(v) => deleteOperand(i)"
         />
       </div>
-    </draggable>
+    <!--/draggable-->
   </v-sheet>
 </template>
 
@@ -78,7 +78,7 @@ import Draggable from "vuedraggable";
 export default {
   name: "BooleanGroup",
   props: {
-    value: {},
+    modelValue: {},
     hasHandle: { type: Boolean, default: () => true },
   },
   components: {
@@ -100,43 +100,43 @@ export default {
     },
     isAny() {
       return (
-        this.value &&
-        this.value.operator == "any" &&
-        this.value.operands.length > 1
+        this.modelValue &&
+        this.modelValue.operator == "any" &&
+        this.modelValue.operands.length > 1
       );
     },
     isAll() {
       return (
-        this.value &&
-        this.value.operator == "all" &&
-        this.value.operands.length > 1
+        this.modelValue &&
+        this.modelValue.operator == "all" &&
+        this.modelValue.operands.length > 1
       );
     },
   },
   methods: {
     setSubValue(key, value) {
-      const newValue = _cloneDeep(this.value);
+      const newValue = _cloneDeep(this.modelValue);
       newValue[key] = value;
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     setOperand(index, value) {
-      const newValue = _cloneDeep(this.value);
+      const newValue = _cloneDeep(this.modelValue);
       if (!newValue.operands) {
         newValue.operands = [];
       }
       newValue.operands[index] = value;
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     deleteOperand(index) {
-      const newValue = _cloneDeep(this.value);
+      const newValue = _cloneDeep(this.modelValue);
       if (!newValue.operands) return;
       newValue.operands.splice(index, 1);
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     dragChanged(newArray) {
-      const newValue = _cloneDeep(this.value);
+      const newValue = _cloneDeep(this.modelValue);
       newValue.operands = newArray;
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     getDraggableData() {
       return {
