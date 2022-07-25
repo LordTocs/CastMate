@@ -6,3 +6,10 @@ const electron = require("electron");
 export const app = electron.app
 export const ipcMain = electron.ipcMain
 export const BrowserWindow = electron.BrowserWindow
+
+
+
+export function ipcFunc(category, name, func)
+{
+    ipcMain.handle(`${category}_${name}`, async (event, ...args) => { return await func(...args) });
+}

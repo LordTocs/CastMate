@@ -41,10 +41,4 @@ export default defineConfig({
       },
     })
   ],
-  /*resolve: {
-    alias: {
-      "@vue/runtime-core": path.join(dirname, './node_modules/@vue/runtime-core/dist/runtime-core.cjs.js'),
-    },
-    dedupe: ['vuetify', 'vue', "@vue/runtime-core"],
-  }*/
 })
