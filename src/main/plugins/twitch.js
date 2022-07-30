@@ -839,7 +839,6 @@ export default {
 					}
 				}
 				if (config.match == "Anywhere") {
-					console.log("Checking for anywhere match ", context.message.toLowerCase(), " : ", config.command.toLowerCase());
 					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
 					}
