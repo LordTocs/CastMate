@@ -6,7 +6,7 @@
       >.
     </p>
     <v-divider class="my-2" />
-    <v-simple-table>
+    <v-table>
       <thead>
         <td>Variable</td>
         <td>Type</td>
@@ -40,7 +40,7 @@
           </td>
         </tr>
       </tbody>
-    </v-simple-table>
+    </v-table>
   </v-sheet>
 </template>
 

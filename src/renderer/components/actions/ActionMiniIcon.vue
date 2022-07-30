@@ -1,12 +1,11 @@
 <template>
   <div>
-    <v-tooltip :color="actionColor" top>
-      <template v-slot:activator="{ on, attrs }">
+    <v-tooltip :color="actionColor" location="top">
+      <template v-slot:activator="{ props }">
         <v-sheet
           class="mini-icon"
           :color="actionColor"
-          v-bind="attrs"
-          v-on="on"
+          v-bind="props"
         >
           <v-icon small> {{ actionDefinition.icon }} </v-icon>
         </v-sheet>

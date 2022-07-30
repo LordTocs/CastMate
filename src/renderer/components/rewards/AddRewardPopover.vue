@@ -5,8 +5,8 @@
     :nudge-width="200"
     offset-x
   >
-    <template v-slot:activator="{ on, attrs }">
-      <v-btn v-bind="attrs" v-on="on"> Add Reward </v-btn>
+    <template v-slot:activator="{ props }">
+      <v-btn v-bind="props"> Add Reward </v-btn>
     </template>
 
     <v-card>

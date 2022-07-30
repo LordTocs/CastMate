@@ -10,8 +10,8 @@
         :close-on-content-click="false"
         offset-y
       >
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn v-bind="attrs" v-on="on">
+        <template #activator="{ props }">
+          <v-btn v-bind="props">
             Existing Automation
           </v-btn>
         </template>

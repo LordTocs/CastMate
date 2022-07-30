@@ -2,76 +2,52 @@
   <div>
     <v-text-field
       label="Name"
-      :value="value.name"
-      @input="(v) => setSubValue('name', v)"
+      v-model="name"
     />
-
     <v-text-field
       label="Description"
-      :value="value.description"
-      @input="(v) => setSubValue('description', v)"
+      v-model="description"
     />
-
     <number-input
       label="Cost"
-      :value="value.cost"
-      @input="(v) => setSubValue('cost', v)"
+      v-model="cost"
     />
-
     <number-input
       label="Cooldown"
-      :value="value.cooldown"
-      @input="(v) => setSubValue('cooldown', v)"
+      v-model="cooldown"
     />
-
     <v-switch
       label="Requires Message"
-      :input-value="value.inputRequired"
-      @change="(v) => setSubValue('inputRequired', v)"
+      v-model="inputRequired"
     />
-
     <v-switch
       label="Skip Queue"
-      :input-value="value.skipQueue"
-      @change="(v) => setSubValue('skipQueue', v)"
+      v-model="skipQueue"
       hide-details
     />
-
     <number-input
       label="Max Redemptions Per Stream"
-      :value="value.maxRedemptionsPerStream"
-      @input="(v) => setSubValue('maxRedemptionsPerStream', v)"
+      v-model="maxRedemptionsPerStream"
     />
-
     <number-input
       label="Max Redemptions Per User Per Stream"
-      :value="value.maxRedemptionsPerUserPerStream"
-      @input="(v) => setSubValue('maxRedemptionsPerUserPerStream', v)"
+      v-model="maxRedemptionsPerUserPerStream"
     />
   </div>
 </template>
 
 <script>
-import NumberInput from "../data/NumberInput.vue";
+import { mapModelValues } from "../../utils/modelValue";
+import NumberInput from "../data/types/NumberInput.vue";
 
 export default {
   components: { NumberInput },
   props: {
     value: {},
   },
-  methods: {
-    setSubValue(key, value) {
-      let newValue = { ...this.value };
-
-      if (value !== undefined && value !== "") {
-        newValue[key] = value;
-      } else {
-        delete newValue[key];
-      }
-
-      this.$emit("input", newValue);
-    },
-  },
+  computed: {
+    ...mapModelValues(["name", "description", "cooldown", "inputRequired", "skipQueue", "maxRedemptionsPerStream", "maxRedemptionsPerUserPerStream"])
+  }
 };
 </script>
 

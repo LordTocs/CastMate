@@ -9,13 +9,12 @@
       <div class="d-flex flex-row">
         <flex-scroller
           style="width: 375px"
-          color="grey darken-4"
           innerClass="px-2"
         >
           <trigger-selector
-            :value="localTriggerType"
+            :model-value="localTriggerType"
             label=""
-            @input="changeTriggerType"
+            @update:model-value="changeTriggerType"
             class="flex-grow-0"
             style="width: 400px"
           />

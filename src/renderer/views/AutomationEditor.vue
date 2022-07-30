@@ -14,15 +14,14 @@
             <v-icon>mdi-content-save</v-icon>
           </v-btn>
           <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
+            <template v-slot:activator="{ props }">
               <v-btn
                 color="primary"
                 fab
                 dark
                 class="my-1 align-self-center"
                 @click="preview"
-                v-bind="attrs"
-                v-on="on"
+                v-bind="props"
               >
                 <v-icon>mdi-play</v-icon>
               </v-btn>
@@ -35,8 +34,8 @@
           <div class="d-flex">
             <h1 class="flex-grow-1">{{ automationName }}</h1>
             <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
-                <div v-bind="attrs" v-on="on" style="width: min-content">
+              <template v-slot:activator="{ props }">
+                <div v-bind="props" style="width: min-content">
                   <v-switch
                     v-if="automation"
                     v-model="automation.sync"

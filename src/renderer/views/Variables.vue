@@ -58,7 +58,7 @@ import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import { mapActions, mapGetters } from "vuex";
 import { mapIpcs } from "../utils/ipcMap";
 import _cloneDeep from "lodash/cloneDeep";
-import NumberInput from '../components/data/NumberInput.vue';
+import NumberInput from '../components/data/types/NumberInput.vue';
 //import { mapIpcs } from "../utils/ipcMap";
 
 export default {

@@ -22,7 +22,7 @@
       <v-container fluid>
         <v-row>
           <v-col>
-            <!--trigger-list v-if="profile" v-model="profile.triggers" /-->
+            <trigger-list v-if="profile" v-model="profile.triggers" />
           </v-col>
         </v-row>
         <v-row>
@@ -61,8 +61,8 @@
       </v-container>
     </flex-scroller>
 
-    <confirm-dialog ref="deleteConfirm" />
-    <confirm-dialog ref="saveDlg" />
+    <!--confirm-dialog ref="deleteConfirm" />
+    <confirm-dialog ref="saveDlg" /-->
   </div>
 </template>
 
@@ -113,7 +113,6 @@ export default {
   },
   async mounted() {
     this.profile = await this.getProfile(this.profileName);
-    console.log(this.profile);
   },
   watch: {
     profile: {
@@ -125,7 +124,7 @@ export default {
       },
     },
   },
-  async beforeRouteLeave(to, from, next) {
+  /*async beforeRouteLeave(to, from, next) {
     if (!this.dirty) {
       return next();
     }
@@ -140,7 +139,7 @@ export default {
       await this.save();
     }
     return next();
-  },
+  },*/
 };
 </script>
 

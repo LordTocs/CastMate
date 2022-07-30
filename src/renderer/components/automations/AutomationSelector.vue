@@ -1,8 +1,7 @@
 <template>
   <div class="d-flex flex-row">
     <v-combobox
-      :value="value"
-      @change="(v) => $emit('input', v)"
+      v-model="modelObj"
       :loading="isLoading"
       :search-input.sync="search"
       :items="automations"
@@ -60,11 +59,12 @@ import { mapGetters } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
 import AutomationQuickEditDialog from "./AutomationQuickEditDialog.vue";
 import { trackAnalytic } from "../../utils/analytics.js";
+import { mapModel } from "../../utils/modelValue";
 
 export default {
   name: "automation-selector",
   props: {
-    value: {},
+    modelValue: {},
     label: { type: String, default: () => "Automation" },
     showButtons: { type: Boolean, default: () => true },
   },
@@ -74,6 +74,7 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
+    ...mapModel()
   },
   data() {
     return {

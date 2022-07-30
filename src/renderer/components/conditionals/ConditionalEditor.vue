@@ -2,9 +2,8 @@
   <v-card :color="color">
     <v-card-text>
       <empty-conditional
-        :value="value"
-        @input="(v) => $emit('input', v)"
         v-if="isEmpty"
+        v-model="modelObj"
       />
       <div class="array-div" v-else-if="isAnd">
         <div class="array-header">And</div>
@@ -12,8 +11,8 @@
           <v-row v-for="(subConditional, i) in value.and" :key="i">
             <v-col>
               <conditional-editor
-                :value="subConditional"
-                @input="(v) => updateSubCondition(i, v)"
+                :model-value="subConditional"
+                @update:model-value="(v) => updateSubCondition(i, v)"
                 @delete="deleteSubCondition(i)"
               />
             </v-col>
@@ -21,8 +20,8 @@
           <v-row>
             <v-col>
               <empty-conditional
-                :value="null"
-                @input="(v) => addSubCondition(v)"
+                :model-value="null"
+                @update:model-value="(v) => addSubCondition(v)"
               />
             </v-col>
           </v-row>
@@ -35,8 +34,8 @@
           <v-row v-for="(subConditional, i) in value.or" :key="i">
             <v-col>
               <conditional-editor
-                :value="subConditional"
-                @input="(v) => updateSubCondition(i, v)"
+                :model-value="subConditional"
+                @update:model-value="(v) => updateSubCondition(i, v)"
                 @delete="deleteSubCondition(i)"
               />
             </v-col>
@@ -44,8 +43,8 @@
           <v-row>
             <v-col>
               <empty-conditional
-                :value="null"
-                @input="(v) => addSubCondition(v)"
+                :model-value="null"
+                @update:model-value="(v) => addSubCondition(v)"
               />
             </v-col>
           </v-row>
@@ -56,8 +55,8 @@
         <div class="array-header">Not</div>
         <div class="array-container">
           <conditional-editor
-            :value="value.not"
-            @input="(v) => changeStateValue('not', v)"
+            :model-value="value.not"
+            @update:model-value="(v) => changeStateValue('not', v)"
             @delete="(v) => changeStateValue('not', null)"
           />
         </div>
@@ -68,16 +67,16 @@
       <v-row v-else>
         <v-col>
           <state-selector
-            :value="stateName"
             label="Variable Name"
-            @input="(v) => changeStateName(stateName, v)"
+            :model-value="stateName"            
+            @update:model-value="(v) => changeStateName(stateName, v)"
             @delete="deleteSubCondition(i)"
           />
         </v-col>
         <v-col>
           <number-input
-            :value="stateValue"
-            @input="(v) => changeStateValue(stateName, v)"
+            :model-value="stateValue"
+            @update:model-value="(v) => changeStateValue(stateName, v)"
             label="Target Value"
             allowTemplate
           />
@@ -94,12 +93,14 @@
 import StateSelector from "../state/StateSelector.vue";
 import EmptyConditional from "./EmptyConditional.vue";
 import { changeObjectKey } from "../../utils/objects.js";
-import NumberInput from "../data/NumberInput.vue";
+import NumberInput from "../data/types/NumberInput.vue";
+import { mapModel } from "../../utils/modelValue";
 export default {
   name: "ConditionalEditor",
   props: {
-    value: {},
+    modelValue: {},
   },
+  emits: ["update:modelValue"],
   components: {
     StateSelector,
     EmptyConditional,
@@ -118,6 +119,7 @@ export default {
     isEmpty() {
       return !this.value;
     },
+    ...mapModel(),
     stateName() {
       let keys = Object.keys(this.value);
       if (keys.length > 0) return keys[0];

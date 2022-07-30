@@ -9,7 +9,7 @@
     <v-card>
       <v-toolbar dense flat>
         <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
+          <template v-slot:activator="{ props }">
             <v-btn
               color="primary"
               dark
@@ -17,8 +17,7 @@
               small
               class="mr-4"
               @click="preview"
-              v-bind="attrs"
-              v-on="on"
+              v-bind="props"
             >
               <v-icon>mdi-play</v-icon>
             </v-btn>

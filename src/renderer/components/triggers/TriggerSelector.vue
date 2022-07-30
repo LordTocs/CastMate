@@ -1,46 +1,50 @@
 <template>
-  <v-combobox
+  <v-select
     :items="triggerList"
-    :value="value"
+    v-model="modelObj"
     :filter="customFilter"
     :label="label"
-    item-text="triggerKey"
-    @change="(v) => $emit('input', v)"
+    item-title="triggerKey"
+    :item-value="getTriggerID"
     :value-comparator="comparator"
     hide-details
+    :return-object="true"
   >
-    <template v-slot:item="{ item }">
-      <v-list-item-title v-if="item">
-        <v-chip class="ma-2" :color="plugins[item.pluginKey].color" small>
-          <v-icon left v-text="plugins[item.pluginKey].icon" />
-          {{ plugins[item.pluginKey].uiName }}
+    <template #item="{ item, props }">
+      <div v-bind="props" class="px-1 py-1">
+        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" small>
+          <v-icon start :icon="plugins[item.raw.pluginKey].icon" />
+          {{ plugins[item.raw.pluginKey].uiName }}
         </v-chip>
-        {{ plugins[item.pluginKey].triggers[item.triggerKey].name }}
-      </v-list-item-title>
+        {{ plugins[item.raw.pluginKey].triggers[item.raw.triggerKey].name }}
+      </div>
     </template>
-    <template v-slot:selection="{ item }">
-      <span v-if="item">
-        <v-chip class="ma-2" :color="plugins[item.pluginKey].color" small>
-          <v-icon left v-text="plugins[item.pluginKey].icon" />
-          {{ plugins[item.pluginKey].uiName }}
+    <template #selection="{ item }">
+      <div class="px-1 py-1">
+        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" small>
+          <v-icon start :icon="plugins[item.raw.pluginKey].icon" />
+          {{ plugins[item.raw.pluginKey].uiName }}
         </v-chip>
-        {{ plugins[item.pluginKey].triggers[item.triggerKey].name }}
-      </span>
+        {{ plugins[item.raw.pluginKey].triggers[item.raw.triggerKey].name }}
+      </div>
     </template>
-  </v-combobox>
+  </v-select>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
 import _flatten from "lodash/flatten";
 import _isEqual from "lodash/isEqual";
+import { mapModel } from "../../utils/modelValue";
 export default {
   props: {
-    value: {},
+    modelValue: {},
     label: { type: String, default: () => "Trigger" },
   },
+  emits: ["update:modelValue"],
   computed: {
     ...mapGetters("ipc", ["plugins"]),
+    ...mapModel(),
     triggerList() {
       return _flatten(
         Object.keys(this.plugins).map((pk) =>
@@ -63,6 +67,9 @@ export default {
     comparator(a, b) {
       return _isEqual(a,b);
     },
+    getTriggerID(triggerItem) {
+      return `${triggerItem.pluginKey}.${triggerItem.triggerKey}`
+    }
   },
 };
 </script>

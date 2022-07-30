@@ -10,7 +10,7 @@
       />
     </v-card-title>
     <v-card-text v-if="triggerPlugins">
-      <v-simple-table
+      <v-table
         style="white-space: nowrap; width: 100%"
         v-if="hasTriggers"
       >
@@ -18,7 +18,7 @@
           <template v-for="pluginKey in triggerPlugins" :key="pluginKey">
             <tr :style="{ backgroundColor: plugins[pluginKey].color }">
               <td colspan="5" class="text-h4">
-                <v-icon v-text="plugins[pluginKey].icon" x-large />
+                <v-icon :icon="plugins[pluginKey].icon" x-large />
                 {{ plugins[pluginKey].uiName }} Triggers
               </td>
             </tr>
@@ -55,7 +55,7 @@
             </template>
           </template>
         </tbody>
-      </v-simple-table>
+      </v-table>
       <v-alert dense outlined border="left" type="warning" class="mx-8" v-else>
         <p class="text-center text-h5 my-4">
           This profile doesn't have any triggers.
@@ -89,7 +89,7 @@ import { filterSchema } from "../../utils/objects";
 export default {
   components: { DataView, AutomationPreview, TriggerListRow, TriggerEditModal },
   props: {
-    value: {},
+    modelValue: {},
   },
   data() {
     return {
@@ -101,13 +101,13 @@ export default {
     visibleTriggers() {
       const result = {};
 
-      for (let pluginKey in this.value) {
+      for (let pluginKey in this.modelValue) {
         if (!this.plugins[pluginKey]) {
           console.log("UNKNOWN PLUGIN", pluginKey);
           continue;
         }
-        for (let triggerKey in this.value[pluginKey]) {
-          for (let triggerMapping of this.value[pluginKey][triggerKey]) {
+        for (let triggerKey in this.modelValue[pluginKey]) {
+          for (let triggerMapping of this.modelValue[pluginKey][triggerKey]) {
             if (!this.plugins[pluginKey].triggers[triggerKey]) {
               console.log("UNKNOWN PLUGIN TRIGGER", pluginKey, triggerKey);
               continue;
@@ -138,12 +138,12 @@ export default {
       return Object.keys(this.visibleTriggers);
     },
     hasTriggers() {
-      return Object.keys(this.value).length > 0;
+      return this.modelValue && Object.keys(this.modelValue).length > 0;
     },
   },
   methods: {
     getMappingIndex(pluginKey, triggerKey, id) {
-      return this.value[pluginKey][triggerKey].findIndex((m) => m.id == id);
+      return this.modelValue[pluginKey][triggerKey].findIndex((m) => m.id == id);
     },
     addMappingInternal(newValue, triggerType, mapping) {
       if (!(triggerType.pluginKey in newValue)) {
@@ -156,12 +156,12 @@ export default {
       newValue[triggerType.pluginKey][triggerType.triggerKey].push(mapping);
     },
     addMapping(triggerType, mapping) {
-      const newValue = _cloneDeep(this.value);
+      const newValue = _cloneDeep(this.modelValue);
       this.addMappingInternal(newValue, triggerType, mapping);
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     updateMapping(triggerType, mapping, pluginKey, triggerKey, id) {
-      const newValue = _cloneDeep(this.value);
+      const newValue = _cloneDeep(this.modelValue);
 
       const index = this.getMappingIndex(pluginKey, triggerKey, id);
 
@@ -178,7 +178,7 @@ export default {
         //Simple update
         newValue[pluginKey][triggerKey][index] = mapping;
       }
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     deleteMappingInternal(newValue, pluginKey, triggerKey, index) {
       newValue[pluginKey][triggerKey].splice(index, 1);
@@ -193,9 +193,9 @@ export default {
     deleteMapping(pluginKey, triggerKey, id) {
       const index = this.getMappingIndex(pluginKey, triggerKey, id);
 
-      const newValue = _cloneDeep(this.value);
+      const newValue = _cloneDeep(this.modelValue);
       this.deleteMappingInternal(newValue, pluginKey, triggerKey, index);
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
   },
 };

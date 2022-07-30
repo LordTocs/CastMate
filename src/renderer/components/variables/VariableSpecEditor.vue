@@ -1,13 +1,11 @@
 <template>
   <div>
     <v-text-field
-      :value="variableName"
-      @change="(v) => $emit('name', v)"
       label="Variable Name"
+      v-model="name"
     />
     <v-select
-      :value="value.type"
-      @change="(v) => updateSubValue('type', v)"
+      v-model="type"
       label="Variable Type"
       :items="[
         { name: 'Number', value: 'Number' },
@@ -17,15 +15,13 @@
       item-value="value"
     />
     <v-text-field
-      :value="value.default"
-      @change="(v) => updateSubValue('default', v)"
-      label="Default Value"
       v-if="value.type == 'String'"
+      v-model="defaultValue"
+      label="Default Value"
     />
     <number-input
       v-else
-      :value="value.default"
-      @input="(v) => updateSubValue('default', v)"
+      v-model="defaultValue"
       label="Default Value"
     />
   </div>
@@ -33,20 +29,27 @@
 
 <script>
 import _cloneDeep from "lodash/cloneDeep";
-import NumberInput from "../data/NumberInput.vue";
+import { mapModelValues } from "../../utils/modelValue";
+import NumberInput from "../data/types/NumberInput.vue";
 export default {
   components: { NumberInput },
   props: {
     variableName: { type: String },
     value: {},
   },
-  methods: {
-    updateSubValue(key, value) {
-      const newValue = _cloneDeep(this.value);
-      newValue[key] = value;
-      this.$emit("input", newValue);
-    },
-  },
+  computed: {
+    ...mapModelValues(["name", "type"]),
+    defaultValue: {
+      get() {
+        return this.modelValue.default;
+      },
+      set(newValue) {
+        const result = _cloneDeep(this.modelValue);
+        result.default = newValue;
+        this.$emit('update:modelValue', result);
+      }
+    }
+  }
 };
 </script>
 

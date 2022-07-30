@@ -22,16 +22,17 @@
       }"
     />
     <draggable
-      :value="value"
-      @input="input"
+      :model-value="value"
+      @update:model-value="input"
+      item-key="id"
       handle=".handle"
       :group="{ name: 'actions' }"
-      style="flex: 1"
+      style=""
       draggable=".is-draggable"
       class="sequence-container"
-      :component-data="getDraggableData()"
+      @dragstart="onDragStart"
     >
-      <div slot="header">
+      <template #header>
         <v-card
           elevation="2"
           outlined
@@ -44,19 +45,21 @@
             </p>
           </v-card-text>
         </v-card>
-      </div>
-      <sequence-item
-        v-for="(action, i) in value"
-        :key="action.id"
-        ref="sequenceItems"
-        class="is-draggable"
-        :selected="selected.includes(i)"
-        :value="action"
-        @input="(v) => updateAction(i, v)"
-        @delete="deleteAction(i)"
-      />
+      </template>
+
+      <template #item="{element, index}">
+        <sequence-item
+          ref="sequenceItems"
+          class="is-draggable"
+          :selected="selected.includes(index)"
+          :model-value="element"
+          @update:model-value="(v) => updateAction(index, v)"
+          @delete="deleteAction(index)"
+        />
+      </template>
+
       <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
-      <template v-slot:footer>
+      <template #footer>
         <div style="font-size: 0; height: 120px">...</div>
       </template>
     </draggable>
@@ -69,11 +72,13 @@ import Draggable from "vuedraggable";
 import { ipcRenderer } from "electron";
 import _cloneDeep from "lodash/cloneDeep";
 import { nanoid } from "nanoid/non-secure";
+import { mapModel } from "../../utils/modelValue";
 export default {
   components: { SequenceItem, Draggable },
   props: {
-    value: {},
+    modelValue: {},
   },
+  emits: ['update:modelValue'],
   data() {
     return {
       selected: [],
@@ -103,6 +108,7 @@ export default {
     dragHeight() {
       return Math.abs(this.dragBox.endY - this.dragBox.startY);
     },
+    ...mapModel()
   },
   methods: {
     getDraggableData() {
@@ -115,6 +121,9 @@ export default {
           "align-top": true,*/
         },
       };
+    },
+    getDraggableId(item) {
+      return `${item.plugin}.${item.action}`
     },
     input(arr) {
       if (arr instanceof Array) {
@@ -331,6 +340,7 @@ export default {
 .sequence-container {
   padding: 16px;
   padding-bottom: 0;
+  flex: 1;
 }
 
 .drag-area {

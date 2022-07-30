@@ -1,48 +1,31 @@
 <template>
   <v-list color="grey darken-4" class="action-list" dense>
     <v-list-group v-for="plugin in actionPlugins" :key="plugin.name" no-action>
-      <template v-slot:activator>
-        <v-list-item-content>
-          <v-list-item-title>
-            <v-icon v-if="plugin.icon"> {{ plugin.icon }} </v-icon>
-            {{ plugin.uiName }}
-          </v-list-item-title>
-        </v-list-item-content>
+      <template #activator="{ props }">
+        <v-list-item v-bind="props" :prepend-icon="plugin.icon" :title="plugin.uiName" />
       </template>
 
       <draggable
-        :list="pluginActionLists[plugin.name]"
+        :model-value="pluginActionLists[plugin.name]"
+        :item-key="getDraggableId"
         :group="{ name: 'actions', pull: 'clone', put: false }"
         :sort="false"
         :component-data="{ attrs: { 'no-action': true } }"
         draggable=".is-draggable"
         :clone="cloneAction"
       >
-        <v-list-item
-          v-for="actionKey in Object.keys(plugin.actions)"
-          :key="actionKey"
-          style="cursor: grab"
-          class="is-draggable"
-        >
-          <v-list-item-avatar :color="plugin.actions[actionKey].color">
-            <v-icon>
-              {{
-                plugin.actions[actionKey].icon
-                  ? plugin.actions[actionKey].icon
-                  : "mdi-file-document-outline"
-              }}</v-icon
-            >
-          </v-list-item-avatar>
-
-          <v-list-item-content>
-            <v-list-item-title style="user-select: none">{{
-              plugin.actions[actionKey].name
-            }}</v-list-item-title>
-            <v-list-item-subtitle style="user-select: none">
-              {{ plugin.actions[actionKey].description }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
+        <template #item="{element, index}">
+          <v-list-item
+            style="cursor: grab; user-select: none;"
+            class="is-draggable"
+            :prepend-icon="plugin.actions[element.action].icon
+                    ? plugin.actions[element.action].icon
+                    : 'mdi-file-document-outline'"
+            :title="plugin.actions[element.action].name"
+            :subtitle="plugin.actions[element.action].description"
+            :color="plugin.actions[element.action].color"
+          />
+        </template>
       </draggable>
     </v-list-group>
   </v-list>
@@ -81,6 +64,9 @@ export default {
     },
   },
   methods: {
+    getDraggableId(item) {
+      return `${item.plugin}.${item.action}`
+    },
     cloneAction(original) {
       const copy = _cloneDeep(original);
       copy.id = nanoid();

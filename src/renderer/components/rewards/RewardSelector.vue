@@ -10,8 +10,8 @@
       clearable
     />
     <v-menu bottom right>
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn dark icon v-bind="attrs" v-on="on">
+      <template v-slot:activator="{ props }">
+        <v-btn dark icon v-bind="props">
           <v-icon>mdi-dots-vertical</v-icon>
         </v-btn>
       </template>
