@@ -87,7 +87,7 @@
 <script>
 import ColorTempSelector from "../colors/ColorTempSelector.vue";
 import HueSelector from "../colors/HueSelector.vue";
-import NumberInput from "./NumberInput.vue";
+import NumberInput from "./types/NumberInput.vue";
 
 const indexToMode = {
   0: "color",

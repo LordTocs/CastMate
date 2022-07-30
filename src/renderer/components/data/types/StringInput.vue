@@ -1,40 +1,42 @@
 <template>
   <v-text-field
     v-if="!schema.enum"
-    :value="value"
-    @input="(v) => $emit('input', v)"
+    v-model="modelObj"
     @copy.stop=""
     @paste.stop=""
-    :label="schema.name || dataName"
+    :label="schema.name || label"
     :clearable="!schema.required"
     :type="!secret ? 'text' : 'password'"
   />
   <enum-input
-    :value="value"
     v-else-if="schema.enum || schema.enumQuery"
     :enum="schema.enum || schema.enumQuery"
     :queryMode="!!schema.enumQuery"
-    @input="(v) => $emit('input', v)"
-    @change="(v) => $emit('change', v)"
-    :label="schema.name || dataName"
+    v-model="modelObj"
+    :label="schema.name || label"
     :clearable="!schema.required"
     :context="context"
   />
 </template>
 
 <script>
+import { mapModel } from "../../../utils/modelValue";
 import EnumInput from "./EnumInput.vue";
 export default {
   components: {
     EnumInput,
   },
   props: {
-    value: {},
+    modelValue: {},
     schema: {},
-    dataName: { type: String },
+    label: { type: String },
     context: {},
     secret: { type: Boolean, default: () => false },
   },
+  emits: ['update:modelValue'],
+  computed: {
+    ...mapModel()
+  }
 };
 </script>
 

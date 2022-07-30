@@ -1,7 +1,7 @@
 <template>
   <div style="d-flex flex-row">
-    <time-input :value="intervalStr" label="Interval" @input="changeInterval" />
-    <time-input :value="offsetStr" label="Delay" @input="changeOffset" />
+    <time-input v-model.lazy="intervalStr" label="Interval" />
+    <time-input v-model.lazy="offsetStr" label="Delay" />
   </div>
 </template>
 
@@ -9,29 +9,41 @@
 import TimeInput from "./TimeInput.vue";
 export default {
   props: {
-    value: {},
+    modelValue: {},
   },
   components: { TimeInput },
   computed: {
     interval() {
-      if (!this.value) return null;
+      if (!this.modelValue) return null;
 
-      const [interval, offset] = this.value.split("+");
+      const [interval, offset] = this.modelValue.split("+");
       return Number(interval);
     },
     offset() {
-      if (!this.value) return null;
+      if (!this.modelValue) return null;
 
-      const [interval, offset] = this.value.split("+");
+      const [interval, offset] = this.modelValue.split("+");
       return Number(offset);
     },
-    intervalStr() {
-      if (this.interval == null) return null;
-      return this.formatTimeStr(this.interval);
+    intervalStr: {
+      get() {
+        if (this.interval == null) return null;
+        return this.formatTimeStr(this.interval);
+      },
+      set(newValue) {
+        const seconds = this.parseTimeStr(newValue);
+        this.$emit("update:modelValue", seconds + "+" + (this.offset != null ? this.offset : "0"));
+      }
     },
-    offsetStr() {
-      if (this.offset == null) return null;
-      return this.formatTimeStr(this.offset);
+    offsetStr: {
+      get() {
+        if (this.offset == null) return null;
+        return this.formatTimeStr(this.offset);
+      },
+      set(newValue) {
+        const seconds = this.parseTimeStr(newValue);
+        this.$emit("update:modelValue", (this.interval != null ? this.interval : "0") + "+" + seconds);
+      }
     },
   },
   methods: {
@@ -80,17 +92,6 @@ export default {
         );
       }
     },
-    changeInterval(newInterval) {
-      const seconds = this.parseTimeStr(newInterval);
-      this.$emit("input", seconds + "+" + (this.offset != null ? this.offset : "0"));
-    },
-    changeOffset(newOffset) {
-      const seconds = this.parseTimeStr(newOffset);
-      this.$emit("input", (this.interval != null ? this.interval : "0") + "+" + seconds);
-    },
-  },
-  mounted() {
-    console.log("Parse Test: ", this.parseTimeStr("30:00"));
   },
 };
 </script>

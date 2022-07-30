@@ -10,13 +10,8 @@
     prepend-icon="mdi-magnify"
     label="Category"
   >
-    <template v-slot:item="data">
-      <v-list-item-avatar>
-        <img :src="data.item.boxArtUrl" />
-      </v-list-item-avatar>
-      <v-list-item-content>
-        <v-list-item-title> {{ data.item.name }} </v-list-item-title>
-      </v-list-item-content>
+    <template #item="{ item, props }">
+      <v-list-item v-bind="props" :append-avatar="item.raw.boxArtUrl" :title="item.raw.name" />
     </template>
   </v-autocomplete>
 </template>

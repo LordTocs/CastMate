@@ -1,8 +1,6 @@
 <template>
   <v-autocomplete
-    :value="value"
-    @input="(v) => $emit('input', v)"
-    @change="(v) => $emit('change', v)"
+    v-model="modelObj"
     :items="files"
     :loading="loading"
     :search-input.sync="search"
@@ -22,6 +20,7 @@ import fs from "fs";
 import path from "path";
 import { mapGetters } from "vuex";
 import recursiveReaddir from "recursive-readdir";
+import { mapModel } from "../../utils/modelValue";
 
 export default {
   props: {
@@ -31,10 +30,12 @@ export default {
     recursive: { type: Boolean, default: () => false },
     basePath: { type: String, default: () => null },
     clearable: { type: Boolean, default: () => false },
-    value: {},
+    modelValue: {},
   },
+  emits: ["update:modelValue"],
   computed: {
     ...mapGetters("ipc", ["paths"]),
+    ...mapModel(),
     searchPath() {
       return path.join(this.paths.userFolder, this.path);
     },

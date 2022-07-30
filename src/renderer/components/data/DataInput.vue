@@ -1,144 +1,138 @@
 <template>
-  <object-editor
-    :schema="schema.properties"
-    :value="value"
-    @input="handleInput"
+  <object-input
     v-if="schema.type == 'Object' && schema.properties"
+    v-model="modelObj"
+    :schema="schema.properties"
     :context="context"
     :secret="secret"
   />
   <number-input
-    :value="value"
-    @input="handleInput"
     v-else-if="schema.type == 'Number' && !schema.slider"
+    v-model="modelObj"
     :allowTemplate="!!schema.template"
     :label="schema.name || label"
     :clearable="!schema.required"
     :secret="secret"
   />
-
   <v-slider
     v-else-if="schema.type == 'Number' && schema.slider"
-    :label="schema.name || label"
-    :value="value"
+    v-model="modelObj"
+    :label="labelString"
     :min="schema.slider.min"
     :max="schema.slider.max"
     :step="schema.slider.step"
     color="white"
-    @input="handleInput"
     :append-icon="!schema.required ? 'mdi-close' : undefined"
-    @click:append="$emit('input', undefined)"
+    @click:append="clear"
   />
-  <string-data-input
-    :value="value"
-    @input="handleInput"
+  <string-input
     v-else-if="schema.type == 'String'"
-    :dataName="schema.name || label"
+    v-model="modelObj"
+    :label="schema.name || label"
     :schema="schema"
     :context="context"
     :secret="secret"
   />
-  <div v-else-if="schema.type == 'Boolean'" class="d-flex flex-row">
-    <div
-      v-if="schema.leftLabel"
-      style="margin-top: 20px; margin-bottom: 8px; height: 24px"
-      class="d-flex align-center mr-2"
-    >
-      <label class="v-label">{{ schema.leftLabel }} </label>
-    </div>
-    <v-switch :input-value="value" @change="handleInput">
-      <template v-slot:label>
-        {{ schema.name || label }}
-        <v-btn
-          v-if="!schema.required"
-          icon
-          @click.stop="(v) => $emit('input', undefined)"
-        >
-          <v-icon> mdi-close </v-icon>
-        </v-btn>
-      </template>
-    </v-switch>
-  </div>
+  <boolean-input 
+    v-else-if="schema.type == 'Boolean'"
+    v-model="modelObj"
+    :schema="schema"
+    :label="labelString"
+   />
   <file-autocomplete
     v-else-if="schema.type == 'FilePath'"
-    :value="value"
-    @change="handleInput"
+    v-model="modelObj"
     :recursive="!!schema.recursive"
     :path="schema.path"
     :basePath="schema.basePath"
     :clearable="!schema.required"
   />
   <color-picker
-    :value="value"
-    @input="handleInput"
     v-else-if="schema.type == 'LightColor'"
+    v-model="modelObj"
     :schema="schema"
     :clearable="!schema.required"
   />
   <automation-selector
-    :value="value"
-    @input="handleInput"
     v-else-if="schema.type == 'Automation'"
+    v-model="modelObj"
+    :label="labelString"
   />
   <reward-selector
     v-else-if="schema.type == 'ChannelPointReward'"
-    :value="value"
-    @input="handleInput"
-    :label="schema.name || label"
+    v-model="modelObj"
+    :label="labelString"
   />
   <time-input
     v-else-if="schema.type == 'Duration'"
-    :value="value"
-    @input="handleInput"
-    :label="schema.name || label"
+    v-model="modelObj"
+    :label="labelString"
   />
   <range-input
     v-else-if="schema.type == 'Range'"
-    :value="value"
-    @input="handleInput"
-    :label="schema.name || label"
+    v-model="modelObj"
+    :label="labelString"
   />
 </template>
 
 <script>
-import NumberInput from "./NumberInput.vue";
+
 import ColorPicker from "./ColorPicker.vue";
 import FileAutocomplete from "./FileAutocomplete.vue";
-import StringDataInput from "./StringDataInput.vue";
 import RewardSelector from "../rewards/RewardSelector.vue";
-import _cloneDeep from "lodash/cloneDeep";
-import RangeInput from "./RangeInput.vue";
-import TimeInput from "./TimeInput.vue";
+
+import RangeInput from "./types/RangeInput.vue";
+import TimeInput from "./types/TimeInput.vue";
+import StringInput from "./types/StringInput.vue";
+import NumberInput from "./types/NumberInput.vue";
+import BooleanInput from "./types/BooleanInput.vue";
+
+import { defineAsyncComponent } from 'vue'
 
 export default {
   name: "data-input",
   components: {
-    ObjectEditor: () => import("./ObjectEditor.vue"),
+    ObjectInput: defineAsyncComponent(() => import("./types/ObjectInput.vue")),
     NumberInput,
     FileAutocomplete,
-    StringDataInput,
+    StringInput,
     ColorPicker,
-    AutomationSelector: () => import("../automations/AutomationSelector.vue"),
+    AutomationSelector: defineAsyncComponent(() => import("../automations/AutomationSelector.vue")),
     RewardSelector,
     RangeInput,
     TimeInput,
-    //FreeObjectEditor: () => import("./FreeObjectEditor.vue"),
-  },
+    BooleanInput
+},
   props: {
     schema: {},
-    value: {},
+    modelValue: {},
     label: {},
     context: {},
     secret: { type: Boolean, default: () => false },
   },
-  methods: {
-    handleInput(v) {
-      if (v === null) {
-        return this.$emit("input", undefined); //Need this to handle clearable returning null instead of undefined.
-      }
-      this.$emit("input", v);
+  emits: ["update:modelValue"],
+  computed: {
+    labelString() {
+      return this.schema.name || this.label;
     },
+    modelObj: {
+      get() {
+        return this.modelValue;
+      },
+      set(newValue) {
+        if (newValue === null) {
+          //Need this to handle clearable returning null instead of undefined.
+          this.clear()
+        }
+        this.$emit("update:modelValue", newValue);
+      }
+    }
   },
+  methods: {
+    clear() {
+      this.$emit("update:modelValue", undefined);
+    }
+  }
 };
 </script>
 

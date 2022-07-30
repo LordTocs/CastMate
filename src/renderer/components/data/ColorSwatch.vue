@@ -1,7 +1,7 @@
 <template>
   <div class="swatch" :style="{ backgroundColor: cssColor }">
-      <v-icon v-if="value.mode == 'template'"> mdi-code-braces </v-icon>
-      <v-icon v-else> mdi-lightbulb-on-outline </v-icon>
+      <v-icon v-if="value.mode == 'template'" icon="mdi-code-braces" />
+      <v-icon v-else icon="mdi-lightbulb-on-outline" />
   </div>
 </template>
 

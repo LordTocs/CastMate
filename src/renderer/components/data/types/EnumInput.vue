@@ -1,32 +1,29 @@
 <template>
   <v-combobox
     v-if="isAutocomplete"
-    :value="value"
+    v-model.lazy="modelObj"
     :items="enumItems"
     :loading="loading"
     :label="label"
     :search-input.sync="search"
-    @input="(v) => $emit('input', v)"
-    @change="(v) => $emit('change', v)"
-    @focus="fetchItems"
     :clearable="clearable"
+    @focus="fetchItems"
   />
   <v-select
     v-else
     :items="this.enum"
     :label="label"
     dense
-    :value="value"
-    @input="(v) => $emit('input', v)"
-    @change="(v) => $emit('change', v)"
+    v-model.lazy="modelObj"
   />
 </template>
 
 <script>
 import { ipcRenderer } from "electron";
+import { mapModel } from "../../../utils/modelValue";
 export default {
   props: {
-    value: {},
+    modelValue: {},
     enum: {},
     queryMode: { type: Boolean, default: () => false },
     label: { type: String },
@@ -37,6 +34,7 @@ export default {
     isAutocomplete() {
       return typeof this.enum == "string" || this.enum instanceof String;
     },
+    ...mapModel()
   },
   data() {
     return {

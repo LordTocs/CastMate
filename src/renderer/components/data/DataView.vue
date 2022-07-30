@@ -62,7 +62,7 @@ export default {
   computed: {
     previewProperties() {
       return Object.keys(this.value).filter(
-        (k) => this.schema.properties[k].preview != false
+        (k) => this.schema.properties[k]?.preview != false
       );
     },
   },
