@@ -7,7 +7,7 @@
     cache-items
     :label="label"
     :clearable="clearable"
-    item-text="basename"
+    item-title="basename"
     item-value="path"
     @copy.stop=""
     @paste.stop=""
