@@ -358,7 +358,7 @@ export default {
 		source: {
 			name: "Source Visibility",
 			description: "Change a OBS source's visibilty",
-			icon: "mdi-swap-horizontal-bold",
+			icon: "mdi-eye",
 			color: "#607A7F",
 			data: {
 				type: Object,
