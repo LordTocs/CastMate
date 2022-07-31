@@ -1,8 +1,8 @@
 <template>
     <v-card class="linktable-card">
-        <div class="d-flex flex-row align-center">
-            <v-btn @click="$emit('new')" class="mx-3"> Add {{ name}} </v-btn>
-            <v-text-field v-model="search" append-icon="mdi-magnify" label="Filter" single-line hide-details />
+        <div class="d-flex flex-row align-center my-2 mx-2">
+            <v-btn @click="$emit('new')" class="mr-3"> Add {{ name}} </v-btn>
+            <v-text-field v-model="search" append-inner-icon="mdi-magnify" label="Filter" single-line hide-details />
         </div>
 
         <v-table>
