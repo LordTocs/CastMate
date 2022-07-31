@@ -21,6 +21,7 @@
 <script>
 import { ipcRenderer } from "electron";
 import { mapModel } from "../../../utils/modelValue";
+import _cloneDeep from "lodash/cloneDeep"
 export default {
   props: {
     modelValue: {},
@@ -54,10 +55,17 @@ export default {
       if (this.isAutocomplete && !this.queryMode) {
         this.loading = true;
 
-        const items = await ipcRenderer.invoke(this.enum, this.context);
+        try
+        {
+          const items = await ipcRenderer.invoke(this.enum, _cloneDeep(this.context));
 
-        this.allItems = items;
-        this.enumItems = items;
+          this.allItems = items;
+          this.enumItems = items;
+        }
+        catch(err)
+        {
+          console.err("Error getting enum items from main process", err);
+        }
 
         this.loading = false;
       }
