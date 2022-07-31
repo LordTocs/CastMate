@@ -22,8 +22,7 @@
       }"
     />
     <draggable
-      :model-value="value"
-      @update:model-value="input"
+      v-model="modelObj"
       item-key="id"
       handle=".handle"
       :group="{ name: 'actions' }"
@@ -37,7 +36,7 @@
           elevation="2"
           outlined
           shaped
-          v-if="!(value && value.length > 0)"
+          v-if="!(modelValue && modelValue.length > 0)"
         >
           <v-card-text>
             <p class="text-center text-h6" style="user-select: none">
@@ -111,44 +110,28 @@ export default {
     ...mapModel()
   },
   methods: {
-    getDraggableData() {
-      return {
-        on: {
-          start: this.onDragStart,
-        },
-        attrs: {
-          /*dense: true,
-          "align-top": true,*/
-        },
-      };
-    },
     getDraggableId(item) {
       return `${item.plugin}.${item.action}`
     },
-    input(arr) {
-      if (arr instanceof Array) {
-        this.$emit("input", arr);
-      }
-    },
     updateAction(index, value) {
-      let newValue = _cloneDeep(this.value);
+      let newValue = _cloneDeep(this.modelValue);
 
       newValue[index] = value;
 
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     deleteAction(index) {
-      let newValue = _cloneDeep(this.value);
+      let newValue = _cloneDeep(this.modelValue);
 
       newValue.splice(index, 1);
 
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     newActionGroup() {
-      let newValue = _cloneDeep(this.value);
+      let newValue = _cloneDeep(this.modelValue);
       newValue.push({});
 
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     rectOverlap(r1, r2) {
       return (
@@ -163,6 +146,10 @@ export default {
       this.abandonDrag();
     },
     doDrag() {
+      if (!this.$refs.dragArea)
+      {
+        return;
+      }
       const areaRect = this.$refs.dragArea.getBoundingClientRect();
       const dragRect = {
         top: areaRect.top + this.dragTop,
@@ -173,8 +160,13 @@ export default {
 
       const newSelection = [];
 
-      for (let itemId in this.$refs.sequenceItems) {
+      //console.log(this.$refs.sequenceItems);
+
+      /*for (let itemId in this.$refs.sequenceItems) {
         const item = this.$refs.sequenceItems[itemId];
+
+        console.log("ITEM!", itemId, item);
+
         const itemRect = item.getBoundingClientRect
           ? item.getBoundingClientRect()
           : item.$el.getBoundingClientRect();
@@ -182,11 +174,15 @@ export default {
         if (this.rectOverlap(dragRect, itemRect)) {
           newSelection.push(Number(itemId));
         }
-      }
+      }*/
 
       this.selected = newSelection;
     },
     startDrag(e) {
+      if (!this.$refs.dragArea)
+      {
+        return;
+      }
       let containerRect = this.$refs.dragArea.getBoundingClientRect();
       const x = e.clientX - containerRect.left;
       const y = e.clientY - containerRect.top;
@@ -202,6 +198,10 @@ export default {
       document.addEventListener("mousemove", this.drag);
     },
     drag(e) {
+      if (!this.$refs.dragArea)
+      {
+        return;
+      }
       let containerRect = this.$refs.dragArea.getBoundingClientRect();
       const x = e.clientX - containerRect.left;
       const y = e.clientY - containerRect.top;
@@ -212,6 +212,10 @@ export default {
       this.doDrag();
     },
     stopDrag(e) {
+      if (!this.$refs.dragArea)
+      {
+        return;
+      }
       if (!this.dragBox.dragging) return;
       let containerRect = this.$refs.dragArea.getBoundingClientRect();
       const x = e.clientX - containerRect.left;
@@ -239,7 +243,7 @@ export default {
       const clipData = [];
 
       for (let idx of this.selected) {
-        clipData.push(_cloneDeep(this.value[idx]));
+        clipData.push(_cloneDeep(this.modelValue[idx]));
       }
 
       event.clipboardData.setData("application/json", JSON.stringify(clipData));
@@ -267,7 +271,7 @@ export default {
 
         //TODO: Validate JSON
 
-        let newValue = _cloneDeep(this.value);
+        let newValue = _cloneDeep(this.modelValue);
 
         let insertIdx = newValue.length;
         //If we have a current selection, overwrite it.
@@ -282,7 +286,7 @@ export default {
         }
 
         newValue.splice(insertIdx, 0, ...pasteData);
-        this.$emit("input", newValue);
+        this.$emit("update:modelValue", newValue);
       } catch (err) {
         console.log("error pasting");
         console.log("Data: ", paste);
@@ -303,7 +307,7 @@ export default {
         return;
       }
 
-      let newValue = _cloneDeep(this.value);
+      let newValue = _cloneDeep(this.modelValue);
 
       let removed = 0;
       for (let idx of this.selected) {
@@ -311,7 +315,7 @@ export default {
         removed += 1;
       }
 
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
 
       this.selected = [];
     },

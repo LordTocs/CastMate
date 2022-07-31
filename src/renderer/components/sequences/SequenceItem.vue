@@ -16,7 +16,7 @@
       <v-card-subtitle class="handle" @click.stop="toggleExpand">
         <data-view
           class="data-preview"
-          :value="actionData"
+          :value="data"
           :schema="actionDefinition.data"
           v-if="!expanded"
         />
@@ -31,10 +31,9 @@
         @mousedown.stop=""
       >
         <action-editor
-          :actionKey="actionKey"
-          :plugin="actionPlugin"
-          :value="actionData"
-          @input="(v) => updateActionData(v)"
+          :actionKey="action"
+          :plugin="plugin"
+          v-model="data"
         />
       </v-card-text>
     </v-expand-transition>
@@ -43,13 +42,15 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { mapModelValues } from "../../utils/modelValue";
 import ActionEditor from "../actions/ActionEditor.vue";
 import DataView from "../data/DataView.vue";
 export default {
   props: {
-    value: { type: Object, required: true },
+    modelValue: { type: Object, required: true },
     selected: { type: Boolean, default: () => false },
   },
+  emits: ["update:modelValue", "expanded"],
   components: { ActionEditor, DataView },
   data() {
     return {
@@ -58,34 +59,19 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["plugins"]),
-    actionKey() {
-      return this.value ? this.value.action : undefined;
-    },
-    actionPlugin() {
-      return this.value ? this.value.plugin : undefined;
-    },
-    actionData() {
-      return this.value ? this.value.data : undefined;
-    },
+    ...mapModelValues(["data", "plugin", "action"]),
     actionDefinition() {
-      const plugin = this.plugins[this.actionPlugin];
+      const plugin = this.plugins[this.plugin];
       if (plugin) {
-        return plugin.actions[this.actionKey];
+        return plugin.actions[this.action];
       }
       return undefined;
     },
     actionColor() {
-      return this.actionDefinition?.color || "grey darken-2";
+      return this.actionDefinition?.color;
     },
   },
   methods: {
-    updateActionData(newData) {
-      let newValue = { ...this.value };
-
-      newValue.data = newData;
-
-      this.$emit("input", newValue);
-    },
     toggleExpand() {
       this.expanded = !this.expanded;
       this.$emit("expanded", this.expanded);
@@ -95,9 +81,6 @@ export default {
 </script>
 
 <style scoped>
-.shrunk {
-  /*max-width: 600px;*/
-}
 .selected {
   border-color: #efefef !important;
   border-width: 3px;

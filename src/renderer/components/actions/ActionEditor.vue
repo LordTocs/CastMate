@@ -1,26 +1,28 @@
 <template>
   <data-input
-    :value="value"
-    @input="(v) => $emit('input', v)"
+    v-model="modelObj"
     :schema="schema"
     :label="label"
-    :context="value"
+    :context="modelObj"
   />
 </template>
 
 <script>
 import { mapGetters } from "vuex";
+import { mapModel } from "../../utils/modelValue";
 import DataInput from "../data/DataInput.vue";
 
 export default {
   props: {
-    value: {},
+    modelValue: {},
     plugin: { type: String },
     actionKey: { type: String },
   },
+  emits: ["update:modelValue"],
   components: { DataInput },
   computed: {
     ...mapGetters("ipc", ["plugins"]),
+    ...mapModel(),
     actionSpec() {
       const plugin = this.plugins[this.plugin];
       return plugin.actions[this.actionKey];
