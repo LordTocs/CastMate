@@ -35,7 +35,7 @@
             class="my-0" v-else />
         </v-sheet>
         <flex-scroller class="flex-grow-1">
-          <!--sequence-editor v-model="actions" style="flex: 1" /-->
+          <sequence-editor v-model="actions" style="flex: 1" />
         </flex-scroller>
       </div>
       <flex-scroller class="toolbox">
@@ -114,14 +114,14 @@ export default {
         if (!this.modelValue) {
           //Assume inline.
           const newAuto = generateEmptyAutomation();
-          newAuto.sync = newSync;
+          newAuto.sync = newValue;
           this.$emit("update:modelValue", newAuto);
         } else if (this.isInline) {
           const newAuto = _cloneDeep(this.modelValue);
-          newAuto.sync = newSync;
+          newAuto.sync = newValue;
           this.$emit("update:modelValue", newAuto);
         } else {
-          this.loadedAutomation.sync = newSync;
+          this.loadedAutomation.sync = newValue;
           this.dirty = true;
         }
       }
@@ -131,7 +131,7 @@ export default {
         return this.isInline ? null : this.modelValue;
       },
       set(newFile) {
-        this.$emit("update:modelValue", v);
+        this.$emit("update:modelValue", newFile);
         this.automationPopover = false;
       }
     },
@@ -174,7 +174,7 @@ export default {
     }
   },
   watch: {
-    value() {
+    modelValue() {
       if (!this.modelValue) {
         console.log("Clearing via watch");
         this.clearLoadedAutomation();
