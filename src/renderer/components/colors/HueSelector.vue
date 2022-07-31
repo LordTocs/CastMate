@@ -6,8 +6,9 @@
 import iro from "@jaames/iro";
 export default {
   props: {
-    value: {}, //{hue, sat, bri}
+    modelValue: {}, //{hue, sat, bri}
   },
+  emits: ['update:modelValue'],
   methods: {
     setupPicker() {
       console.log("Mounting Picker");
@@ -24,16 +25,16 @@ export default {
           sat: color.hsv.s,
           bri: color.hsv.v,
         };
-        this.$emit("input", result);
+        this.$emit("update:modelValue", result);
       };
 
       this.colorPicker.on("input:end", this.colorHandler);
 
-      if (this.value && "hue" in this.value && "sat" in this.value && "bri" in this.value) {
+      if (this.modelValue && "hue" in this.modelValue && "sat" in this.modelValue && "bri" in this.modelValue) {
         this.colorPicker.color.hsv = {
-          h: this.value.hue,
-          s: this.value.sat,
-          v: this.value.bri,
+          h: this.modelValue.hue,
+          s: this.modelValue.sat,
+          v: this.modelValue.bri,
         };
       }
     },
@@ -52,12 +53,12 @@ export default {
     this.destroyPicker();
   },
   watch: {
-    value() {
-      if (this.value && "hue" in this.value && "sat" in this.value && "bri" in this.value) {
+    modelValue() {
+      if (this.modelValue && "hue" in this.modelValue && "sat" in this.modelValue && "bri" in this.modelValue) {
         this.colorPicker.color.hsv = {
-          h: this.value.hue,
-          s: this.value.sat,
-          v: this.value.bri,
+          h: this.modelValue.hue,
+          s: this.modelValue.sat,
+          v: this.modelValue.bri,
         };
       }
     },

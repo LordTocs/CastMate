@@ -6,10 +6,11 @@
 import iro from "@jaames/iro";
 export default {
   props: {
-    value: {},
+    modelValue: {},
     minTemp: {},
     maxTemp: {},
   },
+  emits: ["update:modelValue"],
   methods: {
     setupPicker() {
       this.colorPicker = new iro.ColorPicker(this.$refs.picker, {
@@ -30,13 +31,13 @@ export default {
       });
 
       this.colorHandler = (color) => {
-        this.$emit("input", { temp: color.kelvin });
+        this.$emit("update:modelValue", { temp: color.kelvin });
       };
 
       this.colorPicker.on("input:end", this.colorHandler);
 
-      if ("temp" in this.value) {
-        this.colorPicker.color.kelvin = this.value.temp;
+      if (this.modelValue && "temp" in this.modelValue) {
+        this.colorPicker.color.kelvin = this.modelValue.temp;
       }
     },
     destroyPicker() {
@@ -53,9 +54,9 @@ export default {
     this.destroyPicker();
   },
   watch: {
-    value() {
-      if ("bri" in this.value && "temp" in this.value) {
-        this.colorPicker.color.kelvin = this.value.temp;
+    modelValue() {
+      if ("bri" in this.modelValue && "temp" in this.modelValue) {
+        this.colorPicker.color.kelvin = this.modelValue.temp;
       }
     },
     minTemp() {

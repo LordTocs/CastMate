@@ -1,86 +1,79 @@
 <template>
   <v-card width="400">
     <v-toolbar flat>
-      <v-tabs :value="santizedMode" @change="changeMode" centered>
-        <v-tab :key="0"> <v-icon> mdi-palette </v-icon> </v-tab>
-        <v-tab :key="1"> <v-icon> mdi-brightness-5 </v-icon> </v-tab>
-        <v-tab :key="2"> <v-icon> mdi-code-braces </v-icon> </v-tab>
+      <v-tabs v-model="mode" centered>
+        <v-tab value="color"> <v-icon> mdi-palette </v-icon> </v-tab>
+        <v-tab value="temp"> <v-icon> mdi-brightness-5 </v-icon> </v-tab>
+        <v-tab value="template"> <v-icon> mdi-code-braces </v-icon> </v-tab>
       </v-tabs>
       <v-btn icon v-if="clearable" @click="$emit('input', undefined)">
         <v-icon> mdi-close </v-icon>
       </v-btn>
     </v-toolbar>
-    <v-tabs-items :value="santizedMode">
-      <v-tab-item>
+    <v-window v-model="mode">
+      <v-window-item value="color">
         <v-card flat>
           <v-card-text>
             <div style="display: flex; flex-direction: row">
-              <hue-selector :value="value" @input="changeHue" />
+              <hue-selector v-model="hsb" />
               <v-slider
-                :value="value ? value.bri : 100"
+                v-model="bri"
                 :min="0"
                 :max="100"
-                @change="changeBri"
                 vertical
                 append-icon="mdi-brightness-5"
               />
             </div>
           </v-card-text>
         </v-card>
-      </v-tab-item>
-      <v-tab-item>
+      </v-window-item>
+      <v-window-item value="temp">
         <v-card flat>
           <v-card-text>
             <div style="display: flex; flex-direction: row">
               <color-temp-selector
-                :value="value"
-                @input="changeTemp"
+                v-model="tb"
                 :minTemp="schema.tempRange[0]"
                 :maxTemp="schema.tempRange[1]"
               />
               <v-slider
-                :value="value ? value.bri : 100"
+                v-model="bri"
                 :min="0"
                 :max="100"
-                @change="changeBri"
                 vertical
                 append-icon="mdi-brightness-5"
               />
             </div>
           </v-card-text>
         </v-card>
-      </v-tab-item>
-      <v-tab-item>
+      </v-window-item>
+      <v-window-item value="template">
         <v-card flat>
           <v-card-text>
             <number-input
               label="Hue"
-              :value="value ? value.hue : undefined"
-              @input="(v) => changeHue({ hue: v })"
+              v-model="hue"
               :allowTemplate="true"
             />
             <number-input
               label="Saturation"
-              :value="value ? value.sat : undefined"
-              @input="(v) => changeHue({ sat: v })"
+              v-model="sat"
               :allowTemplate="true"
             />
             <number-input
               label="Brightness"
-              :value="value ? value.bri : undefined"
-              @input="(v) => changeHue({ bri: v })"
+              v-model="bri"
               :allowTemplate="true"
             />
             <number-input
               label="Color Temperature"
-              :value="value ? value.temp : undefined"
-              @input="(v) => changeHue({ temp: v })"
+              v-model="temp"
               :allowTemplate="true"
             />
           </v-card-text>
         </v-card>
-      </v-tab-item>
-    </v-tabs-items>
+      </v-window-item>
+    </v-window>
   </v-card>
 </template>
 
@@ -104,43 +97,95 @@ const modeToIndex = {
 export default {
   components: { HueSelector, ColorTempSelector, NumberInput },
   props: {
-    value: {},
+    modelValue: {},
     schema: {},
     clearable: { type: Boolean, default: () => false },
   },
+  emits: ["update:modelValue"],
   computed: {
-    santizedMode() {
-      if (this.value && this.value.mode) {
-        return modeToIndex[this.value.mode];
+    mode: {
+      get() {
+        return this.modelValue?.mode;
+      },
+      set(newMode) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          mode: newMode,
+        });
       }
-      return 0;
     },
-  },
-  methods: {
-    changeHue(newHue) {
-      this.$emit("input", {
-        ...this.value,
-        ...newHue,
-        mode: this.value?.mode || "color",
-      });
+    hsb: {
+      get() {
+        return { hue: this.modelValue?.hue, sat: this.modelValue?.sat, bri: this.modelValue?.bri };
+      },
+      set(newHSB) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          ...newHSB,
+          mode: this.modelValue?.mode || "color",
+        });
+      }
     },
-    changeTemp(newTemp) {
-      this.$emit("input", {
-        ...this.value,
-        ...newTemp,
-        mode: this.value?.mode || "temp",
-      });
+    tb: {
+      get() {
+        return { temp: this.modelValue?.temp, bri: this.modelValue?.bri };
+      },
+      set(newTB) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          ...newTB,
+          mode: this.modelValue?.mode || "temp",
+        });
+      }
     },
-    changeBri(newBri) {
-      this.$emit("input", {
-        ...this.value,
-        bri: newBri,
-        mode: this.value?.mode || "color",
-      });
+    hue: {
+      get() {
+        return this.modelValue?.hue;
+      },
+      set(newHue) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          hue: newHue,
+          mode: this.modelValue?.mode || "color",
+        });
+      }
     },
-    changeMode(newMode) {
-      this.$emit("input", { ...this.value, mode: indexToMode[newMode] });
+    sat: {
+      get() {
+        return this.modelValue?.sat;
+      },
+      set(newSat) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          sat: newSat,
+          mode: this.modelValue?.mode || "color",
+        });
+      }
     },
+    bri: {
+      get() {
+        return this.modelValue?.bri;
+      },
+      set(newBri) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          bri: newBri,
+          mode: this.modelValue?.mode || "color",
+        });
+      }
+    },
+    temp: {
+      get() {
+        return this.modelValue?.bri;
+      },
+      set(newTemp) {
+        this.$emit("update:modelValue", {
+          ...this.modelValue,
+          temp: newTemp,
+          mode: this.modelValue?.mode || "temp",
+        });
+      }
+    }
   },
 };
 </script>
