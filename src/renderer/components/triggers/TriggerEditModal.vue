@@ -1,22 +1,22 @@
 <template>
-  <v-dialog v-model="dialog" width="85%" persistent>
-    <v-card>
+  <v-dialog v-model="dialog" width="85%" class="d-flex flex-row" persistent>
+    <v-card width="85vw">
       <v-toolbar dense flat>
         <v-toolbar-title class="font-weight-bold grey--text">
           {{ header }}
         </v-toolbar-title>
       </v-toolbar>
-      <div class="d-flex flex-row">
+      <div class="d-flex flex-row py-2">
         <flex-scroller
-          style="width: 375px"
+          style="width: 400px"
           innerClass="px-2"
         >
           <trigger-selector
             :model-value="localTriggerType"
-            label=""
+            label="Trigger"
             @update:model-value="changeTriggerType"
             class="flex-grow-0"
-            style="width: 400px"
+            style="width: 350px"
           />
           <v-sheet outlined rounded class="px-2 py-2 my-2">
             <template v-if="localTriggerType">
