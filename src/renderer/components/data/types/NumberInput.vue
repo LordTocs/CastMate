@@ -29,7 +29,7 @@ export default {
           this.clear()
         }
 
-        let number = Number(v);
+        let number = Number(newValue);
 
         if (isNaN(number) && this.allowTemplate) {
           this.$emit("update:modelValue", newValue);
