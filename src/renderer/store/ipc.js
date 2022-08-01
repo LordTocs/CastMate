@@ -119,7 +119,7 @@ export default {
 		},
 		removeState(state, removal) {
 			for (let pluginKey in removal) {
-				if (!this.stateLookup[pluginKey])
+				if (!state.stateLookup[pluginKey])
 					continue;
 
 				delete state.stateLookup[pluginKey][removal[pluginKey]];
