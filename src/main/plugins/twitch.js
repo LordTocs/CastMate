@@ -664,9 +664,13 @@ export default {
 		async getCategoryById(id) {
 			if (!this.channelTwitchClient)
 				return null;
+			console.log("getCategoryById", id);
 			const category = await this.channelTwitchClient.games.getGameById(id);
 			if (category) {
-				return { name: category.name, id: category.id, boxArtUrl: category.boxArtUrl };
+				const pojoCat = { name: category.name, id: category.id, boxArtUrl: category.boxArtUrl };
+				pojoCat.boxArtUrl = pojoCat.boxArtUrl.replace("{width}","52");
+				pojoCat.boxArtUrl = pojoCat.boxArtUrl.replace("{height}","72");
+				return pojoCat;
 			}
 			return null;
 		},
