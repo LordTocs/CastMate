@@ -1,36 +1,28 @@
 <template>
   <v-autocomplete
     multiple
+    chips
+    closable-chips
+    :label="label"
     :items="tags"
-    item-text="name"
-    item-value="id"
-    label="Tags"
     :loading="loading"
-    :value="value"
-    :search-input.sync="search"
-    @change="changed"
+    item-title="name"
+    item-value="id"    
+    v-model="modelObj"
     prepend-icon="mdi-magnify"
   >
-    <template v-slot:selection="data">
-      <v-chip
-        v-bind="data.attrs"
-        :input-value="data.selected"
-        close
-        @click:close="remove(data.item)"
-      >
-        {{ data.item.name }}
-      </v-chip>
-    </template>
   </v-autocomplete>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import { mapIpcs } from '../../utils/ipcMap';
+import { mapModel } from "../../utils/modelValue";
 export default {
   props: {
-    value: {},
+    modelValue: {},
+    label: { type: String, default: () => "Tags"},
   },
+  emits: ["update:modelValue"],
   data() {
     return {
       tags: [],
@@ -39,6 +31,7 @@ export default {
     };
   },
   computed: {
+    ...mapModel(),
   },
   methods: {
     ...mapIpcs("twitch", ["getAllTags"]),
@@ -51,10 +44,10 @@ export default {
 
       newValue.splice(i, 1);
 
-      this.$emit("change", newValue);
+      this.$emit("update:modelValue", newValue);
     },
     changed(newValue) {
-      this.$emit("change", newValue);
+      this.$emit("update:modelValue", newValue);
       this.search = null;
     },
   },
