@@ -2,6 +2,14 @@ import _cloneDeep from 'lodash/cloneDeep'
 import { computed } from 'vue';
 
 /*
+//NESTED MODEL VALUES IS HARD D:
+
+// Ideally we'd have some sort of nest-v-model-forwarding so when you edited obj.subobj we didn't have to clone all of obj and could just update subobj
+// This requires more thought and I'm surprised it wasn't put into vue3 natively as it's the biggest PITA when building form components.
+// It seems vue3 has gone the multi-v-model route and the samples of an address component bind each of the values as separate v-models
+// This sucks because in our generated UI we don't know what values are expected to exist at bind time.
+// Overall, very shortsighted of vue3. 6/10 
+
 function setModelValue(self, objPath, newValue) {
     if (objPath.length == 0) {
         return self.$emit('update:modelValue', newValue);
@@ -86,18 +94,18 @@ export function mapModelObj(schema) {
     }
 }
 */
-export function mapModelValues(subvalues) {
+export function mapModelValues(subvalues, varname="modelValue") {
     const result = {};
 
     for (let sv of subvalues) {
         result[sv] = {
             get() {
-                return this.modelValue ? this.modelValue[sv] : null;
+                return this[varname] ? this[varname][sv] : null;
             },
             set(newValue) {
-                const newObj = _cloneDeep(this.modelValue);
+                const newObj = _cloneDeep(this[varname]);
                 newObj[sv] = newValue;
-                this.$emit('update:modelValue', newObj);
+                this.$emit(`update:${varname}`, newObj);
             }
         }
     }
@@ -107,14 +115,14 @@ export function mapModelValues(subvalues) {
     return result;
 }
 
-export function mapModel() {
+export function mapModel(varname="modelValue", as="modelObj") {
     return {
-        modelObj: {
+        [as]: {
             get() {
-                return this.modelValue;
+                return this[varname];
             },
             set(newValue) {
-                this.$emit('update:modelValue', newValue);
+                this.$emit(`update:${varname}`, newValue);
             }
         }
     }
