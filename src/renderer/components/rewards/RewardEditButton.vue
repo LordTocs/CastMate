@@ -1,6 +1,6 @@
 <template>
   <v-btn fab small class="mx-1" :disabled="!reward" @click.stop="$refs.editModal.open()">
-    <v-icon small> mdi-pencil </v-icon>
+    <v-icon small icon="mdi-pencil" />
     <reward-edit-modal :reward="reward" ref="editModal" @rename="v => $emit('rename', v)" :showDelete="false" />
   </v-btn>
 </template>

@@ -1,12 +1,10 @@
 <template>
   <v-card-actions>
     <v-combobox
-      :value="value"
+      v-model="modelObj"
       :items="items"
       :label="label"
       :search-input.sync="search"
-      @input="(v) => $emit('input', v)"
-      @change="(v) => $emit('change', v)"
       clearable
     />
     <v-menu bottom right>
@@ -49,20 +47,22 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { mapModel } from "../../utils/modelValue";
 import RewardEditButton from "./RewardEditButton.vue";
 import RewardEditModal from "./RewardEditModal.vue";
 
 export default {
   components: { RewardEditButton, RewardEditModal },
   props: {
-    value: {},
+    modelValue: {},
     label: { type: String, default: () => "Channel Point Reward" },
     existingRewards: { type: Array, default: () => [] },
   },
   computed: {
     ...mapGetters("rewards", ["rewards"]),
+    ...mapModel(),
     currentReward() {
-      return this.rewards.find((r) => r.name == this.value);
+      return this.rewards.find((r) => r.name == this.modelValue);
     },
   },
   data() {

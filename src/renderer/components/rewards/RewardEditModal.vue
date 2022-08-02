@@ -1,13 +1,13 @@
 <template>
-  <v-dialog v-model="dialog" width="50%" @keydown.esc="cancel">
-    <v-card>
+  <v-dialog v-model="dialog"  @keydown.esc="cancel">
+    <v-card width="50vw">
       <v-toolbar dense flat>
         <v-toolbar-title class="text-body-2 font-weight-bold grey--text">
           {{ title || "Edit Channel Point Reward" }}
         </v-toolbar-title>
       </v-toolbar>
       <v-card-text>
-        <reward-editor v-model="rewardEdit" />
+        <reward-editor v-model="rewardEdit" v-model:valid="valid" />
       </v-card-text>
       <v-card-actions class="pt-3">
         <v-spacer></v-spacer>
@@ -25,6 +25,7 @@
           outlined
           v-if="showSave"
           @click.native="save"
+          :active="valid"
         >
           Save
         </v-btn>
@@ -34,6 +35,7 @@
           outlined
           v-if="showCreate"
           @click.native="create"
+          :active="valid"
         >
           Create
         </v-btn>
@@ -53,7 +55,7 @@
 
 <script>
 import RewardEditor from "./RewardEditor.vue";
-import _ from "lodash";
+import _cloneDeep from "lodash/cloneDeep"
 import { mapActions } from "vuex";
 import { trackAnalytic } from "../../utils/analytics.js";
 
@@ -70,12 +72,13 @@ export default {
     return {
       rewardEdit: {},
       dialog: false,
+      valid: false,
     };
   },
   methods: {
     ...mapActions("rewards", ["createReward", "updateReward", "deleteReward"]),
     open() {
-      this.rewardEdit = _.cloneDeep(this.reward) || {};
+      this.rewardEdit = _cloneDeep(this.reward) || {};
       this.dialog = true;
     },
     save() {
