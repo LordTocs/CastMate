@@ -8,10 +8,8 @@
       </v-toolbar>
       <v-card-text>
         <variable-spec-editor
-          :value="variableEdit"
-          :variableName="variableEditName"
-          @name="(v) => (variableEditName = v)"
-          @input="(v) => (variableEdit = v)"
+          v-model="variableEdit"
+          v-model:name="variableEditName"
         />
       </v-card-text>
       <v-card-actions class="pt-3">

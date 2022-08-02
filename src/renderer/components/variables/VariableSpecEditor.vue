@@ -2,7 +2,7 @@
   <div>
     <v-text-field
       label="Variable Name"
-      v-model="name"
+      v-model="modelName"
     />
     <v-select
       v-model="type"
@@ -11,11 +11,11 @@
         { name: 'Number', value: 'Number' },
         { name: 'Text', value: 'String' },
       ]"
-      item-text="name"
+      item-title="name"
       item-value="value"
     />
     <v-text-field
-      v-if="value.type == 'String'"
+      v-if="modelValue.type == 'String'"
       v-model="defaultValue"
       label="Default Value"
     />
@@ -29,16 +29,18 @@
 
 <script>
 import _cloneDeep from "lodash/cloneDeep";
-import { mapModelValues } from "../../utils/modelValue";
+import { mapModel, mapModelValues } from "../../utils/modelValue";
 import NumberInput from "../data/types/NumberInput.vue";
 export default {
   components: { NumberInput },
   props: {
-    variableName: { type: String },
-    value: {},
+    name: { type: String },
+    modelValue: {},
   },
+  emits: ["update:modelValue", "update:name"],
   computed: {
-    ...mapModelValues(["name", "type"]),
+    ...mapModelValues(["type"]),
+    ...mapModel("name", "modelName"),
     defaultValue: {
       get() {
         return this.modelValue.default;
