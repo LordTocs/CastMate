@@ -54,8 +54,8 @@ export default {
       ipcRenderer.invoke("updater.checkForUpdates");
     },
   },
-  mounted() {
-    this.version = this.getVersion();
+  async mounted() {
+    this.version = await this.getVersion();
   },
 };
 </script>
