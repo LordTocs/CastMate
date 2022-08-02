@@ -68,7 +68,6 @@
 
 <script>
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
-import RewardsEditor from "../components/profiles/RewardsEditor.vue";
 import AutomationInput from "../components/automations/AutomationInput.vue";
 import { mapGetters } from "vuex";
 import BooleanGroup from "../components/conditionals/BooleanGroup.vue";
@@ -79,7 +78,6 @@ import { mapIpcs } from "../utils/ipcMap";
 export default {
   components: {
     ConditionsEditor,
-    RewardsEditor,
     AutomationInput,
     ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
     BooleanGroup,
