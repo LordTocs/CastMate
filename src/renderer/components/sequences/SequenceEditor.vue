@@ -2,34 +2,23 @@
   <div
     class="drag-area"
     ref="dragArea"
-    @mousedown="startDrag"
+    @mousedown="startSelect"
     @keyup.delete.self="doDelete"
     tabindex="0"
     @copy="copy"
     @paste="paste"
     @cut="cut"
     @blur="blur"
+    :draggable="false"
   >
-    <div
-      v-if="dragBox.dragging"
-      ref="selectRect"
-      class="select-rect"
-      :style="{
-        left: dragLeft + 'px',
-        top: dragTop + 'px',
-        width: dragWidth + 'px',
-        height: dragHeight + 'px',
-      }"
-    />
     <draggable
       v-model="modelObj"
       item-key="id"
       handle=".handle"
       :group="{ name: 'actions' }"
-      style=""
-      draggable=".is-draggable"
       class="sequence-container"
       @dragstart="onDragStart"
+      ref="dragHandler"
     >
       <template #header>
         <v-card
@@ -56,12 +45,21 @@
           @delete="deleteAction(index)"
         />
       </template>
-
-      <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
-      <template #footer>
-        <div style="font-size: 0; height: 120px">...</div>
-      </template>
     </draggable>
+    <div
+      v-if="selectBox.dragging"
+      ref="selectRect"
+      class="select-rect"
+      :style="{
+        left: dragLeft + 'px',
+        top: dragTop + 'px',
+        width: dragWidth + 'px',
+        height: dragHeight + 'px',
+      }"
+    />
+    <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
+    <!--<div style="font-size: 0; height: 120px" draggable="false">...</div>-->
+    <select-dummy ref="selectDummy" />
   </div>
 </template>
 
@@ -72,8 +70,9 @@ import { ipcRenderer } from "electron";
 import _cloneDeep from "lodash/cloneDeep";
 import { nanoid } from "nanoid/non-secure";
 import { mapModel } from "../../utils/modelValue";
+import SelectDummy from "./SelectDummy.vue";
 export default {
-  components: { SequenceItem, Draggable },
+  components: { SequenceItem, Draggable, SelectDummy },
   props: {
     modelValue: {},
   },
@@ -81,7 +80,7 @@ export default {
   data() {
     return {
       selected: [],
-      dragBox: {
+      selectBox: {
         dragging: false,
         startX: 0,
         startY: 0,
@@ -92,20 +91,20 @@ export default {
   },
   computed: {
     dragTop() {
-      return this.dragBox.endY < this.dragBox.startY
-        ? this.dragBox.endY
-        : this.dragBox.startY;
+      return this.selectBox.endY < this.selectBox.startY
+        ? this.selectBox.endY
+        : this.selectBox.startY;
     },
     dragLeft() {
-      return this.dragBox.endX < this.dragBox.startX
-        ? this.dragBox.endX
-        : this.dragBox.startX;
+      return this.selectBox.endX < this.selectBox.startX
+        ? this.selectBox.endX
+        : this.selectBox.startX;
     },
     dragWidth() {
-      return Math.abs(this.dragBox.endX - this.dragBox.startX);
+      return Math.abs(this.selectBox.endX - this.selectBox.startX);
     },
     dragHeight() {
-      return Math.abs(this.dragBox.endY - this.dragBox.startY);
+      return Math.abs(this.selectBox.endY - this.selectBox.startY);
     },
     ...mapModel()
   },
@@ -143,13 +142,15 @@ export default {
     },
     onDragStart() {
       this.selected = [];
-      this.abandonDrag();
+      this.abandonSelect();
     },
-    doDrag() {
+    doSelect() {
       if (!this.$refs.dragArea)
       {
         return;
       }
+      this.$refs.dragArea.focus();
+      this.$refs.selectDummy.select();
       const areaRect = this.$refs.dragArea.getBoundingClientRect();
       const dragRect = {
         top: areaRect.top + this.dragTop,
@@ -159,6 +160,18 @@ export default {
       };
 
       const newSelection = [];
+
+      const items = this.$refs.dragHandler.$el.querySelectorAll(".sequence-item");
+
+      for (let i = 0; i < items.length; ++i)
+      {
+        const item = items[i];
+        const itemRect = item.getBoundingClientRect();
+
+        if (this.rectOverlap(dragRect, itemRect)) {
+          newSelection.push(i);
+        }
+      }
 
       //console.log(this.$refs.sequenceItems);
 
@@ -178,7 +191,7 @@ export default {
 
       this.selected = newSelection;
     },
-    startDrag(e) {
+    startSelect(e) {
       if (!this.$refs.dragArea)
       {
         return;
@@ -187,17 +200,17 @@ export default {
       const x = e.clientX - containerRect.left;
       const y = e.clientY - containerRect.top;
 
-      this.dragBox.startX = x;
-      this.dragBox.startY = y;
-      this.dragBox.endX = x;
-      this.dragBox.endY = y;
-      this.dragBox.dragging = true;
+      this.selectBox.startX = x;
+      this.selectBox.startY = y;
+      this.selectBox.endX = x;
+      this.selectBox.endY = y;
+      this.selectBox.dragging = true;
 
-      this.doDrag();
+      this.doSelect();
 
-      document.addEventListener("mousemove", this.drag);
+      document.addEventListener("mousemove", this.moveSelect);
     },
-    drag(e) {
+    moveSelect(e) {
       if (!this.$refs.dragArea)
       {
         return;
@@ -206,34 +219,34 @@ export default {
       const x = e.clientX - containerRect.left;
       const y = e.clientY - containerRect.top;
 
-      this.dragBox.endX = x;
-      this.dragBox.endY = y;
+      this.selectBox.endX = x;
+      this.selectBox.endY = y;
 
-      this.doDrag();
+      this.doSelect();
     },
-    stopDrag(e) {
+    stopSelect(e) {
       if (!this.$refs.dragArea)
       {
         return;
       }
-      if (!this.dragBox.dragging) return;
+      if (!this.selectBox.dragging) return;
       let containerRect = this.$refs.dragArea.getBoundingClientRect();
       const x = e.clientX - containerRect.left;
       const y = e.clientY - containerRect.top;
 
-      this.doDrag();
+      this.doSelect();
 
-      this.abandonDrag();
+      this.abandonSelect();
     },
-    abandonDrag() {
-      this.dragBox.dragging = false;
-      this.dragBox.startX = 0;
-      this.dragBox.startY = 0;
-      this.dragBox.endX = 0;
-      this.dragBox.endY = 0;
-      this.dragBox.dragging = false;
+    abandonSelect() {
+      this.selectBox.dragging = false;
+      this.selectBox.startX = 0;
+      this.selectBox.startY = 0;
+      this.selectBox.endX = 0;
+      this.selectBox.endY = 0;
+      this.selectBox.dragging = false;
 
-      document.removeEventListener("mousemove", this.drag);
+      document.removeEventListener("mousemove", this.moveSelect);
     },
     copy(event) {
       console.log("Copy!");
@@ -324,16 +337,16 @@ export default {
     },
   },
   mounted() {
-    document.addEventListener("mouseup", this.stopDrag);
-    //document.addEventListener("touchend", this.stopDrag);
+    document.addEventListener("mouseup", this.stopSelect);
+    //document.addEventListener("touchend", this.stopSelect);
 
     //this.$refs.dragArea.addEventListener("copy", this.copy);
 
     //console.log("Bound copy event!");
   },
   destroyed() {
-    document.removeEventListener("mouseup", this.stopDrag);
-    //document.removeEventListener("touchend", this.stopDrag);
+    document.removeEventListener("mouseup", this.stopSelect);
+    //document.removeEventListener("touchend", this.stopSelect);
 
     //this.$refs.dragArea.removeEventListener("copy", this.copy);
   },
@@ -358,9 +371,12 @@ export default {
 }
 
 .select-rect {
+  pointer-events: none;
+  user-select: none;
   position: absolute;
-  border-width: 1px;
-  border-color: red;
-  border-style: solid;
+  border-width: 2px;
+  border-color: white;
+  mix-blend-mode: difference;
+  border-style: dashed;
 }
 </style>

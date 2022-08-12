@@ -3,7 +3,7 @@
     <v-card-title>
       <v-text-field
         v-model="search"
-        append-icon="mdi-magnify"
+        append-inner-icon="mdi-magnify"
         label="Filter"
         single-line
         hide-details
@@ -91,6 +91,7 @@ export default {
   props: {
     modelValue: {},
   },
+  emits: ['update:modelValue'],
   data() {
     return {
       search: null,

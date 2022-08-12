@@ -2,6 +2,7 @@
   <v-card
     :color="actionColor"
     :class="{ expanded, shrunk: !expanded, 'sequence-item': true, selected }"
+    tabindex="0"
   >
     <div style="font-size: 0; user-select: text">...</div>
     <v-card-title

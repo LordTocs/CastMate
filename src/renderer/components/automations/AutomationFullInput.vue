@@ -1,47 +1,46 @@
 <template>
-  <div>
-    <div class="d-flex flex-row" style="height: 70vh">
-      <div class="flex-grow-1 d-flex flex-column">
-        <v-sheet class="d-flex flex-row px-2 py-2">
-          <v-tooltip bottom>
-            <template #activator="{ props }">
-              <v-btn color="primary" dark fab small class="mr-4" @click="preview" v-bind="props">
-                <v-icon>mdi-play</v-icon>
-              </v-btn>
-            </template>
-            <span>Preview Automation</span>
-          </v-tooltip>
-          <!--v-tooltip bottom>
-            <template #activator="{ props }">
-              <div v-bind="props" style="width: min-content">
-                <v-switch v-model="sync" class="my-0" label="Synchronous" />
-              </div>
-            </template>
-            <span>This automation will queue behind other Synchronous automations
-              and wait to play.</span>
-          </v-tooltip-->
-          <v-spacer />
-          <v-menu v-model="automationPopover" :close-on-content-click="false" offset-y class="mx-2"
-            v-if="!modelValue || isInline">
-            <template #activator="{ props }">
-              <v-btn v-bind="props">Use Existing Automation </v-btn>
-            </template>
+  <div class="d-flex flex-row" style="height: 70vh" :draggable="false">
+    <div class="flex-grow-1 d-flex flex-column">
+      <v-sheet class="d-flex flex-row px-2 py-2">
+        <v-tooltip bottom>
+          <template #activator="{ props }">
+            <v-btn color="primary" dark fab small class="mr-4" @click="preview" v-bind="props">
+              <v-icon>mdi-play</v-icon>
+            </v-btn>
+          </template>
+          <span>Preview Automation</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template #activator="{ props }">
+            <div v-bind="props" style="width: min-content">
+              <v-switch v-model="sync" class="my-0" label="Synchronous" />
+            </div>
+          </template>
+          <span>This automation will queue behind other Synchronous automations
+            and wait to play.</span>
+        </v-tooltip>
+        <v-spacer />
+        <v-menu v-model="automationPopover" :close-on-content-click="false" offset-y class="mx-2"
+          v-if="!modelValue || isInline">
+          <template #activator="{ props }">
+            <v-btn v-bind="props">Use Existing Automation </v-btn>
+          </template>
 
-            <v-card class="px-2">
-              <automation-selector v-model="automationFile" :showButtons="false" />
-            </v-card>
-          </v-menu>
-          <automation-selector v-model="automationFile" :showButtons="false"
-            class="my-0" v-else />
-        </v-sheet>
-        <flex-scroller class="flex-grow-1">
-          <sequence-editor v-model="actions" style="flex: 1" />
-        </flex-scroller>
-      </div>
-      <flex-scroller class="toolbox">
-        <action-toolbox />
+          <v-card class="px-2">
+            <automation-selector v-model="automationFile" :showButtons="false" />
+          </v-card>
+        </v-menu>
+        <automation-selector v-model="automationFile" :showButtons="false"
+          class="my-0" v-else />
+      </v-sheet>
+      <flex-scroller class="flex-grow-1">
+        <sequence-editor v-model="actions" style="flex: 1" :draggable="false" />
+        <!--<timeline-row v-model="actions" style="flex: 1" />-->
       </flex-scroller>
     </div>
+    <flex-scroller class="toolbox">
+      <action-toolbox />
+    </flex-scroller>
   </div>
 </template>
 
@@ -53,13 +52,15 @@ import {  generateEmptyAutomation } from "../../utils/fileTools";
 import _cloneDeep from "lodash/cloneDeep";
 import AutomationSelector from "./AutomationSelector.vue";
 import { mapIpcs } from "../../utils/ipcMap";
+import TimelineRow from "../timelines/TimelineRow.vue";
 export default {
   components: {
     ActionToolbox,
     SequenceEditor,
     FlexScroller,
     AutomationSelector,
-  },
+    TimelineRow
+},
   props: {
     modelValue: {},
   },

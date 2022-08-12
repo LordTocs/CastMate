@@ -8,17 +8,6 @@
       :label="label"
       clearable
     >
-      <template v-slot:selection="{ item }">
-        <v-chip
-          class="ma-2"
-          color="red"
-          text-color="white"
-          v-if="!hasAutomation(item)"
-        >
-          MISSING
-        </v-chip>
-        <span>{{ item }} </span>
-      </template>
     </v-combobox>
     <v-btn
       fab
@@ -26,11 +15,11 @@
       class="mx-1"
       v-if="showButtons"
       @click.stop="$refs.automationDlg.open()"
-      :disabled="!value"
+      :disabled="!modelValue"
     >
       <v-icon small> mdi-pencil </v-icon>
     </v-btn>
-    <v-btn
+    <!--v-btn
       fab
       small
       class="mx-1"
@@ -39,14 +28,8 @@
       :disabled="!!value"
     >
       <v-icon small> mdi-plus </v-icon>
-    </v-btn>
-    <automation-quick-edit-dialog ref="automationDlg" :automationName="value" />
-    <named-item-modal
-      ref="addModal"
-      header="Create New Automation"
-      label="Name"
-      @created="createNewAutomation"
-    />
+    </v-btn-->
+    <automation-quick-edit-dialog ref="automationDlg" :automationName="modelValue" />
   </div>
 </template>
 
@@ -96,34 +79,6 @@ export default {
       }
 
       this.automations = automations;
-    },
-    async createNewAutomation(name) {
-      const filePath = path.join(
-        this.paths.userFolder,
-        "automations",
-        name + ".yaml"
-      );
-
-      if (fs.existsSync(filePath)) {
-        return;
-      }
-
-      //TODO: Remove duplication!!
-      const automation = {
-        version: "1.0",
-        description: "",
-        actions: [],
-      };
-
-      trackAnalytic("newAutomation", { name });
-
-      await fs.promises.writeFile(filePath, YAML.stringify(automation));
-
-      this.$emit("input", name);
-
-      setTimeout(async () => {
-        await this.refreshAutomations();
-      }, 1000);
     },
     hasAutomation(automation) {
       return this.automations.includes(automation);

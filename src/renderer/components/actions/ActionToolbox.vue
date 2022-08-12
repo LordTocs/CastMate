@@ -10,25 +10,19 @@
         :item-key="getDraggableId"
         :group="{ name: 'actions', pull: 'clone', put: false }"
         :sort="false"
-        :component-data="{ attrs: { 'no-action': true } }"
-        draggable=".is-draggable"
         :clone="cloneAction"
       >
         <template #item="{element, index}">
-          <v-list-item
-            style="cursor: grab; user-select: none;"
-            class="is-draggable"
-            :prepend-icon="plugin.actions[element.action].icon
-                    ? plugin.actions[element.action].icon
-                    : 'mdi-file-document-outline'"
-            :title="plugin.actions[element.action].name"
-            :subtitle="plugin.actions[element.action].description"
-            :color="plugin.actions[element.action].color"
+          <action-toolbox-item
+            :plugin-action="element"
           />
         </template>
       </draggable>
     </v-list-group>
   </v-list>
+  <!--
+         
+          -->
 </template>
 
 <script>
@@ -37,9 +31,10 @@ import Draggable from "vuedraggable";
 import { constructDefaultSchema } from "../../utils/objects";
 import { nanoid } from "nanoid/non-secure";
 import _cloneDeep from "lodash/cloneDeep";
+import ActionToolboxItem from "./ActionToolboxItem.vue";
 
 export default {
-  components: { Draggable },
+  components: { Draggable, ActionToolboxItem },
   computed: {
     ...mapGetters("ipc", ["actions", "pluginList"]),
     actionPlugins() {
@@ -68,6 +63,7 @@ export default {
       return `${item.plugin}.${item.action}`
     },
     cloneAction(original) {
+      console.log("CLONING");
       const copy = _cloneDeep(original);
       copy.id = nanoid();
       return copy;

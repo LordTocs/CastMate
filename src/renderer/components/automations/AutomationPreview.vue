@@ -1,14 +1,13 @@
 <template>
-  <div class="d-flex flex-row" v-if="automation">
     <action-mini-preview
+      v-if="automation"
       :automation="isInline ? automation : loadedAutomation"
       :maxActions="maxActions"
     />
-  </div>
 </template>
 
 <script>
-import { loadAutomation } from "../../utils/fileTools";
+import { mapIpcs } from "../../utils/ipcMap";
 import ActionMiniPreview from "../actions/ActionMiniPreview.vue";
 export default {
   components: { ActionMiniPreview },
@@ -27,10 +26,11 @@ export default {
     },
   },
   methods: {
+    ...mapIpcs("io", ["getAutomation"]),
     async reloadAutomation() {
       if (!this.automation || this.isInline) return;
 
-      this.loadedAutomation = await loadAutomation(this.automation);
+      this.loadedAutomation = await this.getAutomation(this.automation);
     },
   },
   mounted() {
@@ -41,7 +41,7 @@ export default {
       if (this.isInline) {
         this.loadedAutomation = null;
       } else {
-        this.loadAutomation();
+        this.reloadAutomation();
       }
     },
   },
