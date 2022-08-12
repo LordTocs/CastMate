@@ -116,10 +116,12 @@ export default {
 					message: {
 						type: String,
 						template: true,
+						name: "Message",
 					},
 					voice: {
 						type: String,
 						required: true,
+						name: "Voice",
 						async enum() {
 							return await this.getVoices();
 						}
