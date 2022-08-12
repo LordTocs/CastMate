@@ -1,5 +1,5 @@
 import { createReactiveProperty, deleteReactiveProperty } from "../utils/reactive.js"
-import { evalTemplate } from '../utils/template.js'
+import { evalTemplate, template } from '../utils/template.js'
 import { variablesFilePath } from '../utils/configuration.js'
 
 import { HotReloader } from '../utils/hot-reloader.js'
@@ -132,6 +132,8 @@ export default {
 				let setValue = variableData.value;
 				if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number) {
 					setValue = await this.handleTemplateNumber(setValue, context);
+				} else {
+					setValue = await template(setValue, context);
 				}
 				this.logger.info(`Setting ${variableData.name} to ${setValue}`);
 				this.state[variableData.name] = setValue;
