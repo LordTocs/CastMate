@@ -35,7 +35,6 @@
       </v-sheet>
       <flex-scroller class="flex-grow-1">
         <sequence-editor v-model="actions" style="flex: 1" :draggable="false" />
-        <!--<timeline-row v-model="actions" style="flex: 1" />-->
       </flex-scroller>
     </div>
     <flex-scroller class="toolbox">

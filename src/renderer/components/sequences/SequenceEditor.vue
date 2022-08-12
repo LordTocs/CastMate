@@ -364,6 +364,7 @@ export default {
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow-x: hidden;
 }
 
 .drag-area:focus {
