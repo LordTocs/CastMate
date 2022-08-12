@@ -7,16 +7,17 @@
     >
       <label class="v-label">{{ schema.leftLabel }} </label>
     </div>
-    <v-switch v-model="modelObj">
+    <v-switch v-model="modelObj" inset density="compact">
       <template v-slot:label>
         {{ schema.name || label }}
         <v-btn
           v-if="!schema.required"
-          icon
+          icon="mdi-close"
+          flat
+          size="x-small"
+          class="mx-1"
           @click.stop="clear"
-        >
-          <v-icon> mdi-close </v-icon>
-        </v-btn>
+        />
       </template>
     </v-switch>
   </div>

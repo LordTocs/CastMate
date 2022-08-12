@@ -4,16 +4,17 @@
       <v-sheet class="d-flex flex-row px-2 py-2">
         <v-tooltip bottom>
           <template #activator="{ props }">
-            <v-btn color="primary" dark fab small class="mr-4" @click="preview" v-bind="props">
+            <v-btn color="success" dark fab small class="mr-4" @click="preview" v-bind="props">
               <v-icon>mdi-play</v-icon>
             </v-btn>
           </template>
           <span>Preview Automation</span>
         </v-tooltip>
+        <v-switch v-model="sync" color="primary" label="Synchronous" inset />
         <v-tooltip bottom>
           <template #activator="{ props }">
             <div v-bind="props" style="width: min-content">
-              <v-switch v-model="sync" class="my-0" label="Synchronous" />
+              
             </div>
           </template>
           <span>This automation will queue behind other Synchronous automations
