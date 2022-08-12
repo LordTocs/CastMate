@@ -31,7 +31,7 @@ export default {
 
 <style scoped>
 .preview {
-  overflow: hidden;
+  overflow-x: hidden;
   white-space: nowrap;
   flex-grow: 0;
 }

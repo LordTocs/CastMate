@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-tooltip :color="actionColor" location="top">
+    <v-tooltip location="top">
       <template v-slot:activator="{ props }">
         <v-sheet
           class="mini-icon"
@@ -10,9 +10,11 @@
           <v-icon small> {{ actionDefinition.icon }} </v-icon>
         </v-sheet>
       </template>
-      <p class="my-1 text-subtitle">{{ actionDefinition.name }}</p>
-      <v-divider />
-      <data-view :schema="actionDefinition.data" :value="this.action.data" />
+      <v-sheet :color="actionColor">
+        <p class="my-1 text-subtitle">{{ actionDefinition.name }}</p>
+        <v-divider />
+        <data-view :schema="actionDefinition.data" :value="this.action.data" />
+      </v-sheet>
     </v-tooltip>
   </div>
 </template>
