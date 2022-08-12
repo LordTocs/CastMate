@@ -1,5 +1,5 @@
 <template>
-  <v-system-bar window app class="draggable">
+  <v-system-bar window app class="draggable" color="black">
     <!--v-icon>mdi-message</v-icon-->
     <span> {{ title }} </span>
     <v-spacer></v-spacer>
