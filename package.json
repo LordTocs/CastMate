@@ -25,7 +25,7 @@
     "chromatism": "^3.0.0",
     "color": "^4.0.2",
     "cs-gamestate": "^2.2.3",
-    "electron": "^18.2.0",
+    "electron": "^20.0.1",
     "electron-updater": "^4.6.1",
     "express": "^4.17.1",
     "lodash": "^4.17.21",
@@ -61,7 +61,7 @@
     "vue-mixpanel": "^2.0.0",
     "vue-router": "^4.0.16",
     "vuedraggable": "^4.1.0",
-    "vuetify": "^3.0.0-beta.6",
+    "vuetify": "^3.0.0-beta.7",
     "vuetify-loader": "^1.7.3",
     "vuex": "^4.0.2"
   },
