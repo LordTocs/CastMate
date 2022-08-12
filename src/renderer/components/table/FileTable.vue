@@ -1,7 +1,7 @@
 <template>
     <v-card class="linktable-card">
         <div class="d-flex flex-row align-center my-2 mx-2">
-            <v-btn @click="$emit('new')" class="mr-3"> Add {{ name}} </v-btn>
+            <v-btn color="primary" @click="$emit('new')" class="mr-3"> Add {{ name}} </v-btn>
             <v-text-field v-model="search" append-inner-icon="mdi-magnify" label="Filter" single-line hide-details />
         </div>
 
@@ -50,7 +50,7 @@ export default {
             if (this.search.length == 0)
                 return this.files;
             const searchLower = this.search.toLowerCase();
-            return this.files.filter(f => f.toLowerCase().includes(searchLower));
+            return this.files.filter(f => f.toLowerCase().includes(searchLower)).sort();
         }
     },
     methods: {
