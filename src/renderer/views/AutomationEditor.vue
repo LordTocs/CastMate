@@ -80,7 +80,6 @@ import SequenceEditor from "../components/sequences/SequenceEditor.vue";
 import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
-import { loadAutomation, saveAutomation } from "../utils/fileTools";
 import { trackAnalytic } from "../utils/analytics.js";
 
 export default {
@@ -104,8 +103,9 @@ export default {
   },
   methods: {
     ...mapIpcs("core", ["runActions"]),
-    async saveAutomation() {
-      await saveAutomation(this.automationName, this.automation);
+    ...mapIpcs("io", ["saveAutomation", "getAutomation"]),
+    async saveInternal() {
+      await this.saveAutomation(this.automationName, this.automation);
       this.dirty = false;
       this.saveSnack = true;
     },
@@ -114,7 +114,7 @@ export default {
     },
   },
   async mounted() {
-    this.automation = await loadAutomation(this.automationName);
+    this.automation = await this.getAutomation(this.automationName);
 
     trackAnalytic("accessAutomation", { name: this.automationName });
   },
@@ -140,7 +140,7 @@ export default {
         "Discard Changes"
       )
     ) {
-      await this.saveAutomation();
+      await this.saveInternal();
     }
     return next();
   },

@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <file-table :files="automationFiles" name="Automation" />
+    <file-table :files="automationFiles" name="Automation" @nav="onNav"/>
   </v-container>
 </template>
 
@@ -21,6 +21,10 @@ export default {
     async getFiles() {
       this.automationFiles = await this.getAutomations()
     },
+    onNav(name) {
+      console.log("HELLO");
+      this.$router.push(`/automations/${name}`)
+    }
   },
   async mounted() {
     await this.getFiles();

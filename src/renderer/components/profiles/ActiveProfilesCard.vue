@@ -43,7 +43,6 @@
 </template>
 
 <script>
-import { createNewProfile, getAllProfiles } from "../../utils/fileTools";
 import { mapGetters } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
 
@@ -51,6 +50,7 @@ export default {
   components: { NamedItemModal },
   computed: {
     ...mapGetters("ipc", ["activeProfiles", "paths"]),
+    ...mapGetters("io", ["getProfiles", "createProfile"])
   },
   data() {
     return {
@@ -58,12 +58,12 @@ export default {
     };
   },
   async mounted() {
-    let profiles = await getAllProfiles();
+    let profiles = await this.getProfiles();
     this.hasProfiles = profiles.length > 0;
   },
   methods: {
     async createNewProfile(name) {
-      await createNewProfile(name);
+      await this.createProfile(name);
       this.$router.push(`/profiles/${name}`);
     },
   },

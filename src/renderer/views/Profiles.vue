@@ -25,7 +25,6 @@ export default {
       console.log(this.profiles);
     },
     onNav(name) {
-      console.log("Naving", name);
       this.$router.push(`/profiles/${name}`)
     }
   },

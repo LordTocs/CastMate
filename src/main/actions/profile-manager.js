@@ -63,6 +63,15 @@ export class ProfileManager
 				this.handleProfileLoaded(profile);
 			});
 
+			if (!config)
+			{
+				config = {
+					version: "2.0",
+					triggers: {},
+					conditions: { operator: 'any', operands: [] }
+				}
+			}
+
 			await newProfile.saveConfig(config);
 			await handleProfileLoaded(newProfile);
 		});

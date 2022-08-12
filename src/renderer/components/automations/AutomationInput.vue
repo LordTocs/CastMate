@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import { generateEmptyAutomation } from "../../utils/fileTools";
 import { mapModel } from "../../utils/modelValue";
 import ActionMiniPreview from "../actions/ActionMiniPreview.vue";
 import AutomationSelector from "./AutomationSelector.vue";

@@ -71,16 +71,13 @@
 </template>
 
 <script>
-import fs from "fs";
 import path from "path";
-import YAML from "yaml";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
 import { mapGetters } from "vuex";
 import FlexScroller from "../layout/FlexScroller.vue";
 import ActionToolbox from "../actions/ActionToolbox.vue";
 import SequenceEditor from "../sequences/SequenceEditor.vue";
 import { mapIpcs } from "../../utils/ipcMap";
-import { loadAutomation, saveAutomation } from '../../utils/fileTools';
 
 export default {
   components: { ConfirmDialog, FlexScroller, ActionToolbox, SequenceEditor },
@@ -96,6 +93,7 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
+    ...mapGetters("io", ["saveAutomation", "getAutomation"]),
     filePath() {
       return path.join(
         this.paths.userFolder,
@@ -105,7 +103,7 @@ export default {
   },
   methods: {
     async save() {
-      await this.saveAutomation();
+      await this.saveInternal();
       this.dirty = false;
       this.dialog = false;
     },
@@ -115,8 +113,8 @@ export default {
       this.dirty = false;
       this.dialog = false;
     },
-    async saveAutomation() {
-      await saveAutomation(this.automationName, this.automation);
+    async saveInternal() {
+      await this.saveAutomation(this.automationName, this.automation);
       this.dirty = false;
     },
     async askToSave() {
@@ -130,11 +128,11 @@ export default {
           "Discard Changes"
         )
       ) {
-        await this.saveAutomation();
+        await this.saveInternal();
       }
     },
     async open() {
-      this.automation = await loadAutomation(this.automationName);
+      this.automation = await this.getAutomation(this.automationName);
 
       this.dialog = true;
     },

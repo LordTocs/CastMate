@@ -144,7 +144,6 @@ import { mapGetters } from "vuex";
 import Twitch from "../plugins/twitch.vue";
 import ObsSettings from "./ObsSettings.vue";
 import { isFirstRun } from "../../utils/firstRun";
-import { createNewProfile, profileExists } from "../../utils/fileTools";
 export default {
   components: { Twitch, ObsSettings },
   data() {
@@ -155,6 +154,7 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["stateLookup", "paths"]),
+    ...mapGetters("io", ["getProfile", "createProfile"]),
     signedIn() {
       return !!this.stateLookup.twitch.channelName;
     },
@@ -174,8 +174,8 @@ export default {
       this.dialog = true;
     },
     async createMainProfile() {
-      if (!(await profileExists("Main"))) {
-        await createNewProfile("Main");
+      if (!(await this.getProfile("Main"))) {
+        await this.createProfile("Main");
       }
     },
     moveNext() {
