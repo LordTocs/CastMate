@@ -11,7 +11,10 @@ export function changeObjectKey(object, oldKey, newKey) {
 }
 
 export function constructDefaultSchema(schema) {
-	if (schema.type == "Object") {
+	if (!schema) {
+		return null
+	}
+	else if (schema.type == "Object") {
 		const result = {};
 		for (let prop in schema.properties) {
 			const value = constructDefaultSchema(schema.properties[prop])
