@@ -64,8 +64,8 @@ export default {
 
 <style scoped>
 .preview {
-  height: 43px;
-  padding-top: 3px;
+  min-height: 43px;
+  margin-top: 10px;
   margin-left: 6px;
   display: flex;
   flex-direction: row;
