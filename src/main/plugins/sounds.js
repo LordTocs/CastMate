@@ -3,8 +3,10 @@ import { template } from '../utils/template.js'
 import path from "path"
 import { userFolder } from "../utils/configuration.js"
 import say from "say"
-import { nanoid } from "nanoid/non-secure"
-//const nanoid = await import("nanoid/non-secure");
+import { customAlphabet } from "nanoid/non-secure"
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default {
 	name: "sounds",
@@ -12,7 +14,7 @@ export default {
 	icon: "mdi-volume-high",
 	color: "#62894F",
 	async init() {
-		this.idgen = nanoid.customAlphabet('1234567890abcdef', 10)
+		this.idgen = customAlphabet('1234567890abcdef', 10)
 
 		this.audioWindow = new BrowserWindow({
 			width: 100,
@@ -25,11 +27,11 @@ export default {
 			}
 		});
 
-		this.audioWindow.loadFile(path.join(__static, "sounds.html"));
+		this.audioWindow.loadFile(path.join(__dirname, "../../../public", "sounds.html"));
 
-		ipcMain.on('sound-window', (event) => {
-			this.audioWindowSender = event.sender;
-		})
+		this.audioWindowSender = this.audioWindow.webContents;
+
+		this.voiceCache = null;
 	},
 	methods: {
 		getFullFilepath(filename) {
@@ -46,6 +48,20 @@ export default {
 				source: filename,
 				volume: (volume != undefined ? (volume / 100) : 1.0) * globalVolume
 			});
+		},
+		getVoices() {
+			if (!this.voiceCache)
+			{
+				return new Promise((resolve, reject) => {
+					say.getInstalledVoices((err, voices) => {
+						if (err)
+							reject(err)
+						this.voiceCache = voices;
+						resolve(voices)
+					})
+				})
+			}
+			return this.voiceCache;
 		}
 	},
 	settings: {
@@ -101,6 +117,13 @@ export default {
 						type: String,
 						template: true,
 					},
+					voice: {
+						type: String,
+						required: true,
+						async enum() {
+							return await this.getVoices();
+						}
+					},
 					volume: {
 						type: Number,
 						template: true,
@@ -118,7 +141,7 @@ export default {
 				const message = await template(data.message, context);
 				this.logger.info(`Speaking: ${message}`);
 				const soundPath = path.join(app.getPath("temp"), this.idgen() + ".wav");
-				say.export(message, undefined, undefined, soundPath, (err) => {
+				say.export(message, data.voice, undefined, soundPath, (err) => {
 					if (err) {
 						this.logger.error(String(err));
 						return;
