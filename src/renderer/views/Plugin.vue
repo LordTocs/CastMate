@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
+    <v-sheet color="grey-darken-4" class="py-4 px-4 d-flex">
       <div class="d-flex flex-column mx-4">
         <v-btn
           color="primary"
@@ -34,8 +34,8 @@
                 :key="settingKey"
                 :schema="addRequired(plugin.settings[settingKey])"
                 :label="settingKey"
-                :value="settings[settingKey]"
-                @input="(v) => setSettingsValue(settingKey, v)"
+                :model-value="settings[settingKey]"
+                @update:model-value="(v) => setSettingsValue(settingKey, v)"
               />
             </v-card-text>
           </v-card>
@@ -52,18 +52,13 @@
                 :key="secretKey"
                 :schema="addRequired(plugin.secrets[secretKey])"
                 :label="secretKey"
-                :value="secrets[secretKey]"
-                @input="(v) => setSecretsValue(secretKey, v)"
+                :model-value="secrets[secretKey]"
+                @update:model-value="(v) => setSecretsValue(secretKey, v)"
                 secret
               />
             </v-card-text>
             <v-card-text v-else>
-              <v-skeleton-loader
-                boilerplate
-                type="text"
-                v-for="secretKey in secretKeys"
-                :key="secretKey"
-              ></v-skeleton-loader>
+              ...
             </v-card-text>
             <v-card-actions>
               <v-btn @click="showSecrets = !showSecrets">
@@ -85,6 +80,7 @@ import DataInput from "../components/data/DataInput.vue";
 import fs from "fs";
 import YAML from "yaml";
 import { trackAnalytic } from "../utils/analytics.js";
+import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 
 export default {
   computed: {
@@ -137,6 +133,8 @@ export default {
       const fullSecrets = YAML.parse(fullSecretsText) || {};
 
       this.secrets = fullSecrets[this.pluginName] || {};
+
+      this.dirty = false;
     },
     async save() {
       const fullSettingsText = await fs.promises.readFile(
@@ -168,9 +166,9 @@ export default {
       this.saveSnack = true;
       this.dirty = false;
     },
-    async routeGuard(next) {
+    async routeGuard() {
       if (!this.dirty) {
-        return next();
+        return true;
       }
       if (
         await this.$refs.saveDlg.open(
@@ -182,13 +180,13 @@ export default {
       ) {
         await this.save();
       }
-      return next();
+      return true;
     },
   },
   components: {
     DataInput,
-    ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
-  },
+    ConfirmDialog
+},
   data() {
     return {
       showSecrets: false,
@@ -228,13 +226,15 @@ export default {
     await this.load();
     trackAnalytic("accessSettings", { name: this.pluginName });
   },
-  async beforeRouteLeave(to, from, next) {
-    await this.routeGuard(next);
+  async beforeRouteLeave(to, from) {
+    const result = await this.routeGuard();
     this.dirty = false;
+    return result;
   },
-  async beforeRouteUpdate(to, from, next) {
-    await this.routeGuard(next);
+  async beforeRouteUpdate(to, from) {
+    const result = await this.routeGuard();
     this.dirty = false;
+    return result;
   },
 };
 </script>

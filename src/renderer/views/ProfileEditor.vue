@@ -61,8 +61,8 @@
       </v-container>
     </flex-scroller>
 
-    <!--confirm-dialog ref="deleteConfirm" />
-    <confirm-dialog ref="saveDlg" /-->
+    <!--<confirm-dialog ref="deleteConfirm" />-->
+    <confirm-dialog ref="saveDlg" />
   </div>
 </template>
 
@@ -74,16 +74,17 @@ import BooleanGroup from "../components/conditionals/BooleanGroup.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
 import TriggerList from "../components/triggers/TriggerList.vue";
 import { mapIpcs } from "../utils/ipcMap";
+import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 
 export default {
   components: {
     ConditionsEditor,
     AutomationInput,
-    ConfirmDialog: () => import("../components/dialogs/ConfirmDialog.vue"),
     BooleanGroup,
     FlexScroller,
     TriggerList,
-  },
+    ConfirmDialog
+},
   computed: {
     ...mapGetters("ipc", ["pluginList"]),
     profileName() {
@@ -122,11 +123,8 @@ export default {
       },
     },
   },
-  /*async beforeRouteLeave(to, from, next) {
-    if (!this.dirty) {
-      return next();
-    }
-    if (
+  async beforeRouteLeave(to, from) {
+    if (this.dirty &&
       await this.$refs.saveDlg.open(
         "Unsaved Changes",
         "Do you want to save your changes?",
@@ -136,8 +134,8 @@ export default {
     ) {
       await this.save();
     }
-    return next();
-  },*/
+    return true;
+  },
 };
 </script>
 

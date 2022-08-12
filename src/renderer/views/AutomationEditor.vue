@@ -1,28 +1,14 @@
 <template>
   <div class="editor-base">
     <div class="d-flex flex-grow-1 flex-column">
-      <v-sheet color="grey darken-4" class="py-4 px-4 d-flex">
+      <v-sheet color="grey-darken-3" class="py-4 px-4 d-flex">
         <div class="d-flex flex-column mx-4">
-          <v-btn
-            color="primary"
-            fab
-            dark
-            class="my-1 align-self-center"
-            @click="saveAutomation"
-            :disabled="!dirty"
-          >
+          <v-btn color="primary" fab dark class="my-1 align-self-center" @click="saveInternal" :disabled="!dirty">
             <v-icon>mdi-content-save</v-icon>
           </v-btn>
           <v-tooltip bottom>
             <template v-slot:activator="{ props }">
-              <v-btn
-                color="primary"
-                fab
-                dark
-                class="my-1 align-self-center"
-                @click="preview"
-                v-bind="props"
-              >
+              <v-btn color="primary" fab dark class="my-1 align-self-center" @click="preview" v-bind="props">
                 <v-icon>mdi-play</v-icon>
               </v-btn>
             </template>
@@ -32,36 +18,22 @@
 
         <div class="flex-grow-1">
           <div class="d-flex">
-            <h1 class="flex-grow-1">{{ automationName }}</h1>
+            <h1 class="flex-grow-1 my-1">{{ automationName }}</h1>
             <v-tooltip bottom>
               <template v-slot:activator="{ props }">
-                <div v-bind="props" style="width: min-content">
-                  <v-switch
-                    v-if="automation"
-                    v-model="automation.sync"
-                    label="Synchronous"
-                  />
+                <div v-bind="props" class="flex-grow-2 align-right">
+                  <v-switch v-if="automation" v-model="automation.sync" label="Synchronous" />
                 </div>
               </template>
-              <span
-                >This automation will queue behind other Synchronous automations
-                and wait to play.</span
-              >
+              <span> This automation will queue behind other Synchronous automations
+                and wait to play. </span>
             </v-tooltip>
           </div>
-          <v-text-field
-            v-if="automation"
-            v-model="automation.description"
-            label="Description"
-          />
+          <v-text-field v-if="automation" v-model="automation.description" label="Description" />
         </div>
       </v-sheet>
       <flex-scroller class="flex-grow-1">
-        <sequence-editor
-          v-if="automation"
-          v-model="automation.actions"
-          style="flex: 1"
-        />
+        <sequence-editor v-if="automation" v-model="automation.actions" style="flex: 1" />
       </flex-scroller>
     </div>
     <div class="editor-toolbox">
@@ -128,11 +100,8 @@ export default {
       },
     },
   },
-  async beforeRouteLeave(to, from, next) {
-    if (!this.dirty) {
-      return next();
-    }
-    if (
+  async beforeRouteLeave(to, from) {
+    if (this.dirty &&
       await this.$refs.saveDlg.open(
         "Unsaved Changes",
         "Do you want to save your changes?",
@@ -142,7 +111,7 @@ export default {
     ) {
       await this.saveInternal();
     }
-    return next();
+    return true;
   },
 };
 </script>
