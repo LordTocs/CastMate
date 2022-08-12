@@ -14,17 +14,19 @@
     :clearable="!schema.required"
     :secret="secret"
   />
-  <v-slider
-    v-else-if="schema.type == 'Number' && schema.slider"
-    v-model="modelObj"
-    :label="labelString"
-    :min="schema.slider.min"
-    :max="schema.slider.max"
-    :step="schema.slider.step"
-    color="white"
-    :append-icon="!schema.required ? 'mdi-close' : undefined"
-    @click:append="clear"
-  />
+  <template v-else-if="schema.type == 'Number' && schema.slider">
+    <div class="text-caption"> {{ labelString }}</div>
+    <v-slider
+      v-model="modelObj"
+      :name="labelString"
+      :min="schema.slider.min"
+      :max="schema.slider.max"
+      :step="schema.slider.step"
+      color="white"
+      :append-icon="!schema.required ? 'mdi-close' : undefined"
+      @click:append="clear"
+    />
+  </template>
   <string-input
     v-else-if="schema.type == 'String'"
     v-model="modelObj"
@@ -46,6 +48,7 @@
     :path="schema.path"
     :basePath="schema.basePath"
     :clearable="!schema.required"
+    :label="labelString"
   />
   <color-picker
     v-else-if="schema.type == 'LightColor'"
