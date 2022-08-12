@@ -33,12 +33,12 @@
         :triggerType="{ triggerKey, pluginKey }"
         @mapping="updateMapping"
       />
-      <v-btn dark icon @click="$refs.editModal.open()">
+      <v-btn dark size="small" class="mx-1" icon @click="$refs.editModal.open()" elevation="0">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
       <v-menu bottom right>
         <template v-slot:activator="{ props }">
-          <v-btn dark icon v-bind="props">
+          <v-btn size="small" class="mx-1" dark icon v-bind="props" elevation="0">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
