@@ -340,7 +340,8 @@ export default {
 					},
 					filterEnabled: {
 						type: Boolean,
-						name: "Filter Enabled"
+						name: "Filter Enabled",
+						required: true
 					}
 				}
 			},
@@ -382,7 +383,8 @@ export default {
 					},
 					enabled: {
 						type: Boolean,
-						name: "Source Visible"
+						name: "Source Visible",
+						required: true,
 					}
 				}
 			},
