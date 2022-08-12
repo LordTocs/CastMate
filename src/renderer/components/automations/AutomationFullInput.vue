@@ -4,7 +4,7 @@
       <v-sheet class="d-flex flex-row px-2 py-2">
         <v-tooltip bottom>
           <template #activator="{ props }">
-            <v-btn color="success" dark fab small class="mr-4" @click="preview" v-bind="props">
+            <v-btn color="success" dark fab size="large" class="mr-4" @click="preview" v-bind="props">
               <v-icon>mdi-play</v-icon>
             </v-btn>
           </template>
