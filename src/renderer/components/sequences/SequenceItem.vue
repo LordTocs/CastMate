@@ -4,40 +4,47 @@
     :class="{ expanded, shrunk: !expanded, 'sequence-item': true, selected }"
     tabindex="0"
   >
-    <div style="font-size: 0; user-select: text">...</div>
-    <v-card-title
-      v-if="actionDefinition"
-      class="handle"
-      @click.stop="toggleExpand"
-    >
-      <v-icon large left> {{ actionDefinition.icon }} </v-icon>
-      {{ actionDefinition.name }}
-    </v-card-title>
-    <v-expand-transition>
-      <v-card-subtitle class="handle" @click.stop="toggleExpand">
-        <data-view
-          class="data-preview"
-          :value="data"
-          :schema="actionDefinition.data"
-          v-if="!expanded"
-        />
-        <!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
-      </v-card-subtitle>
-    </v-expand-transition>
-    <v-expand-transition>
-      <v-card-text
-        v-if="expanded"
-        class="grey darken-4"
-        @click.stop=""
-        @mousedown.stop=""
-      >
-        <action-editor
-          :actionKey="action"
-          :plugin="plugin"
-          v-model="data"
-        />
-      </v-card-text>
-    </v-expand-transition>
+    <div class="d-flex flex-row">
+      <v-sheet :color="darkerActionColor" class="d-flex flex-column justify-center handle" style="cursor: grab;">
+        <v-icon size="x-large" class="mx-2"> mdi-drag </v-icon>
+      </v-sheet>
+      <div class="flex-grow-1">
+        <v-card-title
+          v-if="actionDefinition"
+          @click.stop="toggleExpand"
+        >
+          <v-icon large left> {{ actionDefinition.icon }} </v-icon>
+          {{ actionDefinition.name }}
+        </v-card-title>
+        <v-expand-transition>
+          <v-sheet :color="actionColor">
+            <v-card-subtitle @click.stop="toggleExpand">
+              <data-view
+                class="data-preview"
+                :value="data"
+                :schema="actionDefinition.data"
+                v-if="!expanded"
+              />
+            </v-card-subtitle>
+          </v-sheet>
+        </v-expand-transition>
+        <v-expand-transition>
+          <v-sheet v-show="expanded" :color="darkestActionColor">
+            <v-card-text
+              class="grey darken-4"
+              @click.stop=""
+              @mousedown.stop=""
+            >
+                <action-editor
+                  :actionKey="action"
+                  :plugin="plugin"
+                  v-model="data"
+                />
+            </v-card-text>
+          </v-sheet>
+        </v-expand-transition>
+      </div>
+    </div>
   </v-card>
 </template>
 
@@ -46,6 +53,8 @@ import { mapGetters } from "vuex";
 import { mapModelValues } from "../../utils/modelValue";
 import ActionEditor from "../actions/ActionEditor.vue";
 import DataView from "../data/DataView.vue";
+import chromatism from "chromatism";
+
 export default {
   props: {
     modelValue: { type: Object, required: true },
@@ -71,6 +80,15 @@ export default {
     actionColor() {
       return this.actionDefinition?.color;
     },
+    darkActionColor() {
+      return chromatism.shade(-10, this.actionColor).hex;
+    },
+    darkerActionColor() {
+      return chromatism.shade(-20, this.actionColor).hex;
+    },
+    darkestActionColor() {
+      return chromatism.shade(-30, this.actionColor).hex;
+    }
   },
   methods: {
     toggleExpand() {
