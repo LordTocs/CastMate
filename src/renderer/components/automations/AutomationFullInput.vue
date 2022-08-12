@@ -51,14 +51,12 @@ import {  generateEmptyAutomation } from "../../utils/fileTools";
 import _cloneDeep from "lodash/cloneDeep";
 import AutomationSelector from "./AutomationSelector.vue";
 import { mapIpcs } from "../../utils/ipcMap";
-import TimelineRow from "../timelines/TimelineRow.vue";
 export default {
   components: {
     ActionToolbox,
     SequenceEditor,
     FlexScroller,
     AutomationSelector,
-    TimelineRow
 },
   props: {
     modelValue: {},
