@@ -11,17 +11,17 @@
     :return-object="true"
   >
     <template #item="{ item, props }">
-      <div v-bind="props" class="px-1 py-1">
-        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" small>
+      <div v-bind="props" class="text-no-wrap">
+        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" size="small">
           <v-icon start :icon="plugins[item.raw.pluginKey].icon" />
           {{ plugins[item.raw.pluginKey].uiName }}
         </v-chip>
         {{ plugins[item.raw.pluginKey].triggers[item.raw.triggerKey].name }}
       </div>
     </template>
-    <template #selection="{ item }">
-      <div class="px-1 py-1">
-        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" small>
+    <template #selection="{ item }" >
+      <div class="text-no-wrap">
+        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" size="small">
           <v-icon start :icon="plugins[item.raw.pluginKey].icon" />
           {{ plugins[item.raw.pluginKey].uiName }}
         </v-chip>
