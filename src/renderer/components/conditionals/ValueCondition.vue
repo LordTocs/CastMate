@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-row">
+  <div class="d-flex flex-row justify-center">
     <div class="state-select mx-1">
       <state-selector
         v-model="state"
@@ -14,9 +14,9 @@
         v-model="operator"
       >
         <template v-slot:item="{ item, props }">
-          <div v-bind="props" class="d-flex flex-row justify-center py-1">
+          <v-list-item v-bind="props" class="d-flex flex-row justify-center py-1" title="">
             <v-icon :icon="item.raw.icon"/>
-          </div>
+          </v-list-item>
         </template>
         <template v-slot:selection="{ item }">
           <v-icon :icon="item.raw.icon" size="small" />

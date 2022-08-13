@@ -28,46 +28,42 @@
         <v-btn
           small
           :class="{ 'my-1': true, 'light-green': isAny, 'light-blue': isAll, 'darken-4': true }"
-          @click="setOperand(modelValue.operands.length, { operator: 'equal' })"
+          @click="addOperand({ operator: 'equal' })"
         >
           <v-icon> mdi-plus </v-icon> Add Value
         </v-btn>
         <v-btn
           small
           :class="{ 'my-1': true, 'light-green': isAny, 'light-blue': isAll, 'darken-4': true }"
-          @click="
-            setOperand(modelValue.operands.length, { operator: 'any', operands: [] })
-          "
+          @click="addOperand({ operator: 'any', operands: [] })"
         >
           <v-icon> mdi-format-list-group </v-icon> Add Group
         </v-btn>
       </div>
-      <v-btn icon @click="$emit('delete')" v-if="hasHandle">
-        <v-icon> mdi-close </v-icon>
-      </v-btn>
+      <v-btn icon="mdi-close" class="mx-1 my-3" @click="$emit('delete')" v-if="hasHandle" flat size="x-small" />
     </div>
-    <!--draggable
-      :list="modelValue.operands"
+    <draggable
+      v-model="operands"
+      item-key="id"
       class="group-content"
       handle=".boolean-handle"
       group="boolean-expressions"
-      :component-data="getDraggableData()"
-    -->
-      <div v-for="(expr, i) in modelValue.operands" :key="i">
+    >
+      <template #item="{element, index}">
         <boolean-group
-          v-if="expr.operands"
-          :modelValue="expr"
-          @update:modelValue="(v) => setOperand(i, v)"
-          @delete="(v) => deleteOperand(i)"
+          v-if="element.operands"
+          :modelValue="element"
+          @update:modelValue="(v) => setOperand(index, v)"
+          @delete="(v) => deleteOperand(index)"
         />
         <boolean-expression
           v-else
-          :modelValue="expr"
-          @update:modelValue="(v) => setOperand(i, v)"
-          @delete="(v) => deleteOperand(i)"
+          :modelValue="element"
+          @update:modelValue="(v) => setOperand(index, v)"
+          @delete="(v) => deleteOperand(index)"
         />
-      </div>
-    <!--/draggable-->
+      </template>
+    </draggable>
   </v-sheet>
 </template>
 
@@ -75,6 +71,8 @@
 import _cloneDeep from "lodash/cloneDeep";
 import BooleanExpression from "./BooleanExpression.vue";
 import Draggable from "vuedraggable";
+import { mapModelValues } from "../../utils/modelValue";
+import { nanoid } from "nanoid/non-secure";
 export default {
   name: "BooleanGroup",
   props: {
@@ -86,6 +84,7 @@ export default {
     Draggable,
   },
   computed: {
+    ...mapModelValues(["operands"]),
     operations() {
       return [
         {
@@ -127,23 +126,19 @@ export default {
       newValue.operands[index] = value;
       this.$emit("update:modelValue", newValue);
     },
+    addOperand(value) {
+      const newValue = _cloneDeep(this.modelValue);
+      if (!newValue.operands) {
+        newValue.operands = [];
+      }
+      newValue.operands.push({ value, id: nanoid() });
+      this.$emit("update:modelValue", newValue);
+    },
     deleteOperand(index) {
       const newValue = _cloneDeep(this.modelValue);
       if (!newValue.operands) return;
       newValue.operands.splice(index, 1);
       this.$emit("update:modelValue", newValue);
-    },
-    dragChanged(newArray) {
-      const newValue = _cloneDeep(this.modelValue);
-      newValue.operands = newArray;
-      this.$emit("update:modelValue", newValue);
-    },
-    getDraggableData() {
-      return {
-        on: {
-          inputChanged: this.dragChanged,
-        },
-      };
     },
   },
 };
@@ -162,6 +157,9 @@ export default {
 
 .group-handle {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: grab;
 }
 
 .group-content {

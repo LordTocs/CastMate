@@ -1,18 +1,16 @@
 <template>
-  <v-sheet class="d-flex my-2 rounded">
+  <v-sheet class="d-flex my-2 rounded" color="#272727">
     <div
-      class="boolean-handle expression-handle rounded-l"
+      class="boolean-handle expression-handle rounded-s"
       :style="{ backgroundColor: handleColor }"
     >
       <v-icon> mdi-drag </v-icon>
     </div>
     <value-condition
-      class="flex-grow-1"
+      class="flex-grow-1 my-2"
       v-model="modelObj"
     />
-    <v-btn @click="$emit('delete')" icon>
-      <v-icon> mdi-close </v-icon>
-    </v-btn>
+    <v-btn @click="$emit('delete')" class="mx-1 my-3" icon="mdi-close" size="x-small" color="grey-darken-3" flat/>
   </v-sheet>
 </template>
 
@@ -43,5 +41,8 @@ export default {
 <style scoped>
 .expression-handle {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: grab;
 }
 </style>

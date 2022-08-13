@@ -68,3 +68,11 @@ export function filterSchema(object, schema, filterStr, fallbackStr) {
 	}
 	return fallbackStr.toLowerCase().includes(filterStr.toLowerCase());
 }
+
+function hashCode(s) {
+	return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+}
+
+export function jsonHash(obj) {
+	return hashCode(JSON.stringify(obj));
+}

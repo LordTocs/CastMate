@@ -1,54 +1,22 @@
 <template>
-  <v-select
-    :items="stateList"
-    v-model="modelObj"
-    item-title="id"
-    item-value="id"
-    return-object
-  >
-    <template v-slot:item="{ item, props }">
-      <div v-bind="props" class="py-1 px-1">
-        <v-chip
-          class="mr-2"
-          v-if="item"
-          :color="plugins[item.raw.plugin].color"
-          outlined
-          small
-        >
-          {{ plugins[item.raw.plugin].uiName }}
-        </v-chip>
-        <span v-if="item">
-          {{ item.raw.key }}
-        </span>
-        <span
-          v-if="item && stateLookup[item.raw.plugin][item.raw.key]"
-          class="text--secondary ml-2"
-        >
+  <v-select :items="stateList" v-model="modelObj" item-title="id" item-value="id" return-object>
+    <template #item="{ item, props }">
+      <v-list-item v-bind="props" title="">
+        <span v-if="item" class="font-weight-black" :style="{ 'color': plugins[item.raw.plugin].color }">{{
+            plugins[item.raw.plugin].uiName
+        }}</span>.<span v-if="item">{{ item.raw.key }}</span>
+        <span v-if="item && stateLookup[item.raw.plugin][item.raw.key]" class="text-medium-emphasis ml-2">
           ({{ stateLookup[item.raw.plugin][item.raw.key] }})
         </span>
-      </div>
+      </v-list-item>
     </template>
-    <template v-slot:selection="{ item }">
-      <div>
-        <v-chip
-          class="mr-2"
-          v-if="item"
-          :color="plugins[item.raw.plugin].color"
-          outlined
-          small
-        >
-          {{ plugins[item.raw.plugin].uiName }}
-        </v-chip>
-        <span v-if="item">
-          {{ item.raw.key }}
-        </span>
-        <span
-          v-if="item && stateLookup[item.raw.plugin][item.raw.key]"
-          class="text--secondary ml-2"
-        >
-          ({{ stateLookup[item.raw.plugin][item.raw.key] }})
-        </span>
-      </div>
+    <template #selection="{ item }">
+      <span v-if="item" class="font-weight-black" :style="{ 'color': plugins[item.raw.plugin].color }">{{
+            plugins[item.raw.plugin].uiName
+        }}</span>.<span v-if="item">{{ item.raw.key }}</span>
+      <span v-if="item && stateLookup[item.raw.plugin][item.raw.key]" class="text-medium-emphasis ml-2">
+        ({{ stateLookup[item.raw.plugin][item.raw.key] }})
+      </span>
     </template>
   </v-select>
 </template>
