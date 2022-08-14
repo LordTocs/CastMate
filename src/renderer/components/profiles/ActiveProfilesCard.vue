@@ -26,11 +26,12 @@
         label
         color="primary"
         class="mx-1"
+        @click="() => $router.push(`/profiles/${profileName}`)"
       >
         <span class="mx-1">{{ profileName }} </span>
-        <v-btn x-small icon link :to="`/profiles/${profileName}`">
+        <!--<v-btn x-small icon link :to="`/profiles/${profileName}`">
           <v-icon> mdi-pencil </v-icon>
-        </v-btn>
+        </v-btn>-->
       </v-chip>
     </v-card-text>
     <named-item-modal
