@@ -81,6 +81,7 @@ import fs from "fs";
 import YAML from "yaml";
 import { trackAnalytic } from "../utils/analytics.js";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
+import { defineAsyncComponent } from "vue";
 
 export default {
   computed: {
@@ -106,7 +107,7 @@ export default {
   },
   methods: {
     importSettingsView(viewName) {
-      return () => import(`../components/plugins/${viewName}`);
+      return defineAsyncComponent(() => import(`../components/plugins/${viewName}`));
     },
     setSettingsValue(key, value) {
       this.$set(this.settings, key, value);
