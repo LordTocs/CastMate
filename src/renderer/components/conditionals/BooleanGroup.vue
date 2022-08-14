@@ -43,11 +43,11 @@
       <v-btn icon="mdi-close" class="mx-1 my-3" @click="$emit('delete')" v-if="hasHandle" flat size="x-small" />
     </div>
     <draggable
-      v-model="operands"
+      :list="operands"
       item-key="id"
       class="group-content"
       handle=".boolean-handle"
-      group="boolean-expressions"
+      :group="{ name: 'boolean-expressions' }"
     >
       <template #item="{element, index}">
         <boolean-group
@@ -79,6 +79,7 @@ export default {
     modelValue: {},
     hasHandle: { type: Boolean, default: () => true },
   },
+  emits: ["update:modelValue"],
   components: {
     BooleanExpression,
     Draggable,
@@ -131,7 +132,7 @@ export default {
       if (!newValue.operands) {
         newValue.operands = [];
       }
-      newValue.operands.push({ value, id: nanoid() });
+      newValue.operands.push({ ...value, id: nanoid() });
       this.$emit("update:modelValue", newValue);
     },
     deleteOperand(index) {
