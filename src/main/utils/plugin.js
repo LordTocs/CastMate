@@ -3,6 +3,9 @@ import { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } from 
 import _ from 'lodash'
 import { ipcMain } from "./electronBridge.js"
 import logger from '../utils/logger.js'
+import path from 'path'
+import { userFolder } from '../utils/configuration.js'
+import { FileCache } from "./filecache.js";
 
 export class Plugin
 {
@@ -73,6 +76,7 @@ export class Plugin
 		this.pluginObj.triggers = {};
 
 		this.setupTriggers(config);
+		this.setupCaching(config);
 
 		this.actions = {};
 
@@ -162,6 +166,13 @@ export class Plugin
 				// TODO: Throw exception to UI
 				logger.error(`Error loading ${this.name} plugin. Error Msg: ${err}.`)
 			}
+		}
+	}
+
+	setupCaching(config) {
+		this.pluginObj.getCache = function(name, secret = false) {
+			const filePath = path.join(userFolder, secret ? 'secrets' : 'cache', `${config.name}.${name}.yaml`);
+			return new FileCache(filePath, secret);
 		}
 	}
 

@@ -4,7 +4,7 @@ class HUEStateTracker {
 	}
 
 	getGroupColorState(group, requestedState) {
-		let state = new lightstates.GroupLightState();
+		const deltaState = {};
 		if (!this.lastState[group]) {
 			this.lastState[group] = {};
 		}
@@ -13,26 +13,26 @@ class HUEStateTracker {
 
 		if (requestedState.bri != undefined) {
 			if (lastState.bri != requestedState.bri) {
-				state.bri(requestedState.bri);
+				deltaState.bri = requestedState.bri;
 				lastState.bri = requestedState.bri;
 			}
 		}
 		if (requestedState.sat != undefined) {
 			if (lastState.sat != requestedState.sat) {
-				state.sat(requestedState.sat);
+				deltaState.sat = requestedState.sat;
 				lastState.sat = requestedState.sat;
 			}
 		}
 		if (requestedState.hue != undefined) {
 			if (lastState.hue != requestedState.hue) {
-				state.hue(requestedState.hue);
+				deltaState.hue = requestedState.hue;
 				lastState.hue = requestedState.hue;
 				delete lastState.ct;
 			}
 		}
 		if (requestedState.ct != undefined) {
 			if (lastState.temp != requestedState.ct) {
-				state.ct(requestedState.ct);
+				deltaState.ct = requestedState.ct;
 				lastState.ct = requestedState.ct;
 				delete lastState.hue;
 				delete lastState.sat;
@@ -40,7 +40,7 @@ class HUEStateTracker {
 		}
 		if (requestedState.on != undefined) {
 			if (lastState.on != requestedState.on) {
-				state.on(requestedState.on);
+				deltaState.on = requestedState.on;
 				lastState.on = requestedState.on;
 				if (!requestedState.on) {
 					this.lastState[group] = {};
@@ -48,9 +48,9 @@ class HUEStateTracker {
 			}
 		}
 		if (requestedState.transition != undefined) {
-			state.transitionInMillis(requestedState.transition);
+			deltaState.transition = requestedState.transition;
 		}
-		return state;
+		return deltaState;
 	}
 
 	clearGroupState(group) {
@@ -97,26 +97,43 @@ const fakeSetGroupStateEndpoint = {
 
 import { evalTemplate } from '../utils/template.js'
 
-import * as chromatism from 'chromatism';
-import os from 'os'
-import { sleep } from "../utils/sleep.js"
+import chromatism from 'chromatism';
 import fs from "fs"
 import path from 'path'
 import { userFolder } from '../utils/configuration.js'
 import axios from "axios"
 import _ from "lodash"
+import https from 'https';
+import { AsyncCache } from '../utils/async-cache.js';
 
 class HUEApi
 {
 	static async create(ip, key)
 	{
 		const result = new HUEApi();
+
+		const httpsAgent = new https.Agent ({
+			rejectUnauthorized: false,
+		})
+
 		result.api = axios.create({
-			baseURL: `http://${ip}/clip/v2`,
+			baseURL: `https://${ip}/clip/v2`,
 			headers: {
 				'hue-application-key': key
-			}
+			},
+			httpsAgent
 		});
+
+		result.groupCache = new AsyncCache(async () => {
+			try {
+				const resp = await result.api.get(`/resource/room`);
+				const groups = resp.data.data;
+				return groups;
+			}
+			catch(err) {
+				return [];
+			}
+		})
 
 		await result.getGroups();
 
@@ -125,26 +142,13 @@ class HUEApi
 
 	async getGroups()
 	{
-		const resp = await this.api.get(`/resource/room`);
-
-		const groups = resp.data.data;
-		this.cachedGroups = groups;
-		this.lastCacheTime = Date.now();
-
-		return groups;
+		return await this.groupCache.get();
 	}
 
 	async getGroupByName(name)
 	{
-		if ((Date.now() - this.lastCacheTime) > 15 * 1000)
-		{
-			await this.getGroups();
-		}
-
-		const group = this.cachedGroups.find((g) => {
-			g.metadata.name == name
-		})
-
+		const cachedGroups = await this.groupCache.get();
+		const group = cachedGroups.find((g) => g.metadata.name == name);
 		return group;
 	}
 
@@ -164,17 +168,40 @@ class HUEApi
 		}
 		if ("hue" in state || "sat" in state)
 		{
-			const hue = Math.max(Math.min(Number("hue" in state ? Number(state.hue) : 0), 100), 0);
+			const hue = Math.max(Math.min(Number("hue" in state ? Number(state.hue) : 0), 360), 0);
 			const sat = Math.max(Math.min(Number("sat" in state ? Number(state.sat) : 100), 100), 0);
 			const bri = Math.max(Math.min(Number("bri" in state ? Number(state.bri) : 100), 100), 0);
+			console.log("Hue", hue, "Sat", sat, "Bri", bri);
 			const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
-			update.xy = {
-				x: cie.x,
-				y: cie.y
+			update.color = {
+				xy: {
+					x: cie.x,
+					y: cie.y
+				}
 			}
 		}
 
-		await this.api.put(`/resource/grouped_light/${id}`, update);
+		if ("transition" in state)
+		{
+			update.dynamics = {
+				duration: Math.round(state.transition)
+			}
+		}
+
+		console.log("Setting Grouped Light", id, update);
+
+		try {
+			await this.api.put(`/resource/grouped_light/${id}`, update);
+		}
+		catch(err) {
+			console.error(`HUE API ERROR: `);
+			//this.logger.error(err);
+			//console.log(err?.response);
+			for (let errorStr of err?.response?.data?.errors) {
+				console.error(errorStr);
+			}
+			//throw err;
+		}
 	}
 }
 
@@ -190,8 +217,13 @@ export default {
 			this.stateTracker.lastState = {};
 		}, 60000);
 
-		if (!await this.discoverBridge()) {
-			return false;
+		this.bridgeCache = this.getCache("bridgeCache");
+
+
+		if (!await this.checkForBridge()) {
+		 	if (!await this.discoverBridge()) {
+				return false;
+			}
 		}
 
 		if (!(await this.loadKey())) {
@@ -231,16 +263,30 @@ export default {
 
 			return true;
 		},
+		async checkForBridge() {
+			const cached = await this.bridgeCache.get();
+			this.logger.info("Checking Cached Bridge")
+			if (!cached?.bridgeIp)
+			{
+				this.logger.info("No Cached Bridge");
+				return false;
+			}
+
+			this.bridgeIp = cached.bridgeIp;
+			return true;
+		},
 		async discoverBridge() {
+			this.logger.info("Running HUE Discovery API");
 			const resp = await axios.get("https://discovery.meethue.com/");
 			const results = resp.data;
 
 			if (results.length == 0) {
-				console.error("Couldn't find hue bridge");
+				this.logger.error("Couldn't find hue bridge");
 				return false;
 			}
 			else {
 				this.bridgeIp = results[0].internalipaddress;
+				this.bridgeCache.set({ bridgeIp: this.bridgeIp });
 				return true;
 			}
 		},
@@ -300,6 +346,8 @@ export default {
 			}
 			catch (err) {
 				console.error("Unable to connect with user to bridge. Abandoning");
+				console.error(err);
+
 				return false;
 			}
 		},
@@ -314,8 +362,9 @@ export default {
 				return (await this.hue.getGroups()).map(g => g.metadata.name)
 			}
 			catch (err) {
-				console.error(err);
-				this.logger.error(err);
+				for (let errorStr of err?.response?.data?.errors) {
+					console.error(errorStr);
+				}
 				return []
 			}
 		},
@@ -383,18 +432,18 @@ export default {
 					if ("bri" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.bri = await this.handleTemplateNumber(lightData.hsbk.bri, context);
 
-						requestedState.bri = lightData.hsbk.bri / 100 * 254;
+						requestedState.bri = lightData.hsbk.bri;
 					}
 					if ("sat" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.sat = await this.handleTemplateNumber(lightData.hsbk.sat, context);
 
-						requestedState.sat = lightData.hsbk.sat / 100 * 254;
+						requestedState.sat = lightData.hsbk.sat;
 					}
 					if ("hue" in lightData.hsbk && (mode == 'color' || mode == "template")) {
 						lightData.hsbk.hue = await this.handleTemplateNumber(lightData.hsbk.hue, context);
 
 						//Hue is 0-360
-						requestedState.hue = Math.floor((lightData.hsbk.hue / 360) * 65535);
+						requestedState.hue = lightData.hsbk.hue;
 					}
 					if ("temp" in lightData.hsbk && (mode == 'temp' || mode == "template")) {
 						lightData.hsbk.temp = await this.handleTemplateNumber(lightData.hsbk.temp, context);
@@ -412,16 +461,18 @@ export default {
 					requestedState.transition = (lightData.transition * 1000);
 				}
 
-				let state = this.stateTracker.getGroupColorState(groupName, requestedState);
+				//let state = this.stateTracker.getGroupColorState(groupName, requestedState);
 
 				let group = await this.hue.getGroupByName(groupName);
 
-				if (group.length == 0)
+				if (!group)
 					return;
 
-				//await this.hue.groups.setGroupState(group[0].id, state);
-				//Run our fake endpoint instead of the library's
-				await this.hue.groups.execute(fakeSetGroupStateEndpoint, { id: group[0].id, state: state });
+				
+
+				console.log("Group", group);
+				const service = group.services.find(s => s.rtype == 'grouped_light');
+				await this.hue.setGroupState(service.rid, requestedState);
 
 			}
 		},
