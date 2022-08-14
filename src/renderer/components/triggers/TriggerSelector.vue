@@ -11,13 +11,13 @@
     :return-object="true"
   >
     <template #item="{ item, props }">
-      <div v-bind="props" class="text-no-wrap">
+      <v-list-item v-bind="props" class="text-no-wrap" title="">
         <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" size="small">
           <v-icon start :icon="plugins[item.raw.pluginKey].icon" />
           {{ plugins[item.raw.pluginKey].uiName }}
         </v-chip>
         {{ plugins[item.raw.pluginKey].triggers[item.raw.triggerKey].name }}
-      </div>
+      </v-list-item>
     </template>
     <template #selection="{ item }" >
       <div class="text-no-wrap">
