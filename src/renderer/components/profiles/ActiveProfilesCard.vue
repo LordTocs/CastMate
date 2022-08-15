@@ -45,13 +45,13 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { mapIpcs } from "../../utils/ipcMap";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
 
 export default {
   components: { NamedItemModal },
   computed: {
-    ...mapGetters("ipc", ["activeProfiles", "paths"]),
-    ...mapGetters("io", ["getProfiles", "createProfile"])
+    ...mapGetters("ipc", ["activeProfiles", "paths"])
   },
   data() {
     return {
@@ -63,6 +63,7 @@ export default {
     this.hasProfiles = profiles.length > 0;
   },
   methods: {
+    ...mapIpcs("io", ["getProfiles", "createProfile"]),
     async createNewProfile(name) {
       await this.createProfile(name);
       this.$router.push(`/profiles/${name}`);
