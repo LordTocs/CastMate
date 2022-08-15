@@ -375,7 +375,10 @@ export default {
 				this.logger.info(`Connection to castmate websocket open`);
 
 				this.castMateWebsocketPinger = setInterval(() => {
-					this.castMateWebsocket.ping()
+					if (this.castMateWebsocket.readyState == 1)
+					{
+						this.castMateWebsocket.ping()
+					}
 				}, 30000);
 			})
 
@@ -407,7 +410,6 @@ export default {
 			});
 
 			this.castMateWebsocket.on('close', () => {
-
 				this.retryWebsocketWorkaround();
 			});
 
