@@ -58,7 +58,15 @@
               />
             </v-card-text>
             <v-card-text v-else>
-              ...
+              <v-sheet 
+                rounded  
+                v-for="secretKey in secretKeys"
+                :key="secretKey"
+                style="min-height: 1em"
+                color="grey-darken-3"
+                class="my-2"
+              >
+              </v-sheet>
             </v-card-text>
             <v-card-actions>
               <v-btn @click="showSecrets = !showSecrets">
