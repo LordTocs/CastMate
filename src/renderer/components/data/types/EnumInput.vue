@@ -13,6 +13,7 @@
     v-else
     :items="this.enum"
     :label="label"
+    :loading="loading"
     dense
     v-model.lazy="modelObj"
   />
