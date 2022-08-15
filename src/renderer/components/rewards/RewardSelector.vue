@@ -6,31 +6,34 @@
       :label="label"
       :search-input.sync="search"
       clearable
-    />
-    <v-menu bottom right>
-      <template v-slot:activator="{ props }">
-        <v-btn dark icon v-bind="props">
-          <v-icon>mdi-dots-vertical</v-icon>
-        </v-btn>
+    >
+      <template #append>
+        <div class="d-flex flex-row align-center">
+          <v-menu bottom right>
+            <template v-slot:activator="{ props }">
+              <v-btn size="small" icon="mdi-dots-vertical" v-bind="props" />
+            </template>
+            <v-list>
+              <v-list-item link :disabled="!modelValue">
+                <v-list-item-title @click="$refs.editModal.open()">
+                  Edit Reward
+                </v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="$refs.createModal.open()" link :disabled="!!modelValue">
+                <v-list-item-title> Create New Reward </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
       </template>
-
-      <v-list>
-        <v-list-item link :disabled="!value">
-          <v-list-item-title @click="$refs.editModal.open()">
-            Edit Reward
-          </v-list-item-title>
-        </v-list-item>
-        <v-list-item @click="$refs.createModal.open()" link :disabled="!!value">
-          <v-list-item-title> Create New Reward </v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
+    </v-combobox>
+    
 
     <reward-edit-modal
       ref="editModal"
       title="Edit Channel Point Reward"
       :reward="currentReward"
-      @rename="(v) => $emit('input', v)"
+      @rename="(v) => $emit('update:modelValue', v)"
       :showDelete="false"
     />
 
@@ -40,7 +43,7 @@
       :showSave="false"
       :showCreate="true"
       :showDelete="false"
-      @created="(v) => $emit('input', v)"
+      @created="(v) => $emit('update:modelValue', v)"
     />
   </v-card-actions>
 </template>
