@@ -1,6 +1,6 @@
 <template>
   <v-input v-model="modelObj" @click.stop="$refs.editDlg.open()">
-    <v-field :label="label" clearable :active="!!modelValue">
+    <v-field :label="label" clearable :active="!!modelValue" style="cursor: pointer">
       <div class="d-flex flex-row align-center preview">
         <v-chip
           outlined
