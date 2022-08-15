@@ -678,7 +678,6 @@ export default {
 		async getCategoryById(id) {
 			if (!this.channelTwitchClient)
 				return null;
-			console.log("getCategoryById", id);
 			const category = await this.channelTwitchClient.games.getGameById(id);
 			if (category) {
 				const pojoCat = { name: category.name, id: category.id, boxArtUrl: category.boxArtUrl };
