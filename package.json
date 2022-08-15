@@ -22,7 +22,7 @@
     "bad-words": "^3.0.4",
     "body-parser": "^1.19.0",
     "chokidar": "^3.5.2",
-    "chromatism": "^3.0.0",
+    "chromatism2": "^3.0.2",
     "color": "^4.0.2",
     "cs-gamestate": "^2.2.3",
     "electron": "^20.0.1",

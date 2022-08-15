@@ -97,7 +97,7 @@ const fakeSetGroupStateEndpoint = {
 
 import { evalTemplate } from '../utils/template.js'
 
-import chromatism from 'chromatism';
+import * as chromatism from 'chromatism2';
 import fs from "fs"
 import path from 'path'
 import { userFolder } from '../utils/configuration.js'

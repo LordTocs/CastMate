@@ -53,7 +53,7 @@ import { mapGetters } from "vuex";
 import { mapModelValues } from "../../utils/modelValue";
 import ActionEditor from "../actions/ActionEditor.vue";
 import DataView from "../data/DataView.vue";
-import chromatism from "chromatism";
+import * as chromatism from "chromatism2";
 
 export default {
   props: {
