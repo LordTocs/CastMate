@@ -6,7 +6,7 @@
     <v-navigation-drawer app v-model="navDrawer" style="-webkit-app-region: no-drag" v-if="loaded">
       <v-list-item link to="/">
         <v-list-item-title> 
-          <img src="./assets/logo-mark-dark.svg" style="height: 3em" class="my-1"> 
+          <img src="./assets/logo-mark-dark.svg" style="height: 2.5em" class="my-1"> 
         </v-list-item-title>
       </v-list-item>
 
@@ -20,7 +20,7 @@
         <v-list-item link to="/variables" prepend-icon="mdi-variable" title="Variables" />
         <v-list-item link to="/rewards" prepend-icon="mdi-star-circle-outline" title="Rewards" />
         <v-divider></v-divider>
-        <v-list-group n-action>
+        <v-list-group n-action class="settings">
           <template #activator="{ props }">
             <v-list-item v-bind="props" prepend-icon="mdi-cog" title="Settings" />
           </template>
@@ -155,5 +155,9 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: #616161;
+}
+
+.settings .v-list-item {
+    --indent-padding: 0px !important;
 }
 </style>
