@@ -1,7 +1,7 @@
 <template>
-  <v-dialog persistent v-model="dialog" width="80%" @keydown.esc="cancel">
-    <v-card>
-      <p class="text-center text-h2" v-if="stage == 'welcome'">
+  <v-dialog persistent v-model="dialog" @keydown.esc="cancel">
+    <v-card  width="85vw">
+      <p class="text-center text-h2 py-4" v-if="stage == 'welcome'">
         Welcome to CastMate!
       </p>
       <v-card-title class="text-center" v-if="stage == 'twitch'">
@@ -28,7 +28,7 @@
         </div>
         <v-card-actions>
           <v-spacer />
-          <v-btn x-large color="primary" @click="moveNext"> Get Started </v-btn>
+          <v-btn size="x-large" variant="outlined" color="primary" @click="moveNext"> Get Started </v-btn>
           <v-spacer />
         </v-card-actions>
       </v-card-text>
@@ -104,12 +104,13 @@
         <p class="text-h5 text-center my-5">
           For more help join our discord!
           <v-btn
-            x-large
-            link
-            to="https://discord.gg/txt4DUzYJM"
+            size="x-large"
+            tag="a"
+            href="https://discord.gg/txt4DUzYJM"
             target="_blank"
             color="#5865F2"
             class="mx-5"
+            variant="outlined"
           >
             <v-icon> mdi-discord </v-icon> Discord
           </v-btn>
@@ -126,13 +127,13 @@
       <v-card-actions v-if="stage != 'welcome' && stage != 'done'">
         <v-btn small @click="moveNext"> Skip </v-btn>
         <v-spacer />
-        <v-btn color="primary" :disabled="!ready" @click="moveNext">
+        <v-btn color="primary" variant="outlined" :disabled="!ready" @click="moveNext">
           Next
         </v-btn>
       </v-card-actions>
       <v-card-actions v-if="stage == 'done'">
         <v-spacer />
-        <v-btn x-large color="primary" @click="finish"> Get Creating </v-btn>
+        <v-btn x-large color="primary" variant="outlined" @click="finish"> Get Creating </v-btn>
         <v-spacer />
       </v-card-actions>
     </v-card>
@@ -144,6 +145,7 @@ import { mapGetters } from "vuex";
 import Twitch from "../plugins/twitch.vue";
 import ObsSettings from "./ObsSettings.vue";
 import { isFirstRun } from "../../utils/firstRun";
+import { mapIpcs } from "../../utils/ipcMap";
 export default {
   components: { Twitch, ObsSettings },
   data() {
@@ -154,7 +156,6 @@ export default {
   },
   computed: {
     ...mapGetters("ipc", ["stateLookup", "paths"]),
-    ...mapGetters("io", ["getProfile", "createProfile"]),
     signedIn() {
       return !!this.stateLookup.twitch.channelName;
     },
@@ -170,6 +171,7 @@ export default {
     },
   },
   methods: {
+    ...mapIpcs("io", ["getProfile", "createProfile"]),
     open() {
       this.dialog = true;
     },

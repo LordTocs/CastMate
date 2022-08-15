@@ -30,7 +30,7 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer />
-      <v-btn :color="connected ? 'success' : 'primary'" :loading="trying" large @click="tryConnect"> {{ connected ? "Successfully Connected" : "Connect" }} </v-btn>
+      <v-btn :color="connected ? 'success' : 'primary'" :loading="trying" size="large" @click="tryConnect" variant="outlined"> {{ connected ? "Successfully Connected" : "Connect" }} </v-btn>
       <v-spacer />
     </v-card-actions>
   </v-card>
