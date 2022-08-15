@@ -1,6 +1,6 @@
 
 import { defineConfig } from 'vite'
-import path from 'path'
+import path, { resolve } from 'path'
 import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron'
 import vuetify from 'vite-plugin-vuetify'
@@ -41,4 +41,12 @@ export default defineConfig({
       },
     })
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(dirname, 'index.html'),
+        updater: resolve(dirname, 'updater.html')
+      }
+    }
+  }
 })

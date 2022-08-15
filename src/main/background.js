@@ -65,10 +65,8 @@ async function createWindow() {
 	const win = new BrowserWindow({
 		width: 1600,
 		height: 900,
-		//icon: 'src/assets/icons/icon.png',
+		icon: 'src/renderer/assets/icons/icon.png',
 		webPreferences: {
-			// Use pluginOptions.nodeIntegration, leave this alone
-			// See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
 			//preload,
 			nodeIntegration: true,
 			enableRemoteModule: true,
@@ -77,7 +75,6 @@ async function createWindow() {
 		frame: false
 	})
 
-	//remoteMain.enable(win.webContents);
 
 	if (app.isPackaged) {
 		win.loadFile(indexHtml)
@@ -105,10 +102,12 @@ async function createWindow() {
 }
 
 async function createUpdaterWindow(updateData) {
+	const updaterHtml = path.join(ROOT_PATH.dist, 'updater.html')
+
 	const win = new BrowserWindow({
 		width: 600,
 		height: 400,
-		icon: 'src/assets/icons/icon.png',
+		icon: 'src/renderer/assets/icons/icon.png',
 		webPreferences: {
 
 			// Use pluginOptions.nodeIntegration, leave this alone
@@ -124,21 +123,13 @@ async function createUpdaterWindow(updateData) {
 
 	const params = new URLSearchParams(updateData)
 
-	let baseUrl;
-
-	if (process.env.WEBPACK_DEV_SERVER_URL) {
-		// Load the url of the dev server if in development mode
-		baseUrl = process.env.WEBPACK_DEV_SERVER_URL + "updater";
-		//if (!process.env.IS_TEST) win.webContents.openDevTools()
+	if (app.isPackaged) {
+		win.loadFile(updaterHtml + "?" + params)
 	} else {
-		//createProtocol('app')
-		// Load the index.html when not in development
-		baseUrl = 'app://./updater.html';
+		win.loadURL(url + '/updater.html' + "?" + params)
 	}
 
 	updateContext.window = win;
-
-	win.loadURL(baseUrl + "?" + params);
 
 	win.webContents.on('new-window', function (e, url) {
 		e.preventDefault();
@@ -210,7 +201,7 @@ autoUpdater.on("update-available", async (updateInfo) => {
 		version: updateInfo.version
 	}
 
-	//await createUpdaterWindow(info);
+	await createUpdaterWindow(info);
 })
 
 async function doUpdateCheck() {
@@ -236,7 +227,7 @@ app.whenReady().then(async () => {
 	initCastMate(mainWindow.webContents)
 	
 	//autoUpdater.checkForUpdatesAndNotify();
-	//doUpdateCheck();
+	doUpdateCheck();
 })
 
 
