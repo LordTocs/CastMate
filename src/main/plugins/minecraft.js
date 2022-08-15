@@ -9,55 +9,66 @@ export default {
 	icon: "mdi-minecraft",
 	color: "#66A87B",
 	async init() {
+		this.connectionState = "Disconnected";
 		this.startConnectLoop();
 	},
 	methods: {
 		tryConnect() {
-			return new Promise((resolve, reject) => {
-				try {
-					this.rcon = new Rcon(
-						this.settings.host,
-						Number(this.settings.port),
-						this.secrets.password,
-					);
+			try {
+				this.rcon = new Rcon(
+					this.settings.host,
+					Number(this.settings.port),
+					this.secrets.password,
+				);
 
-					this.logger.info(`Trying MC Connection ${this.settings.host}:${this.settings.port}`)
+				this.logger.info(`Trying MC Connection ${this.settings.host}:${this.settings.port}`)
 
-					this.rcon.connect();
+				this.connectionState = "Connecting";
+				this.rcon.connect();
 
-					this.rcon.on('auth', () => {
-						this.logger.info("Connected to Minecraft!");
-						this.analytics.set({ usesMinecraft: true });
-						resolve(true);
-					})
+				this.rcon.on('auth', () => {
+					this.logger.info("Connected to Minecraft!");
+					this.analytics.set({ usesMinecraft: true });
+					this.connectionState = "Connected";
+				})
 
-					this.rcon.on('response', (str) => {
-						this.logger.info(`MC Resp: ${str}`)
-					})
+				this.rcon.on('response', (str) => {
+					this.logger.info(`MC Resp: ${str}`)
+				})
 
-					this.rcon.on('end', async () => {
-						this.logger.info("Minecraft Connection Ended.");
-						await sleep(5000);
-						this.tryConnect();
-						resolve(false)
-					})
+				this.rcon.on('end', async () => {
+					this.logger.info("Minecraft Connection Ended.");
+					this.connectionState = "Disconnected";
+					if (this.disconnectFunc)
+						this.disconnectFunc();
+				})
 
-					this.rcon.on("error", (err) => {
-						this.logger.info("Error!");
-						this.logger.error(String(err));
-						resolve(false);
-					})
-				}
-				catch (err) {
-					this.logger.error(err);
-					resolve(false)
-				}
-			});
+				this.rcon.on("error", (err) => {
+					this.logger.info("Error!");
+					this.logger.error(String(err));
+					this.connectionState = "Disconnected";
+					if (this.errorFunc)
+						this.errorFunc(err)
+				})
+			}
+			catch (err) {
+				this.connectionState = "Disconnected";
+				this.logger.error(err);
+				if (this.errorFunc)
+					this.errorFunc(err)
+			}
 		},
+
+		async retry() {
+			if (this.connectionState != "Disconnected")
+				return;
+			await sleep(5000);
+			this.tryConnect();
+		},
+
 
 		async startConnectLoop() {
 			this.rcon = null;
-
 
 			if (!this.settings.host)
 				return;
@@ -67,8 +78,38 @@ export default {
 				return;
 
 			this.logger.info("Starting MC Connection Loop");
-			await this.tryConnect();
+
+			this.disconnectFunc = () => this.retry();
+			this.errorFunc = () => this.retry();
+
+			this.tryConnect();
+		},
+		async shutdown() {
+			if (this.connectionState == "Disconnected")
+				return;
+
+			try {
+				await new Promise((resolve, reject) => {
+					this.disconnectFunc = () => resolve();
+					this.errorFunc = (e) => reject(e);
+					this.rcon.disconnect()
+				});
+			}
+			catch(err)
+			{
+				this.logger.error(`Error disconnecting ${err}`);
+			}
 		}
+	},
+	async onSettingsReload() {
+		await this.shutdown();
+
+		await this.startConnectLoop();
+	},
+	async onSecretsReload() {
+		await this.shutdown();
+
+		await this.startConnectLoop();
 	},
 	settings: {
 		host: { type: String, name: "Server" },

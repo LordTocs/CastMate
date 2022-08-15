@@ -7,7 +7,11 @@
     @copy.stop=""
     @paste.stop=""
     :placeholder="placeholder"
-  />
+  >
+    <template #append-inner>
+      {{ unit.name }}
+    </template>
+  </v-text-field>
 </template>
 
 <script>
@@ -18,6 +22,7 @@ export default {
     allowTemplate: { type: Boolean, default: () => false },
     clearable: { type: Boolean, default: () => false },
     placeholder: {},
+    unit: {},
   },
   computed: {
     modelObj: {

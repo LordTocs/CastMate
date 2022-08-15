@@ -399,9 +399,27 @@ export default {
 			data: {
 				type: Object,
 				properties: {
-					on: { type: Boolean, name: "Light Switch", required: true, default: true },
-					hsbk: { type: "LightColor", name: "Color", tempRange: [2000, 6500], required: true },
-					transition: { type: Number, template: true, name: "Transition Time", required: true, default: 0.5 },
+					on: { 
+						type: Boolean, 
+						name: "Light Switch", 
+						required: true, 
+						default: true, 
+						trueIcon: "mdi-lightbulb-on",
+						falseIcon: "mdi-lightbulb-outline"
+					},
+					hsbk: {
+						type: "LightColor",
+						name: "Color",
+						tempRange: [2000, 6500],
+						required: true 
+					},
+					transition: {
+						type: Number,
+						template: true,
+						name: "Transition Time",
+						required: true,
+						default: 0.5 
+					},
 					group: {
 						type: String,
 						template: true,
@@ -467,8 +485,6 @@ export default {
 
 				if (!group)
 					return;
-
-				
 
 				console.log("Group", group);
 				const service = group.services.find(s => s.rtype == 'grouped_light');

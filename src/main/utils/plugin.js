@@ -196,7 +196,7 @@ export class Plugin
 			this.triggers[triggerName] = triggerObj;
 
 			const triggerFunc = function (context, ...args) {
-				return this.actions.trigger(this.name, triggerName, context || {}, args)
+				return this.actions.trigger(this.name, triggerName, context || {}, ...args)
 			}
 			this.pluginObj.triggers[triggerName] = triggerFunc.bind(this.pluginObj);
 		}

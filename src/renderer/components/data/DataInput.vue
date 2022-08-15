@@ -13,6 +13,7 @@
     :label="schema.name || label"
     :clearable="!schema.required"
     :secret="secret"
+    :unit="schema.unit"
   />
   <template v-else-if="schema.type == 'Number' && schema.slider">
     <div class="text-caption"> {{ labelString }}</div>

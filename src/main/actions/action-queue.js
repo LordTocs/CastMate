@@ -31,7 +31,19 @@ export class ActionQueue {
 				const pluginTrigger = plugin.triggers[triggerName];
 				this.triggerHandlers[plugin.name][triggerName] = async (context, ...args) => {
 
+					if (!this.triggerMappings[plugin.name])
+					{
+						logger.error(`Error missing trigger handlers for  ${plugin.name}`);
+						return;
+					}
+
 					const mappings = this.triggerMappings[plugin.name][triggerName];
+					if (!mappings)
+					{
+						logger.error(`Error missing trigger handlers for  ${plugin.name}-${triggerName}`);
+						return;
+					}
+
 					for (let mapping of mappings) {
 						try {
 							if (!pluginTrigger.internalHandler || await pluginTrigger.internalHandler(mapping.config, context, mapping, ...args)) {

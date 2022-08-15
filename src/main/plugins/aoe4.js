@@ -145,46 +145,51 @@ export default {
                 if (!civs.includes(randomCiv)) {
                     civs.push(randomCiv);
                     count++
-                };
+                }
             }
             let civString = `Civ Poll Options: ${civs[0]}, ${civs[1]}, ${civs[2]}, ${civs[3]}, ${civs[4]}`
             return civString;
         },
         async giveFreeElo(playerName) {
-            if (!playerName.length) {
-                return "Enter a player name to gift them extra Elo!";
-            }
-            const agent = new https.Agent({
-                rejectUnauthorized: false
-            });
+          if (!playerName.length) {
+            return "Enter a player name to gift them extra Elo!";
+          }
 
-            let response = await axios.get('https://aoeiv.net/api/leaderboard', {
-                httpsAgent: agent,
-                params: {
-                    game: "aoe4",
-                    leaderboard_id: 17,
-                    search: playerName
-                }
-            })
+          if (!playerName || !playerName.length) {
+            playerName = this.settings.aoeUsername;
+          }
 
-            if (response.data.leaderboard && response.data.leaderboard.length) {
-                let result = response.data.leaderboard.find((player) => {
-                    return player.name.toLowerCase() === playerName.toLowerCase();
-                });
-                result = (result || response.data.leaderboard[0]);
+          const agent = new https.Agent({
+              rejectUnauthorized: false
+          });
 
-                let formattedResult = {};
-                formattedResult.userName = result.name;
-                formattedResult.originalElo = parseInt(result.rating);
-                formattedResult.newElo = parseInt(result.rating) + 500;
+          let response = await axios.get('https://aoe4world.com/api/v0/players/search', {
+              httpsAgent: agent,
+              params: {
+                  query: playerName,
+              }
+          })
+        
 
-                let playerStatString = `⚔️ ${formattedResult.userName} ⚔️ Original ELO: ${formattedResult.originalElo} - New Elo: ${formattedResult.newElo}...thanks ${this.settings.aoeUsername}, I'll definitely be subscribing to your Twitch!`;
+          if (response.data) {
+            let leaderboard = response.data.players[0].leaderboards.rm_1v1;
 
-                console.log(playerStatString);
-                return playerStatString;
-            } else {
-                return "Could not find player.";
-            }
+            let formattedResult = {};
+            formattedResult.userName = response.data.players[0].name;
+            formattedResult.originalElo = leaderboard.rating;
+            formattedResult.newElo = parseInt(leaderboard.rating) + 500;
+            formattedResult.rank = leaderboard.rank;
+            formattedResult.winPercent = leaderboard.win_rate;
+            formattedResult.wins = leaderboard.wins_count;
+            formattedResult.losses = leaderboard.losses_count;
+            formattedResult.streak = leaderboard.streak;
+
+            let playerStatString = `⚔️ ${formattedResult.userName} ⚔️ Original ELO: ${formattedResult.originalElo} - New Elo: ${formattedResult.newElo}...thanks ${this.settings.aoeUsername}, I'll definitely be subscribing to your Twitch!`;
+            console.log(playerStatString);
+            return playerStatString;
+          } else {
+              return "Could not find player.";
+          }
         },
 
         async getAoe4PlayerStat(playerName) {

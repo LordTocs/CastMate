@@ -1,6 +1,6 @@
 <template>
   <v-system-bar window app class="draggable" color="black">
-    <!--v-icon>mdi-message</v-icon-->
+    <img src="../../assets/logo-dark.svg" style="height: 1em; margin-right: 0.5em" />
     <span> {{ title }} </span>
     <v-spacer></v-spacer>
     <v-icon @click="minimize" class="non-draggable">mdi-minus</v-icon>

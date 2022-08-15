@@ -5,7 +5,7 @@
 
     <v-navigation-drawer app v-model="navDrawer" style="-webkit-app-region: no-drag" v-if="loaded">
       <v-list-item link to="/">
-        <v-list-item-title class="title"> CastMate </v-list-item-title>
+        <v-list-item-title class="title"> <img src="./assets/logo-mark-dark.svg" style="height: 1.7em"> </v-list-item-title>
         <!--v-list-item-subtitle> subtext </v-list-item-subtitle-->
       </v-list-item>
 

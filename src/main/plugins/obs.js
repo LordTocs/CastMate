@@ -189,7 +189,7 @@ export default {
 				console.error(err);
 				return [];
 			}
-		}
+		},
 	},
 	ipcMethods: {
 		async refereshAllBrowsers() {
@@ -277,6 +277,7 @@ export default {
 					scene: {
 						type: String,
 						template: true,
+						required: true,
 						async enum() {
 							return await this.getAllScenes();
 						}
@@ -324,14 +325,16 @@ export default {
 						type: String,
 						template: true,
 						name: "Source Name",
+						required: true,
 						async enum() {
-							return (await this.getAllSources()).map(s => s.name);
+							return [...(await this.getAllSources()).map(s => s.name), ...(await this.getAllScenes())];
 						}
 					},
 					filterName: {
 						type: String,
 						template: true,
 						name: "Filter Name",
+						required: true,
 						async enum(context) {
 							console.log(context)
 							this.logger.info('Fetching filters for ' + context.sourceName);
@@ -341,7 +344,10 @@ export default {
 					filterEnabled: {
 						type: Boolean,
 						name: "Filter Enabled",
-						required: true
+						required: true,
+						default: true,
+						trueIcon: "mdi-eye-outline",
+						falseIcon: "mdi-eye-off-outline",
 					}
 				}
 			},
@@ -368,6 +374,7 @@ export default {
 						name: "Scene",
 						type: String,
 						template: true,
+						required: true,
 						async enum() {
 							return await this.getAllScenes();
 						}
@@ -376,6 +383,7 @@ export default {
 						name: "Source",
 						type: String,
 						template: true,
+						required: true,
 						async enum(context) {
 							this.logger.info('Fetching sources for ' + context.scene);
 							return await this.getSceneSources(context.scene);
@@ -385,6 +393,9 @@ export default {
 						type: Boolean,
 						name: "Source Visible",
 						required: true,
+						default: true,
+						trueIcon: "mdi-eye-outline",
+						falseIcon: "mdi-eye-off-outline",
 					}
 				}
 			},
@@ -413,6 +424,7 @@ export default {
 						type: String,
 						template: true,
 						name: "Source Name",
+						required: true,
 						async enum() {
 							const sources = await this.getAllSources();
 							const text_sources = sources.filter((s) => (s.typeId == "text_gdiplus_v2"));
@@ -452,6 +464,8 @@ export default {
 						name: "Media Action",
 						type: String,
 						enum: ["Play", "Pause", "Restart", "Stop", "Next", "Previous"],
+						required: true,
+						default: "Play"
 					}
 				}
 			},
@@ -504,6 +518,7 @@ export default {
 						type: String,
 						template: true,
 						name: "Source Name",
+						required: true,
 						async enum() {
 							const sources = await this.getAllSources();
 							return sources.map(s => s.name);
@@ -513,7 +528,7 @@ export default {
 						type: Number,
 						template: true,
 						name: "Volume",
-						default: 20,
+						default: 1.0,
 						required: true,
 						slider: {
 							min: 0,
@@ -554,6 +569,7 @@ export default {
 						type: String,
 						template: true,
 						name: "Source Name",
+						required: true,
 						async enum() {
 							const sources = await this.getAllSources();
 							return sources.map(s => s.name);
@@ -563,8 +579,10 @@ export default {
 						type: Boolean,
 						required: true,
 						name: "Muted",
-						default: false,
-						leftLabel: "Un-Muted"
+						default: true,
+						leftLabel: "Un-Muted",
+						trueIcon: "mdi-volume-off",
+						falseIcon: "mdi-volume-high",
 					}
 				}
 			},

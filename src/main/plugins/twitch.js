@@ -60,6 +60,8 @@ export default {
 
 		this.state.viewers = 0;
 
+		this.commandTimes = {};
+
 		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
 		//this.filter.addWords(...badwordList.words);
 	},
@@ -406,6 +408,7 @@ export default {
 
 					let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
 					this.state.followers = follows.total;
+					this.state.lastFollower = follows.data.length > 0 ? follows.data[0].userDisplayName : null;
 				}
 			});
 
@@ -493,16 +496,25 @@ export default {
 			try {
 				const subscribers = await this.channelTwitchClient.subscriptions.getSubscriptions(this.channelId);
 				this.state.subscribers = subscribers.total;
+				//this.state.lastSubscriber = subscribers.data.length > 0 ? subscribers.data[0].userDisplayName : null
 			}
-			catch
-			{
+			catch (err) {
 				this.state.subscribers = 0;
+				console.error(err);
 			}
 		},
 
 		async queryFollows() {
-			let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
-			this.state.followers = follows.total;
+			try {
+				let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
+
+				this.state.followers = follows.total;
+				this.state.lastFollower = follows.data.length > 0 ? follows.data[0].userDisplayName : null;
+			}
+			catch(err)
+			{
+				this.logger.error(`Error Querying Follows ${err}`);
+			}
 		},
 
 		async initConditions() {
@@ -804,7 +816,17 @@ export default {
 			type: Boolean,
 			name: "Is Affiliate",
 			description: "True if the user is at least affiliate"
-		}
+		},
+		lastFollower: {
+			type: String,
+			name: "Last Follower",
+			description: "Name of the person to follow"
+		},
+		/*lastSubscriber: {
+			type: String,
+			name: "Last Subscriber",
+			description: "Name of the person to subscribe"
+		},*/
 	},
 	triggers: {
 		chat: {
@@ -826,6 +848,7 @@ export default {
 						},
 						preview: false,
 					},
+					cooldown: { type: Number, name: "Cooldown", preview: false, unit: { name: "Seconds", short: "s" } }
 				}
 			},
 			context: {
@@ -839,15 +862,25 @@ export default {
 				filteredMessage: { type: String },
 			},
 			handler(config, context, mapping, userInfo) {
-				if (config.match == "Start") {
+				const command = config.command || "";
+				if (command.length > 0 && config.match == "Start") {
 					if (context.command != config.command.toLowerCase()) {
 						return false;
 					}
 				}
-				if (config.match == "Anywhere") {
+				if (command.length > 0 && config.match == "Anywhere") {
 					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
 					}
+				}
+
+				if (config.cooldown) {
+					const now = Date.now();
+					const last = this.commandTimes[mapping.id];
+					if ((now - last) < (config.cooldown * 1000)) {
+						return false;
+					}
+					this.commandTimes[mapping.id] = now;
 				}
 
 				if (config.permissions) {
@@ -1058,6 +1091,19 @@ export default {
 			},
 			async handler(message, context) {
 				await this.channelTwitchClient.streams.createStreamMarker(this.channelId, await template(message, context));
+			}
+		},
+		createClip: {
+			name: "Create Clip",
+			description: "Places a marker in the stream for use in the video editor",
+			icon: "mdi-filmstrip",
+			color: "#5E5172",
+			data: {
+				type: Object,
+				properties: {},
+			},
+			async handler() {
+				await this.channelTwitchClient.clips.createClip({ channelId: this.channelId});
 			}
 		}
 	},
