@@ -28,7 +28,7 @@
       />
       </v-card-text>
       <v-card-actions>
-      <v-btn color="primary" @click="$emit('activate')">
+      <v-btn color="primary" variant="outlined" @click="$emit('activate')">
           <v-icon> mdi-play </v-icon> Activate
       </v-btn>
       <v-spacer />
