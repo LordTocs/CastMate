@@ -66,6 +66,7 @@ export default {
       automation: null,
       dirty: false,
       saveSnack: false,
+      loading: false,
     };
   },
   computed: {
@@ -86,15 +87,17 @@ export default {
     },
   },
   async mounted() {
+    this.loading = true;
     this.automation = await this.getAutomation(this.automationName);
-
+    this.loading = false;
     trackAnalytic("accessAutomation", { name: this.automationName });
   },
   watch: {
     automation: {
       deep: true,
       handler(newAutomation, oldAutomation) {
-        if (oldAutomation != null) {
+        console.log("AutoChanged", newAutomation, oldAutomation);
+        if (!this.loading && oldAutomation != null) {
           this.dirty = true;
         }
       },

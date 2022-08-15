@@ -11,7 +11,6 @@ export default {
   emits: ['update:modelValue'],
   methods: {
     setupPicker() {
-      console.log("Mounting Picker");
       this.colorPicker = new iro.ColorPicker(this.$refs.picker, {
         width: 200,
         layoutDirection: "horizontal",
@@ -39,7 +38,6 @@ export default {
       }
     },
     destroyPicker() {
-      console.log("Unmounting Picker");
       if (this.colorPicker) {
         this.colorPicker.off("input:end", this.colorHandler);
       }

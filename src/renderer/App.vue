@@ -21,7 +21,7 @@
         <v-list-item link to="/rewards" prepend-icon="mdi-star-circle-outline" title="Rewards" />
         <v-divider></v-divider>
         <v-list-group n-action>
-          <template v-slot:activator="{ props }">
+          <template #activator="{ props }">
             <v-list-item v-bind="props" prepend-icon="mdi-cog" title="Settings" />
           </template>
 
