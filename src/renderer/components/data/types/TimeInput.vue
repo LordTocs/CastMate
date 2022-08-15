@@ -1,38 +1,24 @@
 <template>
   <v-text-field
-    :value="value"
-    @change="(v) => $emit('input', v)"
-    placeholder="hh:mm:ss"
+    v-model="modelObj"
+    placeholder="hhhh:mm:ss"
     :label="label"
-    v-mask="timeMask"
+    v-maska="{ mask: ['#*:T#:T#', 'T#:T#', 'T#', '#'], tokens: { T: { pattern: /[0-6]/}}}"
   />
 </template>
 
 <script>
+import { mapModel } from '../../../utils/modelValue';
+
 export default {
   props: {
-    value: {},
+    modelValue: {},
     label: { type: String, default: () => "Time" },
   },
-  methods: {
-    /**
-     * Generate a time mask based on input value (000:00:00)
-     * @param {string} value
-     */
-    timeMask(value) {
-      const toSixty = [/[0-5]/, /[0-9]/];
-      if (value.length <= 2) return toSixty;
-      if (value.length <= 5) return [...toSixty, ":", ...toSixty];
-
-      const leadingDigits = value.length - 6;
-      const leadingDigitRegex = [];
-      for (let i = 0; i < leadingDigits; ++i)
-      {
-        leadingDigitRegex.push(/\d/);
-      }
-      return [...leadingDigitRegex, ":", ...toSixty, ":", ...toSixty];
-    },
-  },
+  emits: ['update:modelValue'],
+  computed: {
+    ...mapModel()
+  }
 };
 </script>
 
