@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-row align-center preview" v-if="automation">
+  <div class="d-flex flex-row align-center preview-mini" v-if="automation">
     <action-mini-icon
       v-for="action in clampedActions"
       :key="action.id"
@@ -30,7 +30,7 @@ export default {
 </script>
 
 <style scoped>
-.preview {
+.preview-mini {
   overflow-x: hidden;
   white-space: nowrap;
   flex-grow: 0;

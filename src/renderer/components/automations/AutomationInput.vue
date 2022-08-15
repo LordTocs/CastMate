@@ -1,17 +1,17 @@
 <template>
   <v-input v-model="modelObj" @click.stop="$refs.editDlg.open()">
     <v-field :label="label" clearable :active="!!modelValue">
-      <div class="preview">
+      <div class="d-flex flex-row align-center preview">
         <v-chip
-        class="ma-2"
-        outlined
-        v-if="hasAutomationReference"
+          outlined
+          v-if="hasAutomationReference"
         >
           <v-icon left> mdi-flash </v-icon>
           {{ modelValue }}
         </v-chip>
         <automation-preview :automation="modelValue" :max-actions="10" />
       </div>
+      
     </v-field>
   </v-input>
   <inline-automation-edit-dialog
@@ -64,9 +64,7 @@ export default {
 <style scoped>
 .preview {
   min-height: 43px;
-  margin-top: 10px;
+  margin-top: 20px;
   margin-left: 6px;
-  display: flex;
-  flex-direction: row;
 }
 </style>
