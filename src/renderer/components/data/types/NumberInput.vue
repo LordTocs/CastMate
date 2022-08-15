@@ -9,7 +9,7 @@
     :placeholder="placeholder"
   >
     <template #append-inner>
-      {{ unit.name }}
+      {{ unit?.name }}
     </template>
   </v-text-field>
 </template>
