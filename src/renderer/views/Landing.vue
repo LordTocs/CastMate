@@ -85,7 +85,7 @@
             <v-btn v-if="stateLookup.obs.connected" @click="() => refereshAllBrowsers()" variant="outlined" prepend-icon="mdi-refresh">
               Refresh Browsers
             </v-btn>
-            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()" prepend-icon="mdi-open-in-app">
+            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()" variant="outlined" prepend-icon="mdi-open-in-app">
               Launch OBS
             </v-btn>
           </v-card-actions>
