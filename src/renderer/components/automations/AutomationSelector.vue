@@ -9,7 +9,7 @@
       clearable
     >
     </v-combobox>
-    <v-btn
+    <!--<v-btn
       fab
       small
       class="mx-1"
@@ -19,7 +19,7 @@
     >
       <v-icon small> mdi-pencil </v-icon>
     </v-btn>
-    <!--v-btn
+    v-btn
       fab
       small
       class="mx-1"
@@ -28,20 +28,16 @@
       :disabled="!!value"
     >
       <v-icon small> mdi-plus </v-icon>
-    </v-btn-->
-    <automation-quick-edit-dialog ref="automationDlg" :automationName="modelValue" />
+    </v-btn
+    <automation-quick-edit-dialog ref="automationDlg" :automationName="modelValue" />-->
   </div>
 </template>
 
 <script>
 import { mapIpcs } from "../../utils/ipcMap";
-import fs from "fs";
-import path from "path";
-import YAML from "yaml";
 import { mapGetters } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
 import AutomationQuickEditDialog from "./AutomationQuickEditDialog.vue";
-import { trackAnalytic } from "../../utils/analytics.js";
 import { mapModel } from "../../utils/modelValue";
 
 export default {
