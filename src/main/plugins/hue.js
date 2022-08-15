@@ -59,42 +59,6 @@ class HUEStateTracker {
 }
 
 
-//node-hue-api is dumb and rate limits setGroupState()
-//Rate limiting isn't flat for hue bridges, 
-// the less individual state parameter changes you send the more total state updates you can send.
-// Since node-hue-api doesn't let you disable the rate limiter We create a fake endpoint similar to those in
-// https://github.com/peter-murray/node-hue-api/blob/82b24674dbf2bc74cf1776af15344de81d10696a/lib/api/http/endpoints/endpoint.js
-// and https://github.com/peter-murray/node-hue-api/blob/82b24674dbf2bc74cf1776af15344de81d10696a/lib/api/http/endpoints/groups.js
-// We then execute this endpoint instead.
-const fakeSetGroupStateEndpoint = {
-	getRequest(parameters) {
-		let data = {
-			method: 'PUT',
-			json: true,
-		};
-
-		data.url = `/${parameters.username}/groups/${parameters.id}/action`;
-
-		data.data = parameters.state.getPayload();
-
-		data.headers = {
-			'Content-Type': 'application/json'
-		}
-
-		return data;
-	},
-	getErrorHandler() {
-		return (err) => {
-			console.error(err);
-		}
-	},
-	getPostProcessing() {
-		return null;
-	},
-	successCode: 200
-}
-
-
 import { evalTemplate } from '../utils/template.js'
 
 import * as chromatism from 'chromatism2';
@@ -105,6 +69,8 @@ import axios from "axios"
 import _ from "lodash"
 import https from 'https';
 import { AsyncCache } from '../utils/async-cache.js';
+import os from 'os';
+import { sleep } from '../utils/sleep.js';
 
 class HUEApi
 {
@@ -112,6 +78,7 @@ class HUEApi
 	{
 		const result = new HUEApi();
 
+		// The cert provided in the HUE docs does not appear to work. So for now, ignore https.
 		const httpsAgent = new https.Agent ({
 			rejectUnauthorized: false,
 		})
@@ -138,6 +105,25 @@ class HUEApi
 		await result.getGroups();
 
 		return result;
+	}
+
+	static async createKey(ip) {
+		try {
+			const resp = await axios.post(`http://${ip}/api`, {
+				devicetype: `CastMate#${os.userInfo().username}`,
+			});
+
+			console.log(resp.data);
+
+			if (resp.data?.[0]?.success?.username)
+			{
+				return resp.data[0].success.username;
+			}
+		}
+		catch(err) {
+			console.log(err);
+			return undefined;
+		}
 	}
 
 	async getGroups()
@@ -300,41 +286,29 @@ export default {
 			}
 		},
 		async createUser() {
-			/*
-			//Connect to hue bridge (unauthenticated)
-			let unauthenticatedApi = null;
-			try {
-				unauthenticatedApi = await hueApi.createLocal(this.bridgeIp).connect();
-			}
-			catch (err) {
-				console.error("Unable to connect to bridge to create user");
-				return false;
-			}
-
 			//Try to create user 5 times to allow for hue bridge button to be pressed.
-			const retries = 5;
+			const retries = 6;
 			for (let i = 0; i < retries; ++i) {
-				try {
-					let user = await unauthenticatedApi.users.createUser("CastMate", os.userInfo().username)
-
+				let key = await HUEApi.createKey(this.bridgeIp);
+				
+				if (key)
+				{
 					this.hueUser = {
-						username: user.username,
-						clientKey: user.clientKey
+						username: key,
 					}
 
 					fs.writeFileSync(path.join(userFolder, "secrets/hue.json"), JSON.stringify(this.hueUser));
 
 					return true;
 				}
-				catch (err) {
-					this.logger.error("The link button on the bridge was not pressed. Press and try again.");
-				}
+
+				this.logger.error("The link button on the bridge was not pressed. Press and try again.");
 
 				if (i != retries - 1) {
 					this.logger.info("Trying again in 5 seconds...");
 					await sleep(5000);
 				}
-			}*/
+			}
 
 			return false;
 		},
