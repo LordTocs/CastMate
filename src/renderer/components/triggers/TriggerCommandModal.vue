@@ -18,6 +18,7 @@
             text
             class="body-2 font-weight-bold"
             @click.native="cancel"
+            variant="outlined"
           >
             Cancel
           </v-btn>
@@ -26,6 +27,7 @@
             class="body-2 font-weight-bold"
             outlined
             @click.native="() => create()"
+            variant="outlined"
           >
             Create
           </v-btn>

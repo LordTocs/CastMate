@@ -52,8 +52,8 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" @click="apply" :disabled="!valid"> Apply </v-btn>
-        <v-btn @click="cancel"> Cancel </v-btn>
+        <v-btn color="primary" @click="apply" :disabled="!valid" variant="outlined"> Apply </v-btn>
+        <v-btn @click="cancel" variant="outlined"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
