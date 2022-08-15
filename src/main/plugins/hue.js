@@ -1,3 +1,15 @@
+import { evalTemplate } from '../utils/template.js'
+import * as chromatism from 'chromatism2';
+import fs from "fs"
+import path from 'path'
+import { userFolder } from '../utils/configuration.js'
+import axios from "axios"
+import _ from "lodash"
+import https from 'https';
+import { AsyncCache } from '../utils/async-cache.js';
+import os from 'os';
+import { sleep } from '../utils/sleep.js';
+
 class HUEStateTracker {
 	constructor() {
 		this.lastState = {};
@@ -58,20 +70,6 @@ class HUEStateTracker {
 	}
 }
 
-
-import { evalTemplate } from '../utils/template.js'
-
-import * as chromatism from 'chromatism2';
-import fs from "fs"
-import path from 'path'
-import { userFolder } from '../utils/configuration.js'
-import axios from "axios"
-import _ from "lodash"
-import https from 'https';
-import { AsyncCache } from '../utils/async-cache.js';
-import os from 'os';
-import { sleep } from '../utils/sleep.js';
-
 class HUEApi
 {
 	static async create(ip, key)
@@ -102,6 +100,17 @@ class HUEApi
 			}
 		})
 
+		result.sceneCache = new AsyncCache(async () => {
+			try {
+				const resp = await result.api.get(`/resource/scene`);
+				const scenes = resp.data.data;
+				return scenes;
+			}
+			catch(err) {
+				return []
+			}
+		})
+
 		await result.getGroups();
 
 		return result;
@@ -128,14 +137,49 @@ class HUEApi
 
 	async getGroups()
 	{
-		return await this.groupCache.get();
+		const groups = await this.groupCache.get();
+		//console.log(groups);
+		return groups;
 	}
 
-	async getGroupByName(name)
-	{
+	async getScenes() {
+		const scenes = await this.sceneCache.get();
+		//console.log(scenes);
+		return scenes;
+	}
+
+	async getGroupByName(name) {
 		const cachedGroups = await this.groupCache.get();
 		const group = cachedGroups.find((g) => g.metadata.name == name);
 		return group;
+	}
+
+	async getSceneByName(groupName, sceneName) {
+		const group = await this.getGroupByName(groupName);
+		if (!group)
+			return undefined;
+		const cachedScenes = await this.sceneCache.get();
+		
+		const scene = cachedScenes.find((s) => s.metadata.name == sceneName && s.group.rid == group.id);
+		return scene;
+	}
+
+	async applyScene(sceneId) {
+		const recall = {
+			recall: {
+				action: "active"
+			}
+		}
+
+		try {
+			await this.api.put(`/resource/scene/${sceneId}`, recall);
+		}
+		catch(err) {
+			console.error(`HUE API ERROR: `);
+			for (let errorStr of err?.response?.data?.errors) {
+				console.error(errorStr);
+			}
+		}
 	}
 
 	async setGroupState(id, state)
@@ -157,7 +201,6 @@ class HUEApi
 			const hue = Math.max(Math.min(Number("hue" in state ? Number(state.hue) : 0), 360), 0);
 			const sat = Math.max(Math.min(Number("sat" in state ? Number(state.sat) : 100), 100), 0);
 			const bri = Math.max(Math.min(Number("bri" in state ? Number(state.bri) : 100), 100), 0);
-			console.log("Hue", hue, "Sat", sat, "Bri", bri);
 			const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
 			update.color = {
 				xy: {
@@ -174,7 +217,6 @@ class HUEApi
 			}
 		}
 
-		console.log("Setting Grouped Light", id, update);
 
 		try {
 			await this.api.put(`/resource/grouped_light/${id}`, update);
@@ -342,13 +384,21 @@ export default {
 				return []
 			}
 		},
-		async getSceneNames() {
+		async getSceneNames(groupName) {
 			try {
-				return (await this.hue.scenes.getAll()).map(s => s.name)
+				const group = await this.hue.getGroupByName(groupName);
+				if (!group)
+				{
+					console.log("No Group Found For Scenes")
+					return [];
+				}
+
+				let scenes = await this.hue.getScenes();
+				scenes = scenes.filter(s => s.group.rid == group.id);
+				return scenes.map(s => s.metadata.name);
 			}
 			catch (err) {
 				this.logger.error(err);
-				console.error(err);
 				return []
 			}
 		},
@@ -460,13 +510,12 @@ export default {
 				if (!group)
 					return;
 
-				console.log("Group", group);
 				const service = group.services.find(s => s.rtype == 'grouped_light');
 				await this.hue.setGroupState(service.rid, requestedState);
 
 			}
 		},
-		/*scene: {
+		scene: {
 			name: "Hue Scene",
 			description: "Changes HUE lights to a hue scene",
 			icon: "mdi-lightbulb-on-outline",
@@ -474,13 +523,6 @@ export default {
 			data: {
 				type: Object,
 				properties: {
-					scene: {
-						type: String,
-						name: "Scene",
-						async enum() {
-							return await this.getSceneNames();
-						}
-					},
 					group: {
 						type: String,
 						template: true,
@@ -489,24 +531,30 @@ export default {
 							return await this.getGroupNames()
 						}
 					},
+					scene: {
+						type: String,
+						name: "Scene",
+						async enum(context) {
+							this.logger.info('Fetching Scenes for ' + context);
+							return await this.getSceneNames(context.group);
+						},
+						required: true,
+					},
 				}
 			},
 			async handler(sceneData) {
-				let scene = sceneData.scene;
+				let sceneName = sceneData.scene;
 				let groupName = sceneData.group || this.settings.defaultGroup;
 
 				this.stateTracker.clearGroupState(groupName);
 
-				let sceneObj = await this.hue.scenes.getSceneByName(scene);
-
-				let state = new lightstates.GroupLightState();
-				state.scene(sceneObj[0].id);
-
-				let groups = await this.hue.getGroupByName(groupName);
-
-				await Promise.all(groups.map((group) => this.hue.groups.setGroupState(group.id, state)));
+				const scene = await this.hue.getSceneByName(groupName, sceneName);
+				if (!scene)
+					return;
+				
+				this.hue.applyScene(scene.id);
 			}
-		}*/
+		}
 	},
 	settingsView: 'hue.vue'
 }
