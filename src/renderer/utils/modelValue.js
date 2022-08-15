@@ -110,8 +110,6 @@ export function mapModelValues(subvalues, varname="modelValue") {
         }
     }
 
-    console.log(result);
-
     return result;
 }
 
