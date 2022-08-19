@@ -5,37 +5,41 @@
     :style="{ zIndex: options.zIndex }"
     @keydown.esc="cancel"
   >
-    <v-card>
+    <v-card width="35vw">
       <v-toolbar dark :color="options.color" dense flat>
         <v-toolbar-title class="text-body-2 font-weight-bold grey--text">
           {{ title }}
         </v-toolbar-title>
       </v-toolbar>
-      <v-card-text class="pa-4">
-        <v-text-field v-model="name" :label="label" />
-      </v-card-text>
-      <v-card-actions class="pt-3">
-        <v-spacer></v-spacer>
-        <v-btn
-          v-if="!options.noconfirm"
-          color="grey"
-          text
-          class="body-2 font-weight-bold"
-          @click.native="cancel"
-          >{{ rejectText }}</v-btn
-        >
-        <v-btn
-          color="primary"
-          class="body-2 font-weight-bold"
-          @click.native="agree"
-          >{{ confirmText }}</v-btn
-        >
-      </v-card-actions>
+      <v-form @submit.prevent="agree">
+        <v-card-text class="pa-4">
+          <v-text-field v-model="name" :label="label" ref="nameInput" />
+        </v-card-text>
+        <v-card-actions class="pt-3">
+          <v-spacer></v-spacer>
+          <v-btn
+            v-if="!options.noconfirm"
+            color="grey"
+            text
+            class="body-2 font-weight-bold"
+            @click.native="cancel"
+            >{{ rejectText }}</v-btn
+          >
+          <v-btn
+            color="primary"
+            class="body-2 font-weight-bold"
+            @click.native="agree"
+            >{{ confirmText }}</v-btn
+          >
+        </v-card-actions>
+      </v-form>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
+import { nextTick } from 'vue';
+
 // Grabbed from: https://techformist.com/reusable-confirmation-dialog-vuetify/
 export default {
   name: "NamedItemConfirmation",
@@ -66,6 +70,9 @@ export default {
       this.confirmText = confirmText || "OK";
       this.rejectText = rejectText || "Cancel";
       this.options = Object.assign(this.options, options);
+      nextTick(() => {
+        this.$refs.nameInput.focus()
+      })
       return new Promise((resolve, reject) => {
         this.resolve = resolve;
         this.reject = reject;

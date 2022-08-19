@@ -54,7 +54,7 @@ export class ProfileManager
 		ipcFunc("io", "createProfile", async (name, config) => {
 			const existingProfile = this.profiles.find(p => p.name == name);
 			if (existingProfile)
-				return;
+				return false;
 			
 			const newProfile = new Profile(path.join(userFolder, "profiles", `${name}.yaml`), this, (profile) =>
 			{
@@ -74,12 +74,14 @@ export class ProfileManager
 			await this.handleProfileLoaded(newProfile);
 
 			this.profiles.push(newProfile);
+
+			return true;
 		});
 		ipcFunc("io", "deleteProfile", async(name) => {
 			const profileIndex = this.profiles.findIndex(p => p.name == name);
 
 			if (profileIndex < 0)
-				return;
+				return false;
 
 			try
 			{
@@ -96,6 +98,8 @@ export class ProfileManager
 			this.recombine();
 
 			logger.info(`Profile Deleted: ${name}`);
+
+			return true;
 		})
 		ipcFunc("io", "cloneProfile", async(name, newName) => {
 			const profileIndex = this.profiles.findIndex(p => p.name == name);
