@@ -15,9 +15,9 @@ export class Analytics {
             this.set(data);
         })
 
-        if (process.env.VUE_APP_MIXPANEL_PROJECT_TOKEN && (process.env.NODE_ENV == 'production' || process.env.DEV_ANALYTICS))
+        if (process.env.VITE_APP_MIXPANEL_PROJECT_TOKEN && (process.env.NODE_ENV == 'production' || process.env.DEV_ANALYTICS))
         {
-            this.mixpanel = Mixpanel.init(process.env.VUE_APP_MIXPANEL_PROJECT_TOKEN, {
+            this.mixpanel = Mixpanel.init(process.env.VITE_APP_MIXPANEL_PROJECT_TOKEN, {
                 debug: (process.env.NODE_ENV !== 'production' && !process.env.DEV_ANALYTICS)
             });
         }
