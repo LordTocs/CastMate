@@ -18,7 +18,7 @@
             class="flex-grow-0"
             style="width: 350px"
           />
-          <v-sheet outlined rounded class="px-2 py-2 my-2">
+          <v-sheet variant="outlined" rounded class="px-2 py-2 my-2">
             <template v-if="localTriggerType">
               <p class="my-2">
                 {{ triggerDesc.name }}

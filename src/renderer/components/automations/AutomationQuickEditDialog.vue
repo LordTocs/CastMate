@@ -59,7 +59,7 @@
         <v-btn
           color="primary"
           class="body-2 font-weight-bold"
-          outlined
+          variant="outlined"
           @click.stop="save"
         >
           Save

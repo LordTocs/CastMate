@@ -56,10 +56,10 @@
           </template>
         </tbody>
       </v-table>
-      <v-alert dense outlined border="left" type="warning" class="mx-8" v-else>
+      <v-alert dense variant="outlined" border="left" class="mx-8 my-8" v-else>
         <p class="text-center text-h5 my-4">
           This profile doesn't have any triggers.
-          <v-btn color="warning" outlined @click="$refs.addModal.open()">
+          <v-btn variant="outlined" class="mx-3" @click="$refs.addModal.open()">
             Add Trigger
           </v-btn>
         </p>

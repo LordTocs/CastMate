@@ -1,5 +1,5 @@
 <template>
-  <v-sheet rounded outlined class="px-2 py-2 my-4">
+  <v-sheet rounded variant="outlined" class="px-2 py-2 my-4">
     <p class="my-2">Template Variables</p>
     <p class="text--secondary my-1">
       These are the variables usable in <code v-pre>{{&nbsp;templates&nbsp;}}</code

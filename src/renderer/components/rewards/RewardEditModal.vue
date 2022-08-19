@@ -22,7 +22,6 @@
         <v-btn
           color="primary"
           class="body-2 font-weight-bold"
-          outlined
           v-if="showSave"
           @click.native="save"
           :active="valid"
@@ -32,7 +31,6 @@
         <v-btn
           color="primary"
           class="body-2 font-weight-bold"
-          outlined
           v-if="showCreate"
           @click.native="create"
           :active="valid"
@@ -42,7 +40,6 @@
         <v-btn
           color="red"
           class="body-2 font-weight-bold"
-          outlined
           v-if="showDelete"
           @click.native="deleteMe"
         >

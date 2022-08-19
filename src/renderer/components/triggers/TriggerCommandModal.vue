@@ -25,7 +25,6 @@
           <v-btn
             color="primary"
             class="body-2 font-weight-bold"
-            outlined
             @click.native="() => create()"
             variant="outlined"
           >

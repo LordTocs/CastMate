@@ -27,7 +27,6 @@
         <v-btn
           color="primary"
           class="body-2 font-weight-bold"
-          outlined
           @click.native="agree"
           >{{ confirmText }}</v-btn
         >

@@ -25,7 +25,6 @@
         <v-btn
           color="primary"
           class="body-2 font-weight-bold"
-          outlined
           v-if="showSave"
           @click.native="save"
         >
@@ -34,7 +33,6 @@
         <v-btn
           color="primary"
           class="body-2 font-weight-bold"
-          outlined
           v-if="showCreate"
           @click.native="create"
         >

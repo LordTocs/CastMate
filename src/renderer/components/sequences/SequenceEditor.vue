@@ -23,7 +23,7 @@
       <template #header>
         <v-card
           elevation="2"
-          outlined
+          variant="outlined"
           shaped
           v-if="!(modelValue && modelValue.length > 0)"
         >
