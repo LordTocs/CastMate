@@ -5,8 +5,9 @@
   "description": "CastMate is a broadcaster tool that allows Twitch viewers to interact with a broadcasters stream components through Chat Commands, Channel Point rewards, and more.",
   "author": "LordTocs & FitzBro",
   "scripts": {
-    "build": "vite build && npm run eb",
-    "dev": "vite -- --portable",
+    "build": "vite build --mode production && electron-builder --config electron-builder-config.cjs",
+    "buildpublish": "vite build --mode production && electron-builder --config electron-builder-config.cjs --publish",
+    "dev": "vite",
     "eb": "electron-builder --config electron-builder-config.cjs",
     "postinstall": "electron-builder install-app-deps"
   },
