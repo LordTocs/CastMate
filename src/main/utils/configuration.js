@@ -2,8 +2,7 @@ import { app, ipcMain } from "./electronBridge.js"
 import path from 'path'
 import fs from "fs"
 
-const nodeEnv = process.env.NODE_ENV || 'development'
-const isDevelopment = nodeEnv === 'development';
+const isDevelopment = !app.isPackaged;
 const isPortable = process.argv.includes('--portable') || isDevelopment;
 export const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData'), 'user') : './user'));
 
@@ -38,7 +37,7 @@ export function ensureUserFolder()
 	ensureFolder(path.join(userFolder, "profiles"));
 	ensureFolder(path.join(userFolder, "secrets"));
 	ensureFolder(path.join(userFolder, "sounds"));
-
+	ensureFolder(path.join(userFolder, "cache"));
 	ensureFolder(path.join(userFolder, "automations"));
 
 	ensureFile(rewardsFilePath);
