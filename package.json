@@ -24,7 +24,6 @@
     "axios": "^0.27.2",
     "bad-words": "^3.0.4",
     "body-parser": "^1.19.0",
-    "chokidar": "^3.5.2",
     "chromatism2": "^3.0.2",
     "color": "^4.0.2",
     "cs-gamestate": "^2.2.3",
