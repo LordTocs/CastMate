@@ -5,6 +5,7 @@ import { sleep } from "../utils/sleep.js"
 import YAML from "yaml"
 import fs from 'fs'
 import { ipcFunc, ipcMain } from "../utils/electronBridge.js"
+import _cloneDeep from "lodash/cloneDeep"
 
 export class AutomationManager
 {
@@ -34,13 +35,23 @@ export class AutomationManager
 			catch (err)
 			{
 				logger.error(`Error saving automation. ${err}`);
+				return false;
 			}
 			this.automations[name] = config;
+			return true;
 		})
 		ipcFunc("io", "createAutomation", async (name, config) => {
 			if (name in this.automations)
 			{
-				return;
+				return false;
+			}
+
+			if (!config) {
+				config = {
+					version: "1.0",
+					description: "",
+					actions: [],
+				}
 			}
 
 			try
@@ -50,12 +61,14 @@ export class AutomationManager
 			catch (err)
 			{
 				logger.error(`Error saving automation. ${err}`);
+				return false;
 			}
 			this.automations[name] = config;
+			return true;
 		})
 		ipcFunc("io", "deleteAutomation", async (name) => {
 			if (!(name in this.automations))
-				return;
+				return false;
 
 			delete this.automations[name];
 
@@ -66,7 +79,28 @@ export class AutomationManager
 			catch(err)
 			{
 				logger.error(`Error deleting automation. ${err}`);
+				return false;
 			}
+			return true;
+		})
+		ipcFunc("io", "cloneAutomation", async (name, newName) => {
+			if (!(name in this.automations) || newName in this.automations)
+				return false;
+
+			const config = _cloneDeep(this.automations[name]);
+
+			try
+			{
+				await fs.promises.writeFile(path.join(userFolder, 'automations/', `${newName}.yaml`), YAML.stringify(config), 'utf-8')
+			}
+			catch (err)
+			{
+				logger.error(`Error saving automation. ${err}`);
+				return false;
+			}
+
+			this.automations[newName] = config;
+			return true;
 		})
 	}
 

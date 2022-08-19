@@ -96,7 +96,6 @@ export default {
     automation: {
       deep: true,
       handler(newAutomation, oldAutomation) {
-        console.log("AutoChanged", newAutomation, oldAutomation);
         if (!this.loading && oldAutomation != null) {
           this.dirty = true;
         }

@@ -56,9 +56,7 @@ export class ProfileManager
 			if (existingProfile)
 				return;
 			
-			const basePath = "";
-			
-			const newProfile = new Profile(path.join(basePath, `${name}.yaml`), this, (profile) =>
+			const newProfile = new Profile(path.join(userFolder, "profiles", `${name}.yaml`), this, (profile) =>
 			{
 				this.handleProfileLoaded(profile);
 			});
@@ -73,7 +71,9 @@ export class ProfileManager
 			}
 
 			await newProfile.saveConfig(config);
-			await handleProfileLoaded(newProfile);
+			await this.handleProfileLoaded(newProfile);
+
+			this.profiles.push(newProfile);
 		});
 		ipcFunc("io", "deleteProfile", async(name) => {
 			const profileIndex = this.profiles.findIndex(p => p.name == name);
@@ -96,6 +96,30 @@ export class ProfileManager
 			this.recombine();
 
 			logger.info(`Profile Deleted: ${name}`);
+		})
+		ipcFunc("io", "cloneProfile", async(name, newName) => {
+			const profileIndex = this.profiles.findIndex(p => p.name == name);
+
+			if (profileIndex < 0)
+				return false;
+
+			const existingProfile = this.profiles.find(p => p.name == newName);
+			if (existingProfile)
+				return false;
+
+			const config = _.cloneDeep(this.profiles[profileIndex].config);
+
+			const newProfile = new Profile(path.join(userFolder, "profiles", `${newName}.yaml`), this, (profile) =>
+			{
+				this.handleProfileLoaded(profile);
+			});
+
+			await newProfile.saveConfig(config);
+			await this.handleProfileLoaded(newProfile);
+
+			this.profiles.push(newProfile);
+
+			return true;
 		})
 	}
 
@@ -180,23 +204,6 @@ export class ProfileManager
 		
 		// Recombine active profiles 
 		this.recombine();
-	}
-
-	//Load in a new profile.
-	async loadProfile(filename)
-	{
-		let profile = new Profile(filename, this, (profile) =>
-		{
-			this.handleProfileLoaded(profile);
-		});
-
-		await sleep(50); //Sleep because js is weird and we can accidentally load old files!
-
-		await profile.reload();
-
-		this.profiles.push(profile)
-
-		await this.handleProfileLoaded(profile);
 	}
 
 	//Recalculate which profiles are active.

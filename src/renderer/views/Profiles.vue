@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <file-table :files="profiles" name="Profile" @nav="onNav"/>
+    <file-table :files="profiles" name="Profile" @nav="onNav" @create="onCreate" @duplicate="onDuplicate" @delete="onDelete"/>
   </v-container>
 </template>
 
@@ -19,13 +19,29 @@ export default {
     };
   },
   methods: {
-    ...mapIpcs("io", ["getProfiles"]),
+    ...mapIpcs("io", ["getProfiles", "createProfile", "cloneProfile", "deleteProfile"]),
     async getFiles() {
       this.profiles = await this.getProfiles();
       console.log(this.profiles);
     },
     onNav(name) {
       this.$router.push(`/profiles/${name}`)
+    },
+    async onCreate(name) {
+      if (await this.createProfile(name))
+      {
+        this.onNav(name);
+      }
+    },
+    async onDuplicate(name, newName) {
+      if (await this.cloneProfile(name, newName))
+      {
+        this.onNav(newName);
+      }
+    },
+    async onDelete(name) {
+      await this.deleteProfile(name);
+      await this.getFiles();
     }
   },
   async mounted() {
