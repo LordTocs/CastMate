@@ -1,6 +1,7 @@
 user/
+user_old/
 /dist
-/dist_electron
+/release
 
 .DS_Store
 

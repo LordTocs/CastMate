@@ -3,6 +3,7 @@ import { Plugin } from './plugin.js'
 import { reactiveCopy, Watcher, deleteReactiveProperty } from './reactive.js'
 import { ipcMain } from "./electronBridge.js"
 import _ from 'lodash'
+import logger from './logger.js';
 
 export class PluginManager {
 	async load(ipcSender) {
@@ -28,7 +29,13 @@ export class PluginManager {
 		this.plugins = [];
 		for (let file of pluginFiles)
 		{
-			this.plugins.push(new Plugin((await import(`../plugins/${file}.js`)).default))
+			try {
+				this.plugins.push(new Plugin((await import(`../plugins/${file}.js`)).default))
+			}
+			catch(err) {
+				logger.error(`Error Importing ${file} Plugin. `);
+				logger.error(err);
+			}
 		}
 		this.stateLookup = {};
 

@@ -27,7 +27,11 @@ export default {
 			}
 		});
 
-		this.audioWindow.loadFile(path.join(__dirname, "../../../public", "sounds.html"));
+		//If we're packaged this file is in 'dist/electron/main' so we go up to electron and then into renderer
+		//If we're not packaged we nav up to the public directory
+		const htmlPath = app.isPackaged ? path.join(__dirname, '../renderer') : path.join(__dirname, '../../../public');
+
+		this.audioWindow.loadFile(path.join(htmlPath, "sounds.html"));
 
 		this.audioWindowSender = this.audioWindow.webContents;
 

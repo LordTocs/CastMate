@@ -1,4 +1,3 @@
-import chokidar from "chokidar"
 import path from 'path'
 import { userFolder } from "../utils/configuration.js"
 import logger from "../utils/logger.js"

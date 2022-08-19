@@ -2,7 +2,6 @@ import express from "express"
 import bodyParser from "body-parser"
 import websocket from "websocket"
 import http from "http"
-import { publicIpv4 } from 'public-ip'
 import { userFolder } from "./configuration.js"
 import path from "path"
 import logger from "./logger.js"
@@ -50,13 +49,10 @@ export async function createWebServices(settings, secrets, plugins) {
 
 	let port = settings.port || 80;
 
-	let hostname = await publicIpv4();
-
 	const result = {
 		app,
 		routes,
 		websocketServer,
-		hostname,
 		port: port,
 		start: () => {
 			server.listen(port, () => {

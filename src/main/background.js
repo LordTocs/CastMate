@@ -45,11 +45,15 @@ protocol.registerSchemesAsPrivileged([
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
+const dist = path.join(__dirname, '../..')
+const renderer =  path.join(dist, 'electron', 'renderer')
+
 const ROOT_PATH = {
 	// /dist
-	dist: path.join(__dirname, '../..'),
+	dist,
+	renderer,
 	// /dist or /public
-	public: path.join(__dirname, app.isPackaged ? '../..' : '../../../public'),
+	public: path.join(__dirname, app.isPackaged ? renderer : '../../../public'),
 }
 
 const preload = path.join(__dirname, '../preload/preload.js')
@@ -59,13 +63,13 @@ let mainWindow = null;
 async function createWindow() {
 	// Create the browser window.
 
-	const indexHtml = path.join(ROOT_PATH.dist, 'index.html')
+	const indexHtml = path.join(ROOT_PATH.renderer, 'index.html')
 
 
 	const win = new BrowserWindow({
 		width: 1600,
 		height: 900,
-		icon: 'src/renderer/assets/icons/icon.png',
+		icon: path.join(ROOT_PATH.public, 'icon.png'),
 		webPreferences: {
 			//preload,
 			nodeIntegration: true,
@@ -217,7 +221,7 @@ app.whenReady().then(async () => {
 	if (isDevelopment && !process.env.IS_TEST) {
 		// Install Vue Devtools
 		try {
-			await installExtension.default(installExtension.VUEJS_DEVTOOLS)
+			await installExtension(installExtension.VUEJS_DEVTOOLS)
 		} catch (e) {
 			console.error('Vue Devtools failed to install:', e.toString())
 		}
