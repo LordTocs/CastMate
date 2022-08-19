@@ -5,8 +5,8 @@
         <v-card height="100%" class="d-flex flex-column">
           <v-card-title> Twitch </v-card-title>
           <v-card-text class="flex-grow-1" v-if="!stateLookup.twitch.isAuthed">
-            <v-alert dense variant="outlined" border="left" type="warning">
-              <v-row align="center">
+            <v-alert dense variant="outlined" type="warning">
+              <v-row>
                 <v-col class="grow">
                   To use twitch features with CastMate you must be signed in to
                   Twitch.
@@ -49,8 +49,8 @@
         <v-card height="100%" class="d-flex flex-column">
           <v-card-title> OBS </v-card-title>
           <v-card-text class="flex-grow-1" v-if="!stateLookup.obs.connected">
-            <v-alert dense variant="outlined" border="left" type="warning">
-              <v-row align="center">
+            <v-alert dense variant="outlined" type="warning">
+              <v-row>
                 <v-col class="grow">
                   To use OBS features, you must connect over the
                   <a href="https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-from-websockets.466/"

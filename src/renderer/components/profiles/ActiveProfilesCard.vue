@@ -2,7 +2,7 @@
   <v-card>
     <v-card-title> Active Profiles </v-card-title>
     <v-card-text>
-      <v-alert dense outlined border="left" type="warning" v-if="!hasProfiles">
+      <v-alert dense outlined type="warning" v-if="!hasProfiles">
         <v-row align="center">
           <v-col class="grow">
             You don't have any profiles. Profiles are CastMate's way of

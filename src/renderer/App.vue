@@ -43,12 +43,12 @@
       <v-spacer></v-spacer>
     </v-app-bar>
 
-    <v-main style="max-height: 100%" v-if="loaded">
+    <v-main style="max-height: 100%; overflow: auto;" v-if="loaded">
       <router-view></router-view>
     </v-main>
     <v-main style="max-height: 100%" v-else>
-      <v-container fluid class="fill-height">
-        <v-row align="center" justify="center">
+      <v-container fluid style="height: 100%">
+        <v-row justify="center">
           <v-col cols="12" sm="4" style="justify-content: center; text-align: center">
             <h1>Loading CastMate</h1>
             <v-progress-circular indeterminate color="cyan" :size="100" :width="15" />
@@ -122,15 +122,12 @@ html {
   overflow: hidden !important;
 }
 
-body {
-  overflow: hidden;
-}
-
-.v-main__wrap {
+/*
+.v-main {
   bottom: 0;
   right: 0;
   overflow: auto;
-}
+} */
 
 /*Scroll Bars don't play nicely with the FABs so we shift it a little*/
 .v-speed-dial--right {
