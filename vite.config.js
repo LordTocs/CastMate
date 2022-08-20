@@ -25,16 +25,16 @@ export default defineConfig({
         vite: withDebug({
           plugins: [nodeResolve(['node'])],
           build: {
-            target: 'node16.15',
+            // target: 'node16.15',
             outDir: 'dist/electron/main',
             rollupOptions: {
-              format: 'cjs',
+              // format: 'cjs',
               external: ['public-ip', 'ffi-napi', 'ref-napi', 'ref-struct-di', 'win32-api'],
             }
           },
-          esbuild: {
-            platform: 'node',
-          },
+          // esbuild: {
+          //   platform: 'node',
+          // },
         }),
       },
       /*preload: {
@@ -50,6 +50,9 @@ export default defineConfig({
         }
       },*/
       renderer: {
+        resolve() {
+          return ['fs']
+        }
       },
     })
   ],

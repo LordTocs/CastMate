@@ -12,15 +12,19 @@
     @copy.stop=""
     @paste.stop=""
   >
+    <template #append>
+      <v-btn icon="mdi-folder" size="x-small" @click="openFolder" />
+    </template>
   </v-autocomplete>
 </template>
 
 <script>
-import fs from "fs";
-import path from "path";
-import { mapGetters } from "vuex";
-import recursiveReaddir from "recursive-readdir";
-import { mapModel } from "../../utils/modelValue";
+import fs from "fs"
+import path from "path"
+import { mapGetters } from "vuex"
+import recursiveReaddir from "recursive-readdir"
+import { mapModel } from "../../utils/modelValue"
+import { shell } from "electron"
 
 export default {
   props: {
@@ -102,6 +106,9 @@ export default {
 
       this.loading = false;
     },
+    async openFolder() {
+      shell.openPath(this.searchPath);
+    }
   },
   async mounted() {
     this.loading = true;
