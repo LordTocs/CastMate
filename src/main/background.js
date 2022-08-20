@@ -52,9 +52,9 @@ const ROOT_PATH = {
 	// /dist
 	dist,
 	renderer,
-	// /dist or /public
-	public: path.join(__dirname, app.isPackaged ? renderer : '../../../public'),
 }
+
+const iconPath = app.isPackaged ? renderer : 'src/renderer/assets/icons'
 
 const preload = path.join(__dirname, '../preload/preload.js')
 const url = `http://${process.env['VITE_DEV_SERVER_HOST']}:${process.env['VITE_DEV_SERVER_PORT']}`
@@ -65,11 +65,11 @@ async function createWindow() {
 
 	const indexHtml = path.join(ROOT_PATH.renderer, 'index.html')
 
-
+	
 	const win = new BrowserWindow({
 		width: 1600,
 		height: 900,
-		icon: path.join(ROOT_PATH.public, 'icon.png'),
+		icon: path.join(iconPath, 'icon.png'),
 		webPreferences: {
 			//preload,
 			nodeIntegration: true,
@@ -111,7 +111,7 @@ async function createUpdaterWindow(updateData) {
 	const win = new BrowserWindow({
 		width: 600,
 		height: 400,
-		icon: 'src/renderer/assets/icons/icon.png',
+		icon: path.join(iconPath, 'icon.png'),
 		webPreferences: {
 
 			// Use pluginOptions.nodeIntegration, leave this alone
