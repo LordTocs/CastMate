@@ -10,7 +10,7 @@
             <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody v-if="variableTable.length > 0">
         <tr v-for="variable in variableTable" :key="variable.name">
           <td> {{ variable.name }} </td>
           <td> {{ variable.type }} </td>
@@ -20,7 +20,7 @@
             <v-icon
               small
               class="mr-2"
-              @click="
+              @click.stop="
                 $refs.editDlg.open(variable.name, {
                   default: variable.default,
                   type: variable.type,
@@ -28,27 +28,21 @@
                 "
               icon="mdi-cog"
               />
-            <v-icon small @click="deleteVar(item.name)" icon="mdi-delete"/>
+            <v-icon small @click.stop="deleteVar(variable.name)" icon="mdi-delete"/>
           </td>
         </tr>
       </tbody>
-      <!--template v-slot:item.value="props">
-        <v-edit-dialog
-          @open="() => startEditValue(props.item.name)"
-          @close="() => editValue(props.item.name)"
-        >
-          {{ props.item.value }}
-          <template v-slot:input>
-            <v-text-field
-              v-model="valueEdit"
-              label="Value"
-              v-if="props.item.type == 'String'"
-            />
-            <number-input v-else v-model="valueEdit" label="Value" />
-          </template>
-        </v-edit-dialog>
-      </!--template-->
+      <tbody v-else>
+        <tr>
+          <td colspan="5" class="px-4 py-8 text-center">
+          <span>
+            Create some variables to store intermediate values in.
+          </span>
+          </td>
+        </tr>
+      </tbody>
     </v-table>
+    <v-btn @click="$refs.createDlg.open('', { type: 'Number', default: 0 })" color="primary" size="large" class="my-2"> Create Variable </v-btn>
     <confirm-dialog ref="deleteDlg" />
     <variable-spec-modal ref="editDlg" />
     <variable-spec-modal
