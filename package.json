@@ -6,7 +6,7 @@
   "author": "LordTocs & FitzBro",
   "scripts": {
     "build": "vite build --mode production && electron-builder --config electron-builder-config.cjs",
-    "buildpublish": "vite build --mode production && electron-builder --config electron-builder-config.cjs --publish",
+    "buildpublish": "vite build --mode production && electron-builder --config electron-builder-config.cjs --publish always",
     "dev": "vite",
     "eb": "electron-builder --config electron-builder-config.cjs",
     "postinstall": "electron-builder install-app-deps"
