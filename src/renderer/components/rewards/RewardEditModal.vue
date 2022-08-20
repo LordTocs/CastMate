@@ -1,0 +1,112 @@
+<template>
+  <v-dialog v-model="dialog"  @keydown.esc="cancel">
+    <v-card width="50vw">
+      <v-toolbar dense flat>
+        <v-toolbar-title class="text-body-2 font-weight-bold grey--text">
+          {{ title || "Edit Channel Point Reward" }}
+        </v-toolbar-title>
+      </v-toolbar>
+      <v-card-text>
+        <reward-editor v-model="rewardEdit" v-model:valid="valid" />
+      </v-card-text>
+      <v-card-actions class="pt-3">
+        <v-spacer></v-spacer>
+        <v-btn
+          color="grey"
+          text
+          class="body-2 font-weight-bold"
+          @click.native="cancel"
+        >
+          Cancel
+        </v-btn>
+        <v-btn
+          color="primary"
+          class="body-2 font-weight-bold"
+          v-if="showSave"
+          @click.native="save"
+          :active="valid"
+        >
+          Save
+        </v-btn>
+        <v-btn
+          color="primary"
+          class="body-2 font-weight-bold"
+          v-if="showCreate"
+          @click.native="create"
+          :active="valid"
+        >
+          Create
+        </v-btn>
+        <v-btn
+          color="red"
+          class="body-2 font-weight-bold"
+          v-if="showDelete"
+          @click.native="deleteMe"
+        >
+          Delete
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+</template>
+
+<script>
+import RewardEditor from "./RewardEditor.vue";
+import _cloneDeep from "lodash/cloneDeep"
+import { mapActions } from "vuex";
+import { trackAnalytic } from "../../utils/analytics.js";
+
+export default {
+  components: { RewardEditor },
+  props: {
+    reward: {},
+    title: {},
+    showSave: { type: Boolean, default: () => true },
+    showDelete: { type: Boolean, default: () => true },
+    showCreate: { type: Boolean, default: () => false },
+  },
+  data() {
+    return {
+      rewardEdit: {},
+      dialog: false,
+      valid: false,
+    };
+  },
+  methods: {
+    ...mapActions("rewards", ["createReward", "updateReward", "deleteReward"]),
+    open() {
+      this.rewardEdit = _cloneDeep(this.reward) || {};
+      this.dialog = true;
+    },
+    save() {
+      if (this.reward.name != this.rewardEdit.name) {
+        console.log("Detected Rename! ", this.reward.name, this.rewardEdit.name);
+        this.$emit("rename", this.rewardEdit.name);
+      }
+      this.updateReward({
+        rewardName: this.reward.name,
+        newReward: this.rewardEdit,
+      });
+      trackAnalytic("saveChannelReward");
+      this.dialog = false;
+    },
+    deleteMe() {
+      this.deleteReward(this.reward.name);
+      trackAnalytic("deleteChannelReward");
+      this.dialog = false;
+    },
+    cancel() {
+      this.dialog = false;
+    },
+    create() {
+      this.createReward(this.rewardEdit);
+      this.dialog = false;
+      this.$emit("created", this.rewardEdit.name);
+      trackAnalytic("createChannelReward");
+    },
+  },
+};
+</script>
+
+<style>
+</style>

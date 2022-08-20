@@ -27,7 +27,7 @@ jobs:
       #- name: "Rebuild for Electron"
       #  run: "npm run rebuild"
       - name: "Build"
-        run: "npm run electron:build -- -p always"
+        run: "npm run cicd"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VUE_APP_MIXPANEL_PROJECT_TOKEN: ${{ secrets.MIXPANEL_PROJECT_TOKEN }}
+          VITE_APP_MIXPANEL_PROJECT_TOKEN: ${{ secrets.MIXPANEL_PROJECT_TOKEN }}

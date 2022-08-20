@@ -1,47 +1,45 @@
 {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "Debug App",
+      "preLaunchTask": "Before Debug",
+      "configurations": [
+        "Debug Main Process",
+        "Debug Renderer Process"
+      ],
+      "presentation": {
+        "hidden": false,
+        "group": "",
+        "order": 1
+      },
+      "stopAll": true
+    }
+  ],
   "configurations": [
     {
-      "name": "Electron: Serve",
-      "type": "node",
+      "name": "Debug Main Process",
+      "type": "pwa-node",
       "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run-script", "electron:serve"]
-    },
-    {
-      "name": "Electron: Main",
-      "type": "node",
-      "request": "launch",
-      "protocol": "inspector",
-	  "preLaunchTask": "electron-debug",
       "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
       "windows": {
         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
       },
-      "args": ["--remote-debugging-port=9223", "./dist_electron"],
-      "outFiles": ["${workspaceFolder}/dist_electron/**/*.js"]
+      "runtimeArgs": [
+        "--remote-debugging-port=9229",
+        "."
+      ],
+      "envFile": "${workspaceFolder}/.vscode/.debug.env"
     },
     {
-      "name": "Electron: Renderer",
-      "type": "chrome",
+      "name": "Debug Renderer Process",
+      "port": 9229,
       "request": "attach",
-      "port": 9223,
-      "urlFilter": "http://localhost:*",
-      "timeout": 30000,
-      "webRoot": "${workspaceFolder}/src",
-      "sourceMapPathOverrides": {
-        "webpack:///./src/*": "${webRoot}/*"
-      }
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Electron: All",
-      "configurations": [
-        "Electron: Main",
-        "Electron: Renderer"
-      ]
-    }
+      "type": "pwa-chrome",
+      "timeout": 60000
+    },
   ]
 }
