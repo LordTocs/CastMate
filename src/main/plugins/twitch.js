@@ -1147,7 +1147,7 @@ export default {
 		}
 	},
 
-	settingsView: 'twitch.vue'
+	settingsView: 'twitch'
 }
 
 

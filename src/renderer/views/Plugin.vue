@@ -115,7 +115,7 @@ export default {
   },
   methods: {
     importSettingsView(viewName) {
-      return defineAsyncComponent(() => import(`../components/plugins/${viewName}`));
+      return defineAsyncComponent(() => import(`../components/plugins/${viewName}.vue`));
     },
     setSettingsValue(key, value) {
       this.$set(this.settings, key, value);

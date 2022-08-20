@@ -556,5 +556,5 @@ export default {
 			}
 		}
 	},
-	settingsView: 'hue.vue'
+	settingsView: 'hue'
 }
