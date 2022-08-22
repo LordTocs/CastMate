@@ -281,7 +281,7 @@ export default {
 
 				const context = {
 					command: parsed.command,
-					user,
+					user: msgInfo.userInfo.displayName,
 					userId: msgInfo.userInfo.userId,
 					args: parsed.args,
 					argString: parsed.string,
@@ -847,7 +847,8 @@ export default {
 						},
 						preview: false,
 					},
-					cooldown: { type: Number, name: "Cooldown", preview: false, unit: { name: "Seconds", short: "s" } }
+					cooldown: { type: Number, name: "Cooldown", preview: false, unit: { name: "Seconds", short: "s" } },
+					users: { type: Array, name: "User List", items: { type: String } }
 				}
 			},
 			context: {
@@ -861,7 +862,7 @@ export default {
 				filteredMessage: { type: String },
 				matches: { type: Array },
 			},
-			handler(config, context, mapping, userInfo) {
+			async handler(config, context, mapping, userInfo) {
 				const command = config.command || "";
 				if (command.length > 0 && config.match == "Start") {
 					if (context.command != config.command.toLowerCase()) {
@@ -890,6 +891,15 @@ export default {
 						return false;
 					}
 					this.commandTimes[mapping.id] = now;
+				}
+
+				if (config.users && config.users.length > 0) {
+					console.log("Checking Users Context", context);
+
+					const resolvedUserList = await Promise.all(config.users.map(u => template(u, context)));
+
+					if (!resolvedUserList.includes(context.user))
+						return false;
 				}
 
 				if (config.permissions) {
