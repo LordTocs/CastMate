@@ -835,7 +835,7 @@ export default {
 				type: Object,
 				properties: {
 					command: { type: String, name: "Command", filter: true },
-					match: { type: String, enum: ["Start", "Anywhere"], default: "Start", preview: false, name: "Match" },
+					match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
 					permissions: {
 						type: Object,
 						properties: {
@@ -859,6 +859,7 @@ export default {
 				userColor: { type: String },
 				message: { type: String },
 				filteredMessage: { type: String },
+				matches: { type: Array },
 			},
 			handler(config, context, mapping, userInfo) {
 				const command = config.command || "";
@@ -871,6 +872,15 @@ export default {
 					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
 						return false;
 					}
+				}
+				let matches = undefined;
+				if (command.length > 0 && config.match === "Regex")
+				{
+					matches = context.message.match(new RegExp(config.command));
+					if (!matches) {
+						return false;
+					}
+					context.matches = matches;
 				}
 
 				if (config.cooldown) {
