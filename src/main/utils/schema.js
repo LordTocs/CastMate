@@ -18,6 +18,14 @@ export function cleanSchemaForIPC(rootName, schema)
 			}
 		}
 	}
+	else if (schema.type == 'array' || schema.type == Array)
+	{
+		result.type = 'Array'
+		if (schema.items?.type)
+		{
+			result.items = cleanSchemaForIPC(rootName + "_items", schema.items);
+		}
+	}
 	else
 	{
 		if (!(typeof schema.type == 'string' || schema.type instanceof String) && schema.type) 
