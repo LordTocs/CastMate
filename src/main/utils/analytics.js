@@ -1,5 +1,6 @@
 import Mixpanel from 'mixpanel'
-import { ipcMain } from './electronBridge.js'
+import { app, ipcMain } from './electronBridge.js'
+import logger from './logger.js';
 
 export class Analytics {
     constructor(ipcSender) {
@@ -15,11 +16,18 @@ export class Analytics {
             this.set(data);
         })
 
-        if (process.env.VITE_APP_MIXPANEL_PROJECT_TOKEN && (process.env.NODE_ENV == 'production' || process.env.DEV_ANALYTICS))
+        const isProd = import.meta.env.PROD
+        const key = import.meta.env.VITE_APP_MIXPANEL_PROJECT_TOKEN
+        const forceTrack = import.meta.VITE_DEV_ANALYTICS
+
+        if (!key)
         {
-            this.mixpanel = Mixpanel.init(process.env.VITE_APP_MIXPANEL_PROJECT_TOKEN, {
-                debug: (process.env.NODE_ENV !== 'production' && !process.env.DEV_ANALYTICS)
-            });
+            logger.error(`Missing Mixpanel Key`);
+        }
+
+        if (key && (isProd || forceTrack))
+        {
+            this.mixpanel = Mixpanel.init(key, {});
         }
     }
 
