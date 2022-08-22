@@ -863,7 +863,7 @@ export default {
 				matches: { type: Array },
 			},
 			async handler(config, context, mapping, userInfo) {
-				const command = config.command || "";
+				const command = config.command ? await template(config.command, context) : "";
 				if (command.length > 0 && config.match == "Start") {
 					if (context.command != config.command.toLowerCase()) {
 						return false;
