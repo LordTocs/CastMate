@@ -26,46 +26,15 @@ export class Plugin
 			this.initFunc = this.initFunc.bind(this.pluginObj);
 		}
 
-		this.onSettingsReload = config.onSettingsReload;
-		if (this.onSettingsReload)
-		{
-			this.onSettingsReload = this.onSettingsReload.bind(this.pluginObj);
-		}
+		this._bindFunction(config, "onSettingsReload");
+		this._bindFunction(config, "onSecretsReload");
 
-		this.onProfilesChanged = config.onProfilesChanged;
+		this._bindFunction(config, "onProfilesChanged");
+		this._bindFunction(config, "onProfileLoad");
 
-		if (this.onProfilesChanged)
-		{
-			this.onProfilesChanged = this.onProfilesChanged.bind(this.pluginObj);
-		}
+		this._bindFunction(config, "onWebsocketMessage");
+		this._bindFunction(config, "onWebsocketConnected");
 
-		this.onProfileLoad = config.onProfileLoad;
-
-		if (this.onProfileLoad)
-		{
-			this.onProfileLoad = this.onProfileLoad.bind(this.pluginObj);
-		}
-
-		this.onSecretsReload = config.onSecretsReload;
-
-		if (this.onSecretsReload)
-		{
-			this.onSecretsReload = this.onSecretsReload.bind(this.pluginObj);
-		}
-
-		this.onWebsocketMessage = config.onWebsocketMessage;
-
-		if (this.onWebsocketMessage)
-		{
-			this.onWebsocketMessage = this.onWebsocketMessage.bind(this.pluginObj);
-		}
-
-		this.onWebsocketConnected = config.onWebsocketConnected;
-
-		if (this.onWebsocketConnected)
-		{
-			this.onWebsocketConnected = this.onWebsocketConnected.bind(this.pluginObj);
-		}
 
 		this.settingsView = config.settingsView;
 
@@ -101,24 +70,19 @@ export class Plugin
 			this.actions[actionKey] = action;
 		}
 
-		this.templateFunctions = {};
-		for (let funcKey in config.templateFunctions)
-		{
-			let func = config.templateFunctions[funcKey];
-			func = func.bind(this.pluginObj);
-			this.templateFunctions[funcKey] = func;
-		}
-
-		this.ipcMethods = {}
-		for (let funcKey in config.ipcMethods)
-		{
-			this.ipcMethods[funcKey] = config.ipcMethods[funcKey].bind(this.pluginObj);
-			this.pluginObj[funcKey] = this.ipcMethods[funcKey];
-			ipcMain.handle(`${this.name}_${funcKey}`, async (event, ...args) =>
+		this._bindAllFunctions(config, "templateFunctions")
+		this._bindAllFunctions(config, "ipcMethods", (key, func) => {
+			this.pluginObj[key] = func;
+			ipcMain.handle(`${this.name}_${key}`, async (event, ...args) =>
 			{
-				return await this.ipcMethods[funcKey](...args);
+				return await func(...args);
 			})
-		}
+		});
+
+		this._bindAllFunctions(config, "publicMethods", (key, func) => {
+			this.pluginObj[key] = func;
+		});
+
 
 		this.pluginObj.logger = logger;
 
@@ -140,6 +104,7 @@ export class Plugin
 			makeIPCEnumFunctions(this.pluginObj, this.name + "_state_" + stateKey, this.stateSchemas[stateKey]);
 			this.pluginObj.state[stateKey] = constructDefaultSchema(config.state[stateKey]);
 		}
+		this.state = this.pluginObj.state;
 		reactify(this.pluginObj.state);
 	}
 
@@ -304,6 +269,23 @@ export class Plugin
 			stateSchemas: cleanStateSchemas,
 			ipcMethods: Object.keys(this.ipcMethods),
 			...this.settingsView ? { settingsView: this.settingsView } : {}
+		}
+	}
+
+	_bindFunction(config, name) {
+		if (!config[name])
+			return;
+
+		this[name] = config[name].bind(this.pluginObj);
+	}
+
+	_bindAllFunctions(config, name, handler = () => {}) {
+		const container = config[name];
+		this[name] = {};
+		for (let key in container) {
+			const func = container[key].bind(this.pluginObj);
+			this[name][key] = func;
+			handler(key, func)
 		}
 	}
 
