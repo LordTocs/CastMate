@@ -12,7 +12,7 @@
   >
     <template #item="{ item, props }">
       <v-list-item v-bind="props" class="text-no-wrap" title="">
-        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" size="small">
+        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" size="small" variant="outlined">
           <v-icon start :icon="plugins[item.raw.pluginKey].icon" />
           {{ plugins[item.raw.pluginKey].uiName }}
         </v-chip>
@@ -21,7 +21,7 @@
     </template>
     <template #selection="{ item }" >
       <div class="text-no-wrap">
-        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" size="small">
+        <v-chip class="ma-2" :color="plugins[item.raw.pluginKey].color" size="small" variant="outlined">
           <v-icon start :icon="plugins[item.raw.pluginKey].icon" />
           {{ plugins[item.raw.pluginKey].uiName }}
         </v-chip>
