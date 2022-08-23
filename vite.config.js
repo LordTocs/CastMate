@@ -51,7 +51,7 @@ export default defineConfig({
       },*/
       renderer: {
         resolve() {
-          return ['fs']
+          return ['fs', 'path']
         }
       },
     })
