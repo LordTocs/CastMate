@@ -62,24 +62,26 @@ export class ActionQueue {
 
 		this.plugins = plugins;
 
+		const dummyContext = {
+			//Some dummy data.
+			user: "LordTocs",
+			userColor: "#4411FF",
+			userId: "27082158",
+			message: "Thanks for using CastMate.",
+			filteredMessage: "Thanks for using CastMate.",
+		}
+
 		ipcMain.handle('core_runActions', async (event, actions, context) => {
 			const automation = { actions, sync: false };
 
-			const completeContext = this.createCompleteContext(context);
+			const completeContext = this.createCompleteContext(context || dummyContext);
 
-			this.pushToQueue(automation, completeContext || {
-				//Some dummy data.
-				user: "LordTocs",
-				userColor: "#4411FF",
-				userId: "27082158",
-				message: "Thanks for using CastMate.",
-				filteredMessage: "Thanks for using CastMate.",
-			})
+			this.pushToQueue(automation, completeContext)
 		})
 
 		ipcMain.handle('core_runAutomation', async (event, automationName, context) => {
 			
-			this.startAutomation(automationName, this.createCompleteContext(context))
+			this.startAutomation(automationName, this.createCompleteContext(context || dummyContext))
 		})
 	}
 
