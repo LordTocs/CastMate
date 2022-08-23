@@ -75,6 +75,11 @@
     v-model="modelObj"
     :label="labelString"
   />
+  <spellcast-hook-selector
+    v-else-if="schema.type == 'SpellcastHook'"
+    v-model="modelObj"
+    :label="labelString"
+   />
   <time-input
     v-else-if="schema.type == 'Duration'"
     v-model="modelObj"
@@ -98,6 +103,7 @@ import TimeInput from "./types/TimeInput.vue";
 import StringInput from "./types/StringInput.vue";
 import NumberInput from "./types/NumberInput.vue";
 import BooleanInput from "./types/BooleanInput.vue";
+import SpellcastHookSelector from "../spellcast/SpellcastHookSelector.vue";
 
 import { defineAsyncComponent } from 'vue'
 
@@ -114,7 +120,8 @@ export default {
     RewardSelector,
     RangeInput,
     TimeInput,
-    BooleanInput
+    BooleanInput,
+    SpellcastHookSelector
 },
   props: {
     schema: {},
