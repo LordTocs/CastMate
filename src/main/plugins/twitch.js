@@ -426,6 +426,9 @@ export default {
 				}
 			})
 
+			this.castMateWebsocket.on('error', (err) => {
+				this.logger.error(`CASTMATE WEBSOCKET ERROR: ${err}`);
+			})
 
 		},
 
