@@ -3,6 +3,7 @@ import { WebSocket } from 'ws'
 import { onStateChange } from '../utils/reactive'
 import axios from "axios"
 import { RPCWebSocket } from '../utils/rpc-websocket.js'
+import util from 'util'
 
 const iconSvg = "m 2.0080331,8.616092 c -4.2268094,6.315379 8.0772869,12.422668 8.3448569,12.423225 0.213948,3.62e-4 6.594607,-1.869405 5.573124,-4.027231 C 14.36785,13.720556 5.7176479,9.5778192 8.2086563,8.12845 9.3809946,7.4278447 15.357308,10.53877 16.305331,13.743698 17.970784,5.7313764 5.2620829,5.5062332 12.846312,0.95047028 -6.5179222,6.5085832 9.1201791,11.967068 7.6962099,13.160986 6.2722364,14.354901 0.51904627,12.846902 2.0080331,8.616092 Z"
 
@@ -136,17 +137,18 @@ export default {
                 }
             });
 
+            this.requestSocket = new RPCWebSocket(this.websocket);
+
+            this.requestSocket.handle("getHooks", () => this.getActiveHooks());
+            this.requestSocket.handle("runHook", (hookId, context) => {
+                return this.triggers.spellHook({ hookId, ...context, userColor: this.twitch.publicMethods.getUserColor(context.userId) })
+            });
+
             this.websocket.on('open', () => {
                 this.logger.info(`Connection to SpellCast open (${import.meta.env.VITE_SPELLCAST_SOCKET_URL})`);
 
-                this.requestSocket = new RPCWebSocket(this.websocket);
-
-                this.requestSocket.handle("getHooks", () => this.getActiveHooks());
-                this.requestSocket.handle("runHook", (hookId, context) => {
-                    return this.triggers.spellHook({ hookId, ...context, userColor: this.twitch.publicMethods.getUserColor(context.userId) })
-                });
-
-                this.requestSocket.call("setActiveHooks", Array.from(this.activeHooks));
+                //this.logger.info(`Sending Active Hooks: ${util.inspect(this.activeHooks)}`);
+                //this.requestSocket.call("setActiveHooks", Array.from(this.activeHooks));
 
                 //Every 30 seconds ping to keep the socket alive.
                 this.websocketPinger = setInterval(() => {
@@ -168,6 +170,7 @@ export default {
 
             this.websocket.on('error', (err) => {
                 //Empty function to prevent unhandled exceptions rippling up somewhere else in the process.
+                this.logger.error(`Error in SpellCast Websocket ${err}`);
             });
 
 
@@ -182,11 +185,11 @@ export default {
             try {
                 const resp = await this.apiClient.get(`/streams/${channelId}/hooks/`);
 
-                this.logger.info(`Loaded Button Hooks (${resp.data.length})`);
+                this.logger.info(`Loaded Spell Hooks (${resp.data.length})`);
                 this.spellHooks = resp.data;
             }
             catch (err) {
-                this.logger.error(`Error loading button hooks ${err}`);
+                this.logger.error(`Error loading Spell hooks ${err}`);
             }
         },
         async getActiveHooks() {
@@ -229,7 +232,9 @@ export default {
             }
         }
 
-        if (this.requestSocket) {
+        this.logger.info(`Active Hooks: ${util.inspect(this.activeHooks)}`);
+
+        if (this.websocket.readyState == 1) {
             this.requestSocket.call("setActiveHooks", Array.from(this.activeHooks));
         }
     },
