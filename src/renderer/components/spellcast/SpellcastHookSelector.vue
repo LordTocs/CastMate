@@ -6,7 +6,6 @@
       item-title="name"
       item-value="_id"
       :label="label"
-      :search-input.sync="search"
       clearable
     >
       <template #append>
@@ -34,8 +33,8 @@
       ref="editModal"
       title="Edit Spell Hook"
       :hook="currentItem"
-      :showDelete="false"
-      @updated="refresh"
+      :showDelete="true"
+      @updated="queryItems"
       @deleted="onDelete"
     />
     <spellcast-hook-modal 
@@ -44,7 +43,7 @@
       :showSave="false"
       :showCreate="true"
       :showDelete="false"
-      @created="(v) => $emit('update:modelValue', v)"
+      @created="onCreate"
     />
   </v-card-actions>
 </template>
@@ -62,47 +61,39 @@ export default {
     existingRewards: { type: Array, default: () => [] },
   },
   computed: {
-    ...mapModel()
+    ...mapModel(),
+    currentItem() {
+      return this.items.find(i => i._id == this.modelValue)
+    }
   },
   data() {
     return {
       items: [],
       search: null,
       loading: false,
-      currentItem: null,
     };
   },
   methods: {
     ...mapIpcs("spellcast", ["getSpellHooks", "getSpellHook"]),
-    async filter(query) {
+    async queryItems() {
       this.loading = true;
       let result = await this.getSpellHooks();
-      console.log(result);
-      this.loading = false;
-
-      if (query) {
-        result = result.filter((item) =>
-          item.name.toLowerCase().includes(query.toLowerCase())
-        );
-      }
-
       this.items = result;
-    },
-    async updateItem() {
-        this.currentItem = await this.getSpellHook(this.modelValue);
+      this.loading = false;
     },
     async onDelete() {
         this.$emit('update:modelValue', undefined);
-        await this.refresh();
+        await this.queryItems();
     },
-    async refresh() {
-        this.filter(this.search);
-        this.updateItem();
-    }
+    async onCreate(hookId) {
+      await this.queryItems();
+      this.$emit('update:modelValue', hookId);
+    },
   },
   mounted() {
-    this.filter();
-    this.updateItem();
+    //this.filter();
+    //this.updateItem();
+    this.queryItems();
   },
   watch: {
     async modelValue() {

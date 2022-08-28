@@ -91,8 +91,8 @@ export default {
     cancel() {
       this.dialog = false;
     },
-    create() {
-      const hook = this.createSpellHook(this.hookEdit);
+    async create() {
+      const hook = await this.createSpellHook(this.hookEdit);
       this.$emit("created", hook._id);
       this.dialog = false;
     },

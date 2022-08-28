@@ -67,11 +67,6 @@ export default {
         async deleteSpellHook(hookId) {
             const channelId = this.twitch.state.channelId;
 
-            if (!accessToken) {
-                this.logger.info(`Can't connect to SpellCast, no twitch sign on.`);
-                return;
-            }
-
             try {
                 await this.apiClient.delete(`/streams/${channelId}/hooks/${hookId}`)
                 const idx = this.spellHooks.findIndex(h => h._id == hookId);
