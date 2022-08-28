@@ -105,5 +105,8 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
+.v-avatar>img {
+  height: calc(var(--v-avatar-height) + 0px);
+}
 </style>
