@@ -12,7 +12,6 @@ function ensureIDs(config) {
 			for (let trigger of triggerArray)
 			{
 				if (!trigger.id) {
-					console.log("Assigning Missing ID");
 					trigger.id = nanoid();
 				}
 			}
