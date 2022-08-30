@@ -86,6 +86,8 @@ import _cloneDeep from "lodash/cloneDeep";
 import TriggerListRow from "./TriggerListRow.vue";
 import TriggerEditModal from "./TriggerEditModal.vue";
 import { filterSchema } from "../../utils/objects";
+import { nanoid } from "nanoid/non-secure";
+
 export default {
   components: { DataView, AutomationPreview, TriggerListRow, TriggerEditModal },
   props: {
@@ -153,6 +155,10 @@ export default {
       if (!(triggerType.triggerKey in newValue[triggerType.pluginKey])) {
         newValue[triggerType.pluginKey][triggerType.triggerKey] = [];
       }
+
+      if (!mapping.id) {
+        mapping.id = nanoid();
+      } 
 
       newValue[triggerType.pluginKey][triggerType.triggerKey].push(mapping);
     },

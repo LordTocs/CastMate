@@ -281,7 +281,7 @@ export default {
 
 				const context = {
 					command: parsed.command,
-					user,
+					user: msgInfo.userInfo.displayName,
 					userId: msgInfo.userInfo.userId,
 					args: parsed.args,
 					argString: parsed.string,
@@ -426,6 +426,9 @@ export default {
 				}
 			})
 
+			this.castMateWebsocket.on('error', (err) => {
+				this.logger.error(`CASTMATE WEBSOCKET ERROR: ${err}`);
+			})
 
 		},
 
@@ -835,7 +838,7 @@ export default {
 				type: Object,
 				properties: {
 					command: { type: String, name: "Command", filter: true },
-					match: { type: String, enum: ["Start", "Anywhere"], default: "Start", preview: false, name: "Match" },
+					match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
 					permissions: {
 						type: Object,
 						properties: {
@@ -847,7 +850,8 @@ export default {
 						},
 						preview: false,
 					},
-					cooldown: { type: Number, name: "Cooldown", preview: false, unit: { name: "Seconds", short: "s" } }
+					cooldown: { type: Number, name: "Cooldown", preview: false, unit: { name: "Seconds", short: "s" } },
+					users: { type: Array, name: "User List", items: { type: String } }
 				}
 			},
 			context: {
@@ -859,9 +863,10 @@ export default {
 				userColor: { type: String },
 				message: { type: String },
 				filteredMessage: { type: String },
+				matches: { type: Array },
 			},
-			handler(config, context, mapping, userInfo) {
-				const command = config.command || "";
+			async handler(config, context, mapping, userInfo) {
+				const command = config.command ? await template(config.command, context) : "";
 				if (command.length > 0 && config.match == "Start") {
 					if (context.command != config.command.toLowerCase()) {
 						return false;
@@ -872,6 +877,15 @@ export default {
 						return false;
 					}
 				}
+				let matches = undefined;
+				if (command.length > 0 && config.match === "Regex")
+				{
+					matches = context.message.match(new RegExp(config.command));
+					if (!matches) {
+						return false;
+					}
+					context.matches = matches;
+				}
 
 				if (config.cooldown) {
 					const now = Date.now();
@@ -880,6 +894,15 @@ export default {
 						return false;
 					}
 					this.commandTimes[mapping.id] = now;
+				}
+
+				if (config.users && config.users.length > 0) {
+					console.log("Checking Users Context", context);
+
+					const resolvedUserList = await Promise.all(config.users.map(u => template(u, context)));
+
+					if (!resolvedUserList.includes(context.user))
+						return false;
 				}
 
 				if (config.permissions) {

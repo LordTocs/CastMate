@@ -147,9 +147,7 @@ export class ProfileManager
 				});
 
 				//Load the config from file and setup the profile object.
-				const str = await fs.promises.readFile(filename, 'utf-8');
-				const config = YAML.parse(str);
-				profile.reloadConfig(config);
+				await profile.load();
 		
 				//Add it to the profile list
 				this.profiles.push(profile)

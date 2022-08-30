@@ -1,4 +1,4 @@
-const isDevelopment = process.env.NODE_ENV !== 'production'
+const isDevelopment = import.meta.env.DEV
 
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
@@ -7,7 +7,7 @@ const { app, shell, ipcMain, BrowserWindow } = require('electron');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-import installExtension from 'electron-devtools-installer';
+import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 
 import electronUpdater from 'electron-updater';
 const { autoUpdater, CancellationToken } = electronUpdater;
@@ -221,7 +221,7 @@ app.whenReady().then(async () => {
 	if (isDevelopment && !process.env.IS_TEST) {
 		// Install Vue Devtools
 		try {
-			await installExtension(installExtension.VUEJS_DEVTOOLS)
+			await installExtension(VUEJS_DEVTOOLS)
 		} catch (e) {
 			console.error('Vue Devtools failed to install:', e.toString())
 		}

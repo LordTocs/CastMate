@@ -48,10 +48,15 @@ export default {
     emits: ["nav", "delete", "duplicate", "rename", "create"],
     computed: {
         filteredFiles() {
-            if (this.search.length == 0)
-                return this.files;
+            if (this.search.length == 0) {
+                const sortedFiles = [...this.files];
+                sortedFiles.sort();
+                return sortedFiles;
+            }
             const searchLower = this.search.toLowerCase();
-            return this.files.filter(f => f.toLowerCase().includes(searchLower)).sort();
+            const filteredFiles = this.files.filter(f => f.toLowerCase().includes(searchLower));
+            filteredFiles.sort();
+            return filteredFiles;
         }
     },
     methods: {

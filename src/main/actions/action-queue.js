@@ -44,10 +44,12 @@ export class ActionQueue {
 						return;
 					}
 
+					const completeContext = this.createCompleteContext(context)
+
 					for (let mapping of mappings) {
 						try {
-							if (!pluginTrigger.internalHandler || await pluginTrigger.internalHandler(mapping.config, context, mapping, ...args)) {
-								this.startAutomation(mapping.automation, context)
+							if (!pluginTrigger.internalHandler || await pluginTrigger.internalHandler(mapping.config, completeContext, mapping, ...args)) {
+								this._startAutomationInternal(mapping.automation, completeContext)
 							}
 						}
 						catch (err) {
@@ -60,21 +62,26 @@ export class ActionQueue {
 
 		this.plugins = plugins;
 
+		const dummyContext = {
+			//Some dummy data.
+			user: "LordTocs",
+			userColor: "#4411FF",
+			userId: "27082158",
+			message: "Thanks for using CastMate.",
+			filteredMessage: "Thanks for using CastMate.",
+		}
+
 		ipcMain.handle('core_runActions', async (event, actions, context) => {
 			const automation = { actions, sync: false };
 
-			this.pushToQueue(automation, context || {
-				//Some dummy data.
-				user: "LordTocs",
-				userColor: "#4411FF",
-				userId: "27082158",
-				message: "Thanks for using CastMate.",
-				filteredMessage: "Thanks for using CastMate.",
-			})
+			const completeContext = this.createCompleteContext(context || dummyContext);
+
+			this.pushToQueue(automation, completeContext)
 		})
 
 		ipcMain.handle('core_runAutomation', async (event, automationName, context) => {
-			this.startAutomation(automationName, context)
+			
+			this.startAutomation(automationName, this.createCompleteContext(context || dummyContext))
 		})
 	}
 
@@ -93,7 +100,7 @@ export class ActionQueue {
 		}
 	}
 
-	async startAutomation(automationObj, context) {
+	async _startAutomationInternal(automationObj, context) {
 		let automation = null;
 		if (typeof automationObj == 'string' || automationObj instanceof String) {
 			automation = this.automations.get(automationObj);
@@ -114,6 +121,10 @@ export class ActionQueue {
 		}
 
 		this.pushToQueue(automation, context);
+	}
+
+	async startAutomation(automation, context) {
+		return this._startAutomationInternal(automation, this.createCompleteContext(context))
 	}
 
 	async startAutomationArray(automations, context) {
@@ -142,8 +153,7 @@ export class ActionQueue {
 		this.convertOffsets(automation.actions);
 	}
 
-	async pushToQueue(automation, context) {
-		//Build our complete context.
+	createCompleteContext(context) {
 		let completeContext = { ...context };
 		_.merge(completeContext, this.plugins.templateFunctions);
 		//merge won't work with reactive props, manually go deep here.
@@ -153,19 +163,24 @@ export class ActionQueue {
 			}
 			reactiveCopy(completeContext[pluginKey], this.plugins.stateLookup[pluginKey]);
 		}
+		return completeContext;
+	}
 
+	async pushToQueue(automation, context) {
+		//Build our complete context.
+		
 		this._prepAutomation(automation);
 
 		if (automation.sync) {
 			//Push to the queue
 			let release = await this.queueMutex.acquire();
-			this.queue.push({ automation, context: completeContext });
+			this.queue.push({ automation, context });
 			release();
 
 			this._runStartOfQueue();
 		}
 		else {
-			this._runAutomation(automation, completeContext);
+			this._runAutomation(automation, context);
 		}
 	}
 

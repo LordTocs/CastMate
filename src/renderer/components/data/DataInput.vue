@@ -6,6 +6,14 @@
     :context="context"
     :secret="secret"
   />
+  <array-input 
+    v-if="schema.type == 'Array'"
+    v-model="modelObj"
+    :schema="schema"
+    :context="context"
+    :secret="secret"
+    :label="labelString"
+  />
   <number-input
     v-else-if="schema.type == 'Number' && !schema.slider"
     v-model="modelObj"
@@ -97,6 +105,7 @@ export default {
   name: "data-input",
   components: {
     ObjectInput: defineAsyncComponent(() => import("./types/ObjectInput.vue")),
+    ArrayInput: defineAsyncComponent(() => import("./types/ArrayInput.vue")),
     NumberInput,
     FileAutocomplete,
     StringInput,
@@ -117,7 +126,7 @@ export default {
   emits: ["update:modelValue"],
   computed: {
     labelString() {
-      return this.schema.name || this.label;
+      return this.schema?.name || this.label;
     },
     modelObj: {
       get() {

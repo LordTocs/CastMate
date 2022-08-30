@@ -3,6 +3,21 @@ import YAML from "yaml"
 import path from "path"
 import logger from "../utils/logger.js"
 import { migrateProfile } from "../migration/migrate.js"
+import { nanoid } from "nanoid/non-secure";
+function ensureIDs(config) {
+	for (let pluginKey in config.triggers) {
+		const pluginObj = config.triggers[pluginKey];
+		for (let triggerKey in pluginObj) {
+			const triggerArray = pluginObj[triggerKey];
+			for (let trigger of triggerArray)
+			{
+				if (!trigger.id) {
+					trigger.id = nanoid();
+				}
+			}
+		}
+	}
+}
 
 export class Profile {
 	constructor(filename, manager, onReload) {
@@ -38,6 +53,8 @@ export class Profile {
 		}
 
 		profileConfig = await migrateProfile(profileConfig, this.filename);
+
+		ensureIDs(profileConfig)
 
 		await this.reloadConfig(profileConfig);
 	}
