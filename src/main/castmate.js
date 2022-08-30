@@ -9,9 +9,11 @@ import { HotReloader } from './utils/hot-reloader.js';
 import { createWebServices } from "./utils/webserver.js";
 import { PluginManager } from "./utils/plugin-manager.js";
 import { createRequire } from 'node:module'
-import { ipcMain } from "./utils/electronBridge.js";
+import { ipcMain, app } from "./utils/electronBridge.js";
 
 async function initInternal(mainWindowSender) {
+	logger.info(`Starting CastMate v${app.getVersion()}`);
+
 	ensureUserFolder();
 
 	let plugins = new PluginManager();
