@@ -29,7 +29,7 @@ export default defineConfig({
             outDir: 'dist/electron/main',
             rollupOptions: {
               // format: 'cjs',
-              external: ['public-ip', 'ffi-napi', 'ref-napi', 'ref-struct-di', 'win32-api'],
+              external: ['public-ip', 'ffi-napi', 'ref-napi', 'ref-struct-di', 'win32-api', 'obs-websocket-js', 'ws'],
             }
           },
           // esbuild: {

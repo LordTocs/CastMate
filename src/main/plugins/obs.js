@@ -3,6 +3,7 @@ import { template } from '../utils/template.js'
 import { app } from "../utils/electronBridge.js"
 import ChildProcess from "child_process"
 import regedit from "regedit"
+import util from "util"
 
 if (app.isPackaged) {
 	console.log("Setting External VBS Location", regedit.setExternalVBSLocation('resources/regedit/vbs'));
@@ -43,11 +44,11 @@ export default {
 		this.sceneHistory = [];
 
 		this.connectOBS();
-		this.obs.on("SwitchScenes", data => {
-			this.state.scene = data.sceneName;
+		this.obs.on("CurrentProgramSceneChanged", ({ sceneName }) => {
+			this.state.scene = sceneName;
 
 			if (!this.poppingScene) {
-				this.sceneHistory.push(data.sceneName);
+				this.sceneHistory.push(sceneName);
 
 				if (this.sceneHistory.length > 30) {
 					this.sceneHistory.splice(0, 1);
@@ -64,34 +65,25 @@ export default {
 				this.forceStop = false;
 			}
 		});
-		this.obs.on("StreamStarted", () => {
-			this.state.streaming = true;
-			this.analytics.track("goLive");
+		this.obs.on("StreamStateChanged", ({ outputActive }) => {
+			this.state.streaming = outputActive;
+			if (outputActive)
+			{
+				this.analytics.track("goLive");
+			}
 		})
-		this.obs.on("StreamStopped", () => {
-			this.state.streaming = false;
-		})
-		this.obs.on("StreamStatus", (data) => {
-			this.state.streaming = data.streaming;
-			this.state.recording = data.recording;
-		});
 
-		this.obs.on("RecordingStarted", () => {
-			this.state.recording = true;
-		})
-		this.obs.on("RecordingStopped", () => {
-			this.state.recording = false;
+		this.obs.on("RecordStateChanged", ({ outputActive }) => {
+			this.state.recording = outputActive;
 		})
 
 		this.lastPassword = null;
 		this.lastHostname = null;
 		this.lastPort = null;
-
-
 		this.installDir = this.settings.installDirOverride || await this.lookupInstallDir();
 	},
 	async onSettingsReload() {
-		const port = this.settings.port || 4444;
+		const port = this.settings.port || 4455;
 		const hostname = this.settings.hostname || "localhost"
 		const password = this.secrets.password;
 
@@ -127,32 +119,42 @@ export default {
 			this.lastPassword = password;
 
 			try {
-				await this.obs.connect({
-					address: `${hostname}:${port}`,
-					password: password
-				})
-				let result = await this.obs.send("GetCurrentScene");
-				this.state.scene = result.name;
-				this.sceneHistory = [result.name];
+				await this.obs.connect(`ws://${hostname}:${port}`, password)
 				this.logger.info("OBS connected!");
+				
+				// Set the current scene
+				const { currentProgramSceneName } = await this.obs.call("GetCurrentProgramScene");
+				this.state.scene = currentProgramSceneName;
+				this.sceneHistory = [currentProgramSceneName];
+				
+				//Get the stream status
+				const streamStatus = await this.obs.call("GetStreamStatus");
+				this.state.streaming = streamStatus.outputActive;
+				
+				const recordStatus = await this.obs.call("GetRecordStatus");
+				this.state.recording = recordStatus.outputActive;
+				
 				this.state.connected = true;
 				this.analytics.set({ usesOBS: true });
 				return true;
-			} catch {
+			} catch(error) {
+				this.logger.error(`Error Connecting to OBS: ws://${hostname}:${port}`);
+				console.log(error);
+				this.logger.error(`Failed to connect ${error.code}: ${error.message}`);
 				this.state.connected = false;
 				return false;
 			}
 		},
 		async connectOBS() {
-			const port = this.settings.port || 4444;
+			const port = this.settings.port || 4455;
 			const hostname = this.settings.hostname || "localhost"
 			const password = this.secrets.password;
 			await this.tryConnect(hostname, port, password);
 		},
-		async getAllSources() {
+		async getAllSources(type) {
 			try {
-				const result = await this.obs.send("GetSourcesList");
-				return result.sources;
+				const result = await this.obs.call("GetInputList",  type ?  {inputKind: type } : undefined);
+				return result.inputs;
 			}
 			catch
 			{
@@ -161,8 +163,7 @@ export default {
 		},
 		async getSourceFilters(sourceName) {
 			try {
-				const result = await this.obs.send("GetSourceFilters", { sourceName });
-				return result.filters.map(s => s.name);
+				return await this.obs.call("GetSourceFilterList", { sourceName });
 			}
 			catch
 			{
@@ -171,8 +172,8 @@ export default {
 		},
 		async getSceneSources(sceneName) {
 			try {
-				const result = await this.obs.send("GetSceneItemList", { sceneName });
-				return result.sceneItems.map(s => s.sourceName);
+				const result = await this.obs.call("GetSceneItemList", { sceneName });
+				return result.sceneItems;
 			}
 			catch
 			{
@@ -181,23 +182,17 @@ export default {
 		},
 		async getAllScenes() {
 			try {
-				const result = await this.obs.send('GetSceneList');
-				const sceneitems = result.scenes.map((s) => s.name);
-				return sceneitems;
+				return await this.obs.call('GetSceneList');
 			}
 			catch (err) {
-				console.error(err);
 				return [];
 			}
 		},
 	},
 	ipcMethods: {
 		async refereshAllBrowsers() {
-			const sources = await this.getAllSources();
-
-			const browsers = sources.filter((s) => s.typeId == "browser_source");
-
-			await Promise.all(browsers.map(browser => this.obs.send('RefreshBrowserSource', { sourceName: browser.name })));
+			const browsers = await this.getAllSources("browser_source");
+			await Promise.all(browsers.map(browser => this.obs.call('PressInputPropertiesButton', { inputName: browser.inputName, propertyName: "refreshnocache" })));
 		},
 		async tryConnectSettings(hostname, port, password) {
 			this.forceStop = true;
@@ -205,7 +200,6 @@ export default {
 			return await this.tryConnect(hostname, port, password);
 		},
 		async openOBS() {
-
 			return await new Promise((resolve, reject) => {
 				const startCmd = `Start-Process "${this.installDir}\\bin\\64bit\\obs64.exe" -Verb runAs`
 				this.logger.info(`Opening OBS ${startCmd}`);
@@ -246,7 +240,8 @@ export default {
 			name: "Obs Scene",
 			description: "Currently Active OBS Scene",
 			async enum() {
-				return await this.getAllScenes();
+				const { scenes } = await this.obs.call('GetSceneList');
+				return scenes.map(s => s.sceneName);
 			}
 		},
 		streaming: {
@@ -279,14 +274,15 @@ export default {
 						template: true,
 						required: true,
 						async enum() {
-							return await this.getAllScenes();
+							const { scenes } = await this.obs.call('GetSceneList');
+							return scenes.map(s => s.sceneName);
 						}
 					}
 				}
 			},
 			async handler(sceneData, context) {
-				await this.obs.send('SetCurrentScene', {
-					'scene-name': await template(sceneData.scene, context)
+				await this.obs.call('SetCurrentProgramScene', {
+					sceneName: await template(sceneData.scene, context)
 				})
 			},
 		},
@@ -300,14 +296,14 @@ export default {
 				properties: {
 				}
 			},
-			async handler(sceneData, context) {
+			async handler() {
 				
 				this.sceneHistory.pop();
 				const previousScene = this.sceneHistory[this.sceneHistory.length - 1];
 				if (previousScene) {
 					this.poppingScene = true;
-					await this.obs.send('SetCurrentScene', {
-						'scene-name': previousScene
+					await this.obs.call('SetCurrentProgramScene', {
+						sceneName: previousScene
 					})
 				}
 				
@@ -327,7 +323,8 @@ export default {
 						name: "Source Name",
 						required: true,
 						async enum() {
-							return [...(await this.getAllSources()).map(s => s.name), ...(await this.getAllScenes())];
+							const { inputs } = await this.obs.call('GetInputList');
+							return inputs.map(i => i.inputName);
 						}
 					},
 					filterName: {
@@ -335,10 +332,9 @@ export default {
 						template: true,
 						name: "Filter Name",
 						required: true,
-						async enum(context) {
-							console.log(context)
-							this.logger.info('Fetching filters for ' + context.sourceName);
-							return await this.getSourceFilters(context.sourceName);
+						async enum({ sourceName }) {
+							const { filters } = await this.obs.call("GetSourceFilterList", { sourceName })
+							return filters.map(f => f.filterName);
 						}
 					},
 					filterEnabled: {
@@ -355,7 +351,7 @@ export default {
 				const sourceName = await template(filterData.sourceName, context);
 				const filterName = await template(filterData.filterName, context);
 
-				await this.obs.send('SetSourceFilterVisibility', {
+				await this.obs.call('SetSourceFilterEnabled', {
 					sourceName,
 					filterName,
 					filterEnabled: !!filterData.filterEnabled
@@ -376,7 +372,8 @@ export default {
 						template: true,
 						required: true,
 						async enum() {
-							return await this.getAllScenes();
+							const { scenes } = await this.obs.call('GetSceneList');
+							return scenes.map(s => s.sceneName);
 						}
 					},
 					source: {
@@ -384,9 +381,10 @@ export default {
 						type: String,
 						template: true,
 						required: true,
-						async enum(context) {
-							this.logger.info('Fetching sources for ' + context.scene);
-							return await this.getSceneSources(context.scene);
+						async enum({ scene}) {
+							this.logger.info('Fetching sources for ' + scene);
+							const { sceneItems } = await this.obs.call("GetSceneItemList", { sceneName: scene });
+							return sceneItems.map(i => i.itemName);
 						}
 					},
 					enabled: {
@@ -400,10 +398,15 @@ export default {
 				}
 			},
 			async handler(data, context) {
-				await this.obs.send('SetSceneItemRender', {
-					'scene-name': await template(data.scene, context),
-					'source': await template(data.source, context),
-					'render': data.enabled,
+				const sceneName = await template(data.scene, context)
+				const sourceName = await template(data.source, context)
+				
+				const sceneItemId = await this.obs.call('GetSceneItemId', { sceneName, sourceName });
+				
+				await this.obs.call('SetSceneItemEnabled', {
+					sceneName,
+					sceneItemId,
+					sceneItemEnabled: data.enabled,
 				})
 			},
 		},
@@ -426,19 +429,21 @@ export default {
 						name: "Source Name",
 						required: true,
 						async enum() {
-							const sources = await this.getAllSources();
-							const text_sources = sources.filter((s) => (s.typeId == "text_gdiplus_v2"));
-							return text_sources.map(s => s.name);
+							const { inputs } = await this.obs.call("GetInputList", { inputKind: "text_gdiplus_v2" });
+							return inputs.map(i => i.inputName);
 						}
 					},
 				}
 			},
 			async handler(textData, context) {
-				const sourceName = await template(textData.sourceName, context);
+				const currentSettings = await this.obs.call('GetInputSettings', { inputName: await template(textData.sourceName, context)})
+				this.logger.info(`Text Input Settings: ${util.inspect(currentSettings)}`);
 
-				await this.obs.send('SetTextGDIPlusProperties', {
-					source: sourceName,
-					text: await template(textData.text, context)
+				await this.obs.call('SetInputSettings', {
+					inputName: await template(textData.sourceName, context),
+					inputSettings: {
+						text: await template(textData.text, context)
+					} 
 				})
 			}
 		},
@@ -455,9 +460,9 @@ export default {
 						type: String,
 						template: true,
 						async enum() {
-							const sources = await this.getAllSources();
-							const media_sources = sources.filter((s) => (s.typeId == "ffmpeg_source" || s.typeId == "vlc_source"));
-							return media_sources.map(s => s.name);
+							let { inputs } = await this.obs.call("GetInputList");
+							const media_sources = inputs.filter((s) => (s.inputKind == "ffmpeg_source" || s.inputKind == "vlc_source"));
+							return media_sources.map(s => s.inputName);
 						}
 					},
 					action: {
@@ -470,40 +475,30 @@ export default {
 				}
 			},
 			async handler(mediaControl, context) {
-				const sourceName = await template(mediaControl.mediaSource, context);
+				const inputName = await template(mediaControl.mediaSource, context);
+
+				let mediaAction = null;
 
 				if (mediaControl.action == "Play") {
-					await this.obs.send("PlayPauseMedia", {
-						sourceName,
-						playPause: false,
-					})
+					mediaAction = "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY"
 				}
 				else if (mediaControl.action == "Pause") {
-					await this.obs.send("PlayPauseMedia", {
-						sourceName,
-						playPause: true,
-					})
+					mediaAction = "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE"
 				}
 				else if (mediaControl.action == "Restart") {
-					await this.obs.send("RestartMedia", {
-						sourceName,
-					})
+					mediaAction = "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART"
 				}
 				else if (mediaControl.action == "Stop") {
-					await this.obs.send("StopMedia", {
-						sourceName,
-					})
+					mediaAction = "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_STOP"
 				}
 				else if (mediaControl.action == "Next") {
-					await this.obs.send("NextMedia", {
-						sourceName,
-					})
+					mediaAction = "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_NEXT"
 				}
 				else if (mediaControl.action == "Previous") {
-					await this.obs.send("PreviousMedia", {
-						sourceName,
-					})
+					mediaAction = "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PREVIOUS"
 				}
+
+				this.obs.call("TriggerMediaInputAction", { inputName, mediaAction});
 			}
 		},
 		changeVolume: {
@@ -520,8 +515,8 @@ export default {
 						name: "Source Name",
 						required: true,
 						async enum() {
-							const sources = await this.getAllSources();
-							return sources.map(s => s.name);
+							const { inputs } = await this.obs.call("GetInputList");
+							return inputs.map(s => s.inputName);
 						}
 					},
 					volume: {
@@ -540,21 +535,17 @@ export default {
 				},
 			},
 			async handler(data, context) {
-				const sourceName = await template(data.sourceName, context);
-
+				const inputName = await template(data.sourceName, context);
 				const db = sliderToDB(data.volume);
-
-				this.logger.info(`Setting Volume of ${sourceName} to ${data.volume} - ${db}db`);
+				this.logger.info(`Setting Volume of ${inputName} to ${data.volume} - ${db}db`);
 				try {
-					this.obs.send("SetVolume", {
-						source: sourceName,
-						volume: db,
-						useDecibel: true,
+					this.obs.call("SetInputVolume", {
+						inputName,
+						inputVolumeDb: db,
 					});
 				} catch (err) {
 					this.logger.error(`Error Setting Volume of ${sourceName} to ${db}db`)
 				}
-
 			}
 		},
 		mute: {
@@ -571,8 +562,8 @@ export default {
 						name: "Source Name",
 						required: true,
 						async enum() {
-							const sources = await this.getAllSources();
-							return sources.map(s => s.name);
+							const { inputs } = await this.obs.call("GetInputList");
+							return inputs.map(s => s.inputName);
 						}
 					},
 					muted: {
@@ -587,17 +578,39 @@ export default {
 				}
 			},
 			async handler(data, context) {
-				const sourceName = await template(data.sourceName, context);
+				const inputName = await template(data.sourceName, context);
 
 				try {
-					await this.obs.send("SetMute", {
-						source: sourceName,
-						mute: data.muted,
+					await this.obs.call("SetInputMute", {
+						inputName,
+						inputMuted: data.muted,
 					});
 				}
 				catch (err) {
 					this.logger.error(`Error Muting Source ${sourceName}: \n ${err}`);
 				}
+			}
+		},
+		hotkey: {
+			name: "Trigger Hotkey",
+			description: "Invokes an OBS Hotkey",
+			color: "#607A7F",
+			icon: "mdi-keyboard",
+			data: {
+				type: Object,
+				properties: {
+					hotkey: { 
+						type: String, 
+						name: "Hotkey", 
+						async enum() {
+							const { hotkeys } = await this.obs.call("GetHotkeyList");
+							return hotkeys;
+						}
+					}
+				}
+			},
+			async handler(data) {
+				await this.obs.call("TriggerHotkeyByName", { hotkeyName: data.hotkey })
 			}
 		}
 	}
