@@ -53,12 +53,16 @@ export default {
     this.releaseNotes = urlParams.get("releaseNotes");
     this.version = urlParams.get("version");
 
-    nextTick(() => {
+    this.$nextTick(() => {
       //Github doesn't set target="_blank" on links. So we must do it manually. We have to do it in the next tick so releaseNotes gets rendered.
-      if (!this.$refs.releaseNotes?.$el)
+      if (!this.$refs.releaseNotes)
+      {
+        console.log("Could not find release notes");
+        console.log(this.$refs)
         return;
+      }
 
-      const links = this.$refs.releaseNotes.$el.querySelectorAll("a");
+      const links = this.$refs.releaseNotes.querySelectorAll("a");
       for (let link of links) {
         link.target="_blank"
       }
