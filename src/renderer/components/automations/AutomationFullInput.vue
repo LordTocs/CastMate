@@ -81,7 +81,6 @@ export default {
       set(newActions) {
         if (!this.modelValue) {
           //Assume inline.
-          console.log("new edit");
           const newAuto = generateEmptyAutomation();
           newAuto.actions = newActions;
           this.$emit("update:modelValue", newAuto);

@@ -8,11 +8,11 @@ export class Analytics {
 
         this.ipcSender = ipcSender;
 
-        ipcMain.handle("analytics_track", async (eventName, data) => {
+        ipcMain.handle("analytics_track", async (ipcEvent, eventName, data) => {
             this.track(eventName, data);
         })
 
-        ipcMain.handle("analytics_set", async (data) => {
+        ipcMain.handle("analytics_set", async (ipcEvent, data) => {
             this.set(data);
         })
 

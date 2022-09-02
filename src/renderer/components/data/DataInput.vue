@@ -98,19 +98,20 @@ import TimeInput from "./types/TimeInput.vue";
 import StringInput from "./types/StringInput.vue";
 import NumberInput from "./types/NumberInput.vue";
 import BooleanInput from "./types/BooleanInput.vue";
-
-import { defineAsyncComponent } from 'vue'
+import ObjectInput from "./types/ObjectInput.vue";
+import ArrayInput from "./types/ArrayInput.vue";
+import AutomationSelector from "../automations/AutomationSelector.vue";
 
 export default {
   name: "data-input",
   components: {
-    ObjectInput: defineAsyncComponent(() => import("./types/ObjectInput.vue")),
-    ArrayInput: defineAsyncComponent(() => import("./types/ArrayInput.vue")),
+    ObjectInput,
+    ArrayInput,
     NumberInput,
     FileAutocomplete,
     StringInput,
     ColorPicker,
-    AutomationSelector: defineAsyncComponent(() => import("../automations/AutomationSelector.vue")),
+    AutomationSelector,
     RewardSelector,
     RangeInput,
     TimeInput,

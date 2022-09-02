@@ -37,8 +37,9 @@
 import { mapIpcs } from "../../utils/ipcMap";
 import { mapGetters } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
-import AutomationQuickEditDialog from "./AutomationQuickEditDialog.vue";
 import { mapModel } from "../../utils/modelValue";
+
+import { defineAsyncComponent } from "vue";
 
 export default {
   name: "automation-selector",
@@ -49,7 +50,7 @@ export default {
   },
   components: {
     NamedItemModal,
-    AutomationQuickEditDialog,
+    AutomationQuickEditDialog: defineAsyncComponent(() => import("./AutomationQuickEditDialog.vue")),
   },
   computed: {
     ...mapGetters("ipc", ["paths"]),
