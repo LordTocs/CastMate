@@ -62,13 +62,12 @@ export default {
 
           this.allItems = items;
           this.enumItems = items;
+          this.loading = false;
         }
         catch(err)
         {
-          console.err("Error getting enum items from main process", err);
+          console.error("Error getting enum items from main process", err);
         }
-
-        this.loading = false;
       }
     },
   },
