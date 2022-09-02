@@ -3,12 +3,13 @@ import { ApiClient }from "@twurple/api"
 import { ChatClient }from "@twurple/chat"
 import { PubSubClient, BasicPubSubClient }from "@twurple/pubsub"
 import { template } from '../utils/template.js'
-import { HotReloader } from "../utils/hot-reloader.js"
 import BadWords from "bad-words"
-import { rewardsFilePath } from "../utils/configuration.js"
+import fs from 'fs'
+import path from 'path'
 import { WebSocket } from 'ws'
 import axios from 'axios'
 import { inRange } from "../utils/range.js"
+import { userFolder } from "../utils/configuration.js"
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -64,8 +65,24 @@ export default {
 
 		this.commandTimes = {};
 
-		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
-		//this.filter.addWords(...badwordList.words);
+		let badwords = [];
+		const badwordsFile = path.join(userFolder, "data", "badwords.json")
+		if (fs.existsSync(badwordsFile))
+		{
+			try {
+				badwords = JSON.parse(await fs.promises.readFile(badwordsFile, "utf-8")).words
+			}
+			catch
+			{
+			}
+		}
+		
+
+		this.filter = new BadWords({ emptyList: badwords.length > 0 }); //Temporarily Disable the custom bad words list.
+		if (badwords.length > 0)
+		{
+			this.filter.addWords(...badwords);
+		}
 	},
 	methods: {
 		filterMessage(message) {
