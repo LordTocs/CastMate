@@ -552,7 +552,7 @@ export default {
 				return;
 			}
 
-			this.rewards = await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true);
+			this.rewards = await this.channelTwitchClient.channelPoints.getCustomRewards(this.state.channelId, true);
 			this.logger.info(`Got rewards, ${this.rewards.length}`)
 		},
 
