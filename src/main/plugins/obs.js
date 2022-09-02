@@ -138,9 +138,8 @@ export default {
 				this.analytics.set({ usesOBS: true });
 				return true;
 			} catch(error) {
-				this.logger.error(`Error Connecting to OBS: ws://${hostname}:${port}`);
-				console.log(error);
-				this.logger.error(`Failed to connect ${error.code}: ${error.message}`);
+				//this.logger.error(`Error Connecting to OBS: ws://${hostname}:${port}`);
+				//this.logger.error(`Failed to connect ${error.code}: ${error.message}`);
 				this.state.connected = false;
 				return false;
 			}
