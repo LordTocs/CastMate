@@ -723,7 +723,9 @@ export default {
 		},
 
 		async deleteReward(id) {
+			const idx = this.rewards.findIndex(r => r.id == id);
 			await this.channelTwitchClient.channelPoints.deleteCustomReward(this.channelId, id);
+			this.rewards.splice(idx, 1);
 		}
 	},
 	async onProfileLoad(profile, config) {
