@@ -9,7 +9,8 @@
     "buildpublish": "vite build --mode production && electron-builder --config electron-builder-config.cjs --publish always",
     "dev": "vite",
     "eb": "electron-builder --config electron-builder-config.cjs",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "runbuild": "npm run build & cd release/win-unpacked/ && CastMate.exe"
   },
   "main": "dist/electron/main/backgroundLoader.js",
   "engines": {
