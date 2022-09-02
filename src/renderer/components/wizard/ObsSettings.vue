@@ -50,7 +50,7 @@ export default {
   data() {
     return {
       hostname: "localhost",
-      port: 4444,
+      port: 4455,
       password: null,
       connected: false,
       trying: false,
@@ -110,7 +110,7 @@ export default {
       const fullSettings = YAML.parse(fullSettingsText) || {};
 
       this.hostname = fullSettings?.obs?.hostname || "localhost";
-      this.port = fullSettings?.obs?.port || 4444;
+      this.port = fullSettings?.obs?.port || 4455;
 
       const fullSecretsText = await fs.promises.readFile(
         this.paths.secretsFilePath,
