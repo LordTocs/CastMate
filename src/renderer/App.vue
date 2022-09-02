@@ -99,7 +99,6 @@ export default {
   },
   methods: {
     ...mapActions("ipc", ["init"]),
-    ...mapActions("rewards", ["loadRewards"]),
     ...mapActions("segments", ["loadSegments"]),
     ...mapActions("variables", ["loadVariables"]),
     openSoundsFolder() {
@@ -108,7 +107,6 @@ export default {
   },
   async mounted() {
     await this.init();
-    await this.loadRewards();
     await this.loadSegments();
     await this.loadVariables();
     this.loaded = true;

@@ -118,10 +118,10 @@ export default {
       return defineAsyncComponent(() => import(`../components/plugins/${viewName}.vue`));
     },
     setSettingsValue(key, value) {
-      this.$set(this.settings, key, value);
+      this.settings[key] = value;
     },
     setSecretsValue(key, value) {
-      this.$set(this.secrets, key, value);
+      this.secrets[key] = value;
     },
     addRequired(schema) {
       return { ...schema, required: true };

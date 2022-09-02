@@ -3,12 +3,13 @@ import { ApiClient }from "@twurple/api"
 import { ChatClient }from "@twurple/chat"
 import { PubSubClient, BasicPubSubClient }from "@twurple/pubsub"
 import { template } from '../utils/template.js'
-import { HotReloader } from "../utils/hot-reloader.js"
 import BadWords from "bad-words"
-import { rewardsFilePath } from "../utils/configuration.js"
+import fs from 'fs'
+import path from 'path'
 import { WebSocket } from 'ws'
 import axios from 'axios'
 import { inRange } from "../utils/range.js"
+import { userFolder } from "../utils/configuration.js"
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -54,6 +55,8 @@ export default {
 	async init() {
 		this.logger.info("Starting Twitch");
 
+		this.rewards = [];
+
 		await this.doInitialAuth();
 
 		this.colorCache = {};
@@ -62,8 +65,24 @@ export default {
 
 		this.commandTimes = {};
 
-		this.filter = new BadWords();//{ emptyList: true }); //Temporarily Disable the custom bad words list.
-		//this.filter.addWords(...badwordList.words);
+		let badwords = [];
+		const badwordsFile = path.join(userFolder, "data", "badwords.json")
+		if (fs.existsSync(badwordsFile))
+		{
+			try {
+				badwords = JSON.parse(await fs.promises.readFile(badwordsFile, "utf-8")).words
+			}
+			catch
+			{
+			}
+		}
+		
+
+		this.filter = new BadWords({ emptyList: badwords.length > 0 }); //Temporarily Disable the custom bad words list.
+		if (badwords.length > 0)
+		{
+			this.filter.addWords(...badwords);
+		}
 	},
 	methods: {
 		filterMessage(message) {
@@ -98,6 +117,7 @@ export default {
 		async shutdown() {
 			this.state.botName = null;
 			this.state.channelName = null;
+			this.rewards = [];
 
 			if (this.chatClient) {
 				await this.chatClient.quit();
@@ -521,108 +541,25 @@ export default {
 		},
 
 		async initConditions() {
-
 			await this.querySubscribers();
 			await this.queryFollows();
 		},
 
 		async initChannelRewards() {
-			this.rewardsDefinitions = new HotReloader(rewardsFilePath,
-				() => {
-					this.ensureChannelRewards()
-				},
-				() => { })
-			await this.ensureChannelRewards();
-		},
-
-		async ensureChannelRewards() {
 			if (!this.state.isAffiliate) {
 				this.logger.info("Channel isn't affiliate, skipping channel rewards");
 				return;
 			}
 
-			let rewards = await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true);
-
-			let handledRewards = new Set();
-
-			for (let reward of rewards) {
-				if (!(reward.title in this.rewardsDefinitions.data)) {
-					//Not in the file, delete it.
-					await this.channelTwitchClient.channelPoints.deleteCustomReward(this.channelId, reward.id);
-				}
-				else {
-					//Existing Reward
-					handledRewards.add(reward.title)
-
-					let needsUpdate = false;
-
-					let rewardDef = this.rewardsDefinitions.data[reward.title];
-
-					if (reward.prompt != rewardDef.description)
-						needsUpdate = true;
-					if (reward.cost != rewardDef.cost)
-						needsUpdate = true;
-
-					if (reward.userInputRequired != !!rewardDef.inputRequired)
-						needsUpdate = true;
-					if (reward.autoApproved != !!rewardDef.skipQueue)
-						needsUpdate = true;
-					if (reward.globalCooldown != rewardDef.cooldown)
-						needsUpdate = true;
-					if (reward.maxRedemptionsPerStream != rewardDef.maxRedemptionsPerStream)
-						needsUpdate = true;
-					if (reward.maxRedemptionsPerUserPerStream != rewardDef.maxRedemptionsPerUserPerStream)
-						needsUpdate = true;
-
-					if (needsUpdate) {
-						await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, {
-							prompt: rewardDef.description,
-							cost: rewardDef.cost,
-							userInputRequired: !!rewardDef.inputRequired,
-							autoFulfill: !!rewardDef.skipQueue,
-							globalCooldown: rewardDef.cooldown || 0,
-							maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
-							maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
-						})
-					}
-				}
-			}
-
-			//Check for new rewards
-			for (let rewardKey in this.rewardsDefinitions.data) {
-				if (handledRewards.has(rewardKey))
-					continue;
-
-				let rewardDef = this.rewardsDefinitions.data[rewardKey];
-
-
-				//inputRequired: false
-				//skipQueue: true
-				//Create the new reward.
-				try {
-					await this.channelTwitchClient.channelPoints.createCustomReward(this.channelId, {
-						title: rewardKey,
-						prompt: rewardDef.description,
-						cost: rewardDef.cost,
-						userInputRequired: !!rewardDef.inputRequired,
-						autoFulfill: !!rewardDef.skipQueue,
-						globalCooldown: rewardDef.cooldown || 0,
-						maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
-						maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
-					})
-				} catch (err) {
-					this.logger.error(`Error creating channel reward: ${rewardKey}. Message: ${err}`);
-				}
-			}
+			this.rewards = await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true);
+			this.logger.info(`Got rewards, ${this.rewards.length}`)
 		},
 
 		async switchChannelRewards(activeRewards, inactiveRewards) {
 			if (!this.channelId || !this.state.isAffiliate)
 				return;
 
-			let rewards = await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true);
-
-			for (let reward of rewards) {
+			for (let reward of this.rewards) {
 				if (!reward.isEnabled && activeRewards.has(reward.title)) {
 					await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: true });
 				}
@@ -733,6 +670,60 @@ export default {
 					'Client-ID': this.channelAuth.clientId
 				}
 			})
+		},
+
+		getRewards() {
+			return this.rewards.map(r => ({
+				id: r.id,
+				title: r.title,
+				backgroundColor: r.backgroundColor,
+				prompt: r.prompt,
+				cost: r.cost,
+				userInputRequired: r.userInputRequired,
+				autoFulfill: r.autoFulfill,
+				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
+				maxRedemptionsPerUserPerStream: r.maxRedemptionsPerUserPerStream
+			}));
+		},
+
+		async createReward(rewardDef) {
+			const reward = await this.channelTwitchClient.channelPoints.createCustomReward(this.channelId, {
+				title: rewardDef.title,
+				prompt: rewardDef.prompt,
+				backgroundColor: rewardDef.backgroundColor,
+				cost: rewardDef.cost,
+				userInputRequired: !!rewardDef.userInputRequired,
+				autoFulfill: !!rewardDef.autoFulfill,
+				globalCooldown: rewardDef.globalCooldown || 0,
+				maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
+				maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
+			})
+
+			this.rewards.push(reward);
+		},
+
+		async updateReward(rewardDef) {
+			const idx = this.rewards.findIndex(r => r.id == rewardDef.id);
+			if (idx == -1)
+				return false;
+			
+			const reward = await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, rewardDef.id, {
+				title: rewardDef.title,
+				prompt: rewardDef.prompt,
+				backgroundColor: rewardDef.backgroundColor,
+				cost: rewardDef.cost,
+				userInputRequired: !!rewardDef.userInputRequired,
+				autoFulfill: !!rewardDef.autoFulfill,
+				globalCooldown: rewardDef.globalCooldown || 0,
+				maxRedemptionsPerStream: rewardDef.maxRedemptionsPerStream || null,
+				maxRedemptionsPerUserPerStream: rewardDef.maxRedemptionsPerUserPerStream || null,
+			});
+
+			this.rewards[idx] = reward;
+		},
+
+		async deleteReward(id) {
+			await this.channelTwitchClient.channelPoints.deleteCustomReward(this.channelId, id);
 		}
 	},
 	async onProfileLoad(profile, config) {
@@ -749,12 +740,13 @@ export default {
 			}
 		}
 
-		for (let rewardKey in this.rewardsDefinitions.data) {
-			if (!activeRewards.has(rewardKey)) {
-				inactiveRewards.add(rewardKey);
+		for (let inactiveProf of inactiveProfiles) {
+			for (let reward of inactiveProf.rewards) {
+				if (!activeRewards.has(reward)) {
+					inactiveRewards.add(reward);
+				}
 			}
 		}
-
 		//Set all the reward states.
 		await this.switchChannelRewards(activeRewards, inactiveRewards);
 	},

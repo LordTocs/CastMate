@@ -30,13 +30,13 @@
       <tbody v-if="rewards.length > 0">
         <tr v-for="reward,i in rewards" :key="reward.name">
           <td class="fitwidth">
-            <v-tooltip v-if="reward.skipQueue" location="right">
+            <v-tooltip v-if="reward.autoFulfill" location="right">
               <template #activator="{ props }">
                 <v-icon v-bind="props" icon="mdi-debug-step-over" class="mx-1"/>
               </template>
               This reward won't show in the creator dashboard queue.
             </v-tooltip>
-            <v-tooltip v-if="reward.inputRequired" location="right">
+            <v-tooltip v-if="reward.userInputRequired" location="right">
               <template #activator="{ props }">
                 <v-icon v-bind="props" icon="mdi-comment-text-outline" class="mx-1"/>
               </template>
@@ -47,10 +47,10 @@
             {{ reward.cost }}
           </td>
           <td>
-            {{ reward.name }}
+            {{ reward.title }}
           </td>
           <td class="fitwidth text-center">
-            <span v-if="reward.cooldown">{{ reward.cooldown }}s</span>
+            <span v-if="reward.globalCooldown">{{ reward.globalCooldown }}s</span>
           </td>
           <td class="fitwidth">
             <v-tooltip location="left">
@@ -73,7 +73,7 @@
             </v-tooltip>
           </td>
           <td class="fitwidth">
-            <reward-edit-modal :reward="reward" ref="editModals" />
+            <reward-edit-modal :reward="reward" ref="editModals" @delete="refresh" @updated="refresh" />
             <v-btn size="small" icon="mdi-pencil" class="mx-1" @click="$refs.editModals[i].open()" />
           </td>
         </tr>
@@ -92,6 +92,7 @@
       :showSave="false"
       :showCreate="true"
       :showDelete="false"
+      @create="refresh"
     />
     <v-btn
       color="primary"
@@ -106,14 +107,26 @@
 
 <script>
 import RewardEditModal from "../components/rewards/RewardEditModal.vue";
-import { mapGetters } from "vuex";
+import { mapIpcs } from "../utils/ipcMap";
 export default {
   components: {
     RewardEditModal,
   },
-  computed: {
-    ...mapGetters("rewards", ["rewards"]),
+  data() {
+    return {
+      rewards: []
+    }
   },
+  methods: {
+    ...mapIpcs("twitch", ["getRewards"]),
+    async refresh() {
+      console.log("Refreshing Rewards");
+      this.rewards = await this.getRewards();
+    }
+  },
+  async mounted() {
+    await this.refresh();
+  }
 };
 </script>
 

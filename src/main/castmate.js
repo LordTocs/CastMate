@@ -3,13 +3,13 @@ import { Analytics } from "./utils/analytics.js"
 import logger from "./utils/logger.js"
 
 import { ensureUserFolder, secretsFilePath, settingsFilePath } from "./utils/configuration.js";
-import { ActionQueue } from "./actions/action-queue.js";
-import { ProfileManager } from "./actions/profile-manager.js";
-import { HotReloader } from './utils/hot-reloader.js';
-import { createWebServices } from "./utils/webserver.js";
-import { PluginManager } from "./utils/plugin-manager.js";
-import { createRequire } from 'node:module'
-import { ipcMain, app } from "./utils/electronBridge.js";
+import { ActionQueue } from "./actions/action-queue.js"
+import { ProfileManager } from "./actions/profile-manager.js"
+import { HotReloader } from './utils/hot-reloader.js'
+import { createWebServices } from "./utils/webserver.js"
+import { PluginManager } from "./utils/plugin-manager.js"
+import _ from 'lodash'
+import { ipcMain, app } from "./utils/electronBridge.js"
 
 async function initInternal(mainWindowSender) {
 	logger.info(`Starting CastMate v${app.getVersion()}`);
