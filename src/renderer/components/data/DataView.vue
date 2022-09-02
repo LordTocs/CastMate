@@ -53,10 +53,9 @@
 </template>
 
 <script>
-import RewardEditButton from "../rewards/RewardEditButton.vue";
 import ColorSwatch from "./ColorSwatch.vue";
 export default {
-  components: { ColorSwatch, RewardEditButton },
+  components: { ColorSwatch },
   name: "data-view",
   props: {
     schema: {},

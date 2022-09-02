@@ -1,5 +1,4 @@
 import ipcModule from './ipc';
-import rewardsModule from './rewards';
 import segmentsModule from './segments';
 import variablesModule from './variables';
 import Vuex from 'vuex';
@@ -9,7 +8,6 @@ import { ipcRenderer } from "electron";
 export const store = new Vuex.Store({
 	modules: {
 		ipc: ipcModule,
-		rewards: rewardsModule,
 		segments: segmentsModule,
 		variables: variablesModule,
 	}

@@ -8,7 +8,6 @@ export const userFolder = path.resolve((!isPortable ? path.join(app.getPath('use
 
 export const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));
 export const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
-export const rewardsFilePath = path.resolve(path.join(userFolder, "rewards.yaml"));
 export const segmentsFilePath = path.resolve(path.join(userFolder, "segments.yaml"));
 export const variablesFilePath = path.resolve(path.join(userFolder, "variables.yaml"));
 
@@ -40,7 +39,6 @@ export function ensureUserFolder()
 	ensureFolder(path.join(userFolder, "cache"));
 	ensureFolder(path.join(userFolder, "automations"));
 
-	ensureFile(rewardsFilePath);
 	ensureFile(secretsFilePath);
 	ensureFile(settingsFilePath);
 	ensureFile(segmentsFilePath);
@@ -53,7 +51,6 @@ ipcMain.handle("getPaths", async () =>
 		userFolder,
 		secretsFilePath,
 		settingsFilePath,
-		rewardsFilePath,
 		segmentsFilePath,
 		variablesFilePath,
 	};

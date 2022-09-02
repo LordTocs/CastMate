@@ -53,11 +53,10 @@
 <script>
 import { mapIpcs } from "../../utils/ipcMap";
 import { mapModel } from "../../utils/modelValue";
-import RewardEditButton from "./RewardEditButton.vue";
 import RewardEditModal from "./RewardEditModal.vue";
 
 export default {
-  components: { RewardEditButton, RewardEditModal },
+  components: { RewardEditModal },
   props: {
     modelValue: {},
     label: { type: String, default: () => "Channel Point Reward" },
