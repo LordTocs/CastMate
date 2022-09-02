@@ -57,7 +57,8 @@ const ROOT_PATH = {
 const iconPath = app.isPackaged ? renderer : 'src/renderer/assets/icons'
 
 const preload = path.join(__dirname, '../preload/preload.js')
-const url = `http://${process.env['VITE_DEV_SERVER_HOST']}:${process.env['VITE_DEV_SERVER_PORT']}`
+console.log(process.env);
+const url = `http://${process.env['VITE_DEV_SERVER_HOSTNAME']}:${process.env['VITE_DEV_SERVER_PORT']}`
 
 let mainWindow = null;
 async function createWindow() {
