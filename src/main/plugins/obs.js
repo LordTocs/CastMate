@@ -323,7 +323,8 @@ export default {
 						required: true,
 						async enum() {
 							const { inputs } = await this.obs.call('GetInputList');
-							return inputs.map(i => i.inputName);
+							const { scenes } = await this.obs.call('GetSceneList');
+							return [...inputs.map(i => i.inputName), ...scenes.map(s => s.sceneName)];
 						}
 					},
 					filterName: {
@@ -383,7 +384,7 @@ export default {
 						async enum({ scene}) {
 							this.logger.info('Fetching sources for ' + scene);
 							const { sceneItems } = await this.obs.call("GetSceneItemList", { sceneName: scene });
-							return sceneItems.map(i => i.itemName);
+							return sceneItems.map(i => i.sourceName);
 						}
 					},
 					enabled: {
