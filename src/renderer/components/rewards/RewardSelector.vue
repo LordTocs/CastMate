@@ -3,6 +3,8 @@
     <v-combobox
       v-model="modelObj"
       :items="items"
+      item-key="title"
+      item-title="title"
       :label="label"
       :search-input.sync="search"
       clearable
@@ -33,7 +35,7 @@
       ref="editModal"
       title="Edit Channel Point Reward"
       :reward="currentReward"
-      @rename="(v) => $emit('update:modelValue', v)"
+      @rename="onRename"
       :showDelete="false"
     />
 
@@ -43,13 +45,13 @@
       :showSave="false"
       :showCreate="true"
       :showDelete="false"
-      @created="(v) => $emit('update:modelValue', v)"
+      @created="onCreate"
     />
   </v-card-actions>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapIpcs } from "../../utils/ipcMap";
 import { mapModel } from "../../utils/modelValue";
 import RewardEditButton from "./RewardEditButton.vue";
 import RewardEditModal from "./RewardEditModal.vue";
@@ -59,13 +61,11 @@ export default {
   props: {
     modelValue: {},
     label: { type: String, default: () => "Channel Point Reward" },
-    existingRewards: { type: Array, default: () => [] },
   },
   computed: {
-    ...mapGetters("rewards", ["rewards"]),
     ...mapModel(),
     currentReward() {
-      return this.rewards.find((r) => r.name == this.modelValue);
+      return this.items.find((r) => r.title == this.modelValue);
     },
   },
   data() {
@@ -75,29 +75,18 @@ export default {
     };
   },
   methods: {
-    filterRewards(query) {
-      let result = this.rewards.map((r) => r.name);
-
-      result = result.filter(
-        (reward) => !this.existingRewards.includes(reward)
-      );
-
-      if (query) {
-        result = result.filter((a) =>
-          a.toLowerCase().includes(query.toLowerCase())
-        );
-      }
-
-      this.items = result;
+    ...mapIpcs("twitch", ["getRewards"]),
+    async onCreate(title) {
+      this.items = await this.getRewards()  
+      this.$emit('update:modelValue', title)
     },
+    async onRename(title) {
+      this.items = await this.getRewards()  
+      this.$emit('update:modelValue', title)
+    }
   },
-  mounted() {
-    this.filterRewards();
-  },
-  watch: {
-    async search(newSearch) {
-      await this.filterRewards(newSearch);
-    },
+  async mounted() {
+    this.items = await this.getRewards()
   },
 };
 </script>

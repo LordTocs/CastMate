@@ -55,6 +55,7 @@ import RewardEditor from "./RewardEditor.vue";
 import _cloneDeep from "lodash/cloneDeep"
 import { mapActions } from "vuex";
 import { trackAnalytic } from "../../utils/analytics.js";
+import { mapIpcs } from "../../utils/ipcMap";
 
 export default {
   components: { RewardEditor },
@@ -73,35 +74,34 @@ export default {
     };
   },
   methods: {
-    ...mapActions("rewards", ["createReward", "updateReward", "deleteReward"]),
+    ...mapIpcs("twitch", ["createReward", "updateReward", "deleteReward"]),
     open() {
       this.rewardEdit = _cloneDeep(this.reward) || {};
       this.dialog = true;
     },
-    save() {
-      if (this.reward.name != this.rewardEdit.name) {
-        console.log("Detected Rename! ", this.reward.name, this.rewardEdit.name);
-        this.$emit("rename", this.rewardEdit.name);
+    async save() {
+      if (this.reward.title != this.rewardEdit.title) {
+        console.log("Detected Rename! ", this.reward.title, this.rewardEdit.title);
+        this.$emit("rename", this.rewardEdit.title);
       }
-      this.updateReward({
-        rewardName: this.reward.name,
-        newReward: this.rewardEdit,
-      });
+      await this.updateReward(this.rewardEdit);
       trackAnalytic("saveChannelReward");
+      this.$emit("updated");
       this.dialog = false;
     },
-    deleteMe() {
-      this.deleteReward(this.reward.name);
+    async deleteMe() {
+      await this.deleteReward(this.reward.id);
       trackAnalytic("deleteChannelReward");
+      this.$emit("delete");
       this.dialog = false;
     },
     cancel() {
       this.dialog = false;
     },
-    create() {
-      this.createReward(this.rewardEdit);
+    async create() {
+      await this.createReward(this.rewardEdit);
       this.dialog = false;
-      this.$emit("created", this.rewardEdit.name);
+      this.$emit("created", this.rewardEdit.title);
       trackAnalytic("createChannelReward");
     },
   },

@@ -2,11 +2,11 @@
   <v-form ref="form" v-model="modelValid">
     <v-text-field
       label="Name"
-      v-model="name"
+      v-model="title"
     />
     <v-text-field
       label="Description"
-      v-model="description"
+      v-model="prompt"
     />
     <number-input
       label="Cost"
@@ -14,17 +14,17 @@
       :rules="[v => v > 0 || `Rewards require a cost`]"
     />
     <number-input
-      label="Cooldown"
-      v-model="cooldown"
+      label="Global Cooldown"
+      v-model="globalCooldown"
       :rules="[v => (!v || v > 0) || `Cooldowns must positive!`]"
     />
     <v-switch
       label="Requires Message"
-      v-model="inputRequired"
+      v-model="userInputRequired"
     />
     <v-switch
       label="Skip Queue"
-      v-model="skipQueue"
+      v-model="autoFulfill"
       hide-details
     />
     <number-input
@@ -52,7 +52,7 @@ export default {
   },
   emits: ["update:modelValue", "update:valid"],
   computed: {
-    ...mapModelValues(["name", "description", "cost", "cooldown", "inputRequired", "skipQueue", "maxRedemptionsPerStream", "maxRedemptionsPerUserPerStream"]),
+    ...mapModelValues(["title", "prompt", "cost", "userInputRequired", "autoFulfill", "globalCooldown", "maxRedemptionsPerStream", "maxRedemptionsPerUserPerStream"]),
     ...mapModel("valid", "modelValid")
   }
 };
