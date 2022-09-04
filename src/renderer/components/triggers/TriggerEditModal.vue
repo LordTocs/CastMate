@@ -116,7 +116,7 @@ export default {
       this.dialog = true;
     },
     async apply() {
-      await this.$refs.automationInput.saveAutomation();
+      await this.$refs.automationInput.saveEditedAutomation();
       this.$emit("mapping", this.localTriggerType, this.localMapping);
       trackAnalytic("saveTrigger", { type: this.localTriggerType });
       this.dialog = false;

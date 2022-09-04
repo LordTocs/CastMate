@@ -152,7 +152,7 @@ export default {
       this.loadedAutomation = await this.getAutomation(this.modelValue);
       this.dirty = false;
     },
-    async saveAutomation() {
+    async saveEditedAutomation() {
       if (this.isInline) return;
       await this.saveAutomation(this.modelValue, this.loadedAutomation);
       this.dirty = false;
