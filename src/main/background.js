@@ -3,7 +3,7 @@ const isDevelopment = import.meta.env.DEV
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-const { app, shell, ipcMain, BrowserWindow } = require('electron');
+const { app, shell, ipcMain, BrowserWindow, dialog } = require('electron');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -12,6 +12,7 @@ import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import electronUpdater from 'electron-updater';
 const { autoUpdater, CancellationToken } = electronUpdater;
 import path from 'path'
+import util from 'util'
 
 import { initCastMate } from './castmate.js';
 
@@ -139,7 +140,17 @@ ipcMain.handle("windowFuncs_getVersion", async () => {
 
 ipcMain.handle("updater.downloadUpdate", async () => {
 	updateContext.cancelToken = new CancellationToken();
-	await autoUpdater.downloadUpdate(updateContext.cancelToken);
+	try
+	{
+		await autoUpdater.downloadUpdate(updateContext.cancelToken);
+	}
+	catch(err) {
+		dialog.showMessageBoxSync({
+			message: `${util.inspect(err)}`,
+			type: "error",
+			title: "ERROR UPDATING CASTMATE"
+		})
+	}
 	updateContext.cancelToken = null;
 });
 
