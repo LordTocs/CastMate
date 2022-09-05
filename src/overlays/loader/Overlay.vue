@@ -24,7 +24,13 @@ export default {
         this.bridge = new CastMateBridge(this.castmateState);
         
         // Load the config
-        
+        this.config = [{
+            id: "a",
+            type: "Label",
+            props: {
+                message: "Hello from config"
+            }
+        }]
     }
 }
 </script>

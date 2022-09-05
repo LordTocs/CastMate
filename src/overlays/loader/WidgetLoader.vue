@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue';
+import loadWidget from '../widgets/widgetLoader';
 
 export default {
     props: {
@@ -12,7 +12,7 @@ export default {
     computed: {
         dynamicComponent() {
             //TODO: How does this resolve over http???
-            return defineAsyncComponent(() => import(`../widgets/${this.widgetConfig.type}.vue`))
+            return loadWidget(this.widgetConfig.type)
         }
     }
 }
