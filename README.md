@@ -32,7 +32,7 @@ Profiles are a way to set which automations are to run by which triggers. Profil
 
 3. Sign in with your twitch account, and optionally a bot account. ![CastMate Sign In](docs/images/sign-in.png?raw=true)
 
-4. See the [OBS Setup Guide](OBS.md) to configure OBS!
+4. See the [OBS Setup Guide](docs/OBS.md) to configure OBS!
 
 ## Download
 
