@@ -8,6 +8,8 @@ import vuetify from 'vite-plugin-vuetify'
 import { fileURLToPath } from 'node:url'
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
+import { overlays } from "./src/overlays/vite/plugin.js"
+
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
@@ -54,7 +56,8 @@ export default defineConfig({
           return ['fs', 'path']
         }
       },
-    })
+    }),
+    overlays ({ dirname })
   ],
   build: {
     outDir: "dist/electron/renderer",
