@@ -57,7 +57,7 @@ export default defineConfig({
         }
       },
     }),
-    overlays ({ dirname })
+    //overlays ({ dirname })
   ],
   build: {
     outDir: "dist/electron/renderer",
