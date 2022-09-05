@@ -4,7 +4,7 @@ import fs from "fs"
 import path from 'path'
 import { userFolder } from '../utils/configuration.js'
 import axios from "axios"
-import _ from "lodash"
+import _cloneDeep from "lodash/cloneDeep"
 import https from 'https';
 import { AsyncCache } from '../utils/async-cache.js';
 import os from 'os';
@@ -455,7 +455,7 @@ export default {
 				}
 			},
 			async handler(lightData, context) {
-				lightData = _.cloneDeep(lightData);
+				lightData = _cloneDeep(lightData);
 
 				let groupName = lightData.group || this.settings.defaultGroup;
 
