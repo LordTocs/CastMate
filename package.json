@@ -1,0 +1,11 @@
+{
+  "name": "castmate-monorepo",
+  "version": "0.3.4",
+  "description": "",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "LordTocs",
+  "license": "AGPL",
+  "packageManager": "pnpm@7.11.0"
+}
