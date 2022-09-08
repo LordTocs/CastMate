@@ -23,6 +23,7 @@ export class PluginManager {
 			//"aoe3",
 			"aoe4",
 			"twinkly",
+			"websocketActions"
 		]
 
 		//Todo: This relative require is weird.
