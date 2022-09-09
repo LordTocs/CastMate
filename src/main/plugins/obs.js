@@ -401,7 +401,7 @@ export default {
 				const sceneName = await template(data.scene, context)
 				const sourceName = await template(data.source, context)
 				
-				const sceneItemId = await this.obs.call('GetSceneItemId', { sceneName, sourceName });
+				const { sceneItemId } = await this.obs.call('GetSceneItemId', { sceneName, sourceName });
 				
 				await this.obs.call('SetSceneItemEnabled', {
 					sceneName,

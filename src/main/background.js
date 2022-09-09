@@ -3,7 +3,7 @@ const isDevelopment = import.meta.env.DEV
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-const { app, shell, ipcMain, BrowserWindow } = require('electron');
+const { app, shell, ipcMain, BrowserWindow, dialog } = require('electron');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -12,19 +12,12 @@ import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import electronUpdater from 'electron-updater';
 const { autoUpdater, CancellationToken } = electronUpdater;
 import path from 'path'
+import util from 'util'
 
 import { initCastMate } from './castmate.js';
 
 autoUpdater.autoInstallOnAppQuit = false;
 autoUpdater.autoDownload = false;
-
-//Setup dev update yaml only if we're in debug mode.
-/*if (isDevelopment) {
-	autoUpdater.updateConfigPath = path.join(
-		__dirname,
-		"../dev-app-update.yml" // change path if needed
-	);
-}*/
 
 // Set application name for Windows 10+ notifications
 if (process.platform === 'win32') app.setAppUserModelId(app.getName())
@@ -33,15 +26,6 @@ if (!app.requestSingleInstanceLock()) {
 	app.quit()
 	process.exit(0)
 }
-
-/*
-// Scheme must be registered before the app is ready
-protocol.registerSchemesAsPrivileged([
-	{ scheme: 'app', privileges: { secure: true, standard: true } }
-])
-*/
-
-
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
@@ -57,22 +41,18 @@ const ROOT_PATH = {
 const iconPath = app.isPackaged ? renderer : 'src/renderer/assets/icons'
 
 const preload = path.join(__dirname, '../preload/preload.js')
-console.log(process.env);
 const url = `http://${process.env['VITE_DEV_SERVER_HOSTNAME']}:${process.env['VITE_DEV_SERVER_PORT']}`
 
 let mainWindow = null;
-async function createWindow() {
-	// Create the browser window.
 
-	const indexHtml = path.join(ROOT_PATH.renderer, 'index.html')
-
+function createWindowBase(htmlFile, params, width, height) {
+	
 	
 	const win = new BrowserWindow({
-		width: 1600,
-		height: 900,
+		width,
+		height,
 		icon: path.join(iconPath, 'icon.png'),
 		webPreferences: {
-			//preload,
 			nodeIntegration: true,
 			enableRemoteModule: true,
 			contextIsolation: false,
@@ -80,12 +60,31 @@ async function createWindow() {
 		frame: false
 	})
 
-
 	if (app.isPackaged) {
-		win.loadFile(indexHtml)
+		const htmlFullPath = path.join(ROOT_PATH.renderer, htmlFile)
+		console.log("Loading From File " + htmlFullPath);
+		win.loadFile(htmlFullPath, {
+			query: params
+		})
 	} else {
-		win.loadURL(url)
+		const fullUrl = url + "/" + htmlFile
+		console.log("Loading From URL " + fullUrl);
+		win.loadURL(fullUrl, {
+			query: params
+		})
 	}
+
+	win.webContents.on('new-window', function (e, url) {
+		e.preventDefault();
+		shell.openExternal(url);
+	});
+
+
+	return win
+}
+
+async function createWindow() {
+	const win = createWindowBase("index.html", null, 1600, 900);
 
 	win.on("close", () => {
 		//Workaround for electron bug.
@@ -98,50 +97,12 @@ async function createWindow() {
 		app.quit();
 	})
 
-	win.webContents.on('new-window', function (e, url) {
-		e.preventDefault();
-		shell.openExternal(url);
-	});
-
 	mainWindow = win;
 }
 
 async function createUpdaterWindow(updateData) {
-	const updaterHtml = path.join(ROOT_PATH.dist, 'updater.html')
-
-	const win = new BrowserWindow({
-		width: 600,
-		height: 400,
-		icon: path.join(iconPath, 'icon.png'),
-		webPreferences: {
-
-			// Use pluginOptions.nodeIntegration, leave this alone
-			// See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-			nodeIntegration: true, //process.env.ELECTRON_NODE_INTEGRATION,
-			enableRemoteModule: true,
-			contextIsolation: false,
-		},
-		frame: false
-	})
-
-	//remoteMain.enable(win.webContents);
-
-	const params = new URLSearchParams(updateData)
-
-	if (app.isPackaged) {
-		win.loadFile(updaterHtml + "?" + params)
-	} else {
-		win.loadURL(url + '/updater.html' + "?" + params)
-	}
-
+	const win = createWindowBase("updater.html", updateData, 600, 400)
 	updateContext.window = win;
-
-	win.webContents.on('new-window', function (e, url) {
-		e.preventDefault();
-		shell.openExternal(url);
-	});
-
-
 }
 
 const updateContext = {};
@@ -179,7 +140,17 @@ ipcMain.handle("windowFuncs_getVersion", async () => {
 
 ipcMain.handle("updater.downloadUpdate", async () => {
 	updateContext.cancelToken = new CancellationToken();
-	await autoUpdater.downloadUpdate(updateContext.cancelToken);
+	try
+	{
+		await autoUpdater.downloadUpdate(updateContext.cancelToken);
+	}
+	catch(err) {
+		dialog.showMessageBoxSync({
+			message: `${util.inspect(err)}`,
+			type: "error",
+			title: "ERROR UPDATING CASTMATE"
+		})
+	}
 	updateContext.cancelToken = null;
 });
 

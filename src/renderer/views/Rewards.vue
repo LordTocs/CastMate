@@ -120,7 +120,6 @@ export default {
   methods: {
     ...mapIpcs("twitch", ["getRewards"]),
     async refresh() {
-      console.log("Refreshing Rewards");
       this.rewards = await this.getRewards();
     }
   },

@@ -81,7 +81,6 @@ export default {
       set(newActions) {
         if (!this.modelValue) {
           //Assume inline.
-          console.log("new edit");
           const newAuto = generateEmptyAutomation();
           newAuto.actions = newActions;
           this.$emit("update:modelValue", newAuto);
@@ -153,7 +152,7 @@ export default {
       this.loadedAutomation = await this.getAutomation(this.modelValue);
       this.dirty = false;
     },
-    async saveAutomation() {
+    async saveEditedAutomation() {
       if (this.isInline) return;
       await this.saveAutomation(this.modelValue, this.loadedAutomation);
       this.dirty = false;
