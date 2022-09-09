@@ -73,10 +73,11 @@ export class ProfileManager
 			}
 
 			await newProfile.saveConfig(finalConfig);
-			await this.handleProfileLoaded(newProfile);
 
 			this.profiles.push(newProfile);
 
+			await this.handleProfileLoaded(newProfile);
+			
 			return true;
 		});
 		ipcFunc("io", "deleteProfile", async(name) => {
