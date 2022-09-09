@@ -61,16 +61,18 @@ export class ProfileManager
 				this.handleProfileLoaded(profile);
 			});
 
-			if (!config)
-			{
-				config = {
-					version: "2.0",
-					triggers: {},
-					conditions: { operator: 'any', operands: [] }
-				}
+			const finalConfig = {
+				version: "2.0",
+				triggers: {},
+				conditions: { operator: 'any', operands: [] }
 			}
 
-			await newProfile.saveConfig(config);
+			if (config)
+			{
+				Object.assign(finalConfig, config);
+			}
+
+			await newProfile.saveConfig(finalConfig);
 			await this.handleProfileLoaded(newProfile);
 
 			this.profiles.push(newProfile);
