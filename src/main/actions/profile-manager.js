@@ -26,6 +26,8 @@ export class ProfileManager
 
 		this.ipcSender = ipcSender;
 
+		this.recombiner = null;
+
 		ipcMain.handle("core_getActiveProfiles", () => this.activeProfiles.map(p => p.name));
 
 		this.createIOFuncs();
@@ -61,20 +63,23 @@ export class ProfileManager
 				this.handleProfileLoaded(profile);
 			});
 
-			if (!config)
-			{
-				config = {
-					version: "2.0",
-					triggers: {},
-					conditions: { operator: 'any', operands: [] }
-				}
+			const finalConfig = {
+				version: "2.0",
+				triggers: {},
+				conditions: { operator: 'any', operands: [] }
 			}
 
-			await newProfile.saveConfig(config);
-			await this.handleProfileLoaded(newProfile);
+			if (config)
+			{
+				Object.assign(finalConfig, config);
+			}
+
+			await newProfile.saveConfig(finalConfig);
 
 			this.profiles.push(newProfile);
 
+			await this.handleProfileLoaded(newProfile);
+			
 			return true;
 		});
 		ipcFunc("io", "deleteProfile", async(name) => {
@@ -201,11 +206,22 @@ export class ProfileManager
 			// Deactivate the old watcher if it exists.
 			profile.watcher.unsubscribe();
 		}
-		profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+		profile.watcher = new Watcher(() => this.markForRecombine(), { fireImmediately: false });
 		dependOnAllConditions(profile.conditions, this.plugins.stateLookup, profile.watcher);
 		
 		// Recombine active profiles 
 		this.recombine();
+	}
+
+	markForRecombine() {
+		if (this.recombiner)
+		{
+			return;
+		}
+		this.recombiner = setTimeout(() => {
+			this.recombiner = null;
+			this.recombine();
+		}, 100);
 	}
 
 	//Recalculate which profiles are active.

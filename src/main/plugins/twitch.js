@@ -551,7 +551,18 @@ export default {
 				return;
 			}
 
-			this.rewards = await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true);
+			this.rewards = (await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true)).map(r => ({
+				id: r.id,
+				title: r.title,
+				backgroundColor: r.backgroundColor,
+				prompt: r.prompt,
+				cost: r.cost,
+				userInputRequired: r.userInputRequired,
+				autoFulfill: r.autoFulfill,
+				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
+				maxRedemptionsPerUserPerStream: r.maxRedemptionsPerUserPerStream,
+				isEnabled: r.isEnabled
+			}));
 			this.logger.info(`Got rewards, ${this.rewards.length}`)
 		},
 
@@ -559,12 +570,19 @@ export default {
 			if (!this.channelId || !this.state.isAffiliate)
 				return;
 
+			//console.log("Switch Rewards")
+			//console.log("Active", activeRewards)
+			//console.log("Inactive", inactiveRewards)
+
 			for (let reward of this.rewards) {
+				//console.log("Reward: ", reward.title, ":", reward.isEnabled ,":", activeRewards.has(reward.title), inactiveRewards.has(reward.title))
 				if (!reward.isEnabled && activeRewards.has(reward.title)) {
 					await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: true });
+					reward.isEnabled = true;
 				}
 				else if (reward.isEnabled && inactiveRewards.has(reward.title)) {
 					await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: false });
+					reward.isEnabled = false;
 				}
 			}
 		}
