@@ -26,6 +26,8 @@ export class ProfileManager
 
 		this.ipcSender = ipcSender;
 
+		this.recombiner = null;
+
 		ipcMain.handle("core_getActiveProfiles", () => this.activeProfiles.map(p => p.name));
 
 		this.createIOFuncs();
@@ -204,11 +206,22 @@ export class ProfileManager
 			// Deactivate the old watcher if it exists.
 			profile.watcher.unsubscribe();
 		}
-		profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+		profile.watcher = new Watcher(() => this.markForRecombine(), { fireImmediately: false });
 		dependOnAllConditions(profile.conditions, this.plugins.stateLookup, profile.watcher);
 		
 		// Recombine active profiles 
 		this.recombine();
+	}
+
+	markForRecombine() {
+		if (this.recombiner)
+		{
+			return;
+		}
+		this.recombiner = setTimeout(() => {
+			this.recombiner = null;
+			this.recombine();
+		}, 100);
 	}
 
 	//Recalculate which profiles are active.
