@@ -5,12 +5,13 @@ import { rmSync } from 'fs'
 import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron'
 import vuetify from 'vite-plugin-vuetify'
-import { fileURLToPath } from 'node:url'
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import { fileURLToPath } from 'node:url'
 
-import { overlays } from "./src/overlays/vite/overlay-vite.js"
+import { subpackage } from '../../vite-util/vite-multipackage'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+const dist = path.join(dirname, "dist");
 
 
 rmSync('dist', { recursive: true, force: true }) // v14.14.0
@@ -23,44 +24,29 @@ export default defineConfig({
     }),
     electron({
       main: {
-        entry: 'src/main/backgroundLoader.cjs',
+        entry: resolve(dirname, 'src/main/backgroundLoader.cjs'),
         vite: withDebug({
           plugins: [nodeResolve(['node'])],
           build: {
             // target: 'node16.15',
-            outDir: 'dist/electron/main',
+            outDir: path.join(dist, 'electron/main'),
             rollupOptions: {
-              // format: 'cjs',
               external: ['public-ip', 'ffi-napi', 'ref-napi', 'ref-struct-di', 'win32-api', 'obs-websocket-js', 'ws'],
             }
           },
-          // esbuild: {
-          //   platform: 'node',
-          // },
         }),
       },
-      /*preload: {
-        input: {
-          preload: 'src/preload/preload.js'
-        },
-        vite: {
-          build: {
-            // For debug
-            sourcemap: 'inline',
-            outDir: 'dist/electron/preload',
-          }
-        }
-      },*/
       renderer: {
         resolve() {
           return ['fs', 'path']
         }
       },
     }),
+    subpackage("castmate-overlay-components")
     //overlays ({ dirname })
   ],
   build: {
-    outDir: "dist/electron/renderer",
+    outDir: path.join(dist, "/electron/renderer"),
     rollupOptions: {
       input: {
         main: resolve(dirname, 'index.html'),

@@ -1,5 +1,5 @@
 <template>
-    <widget-loader v-for="widgetConfig in config" :key="widgetConfig.id" />
+    <widget-loader v-for="widgetConfig in config" :key="widgetConfig.id" :widgetConfig="widgetConfig" />
 </template>
 
 <script>

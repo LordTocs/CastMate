@@ -1,21 +1,22 @@
 {
   "name": "castmate",
   "version": "0.3.3",
-  "private": "true",
   "description": "CastMate is a broadcaster tool that allows Twitch viewers to interact with a broadcasters stream components through Chat Commands, Channel Point rewards, and more.",
   "author": "LordTocs & FitzBro",
   "scripts": {
-    "build": "vite build --mode production && electron-builder --config electron-builder-config.cjs",
-    "buildpublish": "vite build --mode production && electron-builder --config electron-builder-config.cjs --publish always",
+    "build": "vite build --mode production && yarn electron:build",
+    "build:test": "vite build --mode production",
     "dev": "vite",
-    "eb": "electron-builder --config electron-builder-config.cjs",
-    "postinstall": "electron-builder install-app-deps",
-    "runbuild": "npm run build & cd release/win-unpacked/ && CastMate.exe"
+    "electron:build": "electron-builder --config electron-builder-config.cjs",
+    "build:publish": "pnpm run build --publish always",
+    "build:run": "pnpm run build & cd release/win-unpacked/ && CastMate.exe",
+    "postinstall": "electron-builder install-app-deps"
   },
   "main": "dist/electron/main/backgroundLoader.js",
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
   },
+  "electronVersion": "20.0.1",
   "dependencies": {
     "@peter-murray/hue-bridge-model": "^2.0.4",
     "@twurple/api": "^5.0.13",
@@ -26,6 +27,7 @@
     "axios": "^0.27.2",
     "bad-words": "^3.0.4",
     "body-parser": "^1.19.0",
+    "castmate-overlay-components": "^0.0.1",
     "chromatism2": "^3.0.2",
     "color": "^4.0.2",
     "cs-gamestate": "^2.2.3",
@@ -53,12 +55,9 @@
     "@mdi/font": "^6.5.95",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@vitejs/plugin-vue": "^3.0.3",
-    "@volar-plugins/prettyhtml": "^1.0.0",
-    "electron": "^20.0.1",
+    "electron": "20.0.1",
     "electron-builder": "^23.3.3",
     "electron-devtools-installer": "^3.2.0",
-    "eslint": "^8.17.0",
-    "vite": "^3.0.7",
     "vite-plugin-electron": "^0.9.0",
     "vite-plugin-electron-renderer": "^0.9.0",
     "vite-plugin-vuetify": "^1.0.0-alpha.12",

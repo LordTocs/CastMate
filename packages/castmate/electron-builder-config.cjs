@@ -3,10 +3,10 @@ module.exports = {
   productName: "CastMate",
   asar: true,
   directories: {
-    output: "release"
+    output: "../../release"
   },
   files: [
-      "dist/**/*",
+      "../../dist/**/*",
       "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
       "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
       "!**/node_modules/*.d.ts",

@@ -1,0 +1,15 @@
+{
+  "name": "castmate-overlay-components",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/overlay-components/castmate-overlay-components.mjs",
+  "devMain": "src/widgetLoader.js",
+  "scripts": {
+    "build:test": "vite build --mode production"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vue": "^3.2.37"
+  }
+}

@@ -97,6 +97,7 @@
         <active-profiles-card />
       </v-col>
     </v-row>
+    <test-label message="Hello from CastMate" />
     <welcome-dialog ref="welcomeDlg" />
   </v-container>
 </template>
@@ -108,8 +109,10 @@ import WelcomeDialog from "../components/wizard/WelcomeDialog.vue";
 import { mapIpcs } from "../utils/ipcMap";
 import { trackAnalytic } from "../utils/analytics.js";
 
+import loadWidget from "castmate-overlay-components";
+
 export default {
-  components: { ActiveProfilesCard, WelcomeDialog },
+  components: { ActiveProfilesCard, WelcomeDialog, TestLabel: loadWidget("Label") },
   computed: {
     ...mapGetters("ipc", ["stateLookup"]),
   },
