@@ -21,19 +21,6 @@ export default {
 	color: "#FFA256",
 	async init() {
 	},
-	methods: {
-	},
-	settings: {
-		globalVolume: {
-			type: Number,
-			name: "Global Volume",
-			description: "Global Volume control.",
-			slider: [0.0, 1.0],
-			default: 1.0,
-		}
-	},
-	secrets: {
-	},
 	actions: {
 		shell: {
 			name: "Command Line",
