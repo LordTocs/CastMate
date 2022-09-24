@@ -99,7 +99,7 @@ export default {
     triggers: {
         endpoint: {
             name: "HTTP Endpoint",
-            description: "Respond to incoming HTTP Requests at /endpoints/...",
+            description: "Respond to incoming HTTP Requests at /plugins/endpoints/...",
             config: {
                 type: Object,
                 properties: {
