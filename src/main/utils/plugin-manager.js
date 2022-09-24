@@ -17,6 +17,8 @@ export class PluginManager {
 			"minecraft",
 			"time",
 			"kofi",
+			"http",
+			"os",
 			//"csgo",
 			"variables",
 			"websocket",
