@@ -15,6 +15,7 @@ export class PluginManager {
 			"sounds",
 			"twitch",
 			"minecraft",
+			"voicemod",
 			"time",
 			"kofi",
 			"http",
@@ -25,6 +26,7 @@ export class PluginManager {
 			//"aoe3",
 			"aoe4",
 			"twinkly",
+			
 		]
 
 		//Todo: This relative require is weird.
