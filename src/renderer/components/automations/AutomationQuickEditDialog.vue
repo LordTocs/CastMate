@@ -71,7 +71,6 @@
 </template>
 
 <script>
-import path from "path";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
 import { mapGetters } from "vuex";
 import FlexScroller from "../layout/FlexScroller.vue";
@@ -94,12 +93,6 @@ export default {
   computed: {
     ...mapGetters("ipc", ["paths"]),
     ...mapGetters("io", ["saveAutomation", "getAutomation"]),
-    filePath() {
-      return path.join(
-        this.paths.userFolder,
-        `automations/${this.automationName}.yaml`
-      );
-    },
   },
   methods: {
     async save() {

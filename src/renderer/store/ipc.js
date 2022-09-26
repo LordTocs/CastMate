@@ -65,26 +65,11 @@ export default {
 		inited: state => state.inited,
 		stateLookup: state => state.stateLookup,
 		analyticsId: state => state.analyticsId,
-		actions: state => {
-			let result = {};
-			for (let plugin of state.plugins) {
-				Object.assign(result, plugin.actions)
-			}
-
-			Object.assign(result, builtInPlugin.actions);
-			return result;
-		},
-		triggers: state => {
-			let result = {};
-			for (let plugin of state.plugins) {
-				Object.assign(result, plugin.triggers)
-			}
-			return result;
-		},
 		stateSchemas: state => {
 			const result = {};
 
-			for (let plugin of state.plugins) {
+			const pluginList = [...Object.keys(state.plugins).map(name => state.plugins[name]), builtInPlugin];
+			for (let plugin of pluginList) {
 				result[plugin.name] = plugin.stateSchemas;
 			}
 

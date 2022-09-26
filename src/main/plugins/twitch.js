@@ -162,7 +162,7 @@ export default {
 			this.state.isAuthed = true;
 
 			//Set some analytics
-			this.analytics.setUserId(this.channelId);
+			this.analytics.setUserId(this.state.channelId);
 			this.analytics.set({
 				$first_name: this.state.channelName,
 			});
@@ -221,7 +221,8 @@ export default {
 				let channel = await this.channelTwitchClient.users.getMe(false);
 				this.state.channelName = channel.displayName;
 				this.state.channelProfileUrl = channel.profilePictureUrl;
-				this.channelId = await channel.id;
+				this.state.channelId = await channel.id;
+				this.state.accessToken = this.channelAuth._accessToken.accessToken;
 
 
 				this.state.isAffiliate = channel.broadcasterType.length > 0;
@@ -235,7 +236,7 @@ export default {
 
 				this.state.isAffiliate = false;
 
-				this.channelId = null;
+				this.state.channelId = null;
 
 				this.logger.info(`Channel Not Signed In`);
 			}
@@ -426,7 +427,7 @@ export default {
 					this.logger.info(`followed by ${message.userDisplayName}`);
 					this.triggers.follow({ user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
 
-					let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
+					let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.state.channelId });
 					this.state.followers = follows.total;
 					this.state.lastFollower = follows.data.length > 0 ? follows.data[0].userDisplayName : null;
 				}
@@ -455,9 +456,9 @@ export default {
 		async setupPubSubTriggers() {
 			this.basePubSubClient = new BasicPubSubClient();
 			this.pubSubClient = new PubSubClient(this.basePubSubClient);
-			await this.pubSubClient.registerUserListener(this.channelAuth, this.channelId);
+			await this.pubSubClient.registerUserListener(this.channelAuth, this.state.channelId);
 
-			await this.pubSubClient.onBits(this.channelId, (message) => {
+			await this.pubSubClient.onBits(this.state.channelId, (message) => {
 				this.logger.info(`Bits: ${message.bits}`);
 
 
@@ -471,7 +472,7 @@ export default {
 				});
 			});
 
-			await this.pubSubClient.onRedemption(this.channelId, (redemption) => {
+			await this.pubSubClient.onRedemption(this.state.channelId, (redemption) => {
 				this.logger.info(`Redemption: ${redemption.rewardId} ${redemption.rewardTitle}`);
 				let message = redemption.message;
 				if (!message) {
@@ -488,7 +489,7 @@ export default {
 				});
 			});
 
-			await this.pubSubClient.onSubscription(this.channelId, async (message) => {
+			await this.pubSubClient.onSubscription(this.state.channelId, async (message) => {
 				if (message.isGift) {
 					return; //Handle gifted subs elsewhere
 				}
@@ -509,7 +510,7 @@ export default {
 				await this.querySubscribers();
 			});
 
-			await this.pubSubClient.onCustomTopic(this.channelId, "video-playback-by-id", async (msg) => {
+			await this.pubSubClient.onCustomTopic(this.state.channelId, "video-playback-by-id", async (msg) => {
 				this.state.viewers = ("viewers" in msg.data ? msg.data.viewers : 0);
 				//console.log("video playback", msg.data);
 			});
@@ -517,7 +518,7 @@ export default {
 
 		async querySubscribers() {
 			try {
-				const subscribers = await this.channelTwitchClient.subscriptions.getSubscriptions(this.channelId);
+				const subscribers = await this.channelTwitchClient.subscriptions.getSubscriptions(this.state.channelId);
 				this.state.subscribers = subscribers.total;
 				//this.state.lastSubscriber = subscribers.data.length > 0 ? subscribers.data[0].userDisplayName : null
 			}
@@ -529,7 +530,7 @@ export default {
 
 		async queryFollows() {
 			try {
-				let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.channelId });
+				let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.state.channelId });
 
 				this.state.followers = follows.total;
 				this.state.lastFollower = follows.data.length > 0 ? follows.data[0].userDisplayName : null;
@@ -551,7 +552,7 @@ export default {
 				return;
 			}
 
-			this.rewards = (await this.channelTwitchClient.channelPoints.getCustomRewards(this.channelId, true)).map(r => ({
+			this.rewards = (await this.channelTwitchClient.channelPoints.getCustomRewards(this.state.channelId, true)).map(r => ({
 				id: r.id,
 				title: r.title,
 				backgroundColor: r.backgroundColor,
@@ -567,7 +568,7 @@ export default {
 		},
 
 		async switchChannelRewards(activeRewards, inactiveRewards) {
-			if (!this.channelId || !this.state.isAffiliate)
+			if (!this.state.channelId || !this.state.isAffiliate)
 				return;
 
 			//console.log("Switch Rewards")
@@ -577,14 +578,19 @@ export default {
 			for (let reward of this.rewards) {
 				//console.log("Reward: ", reward.title, ":", reward.isEnabled ,":", activeRewards.has(reward.title), inactiveRewards.has(reward.title))
 				if (!reward.isEnabled && activeRewards.has(reward.title)) {
-					await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: true });
+					await this.channelTwitchClient.channelPoints.updateCustomReward(this.state.channelId, reward.id, { isPaused: false, isEnabled: true });
 					reward.isEnabled = true;
 				}
 				else if (reward.isEnabled && inactiveRewards.has(reward.title)) {
-					await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, reward.id, { isPaused: false, isEnabled: false });
+					await this.channelTwitchClient.channelPoints.updateCustomReward(this.state.channelId, reward.id, { isPaused: false, isEnabled: false });
 					reward.isEnabled = false;
 				}
 			}
+		}
+	},
+	publicMethods: {
+		getUserColor(userId) {
+			return this.colorCache[userId];
 		}
 	},
 	ipcMethods: {
@@ -670,17 +676,15 @@ export default {
 		},
 
 		async updateStreamInfo(info) {
-			console.log(this.channelId);
-
-			await this.channelTwitchClient.channels.updateChannelInfo(this.channelId, {
+			await this.channelTwitchClient.channels.updateChannelInfo(this.state.channelId, {
 				title: info.title,
 				gameId: info.category,
 			})
 
 			//Awaiting fix from d-fisher
-			//await this.channelTwitchClient.streams.replaceStreamTags(this.channelId, info.tags);
+			await this.channelTwitchClient.streams.replaceStreamTags(this.state.channelId, info.tags);
 
-			await axios.put(`https://api.twitch.tv/helix/streams/tags?broadcaster_id=${this.channelId}`, {
+			await axios.put(`https://api.twitch.tv/helix/streams/tags?broadcaster_id=${this.state.channelId}`, {
 				tag_ids: info.tags
 			}, {
 				headers: {
@@ -781,7 +785,7 @@ export default {
 		await this.doInitialAuth();
 	},
 	async onWebsocketConnected(socket) {
-		socket.send(JSON.stringify({ channel: { channelId: this.channelId, channelName: this.state.channelName } }));
+		socket.send(JSON.stringify({ channel: { channelId: this.state.channelId, channelName: this.state.channelName } }));
 	},
 	settings: {
 		auxiliaryChannel: { type: String, name: "Auxiliary Chat Channel" },
@@ -794,6 +798,11 @@ export default {
 			type: String,
 			name: "Twitch Channel Name",
 			description: "The active channel's Name"
+		},
+		channelId: {
+			type: String,
+			name: "Twitch Channel Name",
+			description: "The active channel's ID"
 		},
 		channelProfileUrl: {
 			type: String,
@@ -824,12 +833,20 @@ export default {
 		isAuthed: {
 			type: Boolean,
 			name: "Is Authed",
-			description: "True if the user is completely authenticated."
+			description: "True if the user is completely authenticated.",
+			hidden: true,
 		},
 		isAffiliate: {
 			type: Boolean,
 			name: "Is Affiliate",
-			description: "True if the user is at least affiliate"
+			description: "True if the user is at least affiliate",
+			hidden: true
+		},
+		accessToken: {
+			type: String,
+			name: "Auth Token",
+			description: "Super secret, treat like a password",
+			hidden: true
 		},
 		lastFollower: {
 			type: String,
@@ -1091,7 +1108,7 @@ export default {
 				template: true,
 			},
 			async handler(message, context) {
-				await this.channelTwitchClient.channels.updateChannelInfo(this.channelId, {
+				await this.channelTwitchClient.channels.updateChannelInfo(this.state.channelId, {
 					title: await template(message, context)
 				})
 			}
@@ -1111,7 +1128,7 @@ export default {
 					"60 Seconds": 60,
 					"90 Seconds": 90,
 				}
-				await this.channelTwitchClient.channels.startChannelCommercial(this.channelId, lookup[duration]);
+				await this.channelTwitchClient.channels.startChannelCommercial(this.state.channelId, lookup[duration]);
 			}
 		},
 		streamMarker: {
@@ -1124,7 +1141,7 @@ export default {
 				template: true,
 			},
 			async handler(message, context) {
-				await this.channelTwitchClient.streams.createStreamMarker(this.channelId, await template(message, context));
+				await this.channelTwitchClient.streams.createStreamMarker(this.state.channelId, await template(message, context));
 			}
 		},
 		createClip: {
@@ -1137,13 +1154,13 @@ export default {
 				properties: {},
 			},
 			async handler() {
-				await this.channelTwitchClient.clips.createClip({ channelId: this.channelId});
+				await this.channelTwitchClient.clips.createClip({ channelId: this.state.channelId});
 			}
 		}
 	},
 	templateFunctions: {
 		async followAge(userId) {
-			const follow = await this.channelTwitchClient.users.getFollowFromUserToBroadcaster(userId, this.channelId);
+			const follow = await this.channelTwitchClient.users.getFollowFromUserToBroadcaster(userId, this.state.channelId);
 
 			if (!follow) {
 				return "Not Following";
