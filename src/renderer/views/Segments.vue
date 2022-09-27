@@ -18,6 +18,7 @@
       </v-col>
     </v-row>
     <v-btn
+      v-if="segments.length > 0"
       color="primary"
       fixed
       fab
