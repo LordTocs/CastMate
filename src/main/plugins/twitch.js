@@ -398,7 +398,7 @@ export default {
 				this.logger.info(`Connection to castmate websocket open`);
 
 				this.castMateWebsocketPinger = setInterval(() => {
-					if (this.castMateWebsocket.readyState == 1)
+					if (this.castMateWebsocket && this.castMateWebsocket.readyState == 1)
 					{
 						this.castMateWebsocket.ping()
 					}
