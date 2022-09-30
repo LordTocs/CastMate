@@ -50,12 +50,14 @@
     >{{ value.min != undefined && value.min != null ? value.min : `-∞` }} ⟶
     {{ value.max != undefined && value.max != null ? value.max : `∞` }}
   </p>
+  <spellcast-hook-view v-else-if="schema.type == 'SpellcastHook' && value" :hookId="value" />
 </template>
 
 <script>
 import ColorSwatch from "./ColorSwatch.vue";
+import SpellcastHookView from "../spellcast/SpellcastHookView.vue";
 export default {
-  components: { ColorSwatch },
+  components: { ColorSwatch, SpellcastHookView },
   name: "data-view",
   props: {
     schema: {},

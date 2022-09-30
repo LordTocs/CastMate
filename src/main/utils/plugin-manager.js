@@ -14,15 +14,20 @@ export class PluginManager {
 			"obs",
 			"sounds",
 			"twitch",
+			"spellcast",
 			"minecraft",
+			"voicemod",
 			"time",
 			"kofi",
+			"http",
+			"os",
 			//"csgo",
 			"variables",
 			"websocket",
 			//"aoe3",
 			"aoe4",
 			"twinkly",
+			
 		]
 
 		//Todo: This relative require is weird.
@@ -126,5 +131,9 @@ export class PluginManager {
 		ipcMain.handle("getStateLookup", async () => {
 			return _.cloneDeep(this.stateLookup);
 		})
+	}
+
+	getPlugin(name) {
+		return this.plugins.find(p => p.name == name);
 	}
 }

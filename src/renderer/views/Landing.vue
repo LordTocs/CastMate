@@ -52,10 +52,7 @@
             <v-alert dense variant="outlined" type="warning">
               <v-row>
                 <v-col class="grow">
-                  To use OBS features, you must connect over the
-                  <a href="https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-from-websockets.466/"
-                    target="_blank">obs-websocket</a>
-                  plugin.
+                  To use OBS features, you must connect over the obs-websocket 5 plugin.
                 </v-col>
                 <v-col class="shrink">
                   <v-btn color="warning" variant="outlined" link to="/plugins/obs" size="small">
@@ -82,10 +79,10 @@
             <br />
           </v-card-text>
           <v-card-actions>
-            <v-btn v-if="stateLookup.obs.connected" @click="() => refereshAllBrowsers()" variant="outlined" prepend-icon="mdi-refresh">
+            <v-btn v-if="stateLookup.obs.connected" @click="() => refereshAllBrowsers()" variant="outlined" prepend-icon="mdi-refresh" size="small">
               Refresh Browsers
             </v-btn>
-            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()" variant="outlined" prepend-icon="mdi-open-in-app">
+            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()" variant="outlined" prepend-icon="mdi-open-in-app" size="small">
               Launch OBS
             </v-btn>
           </v-card-actions>

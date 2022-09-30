@@ -36,7 +36,7 @@ import ActionToolboxItem from "./ActionToolboxItem.vue";
 export default {
   components: { Draggable, ActionToolboxItem },
   computed: {
-    ...mapGetters("ipc", ["actions", "pluginList"]),
+    ...mapGetters("ipc", ["pluginList"]),
     actionPlugins() {
       return this.pluginList.filter(
         (plugin) => Object.keys(plugin.actions).length > 0

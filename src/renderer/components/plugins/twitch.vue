@@ -33,7 +33,7 @@
     </v-col>
     <v-col>
       <v-card>
-        <v-card-title> Twitch Bot Account </v-card-title>
+        <v-card-title> Twitch Bot Account (Optional) </v-card-title>
         <v-card-subtitle> Twitch Account of your Chat Bot </v-card-subtitle>
         <v-card-text>
            <span v-if="botName" class="text-h5">
