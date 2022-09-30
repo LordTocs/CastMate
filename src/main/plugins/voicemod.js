@@ -11,6 +11,7 @@ class VoiceModClient {
 
         this.voicePromise = null;
         this.connected = false;
+        this.pinger = null;
 
         this._handle("getVoices", async (payload) => {
             if (this.voicePromise) {
@@ -96,6 +97,11 @@ class VoiceModClient {
             this.socket.on("close", () => {
                 this.connected = false;
                 
+                if (this.pinger) {
+                    clearInterval(this.pinger);
+                }
+                this.pinger = null;
+
                 if (this.onClose) {
                     this.onClose();
                 }
@@ -104,6 +110,12 @@ class VoiceModClient {
             this.socket.on("open", async () => {
                 await this._callRPC("registerClient", {clientKey: "castmate"});
                 this.connected = true;
+                this.pinger = setInterval(() => {
+                    if (this.socket?.readyState == 1)
+                    {
+                        this.socket.ping();
+                    }
+                }, 30000)
                 resolve();
             });
 
