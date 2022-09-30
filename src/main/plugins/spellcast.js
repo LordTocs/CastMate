@@ -147,7 +147,7 @@ export default {
 
                 //Every 30 seconds ping to keep the socket alive.
                 this.websocketPinger = setInterval(() => {
-                    if (this.websocket.readyState == 1) {
+                    if (this.websocket?.readyState == 1) {
                         this.websocket.ping()
                     }
                 }, 30000);
@@ -193,12 +193,12 @@ export default {
     },
     triggers: {
         spellHook: {
-            name: "Spell Cast",
+            name: "SpellCast",
             description: "Fires when a viewer casts a spell with bits",
             config: {
                 type: Object,
                 properties: {
-                    hookId: { type: "SpellcastHook", name: "Spell Hook" },
+                    hookId: { type: "SpellcastHook", name: "Spell" },
                 }
             },
             context: {
