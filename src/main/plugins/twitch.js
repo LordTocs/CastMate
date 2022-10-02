@@ -695,6 +695,7 @@ export default {
 		},
 
 		getRewards() {
+			console.log("Getting Rewards");
 			return this.rewards.map(r => ({
 				id: r.id,
 				title: r.title,
@@ -709,7 +710,8 @@ export default {
 		},
 
 		async createReward(rewardDef) {
-			const reward = await this.channelTwitchClient.channelPoints.createCustomReward(this.channelId, {
+			console.log("Create Reward")
+			const reward = await this.channelTwitchClient.channelPoints.createCustomReward(this.state.channelId, {
 				title: rewardDef.title,
 				prompt: rewardDef.prompt,
 				backgroundColor: rewardDef.backgroundColor,
@@ -722,6 +724,7 @@ export default {
 			})
 
 			this.rewards.push(reward);
+			console.log("Finish Creating Reward");
 		},
 
 		async updateReward(rewardDef) {
@@ -729,7 +732,7 @@ export default {
 			if (idx == -1)
 				return false;
 			
-			const reward = await this.channelTwitchClient.channelPoints.updateCustomReward(this.channelId, rewardDef.id, {
+			const reward = await this.channelTwitchClient.channelPoints.updateCustomReward(this.state.channelId, rewardDef.id, {
 				title: rewardDef.title,
 				prompt: rewardDef.prompt,
 				backgroundColor: rewardDef.backgroundColor,
@@ -746,7 +749,7 @@ export default {
 
 		async deleteReward(id) {
 			const idx = this.rewards.findIndex(r => r.id == id);
-			await this.channelTwitchClient.channelPoints.deleteCustomReward(this.channelId, id);
+			await this.channelTwitchClient.channelPoints.deleteCustomReward(this.state.channelId, id);
 			this.rewards.splice(idx, 1);
 		}
 	},
