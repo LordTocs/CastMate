@@ -695,7 +695,6 @@ export default {
 		},
 
 		getRewards() {
-			console.log("Getting Rewards");
 			return this.rewards.map(r => ({
 				id: r.id,
 				title: r.title,
@@ -710,7 +709,6 @@ export default {
 		},
 
 		async createReward(rewardDef) {
-			console.log("Create Reward")
 			const reward = await this.channelTwitchClient.channelPoints.createCustomReward(this.state.channelId, {
 				title: rewardDef.title,
 				prompt: rewardDef.prompt,
@@ -724,7 +722,6 @@ export default {
 			})
 
 			this.rewards.push(reward);
-			console.log("Finish Creating Reward");
 		},
 
 		async updateReward(rewardDef) {
