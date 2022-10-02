@@ -15,7 +15,7 @@ export default {
 
         this.webServices.routes.use('/endpoints/', this.router);
 	},
-    onProfilesChanged(activeProfiles, inactiveProfiles)
+    async onProfilesChanged(activeProfiles, inactiveProfiles)
     {
         this.router.stack = []
         this.router.params = {}

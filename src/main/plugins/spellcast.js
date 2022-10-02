@@ -229,7 +229,7 @@ export default {
 
         this.logger.info(`Active Hooks: ${util.inspect(this.activeHooks)}`);
 
-        if (this.websocket.readyState == 1) {
+        if (this.websocket?.readyState == 1) {
             this.requestSocket.call("setActiveHooks", Array.from(this.activeHooks));
         }
     },

@@ -92,7 +92,7 @@
       :showSave="false"
       :showCreate="true"
       :showDelete="false"
-      @create="refresh"
+      @created="refresh"
     />
     <v-btn
       color="primary"
@@ -120,6 +120,7 @@ export default {
   methods: {
     ...mapIpcs("twitch", ["getRewards"]),
     async refresh() {
+      console.log("Refreshing");
       this.rewards = await this.getRewards();
     }
   },
