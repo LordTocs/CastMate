@@ -274,8 +274,16 @@ export class ProfileManager
 		//Notify any plugins of profile changes.
 		for (let plugin of this.plugins.plugins)
 		{
-			if (plugin.onProfilesChanged)
-				plugin.onProfilesChanged(activeProfiles, inactiveProfiles);
+			if (plugin.onProfilesChanged) 
+			{
+				try {
+					plugin.onProfilesChanged(activeProfiles, inactiveProfiles);
+				}
+				catch(err)
+				{
+					logger.error(`Error Triggering onProfilesChanged ${plugin.name}.\n${err}`);
+				}
+			}
 		}
 	}
 }
