@@ -333,7 +333,7 @@ export default {
 			})
 
 			this.chatClient.onTimeout((channel, user, msg) => {
-				this.triggers.ban({
+				this.triggers.timeout({
 					user,
 				})
 			})
