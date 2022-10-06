@@ -326,6 +326,18 @@ export default {
 				});
 			})
 
+			this.chatClient.onBan((channel, user, msg) => {
+				this.triggers.ban({
+					user,
+				})
+			})
+
+			this.chatClient.onTimeout((channel, user, msg) => {
+				this.triggers.timeout({
+					user,
+				})
+			})
+
 			//See here https://twurple.js.org/docs/examples/chat/sub-gift-spam.html
 			const giftCounts = new Map();
 
@@ -1082,6 +1094,20 @@ export default {
 			handler(config, context) {
 				return inRange(context.raiders, config.raiders);
 			}
+		},
+		ban: {
+			name: "User Banned",
+			description: "Fires when a user is banned",
+			context: {
+				user: { type: String },
+			},
+		},
+		timeout: {
+			name: "User Timed Out",
+			description: "Fires when a user is timed out",
+			context: {
+				user: { type: String },
+			},
 		}
 	},
 	actions: {
