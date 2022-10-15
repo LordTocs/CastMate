@@ -5,6 +5,233 @@ import logger from '../utils/logger.js'
 import { ipcMain } from "../utils/electronBridge.js"
 import _ from 'lodash'
 
+/** 
+ * automation:
+ *   queue: "queue-id"
+ *   actions:
+ *    - id: "abc"
+ *      plugin: "plugin"
+ *      action: "action"
+ *      data: { ... }
+ *      timeline:
+ *       - id: "def"
+ *         offset: 10s.
+ *         actions:
+ * 		     - id: 'ghi'
+ *             plugin: 'plugin'
+ *             action: 'action'
+ *             data:
+ *   		   child:
+ *               id:
+ *               plugin:
+ *               action:
+ *               data:
+ * 				 child:
+ *        - id: 
+ *          plugin:
+ *          action:
+ *          data:
+ *          timeline:
+ *   
+ * 
+ * 
+*/
+
+
+
+class QueuedAutomation {
+	constructor(spec, triggerContext, queue) {
+		this.spec = spec
+		this.queue = queue
+		this.triggerContext = triggerContext || {}
+		this.context 
+		this.startTime = null;
+		this.abortController = new AbortController();
+	}
+
+	cancel() {
+		this.abortController.abort();
+	}
+
+	async execute() {
+		if (!this.spec?.actions)
+			return false;
+
+		const completeContext = this.system.getCompleteContext(this.triggerContext);
+
+		await this.queue.system._executeActions(this.spec.actions, completeContext, this.abortController.signal);
+	}
+}
+
+class Queue {
+	constructor(name, system, autoRelease = true) {
+		this.system = system;
+		this.name = name;
+
+		this.queue = [];
+		this.queueMutex = new Mutex();
+
+		this.history = [];
+		this.autoRelease = autoRelease
+		this.executing = null;
+	}
+
+	enqueue(automation, triggerContext) {
+		const qa = new QueuedAction(automation, triggerContext);
+
+		const mutexRelease = this.queueMutex.acquire();
+		this.queue.push(qa);
+		mutexRelease();
+
+		if (this.autoRelease)
+		{
+			this.release();
+		}
+
+		return qa;
+	}
+
+	async release() {
+		if (this.queue.length > 0) {
+			let release = await this.queueMutex.acquire();
+			let qa = this.queue.shift();
+			let qaPromise = qa.execute();
+			this.syncAutomationPromise = qaPromise;
+			this.syncAutomationPromise.then(() => this._runNext());
+			release();
+		}
+		else {
+			this.syncAutomationPromise = null;
+		}
+	}
+}
+
+export class ActionSystem {
+
+	constructor() {
+		this.queuelessAbortController = new AbortController();
+		this.queues = {};
+		//TODO: Create queues from settings
+	}
+
+	/**
+	 * @param {*} actions 
+	 * @param {*} context 
+	 * @param {Number} offset 
+	 * @param {AbortSignal} abortSignal 
+	 * @returns 
+	 */
+	_timelineOffset(actions, context, offset, abortSignal) {
+		return new Promise((resolve, reject) => {
+			const aborter = () => {
+				clearTimeout(timeout);
+				resolve();
+			};
+			const timeout = setTimeout(async () => {
+				abortSignal.removeEventListener("abort", aborter);
+				await this._executeActions(actions,context, abortSignal);
+				resolve()
+			}, offset * 1000)
+			abortSignal.addEventListener('abort', aborter, {once: true});
+		})
+	}
+
+	async _executeTimeline(timeline, context, abortSignal) {
+		const promises = [];
+		for (let timelineSpec of timeline) {
+			promises.push(this._executeActionsOffset(timelineSpec.actions, context, timelineSpec.offset, abortSignal));
+		}
+		return await Promise.all(promises);
+	}
+
+	/**
+	 * 
+	 * @param {*} spec 
+	 * @param {*} context 
+	 * @param {AbortSignal} abortSignal 
+	 */
+	async _executeActionSpec(spec, context, abortSignal) {
+		if (abortSignal.aborted)
+			return;
+
+		const actionType = this.getActionType(spec);
+
+		let promises = [];
+		
+		if (actionType)
+		{
+			//TODO: Track active actions
+			promises.push(actionType.execute(spec.data || {}, context, abortSignal).catch((err) => {
+				logger.error(`Error Executing Action: ${spec.plugin}:${spec.action}`);
+				logger.error(`    ${err}`);
+			}))
+		}
+		else
+		{
+			logger.error(`Missing Action Type ${spec.plugin}:${spec.action}`);
+		}
+
+
+		if (spec.child)
+		{
+			promises.push(this._executeActionSpec(spec.child, context, abortSignal));
+		}
+
+		if (spec.timeline)
+		{
+			promises.push(this._executeTimeline(spec.timeline, context, abortSignal))
+		}
+
+		return await Promise.all(promises);
+	}
+
+	/**
+	 * 
+	 * @param {*} spec 
+	 * @param {*} context 
+	 * @param {AbortSignal} abortSignal 
+	 */
+	async _executeActions(spec, context, abortSignal) {
+		for (let actionSpec of spec) {
+			if (abortSignal.aborted)
+				break;
+			await this._executeActionSpec(actionSpec, context, abortSignal);
+		}
+	}
+
+	getCompleteContext(triggerContext) {
+		let completeContext = { ...triggerContext };
+		_.merge(completeContext, this.plugins.templateFunctions);
+		//merge won't work with reactive props, manually go deep here.
+		for (let pluginKey in this.plugins.stateLookup) {
+			if (!(pluginKey in completeContext)) {
+				completeContext[pluginKey] = {};
+			}
+			reactiveCopy(completeContext[pluginKey], this.plugins.stateLookup[pluginKey]);
+		}
+		return completeContext;
+	}
+
+	enqueueAutomation(automation, triggerContext) {
+		if (!automation.queue)
+		{
+			this._executeActions(automation.actions, this.getCompleteContext(triggerContext), this.queuelessAbortController.signal);
+		}
+		else
+		{
+			const queue = this.queues[automation.queue];
+			if (!queue)
+			{
+				logger.error(`Undefined Queue: ${automation.queue}. Ignoring automation trigger`);
+				return;
+			}
+			queue.enqueue(automation, triggerContext);	
+		}
+	}
+}
+
+
+
 export class ActionQueue {
 	constructor(plugins, automations) {
 		this.triggerMappings = {};
