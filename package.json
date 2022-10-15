@@ -1,0 +1,21 @@
+{
+  "name": "castmate-monorepo",
+  "version": "0.4.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "build": "node ./vite-util/multi-vite.mjs build",
+    "dev": "node ./vite-util/multi-vite.mjs"
+  },
+  "keywords": [],
+  "workspaces": [
+    "packages/*"
+  ],
+  "author": "LordTocs",
+  "license": "AGPL",
+  "devDependencies": {
+    "vite": "^3.1.1",
+    "vite-plugin-inspect": "^0.7.1"
+  },
+  "packageManager": "yarn@3.2.4"
+}
