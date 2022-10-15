@@ -53,7 +53,12 @@ async function servePackage(config, name) {
 }
 */
 
-
+/**
+ * Starts a vite build process in the package's directory.
+ * 
+ * @param {*} name 
+ * @returns 
+ */
 function buildPackageSpawn(name) {
     return new Promise((resolve, reject) => {
         const dir = path.resolve(`./packages/${name}/`);
@@ -70,7 +75,9 @@ function buildPackageSpawn(name) {
     })
 }
 
-
+/**
+ * Starts a vite serve process in the packages directory
+ */
 async function servePackageSpawn(config, name) {
     const dir = path.resolve(`./packages/${name}/`);
     const viteJs = path.resolve(`./node_modules/vite/bin/vite.js`);
