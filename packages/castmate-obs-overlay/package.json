@@ -1,0 +1,19 @@
+{
+  "name": "castmate-obs-overlay",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/obs-overlay/overlay.js",
+  "scripts": {
+    "dev": "vite --port 5174",
+    "build:test": "vite build --mode production"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "castmate-overlay-components": "^0.0.1",
+    "vue": "^3.2.37"
+  },
+  "devDependencies": {
+    "vite-plugin-externals": "^0.5.1"
+  }
+}
