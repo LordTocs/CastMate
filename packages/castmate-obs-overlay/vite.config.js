@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
 
-import { subpackage } from '../../vite-util/vite-multipackage'
+import { subpackage } from '../../vite-util/vite-subpackage-plugin'
 import Inspect from 'vite-plugin-inspect'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));

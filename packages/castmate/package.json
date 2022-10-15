@@ -58,7 +58,6 @@
     "electron-builder": "^23.3.3",
     "electron-devtools-installer": "^3.2.0",
     "eslint": "^8.17.0",
-    "vite": "^3.0.7",
     "vite-plugin-electron": "^0.9.0",
     "vite-plugin-electron-renderer": "^0.9.0",
     "vite-plugin-vuetify": "^1.0.0-alpha.12",

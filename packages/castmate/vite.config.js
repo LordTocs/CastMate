@@ -8,6 +8,8 @@ import vuetify from 'vite-plugin-vuetify'
 import { fileURLToPath } from 'node:url'
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
+import { subpackage } from '../../vite-util/vite-subpackage-plugin'
+
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
@@ -54,7 +56,8 @@ export default defineConfig({
           return ['fs', 'path']
         }
       },
-    })
+    }),
+    subpackage("castmate-overlay-components")
   ],
   build: {
     outDir: "dist/electron/renderer",
