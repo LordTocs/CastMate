@@ -16,6 +16,7 @@
     :label="schema.name || label"
     :clearable="!schema.required"
     :context="context"
+    :template="schema.template"
   />
 </template>
 
