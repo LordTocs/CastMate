@@ -85,12 +85,10 @@ export default {
           newAuto.actions = newActions;
           this.$emit("update:modelValue", newAuto);
         } else if (this.isInline) {
-          console.log("inline edit");
           const newAuto = _cloneDeep(this.modelValue);
           newAuto.actions = newActions;
           this.$emit("update:modelValue", newAuto);
         } else {
-          console.log("saved edit");
           this.loadedAutomation.actions = newActions;
           this.dirty = true;
         }
