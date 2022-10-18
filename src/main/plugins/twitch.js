@@ -1182,7 +1182,44 @@ export default {
 			async handler() {
 				await this.channelTwitchClient.clips.createClip({ channelId: this.state.channelId});
 			}
-		}
+		},
+    createPrediction: {
+      name: "Create Prediction",
+			description: "Creates a Twitch Prediction",
+			icon: "mdi-crystal-ball",
+			color: "#5E5172",
+			data: {
+				type: Object,
+        properties: {
+          title: {
+            type: String,
+            name: "Title",
+          },
+          duration: {
+            type: Number,
+            unit: { name: "Seconds", short: 's' },
+            name: "Duration",
+          },
+          outcomes: {
+            type: Array,
+            name: "Outcomes",
+            items: {
+              type: String
+            }
+          },
+        }
+			},
+			async handler(predictionData) {
+        await this.channelTwitchClient.predictions.createPrediction(
+          this.state.channelId,
+          {
+            title: predictionData.title,
+            autoLockAfter: predictionData.duration,
+            outcomes: predictionData.outcomes,
+          }
+        );
+      },
+    },
 	},
 	templateFunctions: {
 		async followAge(userId) {
