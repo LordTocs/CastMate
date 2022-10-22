@@ -5,6 +5,9 @@ import ProfileEditor from "../views/ProfileEditor.vue";
 import Automations from "../views/Automations.vue";
 import AutomationEditor from "../views/AutomationEditor.vue";
 
+import Overlays from "../views/Overlays.vue"
+import OverlayEditor from "../views/OverlayEditor.vue"
+
 import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
 import Segments from '../views/Segments.vue';
@@ -54,6 +57,16 @@ const routes = [
 		path: "/automations/:automation",
 		name: "Automation Editor",
 		component: AutomationEditor,
+	},
+	{
+		path: "/overlays",
+		name: "Overlays",
+		component: Overlays,
+	},
+	{
+		path: "/overlays/:overlay",
+		name: "Overlay Editor",
+		component: OverlayEditor,
 	},
 	{
 		path: "/plugins/:pluginName",

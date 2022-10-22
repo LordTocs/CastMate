@@ -3,7 +3,7 @@ import path from 'path'
 import fs from "fs"
 
 const isDevelopment = !app.isPackaged;
-const isPortable = process.argv.includes('--portable') || isDevelopment;
+const isPortable = process.argv.includes('--portable');// || isDevelopment;
 export const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData'), 'user') : './user'));
 
 export const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));

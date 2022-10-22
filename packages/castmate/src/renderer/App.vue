@@ -16,6 +16,8 @@
         <v-list-item link to="/profiles" prepend-icon="mdi-card-account-details-outline" title="Profiles" />
         <v-list-item link to="/automations" prepend-icon="mdi-flash" title="Automations" />
         <v-divider></v-divider>
+        <v-list-item link to="/overlays/test" prepend-icon="mdi-picture-in-picture-top-right" title="Overlays" />
+        <v-divider></v-divider>
         <v-list-item link to="/segments" prepend-icon="mdi-tag" title="Segments" />
         <v-list-item link to="/variables" prepend-icon="mdi-variable" title="Variables" />
         <v-list-item link to="/rewards" prepend-icon="mdi-star-circle-outline" title="Rewards" />

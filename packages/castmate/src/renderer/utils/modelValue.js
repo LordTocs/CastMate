@@ -125,3 +125,21 @@ export function mapModel(varname="modelValue", as="modelObj") {
         }
     }
 }
+
+export function defineModel(varName="modelValue", propSpec={}) {
+    const prop = defineProps({
+        [varName]: propSpec
+    })
+
+    const emitName = `update:${modelValue}`;
+    const emit = defineEmits([emitName])
+
+    return computed({
+        get() {
+            return prop[varName];
+        },
+        set(value) {
+            emit(emitName, value)
+        }
+    })
+}
