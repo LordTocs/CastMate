@@ -11,9 +11,6 @@ export default {
     },
     computed: {
         dynamicComponent() {
-            console.log("WidgetConfig: ", this.widgetConfig)
-            //TODO: How does this resolve over http???
-            console.log("Loading: ", this.widgetConfig.type)
             return loadWidget(this.widgetConfig.type)
         }
     }

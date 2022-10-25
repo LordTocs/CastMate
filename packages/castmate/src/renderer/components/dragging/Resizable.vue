@@ -31,13 +31,9 @@ const props = defineProps({
     minHeight: { type: Number },
     maxWidth: { type: Number },
     maxHeight: { type: Number },
+    aspectRatio: { type: Number },
 
     transform: { },
-    
-    x: { type: Number },
-    y: { type: Number },
-    width: { type: Number },
-    height: { type: Number },
     
     selected: { type: Boolean, default: () => false },
 })
@@ -135,6 +131,78 @@ useEventListener(window, 'mouseup', (ev) => {
     stopNextClick();
 })
 
+function extractEdges(transform) {
+    return {
+        left: transform.position.x,
+        right: transform.position.x + transform.size.width,
+        top: transform.position.y,
+        bottom: transform.position.y + transform.size.height,
+    }
+}
+
+function setEdges(transform, edges) {
+    transform.position.x = edges.left;
+    transform.size.width = edges.right - edges.left;
+    transform.position.y = edges.top;
+    transform.size.height = edges.bottom - edges.top;
+}
+
+function enforceAspectRatio(edges, aspectRatio, handle) {
+
+    let width = edges.right - edges.left;
+    let height = edges.bottom - edges.top;
+
+    const newWidth = height * aspectRatio;
+    const newHeight = width / aspectRatio;
+
+    if (handle.id.length > 1)
+    {
+        //Choose whichever new rectangle's area is the least.
+        const wA = width * newHeight;
+        const hA = height * newWidth;
+        if (wA < hA)
+        {
+            width = newWidth;
+        }
+        else
+        {
+            height = newHeight;
+        }
+    }
+    else
+    {
+        //We're grabbing a side.
+        if (handle.id == 'l' || handle.id == 'r')
+        {
+            height = newHeight;
+        }
+        else
+        {
+            width = newWidth;
+        }
+    }
+    
+    if (handle.id.includes('l'))
+    {
+        //Move the left side instead of the right
+        edges.left = edges.right - width;
+    }
+    else
+    {
+        edges.right = edges.left + width;
+    }
+
+    if (handle.id.includes('t'))
+    {
+        //Move the top instead of the bottom
+        edges.top = edges.bottom - height;
+    }
+    else
+    {
+        edges.bottom = edges.top + height;
+    }
+}
+
 
 useEventListener(window, 'mousemove', (ev) => {
     if (!grabbedHandle.value)
@@ -153,35 +221,36 @@ useEventListener(window, 'mousemove', (ev) => {
 
     const newTransform = _cloneDeep(transform.value)
 
+
     const handle = dragHandles.find(h => h.id == grabbedHandle.value);
     if (handle)
     {
+        const edges = extractEdges(transform.value);
         if (handle.id.includes('l'))
         {
             //Moving left handle
-            const rightX = newTransform.position.x + newTransform.size.width; 
-            newTransform.position.x = targetX
-            newTransform.size.width = rightX - targetX
+            edges.left = targetX;
         }
         else if (handle.id.includes('r'))
         {
             //Moving right handle
-            const leftX = newTransform.position.x;
-            newTransform.size.width = targetX - leftX
+            edges.right = targetX;
         }
 
         if (handle.id.includes('t'))
         {
             //Moving the top handle
-            const bottomY = newTransform.position.y + newTransform.size.height;
-            newTransform.position.y = targetY
-            newTransform.size.height = bottomY - targetY
+            edges.top = targetY;
         }
         else if (handle.id.includes('b'))
         {
-            const topY = newTransform.position.y;
-            newTransform.size.height = targetY - topY;
+            edges.bottom = targetY;
         }
+        if (props.aspectRatio)
+        {
+            enforceAspectRatio(edges, props.aspectRatio, handle);
+        }
+        setEdges(newTransform, edges);
     }
     else if (grabbedHandle.value == 'middle')
     {

@@ -4,6 +4,7 @@
 
 <script>
 import loadWidget from 'castmate-overlay-components';
+import { defineAsyncComponent } from 'vue';
 
 export default {
     props: {
@@ -11,10 +12,14 @@ export default {
     },
     computed: {
         dynamicComponent() {
-            console.log("WidgetConfig: ", this.widgetConfig)
-            //TODO: How does this resolve over http???
-            console.log("Loading: ", this.widgetConfig.type)
-            return loadWidget(this.widgetConfig.type)
+            const component = defineAsyncComponent({
+                loader: async () => {
+                    const widget = await loadWidget(this.widgetConfig.type)
+                    return widget
+                }
+            })
+            
+            return component
         }
     }
 }

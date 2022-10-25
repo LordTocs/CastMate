@@ -6,6 +6,6 @@
 export default {
     props: {
         message: { type: String }
-    }
+    },
 }
 </script>

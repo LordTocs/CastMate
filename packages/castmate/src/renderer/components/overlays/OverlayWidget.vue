@@ -1,5 +1,5 @@
 <template>
-    <resizable v-model:transform="modelValue" v-model:selected="selected">
+    <resizable v-model:transform="modelValue" v-model:selected="selected" :aspectRatio="widgetData?.aspectRatio">
         <!--Put a div over top to block any interaction with the underlying widget.
         <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"></div> -->
         <widget-loader :widgetConfig="props.modelValue" />
@@ -11,7 +11,8 @@
 import Resizable from '../dragging/Resizable.vue'
 import WidgetLoader from './WidgetLoader.vue'
 import _cloneDeep from 'lodash/cloneDeep'
-import { ref, computed } from 'vue';
+import { watch, computed, ref, onMounted } from 'vue';
+import loadWidget from 'castmate-overlay-components';
 
 const props = defineProps({
     modelValue: {},
@@ -37,6 +38,28 @@ const selected = computed({
         emit('update:selected', value)
     }
 });
+
+const widgetData = ref(null)
+async function loadWidgetData() {
+    console.log("Loading Widget Data", modelValue.value)
+    if (!modelValue.value)
+        return
+
+    widgetData.value = null
+    if (!modelValue.value?.type)
+        return
+    
+    const componentModule = await loadWidget(modelValue.value.type)
+    console.log(componentModule.default);
+    widgetData.value = componentModule.default.widget || {}
+}
+watch(modelValue, async (newValue) => {
+    loadWidgetData()
+})
+
+onMounted(() => {
+    loadWidgetData()
+})
 
 
 </script>

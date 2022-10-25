@@ -1,7 +1,4 @@
-import { defineAsyncComponent } from "vue";
-
-
 export default function loadWidget(name) {
-    return defineAsyncComponent(() => import (`./components/${name}.vue`))
+    return import (`./components/${name}.vue`)
 }
 
