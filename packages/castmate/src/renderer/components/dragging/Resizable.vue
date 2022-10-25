@@ -73,6 +73,8 @@ const dragFrame = inject('dragFrame');
 const dragOffset = {}
 
 const onHandleMouseDown = (event, handle) => {
+    if (event.button != 0)
+        return
     let containerRect = dragFrame.value.getBoundingClientRect();
       
     const mx = (event.clientX - containerRect.left) / renderScale.value;
@@ -92,6 +94,9 @@ const onHandleMouseDown = (event, handle) => {
 }
 
 const onWidgetMouseDown = (event) => {
+    if (event.button != 0)
+        return
+    
     selected.value = true;
 
     let containerRect = dragFrame.value.getBoundingClientRect();
@@ -119,14 +124,15 @@ useEventListener(window, 'mouseup', (ev) => {
     if (!grabbedHandle.value)
         return;
 
+    if (ev.button != 0)
+        return
+
     grabbedHandle.value = null;
 
     ev.preventDefault();
     ev.stopPropagation();
 
     const elemRect = frame.value.getBoundingClientRect();
-    console.log(elemRect)
-    console.log(ev.clientX, ev.clientY);
 
     stopNextClick();
 })
