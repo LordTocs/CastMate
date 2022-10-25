@@ -131,9 +131,7 @@ useEventListener(window, 'mouseup', (ev) => {
 
     ev.preventDefault();
     ev.stopPropagation();
-
-    const elemRect = frame.value.getBoundingClientRect();
-
+    
     stopNextClick();
 })
 
