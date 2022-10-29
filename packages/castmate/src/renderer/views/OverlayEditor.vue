@@ -20,8 +20,9 @@
 import DragFrame from '../components/dragging/DragFrame.vue'
 import OverlayWidget from '../components/overlays/OverlayWidget.vue'
 import DataInput from '../components/data/DataInput.vue'
-import { ref, computed, watch } from 'vue';
-import loadWidget from 'castmate-overlay-components';
+import { ref, computed, watch } from 'vue'
+import loadWidget from 'castmate-overlay-components'
+import { cleanVuePropSchema } from '../utils/vueSchemaUtils.js'
 
 const testOverlay = {
     width: 1920,
@@ -110,29 +111,7 @@ const selectedWidgetProps = computed({
 
 const widgetPropSchema = ref(null);
 
-/**
- * Convert a vue props object from a compiled component into a compatible JSON schema object with data-input
- * 
- * @param {*} propSchema 
- */
-function cleanVuePropSchema(propSchema) {
-    const result = {
-        type: 'Object',
-        properties: {}
-    }
 
-    for (let propKey in propSchema) {
-        result.properties[propKey] = {
-            ...propSchema[propKey],
-            type: propSchema[propKey].type.name
-        }
-
-        delete result.properties[propKey]['0']
-        delete result.properties[propKey]['1']
-    }
-
-    return result;
-}
 
 watch(selectedWidgetId, async (newId) => {
     if (!selectedWidgetId)
@@ -147,6 +126,7 @@ watch(selectedWidgetId, async (newId) => {
 
     const selectedWidgetComponent = await loadWidget(widget.type)
     const schema = cleanVuePropSchema(selectedWidgetComponent.default.props);
+    console.log("Cleaned to ", schema);
 
     widgetPropSchema.value = schema
 })
