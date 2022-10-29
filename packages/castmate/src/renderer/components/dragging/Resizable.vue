@@ -108,8 +108,6 @@ const onWidgetMouseDown = (event) => {
     dragOffset.offsetY = transform.value.position.y - my;
 
     grabbedHandle.value = 'middle'
-
-    event.preventDefault();
 }
 
 function stopNextClick() {

@@ -9,6 +9,8 @@
                 @drop="onWidgetDropped($event)"
                 @dragover.prevent  
                 @dragenter.prevent
+                tabindex="0"
+                @keyup.delete.self="doDelete"
             >
                 <overlay-widget v-for="widget,i in (overlay?.widgets || [])" :key="widget.id" 
                     :modelValue="widget"
@@ -177,6 +179,14 @@ function onWidgetDropped(event) {
     overlay.value.widgets.push(widget)
 }
 
+function doDelete() {
+    console.log("Delete!")
+    if (selectedWidgetIndex.value != -1) {
+        overlay.value.widgets.splice(selectedWidgetIndex.value, 1);
+        selectedWidgetId.value = null;
+    }
+}
+
 </script>
 
 <style scoped>
@@ -203,6 +213,10 @@ function onWidgetDropped(event) {
     border-width: 1px;
 
     position: relative;
+}
+
+.editor-frame:focus {
+  outline: none !important;
 }
 
 .widget-frame {
