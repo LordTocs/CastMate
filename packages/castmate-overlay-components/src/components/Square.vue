@@ -22,6 +22,9 @@
 <script>
 export default {
     widget: {
+        name: "Test Square",
+        description: "Simply a square widget for testing",
+        icon: "mdi-square",
         aspectRatio: 1.0
     }
 }

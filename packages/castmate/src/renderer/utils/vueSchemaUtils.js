@@ -10,6 +10,11 @@ function cleanVueObjectProps(objPropSchema) {
             type: objPropSchema[propKey].type.name
         }
 
+        if (typeof result[propKey].default === 'function')
+        {
+            result[propKey].default = result[propKey].default()
+        }
+
         if (result[propKey].type === 'Object')
         {
             //Recursively clean inner types

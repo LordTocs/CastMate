@@ -33,5 +33,10 @@ const renderScale = computed(() => {
     return frameWidth.value / props.workspaceWidth;
 })
 
+defineExpose({
+    renderScale,
+    frame
+})
+
 provide('renderScale', renderScale);
 </script>
