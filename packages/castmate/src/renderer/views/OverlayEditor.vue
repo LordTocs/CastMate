@@ -92,7 +92,7 @@ const selectedWidgetProps = computed({
         if (widgetIndex == -1)
             return
         
-        Object.assign(overlay.value.widgets[widgetIndex].props, value);
+        overlay.value.widgets[widgetIndex].props = value;
     }
 })
 
