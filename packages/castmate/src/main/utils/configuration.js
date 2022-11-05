@@ -12,7 +12,7 @@ export const segmentsFilePath = path.resolve(path.join(userFolder, "segments.yam
 export const variablesFilePath = path.resolve(path.join(userFolder, "variables.yaml"));
 
 
-function ensureFolder(path)
+export function ensureFolder(path)
 {
 	if (!fs.existsSync(path))
 	{
@@ -20,7 +20,7 @@ function ensureFolder(path)
 	}
 }
 
-function ensureFile(path)
+export function ensureFile(path)
 {
 	if (!fs.existsSync(path))
 	{

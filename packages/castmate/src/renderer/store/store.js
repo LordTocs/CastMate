@@ -1,19 +1,19 @@
-import ipcModule from './ipc';
-import segmentsModule from './segments';
-import variablesModule from './variables';
-import Vuex from 'vuex';
+import ipcModule from './ipc'
+import segmentsModule from './segments'
+import variablesModule from './variables'
+import resourcesModule from './resources'
+import Vuex from 'vuex'
 
-import { ipcRenderer } from "electron";
+import { ipcRenderer } from "electron"
 
 export const store = new Vuex.Store({
 	modules: {
 		ipc: ipcModule,
 		segments: segmentsModule,
 		variables: variablesModule,
+		resources: resourcesModule
 	}
 });
-
-//ipcRenderer.sendSync("main-window", "hello!");
 
 ipcRenderer.on('state-update', (event, arg) => {
 	store.dispatch('ipc/stateUpdate', arg);
@@ -29,6 +29,10 @@ ipcRenderer.on('state-removal', (event, arg) => {
 
 ipcRenderer.on('profiles-active', (event, arg) => {
 	store.dispatch(`ipc/setActiveProfiles`, arg);
+})
+
+ipcRenderer.on('resources_updateResourceArray', (event, { type, resources} ) => {
+	store.dispatch('resources/updateResourceArray', { type, resources })
 })
 
 

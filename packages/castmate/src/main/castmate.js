@@ -9,10 +9,15 @@ import { HotReloader } from './utils/hot-reloader.js'
 import { createWebServices } from "./utils/webserver.js"
 import { PluginManager } from "./utils/plugin-manager.js"
 import _ from 'lodash'
-import { ipcMain, app } from "./utils/electronBridge.js"
+import { ipcMain, app, setIpcSender } from "./utils/electronBridge.js"
+
+import { ResourceManager } from './resources/resource-manager.js'
+import { OverlayManager }  from './overlays/overlay-manager.js'
 
 async function initInternal(mainWindowSender) {
 	logger.info(`Starting CastMate v${app.getVersion()}`);
+
+	setIpcSender(mainWindowSender);
 
 	ensureUserFolder();
 
@@ -64,6 +69,12 @@ async function initInternal(mainWindowSender) {
 	webServices.start();
 
 	const analytics = new Analytics(mainWindowSender);
+
+	const overlays = new OverlayManager();
+
+	await ResourceManager.getInstance().initialize()
+
+	await overlays.init(webServices)
 
 	await plugins.init(settings, secrets, actions, profiles, webServices, analytics);
 

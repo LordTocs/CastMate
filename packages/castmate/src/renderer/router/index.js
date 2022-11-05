@@ -64,7 +64,7 @@ const routes = [
 		component: Overlays,
 	},
 	{
-		path: "/overlays/:overlay",
+		path: "/overlays/:overlayId",
 		name: "Overlay Editor",
 		component: OverlayEditor,
 	},

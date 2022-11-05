@@ -1,29 +1,36 @@
 <template>
     <div class="editor-base">
-        <div class="editor-frame-outer">
-            <drag-frame class="editor-frame" ref="dragFrame" 
-                :style="frameStyle" 
-                :workspaceWidth="overlay.width" 
-                :workspaceHeight="overlay.height" 
-                @click="frameClicked" 
-                @drop="onWidgetDropped($event)"
-                @dragover.prevent  
-                @dragenter.prevent
-                tabindex="0"
-                @keyup.delete.self="doDelete"
-            >
-                <overlay-widget v-for="widget,i in (overlay?.widgets || [])" :key="widget.id" 
-                    :modelValue="widget"
-                    @update:modelValue="updateWidget($event, i)" 
-                    :selected="selectedWidgetId == widget.id"
-                    @update:selected="selectedWidgetId = widget.id"
-                />
-            </drag-frame>
+        <div class="d-flex flex-column flex-grow-1">
+            <v-sheet color="grey-darken-3" class="py-4 px-4 d-flex">
+                <div class="d-flex flex-column mx-4">
+                    <v-btn color="primary" fab dark class="my-1 align-self-center" @click="saveInternal"
+                        :disabled="!dirty">
+                        <v-icon>mdi-content-save</v-icon>
+                    </v-btn>
+                </div>
+
+                <div class="flex-grow-1">
+                    <div class="d-flex">
+                        <h1 class="flex-grow-1 my-1">{{ overlay?.name }}</h1>
+                    </div>
+                    <v-text-field v-if="automation" v-model="automation.description" label="Description" />
+                </div>
+            </v-sheet>
+            <div class="editor-frame-outer" v-if="overlay">
+                <drag-frame class="editor-frame" ref="dragFrame" :style="frameStyle" :workspaceWidth="overlay.width"
+                    :workspaceHeight="overlay.height" @click="frameClicked" @drop="onWidgetDropped($event)"
+                    @dragover.prevent @dragenter.prevent tabindex="0" @keyup.delete.self="doDelete">
+                    <overlay-widget v-for="widget, i in (overlay?.widgets || [])" :key="widget.id" :modelValue="widget"
+                        @update:modelValue="updateWidget($event, i)" :selected="selectedWidgetId == widget.id"
+                        @update:selected="selectedWidgetId = widget.id" />
+                </drag-frame>
+            </div>
         </div>
-        <v-sheet class="control-panel px-2 py-2" >
+        <v-sheet class="control-panel px-2 py-2">
             <flex-scroller class="flex-grow-1">
-                <div> <!--  TODO, make flex-scroller's interior not a flex layout.-->
-                    <data-input v-if="widgetPropSchema" :schema="widgetPropSchema" v-model="selectedWidgetProps"  />
+                <div>
+                    <!--  TODO, make flex-scroller's interior not a flex layout.-->
+                    <data-input v-if="widgetPropSchema" :schema="widgetPropSchema" v-model="selectedWidgetProps" />
                 </div>
             </flex-scroller>
             <flex-scroller class="flex-grow-1">
@@ -31,6 +38,9 @@
             </flex-scroller>
         </v-sheet>
     </div>
+    <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
+      Saved
+    </v-snackbar>
 </template>
 
 <script setup>
@@ -38,10 +48,13 @@ import DragFrame from '../components/dragging/DragFrame.vue'
 import OverlayWidget from '../components/overlays/OverlayWidget.vue'
 import OverlayToolbox from '../components/overlays/OverlayToolbox.vue'
 import DataInput from '../components/data/DataInput.vue'
-import { ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { ref, computed, watch, onMounted } from 'vue'
 import loadWidget from 'castmate-overlay-components'
 import { cleanVuePropSchema } from '../utils/vueSchemaUtils.js'
 import FlexScroller from '../components/layout/FlexScroller.vue'
+import { useResourceFunctions } from '../utils/resources'
+import _cloneDeep from 'lodash/cloneDeep'
 
 const testOverlay = {
     width: 1920,
@@ -80,7 +93,32 @@ const testOverlay = {
 
     ]
 }
-const overlay = ref(testOverlay);
+
+const route = useRoute();
+
+const overlay = ref(null);
+const dirty = ref(false)
+
+const overlays = useResourceFunctions("overlay")
+
+const overlayId = computed(() => route.params.overlayId)
+
+onMounted(async () => {
+    const o = await overlays.getById(overlayId.value)
+
+    if (!o) {
+        return;
+    }
+
+    overlay.value = o.config
+})
+
+const saveSnack = ref(false)
+async function saveInternal() {
+    console.log("Saving", overlayId.value, overlay.value);
+    await overlays.setConfig(overlayId.value, _cloneDeep(overlay.value));
+    saveSnack.value = true;
+}
 
 ////////////////////////////
 ///// Selection Values /////
@@ -92,7 +130,7 @@ const selectedWidgetIndex = computed(() => {
         return -1
     if (!overlay.value)
         return -1
-    
+
     return overlay.value?.widgets?.findIndex((w) => w.id == selectedWidgetId.value);
 })
 const selectedWidget = computed(() => {
@@ -111,7 +149,7 @@ const selectedWidgetProps = computed({
 
         if (widgetIndex == -1)
             return
-        
+
         overlay.value.widgets[widgetIndex].props = value;
     }
 })
@@ -119,7 +157,7 @@ const selectedWidgetProps = computed({
 /**
  * Use a computed prop to set the overlay's aspect ratio.
  */
- const frameStyle = computed(() => {
+const frameStyle = computed(() => {
     if (!overlay.value)
         return {}
     return {
@@ -153,6 +191,7 @@ watch(selectedWidgetId, async (newId) => {
 function updateWidget(newWidgetData, index) {
     //Use Object.assign() so we don't force reactivity at the array level, but instead at the property level.
     Object.assign(overlay.value.widgets[index], newWidgetData)
+    dirty.value = true;
 }
 
 function frameClicked() {
@@ -191,9 +230,9 @@ function doDelete() {
 
 <style scoped>
 .editor-base {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
 }
 
 .editor-frame-outer {
@@ -216,7 +255,7 @@ function doDelete() {
 }
 
 .editor-frame:focus {
-  outline: none !important;
+    outline: none !important;
 }
 
 .widget-frame {

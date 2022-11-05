@@ -1,45 +1,71 @@
 <template>
   <v-container fluid>
-    <file-table :files="overlayFiles" name="Overlay" @nav="onNav" @create="onCreate" @duplicate="onDuplicate" @delete="onDelete"/>
+    <link-table :items="overlayItems" name="Overlays" @nav="onNav" @create="tryCreate">
+      <template #item-input="{ item} ">
+        <v-btn size="small" class="mx-1" icon="mdi-delete" @click.stop="tryDelete(item)" />
+        <v-btn size="small" class="mx-1" icon="mdi-content-copy" @click.stop="tryDuplicate(item)" />
+        <v-btn size="small" class="mx-1" icon="mdi-pencil" @click.stop="tryRename(item)" />
+      </template>
+    </link-table>
   </v-container>
+  <named-item-confirmation ref="duplicateDlg" />
+  <confirm-dialog ref="deleteDlg" />
+  <overlay-creation-dialog ref="createDlg" />
 </template>
 
 
 <script>
-import FileTable from "../components/table/FileTable.vue";
-import NamedItemModal from "../components/dialogs/NamedItemModal.vue";
-import { mapIpcs } from "../utils/ipcMap";
+import LinkTable from "../components/table/LinkTable.vue"
+import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue"
+import NamedItemConfirmation from "../components/dialogs/NamedItemConfirmation.vue"
+import OverlayCreationDialog from "../components/overlays/OverlayCreationDialog.vue"
+import { mapResourceArray, mapResourceFunctions } from '../utils/resources'
 
 export default {
-  components: { FileTable, NamedItemModal },
-  data() {
-    return {
-        overlayFiles: [],
-    };
+  components: { LinkTable, ConfirmDialog, NamedItemConfirmation, OverlayCreationDialog },
+  computed: {
+    ...mapResourceArray('overlay'),
+    overlayItems() {
+      return this.overlays.map(o => ({id: o.id, name: o.config.name }))
+    }
   },
   methods: {
-    ...mapIpcs("io", ["getOverlays", "createOverlay", "deleteOverlay", "cloneOverlay"]),
-    async getFiles() {
-      this.overlayFiles = await this.getOverlays()
+    ...mapResourceFunctions('overlay'),
+    onNav(overlay) {
+      this.$router.push(`/overlays/${overlay.id}`)
     },
-    onNav(name) {
-      this.$router.push(`/overlays/${name}`)
-    },
-    async onCreate(name) {
-      if (await this.createOverlay(name))
-      {
-        this.onNav(name);
+    async tryCreate() {
+      const config = await this.$refs.createDlg.open();
+      if (config) {
+        const result = await this.createOverlay({ ...config, widgets: [] })
+        this.$router.push(`/overlays/${result.id}`)
       }
     },
-    async onDuplicate(name, newName) {
-      if (await this.cloneOverlay(name, newName))
-      {
-        this.onNav(newName);
+    async tryDuplicate(overlay) {
+      if (
+          await this.$refs.duplicateDlg.open(
+              `Duplicate ${overlay.name}?`,
+              `New Overlay's Name`,
+              "Duplicate",
+              "Cancel"
+          )
+      ) {
+          const newName = this.$refs.duplicateDlg.name;
+
+          const newOverlay = await this.cloneOverlay(overlay.id);
+          await this.setOverlayConfig(newOverlay.name, { name: newName });
+          this.$router.push(`/overlays/${newOverlay.id}`)
       }
     },
-    async onDelete(name) {
-      await this.deleteOverlay(name);
-      await this.getFiles();
+    async tryDelete(overlay) {
+      if (
+          await this.$refs.deleteDlg.open(
+              "Confirm",
+              `Are you sure you want to delete ${overlay.name}?`
+          )
+      ) {
+          await this.deleteOverlay(overlay.id);
+      }
     }
   }
 }
