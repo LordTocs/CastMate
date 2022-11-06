@@ -11,6 +11,7 @@ const dist = path.join(dirname, "dist");
 
 
 export default defineConfig({
+    base: '/overlays/',
     plugins: [
         Inspect(),
         vue(),
@@ -23,6 +24,6 @@ export default defineConfig({
             input: {
                 main: path.resolve(dirname, 'overlay.html'),
             },
-        }
+        },
     },
 });
