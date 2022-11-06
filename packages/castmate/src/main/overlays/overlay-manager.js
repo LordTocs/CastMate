@@ -75,27 +75,24 @@ export class OverlayManager {
                 target: 'http://localhost:5174',
             })
 
+            webServices.wsProxies['/overlays/'] = devProxy
+
             overlayRoutes.get(`/:id`, (req, res, next) => {
                 console.log("Checking Overlay", req.params.id)
                 const overlay = this.overlayResources.getById(req.params.id);
                 if (!overlay) {
                     return next();
                 }
-                console.log("Proxying overlay.html");
                 //Serve overlay.html
                 devProxy.web(req, res, { ignorePath: true, target: 'http://localhost:5174/overlays/overlay.html' })
             })   
 
             overlayRoutes.get('*', (req, res, next) => {
                 //Try to get the file from the dev server
-                console.log("Proxying Other")
                 devProxy.web(req, res, { }, (err) => {
-                    console.log("Proxy failed!")
                     next(err)
-                })
+                });
             });
-
-
         }
         
         webServices.app.use('/overlays/', overlayRoutes);
