@@ -18,3 +18,13 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+p {
+    color: #fff;
+    text-shadow: 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, -2px 0 0 #000;
+    font-size: 40px;
+    font-family: 'Anton', sans-serif;
+    text-align: center;
+}
+</style>
