@@ -1,108 +1,117 @@
 import express from "express"
 import bodyParser from "body-parser"
-import websocket from "websocket"
 import ws from "ws"
 import http from "http"
 import { userFolder } from "./configuration.js"
 import path from "path"
 import logger from "./logger.js"
 
-export async function createWebServices(settings, secrets, plugins) {
-	
-	let app = express();
-	let routes = express.Router();
+class CastMateWebServer
+{
+	constructor(settings, plugins) {
+		this.plugins = plugins
+		this.wsProxies = {};
+		this.port = settings.port || 80;
 
-	// Parse application/x-www-form-urlencoded
-	routes.use(bodyParser.urlencoded({ extended: false }));
+		this.app = express();
+		this.routes = express.Router();
 
-	// Parse application/json
-	routes.use(bodyParser.json());
-	routes.use(express.json());
+		// Parse application/x-www-form-urlencoded
+		this.routes.use(bodyParser.urlencoded({ extended: false }));
 
-	let server = http.createServer(app)
+		// Parse application/json
+		this.routes.use(bodyParser.json());
+		this.routes.use(express.json());
+		
+		this.server = http.createServer(this.app)
 
-	app.use("/plugins/", routes);
+		this.app.use("/plugins/", this.routes);
 
-	const wsServer = new ws.Server({ noServer: true });
+		this.websocketServer = new ws.Server({ noServer: true });
 
-	wsServer.on('connection', async (socket, request) => {
-		console.log("Connected Socket");
-
-		socket.on("message", (rawData, isBinary) => {
-			if (isBinary)
-				return;
-			let data = null;
-			try {
-				data = JSON.parse(rawData);
-			}
-			catch(err) {
-				return;
-			}
-
-			for (let plugin of plugins.plugins) {
-				if (plugin.onWebsocketMessage) {
-					plugin.onWebsocketMessage(data, socket);
-				}
-			}
-		})
-
-		for (let plugin of plugins.plugins) {
-			if (plugin.onWebsocketConnected) {
-				plugin.onWebsocketConnected(socket);
+		this.websocketServer.broadcast = (message) => {
+			for (let client in this.websocketServer.clients) {
+				client.send(message)
 			}
 		}
-	});
 
-	const wsProxies = {};
-	
-	let port = settings.port || 80;
+		this.websocketServer.on('connection', async (socket, request) => {
+			console.log("Connected Socket");
 
-	const result = {
-		app,
-		routes,
-		wsProxies,
-		websocketServer: wsServer,
-		port: port,
-		start: () => {
-			server.listen(port, () => {
-				logger.info(`Started Internal Webserver on port ${port}`);
-				app.use(express.static("./web"));
-				app.use("/user", express.static(path.join(userFolder, "data"), {
-					etag: false
-				}));
-			});
-		},
-		startWebsockets: () => {
-			server.on('upgrade', async (request, socket, head) => {
-				//Check if this route is proxied
-				const url = new URL(request.url, `http://${request.headers.host}`)
-		
-				const proxy = wsProxies[url.pathname]; 
-				if (proxy)
-				{
-					proxy.ws(request, socket, head)
+			socket.on("message", (rawData, isBinary) => {
+				if (isBinary)
+					return;
+				let data = null;
+				try {
+					data = JSON.parse(rawData);
+				}
+				catch(err) {
 					return;
 				}
-		
-				//Non-proxied ws connection
-				//Upgrade it to a websocket connection here
-				wsServer.handleUpgrade(request, socket, head, (socket) => {
-					server.emit('connection', socket, request)
-				})
-			});
-		},
-		updatePort: (newPort) => {
-			server.close(() => {
-				result.port = newPort;
 
-				server.listen(newPort, () => {
-					logger.info(`Started Internal Webserver on port ${newPort}`);
-				})
+				for (let plugin of this.plugins.plugins) {
+					if (plugin.onWebsocketMessage) {
+						plugin.onWebsocketMessage(data, socket);
+					}
+				}
 			})
-		},
-		stop: () => {
-			server.close();
-		}
+
+			for (let plugin of this.plugins.plugins) {
+				if (plugin.onWebsocketConnected) {
+					plugin.onWebsocketConnected(socket);
+				}
+			}
+		});
+
+
 	}
-	return result;
+
+	start() {
+		this.server.listen(this.port, () => {
+			logger.info(`Started Internal Webserver on port ${this.port}`);
+			this.app.use(express.static("./web"));
+			this.app.use("/user", express.static(path.join(userFolder, "data"), {
+				etag: false
+			}));
+		});
+	}
+
+	startWebsockets() {
+		this.server.on('upgrade', async (request, socket, head) => {
+			//Check if this route is proxied
+			const url = new URL(request.url, `http://${request.headers.host}`)
+	
+			const proxy = this.wsProxies[url.pathname]; 
+			if (proxy)
+			{
+				proxy.ws(request, socket, head)
+				return;
+			}
+	
+			//Non-proxied ws connection
+			//Upgrade it to a websocket connection here
+			this.websocketServer.handleUpgrade(request, socket, head, (socket) => {
+				this.websocketServer.emit('connection', socket, request)
+			})
+		});
+	}
+
+	updatePort(newPort) {
+		this.server.close(() => {
+			this.port = newPort;
+
+			this.server.listen(newPort, () => {
+				logger.info(`Started Internal Webserver on port ${newPort}`);
+			})
+		})
+	}
+
+	stop() {
+		this.server.close();
+	}
+}
+
+
+export async function createWebServices(settings, secrets, plugins) {
+	return new CastMateWebServer(settings, plugins);
 }
