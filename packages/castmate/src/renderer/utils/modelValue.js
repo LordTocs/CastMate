@@ -143,3 +143,15 @@ export function defineModel(varName="modelValue", propSpec={}) {
         }
     })
 }
+
+export function useModel(props, emit, varName="modelValue") {
+    const emitName = `update:${varName}`;
+    return computed({
+        get() {
+            return props[varName];
+        },
+        set(value) {
+            emit(emitName, value)
+        }
+    })
+}

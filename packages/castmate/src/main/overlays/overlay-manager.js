@@ -54,6 +54,15 @@ export class OverlayManager {
         this.openSockets = [];
     }
 
+    getById(id) {
+        return this.overlayResources.getById(id)
+    }
+
+    async callOverlayFunc(overlayId, widgetId, funcName, ...args) {
+        await Promise.all(this.openSockets.filter((s) => s.overlayId == overlayId).map(
+            async (s) => s.socket.call('widgetFunc', widgetId, funcName, ...args).catch(err => null)))
+    }
+
     static getInstance() {
         if (!overlayManager)
         {

@@ -20,6 +20,10 @@ export class CastMateBridge extends EventEmitter
             this.emit('configChanged', newConfig)
         })
 
+		this.rpcSocket.handle('widgetFunc', async (widgetId, funcName, ...args) => {
+			this.emit('widgetFunc', widgetId, funcName, ...args);
+		})
+
 		this.socket.addEventListener('open', () =>
 		{
 			console.log("Connected");

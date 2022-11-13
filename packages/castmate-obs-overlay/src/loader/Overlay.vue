@@ -1,6 +1,6 @@
 <template>
     <template v-if="config">
-        <widget-loader v-for="widgetConfig in config.widgets" :key="widgetConfig.id" :widgetConfig="widgetConfig" />
+        <widget-loader v-for="widgetConfig in config.widgets" :key="widgetConfig.id" :widgetConfig="widgetConfig" ref="widgets" />
     </template>
 </template>
 
@@ -26,6 +26,18 @@ export default {
         this.bridge = new CastMateBridge(overlayId);
 
         this.bridge.on('configChanged', (newConfig) => this.config = newConfig);
+
+        this.bridge.on('widgetFunc', async (widgetId, funcName, ...args) => {
+            const widget = this.$refs.widgets.find(w => w.$props.widgetConfig.id == widgetId);
+            console.log(this.$refs.widgets[0]?.$props)
+
+            if (!widget) {
+                console.log("UNKNOWN WIDGET", widgetId)
+                return
+            }
+
+            widget.callWidgetFunc(funcName, ...args);
+        })
 
         this.bridge.connect();
         

@@ -30,7 +30,13 @@ export function cleanSchemaForIPC(rootName, schema)
 	{
 		if (!(typeof schema.type == 'string' || schema.type instanceof String) && schema.type) 
 		{
-			result.type = result.type.name;
+			if (schema.type.resourceContainer) {
+				result.type = "Resource"
+				result.resourceType = schema.type.resourceContainer?.spec?.type;
+			}
+			else {
+				result.type = result.type.name;
+			}
 		}
 
 		if (schema.enum instanceof Function || schema.enum instanceof AsyncFunction)

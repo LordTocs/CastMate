@@ -1,5 +1,5 @@
 <template>
-    <component :is="dynamicComponent" v-bind="widgetConfig.props ? widgetConfig.props : {}" class="widget" :style="widgetStyle" > </component>
+    <component :is="dynamicComponent" v-bind="widgetConfig.props ? widgetConfig.props : {}" class="widget" :style="widgetStyle" ref="widget"> </component>
 </template>
 
 <script>
@@ -28,6 +28,15 @@ export default {
                 width: `${this.widgetConfig?.size.width}px`,
                 height: `${this.widgetConfig?.size.height}px`,
             }
+        }
+    },
+    methods: {
+        async callWidgetFunc(funcName, ...args) {
+            if (!this.$refs.widget?.[funcName]) {
+                console.log("Widget", this.$refs.widget, "Doesn't have", funcName)
+                return
+            }
+            return await this.$refs.widget[funcName](...args);
         }
     }
 }

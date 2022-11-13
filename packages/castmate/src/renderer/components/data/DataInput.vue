@@ -23,6 +23,12 @@
     :secret="secret"
     :unit="schema.unit"
   />
+  <resource-input
+    v-else-if="schema.type == 'Resource'"
+    v-model="modelObj"
+    :label="labelString"
+    :schema="schema"
+  />
   <template v-else-if="schema.type == 'Number' && schema.slider">
     <div class="text-caption"> {{ labelString }}</div>
     <v-slider
@@ -107,6 +113,7 @@ import SpellcastHookSelector from "../spellcast/SpellcastHookSelector.vue";
 import ObjectInput from "./types/ObjectInput.vue";
 import ArrayInput from "./types/ArrayInput.vue";
 import AutomationSelector from "../automations/AutomationSelector.vue";
+import ResourceInput from './types/ResourceInput.vue'
 
 export default {
   name: "data-input",
@@ -122,7 +129,8 @@ export default {
     RangeInput,
     TimeInput,
     BooleanInput,
-    SpellcastHookSelector
+    SpellcastHookSelector,
+    ResourceInput
 },
   props: {
     schema: {},

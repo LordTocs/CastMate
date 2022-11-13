@@ -13,6 +13,7 @@ export class Resource {
     constructor(type, spec) {
         this.spec = spec
         this.resourceType = type
+        type.resourceContainer = this;
         this.resources = []
 
         this.createIOFuncs();
@@ -186,7 +187,6 @@ export class FileResource {
 
     async setConfig(config) {
         this.config = config
-        console.log("Set Config", config, userFolder, this.constructor.storageFolder)
         await fs.promises.writeFile(path.join(userFolder, this.constructor.storageFolder, `${this.id}.yaml`), YAML.stringify(config), 'utf-8');
     }
 
