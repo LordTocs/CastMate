@@ -3,7 +3,10 @@ import { app, ipcFunc } from "../utils/electronBridge";
 import { Overlay } from "./overlay";
 import express from "express"
 import httpProxy from "http-proxy"
-import bodyParser from "body-parser"
+import { RPCWebSocket } from '../utils/rpc-websocket.js'
+import { nanoid } from "nanoid/non-secure";
+
+let overlayManager = null;
 
 export class OverlayManager {
 
@@ -48,6 +51,15 @@ export class OverlayManager {
                 },
             }
         })
+        this.openSockets = [];
+    }
+
+    static getInstance() {
+        if (!overlayManager)
+        {
+            overlayManager = new this();
+        }
+        return overlayManager;
     }
 
     async init(webServices) {
@@ -96,5 +108,35 @@ export class OverlayManager {
         }
         
         webServices.app.use('/overlays/', overlayRoutes);
+
+        
+        webServices.on('ws-connection', (socket, params) => {
+            console.log("Checking Connection", params)
+            if (params.get('overlay'))
+            {
+                console.log("Got Overlay Connection");
+                const newSocket = {
+                    id: nanoid(),
+                    socket: new RPCWebSocket(socket),
+                    overlayId: params.get('overlay'),
+                }
+
+                socket.on('close', () => {
+                    const idx = this.openSockets.findIndex(s => s.id == newSocket.id)
+                    if (idx == -1) return;
+                    console.log("Closing Overlay Connection", newSocket.id)
+                    this.openSockets.splice(idx, 1);
+                })
+
+                this.openSockets.push(newSocket);
+            }
+        })
+    }
+
+    async broadcastConfigChange(overlayId, newConfig) {
+        console.log("Broadcasting UPDATE", overlayId);
+        await Promise.all(this.openSockets.filter((s) => s.overlayId == overlayId).map(
+            async (s) => s.socket.call('setConfig', newConfig).catch(err => null)))
     }
 }
+

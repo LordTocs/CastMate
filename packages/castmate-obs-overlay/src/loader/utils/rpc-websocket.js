@@ -8,10 +8,10 @@ export class RPCWebSocket {
         this.handlers = {};
         this.idGen = customAlphabet("abcdefghijklmnop0123456789", 10);
 
-        this.socket.on('message', async (textData) => {
+        this.socket.onmessage = async (event) => {
             let data = null;
             try {
-                data = JSON.parse(textData);
+                data = JSON.parse(event.data);
             }
             catch
             {
@@ -50,7 +50,7 @@ export class RPCWebSocket {
 
                 this.handlers[requestName](requestId, ...args);
             }
-        })
+        }
     }
 
     handle(name, func) {

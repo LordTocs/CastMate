@@ -1,53 +1,23 @@
-import ws from 'ws'
 import { RPCWebSocket } from './rpc-websocket';
+import EventEmitter from 'events'
 
-export class CastMateBridge
+export class CastMateBridge extends EventEmitter
 {
-	constructor(stateObj) 
+	constructor(overlayId) 
 	{
+		super()
+		this.overlayId = overlayId
         this.socket = null;
-        this.stateObj = stateObj;
-		this.callbacks = {};
-	}
-
-	on(event, func)
-	{
-		if (event in this.callbacks)
-		{
-			this.callbacks[event].push(func);
-		}
-		else
-		{
-			this.callbacks[event] = [func];
-		}
-	}
-
-	emit(event, payload)
-	{
-		if (event in this.callbacks)
-		{
-			for (let func of this.callbacks[event])
-			{
-				try
-				{
-					func(payload);
-				}
-				catch (err)
-				{
-					console.error(err);
-				}
-			}
-		}
 	}
 
 	connect()
-	{
-		// TODO: This address needs to be dynamic!
-		this.socket = new ws.Websocket(`ws://${window.location.host}`);
+	{ 
+		this.socket = new WebSocket(`ws://${window.location.host}?overlay=${this.overlayId}`);
+
         this.rpcSocket = new RPCWebSocket(this.socket);
 
-        this.rpcSocket.handle("stateUpdate", async (updateObj) => {
-            Object.assign(this.stateObj, updateObj);
+        this.rpcSocket.handle("setConfig", async (newConfig) => {
+            this.emit('configChanged', newConfig)
         })
 
 		this.socket.addEventListener('open', () =>

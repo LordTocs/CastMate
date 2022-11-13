@@ -70,11 +70,9 @@ async function initInternal(mainWindowSender) {
 
 	const analytics = new Analytics(mainWindowSender);
 
-	const overlays = new OverlayManager();
-
 	await ResourceManager.getInstance().initialize()
 
-	await overlays.init(webServices)
+	await OverlayManager.getInstance().init(webServices)
 
 	await plugins.init(settings, secrets, actions, profiles, webServices, analytics);
 

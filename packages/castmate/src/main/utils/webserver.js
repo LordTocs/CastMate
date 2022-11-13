@@ -5,10 +5,12 @@ import http from "http"
 import { userFolder } from "./configuration.js"
 import path from "path"
 import logger from "./logger.js"
+import { EventEmitter } from "node:events"
 
-class CastMateWebServer
+class CastMateWebServer extends EventEmitter
 {
 	constructor(settings, plugins) {
+		super()
 		this.plugins = plugins
 		this.wsProxies = {};
 		this.port = settings.port || 80;
@@ -36,8 +38,6 @@ class CastMateWebServer
 		}
 
 		this.websocketServer.on('connection', async (socket, request) => {
-			console.log("Connected Socket");
-
 			socket.on("message", (rawData, isBinary) => {
 				if (isBinary)
 					return;
@@ -56,14 +56,15 @@ class CastMateWebServer
 				}
 			})
 
+			const requestUrl = new URL(request.url, `http://${request.headers.host}`);
+			this.emit('ws-connection', socket, requestUrl.searchParams)
+
 			for (let plugin of this.plugins.plugins) {
 				if (plugin.onWebsocketConnected) {
 					plugin.onWebsocketConnected(socket);
 				}
 			}
 		});
-
-
 	}
 
 	start() {

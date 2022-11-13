@@ -10,14 +10,10 @@ import { CastMateBridge } from './utils/websocket.js'
 import axios from 'axios'
 
 export default {
-    props: {
-        overlayId: { type: String },
-    },
     components: { WidgetLoader },
     data() {
         return {
             config: null,
-            castmateState: {},
         }
     },
     methods: {
@@ -25,11 +21,14 @@ export default {
     },
     async mounted() {
         // Connect to the websocket
-        //this.bridge = new CastMateBridge(this.castmateState);
-        
-        //const urlParams = new URLSearchParams(window.location.);
-		const overlayId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1); //Probably includes querystring????
+        const overlayId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1); //Probably includes querystring????
 
+        this.bridge = new CastMateBridge(overlayId);
+
+        this.bridge.on('configChanged', (newConfig) => this.config = newConfig);
+
+        this.bridge.connect();
+        
         try {
             const configResp = await axios.get(`/overlays/${overlayId}/config`)
             // Load the config
