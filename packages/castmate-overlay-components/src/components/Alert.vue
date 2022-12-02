@@ -1,6 +1,6 @@
 <template>
     <transition name="fade">
-        <div class="alert" :style="{ borderColor: color || 'transparent' }" v-if="showing">
+        <div class="alert" :style="{ borderColor: color || 'transparent' }" v-if="showing || isEditor">
             <div class="alert-head">
                 {{ header }}
             </div>
@@ -13,10 +13,13 @@
 
 <script>
 export default {
+    props: {
+        isEditor: { type: Boolean, default: false }
+    },
     data() {
         return {
-            message: null,
-            header: null,
+            message:  this.isEditor ? "Message" : null,
+            header: this.isEditor ? "Title" : null,
             color: null,
             showing: false,
         }

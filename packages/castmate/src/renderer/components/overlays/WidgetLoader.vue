@@ -1,5 +1,5 @@
 <template>
-    <component :is="dynamicComponent" v-bind="widgetConfig.props ? widgetConfig.props : {}"> </component>
+    <component :is="dynamicComponent" v-bind="widgetConfig.props ? widgetConfig.props : {}" :isEditor="true"> </component>
 </template>
 
 <script>
