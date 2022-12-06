@@ -28,12 +28,16 @@
         </div>
         <v-sheet class="control-panel px-2 py-2">
             <flex-scroller class="flex-grow-1">
-                <div>
+                <div v-if="widgetPropSchema">
                     <!--  TODO, make flex-scroller's interior not a flex layout.-->
-                    <data-input v-if="widgetPropSchema" :schema="widgetPropSchema" v-model="selectedWidgetProps" />
+                    <p class="text-subtitle-2 my-1">Widget Properties</p>
+                    <data-input  :schema="widgetPropSchema" v-model="selectedWidgetProps" :colorRefs="widgetColorRefs" />
+                    <v-divider></v-divider>
+                    <overlay-transform-input v-model:size="selectedWidgetSize" v-model:position="selectedWidgetPosition" />
                 </div>
             </flex-scroller>
             <flex-scroller class="flex-grow-1">
+                <p class="text-subtitle-2 my-1">Overlay Widgets</p>
                 <overlay-toolbox />
             </flex-scroller>
         </v-sheet>
@@ -47,6 +51,7 @@
 import DragFrame from '../components/dragging/DragFrame.vue'
 import OverlayWidget from '../components/overlays/OverlayWidget.vue'
 import OverlayToolbox from '../components/overlays/OverlayToolbox.vue'
+import OverlayTransformInput from '../components/overlays/OverlayTransformInput.vue'
 import DataInput from '../components/data/DataInput.vue'
 import { useRoute } from 'vue-router'
 import { ref, computed, watch, onMounted } from 'vue'
@@ -154,6 +159,34 @@ const selectedWidgetProps = computed({
     }
 })
 
+const selectedWidgetSize = computed({
+    get() {
+        return selectedWidget.value?.size;
+    },
+    set(value) {
+        const widgetIndex = selectedWidgetIndex.value
+
+        if (widgetIndex == -1)
+            return
+
+        overlay.value.widgets[widgetIndex].size = value;
+    }
+})
+
+const selectedWidgetPosition = computed({
+    get() {
+        return selectedWidget.value?.position;
+    },
+    set(value) {
+        const widgetIndex = selectedWidgetIndex.value
+
+        if (widgetIndex == -1)
+            return
+
+        overlay.value.widgets[widgetIndex].position = value;
+    }
+})
+
 /**
  * Use a computed prop to set the overlay's aspect ratio.
  */
@@ -167,6 +200,7 @@ const frameStyle = computed(() => {
 
 
 const widgetPropSchema = ref(null);
+const widgetColorRefs = ref(null);
 
 
 
@@ -186,6 +220,7 @@ watch(selectedWidgetId, async (newId) => {
     console.log("Cleaned to ", schema);
 
     widgetPropSchema.value = schema
+    widgetColorRefs.value = selectedWidgetComponent.default.widget?.colorRefs;
 })
 
 function updateWidget(newWidgetData, index) {

@@ -155,3 +155,24 @@ export function useModel(props, emit, varName="modelValue") {
         }
     })
 }
+
+export function useModelValues(props, emit, subValues, varName="modelValue")
+{
+    const result = {};
+
+    for (let sv of subValues) {
+        result[sv] = computed({
+            get() {
+                return props[varName] ? props[varName][sv] : null;
+            },
+            set(newValue) {
+                const newObj = _cloneDeep(props[varName]) || {};
+                console.log(newObj)
+                newObj[sv] = newValue;
+                emit(`update:${varName}`, newObj);
+            }
+        })
+    }
+
+    return result;
+}

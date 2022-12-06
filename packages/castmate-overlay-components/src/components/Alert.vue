@@ -2,19 +2,23 @@
     <transition name="fade">
         <div class="alert" :style="{ borderColor: color || 'transparent' }" v-if="showing || isEditor">
             <div class="alert-head">
-                {{ header }}
+                <span :style="getFontStyle(headerStyle)">{{ header }}</span>
             </div>
             <div class="alert-body">
-                {{ message }}
+                <span :style="getFontStyle(messageStyle)">{{ message }}</span>
             </div>
         </div>
     </transition>
 </template>
 
 <script>
+import { OverlayFontStyle } from '../typeProxies.js'
+
 export default {
     props: {
-        isEditor: { type: Boolean, default: false }
+        isEditor: { type: Boolean, default: false },
+        headerStyle: { type: OverlayFontStyle, default: () => new OverlayFontStyle(), name: "Header Style", exampleText: "Title" },
+        messageStyle: { type: OverlayFontStyle, default: () => new OverlayFontStyle(), name: "Message Style", exampleText: "Message" }
     },
     data() {
         return {
@@ -22,19 +26,27 @@ export default {
             header: this.isEditor ? "Title" : null,
             color: null,
             showing: false,
+            colorRefs: {
+                alertColor: "#FF0000"
+            }
         }
     },
     widget: {
         name: "Alert Box",
         description: "An ALERT!",
         icon: "mdi-square",
-        testActions: ['alerts.alert']
+        testActions: ['alerts.alert'],
+        colorRefs: ['alertColor'],
     },
     methods: {
+        getFontStyle(headerStyle) {
+            return OverlayFontStyle.getStyleObj(headerStyle, this.colorRefs)
+        },
         showAlert(header, message, color, duration) {
             this.header = header
             this.message = message
             this.color = color
+            this.colorRefs.alertColor = color
             this.showing = true
 
             setTimeout(() => {
