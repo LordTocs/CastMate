@@ -5,6 +5,7 @@
     :schema="schema.properties"
     :context="context"
     :secret="secret"
+    :colorRefs="colorRefs"
   />
   <array-input 
     v-if="schema.type == 'Array'"
@@ -13,6 +14,7 @@
     :context="context"
     :secret="secret"
     :label="labelString"
+    :colorRefs="colorRefs"
   />
   <number-input
     v-else-if="schema.type == 'Number' && !schema.slider"
@@ -96,6 +98,13 @@
     v-model="modelObj"
     :label="labelString"
   />
+  <overlay-font-style-input 
+    v-else-if="schema.type == 'OverlayFontStyle'"
+    v-model="modelObj"
+    :label="labelString"
+    :color-refs="colorRefs"
+    :schema="schema"
+  />
 </template>
 
 <script>
@@ -114,6 +123,7 @@ import ObjectInput from "./types/ObjectInput.vue";
 import ArrayInput from "./types/ArrayInput.vue";
 import AutomationSelector from "../automations/AutomationSelector.vue";
 import ResourceInput from './types/ResourceInput.vue'
+import OverlayFontStyleInput from "./types/OverlayFontStyleInput.vue";
 
 export default {
   name: "data-input",
@@ -130,7 +140,8 @@ export default {
     TimeInput,
     BooleanInput,
     SpellcastHookSelector,
-    ResourceInput
+    ResourceInput,
+    OverlayFontStyleInput
 },
   props: {
     schema: {},
@@ -138,6 +149,7 @@ export default {
     label: {},
     context: {},
     secret: { type: Boolean, default: () => false },
+    colorRefs: {},
   },
   emits: ["update:modelValue"],
   computed: {

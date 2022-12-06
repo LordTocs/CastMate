@@ -7,6 +7,7 @@
     @update:model-value="(v) => updateObject(propertyKey, v)"
     :context="context"
     :secret="secret"
+    :colorRefs="colorRefs"
   />
 </template>
 
@@ -20,6 +21,7 @@ export default {
     modelValue: {},
     schema: {},
     context: {},
+    colorRefs: {},
     secret: { type: Boolean, default: () => false }
   },
   methods: {
