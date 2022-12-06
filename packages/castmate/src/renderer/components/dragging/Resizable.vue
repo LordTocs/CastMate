@@ -205,6 +205,13 @@ function enforceAspectRatio(edges, aspectRatio, handle) {
     }
 }
 
+function snapEdgesToInt(edges) {
+    edges.left = Math.round(edges.left)
+    edges.right = Math.round(edges.right)
+    edges.top = Math.round(edges.top)
+    edges.bottom = Math.round(edges.bottom)
+}
+
 
 useEventListener(window, 'mousemove', (ev) => {
     if (!grabbedHandle.value)
@@ -252,12 +259,13 @@ useEventListener(window, 'mousemove', (ev) => {
         {
             enforceAspectRatio(edges, props.aspectRatio, handle);
         }
+        snapEdgesToInt(edges)
         setEdges(newTransform, edges);
     }
     else if (grabbedHandle.value == 'middle')
     {
-        newTransform.position.x = targetX
-        newTransform.position.y = targetY
+        newTransform.position.x = Math.round(targetX)
+        newTransform.position.y = Math.round(targetY)
     }
 
     transform.value = newTransform
