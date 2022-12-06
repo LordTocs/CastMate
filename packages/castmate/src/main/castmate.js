@@ -13,6 +13,7 @@ import { ipcMain, app, setIpcSender } from "./utils/electronBridge.js"
 
 import { ResourceManager } from './resources/resource-manager.js'
 import { OverlayManager }  from './overlays/overlay-manager.js'
+import { osInit } from './utils/os.js'
 
 async function initInternal(mainWindowSender) {
 	logger.info(`Starting CastMate v${app.getVersion()}`);
@@ -20,6 +21,8 @@ async function initInternal(mainWindowSender) {
 	setIpcSender(mainWindowSender);
 
 	ensureUserFolder();
+
+	osInit();
 
 	let plugins = new PluginManager();
 	await plugins.load(mainWindowSender);
