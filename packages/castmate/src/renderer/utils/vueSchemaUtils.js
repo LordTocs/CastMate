@@ -37,7 +37,6 @@ function cleanVueObjectProps(objPropSchema) {
  */
  export function cleanVuePropSchema(propSchema) {
     propSchema = { ...propSchema }
-    delete propSchema.isEditor
     return {
         type: 'Object',
         properties: cleanVueObjectProps(propSchema)

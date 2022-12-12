@@ -54,12 +54,14 @@ import OverlayToolbox from '../components/overlays/OverlayToolbox.vue'
 import OverlayTransformInput from '../components/overlays/OverlayTransformInput.vue'
 import DataInput from '../components/data/DataInput.vue'
 import { useRoute } from 'vue-router'
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, provide } from 'vue'
 import loadWidget from 'castmate-overlay-components'
 import { cleanVuePropSchema } from '../utils/vueSchemaUtils.js'
 import FlexScroller from '../components/layout/FlexScroller.vue'
 import { useResourceFunctions } from '../utils/resources'
 import _cloneDeep from 'lodash/cloneDeep'
+import { useStore } from 'vuex'
+import path from 'path'
 
 const testOverlay = {
     width: 1920,
@@ -98,6 +100,13 @@ const testOverlay = {
 
     ]
 }
+
+const store = useStore()
+
+const mediaFolder = computed(() => path.join(store.getters['ipc/paths'].userFolder, 'media'))
+
+provide('isEditor', true)
+provide('mediaFolder', mediaFolder)
 
 const route = useRoute();
 

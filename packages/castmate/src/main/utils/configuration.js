@@ -5,6 +5,7 @@ import fs from "fs"
 const isDevelopment = !app.isPackaged;
 const isPortable = process.argv.includes('--portable');// || isDevelopment;
 export const userFolder = path.resolve((!isPortable ? path.join(app.getPath('userData'), 'user') : './user'));
+export const mediaFolder = path.resolve(path.join(userFolder, "media"));
 
 export const settingsFilePath = path.resolve(path.join(userFolder, "settings.yaml"));
 export const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
@@ -38,6 +39,7 @@ export function ensureUserFolder()
 	ensureFolder(path.join(userFolder, "sounds"));
 	ensureFolder(path.join(userFolder, "cache"));
 	ensureFolder(path.join(userFolder, "automations"));
+	ensureFolder(mediaFolder);
 
 	ensureFile(secretsFilePath);
 	ensureFile(settingsFilePath);

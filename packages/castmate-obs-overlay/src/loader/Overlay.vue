@@ -19,6 +19,11 @@ export default {
     methods: {
 
     },
+    provide() {
+        return {
+            isEditor: false
+        }
+    },
     async mounted() {
         // Connect to the websocket
         const overlayId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1); //Probably includes querystring????

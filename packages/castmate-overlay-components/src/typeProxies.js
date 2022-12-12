@@ -9,6 +9,10 @@ function resolveColorRef(color, refs) {
 }
 
 
+export class MediaFile {
+    
+}
+
 export class OverlayFontStyle {
 
     constructor() {

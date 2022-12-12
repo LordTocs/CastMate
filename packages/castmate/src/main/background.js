@@ -56,6 +56,7 @@ function createWindowBase(htmlFile, params, width, height) {
 			nodeIntegration: true,
 			enableRemoteModule: true,
 			contextIsolation: false,
+			webSecurity: false,
 		},
 		frame: false
 	})

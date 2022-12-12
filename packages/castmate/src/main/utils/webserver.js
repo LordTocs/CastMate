@@ -2,7 +2,7 @@ import express from "express"
 import bodyParser from "body-parser"
 import ws from "ws"
 import http from "http"
-import { userFolder } from "./configuration.js"
+import { mediaFolder, userFolder } from "./configuration.js"
 import path from "path"
 import logger from "./logger.js"
 import { EventEmitter } from "node:events"
@@ -74,6 +74,10 @@ class CastMateWebServer extends EventEmitter
 			this.app.use("/user", express.static(path.join(userFolder, "data"), {
 				etag: false
 			}));
+
+			this.app.use("/media", express.static(mediaFolder, {
+				etag: false
+			}))
 		});
 	}
 

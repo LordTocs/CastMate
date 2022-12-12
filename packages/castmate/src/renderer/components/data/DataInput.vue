@@ -65,6 +65,7 @@
     :path="schema.path"
     :basePath="schema.basePath"
     :clearable="!schema.required"
+    :ext="schema.exts || []"
     :label="labelString"
   />
   <color-picker
@@ -105,6 +106,12 @@
     :color-refs="colorRefs"
     :schema="schema"
   />
+  <media-input 
+    v-else-if="schema.type == 'MediaFile'"
+    v-model="modelObj"
+    :label="labelString"
+    :schema="schema"
+  />
 </template>
 
 <script>
@@ -124,6 +131,7 @@ import ArrayInput from "./types/ArrayInput.vue";
 import AutomationSelector from "../automations/AutomationSelector.vue";
 import ResourceInput from './types/ResourceInput.vue'
 import OverlayFontStyleInput from "./types/OverlayFontStyleInput.vue";
+import MediaInput from "./types/MediaInput.vue";
 
 export default {
   name: "data-input",
@@ -141,7 +149,8 @@ export default {
     BooleanInput,
     SpellcastHookSelector,
     ResourceInput,
-    OverlayFontStyleInput
+    OverlayFontStyleInput,
+    MediaInput
 },
   props: {
     schema: {},

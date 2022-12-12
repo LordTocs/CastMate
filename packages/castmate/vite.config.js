@@ -26,12 +26,17 @@ export default defineConfig({
         entry: 'src/main/backgroundLoader.cjs',
         vite: withDebug({
           plugins: [nodeResolve(['node'])],
+          resolve: {
+            alias: {
+              './lib-cov/fluent-ffmpeg': './lib/fluent-ffmpeg'  // This line
+            }
+          },
           build: {
             // target: 'node16.15',
             outDir: 'dist/electron/main',
             rollupOptions: {
               // format: 'cjs',
-              external: ['public-ip', 'ffi-napi', 'ref-napi', 'ref-struct-di', 'win32-api', 'obs-websocket-js', 'ws'],
+              external: ['public-ip', 'ffi-napi', 'ref-napi', 'ref-struct-di', 'win32-api', 'obs-websocket-js', 'ws', 'fluent-ffmpeg'],
             }
           },
           // esbuild: {
@@ -53,19 +58,25 @@ export default defineConfig({
       },*/
       renderer: {
         resolve() {
-          return ['fs', 'path']
+          return ['fs', 'path', 'fluent-ffmpeg']
         }
       },
     }),
     subpackage("castmate-overlay-components")
   ],
+  resolve: {
+    alias: {
+      './lib-cov/fluent-ffmpeg': './lib/fluent-ffmpeg'  // This line
+    }
+  },
   build: {
     outDir: "dist/electron/renderer",
     rollupOptions: {
       input: {
         main: resolve(dirname, 'index.html'),
         updater: resolve(dirname, 'updater.html')
-      }
+      },
+      external: ['fluent-ffmpeg']
     }
   }
 })
