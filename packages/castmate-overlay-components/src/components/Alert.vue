@@ -1,21 +1,26 @@
 <template>
-    <media-container ref="media" class="alert" v-show="showing" :media-file="media">
-        <div class="alert-head">
-            <span :style="getFontStyle(headerStyle)">{{ header }}</span>
-        </div>
-        <div class="alert-body">
-            <span :style="getFontStyle(messageStyle)">{{ message }}</span>
-        </div>
-    </media-container>
+    <timed-reveal ref="alertReveal" :animation="alertAnimation" :transition="alertTransition" >
+        <media-container ref="media" class="alert" :media-file="media">
+            <div class="alert-head">
+                <span :style="getFontStyle(headerStyle)">{{ header }}</span>
+            </div>
+            <div class="alert-body">
+                <span :style="getFontStyle(messageStyle)">{{ message }}</span>
+            </div>
+        </media-container>
+    </timed-reveal>
 </template>
 
 <script>
 import { OverlayFontStyle } from '../typeProxies.js'
 import MediaContainer from '../utils/MediaContainer.vue'
 import { MediaFile } from '../typeProxies.js'
+import TimedReveal from '../utils/TimedReveal.vue'
+import Revealers from '../utils/Revealers.js'
+import { nextTick } from 'vue'
 
 export default {
-    components: { MediaContainer },
+    components: { MediaContainer, TimedReveal },
     inject: ['isEditor'],
     props: {
         headerStyle: { type: OverlayFontStyle, default: () => new OverlayFontStyle(), name: "Header Style", exampleText: "Title" },
@@ -25,10 +30,8 @@ export default {
     },
     data() {
         return {
-            message:  this.isEditor ? "Message" : null,
-            header: this.isEditor ? "Title" : null,
-            color: null,
-            showing: false,
+            message: null,
+            header: null,
             colorRefs: {
                 alertColor: "#FF0000"
             }
@@ -41,6 +44,14 @@ export default {
         testActions: ['alerts.alert'],
         colorRefs: ['alertColor'],
     },
+    computed: {
+        alertAnimation() {
+            return Revealers['Fade']
+        },
+        alertTransition() {
+            return 0.5
+        }
+    },
     methods: {
         getFontStyle(headerStyle) {
             return OverlayFontStyle.getStyleObj(headerStyle, this.colorRefs)
@@ -49,15 +60,9 @@ export default {
             this.header = header
             this.message = message
             this.colorRefs.alertColor = color
-            this.showing = true
 
-            console.log(this.$refs)
+            this.$refs.alertReveal.appear(this.duration);
             this.$refs.media.restart()
-
-
-            setTimeout(() => {
-                this.showing = false;
-            }, this.duration * 1000);
         },
         setEditorTimer() {
             if (this.isEditor) {
@@ -72,6 +77,12 @@ export default {
     }, 
     mounted() {
         this.setEditorTimer();
+    },
+    unmounted() {
+        if (this.timer)
+        {
+            clearInterval(this.timer)
+        }
     },
     watch: {
         duration() {
@@ -96,15 +107,5 @@ export default {
 .alert-body {
     font-size: 30px;
     text-align: center;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
