@@ -5,6 +5,8 @@
         :loading="fetching"
         clearable
         @focus="onFocus"
+        :density="topProps.density"
+        :label="label"
     >
         <template #item="{props, item}">
             <media-list-item :media-file="item.value" @click="props.onClick" />
@@ -27,6 +29,7 @@ const topProps = defineProps({
     schema: {},
     modelValue: {},
     label: { type: String },
+    density: { type: String }
 })
 
 const store = useStore()

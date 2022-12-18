@@ -18,8 +18,14 @@
             </v-sheet>
             <div class="editor-frame-outer" v-if="overlay">
                 <drag-frame class="editor-frame" ref="dragFrame" :style="frameStyle" :workspaceWidth="overlay.width"
-                    :workspaceHeight="overlay.height" @click="frameClicked" @drop="onWidgetDropped($event)"
-                    @dragover.prevent @dragenter.prevent tabindex="0" @keyup.delete.self="doDelete">
+                    :workspaceHeight="overlay.height" 
+                    @click="frameClicked" 
+                    @drop="onWidgetDropped($event)"
+                    @dragover.prevent 
+                    @dragenter.prevent 
+                    tabindex="0" 
+                    @keyup.delete.self="doDelete"
+                >
                     <overlay-widget v-for="widget, i in (overlay?.widgets || [])" :key="widget.id" :modelValue="widget"
                         @update:modelValue="updateWidget($event, i)" :selected="selectedWidgetId == widget.id"
                         @update:selected="selectedWidgetId = widget.id" />
@@ -31,7 +37,7 @@
                 <div v-if="widgetPropSchema">
                     <!--  TODO, make flex-scroller's interior not a flex layout.-->
                     <p class="text-subtitle-2 my-1">Widget Properties</p>
-                    <data-input  :schema="widgetPropSchema" v-model="selectedWidgetProps" :colorRefs="widgetColorRefs" />
+                    <data-input density="compact" :schema="widgetPropSchema" v-model="selectedWidgetProps" :colorRefs="widgetColorRefs" />
                     <v-divider></v-divider>
                     <overlay-transform-input v-model:size="selectedWidgetSize" v-model:position="selectedWidgetPosition" />
                 </div>

@@ -8,12 +8,14 @@
         class="my-0 py-0"
         v-model.lazy="minValue"
         placeholder="−∞"
+        :density="density"
       />
       <span class="mx-3">⟶</span>
       <number-input
         class="my-0 py-0"
         v-model.lazy="maxValue"
         placeholder="∞"
+        :density="density"
       />
     </div>
   </div>
@@ -25,6 +27,7 @@ export default {
   props: {
     modelValue: {},
     label: { type: String, default: () => "" },
+    density: {},
   },
   emits: ["update:modelValue"],
   components: { NumberInput },

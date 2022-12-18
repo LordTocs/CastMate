@@ -7,6 +7,7 @@
     :label="schema.name || label"
     :clearable="!schema.required"
     :type="!secret ? 'text' : 'password'"
+    :density="density"
   />
   <enum-input
     v-else-if="schema.enum || schema.enumQuery"
@@ -17,6 +18,7 @@
     :clearable="!schema.required"
     :context="context"
     :template="schema.template"
+    :density="density"
   />
 </template>
 
@@ -33,6 +35,7 @@ export default {
     label: { type: String },
     context: {},
     secret: { type: Boolean, default: () => false },
+    density: { type: String },
   },
   emits: ['update:modelValue'],
   computed: {

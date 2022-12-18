@@ -10,6 +10,7 @@
     item-value="value"
     item-title="name"
     @focus="fetchItems"
+    :density="density"
   />
   <v-combobox
     v-else-if="isAutocomplete && template"
@@ -20,6 +21,7 @@
     :search-input.sync="search"
     :clearable="clearable"
     @focus="fetchItems"
+    :density="density"
   />
   <v-select
     v-else
@@ -30,6 +32,7 @@
     item-title="name"
     dense
     v-model.lazy="modelObj"
+    :density="density"
   />
 </template>
 
@@ -46,6 +49,7 @@ export default {
     clearable: { type: Boolean, default: () => false },
     template: { type: Boolean, default: () => false },
     context: {},
+    density: { tyep: String }
   },
   computed: {
     isAutocomplete() {

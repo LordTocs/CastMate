@@ -7,7 +7,7 @@
     >
       <label class="v-label">{{ schema.leftLabel }} </label>
     </div>
-    <v-switch v-model="modelObj" inset density="compact">
+    <v-switch v-model="modelObj" inset density="compact" :density="density">
       <template v-slot:label>
         {{ schema.name || label }}
         <v-btn
@@ -17,6 +17,7 @@
           size="x-small"
           class="mx-1"
           @click.stop="clear"
+          :density="density"
         />
       </template>
     </v-switch>
@@ -31,6 +32,7 @@ export default {
         modelValue: {},
         schema: {},
         label: {},
+        density: {},
     },
     emits: ['update:modelValue'],
     methods: {

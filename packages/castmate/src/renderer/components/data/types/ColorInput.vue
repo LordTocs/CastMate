@@ -2,7 +2,7 @@
     <div class="d-flex flex-row">
         <v-menu :close-on-content-click="false">
             <template #activator="{ props }">
-                <v-input v-model="modelObj" v-bind="props">
+                <v-input v-model="modelObj" v-bind="props" :density="topProps.density">
                     <v-field :label="topProps.label" clearable :active="!!modelObj" style="cursor: pointer">
                         <div class="d-flex flex-row align-center preview">
                             <div class="swatch" :style="{ backgroundColor: modelObj }" v-if="!isFixedColor"> </div>
@@ -34,7 +34,8 @@
     const topProps = defineProps({
         modelValue: {},
         label: { type: String },
-        colorRefs: { }
+        colorRefs: { },
+        density: { type: String },
     })
     const emit = defineEmits(['update:modelValue'])
     const modelObj = useModel(topProps ,emit);

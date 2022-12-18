@@ -1,5 +1,5 @@
 <template>
-    <v-input v-model="modelObj">
+    <v-input v-model="modelObj" :density="props.density">
         <v-field :label="label" clearable :active="!!props.modelValue" style="cursor: pointer" @click.stop="(dialog=true)">
             <div class="d-flex flex-row align-center preview">
                 <span :style="previewFontStyle">{{ previewText }}</span>
@@ -19,10 +19,10 @@
                 </div>
                 <font-input v-model="fontFamily" label="Font" />
                 <number-input v-model="fontSize" label="Font Size" />
-                <color-input v-model="fontColor" :color-refs="props.colorRefs" label="Font Color" />
+                <color-input v-model="fontColor" :color-refs="props.colorRefs" label="Font Color"/>
                 <div class="d-flex flex-row">
                     <font-stroke-input v-model="stroke" :color-refs="props.colorRefs" class="flex-grow-1 mr-2" />
-                    <font-shadow-input v-model="shadow" :color-refs="props.colorRefs" class="flex-grow-1 ml-2"/>
+                    <font-shadow-input v-model="shadow" :color-refs="props.colorRefs" class="flex-grow-1 ml-2" />
                 </div>
             </div>
             <v-card-actions>
@@ -47,7 +47,8 @@ const props = defineProps({
     modelValue: {},
     label: { type: String },
     colorRefs: {},
-    schema: {}
+    schema: {},
+    density: {},
 })
 const emit = defineEmits(["update:modelValue"])
 
@@ -109,9 +110,10 @@ const previewText = computed(() => {
     margin: 10px;
 }
 .preview {
-  min-height: 43px;
-  margin-top: 20px;
-  margin-left: 6px;
-  margin-inline-start: var(--v-field-padding-start);
+    min-height: var(--v-input-control-height, 56px);
+    padding-inline-start: var(--v-field-padding-start);
+    padding-inline-end: var(--v-field-padding-end);
+    padding-top: calc(var(--v-field-padding-top, 10px) + var(--v-input-padding-top, 0));
+    padding-bottom: var(--v-field-padding-bottom, 6px);
 }
 </style>

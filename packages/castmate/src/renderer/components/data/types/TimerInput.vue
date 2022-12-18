@@ -1,7 +1,7 @@
 <template>
   <div style="d-flex flex-row">
-    <time-input v-model.lazy="intervalStr" label="Interval" />
-    <time-input v-model.lazy="offsetStr" label="Delay" />
+    <time-input v-model.lazy="intervalStr" label="Interval" :density="density" />
+    <time-input v-model.lazy="offsetStr" label="Delay" :density="density" />
   </div>
 </template>
 
@@ -10,6 +10,7 @@ import TimeInput from "./TimeInput.vue";
 export default {
   props: {
     modelValue: {},
+    density: { type: String }
   },
   components: { TimeInput },
   computed: {

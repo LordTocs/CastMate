@@ -12,6 +12,7 @@
         @update:model-value="(v) => updateObject(propertyKey, v)"
         :context="context"
         :secret="secret"
+        :density="density"
         :colorRefs="colorRefs"
       />
     </div>
@@ -29,7 +30,8 @@ export default {
     schema: {},
     context: {},
     colorRefs: {},
-    secret: { type: Boolean, default: () => false }
+    secret: { type: Boolean, default: () => false },
+    density: { type: String }
   },
   computed: {
     isGroup() {

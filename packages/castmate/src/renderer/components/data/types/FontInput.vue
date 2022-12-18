@@ -5,6 +5,7 @@
         @focus="refreshFonts"
         hide-details
         :label="props.label"
+        :density="props.density"
     >
         <template #item="{ item, props}">
             <v-list-item v-bind="props" class="d-flex flex-row justify-center py-1" title="">
@@ -28,7 +29,8 @@ const getFonts = useIpcFunc('os', 'getFonts')
 
 const props = defineProps({ 
     modelValue: { type: String },
-    label: { type: String }
+    label: { type: String },
+    density: { type: String },
 })
 const emit = defineEmits(['update:modelValue'])
 

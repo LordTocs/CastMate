@@ -7,6 +7,7 @@
     @copy.stop=""
     @paste.stop=""
     :placeholder="placeholder"
+    :density="density"
   >
     <template #append-inner>
       {{ unit?.name }}
@@ -23,6 +24,7 @@ export default {
     clearable: { type: Boolean, default: () => false },
     placeholder: {},
     unit: {},
+    density: { type: String },
   },
   computed: {
     modelObj: {

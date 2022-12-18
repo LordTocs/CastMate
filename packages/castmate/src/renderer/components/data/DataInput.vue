@@ -2,34 +2,25 @@
   <object-input
     v-if="schema.type == 'Object' && schema.properties"
     v-model="modelObj"
-    :schema="schema"
-    :context="context"
-    :secret="secret"
-    :colorRefs="colorRefs"
+    v-bind="allProps"
   />
   <array-input 
     v-if="schema.type == 'Array'"
     v-model="modelObj"
-    :schema="schema"
-    :context="context"
-    :secret="secret"
-    :label="labelString"
-    :colorRefs="colorRefs"
+    v-bind="allProps"
   />
   <number-input
     v-else-if="schema.type == 'Number' && !schema.slider && !schema.enum"
     v-model="modelObj"
     :allowTemplate="!!schema.template"
-    :label="schema.name || label"
     :clearable="!schema.required"
-    :secret="secret"
     :unit="schema.unit"
+    v-bind="allProps"
   />
   <resource-input
     v-else-if="schema.type == 'Resource'"
     v-model="modelObj"
-    :label="labelString"
-    :schema="schema"
+    v-bind="allProps"
   />
   <template v-else-if="schema.type == 'Number' && schema.slider">
     <div class="text-caption"> {{ labelString }}</div>
@@ -39,6 +30,7 @@
       :min="schema.slider.min"
       :max="schema.slider.max"
       :step="schema.slider.step"
+      :density="density"
       color="white"
       :append-icon="!schema.required ? 'mdi-close' : undefined"
       @click:append="clear"
@@ -56,16 +48,12 @@
   <string-input
     v-else-if="schema.type == 'String'"
     v-model="modelObj"
-    :label="schema.name || label"
-    :schema="schema"
-    :context="context"
-    :secret="secret"
+    v-bind="allProps"
   />
   <boolean-input 
     v-else-if="schema.type == 'Boolean'"
     v-model="modelObj"
-    :schema="schema"
-    :label="labelString"
+    v-bind="allProps"
    />
   <file-autocomplete
     v-else-if="schema.type == 'FilePath'"
@@ -76,6 +64,7 @@
     :clearable="!schema.required"
     :ext="schema.exts || []"
     :label="labelString"
+    :density="density"
   />
   <color-picker
     v-else-if="schema.type == 'LightColor'"
@@ -86,40 +75,37 @@
   <automation-selector
     v-else-if="schema.type == 'Automation'"
     v-model="modelObj"
-    :label="labelString"
+    v-bind="allProps"
   />
   <reward-selector
     v-else-if="schema.type == 'ChannelPointReward'"
     v-model="modelObj"
-    :label="labelString"
+    v-bind="allProps"
   />
   <spellcast-hook-selector
     v-else-if="schema.type == 'SpellcastHook'"
     v-model="modelObj"
-    :label="labelString"
+    v-bind="allProps"
    />
   <time-input
     v-else-if="schema.type == 'Duration'"
     v-model="modelObj"
-    :label="labelString"
+    v-bind="allProps"
   />
   <range-input
     v-else-if="schema.type == 'Range'"
     v-model="modelObj"
-    :label="labelString"
+    v-bind="allProps"
   />
   <overlay-font-style-input 
     v-else-if="schema.type == 'OverlayFontStyle'"
     v-model="modelObj"
-    :label="labelString"
-    :color-refs="colorRefs"
-    :schema="schema"
+    v-bind="allProps"
   />
   <media-input 
     v-else-if="schema.type == 'MediaFile'"
     v-model="modelObj"
-    :label="labelString"
-    :schema="schema"
+    v-bind="allProps"
   />
 </template>
 
@@ -170,11 +156,22 @@ export default {
     context: {},
     secret: { type: Boolean, default: () => false },
     colorRefs: {},
+    density:  { type: String }
   },
   emits: ["update:modelValue"],
   computed: {
     labelString() {
       return this.schema?.name || this.label;
+    },
+    allProps() {
+      return {
+        schema: this.schema,
+        context: this.context,
+        secret: this.secret,
+        colorRefs: this.colorRefs,
+        label: this.labelString,
+        density: this.density
+      }
     },
     modelObj: {
       get() {

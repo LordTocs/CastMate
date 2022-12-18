@@ -7,7 +7,14 @@
         <v-divider />
         <div class="my-2">
             <div class="d-flex flex-row mx-2 align-center" v-for="item,i in (modelValue || [])">
-                <data-input :schema="itemSchema" :model-value="item" @update:model-value="(v) => updateItem(i, v)"  />
+                <data-input 
+                    :schema="itemSchema" 
+                    :model-value="item" 
+                    @update:model-value="(v) => updateItem(i, v)"
+                    :density="density"
+                    :secret="secret"
+                    :context="context"
+                />
                 <v-btn class="mx-2" icon="mdi-delete" @click="deleteItem(i)" size="x-small"/>
             </div>
         </div>
@@ -22,7 +29,10 @@ export default {
     props: {
         schema: {},
         modelValue: { type: Array },
-        label: { type: String, default: () => ""}
+        label: { type: String, default: () => ""},
+        density: { type: String },
+        secret: { type: Boolean, default: false },
+        context: { type: {} },
     },
     emits: ['update:modelValue'],
     components: { DataInput: defineAsyncComponent(() => import("../DataInput.vue")) },

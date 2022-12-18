@@ -6,6 +6,7 @@
         item-value="id"
         :label="props.label"
         clearable
+        :density="props.density"
     ></v-select>
 </template>
 
@@ -17,6 +18,7 @@ const props = defineProps({
     modelValue: {},
     schema: {},
     label: {},
+    density: { type: String },
 })
 
 const emit = defineEmits(["update:modelValue"]);

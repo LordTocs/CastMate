@@ -4,6 +4,7 @@
     placeholder="hhhh:mm:ss"
     :label="label"
     v-maska="{ mask: ['#*:T#:T#', 'T#:T#', 'T#', '#'], tokens: { T: { pattern: /[0-6]/}}}"
+    :density="density"
   />
 </template>
 
@@ -14,6 +15,7 @@ export default {
   props: {
     modelValue: {},
     label: { type: String, default: () => "Time" },
+    density: { type: String }
   },
   emits: ['update:modelValue'],
   computed: {
