@@ -2,7 +2,7 @@
   <object-input
     v-if="schema.type == 'Object' && schema.properties"
     v-model="modelObj"
-    :schema="schema.properties"
+    :schema="schema"
     :context="context"
     :secret="secret"
     :colorRefs="colorRefs"
@@ -17,7 +17,7 @@
     :colorRefs="colorRefs"
   />
   <number-input
-    v-else-if="schema.type == 'Number' && !schema.slider"
+    v-else-if="schema.type == 'Number' && !schema.slider && !schema.enum"
     v-model="modelObj"
     :allowTemplate="!!schema.template"
     :label="schema.name || label"
@@ -44,6 +44,15 @@
       @click:append="clear"
     />
   </template>
+  <enum-input v-else-if="schema.type == 'Number' && schema.enum"
+    :enum="schema.enum || schema.enumQuery"
+    :queryMode="!!schema.enumQuery"
+    v-model="modelObj"
+    :label="labelString"
+    :clearable="!schema.required"
+    :context="context"
+    :template="schema.template"
+   />
   <string-input
     v-else-if="schema.type == 'String'"
     v-model="modelObj"
@@ -132,6 +141,7 @@ import AutomationSelector from "../automations/AutomationSelector.vue";
 import ResourceInput from './types/ResourceInput.vue'
 import OverlayFontStyleInput from "./types/OverlayFontStyleInput.vue";
 import MediaInput from "./types/MediaInput.vue";
+import EnumInput from "./types/EnumInput.vue";
 
 export default {
   name: "data-input",
@@ -150,7 +160,8 @@ export default {
     SpellcastHookSelector,
     ResourceInput,
     OverlayFontStyleInput,
-    MediaInput
+    MediaInput,
+    EnumInput,
 },
   props: {
     schema: {},
