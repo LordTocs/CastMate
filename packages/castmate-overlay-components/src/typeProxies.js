@@ -9,8 +9,31 @@ function resolveColorRef(color, refs) {
 }
 
 
+export class OverlayTransition {
+/*
+{
+    duration: 0.5,
+    animation: 'Fade'
+}
+*/
+}
+
+export class OverlayTimedTransition {
+/*
+{
+    transition: {
+        duration: 0.5,
+        animation: 'Fade'
+    },
+    appearDelay: 1,
+    trailingDelay: 1,
+}
+*/
+}
+
+
 export class MediaFile {
-    
+
 }
 
 export class OverlayFontStyle {
