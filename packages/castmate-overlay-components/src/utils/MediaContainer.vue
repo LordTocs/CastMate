@@ -2,7 +2,7 @@
 <div class="container">
 
     <video v-if="isVideo" class="fill" ref="video" :muted="isEditor" :src="url"></video>
-    <img v-if="isGIF" :src="gifSrc"  ref="gif" class="fill" />
+    <img v-if="isImage" :src="imgSrc"  ref="img" class="fill" />
     <div class="content">
         <slot></slot>
     </div>
@@ -11,11 +11,12 @@
 
 
 <script setup>
-import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, ref } from 'vue'
+import { ImageFormats, VideoFormats } from './filetypes.js'
 import path from 'path'
 
 const video = ref(null)
-const gif = ref(null)
+const img = ref(null)
 
 const isEditor = inject('isEditor')
 const mediaFolder = inject('mediaFolder')
@@ -27,7 +28,7 @@ const props = defineProps({
 
 const blankImg = ref(false)
 
-const id = Math.round(Math.random() * 1000)
+const id = Math.round(Math.random() * 10000)
 
 const url = computed(() => {
     if (!props.mediaFile)
@@ -43,15 +44,20 @@ const url = computed(() => {
     }
 })
 
-const gifSrc = computed(() => {
+const imgSrc = computed(() => {
     if (!props.mediaFile)
         return undefined
 
     if (blankImg.value) {
-        console.log("Blanking out the gif")
         return "#"
     }
     return url.value
+})
+
+const isImage = computed(() => {
+    if (!props.mediaFile)
+        return false;
+    return ImageFormats.includes(path.extname(props.mediaFile.toLowerCase()))
 })
 
 const isGIF = computed(() => {
@@ -73,22 +79,33 @@ const isVideo = computed(() => {
 
 defineExpose({
     restart: () => {
-        if (isGIF.value && gif.value)
+        if (isGIF.value && img.value)
         {
-            console.log("Restarting Gif", gif.value.src)
             blankImg.value = true
+            //Wait for the next v-dom tick so blankImg's value is updated in the render
             nextTick(() => {
-                setTimeout(() => {
-                    console.log("Gif Restarted: ", gif.value.src)
+                //Wait for the next dom render so we're guarenteed the img has been rendered without a src
+                window.requestAnimationFrame(() => {
                     blankImg.value = false
-                }, 0)
+                })
             })
         }
         else if (isVideo.value && video.value) {
-            video.value.pause()
+            
+            //video.value.pause()
             video.value.currentTime = 0;
             video.value.load()
-            video.value.play()
+            if (video.value.paused)
+            {
+                try {
+                    video.value.play()
+                }
+                catch(err)
+                {
+                    //Sometimes it throws exceptions when trying to play while the app is minimized.
+                    //We don't really need to do anything to handle it, but we don't want the exception to bubble.
+                }
+            }
         }
     }
 })
