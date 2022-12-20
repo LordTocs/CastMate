@@ -612,6 +612,149 @@ export default {
 			async handler(data) {
 				await this.obs.call("TriggerHotkeyByName", { hotkeyName: data.hotkey })
 			}
+		},
+		setTransform: {
+			name: "Set Source Transform",
+			description: "Set's a source's transform",
+			color: "#607A7F",
+			icon: "mdi-move-resize",
+			data: {
+				type: Object,
+				properties: {
+					scene: {
+						name: "Scene",
+						type: String,
+						required: true,
+						async enum() {
+							const { scenes } = await this.obs.call('GetSceneList');
+							return scenes.map(s => s.sceneName);
+						}
+					},
+					sceneItemId: {
+						name: "Source",
+						type: String,
+						required: true,
+						async enum({ scene}) {
+							const { sceneItems } = await this.obs.call("GetSceneItemList", { sceneName: scene });
+							return sceneItems.map(i => ({ name: i.sourceName, value: i.sceneItemId }));
+						}
+					},
+					position: {
+						name: "Position",
+						type: Object,
+						properties: {
+							x: { name: "X", type: Number, template: true },
+							y: { name: "Y", type: Number, template: true },
+						}
+					},
+					rotation: {	name: "Rotation", type: Number,	template: true },
+					scale: {
+						name: "Scale",
+						type: Object,
+						properties: {
+							x: { name: "X", type: Number, template: true },
+							y: { name: "Y", type: Number, template: true },
+						}
+					},
+					crop: {
+						name: "Crop",
+						type: Object,
+						properties: {
+							top: { name: "Top", type: Number, template: true },
+							right: { name: "Right", type: Number, template: true },
+							bottom: { name: "Bottom", type: Number, template: true },
+							left: { name: "Left", type: Number, template: true },
+						}
+					},
+					boundingBox: {
+						name: "Bounding Box",
+						type: Object,
+						properties: {
+							boxType: { 
+								name: "Type", 
+								type: String, 
+								enum: [
+									{ name: "No Bounds", value: "OBS_BOUNDS_NONE" },
+									{ name: "Stretch to bounds", value: "OBS_BOUNDS_STRETCH" },
+									{ name: "Scale to inner bounds", value: "OBS_BOUNDS_SCALE_INNER" },
+									{ name: "Scale to outer bounds", value: "OBS_BOUNDS_SCALE_OUTER" },
+									{ name: "Scale to width of bounds", value: "OBS_BOUNDS_SCALE_TO_WIDTH" },
+									{ name: "Scale to height of bounds", value: "OBS_BOUNDS_SCALE_TO_HEIGHT" },
+									{ name: "Maximum size only", value: "OBS_BOUNDS_MAX_ONLY" },
+								]
+							},
+							alignment: {
+								name: "Alignment",
+								type: Number,
+								// See https://github.com/obsproject/obs-studio/blob/master/libobs/obs-defs.h
+								enum: [
+									{ name: "Top Left", value: 4 | 1 },
+									{ name: "Top Center", value: 4 },
+									{ name: "Top Right", value: 4 | 2 },
+									{ name: "Center Left", value: 1 },
+									{ name: "Center", value: 0 },
+									{ name: "Center Right", value: 2 },
+									{ name: "Bottom Left", value: 8 | 1 },
+									{ name: "Bottom Center", value: 8  },
+									{ name: "Bottom Right", value: 8 | 2 },
+								]
+							},
+							width: { name: "Width", type: Number, template: true },
+							height: { name: "Height", type: Number, template: true },
+						}
+					}
+				}
+			},
+			async handler(data, context) {
+				const sceneName = await template(data.scene, context)
+				//const sourceName = await template(data.source, context)
+				const sceneItemId = data.sceneItemId;
+
+				if (!sceneName || !sceneItemId)
+					return;
+
+				const { sceneItemTransform } = await this.obs.call('GetSceneItemTransform', { sceneName, sceneItemId });
+
+				const applyTemplateValue = async (propName, templateValue) => {
+					if (templateValue == undefined || templateValue == null)
+						return;
+					let value = templateValue;
+					if (typeof value === 'string' || value instanceof String)
+					{
+						value = await template(value, context)
+					}
+					sceneItemTransform[propName] = Number(value);
+				}
+
+				const applyValue = (propName, value) => {
+					if (value == undefined || value == null)
+						return;
+					sceneItemTransform[propName] = value;
+				}
+
+				await Promise.all([
+					applyTemplateValue("positionX", data?.position?.x),
+					applyTemplateValue("positionY", data?.position?.y),
+					applyTemplateValue("rotation", data?.rotation),
+					applyTemplateValue("scaleX", data?.scale?.x),
+					applyTemplateValue("scaleY", data?.scale?.y),
+					applyTemplateValue("cropBottom", data?.crop?.bottom),
+					applyTemplateValue("cropLeft", data?.crop?.left),
+					applyTemplateValue("cropRight", data?.crop?.right),
+					applyTemplateValue("cropTop", data?.crop?.top),
+					applyTemplateValue("boundsWidth", data?.boundingBox?.width),
+					applyTemplateValue("boundsHeight", data?.boundingBox?.height),
+				])
+
+				applyValue("boundsType", data?.boundingBox?.boxType)
+				applyValue("boundsAlignment", data?.boundingBox?.alignment)
+
+				sceneItemTransform.boundsWidth = Math.max(sceneItemTransform.boundsWidth, 1.0)
+				sceneItemTransform.boundsHeight = Math.max(sceneItemTransform.boundsWidth, 1.0)
+
+
+				await this.obs.call('SetSceneItemTransform', { sceneName, sceneItemId, sceneItemTransform })
+			}
 		}
 	}
 }

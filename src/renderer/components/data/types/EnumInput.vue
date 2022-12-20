@@ -1,6 +1,18 @@
 <template>
+  <v-autocomplete
+    v-if="isAutocomplete && !template"
+    v-model.lazy="modelObj"
+    :items="enumItems"
+    :loading="loading"
+    :label="label"
+    :search-input.sync="search"
+    :clearable="clearable"
+    item-value="value"
+    item-title="name"
+    @focus="fetchItems"
+  />
   <v-combobox
-    v-if="isAutocomplete"
+    v-else-if="isAutocomplete && template"
     v-model.lazy="modelObj"
     :items="enumItems"
     :loading="loading"
@@ -14,6 +26,8 @@
     :items="this.enum"
     :label="label"
     :loading="loading"
+    item-value="value"
+    item-title="name"
     dense
     v-model.lazy="modelObj"
   />
@@ -30,6 +44,7 @@ export default {
     queryMode: { type: Boolean, default: () => false },
     label: { type: String },
     clearable: { type: Boolean, default: () => false },
+    template: { type: Boolean, default: () => false },
     context: {},
   },
   computed: {
@@ -47,9 +62,17 @@ export default {
     };
   },
   methods: {
+    isString(obj) {
+      return typeof obj == "string" || obj instanceof String
+    },
+    getName(item) {
+      if (this.isString(item))
+        return item;
+      return item.name;
+    },
     filterArray(search, arr) {
       return search
-        ? arr.filter((i) => i.toLowerCase().includes(search.toLowerCase()))
+        ? arr.filter((i) => this.getName(i).toLowerCase().includes(search.toLowerCase()))
         : arr;
     },
     async fetchItems() {

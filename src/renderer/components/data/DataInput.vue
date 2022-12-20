@@ -2,7 +2,7 @@
   <object-input
     v-if="schema.type == 'Object' && schema.properties"
     v-model="modelObj"
-    :schema="schema.properties"
+    :schema="schema"
     :context="context"
     :secret="secret"
   />
@@ -15,7 +15,7 @@
     :label="labelString"
   />
   <number-input
-    v-else-if="schema.type == 'Number' && !schema.slider"
+    v-else-if="schema.type == 'Number' && !schema.slider && !schema.enum"
     v-model="modelObj"
     :allowTemplate="!!schema.template"
     :label="schema.name || label"
@@ -36,6 +36,15 @@
       @click:append="clear"
     />
   </template>
+  <enum-input v-else-if="schema.type == 'Number' && schema.enum"
+    :enum="schema.enum || schema.enumQuery"
+    :queryMode="!!schema.enumQuery"
+    v-model="modelObj"
+    :label="labelString"
+    :clearable="!schema.required"
+    :context="context"
+    :template="schema.template"
+   />
   <string-input
     v-else-if="schema.type == 'String'"
     v-model="modelObj"
@@ -107,6 +116,7 @@ import SpellcastHookSelector from "../spellcast/SpellcastHookSelector.vue";
 import ObjectInput from "./types/ObjectInput.vue";
 import ArrayInput from "./types/ArrayInput.vue";
 import AutomationSelector from "../automations/AutomationSelector.vue";
+import EnumInput from "./types/EnumInput.vue";
 
 export default {
   name: "data-input",
@@ -122,7 +132,8 @@ export default {
     RangeInput,
     TimeInput,
     BooleanInput,
-    SpellcastHookSelector
+    SpellcastHookSelector,
+    EnumInput
 },
   props: {
     schema: {},
