@@ -2,7 +2,7 @@ import { ElectronAuthManager }from "../utils/twitchAuth.js"
 import { ApiClient }from "@twurple/api"
 import { ChatClient }from "@twurple/chat"
 import { PubSubClient, BasicPubSubClient }from "@twurple/pubsub"
-import { template } from '../utils/template.js'
+import { template, templateNumber } from '../utils/template.js'
 import BadWords from "bad-words"
 import fs from 'fs'
 import path from 'path'
@@ -78,7 +78,7 @@ export default {
 		}
 		
 
-		this.filter = new BadWords({ emptyList: badwords.length > 0 }); //Temporarily Disable the custom bad words list.
+		this.filter = new BadWords({ emptyList: badwords.length > 0 });
 		if (badwords.length > 0)
 		{
 			this.filter.addWords(...badwords);
@@ -106,7 +106,12 @@ export default {
 			this.channelAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Channel" })
 			this.botAuth = new ElectronAuthManager({ clientId, redirectUri: `http://localhost/auth/channel/redirect`, name: "Bot", scopes: ["chat:edit", "chat:read"] })
 
-			await Promise.all([this.channelAuth.trySilentAuth(), await this.botAuth.trySilentAuth()]);
+			const [channelAuthResult, botAuthResult] = await Promise.all([this.channelAuth.trySilentAuth(), await this.botAuth.trySilentAuth()]);
+
+			if (channelAuthResult.error == "scopes_changed")
+			{
+				this.state.scopesChanged = true;
+			}
 
 			await this.completeAuth();
 
@@ -154,6 +159,8 @@ export default {
 				this.state.isAuthed = false;
 				return;
 			}
+
+			this.state.scopesChanged = false
 
 			if (!this.botAuth || !this.botAuth.isAuthed) {
 				this.logger.info("No bot account authed.");
@@ -854,12 +861,7 @@ export default {
 			description: "True if the user is at least affiliate",
 			hidden: true
 		},
-		accessToken: {
-			type: String,
-			name: "Auth Token",
-			description: "Super secret, treat like a password",
-			hidden: true
-		},
+
 		lastFollower: {
 			type: String,
 			name: "Last Follower",
@@ -870,6 +872,17 @@ export default {
 			name: "Last Subscriber",
 			description: "Name of the person to subscribe"
 		},*/
+		accessToken: {
+			type: String,
+			name: "Auth Token",
+			description: "Super secret, treat like a password",
+			hidden: true
+		},
+		scopesChanged: {
+			type: Boolean,
+			name: "Helper for UI to know scopes have changed to prompt for re-signin",
+			hidden: true,
+		}
 	},
 	triggers: {
 		chat: {
@@ -1183,43 +1196,90 @@ export default {
 				await this.channelTwitchClient.clips.createClip({ channelId: this.state.channelId});
 			}
 		},
-    createPrediction: {
-      name: "Create Prediction",
+		createPrediction: {
+			name: "Create Prediction",
 			description: "Creates a Twitch Prediction",
 			icon: "mdi-crystal-ball",
 			color: "#5E5172",
 			data: {
 				type: Object,
-        properties: {
-          title: {
-            type: String,
-            name: "Title",
-          },
-          duration: {
-            type: Number,
-            unit: { name: "Seconds", short: 's' },
-            name: "Duration",
-          },
-          outcomes: {
-            type: Array,
-            name: "Outcomes",
-            items: {
-              type: String
-            }
-          },
-        }
+				properties: {
+					title: {
+						type: String,
+						name: "Title",
+						template: true,
+					},
+					duration: {
+						type: Number,
+						unit: { name: "Seconds", short: 's' },
+						name: "Duration",
+						template: true,
+					},
+					outcomes: {
+						type: Array,
+						name: "Outcomes",
+						items: {
+							type: String,
+							template: true
+						}
+					},
+				}
 			},
-			async handler(predictionData) {
-        await this.channelTwitchClient.predictions.createPrediction(
-          this.state.channelId,
-          {
-            title: predictionData.title,
-            autoLockAfter: predictionData.duration,
-            outcomes: predictionData.outcomes,
-          }
-        );
-      },
-    },
+			async handler(predictionData, context) {
+				const config = {
+					title: await template(predictionData.title, context),
+					autoLockAfter: Math.round(await templateNumber(predictionData.duration, context)),
+					outcomes: await Promise.all(predictionData.outcomes.map(t => template(t, context)))
+				}
+
+				await this.channelTwitchClient.predictions.createPrediction(this.state.channelId, config);
+			},
+		},
+		createPoll: {
+			name: "Create Poll",
+			description: "Creates a Twitch Poll",
+			icon: "mdi-poll",
+			color: "#5E5172",
+			data: {
+				type: Object,
+				properties: {
+					title: {
+						type: String,
+						name: "Title",
+						template: true,
+					},
+					duration: {
+						type: Number,
+						unit: { name: "Seconds", short: 's' },
+						name: "Duration",
+						template: true,
+					},
+					choices: {
+						type: Array,
+						name: "Outcomes",
+						items: {
+							type: String,
+							template: true
+						}
+					},
+					channelPointsPerVote: {
+						type: Number,
+						name: "Channel Points Per Vote",
+						template: true,
+					},
+				}
+			},
+			async handler(predictionData, context) {
+				const config = {
+					title: await template(predictionData.title, context),
+					duration: await templateNumber(predictionData.duration, context),
+					choices: await Promise.all(predictionData.choices.map(t => template(t, context))),
+					channelPointsPerVote: await templateNumber(predictionData.channelPointsPerVote, context)
+				}
+
+				await this.channelTwitchClient.polls.createPoll(this.state.channelId, config);
+			},
+		}
 	},
 	templateFunctions: {
 		async followAge(userId) {

@@ -4,36 +4,19 @@
       <v-col>
         <v-card height="100%" class="d-flex flex-column">
           <v-card-title> Twitch </v-card-title>
-          <v-card-text class="flex-grow-1" v-if="!stateLookup.twitch.isAuthed">
-            <v-alert dense variant="outlined" type="warning">
-              <v-row>
-                <v-col class="grow">
-                  To use twitch features with CastMate you must be signed in to
-                  Twitch.
-                </v-col>
-                <v-col class="shrink">
-                  <v-btn color="warning" variant="outlined" link to="/plugins/twitch" size="small">
-                    Twitch Settings
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-alert>
-          </v-card-text>
-          <v-card-text class="flex-grow-1" v-else>
+          <v-card-text class="flex-grow-1">
             <v-row>
               <v-col>
-                <strong> Channel: </strong>
-                {{ stateLookup.twitch.channelName }} <br />
-                <strong> Bot: </strong>
-                {{ stateLookup.twitch.botName }}
+                <twitch-account-display />
+                <twitch-account-display is-bot />
               </v-col>
               <v-col>
                 <strong> Viewers: </strong> {{ stateLookup.twitch.viewers }}
                 <br />
                 <strong> Followers: </strong>
-                {{ stateLookup.twitch.followers }} <br />
+                {{ stateLookup.twitch.followers || 0 }} <br />
                 <strong> Subscribers: </strong>
-                {{ stateLookup.twitch.subscribers }} <br />
+                {{ stateLookup.twitch.subscribers || 0 }} <br />
               </v-col>
             </v-row>
           </v-card-text>
@@ -104,9 +87,10 @@ import ActiveProfilesCard from "../components/profiles/ActiveProfilesCard.vue";
 import WelcomeDialog from "../components/wizard/WelcomeDialog.vue";
 import { mapIpcs } from "../utils/ipcMap";
 import { trackAnalytic } from "../utils/analytics.js";
+import TwitchAccountDisplay from "../components/twitch/TwitchAccountDisplay.vue";
 
 export default {
-  components: { ActiveProfilesCard, WelcomeDialog },
+  components: { ActiveProfilesCard, WelcomeDialog, TwitchAccountDisplay },
   computed: {
     ...mapGetters("ipc", ["stateLookup"]),
   },

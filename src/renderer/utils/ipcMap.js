@@ -13,3 +13,9 @@ export function mapIpcs(pluginName, functions)
 	}
 	return result;
 }
+
+export function useIpc(pluginName, ipcMethod) {
+	return async function (...args) {
+		return await ipcRenderer.invoke(`${pluginName}_${ipcMethod}`, ...(args.map(a => _cloneDeep(a))));
+	}
+}
