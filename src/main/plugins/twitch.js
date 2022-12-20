@@ -73,16 +73,28 @@ export default {
 				badwords = JSON.parse(await fs.promises.readFile(badwordsFile, "utf-8")).words
 			}
 			catch
-			{
-			}
+			{}
 		}
-		
 
+		
 		this.filter = new BadWords({ emptyList: badwords.length > 0 });
 		if (badwords.length > 0)
 		{
 			this.filter.addWords(...badwords);
 		}
+
+		//TEMP CACHING OF LAST SUB
+		const lastSubFile = path.join(userFolder, "data", "lastSub.json")
+		if (fs.existsSync(lastSubFile))
+		{
+			try {
+				this.state.lastSubscriber = JSON.parse(await fs.promises.readFile(lastSubFile, "utf-8")).sub
+			}
+			catch
+			{}
+		}
+		
+
 	},
 	methods: {
 		filterMessage(message) {
@@ -524,6 +536,11 @@ export default {
 						message: message.message,
 						filteredMessage: this.filterMessage(message.message),
 					})
+
+					this.state.lastSubscriber = message.userDisplayName
+					//Cache to a file
+					const lastSubFile = path.join(userFolder, "data", "lastSub.json")
+					fs.promises.writeFile(lastSubFile, JSON.stringify({ sub: message.userDisplayName }));
 				}
 
 				await this.querySubscribers();
@@ -867,11 +884,11 @@ export default {
 			name: "Last Follower",
 			description: "Name of the person to follow"
 		},
-		/*lastSubscriber: {
+		lastSubscriber: {
 			type: String,
 			name: "Last Subscriber",
 			description: "Name of the person to subscribe"
-		},*/
+		},
 		accessToken: {
 			type: String,
 			name: "Auth Token",
