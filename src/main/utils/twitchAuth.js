@@ -16,7 +16,8 @@ const defaultScopes = [
 	"channel:read:hype_train",
 	"channel:read:subscriptions",
 	"channel:read:redemptions",
-	//"channel:manage:polls",
+	"channel:manage:polls",
+  "channel:manage:predictions",
 
 	"clips:edit",
 
