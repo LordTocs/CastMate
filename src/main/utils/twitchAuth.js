@@ -3,34 +3,34 @@ import { BrowserWindow } from './electronBridge.js'
 import logger from './logger.js'
 
 const defaultScopes = [
-	"analytics:read:extensions",
-	"analytics:read:games",
-	"bits:read",
+	"bits:read", 
 
-	"channel:edit:commercial",
-	"channel:manage:broadcast",
-	"channel:manage:redemptions",
+	"channel:edit:commercial", //Start ads
+	
+    "channel:manage:broadcast", //Change title/category, Stream Markers, Tags
+    "user:read:broadcast", //Get current values
+	
+    "channel:read:redemptions",
+    "channel:manage:redemptions", //Change channel point rewards
 
-	"channel_subscriptions",
+	"channel:read:hype_train", //Eventsub Hypetrain... eventually
+	
+    "channel:read:subscriptions", //Sub notifications
 
-	"channel:read:hype_train",
-	"channel:read:subscriptions",
-	"channel:read:redemptions",
-	"channel:manage:polls",
-  "channel:manage:predictions",
+    
+    "channel:read:polls",  //Read the current poll / poll eventsub ... eventually
+	"channel:manage:polls", //Start polls
 
-	"clips:edit",
+    "channel:read:predictions", //Get the current prediction / prediction eventsub ... eventually
+    "channel:manage:predictions", //Start Predictions
 
-	"user:edit",
+	"clips:edit", //Create clips
+
 	"user:read:email",
 
-	"user:edit:broadcast",
-	"user:read:broadcast",
-
-	"channel:moderate",
-
-	"chat:edit",
-	"chat:read"
+	"channel:moderate", //Chat moderation options
+	"chat:edit", //Send chat
+	"chat:read" //See the chat
 ]
 
 export class ElectronAuthManager {
@@ -113,7 +113,7 @@ export class ElectronAuthManager {
                         this._currentScopes = new Set(this.scopes);
 
 						logger.info("  Auth Success");
-						resolve(this._accessToken);
+						resolve({ accessToken: this._accessToken });
 						window.destroy();
 					}
 					else
@@ -130,14 +130,14 @@ export class ElectronAuthManager {
 				{
 					//Hacky, assume that if we're loading jquery we've failed auth.
 					logger.info("  We've *probably* failed auth because scopes have changed.");
-					resolve(false)
+					resolve({ error: 'scopes_changed' })
 					window.destroy();
 					callback({ cancel: true });
 				}
 				else if (matchUrl == "https://www.twitch.tv/login")
 				{
 					logger.info("  No Signin Cookies");
-					resolve(false);
+					resolve({ error: 'not_signed_in' });
 					callback({ cancel: true });
 					window.destroy();
 				}
