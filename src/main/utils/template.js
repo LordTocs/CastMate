@@ -101,3 +101,11 @@ export async function template(templateStr, data)
 
 	return resultStr;
 }
+
+
+export async function templateNumber(value, context) {
+	if (typeof value === 'string' || value instanceof String) {
+		return Number(await evalTemplate(value, context))
+	}
+	return value;
+}
