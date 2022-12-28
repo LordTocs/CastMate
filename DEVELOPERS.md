@@ -8,9 +8,9 @@ This project relies on VUE CLI you need to run `npm install -g @vue/cli`
 
 Run `npm install` after cloning the repo
 
-To start in development mode, use `npm run electron:serve`
+To start in development mode, use `npm run dev`
 
-To build into an installer run `npm run electron:build`
+To build into an installer run `npm run build`
 
 ## Useful Documentation Links
 

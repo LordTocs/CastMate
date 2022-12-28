@@ -57,6 +57,9 @@ export default {
       const result = [];
       for (let pluginKey in this.stateLookup) {
         for (let stateKey in this.stateLookup[pluginKey]) {
+          if (this.plugins[pluginKey]?.stateSchemas[stateKey]?.hidden) 
+            continue;
+            
           result.push({
             variable: `${pluginKey}.${stateKey}`,
             color: this.plugins[pluginKey].color,

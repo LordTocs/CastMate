@@ -30,8 +30,8 @@ export default {
         return this.modelValue;
       },
       set(newValue) {
-        if (newValue === null || String(newValue).trim() == "") {
-          this.clear()
+        if (newValue === null || newValue == undefined || String(newValue).trim() == "") {
+          return this.clear()
         }
 
         let number = Number(newValue);

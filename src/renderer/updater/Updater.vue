@@ -13,7 +13,7 @@
         <v-card class="flex-grow-0 my-2" style="min-height: 30px;">
           <v-card-actions>
             <v-spacer />
-            <v-btn variant="outlined" color="success" @click="doUpdate"> Update Now </v-btn>
+            <v-btn variant="outlined" color="success" @click="doUpdate" :loading="updating"> Update Now </v-btn>
           </v-card-actions>
         </v-card>
       </v-container>
@@ -37,11 +37,18 @@ export default {
       releaseName: null,
       releaseNotes: null,
       version: null,
+      updating: false,
     };
   },
   methods: {
-      doUpdate() {
-          ipcRenderer.invoke("updater.downloadUpdate")
+      async doUpdate() {
+        this.updating = true;
+        try {
+          await ipcRenderer.invoke("updater.downloadUpdate")
+        }
+        catch(err) {
+          this.updating = false;
+        }
       }
   },
   mounted() {

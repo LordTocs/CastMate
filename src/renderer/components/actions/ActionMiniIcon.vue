@@ -1,13 +1,13 @@
 <template>
-  <div>
-    <v-tooltip location="top">
+  <div v-if="actionDefinition">
+    <v-tooltip location="top" >
       <template v-slot:activator="{ props }">
         <v-sheet
           class="mini-icon"
           :color="actionColor"
           v-bind="props"
         >
-          <v-icon small> {{ actionDefinition.icon }} </v-icon>
+          <v-icon small v-if="actionDefinition.icon"> {{ actionDefinition.icon }} </v-icon>
         </v-sheet>
       </template>
       <v-sheet :color="actionColor">

@@ -87,11 +87,25 @@ export async function template(templateStr, data)
 		}
 
 		let template = templateStr.substr(index + 2, parseContext.i - 2 - (index + 2) + 1);
-		let value = await evalTemplate(template, data);
+		let value = undefined;
+		try {
+			value = await evalTemplate(template, data);
+		}
+		catch (err) {
+
+		}
 
 		resultStr += (value != null && value != undefined) ? value.toString() : "";
 		searchStart = parseContext.i + 1;
 	}
 
 	return resultStr;
+}
+
+
+export async function templateNumber(value, context) {
+	if (typeof value === 'string' || value instanceof String) {
+		return Number(await evalTemplate(value, context))
+	}
+	return value;
 }
