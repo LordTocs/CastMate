@@ -3,7 +3,6 @@
         :items="fonts || []"
         v-model="modelObj"
         @focus="refreshFonts"
-        hide-details
         :label="props.label"
         :density="props.density"
     >
