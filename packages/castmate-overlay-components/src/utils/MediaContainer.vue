@@ -40,7 +40,7 @@ const url = computed(() => {
     }
     else
     {
-        return `/media/${props.mediaFile}?id=${id}`
+        return `http://${window.location.host}/media/${props.mediaFile}?id=${id}`
     }
 })
 
