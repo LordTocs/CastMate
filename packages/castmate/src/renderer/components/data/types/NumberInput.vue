@@ -9,9 +9,13 @@
     :placeholder="placeholder"
     :density="density"
   >
+    
     <template #append-inner>
-      {{ unit?.name }}
+      <p class="text-disabled">
+        {{ unit?.name }}
+      </p>
     </template>
+    
   </v-text-field>
 </template>
 
