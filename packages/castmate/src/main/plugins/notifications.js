@@ -87,7 +87,6 @@ export default {
 					header: { type: String, template: true, name: "Header" },
 					text: { type: String, template: true, name: "Text" },
 					color: { type: String, template: true, name: "Color" },
-					duration: { type: Number, name: "Duration", unit: { name: "Seconds", short: 's'}, default: 2.0}
 				}
 			},
 			async handler(notificationData, context)
@@ -113,7 +112,7 @@ export default {
 					notification.color = this.settings.defaultColor;
 				}
 
-				OverlayManager.getInstance().callOverlayFunc(notificationData.overlay, notificationData.alertBox, 'showAlert', notification.header, notification.text, notification.color, notificationData.duration)
+				OverlayManager.getInstance().callOverlayFunc(notificationData.overlay, notificationData.alertBox, 'showAlert', notification.header, notification.text, notification.color)
 			}
 		}
 	}
