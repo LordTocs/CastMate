@@ -21,7 +21,8 @@ export default {
     },
     provide() {
         return {
-            isEditor: false
+            isEditor: false,
+            mediaFolder: { value: `http://${window.location.host}/media/`}
         }
     },
     async mounted() {

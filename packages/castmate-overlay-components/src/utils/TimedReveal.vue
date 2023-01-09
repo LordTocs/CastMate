@@ -11,9 +11,9 @@ import { isNumber } from './typeHelpers.js';
 
 const props = defineProps({
     transition: { },
-    animation: {},
+    animation: { },
     appearDelay: { type: Number, default: 0 },
-    dissappearAhead: { type: Number, default: 0 },
+    vanishAdvance: { type: Number, default: 0 },
 })
 
 const transitionTime = computed(() => {
@@ -32,7 +32,7 @@ defineExpose({
             visible.value = true;
         }, props.appearDelay * 1000);
 
-        const beginDissappearing = Math.max(0, duration - (props.dissappearAhead + transitionTime.value))
+        const beginDissappearing = Math.max(0, duration - (props.vanishAdvance + transitionTime.value))
 
         setTimeout(() => {
             visible.value = false;

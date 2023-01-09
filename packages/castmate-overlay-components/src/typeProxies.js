@@ -18,19 +18,41 @@ export class OverlayTransition {
 */
 }
 
-export class OverlayTimedTransition {
+export class OverlayTransitionTiming {
 /*
-{
-    transition: {
-        duration: 0.5,
-        animation: 'Fade'
-    },
     appearDelay: 1,
-    trailingDelay: 1,
-}
+    vanishAdvance: 1,
 */
 }
 
+export class OverlayPadding {
+    /*
+    {
+        top:
+        left:
+        right:
+        bottom:
+    }
+    */
+
+    static getStyleObject(overlayPadding) {
+        const result = {};
+
+        if (!overlayPadding)
+            return result;
+
+        if (overlayPadding.left)
+            result.paddingLeft = `${overlayPadding.left}px`
+        if (overlayPadding.right)
+            result.paddingRight = `${overlayPadding.right}px`
+        if (overlayPadding.top)
+            result.paddingTop = `${overlayPadding.top}px`
+        if (overlayPadding.bottom)
+            result.paddingBottom = `${overlayPadding.bottom}px`
+
+        return result;
+    }
+}
 
 export class MediaFile {
 
@@ -58,11 +80,14 @@ export class OverlayFontStyle {
     static getStyleObj(overlayFontStyle, colorRefs) {
         const result = {};
 
+        if (!overlayFontStyle)
+            return result;
+
         result.fontSize = `${overlayFontStyle.fontSize}px`
         result.color = resolveColorRef(overlayFontStyle.fontColor, colorRefs)
         result.fontFamily = overlayFontStyle.fontFamily
         result.fontWeight = overlayFontStyle.fontWeight
-        if (overlayFontStyle.stroke && overlayFontStyle.width > 0) {
+        if (overlayFontStyle.stroke && overlayFontStyle.stroke.width > 0) {
             result['-webkit-text-stroke-color'] = resolveColorRef(overlayFontStyle.stroke.color, colorRefs) || "#000000"
             result['-webkit-text-stroke-width'] = `${overlayFontStyle.stroke.width}px`
         }

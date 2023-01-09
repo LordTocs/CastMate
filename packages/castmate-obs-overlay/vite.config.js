@@ -17,6 +17,11 @@ export default defineConfig({
         vue(),
         subpackage("castmate-overlay-components")
     ],
+    resolve: {
+        alias: {
+            path: "path-browserify",
+        }
+    },
     build: {
         outDir: path.join(dist, "obs-overlay"),
         minify: false,

@@ -232,7 +232,6 @@ watch(selectedWidgetId, async (newId) => {
 
     const selectedWidgetComponent = await loadWidget(widget.type)
     const schema = cleanVuePropSchema(selectedWidgetComponent.default.props);
-    console.log("Cleaned to ", schema);
 
     widgetPropSchema.value = schema
     widgetColorRefs.value = selectedWidgetComponent.default.widget?.colorRefs;
@@ -314,7 +313,7 @@ function doDelete() {
 }
 
 .control-panel {
-    width: 20rem;
+    width: 25rem;
     display: flex;
     flex-direction: column;
 }

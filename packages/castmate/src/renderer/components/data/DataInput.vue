@@ -102,6 +102,21 @@
     v-model="modelObj"
     v-bind="allProps"
   />
+  <overlay-transition-input
+    v-else-if="schema.type == 'OverlayTransition'"
+    v-model="modelObj"
+    v-bind="allProps"
+  />
+  <overlay-transition-timing-input
+    v-else-if="schema.type == 'OverlayTransitionTiming'"
+    v-model="modelObj"
+    v-bind="allProps"
+  />
+  <overlay-padding-input 
+    v-else-if="schema.type == 'OverlayPadding'"
+    v-model="modelObj"
+    v-bind="allProps"
+  />
   <media-input 
     v-else-if="schema.type == 'MediaFile'"
     v-model="modelObj"
@@ -128,6 +143,9 @@ import ResourceInput from './types/ResourceInput.vue'
 import OverlayFontStyleInput from "./types/OverlayFontStyleInput.vue";
 import MediaInput from "./types/MediaInput.vue";
 import EnumInput from "./types/EnumInput.vue";
+import OverlayTransitionInput from "./types/OverlayTransitionInput.vue";
+import OverlayTransitionTimingInput from "./types/OverlayTransitionTimingInput.vue";
+import OverlayPaddingInput from "./types/OverlayPaddingInput.vue";
 
 export default {
   name: "data-input",
@@ -148,6 +166,9 @@ export default {
     OverlayFontStyleInput,
     MediaInput,
     EnumInput,
+    OverlayTransitionInput,
+    OverlayTransitionTimingInput,
+    OverlayPaddingInput
 },
   props: {
     schema: {},
