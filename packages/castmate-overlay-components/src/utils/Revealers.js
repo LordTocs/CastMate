@@ -1,6 +1,12 @@
 
 
 export default {
+    'None': {
+        inactive: {
+        },
+        active: {
+        }
+    },
     'Fade': {
         inactive: {
             opacity: 0,
