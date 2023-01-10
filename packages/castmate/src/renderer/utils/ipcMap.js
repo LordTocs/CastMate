@@ -14,9 +14,8 @@ export function mapIpcs(pluginName, functions)
 	return result;
 }
 
-export function useIpcFunc(category, functionName) {
+export function useIpc(pluginName, ipcMethod) {
 	return async function (...args) {
-		//Do we really have to clone? It appears ipcRenderer.invoke does not understand what a Proxy is.
-		return await ipcRenderer.invoke(`${category}_${functionName}`, ...(args.map(a => _cloneDeep(a))));
+		return await ipcRenderer.invoke(`${pluginName}_${ipcMethod}`, ...(args.map(a => _cloneDeep(a))));
 	}
 }
