@@ -1,6 +1,6 @@
 <template>
   <div v-if="actionDefinition">
-    <v-tooltip location="top" >
+    <v-tooltip location="top" :content-props="contentProps">
       <template v-slot:activator="{ props }">
         <v-sheet
           class="mini-icon"
@@ -10,11 +10,9 @@
           <v-icon small v-if="actionDefinition.icon"> {{ actionDefinition.icon }} </v-icon>
         </v-sheet>
       </template>
-      <v-sheet :color="actionColor">
-        <p class="my-1 text-subtitle">{{ actionDefinition.name }}</p>
-        <v-divider />
-        <data-view :schema="actionDefinition.data" :value="this.action.data" />
-      </v-sheet>
+      <p class="my-1 text-subtitle">{{ actionDefinition.name }}</p>
+      <v-divider />
+      <data-view :schema="actionDefinition.data" :value="this.action.data" />
     </v-tooltip>
   </div>
 </template>
@@ -38,8 +36,13 @@ export default {
     },
     actionColor() {
       if (!this.actionDefinition) return null;
-      return this.actionDefinition?.color || "grey darken-2";
+      return this.actionDefinition?.color || "#7a7a7a";
     },
+    contentProps() {
+      return {
+        style: `background-color: ${this.actionColor}; color: white !important;`
+      }
+    }
   },
 };
 </script>
