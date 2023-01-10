@@ -21,10 +21,10 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useIpcFunc } from '../../../utils/ipcMap';
+import { useIpc } from '../../../utils/ipcMap';
 import { useModel } from '../../../utils/modelValue';
 
-const getFonts = useIpcFunc('os', 'getFonts')
+const getFonts = useIpc('os', 'getFonts')
 
 const props = defineProps({ 
     modelValue: { type: String },

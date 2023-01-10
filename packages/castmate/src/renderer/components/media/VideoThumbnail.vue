@@ -6,7 +6,7 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
-import { useIpcFunc } from '../../utils/ipcMap';
+import { useIpc } from '../../utils/ipcMap';
 
 const props = defineProps({
     videoFile: { type: String },
@@ -15,7 +15,7 @@ const props = defineProps({
 
 const thumbnail = ref(null)
 
-const getThumbnail = useIpcFunc("media", "getThumbnail")
+const getThumbnail = useIpc("media", "getThumbnail")
 
 async function generateThumbnail() {
     console.log("Generate Thumbnail")
