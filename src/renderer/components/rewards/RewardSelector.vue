@@ -1,12 +1,13 @@
 <template>
   <v-card-actions>
-    <v-combobox
+    <v-select
       v-model="modelObj"
       :items="items"
-      item-key="title"
-      item-title="title"
+      item-value="title"
+      item-text="title"
       :label="label"
       :search-input.sync="search"
+      
       clearable
     >
       <template #append>
@@ -28,7 +29,7 @@
           </v-menu>
         </div>
       </template>
-    </v-combobox>
+    </v-select>
     
 
     <reward-edit-modal
