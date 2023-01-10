@@ -105,6 +105,9 @@ export default {
                     clearInterval(this.timer)
                     this.timer = null
                 }
+                //Show right away
+                this.showAlert("Title", "Message", "#FF0000")
+                //Show in the future
                 this.timer = setInterval(() => this.showAlert("Title", "Message", "#FF0000"), (this.duration + 1) * 1000)
             }
         }
