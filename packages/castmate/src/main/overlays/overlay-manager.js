@@ -59,6 +59,7 @@ export class OverlayManager {
         ipcFunc("overlays","setTypes", (types) => {
             this.overlayTypes = types;
 
+            console.log("Overlay Types Loaded, Resetting Watchers")
             //Reset any of the watchers now that we have the overlay types
             for (let overlay of this.overlayResources.resources) {
                 overlay.resetWatcher();
@@ -139,7 +140,7 @@ export class OverlayManager {
         webServices.app.use('/overlays/', overlayRoutes);
 
         
-        webServices.on('ws-connection', (socket, params) => {
+        webServices.on('ws-connection',async (socket, params) => {
             if (params.get('overlay'))
             {
                 logger.info("Overlay Connection: ");
@@ -157,6 +158,10 @@ export class OverlayManager {
                 })
 
                 this.openSockets.push(newSocket);
+
+                //We've just connected, it might be a reconnected overlay. Resend our config incase it's stale.
+                const overlay = this.overlayResources.getById(newSocket.overlayId)
+                newSocket.socket.call('setConfig', await overlay?.getTemplatedConfig())
             }
         })
     }
