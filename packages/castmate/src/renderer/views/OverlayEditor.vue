@@ -69,44 +69,6 @@ import _cloneDeep from 'lodash/cloneDeep'
 import { useStore } from 'vuex'
 import path from 'path'
 
-const testOverlay = {
-    width: 1920,
-    height: 1080,
-    widgets: [
-        {
-            id: "a",
-            type: "Label",
-            props: {
-                message: "Oh HELLO"
-            },
-            position: {
-                x: 10,
-                y: 400,
-            },
-            size: {
-                width: 100,
-                height: 30,
-            }
-        },
-        {
-            id: "b",
-            type: "Square",
-            props: {
-                message: "Oh HELLO"
-            },
-            position: {
-                x: 10,
-                y: 10,
-            },
-            size: {
-                width: 100,
-                height: 100,
-            }
-        },
-
-    ]
-}
-
 const store = useStore()
 
 const mediaFolder = computed(() => path.join(store.getters['ipc/paths'].userFolder, 'media'))
@@ -120,7 +82,6 @@ const overlay = ref(null);
 const dirty = ref(false)
 
 const overlays = useResourceFunctions("overlay")
-
 const overlayId = computed(() => route.params.overlayId)
 
 onMounted(async () => {

@@ -5,6 +5,7 @@ import express from "express"
 import httpProxy from "http-proxy"
 import { RPCWebSocket } from '../utils/rpc-websocket.js'
 import { nanoid } from "nanoid/non-secure";
+import logger from "../utils/logger";
 
 let overlayManager = null;
 
@@ -52,10 +53,25 @@ export class OverlayManager {
             }
         })
         this.openSockets = [];
+
+        this.overlayTypes = {}
+
+        ipcFunc("overlays","setTypes", (types) => {
+            this.overlayTypes = types;
+
+            //Reset any of the watchers now that we have the overlay types
+            for (let overlay of this.overlayResources.resources) {
+                overlay.resetWatcher();
+            }
+        })
     }
 
     getById(id) {
         return this.overlayResources.getById(id)
+    }
+    
+    getWidgetType(id) {
+        return this.overlayTypes?.[id];
     }
 
     async callOverlayFunc(overlayId, widgetId, funcName, ...args) {
@@ -63,6 +79,10 @@ export class OverlayManager {
             async (s) => s.socket.call('widgetFunc', widgetId, funcName, ...args).catch(err => null)))
     }
 
+    /**
+     * 
+     * @returns {OverlayManager}
+     */
     static getInstance() {
         if (!overlayManager)
         {
@@ -76,7 +96,7 @@ export class OverlayManager {
 
         const overlayRoutes = express.Router();
 
-        overlayRoutes.get(`/:id/config`, (req, res, next) => {
+        overlayRoutes.get(`/:id/config`, async (req, res, next) => {
             const overlay = this.overlayResources.getById(req.params.id);
             if (!overlay) {
                 const error = new Error("Unknown Overlay");
@@ -84,7 +104,7 @@ export class OverlayManager {
                 return next(error);
             }
 
-            return res.send(overlay.config);
+            return res.send(await overlay.getTemplatedConfig());
         })
 
         if (app.isPackaged)
@@ -120,10 +140,9 @@ export class OverlayManager {
 
         
         webServices.on('ws-connection', (socket, params) => {
-            console.log("Checking Connection", params)
             if (params.get('overlay'))
             {
-                console.log("Got Overlay Connection");
+                logger.info("Overlay Connection: ");
                 const newSocket = {
                     id: nanoid(),
                     socket: new RPCWebSocket(socket),
@@ -143,7 +162,7 @@ export class OverlayManager {
     }
 
     async broadcastConfigChange(overlayId, newConfig) {
-        console.log("Broadcasting UPDATE", overlayId);
+        //console.log("Broadcasting UPDATE", overlayId);
         await Promise.all(this.openSockets.filter((s) => s.overlayId == overlayId).map(
             async (s) => s.socket.call('setConfig', newConfig).catch(err => null)))
     }

@@ -1,5 +1,5 @@
 import OBSWebSocket from 'obs-websocket-js' // For more info: https://www.npmjs.com/package/obs-websocket-js
-import { template } from '../utils/template.js'
+import { template } from '../state/template.js'
 import { app } from "../utils/electronBridge.js"
 import ChildProcess from "child_process"
 import regedit from "regedit"

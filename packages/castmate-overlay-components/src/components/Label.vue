@@ -5,7 +5,7 @@
 <script>
 export default {
     props: {
-        message: { type: String, default: () => "Text Label" }
+        message: { type: String, default: () => "Text Label", template: true }
     },
     widget: {
         name: "Label",

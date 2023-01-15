@@ -60,8 +60,6 @@ class SheetHelper {
         this.sheetElement = document.createElement('style');
         this.sheetElement.type = 'text/css';
         document.head.appendChild(this.sheetElement);
-
-        console.log("Mounted Sheet", this.sheetElement)
         
         this.setRules();
     }

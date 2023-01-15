@@ -1,5 +1,5 @@
 
-import { template } from '../utils/template.js'
+import { template } from '../state/template.js'
 import _ from 'lodash'
 
 export default {
@@ -10,7 +10,7 @@ export default {
 	async onWebsocketMessage(msg, connection)
 	{
 		//Broadcast state out over the websocket.
-		if ("state" in msg)
+		/*if ("state" in msg)
 		{
 			let result = {};
 			for (let stateKey of msg.state)
@@ -27,7 +27,7 @@ export default {
 				}
 			}
 			connection.send(JSON.stringify({ state: result }));
-		}
+		}*/
 	},
 	methods: {
 		async transformTemplatesRecursive(obj, context)

@@ -1,8 +1,9 @@
-import { createReactiveProperty, deleteReactiveProperty } from "../utils/reactive.js"
-import { evalTemplate, template } from '../utils/template.js'
+import { createReactiveProperty, deleteReactiveProperty } from "../state/reactive.js"
+import { evalTemplate, template } from '../state/template.js'
 import { variablesFilePath } from '../utils/configuration.js'
 
 import { HotReloader } from '../utils/hot-reloader.js'
+import { StateManager } from "../state/state-manager.js"
 
 export default {
 	name: "variables",
@@ -77,7 +78,7 @@ export default {
 					//This variable is gone, destroy it.
 					this.logger.info(`Deleting Variable ${variableName}`);
 					deleteReactiveProperty(this.state, variableName);
-					this.plugins.removeReactiveValue(this.name, variableName);
+					StateManager.getInstance().removePluginReactiveProp(this, variableName)
 					needsDependencyUpdate = true;
 					delete this.variableSpecs[variableName];
 				}
@@ -90,7 +91,7 @@ export default {
 		createVariable(name, value) {
 			this.state[name] = value
 			createReactiveProperty(this.state, name);
-			this.plugins.updateReactivity(this);
+			StateManager.getInstance().addPluginReactiveProp(this, name)
 		},
 		async handleTemplateNumber(value, context) {
 			if (typeof value === 'string' || value instanceof String) {

@@ -193,7 +193,6 @@ export class ElectronAuthManager {
                     }
 
                     if (respParams.error) {
-                        logger.info("Error!");
                         //todo error!
                         reject(respParams.error);
                         callback({ cancel: true });

@@ -1,4 +1,4 @@
-import { evalTemplate } from '../utils/template.js'
+import { evalTemplate } from '../state/template.js'
 import axios from 'axios'
 import crypto from 'crypto'
 import Color from 'color'

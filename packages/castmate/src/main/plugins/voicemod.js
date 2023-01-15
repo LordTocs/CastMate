@@ -174,7 +174,7 @@ export default {
         this.voicemod = new VoiceModClient();
 
         this.voicemod.onClose = async () => {
-            this.logger.info('VoiceMod Connection Closed');
+            //this.logger.info('VoiceMod Connection Closed');
             this.retryConnection();
         }
 
@@ -188,7 +188,7 @@ export default {
 	},
     methods: {
         async tryConnect() {
-            this.logger.info('Trying voicemod connection');
+            //this.logger.info('Trying voicemod connection');
             try {
                 await this.voicemod.connect()
             }

@@ -1,5 +1,5 @@
 import Rcon from 'rcon'
-import { template } from '../utils/template.js'
+import { template } from '../state/template.js'
 import { sleep } from "../utils/sleep.js"
 
 
@@ -21,7 +21,7 @@ export default {
 					this.secrets.password,
 				);
 
-				this.logger.info(`Trying MC Connection ${this.settings.host}:${this.settings.port}`)
+				//this.logger.info(`Trying MC Connection ${this.settings.host}:${this.settings.port}`)
 
 				this.connectionState = "Connecting";
 				this.rcon.connect();
@@ -44,8 +44,7 @@ export default {
 				})
 
 				this.rcon.on("error", (err) => {
-					this.logger.info("Error!");
-					this.logger.error(String(err));
+					//this.logger.error(String(err));
 					this.connectionState = "Disconnected";
 					if (this.errorFunc)
 						this.errorFunc(err)
@@ -53,7 +52,7 @@ export default {
 			}
 			catch (err) {
 				this.connectionState = "Disconnected";
-				this.logger.error(err);
+				//this.logger.error(err);
 				if (this.errorFunc)
 					this.errorFunc(err)
 			}

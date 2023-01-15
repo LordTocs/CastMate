@@ -2,7 +2,7 @@ import { ElectronAuthManager }from "../utils/twitchAuth.js"
 import { ApiClient }from "@twurple/api"
 import { ChatClient }from "@twurple/chat"
 import { PubSubClient, BasicPubSubClient }from "@twurple/pubsub"
-import { template, templateNumber } from '../utils/template.js'
+import { template, templateNumber } from '../state/template.js'
 import BadWords from "bad-words"
 import fs from 'fs'
 import path from 'path'

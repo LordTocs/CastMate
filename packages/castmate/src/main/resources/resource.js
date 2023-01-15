@@ -7,6 +7,7 @@ import { ensureFolder, userFolder } from '../utils/configuration'
 import YAML from 'yaml'
 import { ResourceManager } from './resource-manager'
 import { cleanSchemaForIPC } from '../utils/schema'
+import logger from '../utils/logger'
 
 
 export class Resource {
@@ -37,7 +38,6 @@ export class Resource {
             description: this.spec.description,
             config: cleanSchemaForIPC(`${this.spec.type}_config`, this.spec.config),
         }
-        console.log(desc);
         return desc;
     }
 
@@ -74,8 +74,9 @@ export class Resource {
 
     async load() {
         console.log("Loading... ", this.name);
+        logger.info(`Loading ${this.name} Resources`);
+
         this.resources = await this.resourceType.load()
-        console.log(this.resources);
 
         this._triggerUpdate();
     }
@@ -170,6 +171,7 @@ export class FileResource {
                 const instance = new this()
                 instance.id = path.basename(file, '.yaml')
                 instance.config = yaml
+                instance.onLoaded?.()
                 return instance
             }
             catch(err) {

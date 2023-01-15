@@ -1,9 +1,11 @@
 import { manualDependency } from './conditionals.js';
 import { Plugin } from './plugin.js'
-import { reactiveCopy, Watcher, deleteReactiveProperty } from './reactive.js'
+import { reactiveCopy, Watcher, deleteReactiveProperty } from '../state/reactive.js'
 import { ipcMain } from "./electronBridge.js"
 import _ from 'lodash'
 import logger from './logger.js';
+
+let pluginManager = null;
 
 export class PluginManager {
 	async load(ipcSender) {
@@ -32,22 +34,18 @@ export class PluginManager {
 
 		//Todo: This relative require is weird.
 		this.plugins = [];
-		for (let file of pluginFiles)
-		{
+
+		this.plugins = await Promise.all(pluginFiles.map(async file => {
+			let plugin = null;
 			try {
-				this.plugins.push(new Plugin((await import(`../plugins/${file}.js`)).default))
+				plugin = new Plugin((await import(`../plugins/${file}.js`)).default)
 			}
 			catch(err) {
 				logger.error(`Error Importing ${file} Plugin. `);
 				logger.error(err);
 			}
-		}
-		this.stateLookup = {};
-
-		for (let plugin of this.plugins) {
-			this.stateLookup[plugin.name] = {};
-			reactiveCopy(this.stateLookup[plugin.name], plugin.pluginObj.state)
-		}
+			return plugin
+		}))
 
 		this.templateFunctions = {};
 		for (let plugin of this.plugins) {
@@ -55,59 +53,6 @@ export class PluginManager {
 		}
 
 		this.ipcSender = ipcSender;
-	}
-
-	createStateWatcher(pluginName, stateKey, reactiveObj) {
-		const watcher = new Watcher(() => {
-			this.webServices.websocketServer.broadcast(JSON.stringify({
-				state: {
-					[pluginName]: {
-						[stateKey]: reactiveObj[stateKey]
-					}
-				}
-			}))
-
-			if (this.ipcSender) {
-				this.ipcSender.send('state-update', {
-					[pluginName]: {
-						[stateKey]: reactiveObj[stateKey]
-					}
-				});
-			}
-
-		}, { fireImmediately: false })
-
-		manualDependency(reactiveObj, watcher, stateKey);
-	}
-
-	setupReactivity() {
-		for (let pluginName in this.stateLookup) {
-			for (let stateKey in this.stateLookup[pluginName]) {
-				this.createStateWatcher(pluginName, stateKey, this.stateLookup[pluginName])
-			}
-		}
-	}
-
-	updateReactivity(pluginObj) {
-		if (!this.stateLookup[pluginObj.name]) {
-			this.stateLookup[pluginObj.name] = {};
-		}
-		reactiveCopy(this.stateLookup[pluginObj.name], pluginObj.state, (newKey) => {
-			this.createStateWatcher(pluginObj.name, newKey, this.stateLookup[pluginObj.name])
-
-			if (this.ipcSender) {
-				this.ipcSender.send('state-update', {
-					[pluginObj.name]: {
-						[newKey]: this.stateLookup[pluginObj.name][newKey]
-					}
-				});
-			}
-		});
-	}
-
-	removeReactiveValue(pluginName, stateKey) {
-		deleteReactiveProperty(this.stateLookup[pluginName], stateKey);
-		this.ipcSender.send('state-removal', { [pluginName]: stateKey });
 	}
 
 	async init(settings, secrets, actions, profiles, webServices, analytics) {
@@ -127,13 +72,26 @@ export class PluginManager {
 			} 
 			return pluginInfo;
 		})
-
-		ipcMain.handle("getStateLookup", async () => {
-			return _.cloneDeep(this.stateLookup);
-		})
 	}
 
+	/**
+	 * 
+	 * @param {String} name 
+	 * @returns {Plugin}
+	 */
 	getPlugin(name) {
 		return this.plugins.find(p => p.name == name);
 	}
+
+	/**
+	 * 
+	 * @returns {PluginManager}
+	 */
+	static getInstance() {
+        if (!pluginManager)
+        {
+            pluginManager = new this();
+        }
+        return pluginManager;
+    }
 }

@@ -41,7 +41,6 @@ const selected = computed({
 
 const widgetData = ref(null)
 async function loadWidgetData() {
-    console.log("Loading Widget Data", modelValue.value)
     if (!modelValue.value)
         return
 
@@ -50,7 +49,6 @@ async function loadWidgetData() {
         return
     
     const componentModule = await loadWidget(modelValue.value.type)
-    console.log(componentModule.default);
     widgetData.value = componentModule.default.widget || {}
 }
 watch(modelValue, async (newValue) => {

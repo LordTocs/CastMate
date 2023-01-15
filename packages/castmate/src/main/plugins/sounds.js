@@ -1,5 +1,5 @@
 import { ipcMain, BrowserWindow, app } from "../utils/electronBridge.js"
-import { template } from '../utils/template.js'
+import { template } from '../state/template.js'
 import path from "path"
 import { userFolder } from "../utils/configuration.js"
 import say from "say"

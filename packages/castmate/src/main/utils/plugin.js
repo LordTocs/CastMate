@@ -1,4 +1,4 @@
-import { reactify } from "./reactive.js";
+import { reactify } from "../state/reactive.js";
 import { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } from "./schema.js"
 import _ from 'lodash'
 import { ipcMain } from "./electronBridge.js"
@@ -6,6 +6,7 @@ import logger from '../utils/logger.js'
 import path from 'path'
 import { userFolder } from '../utils/configuration.js'
 import { FileCache } from "./filecache.js";
+import { StateManager } from "../state/state-manager.js";
 
 export class Plugin
 {
@@ -35,41 +36,19 @@ export class Plugin
 		this._bindFunction(config, "onWebsocketMessage");
 		this._bindFunction(config, "onWebsocketConnected");
 
-
 		this.settingsView = config.settingsView;
-
 		this.settings = config.settings || [];
 		this.secrets = config.secrets || [];
-		this.triggers = {};
-
-		this.pluginObj.triggers = {};
-
+		
+		this.setupActions(config);
 		this.setupTriggers(config);
 		this.setupCaching(config);
 
-		this.actions = {};
-
-		//Pass the methods onto the plugin object for use.
-		if (config.methods)
-		{
-			Object.assign(this.pluginObj, config.methods);
-		}
-
-		//Bind all the action handlers to the pluginObj so 'this' works correctly.
-		for (let actionKey in config.actions)
-		{
-			let action = config.actions[actionKey];
-			if (action.handler)
-			{
-				action.handler = action.handler.bind(this.pluginObj);
-			}
-			if (action.data)
-			{
-				makeIPCEnumFunctions(this.pluginObj, this.name + "_action_" + actionKey, action.data);
-			}
-			this.actions[actionKey] = action;
-		}
-
+		//Bind our methods and functions
+		this._bindAllFunctions(config, "methods", (key, func) => {
+			this.pluginObj[key] = func;
+		})
+		
 		this._bindAllFunctions(config, "templateFunctions")
 		this._bindAllFunctions(config, "ipcMethods", (key, func) => {
 			this.pluginObj[key] = func;
@@ -95,17 +74,7 @@ export class Plugin
 			makeIPCEnumFunctions(this.pluginObj, this.name + "_settings_" + secretsKey, this.secrets[secretsKey]);
 		}
 
-		//Create all the state.
-		this.stateSchemas = {};
-		this.pluginObj.state = {};
-		for (let stateKey in config.state)
-		{
-			this.stateSchemas[stateKey] = config.state[stateKey];
-			makeIPCEnumFunctions(this.pluginObj, this.name + "_state_" + stateKey, this.stateSchemas[stateKey]);
-			this.pluginObj.state[stateKey] = constructDefaultSchema(config.state[stateKey]);
-		}
-		this.state = this.pluginObj.state;
-		reactify(this.pluginObj.state);
+		this.setupState(config);
 	}
 
 	async init(settings, secrets, actions, profiles, webServices, analytics, plugins)
@@ -134,6 +103,42 @@ export class Plugin
 		}
 	}
 
+	setupActions(config) {
+		this.actions = {};
+
+		//Bind all the action handlers to the pluginObj so 'this' works correctly.
+		for (let actionKey in config.actions)
+		{
+			let action = config.actions[actionKey];
+			if (action.handler)
+			{
+				action.handler = action.handler.bind(this.pluginObj);
+			}
+
+			if (action.data)
+			{
+				makeIPCEnumFunctions(this.pluginObj, this.name + "_action_" + actionKey, action.data);
+			}
+			this.actions[actionKey] = action;
+		}
+	}
+
+	setupState(config) {
+		//Create all the state.
+		this.stateSchemas = {};
+		this.pluginObj.state = {};
+		for (let stateKey in config.state)
+		{
+			this.stateSchemas[stateKey] = config.state[stateKey];
+			makeIPCEnumFunctions(this.pluginObj, this.name + "_state_" + stateKey, this.stateSchemas[stateKey]);
+			this.pluginObj.state[stateKey] = constructDefaultSchema(config.state[stateKey]);
+		}
+		this.state = this.pluginObj.state;
+		reactify(this.pluginObj.state);
+
+		StateManager.getInstance().registerPlugin(this);
+	}
+
 	setupCaching(config) {
 		this.pluginObj.getCache = function(name, secret = false) {
 			const filePath = path.join(userFolder, secret ? 'secrets' : 'cache', `${config.name}.${name}.yaml`);
@@ -142,6 +147,10 @@ export class Plugin
 	}
 
 	setupTriggers(config) {
+
+		this.triggers = {};
+		this.pluginObj.triggers = {};
+
 		for (let triggerName in config.triggers)
 		{
 			const triggerSpec = config.triggers[triggerName];

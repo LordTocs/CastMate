@@ -1,6 +1,6 @@
 import { OverlayManager } from '../overlays/overlay-manager.js';
 import { Overlay } from '../overlays/overlay.js';
-import { template } from '../utils/template.js'
+import { template } from '../state/template.js'
 
 
 export default {
@@ -77,7 +77,6 @@ export default {
 						name: 'Alert Box',
 						required: true,
 						async enum({ overlay }) {
-							console.log("Fetching Overlay", overlay)
 							const overlayObj = OverlayManager.getInstance().getById(overlay)
 							if (!overlayObj)
 								return []

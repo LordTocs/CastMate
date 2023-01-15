@@ -1,6 +1,6 @@
 
 import path from "path"
-import { template } from "../utils/template"
+import { template } from "../state/template"
 import { exec } from 'child_process'
 import express from 'express'
 import axios from "axios"
@@ -43,7 +43,6 @@ export default {
         for (let method in routes) {
             for (let route of routes[method]) {
                 this.router[method.toLowerCase()](route, (req, res, next) => {
-                    console.log("Hello!")
                     this.triggers.endpoint({ 
                         method: method, 
                         route: route, 

@@ -14,6 +14,7 @@ import { ipcMain, app, setIpcSender } from "./utils/electronBridge.js"
 import { ResourceManager } from './resources/resource-manager.js'
 import { OverlayManager }  from './overlays/overlay-manager.js'
 import { osInit } from './utils/os.js'
+import { RemoteTemplateManager } from "./state/remote-template.js";
 
 async function initInternal(mainWindowSender) {
 	logger.info(`Starting CastMate v${app.getVersion()}`);
@@ -24,8 +25,10 @@ async function initInternal(mainWindowSender) {
 
 	osInit();
 
-	let plugins = new PluginManager();
+	let plugins =  PluginManager.getInstance();
 	await plugins.load(mainWindowSender);
+
+	const remoteTemplates = RemoteTemplateManager.getInstance();
 
 	const settings = new HotReloader(settingsFilePath,
 		(newSettings, oldSettings) => {
@@ -64,7 +67,7 @@ async function initInternal(mainWindowSender) {
 
 	plugins.webServices = webServices;
 
-	plugins.setupReactivity();
+	//plugins.setupReactivity();
 
 	const profiles = new ProfileManager(actions, plugins, mainWindowSender);
 

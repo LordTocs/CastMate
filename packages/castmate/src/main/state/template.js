@@ -1,4 +1,6 @@
 
+import _cloneDeep from 'lodash/cloneDeep'
+
 const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 
 export async function evalTemplate(template, data)
@@ -108,4 +110,56 @@ export async function templateNumber(value, context) {
 		return Number(await evalTemplate(value, context))
 	}
 	return value;
+}
+
+
+export async function templateSchema(obj, schema, context) {
+	if (!schema)
+		return obj;
+	
+	if (schema.type == Object || schema.type == "Object")
+	{
+		const result = {};
+		const promises = [];
+
+		for (let key in schema.properties) {
+			
+			promises.push((async () => {
+				if (!(key in obj))
+					return
+
+				const subObj = obj[key];
+				const subSchema = schema.properties[key]
+
+				result[key] = await templateSchema(subObj, subSchema , context)
+			})())
+		}
+
+		await Promise.all(promises);
+
+		return result;
+	}
+	else if (schema.type == 'Array' || schema.type == Array)
+	{
+		const promises = [];
+
+		for (let arrItem of obj) {
+			promises.push(templateSchema(arrItem, schema.items, schema))
+		}
+
+		return await Promise.all(promises)
+	}
+	else if (schema.template)
+	{
+		if (schema.type == 'String' || schema.type == String) 
+		{
+			return await template(obj, context);
+		}
+		else if (schema.type == 'Number' || schema.type == Number) 
+		{
+			return await templateNumber(obj, context);
+		}
+	}
+
+	return obj
 }

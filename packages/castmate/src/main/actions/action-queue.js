@@ -1,9 +1,9 @@
 import { sleep } from "../utils/sleep.js"
 import { Mutex } from "async-mutex"
-import { reactiveCopy } from "../utils/reactive.js"
 import logger from '../utils/logger.js'
 import { ipcMain } from "../utils/electronBridge.js"
 import _ from 'lodash'
+import { StateManager } from "../state/state-manager.js"
 
 export class ActionQueue {
 	constructor(plugins, automations) {
@@ -44,7 +44,7 @@ export class ActionQueue {
 						return;
 					}
 
-					const completeContext = this.createCompleteContext(context)
+					const completeContext = StateManager.getInstance().getTemplateContext(context)
 
 					for (let mapping of mappings) {
 						try {
@@ -62,26 +62,18 @@ export class ActionQueue {
 
 		this.plugins = plugins;
 
-		const dummyContext = {
-			//Some dummy data.
-			user: "LordTocs",
-			userColor: "#4411FF",
-			userId: "27082158",
-			message: "Thanks for using CastMate.",
-			filteredMessage: "Thanks for using CastMate.",
-		}
 
 		ipcMain.handle('core_runActions', async (event, actions, context) => {
 			const automation = { actions, sync: false };
 
-			const completeContext = this.createCompleteContext(context || dummyContext);
+			const completeContext = StateManager.getInstance().getTemplateContext(context || dummyContext);
 
 			this.pushToQueue(automation, completeContext)
 		})
 
 		ipcMain.handle('core_runAutomation', async (event, automationName, context) => {
 			
-			this.startAutomation(automationName, this.createCompleteContext(context || dummyContext))
+			this.startAutomation(automationName, StateManager.getInstance().getTemplateContext(context || dummyContext))
 		})
 	}
 
@@ -124,7 +116,7 @@ export class ActionQueue {
 	}
 
 	async startAutomation(automation, context) {
-		return this._startAutomationInternal(automation, this.createCompleteContext(context))
+		return this._startAutomationInternal(automation, StateManager.getInstance().getTemplateContext(context))
 	}
 
 	async startAutomationArray(automations, context) {
@@ -151,19 +143,6 @@ export class ActionQueue {
 		automation.sync = !!automation.sync; //ensure that sync exists and is a bool.
 
 		this.convertOffsets(automation.actions);
-	}
-
-	createCompleteContext(context) {
-		let completeContext = { ...context };
-		_.merge(completeContext, this.plugins.templateFunctions);
-		//merge won't work with reactive props, manually go deep here.
-		for (let pluginKey in this.plugins.stateLookup) {
-			if (!(pluginKey in completeContext)) {
-				completeContext[pluginKey] = {};
-			}
-			reactiveCopy(completeContext[pluginKey], this.plugins.stateLookup[pluginKey]);
-		}
-		return completeContext;
 	}
 
 	async pushToQueue(automation, context) {

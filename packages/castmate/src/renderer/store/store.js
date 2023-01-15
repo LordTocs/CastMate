@@ -2,6 +2,7 @@ import ipcModule from './ipc'
 import segmentsModule from './segments'
 import variablesModule from './variables'
 import resourcesModule from './resources'
+import remoteTemplatesModule from './remoteTemplates'
 import Vuex from 'vuex'
 
 import { ipcRenderer } from "electron"
@@ -11,7 +12,8 @@ export const store = new Vuex.Store({
 		ipc: ipcModule,
 		segments: segmentsModule,
 		variables: variablesModule,
-		resources: resourcesModule
+		resources: resourcesModule,
+		remoteTemplates: remoteTemplatesModule
 	}
 });
 
@@ -33,6 +35,11 @@ ipcRenderer.on('profiles-active', (event, arg) => {
 
 ipcRenderer.on('resources_updateResourceArray', (event, { type, resources} ) => {
 	store.dispatch('resources/updateResourceArray', { type, resources })
+})
+
+ipcRenderer.on('templates_updateTemplatedData', (event, {id, templatedData }) => {
+	console.log("Received Templated Data", id, templatedData)
+	store.commit('remoteTemplates/setTemplateData', { id, data: templatedData})
 })
 
 

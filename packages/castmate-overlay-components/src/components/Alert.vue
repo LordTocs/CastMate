@@ -100,7 +100,6 @@ export default {
         },
         setEditorTimer() {
             if (this.isEditor) {
-                console.log("Setting Editor Timer")
                 if (this.timer) {
                     clearInterval(this.timer)
                     this.timer = null

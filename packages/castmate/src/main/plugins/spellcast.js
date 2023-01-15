@@ -1,6 +1,6 @@
 
 import { WebSocket } from 'ws'
-import { onStateChange } from '../utils/reactive'
+import { onStateChange } from '../state/reactive'
 import axios from "axios"
 import { RPCWebSocket } from '../utils/rpc-websocket.js'
 import util from 'util'

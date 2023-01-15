@@ -1,5 +1,5 @@
 import { evalConditional, dependOnAllConditions } from "../utils/conditionals.js"
-import { Watcher } from "../utils/reactive.js"
+import { Watcher } from "../state/reactive.js"
 import { Profile } from "./profiles.js"
 import _ from 'lodash'
 import YAML from 'yaml'
@@ -9,6 +9,7 @@ import { userFolder } from "../utils/configuration.js"
 import logger from "../utils/logger.js"
 import { ipcFunc, ipcMain } from "../utils/electronBridge.js"
 import fs from "fs";
+import { StateManager } from "../state/state-manager.js"
 
 export class ProfileManager
 {
@@ -183,9 +184,9 @@ export class ProfileManager
 			profile.watcher.unsubscribe();
 
 			//create a new watcher
-			profile.watcher = new Watcher(() => this.recombine(), { fireImmediately: false });
+			profile.watcher = new Watcher(() => this.recombine());
 			this.recombine();
-			dependOnAllConditions(profile.conditions, this.plugins.stateLookup, profile.watcher);
+			dependOnAllConditions(profile.conditions, StateManager.getInstance().rootState, profile.watcher);
 		}
 	}
 
@@ -206,8 +207,8 @@ export class ProfileManager
 			// Deactivate the old watcher if it exists.
 			profile.watcher.unsubscribe();
 		}
-		profile.watcher = new Watcher(() => this.markForRecombine(), { fireImmediately: false });
-		dependOnAllConditions(profile.conditions, this.plugins.stateLookup, profile.watcher);
+		profile.watcher = new Watcher(() => this.markForRecombine());
+		dependOnAllConditions(profile.conditions, StateManager.getInstance().rootState, profile.watcher);
 		
 		// Recombine active profiles 
 		this.recombine();
@@ -233,7 +234,7 @@ export class ProfileManager
 			return;
 		}
 
-		let [activeProfiles, inactiveProfiles] = _.partition(this.profiles, (profile) => evalConditional(profile.conditions, this.plugins.stateLookup));
+		let [activeProfiles, inactiveProfiles] = _.partition(this.profiles, (profile) => evalConditional(profile.conditions, StateManager.getInstance().rootState));
 
 		logger.info(`Combining Profiles: ${activeProfiles.map(p => p.name).join(', ')}`);
 

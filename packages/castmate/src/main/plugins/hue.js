@@ -1,4 +1,4 @@
-import { evalTemplate } from '../utils/template.js'
+import { evalTemplate } from '../state/template.js'
 import * as chromatism from 'chromatism2';
 import fs from "fs"
 import path from 'path'

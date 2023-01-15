@@ -1,5 +1,10 @@
 
 const { ipcRenderer } = require("electron");
+import { cleanVuePropSchema } from '../utils/vueSchemaUtils'
+import loadWidget, { getAllWidgets } from 'castmate-overlay-components'
+import { useIpc } from '../utils/ipcMap';
+
+const setOverlayTypes = useIpc("overlays", "setTypes")
 
 const builtInPlugin = {
 	name: 'castmate',
@@ -126,9 +131,27 @@ export default {
 			const paths = await ipcRenderer.invoke('getPaths');
 			commit('setPaths', paths);
 
-			commit('applyState',  await ipcRenderer.invoke("getStateLookup"));
+			commit('applyState',  await ipcRenderer.invoke("state_getRootState"));
 
 			commit('setActiveProfiles',  await ipcRenderer.invoke('core_getActiveProfiles'));
+
+			//Load widget types
+			//TODO: This is kinda sloppy
+			const widgetIds = getAllWidgets()
+
+    		const widgetModules = await Promise.all(widgetIds.map((wid) => loadWidget(wid)))
+			
+			const widgetTypes = {};
+
+			for (let i = 0; i < widgetModules.length; ++i)
+			{
+				widgetTypes[widgetIds[i]] = {
+					...widgetModules[i].default.widget,
+					props: cleanVuePropSchema(widgetModules[i].default.props)
+				}
+			}
+
+			await setOverlayTypes(widgetTypes);
 		},
 		stateUpdate({ commit }, update) {
 			//console.log("applyState", update);

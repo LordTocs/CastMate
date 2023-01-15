@@ -10,10 +10,20 @@ export const safeStorage = electron.safeStorage
 export const dialog = electron.dialog
 
 let mainIpcSender = null;
+/**
+ * 
+ * @param {Electron.WebContents} ipcSender 
+ */
 export function setIpcSender(ipcSender) {
     mainIpcSender = ipcSender
 }
 
+/**
+ * 
+ * @param {String} funcName 
+ * @param {*} payload 
+ * @returns 
+ */
 export function callIpcFunc(funcName, payload) {
     if (!mainIpcSender)
     {
@@ -23,7 +33,12 @@ export function callIpcFunc(funcName, payload) {
     mainIpcSender.send(funcName, payload);
 }
 
-
+/**
+ * 
+ * @param {String} category 
+ * @param {String} name 
+ * @param {CallableFunction} func 
+ */
 export function ipcFunc(category, name, func)
 {
     ipcMain.handle(`${category}_${name}`, async (event, ...args) => { return await func(...args) });

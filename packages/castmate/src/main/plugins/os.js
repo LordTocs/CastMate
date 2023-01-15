@@ -1,6 +1,6 @@
 
 import path from "path"
-import { template } from "../utils/template"
+import { template } from "../state/template"
 import { exec } from 'child_process'
 
 

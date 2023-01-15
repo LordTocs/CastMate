@@ -1,4 +1,7 @@
 //https://medium.com/vue-mastery/the-best-explanation-of-javascript-reactivity-fea6112dd80d
+import { AsyncLocalStorage } from 'node:async_hooks';
+
+const dependencyAsyncStorage = new AsyncLocalStorage();
 
 class Dependency {
 	constructor() {
@@ -29,26 +32,29 @@ class Dependency {
 	}
 
 	depend() {
-		if (Dependency.target) {
-			this.addSubscriber(Dependency.target)
+		//Pull the watcher out of the sync store.
+		const watcher = dependencyAsyncStorage.getStore();
+		if (watcher) {
+			this.addSubscriber(watcher)
 		}
 	}
 }
 
-Dependency.target = null;
-
 
 export class Watcher {
-	constructor(func, { fireImmediately = true }) {
+	constructor(func) {
 		this.func = func;
 		this.dependencies = [];
+	}
 
-		if (fireImmediately) {
-			//Todo: Solve async eval race condition with async_hooks package.
-			Dependency.target = this;
-			this.func();
-			Dependency.target = null;
-		}
+	static async watchAsync(func) {
+		const watcher = new Watcher(func);
+
+		await dependencyAsyncStorage.run(watcher, async () => {
+			await func()
+		})
+
+		return watcher;
 	}
 
 	update() {
@@ -63,7 +69,6 @@ export class Watcher {
 		this.dependencies = [];
 	}
 }
-
 export function createReactiveProperty(obj, key) {
 	let observable = {
 		dependency: new Dependency(),
@@ -109,37 +114,52 @@ export function reactify(obj) {
 	}
 }
 
+export function reactiveCopyProp(target, obj, key) {
+	if (!target.__reactivity__) {
+		Object.defineProperty(target, "__reactivity__", {
+			enumerable: false,
+			writable: true,
+			value: {}
+		});
+	}
+
+	let sourceReactivity = obj.__reactivity__[key]
+	if (!sourceReactivity)
+	{
+		return false;
+	}
+	//Share the reactivity info
+	target.__reactivity__[key] = sourceReactivity;
+
+	if (key in target)
+	{
+		delete target[key];
+	}
+
+	Object.defineProperty(target, key, {
+		enumerable: true,
+		get: () => {
+			target.__reactivity__[key].dependency.depend();
+			return target.__reactivity__[key].internalValue;
+		},
+		set: (value) => {
+			if (target.__reactivity__[key].internalValue !== value) {
+				target.__reactivity__[key].internalValue = value;
+				target.__reactivity__[key].dependency.notify();
+			}
+		},
+		configurable: true
+	})
+}
+
+
 export function reactiveCopy(target, obj, onNewKey = null) {
-	let sourceReactivity = obj.__reactivity__;
-
 	for (let key in obj) {
-		if (!target.__reactivity__) {
-			Object.defineProperty(target, "__reactivity__", {
-				enumerable: false,
-				writable: true,
-				value: {}
-			});
-		}
-
+		
 		if (key in target)
 			continue;
 
-		target.__reactivity__[key] = sourceReactivity[key];
-
-		Object.defineProperty(target, key, {
-			enumerable: true,
-			get: () => {
-				sourceReactivity[key].dependency.depend();
-				return sourceReactivity[key].internalValue;
-			},
-			set: (value) => {
-				if (sourceReactivity[key].internalValue !== value) {
-					sourceReactivity[key].internalValue = value;
-					sourceReactivity[key].dependency.notify();
-				}
-			},
-			configurable: true
-		})
+		reactiveCopyProp(target, obj, key);
 
 		if (onNewKey) {
 			onNewKey(key);
@@ -149,7 +169,7 @@ export function reactiveCopy(target, obj, onNewKey = null) {
 
 export function onStateChange(obj, name, func)
 {
-	const watcher = new Watcher(func, { fireImmediately: false });
+	const watcher = new Watcher(func);
 
 	obj.__reactivity__[name].dependency.addSubscriber(watcher);
 
