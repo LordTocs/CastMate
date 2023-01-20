@@ -21,6 +21,7 @@
     "@twurple/api": "^5.0.13",
     "@twurple/auth": "^5.0.13",
     "@twurple/chat": "^5.0.13",
+    "@twurple/eventsub-ws": "^5.3.3",
     "@twurple/pubsub": "^5.0.13",
     "async-mutex": "^0.3.0",
     "axios": "^0.27.2",

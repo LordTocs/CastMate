@@ -2,6 +2,7 @@ import { ElectronAuthManager }from "../utils/twitchAuth.js"
 import { ApiClient }from "@twurple/api"
 import { ChatClient }from "@twurple/chat"
 import { PubSubClient, BasicPubSubClient }from "@twurple/pubsub"
+import { EventSubWsListener } from "@twurple/eventsub-ws"
 import { template, templateNumber } from '../state/template.js'
 import BadWords from "bad-words"
 import fs from 'fs'
@@ -10,6 +11,7 @@ import { WebSocket } from 'ws'
 import axios from 'axios'
 import { inRange } from "../utils/range.js"
 import { userFolder } from "../utils/configuration.js"
+import _ from "lodash"
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -45,6 +47,50 @@ function dateInterval(date1, date2) {
 		result.months += 12;
 	}
 	return result;
+}
+
+/**
+ * Runs the string matching algorithm chosen by matchType on input with compare
+ * 
+ * @param {String} input 
+ * @param {String | RegExp} compare 
+ * @param {String} matchType 
+ * @returns { Boolean | Array }
+ */
+function doMatch(input, compare, matchType)
+{
+	if (input.length > 0 && matchType == "Start") {
+		if (!compare || compare.length == 0)
+		{
+			//For Start, if the compare is empty we always match.
+			return true;
+		}
+
+		if (input.toLowerCase().startsWith(compare.toLowerCase())) {
+			return true;
+		}
+	}
+	if (input.length > 0 && matchType == "Anywhere") {
+		
+		if (!compare || compare.length == 0) {
+			//For Anywhere, if the compare is empty we always match.
+			return true;
+		}
+
+		if (input.toLowerCase().includes(compare.toLowerCase())) {
+			return true;
+		}
+	}
+	let matches = undefined;
+	if (input.length > 0 && matchType === "Regex")
+	{
+		const regexp = compare instanceof RegExp ? compare : new RegExp(config.command)
+		matches = input.match(regexp);
+		if (!matches) {
+			return false;
+		}
+		return matches
+	}
 }
 
 export default {
@@ -138,19 +184,18 @@ export default {
 
 			if (this.chatClient) {
 				await this.chatClient.quit();
+				this.chatClient = null
 			}
 
 			if (this.basePubSubClient) {
 				this.basePubSubClient.disconnect();
+				this.basePubSubClient = null
+				this.pubSubClient = null
 			}
 
-			if (this.castMateWebsocket) {
-				//Flag so the automatic reconnect does not run
-				this.castMateWebsocketReconnect = false;
-				this.castMateWebsocket.terminate();
-				clearInterval(this.castMateWebsocketPinger);
-				this.castMateWebsocketPinger = null;
-				this.castMateWebsocket = null;
+			if (this.eventSubClient) {
+				this.eventSubClient.stop();
+				this.eventSubClient = null
 			}
 		},
 
@@ -202,10 +247,10 @@ export default {
 			}
 
 			try {
-				await this.setupCastMateWebsocketWorkaround();
+				await this.setupEventSubTriggers();
 			}
 			catch (err) {
-				this.logger.error(`Failed to setup Websocket Workaround`);
+				this.logger.error(`Failed to setup EventSub`);
 				this.logger.error(`${err}`);
 			}
 
@@ -389,99 +434,184 @@ export default {
 
 		},
 
-		async retryWebsocketWorkaround() {
-			if (this.castMateWebsocket) {
-				this.castMateWebsocket.terminate();
-
-				if (this.castMateWebsocketPinger) {
-					clearInterval(this.castMateWebsocketPinger);
-					this.castMateWebsocketPinger = null;
-				}
-			}
-
-			this.castMateWebsocket = null;
-
-			//Retry connection in 5 seconds.
-			if (this.castMateWebsocketReconnect) {
-				this.logger.info(`Connection to castmate websocket failed, retrying in 5 seconds...`);
-				setTimeout(() => {
-					this.setupCastMateWebsocketWorkaround().catch(err => {
-						this.logger.error(`Exception on socket reconnect.`);
-						this.logger.error(`${err}`);
-						this.retryWebsocketWorkaround();
-					})
-				}, 5000);
-			}
-		},
-
-		async setupCastMateWebsocketWorkaround() {
-			this.followerCache = new Set();
-
-			this.castMateWebsocketReconnect = true;
-
-			this.castMateWebsocket = new WebSocket('wss://castmate-websocket.herokuapp.com', {
-				headers: {
-					Authorization: `Bearer ${this.channelAuth._accessToken.accessToken}`,
-				}
-			});
-
-			this.castMateWebsocket.on('open', () => {
-				this.logger.info(`Connection to castmate websocket open`);
-
-				this.castMateWebsocketPinger = setInterval(() => {
-					if (this.castMateWebsocket && this.castMateWebsocket.readyState == 1)
-					{
-						this.castMateWebsocket.ping()
-					}
-				}, 30000);
+		async setupEventSubTriggers() {
+			
+			this.eventSubClient = new EventSubWsListener({
+				apiClient: this.channelTwitchClient
 			})
 
-			this.castMateWebsocket.on('message', async (data) => {
-				let message = null;
-				try {
-					message = JSON.parse(data);
-				}
-				catch
-				{
-					console.error("Unable to parse", data);
-				}
+			//Trick to give a type hint to vscode.
+			/** @type {EventSubWsListener} */
+			const eventSubClient = this.eventSubClient
+			/** @type { ApiClient } */
+			const apiClient = this.channelTwitchClient
 
-				if (!message)
-					return;
-
-				if (message.event == "follow") {
-					if (this.followerCache.has(message.userId))
+			eventSubClient.subscribeToChannelFollowEvents(this.state.channelId, async (event) => {
+				if (this.followerCache.has(event.userId))
 						return;
 
-					this.followerCache.add(message.userId);
+				this.followerCache.add(event.userId);
 
-					this.logger.info(`followed by ${message.userDisplayName}`);
-					this.triggers.follow({ user: message.userDisplayName, userId: message.userId, ...{ userColor: this.colorCache[message.userId] } });
+				this.logger.info(`followed by ${event.userDisplayName}`);
+				this.triggers.follow({ user: event.userDisplayName, userId: event.userId, ...{ userColor: this.colorCache[message.userId] } });
 
-					let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.state.channelId });
-					this.state.followers = follows.total;
-					this.state.lastFollower = follows.data.length > 0 ? follows.data[0].userDisplayName : null;
-				}
+				let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.state.channelId });
+				this.state.followers = follows.total;
+				this.state.lastFollower = follows.data.length > 0 ? follows.data[0].userDisplayName : null;
 			});
 
-			this.castMateWebsocket.on('close', () => {
-				this.retryWebsocketWorkaround();
-			});
+			//Initialize the state
+			const hypeTrainResult = await apiClient.hypeTrain.getHypeTrainEventsForBroadcaster(this.state.channelId)
+			const hypeTrainEvent = hypeTrainResult.data[0]
+			if (hypeTrainEvent.expiryDate > new Date()) {
+				//The hypetrain is active
+				this.state.hypeTrainLevel = hypeTrainEvent.level
+				this.state.hypeTrainGoal = hypeTrainEvent.goal
+				this.state.hypeTrainProgress = 0 //Twitch API is broken here, it doesn't return the level progress when querying
+				this.state.hypeTrainTotal = hypeTrainEvent.total
+			}
+			
+			eventSubClient.subscribeToChannelHypeTrainBeginEvents(this.state.channelId, (event) => {
+				this.state.hypeTrainLevel = event.level
+				this.state.hypeTrainProgress = event.progress
+				this.state.hypeTrainGoal = event.goal
+				this.state.hypeTrainTotal = event.total
+				this.state.hypeTrainExists = true;
+				this.logger.info(`Hype Train Started`)
+				
+				this.triggers.hypeTrainStarted({ level: event.level, progress: event.progress, goal: event.goal, total: event.total })
+			})
 
-			this.castMateWebsocket.on('unexpected-response', (request, response) => {
-				this.logger.error(`Unexpected Response!`);
-				console.log(response);
-				this.retryWebsocketWorkaround();
-				if (response.status == 200) {
-					this.logger.info(`It's the mysterious 200 response!`);
+			eventSubClient.subscribeToChannelHypeTrainProgressEvents(this.state.channelId, (event) => {
+				
+				const levelUp = event.level > this.state.hypeTrainLevel
 
+				this.state.hypeTrainLevel = event.level
+				this.state.hypeTrainProgress = event.progress
+				this.state.hypeTrainGoal = event.goal
+				this.state.hypeTrainTotal = event.total
+
+				this.logger.info(`Hype Train Progressed`)
+
+				if (levelUp) {
+					this.triggers.hypeTrainLevelUp({ level: event.level, progress: event.progress, goal: event.goal, total: event.total })
 				}
 			})
 
-			this.castMateWebsocket.on('error', (err) => {
-				this.logger.error(`CASTMATE WEBSOCKET ERROR: ${err}`);
+			eventSubClient.subscribeToChannelHypeTrainEndEvents(this.state.channelId, (event) => {
+				this.state.hypeTrainLevel = 0
+				this.state.hypeTrainProgress = 0
+				this.state.hypeTrainGoal = 0
+				this.state.hypeTrainTotal = 0
+				this.state.hypeTrainExists = false;
+
+				this.logger.info(`Hype Train Ended`)
+
+				this.triggers.hypeTrainEnded({ level: event.level, progress: event.progress, goal: event.goal, total: event.total })
 			})
 
+			
+			eventSubClient.subscribeToChannelRaidEventsFrom(this.state.channelId, (event) => {
+				this.logger.info(`Raided Out to ${event.raidedBroadcasterDisplayName}`)
+				this.triggers.raidOut({ raidedUser: event.raidedBroadcasterDisplayName, raidedUserId: event.raidedBroadcasterId, raiders: event.viewers })
+			})
+
+			//TODO: We need to update the state with the prediction progress, but that means reactive arrays.
+
+			eventSubClient.subscribeToChannelPredictionBeginEvents(this.state.channelId, (event) => {
+				this.logger.info(`Prediction Started`)
+			
+				this.state.predictionTitle = event.title;
+				this.state.predictionExists = true;
+				this.state.predictionOpen = true;
+				let total = 0;
+				for (let o of event.outcomes) {
+					total += o.channelPoints
+				}
+				this.state.predictionTotal = total
+
+				this.triggers.predictionStarted({ title: event.title, outcomes: event.outcomes.map(o => ({ title: o.title, color: o.color, points: 0 })) })
+			})
+
+			eventSubClient.subscribeToChannelPredictionProgressEvents(this.state.channelId, (event) => {
+				//this.triggers.predictionVote({ title: event.title, outcomes: event.outcomes.map(o => ({ title: o.title, color: o.color, points: o.channelPoints })) })
+				let total = 0;
+				for (let o of event.outcomes) {
+					total += o.channelPoints
+				}
+				this.state.predictionTotal = total
+			})
+
+			eventSubClient.subscribeToChannelPredictionLockEvents(this.state.channelId, (event) => {
+				this.logger.info(`Prediction Locked`)
+				let total = 0;
+				for (let o of event.outcomes) {
+					total += o.channelPoints
+				}
+			
+				this.state.predictionOpen = false;
+				this.state.predictionPending = true;
+				this.state.predictionTitle = event.title;
+
+				this.triggers.predictionLocked({ title: event.title, total, outcomes: event.outcomes.map(o => ({ title: o.title, color: o.color, points: o.channelPoints })) })
+			})
+
+			eventSubClient.subscribeToChannelPredictionEndEvents(this.state.channelId, (event) => {
+				this.logger.info(`Prediction Settled`)
+				let total = 0;
+				for (let o of event.outcomes) {
+					total += o.channelPoints
+				}
+
+				this.state.predictionTitle = null;
+				this.state.predictionPending = false;
+				this.state.predictionExists = false;
+
+				this.triggers.predictionSettled({
+					title: event.title,
+					total,
+					winner: { 
+						title: event.winningOutcome.title,
+						color: event.winningOutcome.color,
+						points: event.winningOutcome.channelPoints
+					},
+					outcomes: event.outcomes.map(o => ({
+						 title: o.title,
+						 color: o.color,
+						 points: o.channelPoints 
+					}))
+				})
+			})
+
+			////
+
+			eventSubClient.subscribeToChannelPollBeginEvents(this.state.channelId, (event) => {
+				this.logger.info(`Poll Started`)
+
+				const totalVotes = event.choices.reduce((total, choice) => total + choice.totalVotes);
+				const choices = event.choices.map(c => ({ title: c.title, votes: c.totalVotes, fraction: c.totalVotes / totalVotes }))
+
+				this.state.pollExists = true;
+				this.state.pollTitle = event.title;
+
+				this.triggers.pollStarted({ title: event.title, choices, totalVotes })
+			})
+
+			/*eventSubClient.subscribeToChannelPollProgressEvents(this.state.channelId, (event) => {
+				this.logger.info(`Poll Progressed`)
+			})*/
+
+			eventSubClient.subscribeToChannelPollEndEvents(this.state.channelId, (event) => {
+				this.logger.info(`Poll Ended`)
+
+				const totalVotes = event.choices.reduce((total, choice) => total + choice.totalVotes);
+				const choices = event.choices.map(c => ({ title: c.title, votes: c.totalVotes, fraction: c.totalVotes / totalVotes }))
+				const winner = _.maxBy(choices, r => r.votes)
+				this.triggers.pollEnded({ title: event.title, totalVotes, winner, choices })
+
+				this.state.pollExists = false;
+				this.state.pollTitle = null;
+			})
 		},
 
 		async setupPubSubTriggers() {
@@ -491,7 +621,6 @@ export default {
 
 			await this.pubSubClient.onBits(this.state.channelId, (message) => {
 				this.logger.info(`Bits: ${message.bits}`);
-
 
 				this.triggers.bits({
 					bits: message.bits,
@@ -878,7 +1007,66 @@ export default {
 			description: "True if the user is at least affiliate",
 			hidden: true
 		},
-
+		hypeTrainExists: {
+			type: Boolean,
+			name: "Hype Train Exists",
+			description: "True if there's currently a hype train.",
+		},
+		hypeTrainLevel: {
+			type: Number,
+			name: "Hype Train Level",
+			description: "The Current Level of the hype train, if there's no hype train it is 0.",
+		},
+		hypeTrainGoal: {
+			type: Number,
+			name: "Hype Train Goal",
+			description: "Points required for the next hype train level."
+		},
+		hypeTrainProgress: {
+			type: Number,
+			name: "Hype Train Progress",
+			description: "Points into the current level of the hype train"
+		},
+		hypeTrainTotal: {
+			type: Number,
+			name: "Hype Train Progress",
+			description: "Total points across all levels of the type train."
+		},
+		predictionExists: {
+			type: Boolean,
+			name: "Prediction Exists",
+			description: "True if there's a prediction that's either open or waiting for the streamer to settle"
+		},
+		predictionOpen: {
+			type: Boolean,
+			name: "Prediction Open",
+			description: "True if there's currently a prediction that viewers can add points to"
+		},
+		predictionPending: {
+			type: Boolean,
+			name: "Prediction Pending",
+			description: "True if there's a locked prediction waiting to be settled by the streamer"
+		},
+		predictionTitle: {
+			type: String,
+			name: "Prediction Title",
+			description: "The title of the current prediction"
+		},
+		predictionTotal: {
+			type: Number,
+			name: "Prediction Total",
+			description: "Total points in the prediction"
+		},
+		pollExists: {
+			type: Boolean,
+			name: "Poll Exists",
+			description: "True if there's a currently active poll"
+		},
+		pollTitle: {
+			type: String,
+			name: "Poll Title",
+			description: "Title of the current poll."
+		},
 		lastFollower: {
 			type: String,
 			name: "Last Follower",
@@ -908,7 +1096,7 @@ export default {
 			config: {
 				type: Object,
 				properties: {
-					command: { type: String, name: "Command", filter: true },
+					command: { type: String, name: "Command", filter: true, template: true },
 					match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
 					permissions: {
 						type: Object,
@@ -938,24 +1126,16 @@ export default {
 			},
 			async handler(config, context, mapping, userInfo) {
 				const command = config.command ? await template(config.command, context) : "";
-				if (command.length > 0 && config.match == "Start") {
-					if (context.command != config.command.toLowerCase()) {
-						return false;
-					}
-				}
-				if (command.length > 0 && config.match == "Anywhere") {
-					if (!context.message.toLowerCase().includes(config.command.toLowerCase())) {
-						return false;
-					}
-				}
-				let matches = undefined;
-				if (command.length > 0 && config.match === "Regex")
+				let matches = doMatch(context.message, command, config.match);
+
+				if (!matches)
 				{
-					matches = context.message.match(new RegExp(config.command));
-					if (!matches) {
-						return false;
-					}
-					context.matches = matches;
+					return false;
+				}
+
+				if (Array.isArray(matches))
+				{
+					context.matches = matches; //If we got an array back from doMatch it's a regexp match.
 				}
 
 				if (config.cooldown) {
@@ -1125,6 +1305,22 @@ export default {
 				return inRange(context.raiders, config.raiders);
 			}
 		},
+		raidOut: {
+			name: "Outgoing Raid",
+			description: "Fires when you raid someone else.",
+			config: {
+				type: Object,
+				raiders: { type: "Range", name: 'Raiders', default: { min: 1} }
+			},
+			context: {
+				raiders: { type: Number },
+				raidedUser: { type: String },
+				raidedUserId: { type: String }
+			},
+			handler(config, context) {
+				return inRange(context.raiders, config.raiders)
+			}
+		},
 		ban: {
 			name: "User Banned",
 			description: "Fires when a user is banned",
@@ -1138,6 +1334,261 @@ export default {
 			context: {
 				user: { type: String },
 			},
+		},
+		hypeTrainStarted: {
+			name: "Hype Train Started",
+			description: "Fires when a hype train is first started",
+			context: {
+				level: { type: Number },
+				progress: { type: Number },
+				goal: { type: Number },
+				total: { type: Number },
+			}
+		},
+		hypeTrainLevelUp: {
+			name: "Hype Train Started",
+			description: "Fires when a hype train goes to the next level",
+			config: {
+				level: { type: 'Range', name: "Level", default: { min: 1 } }
+			},
+			context: {
+				level: { type: Number },
+				progress: { type: Number },
+				goal: { type: Number },
+				total: { type: Number },
+			},
+			handler(config, context) {
+				return inRange(context.level, config.level)
+			}
+		},
+		hypeTrainEnded: {
+			name: "Hype Train Ended",
+			description: "Fires when a hype train ends",
+			config: {
+				level: { type: 'Range', name: "Level", default: { min: 1 } }
+			},
+			context: {
+				level: { type: Number },
+				progress: { type: Number },
+				goal: { type: Number },
+				total: { type: Number },
+			},
+			handler(config, context) {
+				return inRange(context.level, config.level)
+			}
+		},
+		predictionStarted: {
+			name: "Prediction Started",
+			description: "Fires when a prediction is first opened to viewers",
+			config: {
+				title: { type: String, name: "Title", template: true },
+				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+			},
+			context: {
+				title: { type: String },
+				outcomes: {
+					type: Array, 
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String },
+							color: { type: String },
+							points: { type: Number },
+						}
+					}
+				},
+				matches: { type: Array, items: { type: String }}
+			},
+			async handler(context, config) {
+				const title = config.title ? await template(config.title, context) : "";
+				let matches = doMatch(context.title, title, config.match);
+
+				if (!matches)
+				{
+					return false;
+				}
+
+				if (Array.isArray(matches))
+				{
+					context.matches = matches; //If we got an array back from doMatch it's a regexp match.
+				}
+
+				return true;
+			}
+		},
+		predictionLocked: {
+			name: "Prediction Locked",
+			description: "Fires when a prediction is locked and no more points can be added.",
+			config: {
+				title: { type: String, name: "Title", template: true },
+				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+			},
+			context: {
+				title: { type: String },
+				outcomes: {
+					type: Array, 
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String },
+							color: { type: String },
+							points: { type: Number },
+						}
+					}
+				},
+				total: { type: Number },
+				matches: { type: Array, items: { type: String } }
+			},
+			async handler(context, config) {
+				const title = config.title ? await template(config.title, context) : "";
+				let matches = doMatch(context.title, title, config.match);
+
+				if (!matches)
+				{
+					return false;
+				}
+
+				if (Array.isArray(matches))
+				{
+					context.matches = matches; //If we got an array back from doMatch it's a regexp match.
+				}
+
+				return true;
+			}
+		},
+		predictionSettled: {
+			name: "Prediction Settled",
+			description: "Fires when the streamer picks the winning outcome of the prediction",
+			config: {
+				title: { type: String, name: "Title", template: true },
+				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+			},
+			context: {
+				title: { type: String },
+				outcomes: {
+					type: Array, 
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String },
+							color: { type: String },
+							points: { type: Number },
+						}
+					}
+				},
+				total: { type: Number },
+				winner: {
+					type: Object,
+					properties: {
+						title: { type: String },
+						color: { type: String },
+						points: { type: Number },
+					}
+				},
+				matches: { type: Array, items: { type: String } }
+			},
+			async handler(context, config) {
+				const title = config.title ? await template(config.title, context) : "";
+				let matches = doMatch(context.title, title, config.match);
+
+				if (!matches)
+				{
+					return false;
+				}
+
+				if (Array.isArray(matches))
+				{
+					context.matches = matches; //If we got an array back from doMatch it's a regexp match.
+				}
+
+				return true;
+			}
+		},
+		pollStarted: {
+			name: "Poll Started",
+			description: "Fires when a poll opens up.",
+			config: {
+				title: { type: String, name: "Title", template: true },
+				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+			},
+			context: {
+				title: { type: String },
+				totalVotes: { type: Number },
+				choices: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String },
+							votes: { type: Number },
+							fraction: { type: Number },
+						}
+					}
+				}
+			},
+			async handler(context, config) {
+				const title = config.title ? await template(config.title, context) : "";
+				let matches = doMatch(context.title, title, config.match);
+
+				if (!matches)
+				{
+					return false;
+				}
+
+				if (Array.isArray(matches))
+				{
+					context.matches = matches; //If we got an array back from doMatch it's a regexp match.
+				}
+
+				return true;
+			}
+		},
+		pollEnded: {
+			name: "Poll Ended",
+			description: "Fires when a poll closes.",
+			config: {
+				title: { type: String, name: "Title", template: true },
+				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+			},
+			context: {
+				title: { type: String },
+				totalVotes: { type: Number },
+				winner: {
+					type: Object,
+					properties: {
+						title: { type: String },
+						votes: { type: Number },
+						fraction: { type: Number },
+					}
+				},
+				choices: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String },
+							votes: { type: Number },
+							fraction: { type: Number },
+						}
+					}
+				}
+			},
+			async handler(context, config) {
+				const title = config.title ? await template(config.title, context) : "";
+				let matches = doMatch(context.title, title, config.match);
+
+				if (!matches)
+				{
+					return false;
+				}
+
+				if (Array.isArray(matches))
+				{
+					context.matches = matches; //If we got an array back from doMatch it's a regexp match.
+				}
+
+				return true;
+			}
 		}
 	},
 	actions: {
