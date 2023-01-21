@@ -6,7 +6,7 @@ export function cleanSchemaForIPC(rootName, schema)
 {
 	let result = { ...schema };
 
-	if (schema.type == Object)
+	if (schema.type == Object || schema.type == 'Object')
 	{
 		result.type = "Object";
 		if (schema.properties)
@@ -18,7 +18,7 @@ export function cleanSchemaForIPC(rootName, schema)
 			}
 		}
 	}
-	else if (schema.type == 'array' || schema.type == Array)
+	else if (schema.type == 'Array' || schema.type == Array)
 	{
 		result.type = 'Array'
 		if (schema.items?.type)
