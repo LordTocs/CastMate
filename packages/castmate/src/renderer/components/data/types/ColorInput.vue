@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex flex-row">
-        <v-menu :close-on-content-click="false">
+        <v-menu :close-on-content-click="false" :contentProps="{ style: { minWidth: 'unset !important' }}">
             <template #activator="{ props }">
                 <v-input v-model="modelObj" v-bind="props" :density="topProps.density">
                     <v-field :label="topProps.label" clearable :active="!!modelObj" style="cursor: pointer">
@@ -21,9 +21,9 @@
                     </v-field>
                 </v-input>
             </template>
-            <div class="mx-1 my-1">
+            <v-card class="mx-1 my-1">
                 <v-color-picker v-model="sanitizedColor" />
-            </div>
+            </v-card>
         </v-menu>
     </div>
     </template>
