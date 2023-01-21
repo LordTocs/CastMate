@@ -26,8 +26,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { constructDefaultSchema } from "../../utils/objects";
 import loadWidget, { getAllWidgets } from 'castmate-overlay-components'
-import Draggable from "vuedraggable";
-import { nanoid } from 'nanoid/non-secure';
+import { nanoid } from 'nanoid/non-secure'
 import { cleanVuePropSchema } from '../../utils/vueSchemaUtils';
 const widgets = ref([])
 

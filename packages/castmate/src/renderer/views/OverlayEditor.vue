@@ -33,18 +33,21 @@
             </div>
         </div>
         <v-sheet class="control-panel px-2 py-2">
-            <flex-scroller class="flex-grow-1">
+            <flex-scroller style="flex: 1.5">
                 <div v-if="widgetPropSchema">
                     <!--  TODO, make flex-scroller's interior not a flex layout.-->
                     <p class="text-subtitle-2 my-1">Widget Properties</p>
+                    <v-text-field v-model="selectedWidgetName" label="Name" density="compact" />
                     <data-input density="compact" :schema="widgetPropSchema" v-model="selectedWidgetProps" :colorRefs="widgetColorRefs" />
                     <v-divider></v-divider>
-                    <overlay-transform-input v-model:size="selectedWidgetSize" v-model:position="selectedWidgetPosition" />
+                    <overlay-transform-input density="compact" v-model:size="selectedWidgetSize" v-model:position="selectedWidgetPosition" />
                 </div>
             </flex-scroller>
+            <v-divider />
             <flex-scroller class="flex-grow-1">
                 <p class="text-subtitle-2 my-1">Overlay Widgets</p>
-                <overlay-toolbox />
+                <!--<overlay-toolbox />-->
+                <overlay-widget-list v-model="overlay" @select="(id) => selectedWidgetId = id" :selected-widget-id="selectedWidgetId" />
             </flex-scroller>
         </v-sheet>
     </div>
@@ -57,6 +60,7 @@
 import DragFrame from '../components/dragging/DragFrame.vue'
 import OverlayWidget from '../components/overlays/OverlayWidget.vue'
 import OverlayToolbox from '../components/overlays/OverlayToolbox.vue'
+import OverlayWidgetList from '../components/overlays/OverlayWidgetList.vue'
 import OverlayTransformInput from '../components/overlays/OverlayTransformInput.vue'
 import DataInput from '../components/data/DataInput.vue'
 import { useRoute } from 'vue-router'
@@ -119,6 +123,20 @@ const selectedWidget = computed(() => {
     if (index < 0)
         return undefined
     return overlay.value?.widgets?.[index];
+})
+
+const selectedWidgetName = computed({
+    get() {
+        return selectedWidget.value?.name;
+    },
+    set(value) {
+        const widgetIndex = selectedWidgetIndex.value
+
+        if (widgetIndex == -1)
+            return
+
+        overlay.value.widgets[widgetIndex].name = value;
+    }
 })
 
 const selectedWidgetProps = computed({
