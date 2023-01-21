@@ -102,6 +102,7 @@ async function saveInternal() {
     console.log("Saving", overlayId.value, overlay.value);
     await overlays.setConfig(overlayId.value, _cloneDeep(overlay.value));
     saveSnack.value = true;
+    dirty.value = false;
 }
 
 ////////////////////////////
@@ -149,6 +150,7 @@ const selectedWidgetProps = computed({
             return
 
         overlay.value.widgets[widgetIndex].props = value;
+        dirty.value = true
     }
 })
 
@@ -163,6 +165,7 @@ const selectedWidgetSize = computed({
             return
 
         overlay.value.widgets[widgetIndex].size = value;
+        dirty.value = true
     }
 })
 
@@ -177,6 +180,7 @@ const selectedWidgetPosition = computed({
             return
 
         overlay.value.widgets[widgetIndex].position = value;
+        dirty.value = true
     }
 })
 
