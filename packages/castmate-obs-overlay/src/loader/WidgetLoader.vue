@@ -1,5 +1,11 @@
 <template>
-    <component :is="dynamicComponent" v-bind="widgetConfig.props ? widgetConfig.props : {}" class="widget" :style="widgetStyle" ref="widget"> </component>
+    <component 
+        :is="dynamicComponent" 
+        v-bind="widgetConfig.props ? widgetConfig.props : {}" 
+        class="widget" 
+        :style="widgetStyle" 
+        ref="widget"
+    > </component>
 </template>
 
 <script>
