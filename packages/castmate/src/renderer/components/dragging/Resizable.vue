@@ -4,7 +4,8 @@
             <slot></slot>
         </div>
     </div>
-    <div :style="frameStyle" @click.stop="" :class="{ selected, 'drag-div': true }" v-if="selected" @mousedown="onWidgetMouseDown">
+    <div :style="frameStyle" @click.stop="" :class="{ selected, 'drag-div': true }" v-if="selected" >
+        <div class="drag-cover" @mousedown="onWidgetMouseDown"></div>
         <template v-if="selected">
             <div v-for="handle in dragHandles" :key="handle.id" :class="['handle', handle.class]" @mousedown="onHandleMouseDown($event, handle)" @click.stop=""></div>
         </template>
@@ -287,6 +288,14 @@ useEventListener(window, 'mousemove', (ev) => {
 
 .drag-div {
     z-index: 1000;
+}
+
+.drag-cover {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
 }
 
 .handle {
