@@ -63,9 +63,13 @@ export default {
     widget: {
         name: "Alert Box",
         description: "An ALERT!",
-        icon: "mdi-square",
+        icon: "mdi-alert-box",
         testActions: ['alerts.alert'],
         colorRefs: ['alertColor'],
+        defaultSize: {
+            width: 300,
+            height: 200
+        }
     },
     computed: {
         alertAnimation() {

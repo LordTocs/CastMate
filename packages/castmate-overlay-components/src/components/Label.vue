@@ -10,10 +10,10 @@ export default {
     widget: {
         name: "Label",
         description: "Display some text on screen.",
-        icon: "mdi-edit",
+        icon: "mdi-cursor-text",
         defaultSize: {
-            width: 100,
-            height: 50
+            width: 300,
+            height: 100
         }
     }
 }
