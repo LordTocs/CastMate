@@ -80,7 +80,7 @@ export default {
 							const overlayObj = OverlayManager.getInstance().getById(overlay)
 							if (!overlayObj)
 								return []
-							return overlayObj.config.widgets.filter(w => w.type == 'Alert').map(w => w.id)
+							return overlayObj.config.widgets.filter(w => w.type == 'Alert').map(w => ({ name: w.name, value: w.id} ))
 						},
 					},
 					header: { type: String, template: true, name: "Header" },
