@@ -13,7 +13,6 @@
                     <div class="d-flex">
                         <h1 class="flex-grow-1 my-1">{{ overlay?.name }}</h1>
                     </div>
-                    <v-text-field v-if="automation" v-model="automation.description" label="Description" />
                 </div>
             </v-sheet>
             <div class="editor-frame-outer" v-if="overlay">
