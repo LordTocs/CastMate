@@ -1,5 +1,5 @@
 <template>
-    <div :style="frameStyle" :class="{ unselected }" ref="frame">
+    <div :style="frameStyle" :class="{ unselected: true }" ref="frame">
         <div :style="scaleStyle" @mousedown="onWidgetMouseDown">
             <slot></slot>
         </div>
