@@ -87,6 +87,7 @@ export class OverlayFontStyle {
         result.color = resolveColorRef(overlayFontStyle.fontColor, colorRefs)
         result.fontFamily = overlayFontStyle.fontFamily
         result.fontWeight = overlayFontStyle.fontWeight
+        result.textAlign = overlayFontStyle.textAlign
         if (overlayFontStyle.stroke && overlayFontStyle.stroke.width > 0) {
             result['-webkit-text-stroke-color'] = resolveColorRef(overlayFontStyle.stroke.color, colorRefs) || "#000000"
             result['-webkit-text-stroke-width'] = `${overlayFontStyle.stroke.width}px`

@@ -1,5 +1,5 @@
 <template>
-    <p> <span :style="fontStyle"> {{ message }} </span> </p>
+    <p :style="fontStyle"> {{ message }} </p>
 </template>
 
 <script>

@@ -20,6 +20,12 @@
                 <font-input v-model="fontFamily" label="Font" />
                 <number-input v-model="fontSize" label="Font Size" />
                 <color-input v-model="fontColor" :color-refs="props.colorRefs" label="Font Color"/>
+                <v-btn-toggle v-model="textAlign" divided style="margin-bottom: 20px">
+                    <v-btn icon="mdi-format-align-left" value="left"></v-btn>
+                    <v-btn icon="mdi-format-align-center" value="center"></v-btn>
+                    <v-btn icon="mdi-format-align-right" value="right"></v-btn>
+                    <v-btn icon="mdi-format-align-justify" value="justify"></v-btn>
+                </v-btn-toggle>
                 <div class="d-flex flex-row">
                     <font-stroke-input v-model="stroke" :color-refs="props.colorRefs" class="flex-grow-1 mr-2" />
                     <font-shadow-input v-model="shadow" :color-refs="props.colorRefs" class="flex-grow-1 ml-2" />
@@ -55,7 +61,7 @@ const emit = defineEmits(["update:modelValue"])
 const dialog = ref(null)
 
 const modelObj = useModel(props, emit);
-const { fontSize, fontColor, fontFamily, fontWeight, stroke, shadow } = useModelValues(props, emit, ['fontSize', 'fontColor', 'fontFamily', 'fontWeight', 'stroke', 'shadow'])
+const { fontSize, fontColor, fontFamily, fontWeight, stroke, shadow, textAlign } = useModelValues(props, emit, ['fontSize', 'fontColor', 'fontFamily', 'fontWeight', 'stroke', 'shadow', 'textAlign'])
 
 const fontStyle = computed(() => {
     const result = {};
