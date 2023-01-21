@@ -1,11 +1,18 @@
 <template>
-<p> {{ message }} </p>
+    <p> <span :style="fontStyle"> {{ message }} </span> </p>
 </template>
 
 <script>
+import { OverlayFontStyle } from '../typeProxies.js'
 export default {
     props: {
-        message: { type: String, default: () => "Text Label", template: true }
+        message: { type: String, default: () => "Text Label", template: true },
+        textStyle: { type: OverlayFontStyle, name: "Style", exampleText: "Text" },
+    },
+    computed: {
+        fontStyle() {
+            return OverlayFontStyle.getStyleObj(this.textStyle);
+        }
     },
     widget: {
         name: "Label",
@@ -20,11 +27,4 @@ export default {
 </script>
 
 <style scoped>
-p {
-    color: #fff;
-    text-shadow: 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, -2px 0 0 #000;
-    font-size: 40px;
-    font-family: 'Anton', sans-serif;
-    text-align: center;
-}
 </style>
