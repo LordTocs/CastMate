@@ -62,6 +62,14 @@ export class ActionQueue {
 
 		this.plugins = plugins;
 
+		const dummyContext = {
+			//Some dummy data.
+			user: "LordTocs",
+			userColor: "#4411FF",
+			userId: "27082158",
+			message: "Thanks for using CastMate.",
+			filteredMessage: "Thanks for using CastMate.",
+		}
 
 		ipcMain.handle('core_runActions', async (event, actions, context) => {
 			const automation = { actions, sync: false };
