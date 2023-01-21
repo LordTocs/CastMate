@@ -463,7 +463,7 @@ export default {
 			//Initialize the state
 			const hypeTrainResult = await apiClient.hypeTrain.getHypeTrainEventsForBroadcaster(this.state.channelId)
 			const hypeTrainEvent = hypeTrainResult.data[0]
-			if (hypeTrainEvent.expiryDate > new Date()) {
+			if (hypeTrainEvent && hypeTrainEvent.expiryDate > new Date()) {
 				//The hypetrain is active
 				this.state.hypeTrainLevel = hypeTrainEvent.level
 				this.state.hypeTrainGoal = hypeTrainEvent.goal
@@ -1310,7 +1310,9 @@ export default {
 			description: "Fires when you raid someone else.",
 			config: {
 				type: Object,
-				raiders: { type: "Range", name: 'Raiders', default: { min: 1} }
+				properties: {
+					raiders: { type: "Range", name: 'Raiders', default: { min: 1} }
+				}
 			},
 			context: {
 				raiders: { type: Number },
@@ -1349,7 +1351,10 @@ export default {
 			name: "Hype Train Started",
 			description: "Fires when a hype train goes to the next level",
 			config: {
-				level: { type: 'Range', name: "Level", default: { min: 1 } }
+				type: Object,
+				properties: {
+					level: { type: 'Range', name: "Level", default: { min: 1 } }
+				}
 			},
 			context: {
 				level: { type: Number },
@@ -1365,7 +1370,10 @@ export default {
 			name: "Hype Train Ended",
 			description: "Fires when a hype train ends",
 			config: {
-				level: { type: 'Range', name: "Level", default: { min: 1 } }
+				type: Object,
+				properties: {
+					level: { type: 'Range', name: "Level", default: { min: 1 } }
+				}
 			},
 			context: {
 				level: { type: Number },
@@ -1381,8 +1389,11 @@ export default {
 			name: "Prediction Started",
 			description: "Fires when a prediction is first opened to viewers",
 			config: {
-				title: { type: String, name: "Title", template: true },
-				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				type: Object,
+				properties: {
+					title: { type: String, name: "Title", template: true },
+					match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				}
 			},
 			context: {
 				title: { type: String },
@@ -1420,8 +1431,11 @@ export default {
 			name: "Prediction Locked",
 			description: "Fires when a prediction is locked and no more points can be added.",
 			config: {
-				title: { type: String, name: "Title", template: true },
-				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				type: Object,
+				properties: {
+					title: { type: String, name: "Title", template: true },
+					match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				}
 			},
 			context: {
 				title: { type: String },
@@ -1460,8 +1474,11 @@ export default {
 			name: "Prediction Settled",
 			description: "Fires when the streamer picks the winning outcome of the prediction",
 			config: {
-				title: { type: String, name: "Title", template: true },
-				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				type: Object,
+				properties: {
+					title: { type: String, name: "Title", template: true },
+					match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				}
 			},
 			context: {
 				title: { type: String },
@@ -1508,8 +1525,11 @@ export default {
 			name: "Poll Started",
 			description: "Fires when a poll opens up.",
 			config: {
-				title: { type: String, name: "Title", template: true },
-				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				type: Object,
+				properties: {
+					title: { type: String, name: "Title", template: true },
+					match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				}
 			},
 			context: {
 				title: { type: String },
@@ -1547,8 +1567,11 @@ export default {
 			name: "Poll Ended",
 			description: "Fires when a poll closes.",
 			config: {
-				title: { type: String, name: "Title", template: true },
-				match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				type: Object,
+				properties: {
+					title: { type: String, name: "Title", template: true },
+					match: { type: String, enum: ["Start", "Anywhere", "Regex"], default: "Start", preview: false, name: "Match" },
+				}
 			},
 			context: {
 				title: { type: String },
