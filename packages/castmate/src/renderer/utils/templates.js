@@ -19,15 +19,15 @@ export function useTemplatedData(schema, data) {
     })
 
     watch(() => unref(data), () => {
-        console.log("Data Changed!!", id)
+        //console.log("Data Changed!!", id)
         if (mounted) {
-            console.log("Data Changed", id)
+            //console.log("Data Changed", id)
             updateData(id, unref(data))
         }
     })
 
     watch(() => unref(schema), async () => {
-        console.log("Schema Changed!", id)
+        //console.log("Schema Changed!", id)
         await release()
         await setup()
     })
@@ -36,7 +36,7 @@ export function useTemplatedData(schema, data) {
         if (!unref(schema) || !unref(data))
             return
         
-        console.log("Setting Up Templates", id)
+        //console.log("Setting Up Templates", id)
         store.commit('remoteTemplates/createTemplateData', { id })
         await createEvaluator(id, unref(schema), unref(data))
         mounted = true
@@ -47,7 +47,7 @@ export function useTemplatedData(schema, data) {
         {
             return;
         }
-        console.log("Releasing", id)
+        //console.log("Releasing", id)
 
         await releaseEvaluator(id)
         store.commit('remoteTemplates/clearTemplateData', { id })

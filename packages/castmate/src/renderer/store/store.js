@@ -38,7 +38,7 @@ ipcRenderer.on('resources_updateResourceArray', (event, { type, resources} ) => 
 })
 
 ipcRenderer.on('templates_updateTemplatedData', (event, {id, templatedData }) => {
-	console.log("Received Templated Data", id, templatedData)
+	//console.log("Received Templated Data", id, templatedData)
 	store.commit('remoteTemplates/setTemplateData', { id, data: templatedData})
 })
 

@@ -15,7 +15,6 @@ const props = defineProps({
 const propSchema = ref(null)
 
 const untemplatedProps = computed(() => {
-    console.log("Untemplated Props")
     return props.widgetConfig.props
 })
 const templatedProps = useTemplatedData(propSchema, untemplatedProps)
@@ -30,7 +29,6 @@ const dynamicComponent = computed(() => {
     const component = defineAsyncComponent({
         loader: async () => {
             const widget = await loadWidget(props.widgetConfig.type)
-            console.log("Widget Loaded!")
             propSchema.value = cleanVuePropSchema(widget.default.props)
             return widget
         }
