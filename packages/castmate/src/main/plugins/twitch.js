@@ -1348,7 +1348,7 @@ export default {
 			}
 		},
 		hypeTrainLevelUp: {
-			name: "Hype Train Started",
+			name: "Hype Train Level Up",
 			description: "Fires when a hype train goes to the next level",
 			config: {
 				type: Object,
