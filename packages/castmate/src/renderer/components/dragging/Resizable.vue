@@ -1,9 +1,10 @@
 <template>
-    <div :style="frameStyle" @click.stop="" :class="{ selected, unselected: !selected }" ref="frame">
+    <div :style="frameStyle" :class="{ unselected }" ref="frame">
         <div :style="scaleStyle" @mousedown="onWidgetMouseDown">
             <slot></slot>
         </div>
-
+    </div>
+    <div :style="frameStyle" @click.stop="" :class="{ selected, 'drag-div': true }" v-if="selected" @mousedown="onWidgetMouseDown">
         <template v-if="selected">
             <div v-for="handle in dragHandles" :key="handle.id" :class="['handle', handle.class]" @mousedown="onHandleMouseDown($event, handle)" @click.stop=""></div>
         </template>
@@ -282,6 +283,10 @@ useEventListener(window, 'mousemove', (ev) => {
 
 .unselected {
     border: dashed 1px transparent;
+}
+
+.drag-div {
+    z-index: 1000;
 }
 
 .handle {
