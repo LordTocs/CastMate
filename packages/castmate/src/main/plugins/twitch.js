@@ -446,14 +446,15 @@ export default {
 			/** @type { ApiClient } */
 			const apiClient = this.channelTwitchClient
 
-			eventSubClient.subscribeToChannelFollowEvents(this.state.channelId, async (event) => {
+			this.followerCache = new Set();
+			const followSub = eventSubClient.subscribeToChannelFollowEvents(this.state.channelId, async (event) => {
 				if (this.followerCache.has(event.userId))
 						return;
 
 				this.followerCache.add(event.userId);
 
 				this.logger.info(`followed by ${event.userDisplayName}`);
-				this.triggers.follow({ user: event.userDisplayName, userId: event.userId, ...{ userColor: this.colorCache[message.userId] } });
+				this.triggers.follow({ user: event.userDisplayName, userId: event.userId, ...{ userColor: this.colorCache[event.userId] } });
 
 				let follows = await this.channelTwitchClient.users.getFollows({ followedUser: this.state.channelId });
 				this.state.followers = follows.total;
@@ -471,7 +472,7 @@ export default {
 				this.state.hypeTrainTotal = hypeTrainEvent.total
 			}
 			
-			eventSubClient.subscribeToChannelHypeTrainBeginEvents(this.state.channelId, (event) => {
+			const trainBeginSub = eventSubClient.subscribeToChannelHypeTrainBeginEvents(this.state.channelId, (event) => {
 				this.state.hypeTrainLevel = event.level
 				this.state.hypeTrainProgress = event.progress
 				this.state.hypeTrainGoal = event.goal
@@ -482,7 +483,7 @@ export default {
 				this.triggers.hypeTrainStarted({ level: event.level, progress: event.progress, goal: event.goal, total: event.total })
 			})
 
-			eventSubClient.subscribeToChannelHypeTrainProgressEvents(this.state.channelId, (event) => {
+			const trainProgressSub = eventSubClient.subscribeToChannelHypeTrainProgressEvents(this.state.channelId, (event) => {
 				
 				const levelUp = event.level > this.state.hypeTrainLevel
 
@@ -498,7 +499,7 @@ export default {
 				}
 			})
 
-			eventSubClient.subscribeToChannelHypeTrainEndEvents(this.state.channelId, (event) => {
+			const trainEndSub = eventSubClient.subscribeToChannelHypeTrainEndEvents(this.state.channelId, (event) => {
 				this.state.hypeTrainLevel = 0
 				this.state.hypeTrainProgress = 0
 				this.state.hypeTrainGoal = 0
@@ -511,14 +512,14 @@ export default {
 			})
 
 			
-			eventSubClient.subscribeToChannelRaidEventsFrom(this.state.channelId, (event) => {
+			const raidOutSub = eventSubClient.subscribeToChannelRaidEventsFrom(this.state.channelId, (event) => {
 				this.logger.info(`Raided Out to ${event.raidedBroadcasterDisplayName}`)
 				this.triggers.raidOut({ raidedUser: event.raidedBroadcasterDisplayName, raidedUserId: event.raidedBroadcasterId, raiders: event.viewers })
 			})
 
 			//TODO: We need to update the state with the prediction progress, but that means reactive arrays.
 
-			eventSubClient.subscribeToChannelPredictionBeginEvents(this.state.channelId, (event) => {
+			const predictionBeginSub = eventSubClient.subscribeToChannelPredictionBeginEvents(this.state.channelId, (event) => {
 				this.logger.info(`Prediction Started`)
 			
 				this.state.predictionTitle = event.title;
@@ -533,7 +534,7 @@ export default {
 				this.triggers.predictionStarted({ title: event.title, outcomes: event.outcomes.map(o => ({ title: o.title, color: o.color, points: 0 })) })
 			})
 
-			eventSubClient.subscribeToChannelPredictionProgressEvents(this.state.channelId, (event) => {
+			const predictionProgressSub = eventSubClient.subscribeToChannelPredictionProgressEvents(this.state.channelId, (event) => {
 				//this.triggers.predictionVote({ title: event.title, outcomes: event.outcomes.map(o => ({ title: o.title, color: o.color, points: o.channelPoints })) })
 				let total = 0;
 				for (let o of event.outcomes) {
@@ -542,7 +543,7 @@ export default {
 				this.state.predictionTotal = total
 			})
 
-			eventSubClient.subscribeToChannelPredictionLockEvents(this.state.channelId, (event) => {
+			const predictionLockSub = eventSubClient.subscribeToChannelPredictionLockEvents(this.state.channelId, (event) => {
 				this.logger.info(`Prediction Locked`)
 				let total = 0;
 				for (let o of event.outcomes) {
@@ -556,7 +557,7 @@ export default {
 				this.triggers.predictionLocked({ title: event.title, total, outcomes: event.outcomes.map(o => ({ title: o.title, color: o.color, points: o.channelPoints })) })
 			})
 
-			eventSubClient.subscribeToChannelPredictionEndEvents(this.state.channelId, (event) => {
+			const predictionEndSub = eventSubClient.subscribeToChannelPredictionEndEvents(this.state.channelId, (event) => {
 				this.logger.info(`Prediction Settled`)
 				let total = 0;
 				for (let o of event.outcomes) {
@@ -585,7 +586,7 @@ export default {
 
 			////
 
-			eventSubClient.subscribeToChannelPollBeginEvents(this.state.channelId, (event) => {
+			const pollBeginSub = eventSubClient.subscribeToChannelPollBeginEvents(this.state.channelId, (event) => {
 				this.logger.info(`Poll Started`)
 
 				const totalVotes = event.choices.reduce((total, choice) => total + choice.totalVotes);
@@ -601,7 +602,7 @@ export default {
 				this.logger.info(`Poll Progressed`)
 			})*/
 
-			eventSubClient.subscribeToChannelPollEndEvents(this.state.channelId, (event) => {
+			const pollEndSub = eventSubClient.subscribeToChannelPollEndEvents(this.state.channelId, (event) => {
 				this.logger.info(`Poll Ended`)
 
 				const totalVotes = event.choices.reduce((total, choice) => total + choice.totalVotes);
@@ -612,6 +613,10 @@ export default {
 				this.state.pollExists = false;
 				this.state.pollTitle = null;
 			})
+
+			const subs = await Promise.all([followSub, trainBeginSub, trainProgressSub, trainEndSub, raidOutSub, predictionBeginSub, predictionProgressSub, predictionLockSub, predictionEndSub, pollBeginSub, pollEndSub ])
+			
+			await eventSubClient.start()
 		},
 
 		async setupPubSubTriggers() {
