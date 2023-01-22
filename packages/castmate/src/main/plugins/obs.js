@@ -338,7 +338,7 @@ export default {
 						}
 					},
 					filterEnabled: {
-						type: Boolean,
+						type: 'Toggle',
 						name: "Filter Enabled",
 						required: true,
 						default: true,
@@ -351,10 +351,17 @@ export default {
 				const sourceName = await template(filterData.sourceName, context);
 				const filterName = await template(filterData.filterName, context);
 
+				let enabled = filterData.filterEnabled
+				if (enabled == 'toggle')
+				{
+					const { filterEnabled } = await this.obs.call('GetSourceFilter', { sourceName, filterName })
+					enabled = !filterEnabled;
+				}
+
 				await this.obs.call('SetSourceFilterEnabled', {
 					sourceName,
 					filterName,
-					filterEnabled: !!filterData.filterEnabled
+					filterEnabled: enabled
 				})
 			}
 		},
@@ -388,7 +395,7 @@ export default {
 						}
 					},
 					enabled: {
-						type: Boolean,
+						type: 'Toggle',
 						name: "Source Visible",
 						required: true,
 						default: true,
@@ -402,11 +409,17 @@ export default {
 				const sourceName = await template(data.source, context)
 				
 				const { sceneItemId } = await this.obs.call('GetSceneItemId', { sceneName, sourceName });
+
+				let enabled = data.enabled
+				if (enabled == 'toggle') {
+					const { sceneItemEnabled } = await this.obs.call('GetSceneItemEnabled',  { sceneName, sceneItemId })
+					enabled = !sceneItemEnabled
+				}
 				
 				await this.obs.call('SetSceneItemEnabled', {
 					sceneName,
 					sceneItemId,
-					sceneItemEnabled: data.enabled,
+					sceneItemEnabled: enabled,
 				})
 			},
 		},
@@ -567,7 +580,7 @@ export default {
 						}
 					},
 					muted: {
-						type: Boolean,
+						type: 'Toggle',
 						required: true,
 						name: "Muted",
 						default: true,
@@ -581,10 +594,17 @@ export default {
 				const inputName = await template(data.sourceName, context);
 
 				try {
-					await this.obs.call("SetInputMute", {
-						inputName,
-						inputMuted: data.muted,
-					});
+					let muted = data.muted
+					if (muted === 'toggle') {
+						await this.obs.call("ToggleInputMute", { inputName });
+					}
+					else {
+						await this.obs.call("SetInputMute", {
+							inputName,
+							inputMuted: data.muted,
+						});
+					}
+
 				}
 				catch (err) {
 					this.logger.error(`Error Muting Source ${sourceName}: \n ${err}`);

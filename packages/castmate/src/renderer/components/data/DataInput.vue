@@ -122,6 +122,11 @@
     v-model="modelObj"
     v-bind="allProps"
   />
+  <toggle-input 
+    v-else-if="schema.type == 'Toggle'"
+    v-model="modelObj"
+    v-bind="allProps"
+  />
 </template>
 
 <script>
@@ -146,6 +151,7 @@ import EnumInput from "./types/EnumInput.vue";
 import OverlayTransitionInput from "./types/OverlayTransitionInput.vue";
 import OverlayTransitionTimingInput from "./types/OverlayTransitionTimingInput.vue";
 import OverlayPaddingInput from "./types/OverlayPaddingInput.vue";
+import ToggleInput from "./types/ToggleInput.vue";
 
 export default {
   name: "data-input",
@@ -168,7 +174,8 @@ export default {
     EnumInput,
     OverlayTransitionInput,
     OverlayTransitionTimingInput,
-    OverlayPaddingInput
+    OverlayPaddingInput,
+    ToggleInput,
 },
   props: {
     schema: {},
