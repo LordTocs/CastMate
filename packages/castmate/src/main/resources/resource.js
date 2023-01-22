@@ -153,6 +153,8 @@ export class FileResource {
         const dir = path.join(userFolder, this.storageFolder);
         ensureFolder(dir);
         await fs.promises.writeFile(path.join(dir, `${instance.id}.yaml`), YAML.stringify(instance.config), 'utf-8');
+
+        return instance
     }
 
     static async load() {

@@ -38,7 +38,6 @@ export class Overlay extends FileResource
         this.configWatch = await Watcher.watchAsync(async () => {
             //Send over the websocket....
             const config = await this.getTemplatedConfig()
-            console.log("Sending Update", config.widgets[0]?.props)
             await OverlayManager.getInstance().broadcastConfigChange(this.id, config)
         })
     }
