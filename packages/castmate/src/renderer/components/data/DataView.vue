@@ -20,6 +20,14 @@
     </span>
     <v-icon> {{ value ? (schema.trueIcon ? schema.trueIcon : 'mdi-check-bold' ) : (schema.falseIcon ? schema.falseIcon : 'mdi-close-bold' ) }} </v-icon>
   </p>
+  <p v-else-if="schema.type == 'Toggle'">
+    <span class="text--secondary" v-if="schema.name || label">
+      {{ schema.name || label }}:
+    </span>
+    <v-icon v-if="value===true"> {{ (schema.trueIcon ? schema.trueIcon : 'mdi-check-bold' ) }} </v-icon>
+    <v-icon v-else-if="value==='toggle'"> {{ (schema.toggleIcon ? schema.toggleIcon : 'mdi-swap-horizontal' ) }} </v-icon>
+    <v-icon v-else-if="!value"> {{ (schema.falseIcon ? schema.falseIcon : 'mdi-close-bold' ) }} </v-icon>
+  </p>
   <p v-else-if="schema.type == 'LightColor'">
     <span class="text--secondary" v-if="schema.name || label">
       {{ schema.name || label }}:
