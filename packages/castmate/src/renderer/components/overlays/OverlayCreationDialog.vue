@@ -8,10 +8,10 @@
             </v-toolbar>
             <v-form @submit.prevent="create">
                 <v-card-text>
-                    <v-text-field v-model="name" :label="label" ref="nameInput"/>
+                    <v-text-field v-model="name" label="Overlay Name" ref="nameInput"/>
                     <div class="d-flex flex-row">
-                        <number-input v-model="width" class="mx-1"/>
-                        <number-input v-model="height" class="mx-1" />
+                        <number-input v-model="width" class="mx-1" label="Width"/>
+                        <number-input v-model="height" class="mx-1" label="Height"/>
                     </div>
                     <v-card-actions class="pt-3">
                     <v-spacer></v-spacer>
@@ -41,7 +41,7 @@
 <script setup>
 import NumberInput from "../data/types/NumberInput.vue"
 
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
 const props = defineProps({
     header: { type: String },
@@ -50,6 +50,8 @@ const props = defineProps({
 const name = ref(null);
 const width = ref(1920);
 const height = ref(1080);
+
+const nameInput = ref(null);
 
 const dialog = ref(false);
 
@@ -78,6 +80,9 @@ defineExpose({
         if (openPromise)
             return undefined;
         dialog.value = true;
+        nextTick(() => {
+            nameInput.value.focus();
+        })
         return new Promise((resolve, reject) => {
             openPromise = { resolve, reject }
         })
