@@ -50,19 +50,21 @@
             </flex-scroller>
         </v-sheet>
     </div>
+    <confirm-dialog ref="saveDlg" />
     <v-snackbar v-model="saveSnack" :timeout="1000" color="green">
       Saved
     </v-snackbar>
 </template>
 
 <script setup>
+import ConfirmDialog from '../components/dialogs/ConfirmDialog.vue'
 import DragFrame from '../components/dragging/DragFrame.vue'
 import OverlayWidget from '../components/overlays/OverlayWidget.vue'
 import OverlayToolbox from '../components/overlays/OverlayToolbox.vue'
 import OverlayWidgetList from '../components/overlays/OverlayWidgetList.vue'
 import OverlayTransformInput from '../components/overlays/OverlayTransformInput.vue'
 import DataInput from '../components/data/DataInput.vue'
-import { useRoute } from 'vue-router'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { ref, computed, watch, onMounted, provide } from 'vue'
 import loadWidget from 'castmate-overlay-components'
 import { cleanVuePropSchema } from '../utils/vueSchemaUtils.js'
@@ -256,6 +258,22 @@ function doDelete() {
         selectedWidgetId.value = null;
     }
 }
+
+const saveDlg = ref(null)
+
+onBeforeRouteLeave(async (to, from) => {
+    if (dirty.value &&
+      await saveDlg.value.open(
+        "Unsaved Changes",
+        "Do you want to save your changes?",
+        "Save Changes",
+        "Discard Changes"
+      )
+    ) {
+      await saveInternal();
+    }
+    return true;
+})
 
 </script>
 
