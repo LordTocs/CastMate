@@ -186,7 +186,7 @@ export class FileResource {
     }
 
     async clone() {
-        await this.constructor.create(this.config)
+        return await this.constructor.create(this.config)
     }
 
     async setConfig(config) {

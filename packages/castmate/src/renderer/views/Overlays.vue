@@ -53,7 +53,7 @@ export default {
           const newName = this.$refs.duplicateDlg.name;
 
           const newOverlay = await this.cloneOverlay(overlay.id);
-          await this.setOverlayConfig(newOverlay.name, { name: newName });
+          await this.setOverlayConfig(newOverlay.id, { ...newOverlay.config, name: newName });
           this.$router.push(`/overlays/${newOverlay.id}`)
       }
     },
