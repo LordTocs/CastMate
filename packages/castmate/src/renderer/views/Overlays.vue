@@ -10,7 +10,7 @@
   </v-container>
   <named-item-confirmation ref="duplicateDlg" />
   <confirm-dialog ref="deleteDlg" />
-  <overlay-creation-dialog ref="createDlg" />
+  <overlay-creation-dialog ref="createDlg" header="Create New Overlay"/>
 </template>
 
 
