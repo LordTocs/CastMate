@@ -14,7 +14,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="item in filteredItems" :key="getId(obj)" @click="$emit('nav', item)">
+                <tr v-for="item in filteredItems" :key="getId(item)" @click="$emit('nav', item)">
                     <td> <slot name="item" :item="item"> {{ getName(item) }}</slot> </td>
                     <td class="d-flex flex-row justify-end align-center">
                         <slot name="item-input" :item="item"></slot>
