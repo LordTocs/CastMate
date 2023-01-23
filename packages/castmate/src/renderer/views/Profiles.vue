@@ -22,7 +22,6 @@ export default {
     ...mapIpcs("io", ["getProfiles", "createProfile", "cloneProfile", "deleteProfile"]),
     async getFiles() {
       this.profiles = await this.getProfiles();
-      console.log(this.profiles);
     },
     onNav(name) {
       this.$router.push(`/profiles/${name}`)
