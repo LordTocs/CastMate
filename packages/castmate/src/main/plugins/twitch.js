@@ -59,6 +59,9 @@ function dateInterval(date1, date2) {
  */
 function doMatch(input, compare, matchType)
 {
+	const inputLower = input.toLowerCase();
+	const compareLower = compare.toLowerCase();
+
 	if (input.length > 0 && matchType == "Start") {
 		if (!compare || compare.length == 0)
 		{
@@ -66,7 +69,8 @@ function doMatch(input, compare, matchType)
 			return true;
 		}
 
-		if (input.toLowerCase().startsWith(compare.toLowerCase())) {
+		//Make sure the input starts with the compare and the next character is either non-existant (eos) or a delimeter
+		if (inputLower.startsWith(compareLower) && (inputLower[compareLower.length] == undefined || inputLower[compareLower.length] == ' ')) {
 			return true;
 		}
 	}
@@ -77,7 +81,7 @@ function doMatch(input, compare, matchType)
 			return true;
 		}
 
-		if (input.toLowerCase().includes(compare.toLowerCase())) {
+		if (inputLower.includes(compareLower)) {
 			return true;
 		}
 	}
