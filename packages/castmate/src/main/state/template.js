@@ -48,7 +48,7 @@ function skipString(templateStr, parseContext)
 	return true;
 }
 
-export async function template(templateStr, data)
+export async function template(templateStr, data, escapeFunction)
 {
 	//Extract stuff inbetween {{ }}
 	let resultStr = "";
@@ -95,6 +95,10 @@ export async function template(templateStr, data)
 		}
 		catch (err) {
 
+		}
+
+		if (escapeFunction) {
+			value = escapeFunction(value)
 		}
 
 		resultStr += (value != null && value != undefined) ? value.toString() : "";
