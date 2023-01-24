@@ -10,8 +10,9 @@
                 </div>
 
                 <div class="flex-grow-1">
-                    <div class="d-flex">
+                    <div class="d-flex align-center">
                         <h1 class="flex-grow-1 my-1">{{ overlay?.name }}</h1>
+                        <overlay-source-manager v-if="overlay" :overlay="overlay" :overlay-id="overlayId" />
                     </div>
                 </div>
             </v-sheet>
@@ -61,6 +62,7 @@ import ConfirmDialog from '../components/dialogs/ConfirmDialog.vue'
 import DragFrame from '../components/dragging/DragFrame.vue'
 import OverlayWidget from '../components/overlays/OverlayWidget.vue'
 import OverlayToolbox from '../components/overlays/OverlayToolbox.vue'
+import OverlaySourceManager from '../components/overlays/OverlaySourceManager.vue'
 import OverlayWidgetList from '../components/overlays/OverlayWidgetList.vue'
 import OverlayTransformInput from '../components/overlays/OverlayTransformInput.vue'
 import DataInput from '../components/data/DataInput.vue'

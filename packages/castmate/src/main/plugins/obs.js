@@ -4,6 +4,8 @@ import { app } from "../utils/electronBridge.js"
 import ChildProcess from "child_process"
 import regedit from "regedit"
 import util from "util"
+import os from 'os'
+import { getLocalIP } from '../utils/os.js'
 
 if (app.isPackaged) {
 	console.log("Setting External VBS Location", regedit.setExternalVBSLocation('resources/regedit/vbs'));
@@ -223,7 +225,48 @@ export default {
 				}
 
 			})
+		},
+		async createNewSource(sourceTypeId, sourceName, sceneName, settings) {
+			const { sceneItemId } = await this.obs.call("CreateInput", {
+				sceneName,
+				inputName: sourceName,
+				inputKind: sourceTypeId,
+				inputSettings: settings
+			})
 
+			return sceneItemId
+		},
+		async findBrowserByUrlPattern(urlPattern) {
+			const { inputs } = await this.obs.call('GetInputList', {
+				inputKind: 'browser_source'
+			})
+
+			const inputSettingsAndName = await Promise.all(inputs.map( async i => {
+				const result = await this.obs.call('GetInputSettings', { inputName: i.inputName })
+				return { inputName: i.inputName, ...result }
+			}));
+
+			const urlRegex = new RegExp(urlPattern);
+
+			console.log("Checking Pattern", urlPattern)
+
+			const input = inputSettingsAndName.find(i => {
+				return i.inputSettings.url.match(urlRegex)
+			})
+			
+			return input
+		},
+		async getOBSRemoteHost() {
+			//Returns the relative hostname to use for overlay urls. This is most likely localhost, but if we're connecting to obs on a different machine
+			//We need the local url.
+			if (this.settings.hostname.toLowerCase() == 'localhost')
+			{
+				return 'localhost'
+			}
+			else
+			{
+				return getLocalIP();
+			}
 		}
 	},
 	settings: {
