@@ -6,6 +6,7 @@ import httpProxy from "http-proxy"
 import { RPCWebSocket } from '../utils/rpc-websocket.js'
 import { nanoid } from "nanoid/non-secure";
 import logger from "../utils/logger";
+import { WebServices } from "../webserver/webserver";
 
 let overlayManager = null;
 
@@ -92,7 +93,7 @@ export class OverlayManager {
         return overlayManager;
     }
 
-    async init(webServices) {
+    async init() {
         await this.overlayResources.load();
 
         const overlayRoutes = express.Router();
@@ -107,6 +108,8 @@ export class OverlayManager {
 
             return res.send(await overlay.getTemplatedConfig());
         })
+
+        const webServices = WebServices.getInstance();
 
         if (app.isPackaged)
         {

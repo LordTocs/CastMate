@@ -1,12 +1,14 @@
 import { reactify } from "../state/reactive.js";
-import { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } from "./schema.js"
+import { cleanSchemaForIPC, makeIPCEnumFunctions, constructDefaultSchema } from "../utils/schema.js"
 import _ from 'lodash'
-import { ipcMain } from "./electronBridge.js"
+import { ipcMain } from "../utils/electronBridge.js"
 import logger from '../utils/logger.js'
 import path from 'path'
 import { userFolder } from '../utils/configuration.js'
-import { FileCache } from "./filecache.js";
+import { FileCache } from "../utils/filecache.js";
 import { StateManager } from "../state/state-manager.js";
+import { SettingsManager } from "./settings-manager.js";
+import { WebServices } from "../webserver/webserver.js";
 
 export class Plugin
 {
@@ -77,14 +79,16 @@ export class Plugin
 		this.setupState(config);
 	}
 
-	async init(settings, secrets, actions, profiles, webServices, analytics, plugins)
+	async init(actions, profiles, analytics, plugins)
 	{
-		let pluginSettings = settings.data[this.name] || {};
-		let pluginSecrets = secrets.data[this.name] || {};
+		const settings = SettingsManager.getInstance();
+
+		let pluginSettings = settings.settings[this.name] || {};
+		let pluginSecrets = settings.secrets[this.name] || {};
 
 		this.pluginObj.settings = pluginSettings;
 		this.pluginObj.secrets = pluginSecrets;
-		this.pluginObj.webServices = webServices;
+		this.pluginObj.webServices = WebServices.getInstance();
 		this.pluginObj.actions = actions;
 		this.pluginObj.profiles = profiles;
 		this.pluginObj.plugins = plugins;
@@ -176,13 +180,11 @@ export class Plugin
 		}
 	}
 
-	async updateSettings(newSettings, oldSettings)
+	async updateSettings(newPluginSettings, oldPluginSettings)
 	{
-		let newPluginSettings = newSettings[this.name] || {};
 		this.pluginObj.settings = newPluginSettings;
 		if (this.onSettingsReload)
 		{
-			let oldPluginSettings = oldSettings[this.name] || {};
 			if (!_.isEqual(newPluginSettings, oldPluginSettings))
 			{
 				this.onSettingsReload(newPluginSettings, oldPluginSettings);
@@ -190,13 +192,11 @@ export class Plugin
 		}
 	}
 
-	async updateSecrets(newSecrets, oldSecrets)
+	async updateSecrets(newPluginSecrets, oldPluginSecrets)
 	{
-		let newPluginSecrets = newSecrets[this.name] || {};
 		this.pluginObj.secrets = newPluginSecrets;
 		if (this.onSecretsReload)
 		{
-			let oldPluginSecrets = oldSecrets[this.name] || {};
 			if (!_.isEqual(newPluginSecrets, oldPluginSecrets))
 			{
 				this.onSettingsReload(newPluginSecrets, oldPluginSecrets);

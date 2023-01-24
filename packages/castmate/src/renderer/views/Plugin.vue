@@ -23,19 +23,18 @@
         v-bind:is="settingsComponent"
         style="margin-bottom: 18px"
       />
-      <v-row v-if="settings && settingsKeys.length > 0">
+      <v-row v-if="settings && settingKeys.length > 0">
         <v-col>
           <v-card>
             <v-card-title> Settings </v-card-title>
 
             <v-card-text>
               <data-input
-                v-for="settingKey in settingsKeys"
+                v-for="settingKey in settingKeys"
                 :key="settingKey"
                 :schema="addRequired(plugin.settings[settingKey])"
                 :label="settingKey"
-                :model-value="settings[settingKey]"
-                @update:model-value="(v) => setSettingsValue(settingKey, v)"
+                v-model="settings[settingKey]"
               />
             </v-card-text>
           </v-card>
@@ -52,8 +51,7 @@
                 :key="secretKey"
                 :schema="addRequired(plugin.secrets[secretKey])"
                 :label="secretKey"
-                :model-value="secrets[secretKey]"
-                @update:model-value="(v) => setSecretsValue(secretKey, v)"
+                v-model="secrets[secretKey]"
                 secret
               />
             </v-card-text>
@@ -82,170 +80,95 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from "vuex";
+<script setup>
+import { useStore } from "vuex";
 import DataInput from "../components/data/DataInput.vue";
-import fs from "fs";
-import YAML from "yaml";
-import { trackAnalytic } from "../utils/analytics.js";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, onMounted, watch, computed, ref, nextTick } from "vue";
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from "vue-router";
+import { useIpc } from "../utils/ipcMap";
+import { useSettingsStore } from '../store/settings';
+import _cloneDeep from "lodash/cloneDeep"
 
-export default {
-  computed: {
-    ...mapGetters("ipc", ["plugins", "paths"]),
-    pluginName() {
-      return this.$route.params.pluginName;
-    },
-    plugin() {
-      return this.plugins[this.pluginName];
-    },
-    settingsKeys() {
-      return Object.keys(this.plugin.settings);
-    },
-    secretKeys() {
-      return Object.keys(this.plugin.secrets);
-    },
-    hasSettingsComponent() {
-      return !!this.plugin.settingsView;
-    },
-    settingsComponent() {
-      return this.importSettingsView(this.plugin.settingsView);
-    },
-  },
-  methods: {
-    importSettingsView(viewName) {
-      return defineAsyncComponent(() => import(`../components/plugins/${viewName}.vue`));
-    },
-    setSettingsValue(key, value) {
-      this.settings[key] = value;
-    },
-    setSecretsValue(key, value) {
-      this.secrets[key] = value;
-    },
-    addRequired(schema) {
-      return { ...schema, required: true };
-    },
-    async load() {
-      const fullSettingsText = await fs.promises.readFile(
-        this.paths.settingsFilePath,
-        "utf-8"
-      );
-      const fullSettings = YAML.parse(fullSettingsText) || {};
+const route = useRoute();
+const store = useStore();
+const settingsStore = useSettingsStore()
 
-      this.settings = fullSettings[this.pluginName] || {};
+const pluginName = computed(() => route.params.pluginName);
+const plugin = computed(() => store.getters['ipc/plugins'][pluginName.value])
 
-      const fullSecretsText = await fs.promises.readFile(
-        this.paths.secretsFilePath,
-        "utf-8"
-      );
-      const fullSecrets = YAML.parse(fullSecretsText) || {};
+const settingKeys = computed(() => Object.keys(plugin.value.settings))
+const secretKeys = computed(() => Object.keys(plugin.value.secrets))
 
-      this.secrets = fullSecrets[this.pluginName] || {};
+const hasSettingsComponent = computed(() => !!plugin.value.settingsView)
+const settingsComponent = computed(() => defineAsyncComponent(() => import(`../components/plugins/${plugin.value.settingsView}.vue`)))
 
-      this.dirty = false;
-    },
-    async save() {
-      const fullSettingsText = await fs.promises.readFile(
-        this.paths.settingsFilePath,
-        "utf-8"
-      );
-      const fullSettings = YAML.parse(fullSettingsText) || {};
+const dirty = ref(false)
+const settings = ref(null)
+const secrets = ref(null);
+const showSecrets = ref(false);
 
-      fullSettings[this.pluginName] = this.settings;
+watch(settings, (newValue, oldValue) => {
+  if (oldValue) dirty.value = true
+}, { deep: true })
+watch(secrets, (newValue, oldValue) => {
+  if (oldValue) dirty.value = true
+}, { deep: true })
 
-      let newSettingsYaml = YAML.stringify(fullSettings);
+async function load() {
+  const fullSettings = _cloneDeep(settingsStore.settings);
+  const fullSecrets = _cloneDeep(settingsStore.secrets);
 
-      await fs.promises.writeFile(this.paths.settingsFilePath, newSettingsYaml);
+  settings.value = fullSettings[pluginName.value]
+  secrets.value = fullSecrets[pluginName.value]
 
-      const fullSecretsText = await fs.promises.readFile(
-        this.paths.secretsFilePath,
-        "utf-8"
-      );
-      const fullSecrets = YAML.parse(fullSecretsText) || {};
+  nextTick(() => {
+    dirty.value = false;
+  }); //Wait for the dirty watches to finish to undirty it for initial
+}
 
-      fullSecrets[this.pluginName] = this.secrets;
+const saveDlg = ref(null)
+//Auto mark things as dirty
+const changeSettings = useIpc("settings", "changeSettings")
+const changeSecrets = useIpc("settings", "changeSecrets")
 
-      let newSecretsYaml = YAML.stringify(fullSecrets);
 
-      await fs.promises.writeFile(this.paths.secretsFilePath, newSecretsYaml);
+const saveSnack = ref(false)
+async function save() {
+  await Promise.all([ changeSettings(pluginName.value, settings.value), changeSecrets(pluginName.value, settings.value)])
+  dirty.value = false;
+  saveSnack.value = true
+}
 
-      trackAnalytic("saveSettings", { name: this.pluginName });
+onMounted(() => {
+  load()
+})
 
-      this.saveSnack = true;
-      this.dirty = false;
-    },
-    async routeGuard() {
-      if (!this.dirty) {
-        return true;
-      }
-      if (
-        await this.$refs.saveDlg.open(
-          "Unsaved Changes",
-          "Do you want to save your changes?",
-          "Save Changes",
-          "Discard Changes"
-        )
-      ) {
-        await this.save();
-      }
-      return true;
-    },
-  },
-  components: {
-    DataInput,
-    ConfirmDialog
-},
-  data() {
-    return {
-      showSecrets: false,
-      settings: null,
-      secrets: null,
-      saveSnack: false,
-      dirty: false,
-    };
-  },
-  watch: {
-    settings: {
-      deep: true,
-      handler(newSettings, oldSettings) {
-        if (oldSettings) {
-          this.dirty = true;
-        }
-      },
-    },
-    secrets: {
-      deep: true,
-      handler(newSecrets, oldSecrets) {
-        if (oldSecrets) {
-          this.dirty = true;
-        }
-      },
-    },
-    pluginName: {
-      async handler() {
-        this.secrets = null;
-        this.settings = null;
-        this.dirty = false;
-        this.load();
-      },
-    },
-  },
-  async mounted() {
-    await this.load();
-    trackAnalytic("accessSettings", { name: this.pluginName });
-  },
-  async beforeRouteLeave(to, from) {
-    const result = await this.routeGuard();
-    this.dirty = false;
-    return result;
-  },
-  async beforeRouteUpdate(to, from) {
-    const result = await this.routeGuard();
-    this.dirty = false;
-    return result;
-  },
-};
+//When we change routes this component isn't remounted. Watch for the plugin name change and load here.
+watch(pluginName, load);
+
+async function routeGuard() {
+  if (!dirty.value) {
+    return true;
+  }
+  if (await saveDlg.value.open(
+      "Unsaved Changes",
+      "Do you want to save your changes?",
+      "Save Changes",
+      "Discard Changes")
+  ) {
+    await save();
+  }
+  return true;
+}
+
+onBeforeRouteLeave(routeGuard)
+onBeforeRouteUpdate(routeGuard)
+
+
+function  addRequired(schema) {
+  return { ...schema, required: true };
+}
 </script>
 
 <style scoped></style>

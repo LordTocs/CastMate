@@ -2,18 +2,34 @@ import express from "express"
 import bodyParser from "body-parser"
 import ws from "ws"
 import http from "http"
-import { mediaFolder, userFolder } from "./configuration.js"
+import { mediaFolder, userFolder } from "../utils/configuration.js"
 import path from "path"
-import logger from "./logger.js"
+import logger from "../utils/logger.js"
 import { EventEmitter } from "node:events"
 
-class CastMateWebServer extends EventEmitter
+import { PluginManager } from "../pluginCore/plugin-manager"
+import { SettingsManager } from "../pluginCore/settings-manager"
+
+let webServices = null;
+
+export class WebServices extends EventEmitter
 {
-	constructor(settings, plugins) {
+	/**
+	 * 
+	 * @returns {WebServices}
+	 */
+	static getInstance() {
+		if (!webServices) {
+			webServices = new WebServices();
+		}
+
+		return webServices
+	}
+
+	constructor() {
 		super()
-		this.plugins = plugins
 		this.wsProxies = {};
-		this.port = settings.port || 80;
+		this.port = SettingsManager.getInstance().settings?.castmate?.port || 85;
 
 		this.app = express();
 		this.routes = express.Router();
@@ -49,7 +65,8 @@ class CastMateWebServer extends EventEmitter
 					return;
 				}
 
-				for (let plugin of this.plugins.plugins) {
+				const plugins = PluginManager.getInstance();
+				for (let plugin of plugins.plugins) {
 					if (plugin.onWebsocketMessage) {
 						plugin.onWebsocketMessage(data, socket);
 					}
@@ -59,7 +76,9 @@ class CastMateWebServer extends EventEmitter
 			const requestUrl = new URL(request.url, `http://${request.headers.host}`);
 			this.emit('ws-connection', socket, requestUrl.searchParams)
 
-			for (let plugin of this.plugins.plugins) {
+			const plugins = PluginManager.getInstance();
+
+			for (let plugin of plugins.plugins) {
 				if (plugin.onWebsocketConnected) {
 					plugin.onWebsocketConnected(socket);
 				}
@@ -68,6 +87,8 @@ class CastMateWebServer extends EventEmitter
 	}
 
 	start() {
+		this.port = SettingsManager.getInstance().settings?.castmate?.port || 85;
+
 		this.server.listen(this.port, () => {
 			logger.info(`Started Internal Webserver on port ${this.port}`);
 			this.app.use(express.static("./web"));
@@ -114,9 +135,4 @@ class CastMateWebServer extends EventEmitter
 	stop() {
 		this.server.close();
 	}
-}
-
-
-export async function createWebServices(settings, secrets, plugins) {
-	return new CastMateWebServer(settings, plugins);
 }

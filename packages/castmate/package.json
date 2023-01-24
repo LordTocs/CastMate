@@ -40,6 +40,7 @@
     "mixpanel": "^0.16.0",
     "nanoid": "^4.0.0",
     "obs-websocket-js": "^5.0.1",
+    "pinia": "^2.0.29",
     "rcon": "^1.1.0",
     "recursive-readdir": "^2.2.2",
     "ref-union-di": "^1.0.1",

@@ -72,9 +72,11 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
+import { mapActions as mapPiniaActions } from "pinia";
 import SystemBar from "./components/layout/SystemBar.vue";
 import path from "path";
 import { shell } from "electron";
+import { useSettingsStore } from "./store/settings";
 
 export default {
   components: {
@@ -119,6 +121,7 @@ export default {
     await this.initResources()
     await this.loadSegments();
     await this.loadVariables();
+    await useSettingsStore().init()
     this.loaded = true;
     //ipcRenderer.invoke("updater.checkForUpdates");
   },

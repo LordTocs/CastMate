@@ -3,7 +3,7 @@ import logger from "../utils/logger";
 import _merge from "lodash/merge"
 import _cloneDeep from "lodash/cloneDeep"
 import { deleteReactiveProperty, onStateChange, reactiveCopy, reactiveCopyProp } from "./reactive";
-import { PluginManager } from "../utils/plugin-manager";
+import { PluginManager } from "../pluginCore/plugin-manager";
 
 let stateManager = null;
 /**

@@ -1,14 +1,23 @@
-import { manualDependency } from './conditionals.js';
 import { Plugin } from './plugin.js'
-import { reactiveCopy, Watcher, deleteReactiveProperty } from '../state/reactive.js'
-import { ipcMain } from "./electronBridge.js"
+import { ipcMain } from "../utils/electronBridge.js"
 import _ from 'lodash'
-import logger from './logger.js';
+import logger from '../utils/logger.js';
 
 let pluginManager = null;
-
 export class PluginManager {
-	async load(ipcSender) {
+	/**
+	 * 
+	 * @returns {PluginManager}
+	 */
+	 static getInstance() {
+        if (!pluginManager)
+        {
+            pluginManager = new this();
+        }
+        return pluginManager;
+    }
+
+	async load() {
 		let pluginFiles = [
 			"inputs",
 			"hue",
@@ -51,14 +60,12 @@ export class PluginManager {
 		for (let plugin of this.plugins) {
 			this.templateFunctions[plugin.name] = plugin.templateFunctions;
 		}
-
-		this.ipcSender = ipcSender;
 	}
 
-	async init(settings, secrets, actions, profiles, webServices, analytics) {
+	async init(actions, profiles, analytics) {
 		for (let plugin of this.plugins) {
 			try {
-				await plugin.init(settings, secrets, actions, profiles, webServices, analytics, this);
+				await plugin.init(actions, profiles, analytics, this);
 			}
 			catch (err) {
 				console.error(err);
@@ -82,16 +89,4 @@ export class PluginManager {
 	getPlugin(name) {
 		return this.plugins.find(p => p.name == name);
 	}
-
-	/**
-	 * 
-	 * @returns {PluginManager}
-	 */
-	static getInstance() {
-        if (!pluginManager)
-        {
-            pluginManager = new this();
-        }
-        return pluginManager;
-    }
 }

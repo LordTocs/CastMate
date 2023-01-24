@@ -1,12 +1,10 @@
 import Mixpanel from 'mixpanel'
-import { app, ipcMain } from './electronBridge.js'
+import { app, callIpcFunc, ipcMain } from './electronBridge.js'
 import logger from './logger.js';
 
 export class Analytics {
-    constructor(ipcSender) {
+    constructor() {
         this.analyticsId = null;
-
-        this.ipcSender = ipcSender;
 
         ipcMain.handle("analytics_track", async (ipcEvent, eventName, data) => {
             this.track(eventName, data);
@@ -34,7 +32,7 @@ export class Analytics {
     setUserId(id) {
         this.analyticsId = id;
 
-        this.ipcSender.send('analytics-id', id);
+        callIpcFunc('analytics-id', id)
     }
 
     track(eventName, data) {

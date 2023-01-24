@@ -1,5 +1,4 @@
 import { FileResource } from "../resources/resource.js";
-import { PluginManager } from "../utils/plugin-manager.js";
 import { Watcher } from "../state/reactive.js";
 import { templateSchema } from "../state/template.js";
 import { OverlayManager } from "./overlay-manager.js";

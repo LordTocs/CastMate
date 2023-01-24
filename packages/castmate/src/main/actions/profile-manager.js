@@ -7,13 +7,13 @@ import { sleep } from "../utils/sleep.js"
 import path from 'path'
 import { userFolder } from "../utils/configuration.js"
 import logger from "../utils/logger.js"
-import { ipcFunc, ipcMain } from "../utils/electronBridge.js"
+import { callIpcFunc, ipcFunc, ipcMain } from "../utils/electronBridge.js"
 import fs from "fs";
 import { StateManager } from "../state/state-manager.js"
 
 export class ProfileManager
 {
-	constructor(actions, plugins, ipcSender)
+	constructor(actions, plugins)
 	{
 		this.actions = actions;
 		this.profiles = [];
@@ -24,8 +24,6 @@ export class ProfileManager
 
 		this.activeProfiles = [];
 		this.inactiveProfiles = [];
-
-		this.ipcSender = ipcSender;
 
 		this.recombiner = null;
 
@@ -270,7 +268,7 @@ export class ProfileManager
 		this.inactiveProfiles = inactiveProfiles;
 		this.activeProfiles = activeProfiles;
 
-		this.ipcSender.send('profiles-active', activeProfiles.map(p => p.name))
+		callIpcFunc('profiles-active', activeProfiles.map(p => p.name))
 
 		//Notify any plugins of profile changes.
 		for (let plugin of this.plugins.plugins)
