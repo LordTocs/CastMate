@@ -1586,6 +1586,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bindings@npm:~1.2.1":
+  version: 1.2.1
+  resolution: "bindings@npm:1.2.1"
+  checksum: fb542a5721cbeb0a75607a0447ac4d12e3ba8fe12ddf2adbe76814fa9cf3d1236a03ab51d55a7fef1b2d1d9917f4315e8b1cf8b74ff21a6cf9e722e7e363ba5f
+  languageName: node
+  linkType: hard
+
 "bluebird-lst@npm:^1.0.9":
   version: 1.0.9
   resolution: "bluebird-lst@npm:1.0.9"
@@ -1926,6 +1933,7 @@ __metadata:
     lodash: ^4.17.21
     maska: ^1.5.0
     mixpanel: ^0.16.0
+    ms-speech-api: ^0.0.1
     nanoid: ^4.0.0
     obs-websocket-js: ^5.0.1
     pinia: ^2.0.29
@@ -5425,6 +5433,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ms-speech-api@^0.0.1, ms-speech-api@workspace:packages/ms-speech-api":
+  version: 0.0.0-use.local
+  resolution: "ms-speech-api@workspace:packages/ms-speech-api"
+  dependencies:
+    bindings: ~1.2.1
+    node-addon-api: ^5.0.0
+    node-gyp: ^9.3.1
+  languageName: unknown
+  linkType: soft
+
 "ms@npm:2.0.0":
   version: 2.0.0
   resolution: "ms@npm:2.0.0"
@@ -5496,6 +5514,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-addon-api@npm:^5.0.0":
+  version: 5.1.0
+  resolution: "node-addon-api@npm:5.1.0"
+  dependencies:
+    node-gyp: latest
+  checksum: 2508bd2d2981945406243a7bd31362fc7af8b70b8b4d65f869c61731800058fb818cc2fd36c8eac714ddd0e568cc85becf5e165cebbdf7b5024d5151bbc75ea1
+  languageName: node
+  linkType: hard
+
 "node-fetch@npm:2.6.7":
   version: 2.6.7
   resolution: "node-fetch@npm:2.6.7"
@@ -5518,6 +5545,26 @@ __metadata:
     node-gyp-build-optional: optional.js
     node-gyp-build-test: build-test.js
   checksum: d888bae0fb88335f69af1b57a2294a931c5042f36e413d8d364c992c9ebfa0b96ffe773179a5a2c8f04b73856e8634e09cce108dbb9804396d3cc8c5455ff2db
+  languageName: node
+  linkType: hard
+
+"node-gyp@npm:^9.3.1":
+  version: 9.3.1
+  resolution: "node-gyp@npm:9.3.1"
+  dependencies:
+    env-paths: ^2.2.0
+    glob: ^7.1.4
+    graceful-fs: ^4.2.6
+    make-fetch-happen: ^10.0.3
+    nopt: ^6.0.0
+    npmlog: ^6.0.0
+    rimraf: ^3.0.2
+    semver: ^7.3.5
+    tar: ^6.1.2
+    which: ^2.0.2
+  bin:
+    node-gyp: bin/node-gyp.js
+  checksum: b860e9976fa645ca0789c69e25387401b4396b93c8375489b5151a6c55cf2640a3b6183c212b38625ef7c508994930b72198338e3d09b9d7ade5acc4aaf51ea7
   languageName: node
   linkType: hard
 

@@ -6,6 +6,10 @@ import say from "say"
 import { customAlphabet } from "nanoid/non-secure"
 import { fileURLToPath } from 'node:url'
 
+import { SpeechEngine, AudioInput, SpeechRecognizer, CommandGrammar } from 'ms-speech-api'
+import { nextTick } from "process"
+import util from 'util'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default {
@@ -36,7 +40,46 @@ export default {
 		this.audioWindowSender = this.audioWindow.webContents;
 
 		this.voiceCache = null;
+
+		this.speechRecognizer = new SpeechRecognizer(SpeechEngine.getDefaultEngine(), AudioInput.getDefaultInput());
+
+		this.speechRecognizer.setRecognitionCallback((phrase, confidence) => {
+			this.logger.info(`Voice Command(${confidence}): ${phrase}`)
+			this.triggers.voiceCommand({ phrase, confidence })
+		})
+
+		this.speechCommandGrammer = new CommandGrammar(this.speechRecognizer);
+
+		nextTick(() => {
+			//For whatever reason nextTick is required to properly start the damn mic.
+			this.speechRecognizer.enableMicrophone();
+		})
 	},
+	async onProfilesChanged(activeProfiles, inactiveProfiles) {
+        this.activeCommands = new Set();
+
+		this.speechCommandGrammer.deactivate();
+        //Handle rewards
+        for (let activeProf of activeProfiles) {
+			const speechTriggers = activeProf?.triggers?.sounds?.voiceCommand;
+
+			if (!speechTriggers)
+				continue;
+
+			for (let speechTrigger of speechTriggers)
+			{
+				if (speechTrigger.config.phrase) {
+					this.activeCommands.add(speechTrigger.config.phrase);
+				}
+			}
+        }
+
+        this.logger.info(`Active Speech Commands: ${util.inspect(this.activeCommands)}`);
+
+        this.speechCommandGrammer.setCommands(Array.from(this.activeCommands));
+
+		this.speechCommandGrammer.activate();
+    },
 	methods: {
 		getFullFilepath(filename) {
 			return path.resolve(path.join(userFolder, 'sounds', filename));
@@ -157,6 +200,27 @@ export default {
 
 					this.playAudioFile(soundPath, data.volume);
 				});
+			}
+		}
+	},
+	triggers: {
+		voiceCommand: {
+			name: "Voice Command",
+			description: "Fires when you say one of the voice commands",
+			config: {
+				type: Object,
+				properties: {
+					phrase: { type: String, name: "Phrase", filter: true},
+					confidence: { type: Number, name: "Confidence", default: 0.75, slider: { min: 0.0, max: 1.0}, required: true, preview: false }
+				}
+			},
+			context: {
+				phrase: { type: String },
+			},
+			handler(config, context) {
+				if ((config.confidence ?? 0.75) > context.confidence)
+					return false
+				return context.phrase.toLowerCase().trim() == config.phrase.toLowerCase().trim();
 			}
 		}
 	}
