@@ -36,107 +36,55 @@
   </v-card>
 </template>
 
-<script>
-import fs from "fs";
-import YAML from "yaml";
-import { mapGetters } from "vuex";
+<script setup>
+import { onMounted } from "vue";
+import { useSettingsStore } from "../../store/settings";
+import { useIpc } from "../../utils/ipcMap";
 import DataInput from "../data/DataInput.vue";
-import { mapIpcs } from "../../utils/ipcMap";
 
-export default {
-  components: {
-    DataInput,
-  },
-  data() {
-    return {
-      hostname: "localhost",
-      port: 4455,
-      password: null,
-      connected: false,
-      trying: false,
-    };
-  },
-  computed: {
-    ...mapGetters("ipc", ["plugins", "paths"]),
-  },
-  methods: {
-    ...mapIpcs("obs", ["tryConnectSettings"]),
-    addRequired(schema) {
-      return { ...schema, required: true };
-    },
-    async save() {
-      const fullSettingsText = await fs.promises.readFile(
-        this.paths.settingsFilePath,
-        "utf-8"
-      );
+const hostname = ref("localhost")
+const port = ref(4455)
+const password = ref(null)
 
-      const fullSettings = YAML.parse(fullSettingsText) || {};
 
-      if (!fullSettings.obs) {
-        fullSettings.obs = {};
-      }
+function addRequired(schema) {
+  return { ...schema, required: true };
+}
 
-      fullSettings.obs.hostname = this.hostname;
-      fullSettings.obs.port = this.port;
+const connected = ref(false)
+const trying = ref(false)
 
-      await fs.promises.writeFile(
-        this.paths.settingsFilePath,
-        YAML.stringify(fullSettings)
-      );
+const tryConnectSettings = useIpc('obs', 'tryConnectSettings')
 
-      const fullSecretsText = await fs.promises.readFile(
-        this.paths.secretsFilePath,
-        "utf-8"
-      );
-      const fullSecrets = YAML.parse(fullSecretsText) || {};
 
-      if (!fullSecrets.obs) {
-        fullSecrets.obs = {};
-      }
 
-      fullSecrets.obs.password = this.password;
+async function tryConnect() {
+    trying.value = true;
+    const result = await this.tryConnectSettings(this.hostname, this.port, this.password);
+    trying.value = false;
 
-      await fs.promises.writeFile(
-        this.paths.secretsFilePath,
-        YAML.stringify(fullSecrets)
-      );
-    },
-
-    async load() {
-      const fullSettingsText = await fs.promises.readFile(
-        this.paths.settingsFilePath,
-        "utf-8"
-      );
-      const fullSettings = YAML.parse(fullSettingsText) || {};
-
-      this.hostname = fullSettings?.obs?.hostname || "localhost";
-      this.port = fullSettings?.obs?.port || 4455;
-
-      const fullSecretsText = await fs.promises.readFile(
-        this.paths.secretsFilePath,
-        "utf-8"
-      );
-      const fullSecrets = YAML.parse(fullSecretsText) || {};
-
-      this.password = fullSecrets?.obs?.password;
-    },
-
-    async tryConnect() {
-        this.trying = true;
-        const result = await this.tryConnectSettings(this.hostname, this.port, this.password);
-        this.trying = false;
-
-        if (result)
-        {
-            this.connected = true;
-            await this.save();
-        }
+    if (result)
+    {
+        connected.value = true;
+        await save();
     }
-  },
-  async mounted() {
-    await this.load();
-  },
-};
+}
+
+const changeSettings = useIpc("settings", "changeSettings")
+const changeSecrets = useIpc("settings", "changeSecrets")
+
+async function save() {
+  await Promise.all([ changeSettings({ ...settingsStore.settings.obs, hostname: hostname.value, port: port.value }), changeSecrets({ ...settingsStore.secrets.obs, password: password.value })])
+}
+
+const settingsStore = useSettingsStore()
+
+onMounted(() => {
+  hostname.value = settingsStore.settings.obs?.hostname || 'localhost'
+  port.value = settingsStore.settings.obs?.port || 4455;
+  password.value = settingsStore.secrets.obs?.password || null;
+})
+
 </script>
 
 <style>
