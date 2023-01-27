@@ -1,12 +1,37 @@
 import { onMounted, onUnmounted, computed, unref, watch, watchEffect } from 'vue'
 import { useIpc } from './ipcMap'
 import { nanoid } from 'nanoid/non-secure'
-import { useStore } from 'vuex'
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { ipcRenderer } from 'electron';
 
+export const useRemoteTemplateStore = defineStore("remoteTemplates", () => {
+
+    const templateData = ref({})
+
+    async function init() {
+        ipcRenderer.on('templates_updateTemplatedData', (event, id, data) => {
+            //console.log("Received Templated Data", id, templatedData)
+            templateData.value[id] = data
+        })
+    }
+
+    async function createTemplateData(id) {
+        templateData.value[id] = {}
+    }
+
+    function clearTemplateData(id) {
+        delete templateData.value[id]
+    }
+
+    const templates = computed( () => templateData.value )
+
+    return { init, createTemplateData, clearTemplateData, templates }
+})
 
 export function useTemplatedData(schema, data) {
     
-    const store = useStore();
+    const templateStore = useRemoteTemplateStore();
     const updateData = useIpc('templates', 'updateData')
     const createEvaluator = useIpc('templates', 'createEvaluator')
     const releaseEvaluator = useIpc('templates', 'releaseEvaluator')
@@ -15,7 +40,7 @@ export function useTemplatedData(schema, data) {
     let mounted = false;
 
     const templatedData = computed(() => {
-        return store.getters['remoteTemplates/templateData'][id]
+        return templateStore.templates[id]
     })
 
     watch(() => unref(data), () => {
@@ -37,7 +62,7 @@ export function useTemplatedData(schema, data) {
             return
         
         //console.log("Setting Up Templates", id)
-        store.commit('remoteTemplates/createTemplateData', { id })
+        await templateStore.createTemplateData(id)
         await createEvaluator(id, unref(schema), unref(data))
         mounted = true
     }
@@ -50,7 +75,7 @@ export function useTemplatedData(schema, data) {
         //console.log("Releasing", id)
 
         await releaseEvaluator(id)
-        store.commit('remoteTemplates/clearTemplateData', { id })
+        await templateStore.clearTemplateData(id)
         mounted = false
     }
 

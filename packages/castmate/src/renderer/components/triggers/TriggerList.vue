@@ -100,7 +100,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["paths", "plugins"]),
+    ...mapGetters("ipc", ["plugins"]),
     visibleTriggers() {
       const result = {};
 

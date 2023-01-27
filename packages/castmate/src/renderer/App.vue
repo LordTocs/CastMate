@@ -77,6 +77,7 @@ import SystemBar from "./components/layout/SystemBar.vue";
 import path from "path";
 import { shell } from "electron";
 import { useSettingsStore } from "./store/settings";
+import { useRemoteTemplateStore } from "./utils/templates";
 
 export default {
   components: {
@@ -122,6 +123,7 @@ export default {
     await this.loadSegments();
     await this.loadVariables();
     await useSettingsStore().init()
+    await useRemoteTemplateStore().init()
     this.loaded = true;
     //ipcRenderer.invoke("updater.checkForUpdates");
   },

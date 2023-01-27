@@ -32,7 +32,7 @@ class RemoteTemplateEvaluator
 
         this.watcher = await Watcher.watchAsync(async () => {
             this.templatedData = await templateSchema(this.data, this.schema, StateManager.getInstance().getTemplateContext({}))
-            callIpcFunc('templates_updateTemplatedData', { id: this.id, templatedData: this.templatedData })
+            callIpcFunc('templates_updateTemplatedData', this.id, this.templatedData)
         })
     }
 

@@ -9,6 +9,7 @@ export const BrowserWindow = electron.BrowserWindow
 export const safeStorage = electron.safeStorage
 export const dialog = electron.dialog
 
+/** @type{Electron.WebContents} */
 let mainIpcSender = null;
 /**
  * 
@@ -24,13 +25,13 @@ export function setIpcSender(ipcSender) {
  * @param {*} payload 
  * @returns 
  */
-export function callIpcFunc(funcName, payload) {
+export function callIpcFunc(funcName, ...args) {
     if (!mainIpcSender)
     {
         console.error(`Tried to call renderer IPC function ${funcName} but we had no ipcSender`)   
         return;
     }
-    mainIpcSender.send(funcName, payload);
+    mainIpcSender.send(funcName, ...args);
 }
 
 /**

@@ -91,7 +91,6 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["paths"]),
     ...mapGetters("io", ["saveAutomation", "getAutomation"]),
   },
   methods: {
