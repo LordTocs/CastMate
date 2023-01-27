@@ -176,9 +176,6 @@ export default {
 			}
 
 			await this.completeAuth();
-
-			await this.getAllTags();
-
 		},
 
 		async shutdown() {
@@ -826,45 +823,11 @@ export default {
 			return null;
 		},
 
-		async getAllTags() {
-			if (this.tagCache)
-				return this.tagCache;
-
-			if (!this.channelAuth || !this.channelAuth.isAuthed || !this.channelTwitchClient)
-				return [];
-
-			const pageniator = this.channelTwitchClient.tags.getAllStreamTagsPaginated();
-
-			const tags = await pageniator.getAll();
-			const pojoTags = []
-
-			for (let tag of tags) {
-				if (!tag.isAuto) {
-					pojoTags.push({ id: tag.id, name: tag.getName("en-us") })
-				}
-			}
-
-			this.tagCache = pojoTags;
-
-			return this.tagCache;
-		},
-
 		async updateStreamInfo(info) {
 			await this.channelTwitchClient.channels.updateChannelInfo(this.state.channelId, {
 				title: info.title,
 				gameId: info.category,
-			})
-
-			//Awaiting fix from d-fisher
-			await this.channelTwitchClient.streams.replaceStreamTags(this.state.channelId, info.tags);
-
-			await axios.put(`https://api.twitch.tv/helix/streams/tags?broadcaster_id=${this.state.channelId}`, {
-				tag_ids: info.tags
-			}, {
-				headers: {
-					Authorization: `Bearer ${this.channelAuth._accessToken.accessToken}`,
-					'Client-ID': this.channelAuth.clientId
-				}
+				tags: info.tags
 			})
 		},
 

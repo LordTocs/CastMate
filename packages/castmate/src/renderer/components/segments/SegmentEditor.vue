@@ -6,6 +6,7 @@
           label="Title"
           counter
           maxlength="140"
+          density="compact"
       />
       </v-card-title>
       <v-card-text>
@@ -18,9 +19,11 @@
       /-->
       <category-search
           v-model="category"
+          density="compact"
       />
       <tag-select
           v-model="tags"
+          density="compact"
       />
       <automation-input
           v-model="automation"
