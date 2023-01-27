@@ -53,7 +53,6 @@ export default {
     AutomationQuickEditDialog: defineAsyncComponent(() => import("./AutomationQuickEditDialog.vue")),
   },
   computed: {
-    ...mapGetters("ipc", ["paths"]),
     ...mapModel()
   },
   data() {

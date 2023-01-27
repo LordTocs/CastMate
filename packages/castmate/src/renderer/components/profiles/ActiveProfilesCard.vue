@@ -50,9 +50,6 @@ import NamedItemModal from "../dialogs/NamedItemModal.vue";
 
 export default {
   components: { NamedItemModal },
-  computed: {
-    ...mapGetters("ipc", ["activeProfiles", "paths"])
-  },
   data() {
     return {
       hasProfiles: true,
