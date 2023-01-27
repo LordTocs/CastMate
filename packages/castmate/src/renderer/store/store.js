@@ -1,7 +1,6 @@
 import ipcModule from './ipc'
 import segmentsModule from './segments'
 import variablesModule from './variables'
-import resourcesModule from './resources'
 import Vuex from 'vuex'
 
 import { ipcRenderer } from "electron"
@@ -11,7 +10,6 @@ export const store = new Vuex.Store({
 		ipc: ipcModule,
 		segments: segmentsModule,
 		variables: variablesModule,
-		resources: resourcesModule,
 	}
 });
 
@@ -31,9 +29,6 @@ ipcRenderer.on('profiles-active', (event, arg) => {
 	store.dispatch(`ipc/setActiveProfiles`, arg);
 })
 
-ipcRenderer.on('resources_updateResourceArray', (event, { type, resources} ) => {
-	store.dispatch('resources/updateResourceArray', { type, resources })
-})
 
 
 

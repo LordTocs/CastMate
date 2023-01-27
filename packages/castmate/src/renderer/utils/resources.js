@@ -1,18 +1,14 @@
 import { ipcRenderer } from "electron";
 import { computed } from "vue"
-import { store } from "../store/store"
+import { useResourceStore } from '../store/resources'
 
 export function useResourceArray(resourceType) {
+    const resourceStore = useResourceStore()
     return computed(() => {
-        return store.getters['resources/resources'][resourceType];
+        return resourceStore.resources[resourceType];
     })
 }
 
-export function mapResourceArray(resourceType) {
-    return {
-        [`${resourceType}s`]: () => store.getters['resources/resources']?.[resourceType] || []
-    }
-}
 
 function capitalizeType(typename) 
 {

@@ -19,12 +19,16 @@ import LinkTable from "../components/table/LinkTable.vue"
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue"
 import NamedItemConfirmation from "../components/dialogs/NamedItemConfirmation.vue"
 import OverlayCreationDialog from "../components/overlays/OverlayCreationDialog.vue"
-import { mapResourceArray, mapResourceFunctions } from '../utils/resources'
+import { mapResourceFunctions } from '../utils/resources'
+import { useResourceStore } from "../store/resources"
+import { mapState } from "pinia"
 
 export default {
   components: { LinkTable, ConfirmDialog, NamedItemConfirmation, OverlayCreationDialog },
   computed: {
-    ...mapResourceArray('overlay'),
+    ...mapState(useResourceStore, {
+      overlays: store => store.resources.overlays
+    }),
     overlayItems() {
       return this.overlays.map(o => ({id: o.id, name: o.config.name }))
     }

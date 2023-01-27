@@ -1,51 +1,35 @@
 import { ipcRenderer } from "electron";
+import { defineStore } from "pinia";
+import { computed, ref } from "vue";
+import { useIpc } from "../utils/ipcMap";
 
-// TECH DEBT - TECH DEBT - TECH DEBT - TECH DEBT
-// We should be switching to pinia but right now we're still on vuex.
-// SO NOW WE GOTTA UPDATE THIS WHOLE FILE LATER.
+export const useResourceStore = defineStore("resources", () => {
+    const resourceTypes = ref([])
+    const resourcesStorage = ref({})
 
-export default {
-    namespaced: true,
-    state() {
-        return {
-            resourceTypes: [],
-            resources: {}
-        }
-    },
-    getters: {
-        resourceTypes: state => state.resourceTypes,
-        resources: state => state.resources
-    },
-    mutations: {
-        setResourceTypes(state, resourceTypes) {
-            state.resourceTypes = resourceTypes
-        },
-        setResourceArray(state, {type, resources }) {
-            state.resources[type] = resources
-        }
-    },
-    actions: {
-        async initResources({ commit }) {
-            const resourceTypes = await ipcRenderer.invoke(`resourceManager_getResourceTypes`)
-            console.log("Getting Resource Types", resourceTypes)
+    const getResourceTypes = useIpc("resourceManager", "getResourceTypes")
 
-            commit('setResourceTypes', resourceTypes);
+    async function init() {
+        console.log("Initting Resource Store")
 
-            //Initial array state load
+        ipcRenderer.on("resources_updateResourceArray", (event, type, resourceArray) => {
+            resources.value[type] = resourceArray
+        })
 
-            const resourceArrays = await Promise.all(resourceTypes.map( async rt => ({
-                type: rt.type,
-                resources: await ipcRenderer.invoke(`resources_${rt.type}_get`)
-            })));
+        resourceTypes.value = await getResourceTypes(); 
 
+        const resourceArrays = await Promise.all(resourceTypes.value.map( async rt => ({
+            type: rt.type,
+            resources: await ipcRenderer.invoke(`resources_${rt.type}_get`)
+        })));
 
-            for (let rArray of resourceArrays) {
-                commit('setResourceArray', rArray)
-            }
-        },
-
-        async updateResourceArray({ commit }, { type, resources}) {
-            commit('setResourceArray', { type, resources });
+        for (let ra of resourceArrays) {
+            resourcesStorage.value[ra.type] = ra.resources
         }
     }
-}
+
+    const resources = computed(() => resourcesStorage.value)
+    const types = computed(() => resourceTypes.value )
+
+    return { init, resources, types }
+})

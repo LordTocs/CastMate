@@ -71,13 +71,14 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
-import { mapActions as mapPiniaActions } from "pinia";
-import SystemBar from "./components/layout/SystemBar.vue";
-import path from "path";
-import { shell } from "electron";
-import { useSettingsStore } from "./store/settings";
-import { useRemoteTemplateStore } from "./utils/templates";
+import { mapGetters, mapActions } from "vuex"
+import { mapActions as mapPiniaActions } from "pinia"
+import SystemBar from "./components/layout/SystemBar.vue"
+import path from "path"
+import { shell } from "electron"
+import { useSettingsStore } from "./store/settings"
+import { useRemoteTemplateStore } from "./utils/templates"
+import { useResourceStore } from './store/resources'
 
 export default {
   components: {
@@ -110,7 +111,6 @@ export default {
   },
   methods: {
     ...mapActions("ipc", ["init"]),
-    ...mapActions("resources", ["initResources"]),
     ...mapActions("segments", ["loadSegments"]),
     ...mapActions("variables", ["loadVariables"]),
     openSoundsFolder() {
@@ -119,9 +119,9 @@ export default {
   },
   async mounted() {
     await this.init();
-    await this.initResources()
     await this.loadSegments();
     await this.loadVariables();
+    await useResourceStore().init()
     await useSettingsStore().init()
     await useRemoteTemplateStore().init()
     this.loaded = true;
