@@ -1,6 +1,17 @@
 <template>
-  <v-autocomplete v-model="modelObj" :loading="isLoading" v-model:search="search" :items="categories" item-value="id"
-    item-title="name" prepend-icon="mdi-magnify" label="Category">
+  <v-autocomplete 
+    v-model="modelObj" 
+    :loading="isLoading" 
+    v-model:search="search" 
+    :items="categories" 
+    item-value="id" 
+    item-title="name"
+    prepend-icon="mdi-magnify"
+    label="Category"
+    :density="density"
+    clearable
+    :menu-props="{ maxHeight: 200, location: 'bottom' }"
+  >
     <template #item="{ item, props }">
       <v-list-item v-bind="props" :prepend-avatar="item.raw.boxArtUrl" :title="item.raw.name" />
     </template>
@@ -17,6 +28,7 @@ import { mapModel } from "../../utils/modelValue";
 export default {
   props: {
     modelValue: {},
+    density: { type: String}
   },
   emits: ["update:modelValue"],
   computed: {
@@ -45,6 +57,7 @@ export default {
         }
 
         this.isLoading = true;
+        console.log("Searching...")
         const categories = await this.searchCategories(search)
         this.categories = categories;
         this.isLoading = false;

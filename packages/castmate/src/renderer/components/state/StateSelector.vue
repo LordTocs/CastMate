@@ -1,5 +1,12 @@
 <template>
-  <v-select :items="stateList" v-model="modelObj" item-title="id" item-value="id" return-object>
+  <v-select 
+    :items="stateList" 
+    v-model="modelObj" 
+    item-title="id" 
+    item-value="id" 
+    return-object
+    :menu-props="{ maxHeight: 200, location: 'bottom' }"
+    >
     <template #item="{ item, props }">
       <v-list-item v-bind="props" title="">
         <span v-if="item" class="font-weight-black" :style="{ 'color': plugins[item.raw.plugin].color }">{{

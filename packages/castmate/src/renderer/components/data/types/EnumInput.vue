@@ -11,6 +11,7 @@
     item-title="name"
     @focus="fetchItems"
     :density="density"
+    :menu-props="{ maxHeight: 200, location: 'bottom' }"
   />
   <v-combobox
     v-else-if="isAutocomplete && template"
@@ -22,6 +23,7 @@
     :clearable="clearable"
     @focus="fetchItems"
     :density="density"
+    :menu-props="{ maxHeight: 200, location: 'bottom' }"
   />
   <v-select
     v-else
@@ -33,6 +35,7 @@
     dense
     v-model.lazy="modelObj"
     :density="density"
+    :menu-props="{ maxHeight: 200, location: 'bottom' }"
   />
 </template>
 

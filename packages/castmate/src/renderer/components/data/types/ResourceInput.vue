@@ -7,6 +7,7 @@
         :label="props.label"
         clearable
         :density="props.density"
+        :menu-props="{ maxHeight: 200, location: 'bottom' }"
     ></v-select>
 </template>
 

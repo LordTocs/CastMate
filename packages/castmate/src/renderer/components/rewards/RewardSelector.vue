@@ -1,13 +1,13 @@
 <template>
-  <v-card-actions>
     <v-select
       v-model="modelObj"
       :items="items"
       item-value="title"
       item-text="title"
       :label="label"
+      :density="density"
       :search-input.sync="search"
-      
+      :menu-props="{ maxHeight: 300, location: 'bottom' }"
       clearable
     >
       <template #append>
@@ -48,7 +48,6 @@
       :showDelete="false"
       @created="onCreate"
     />
-  </v-card-actions>
 </template>
 
 <script>
@@ -61,6 +60,7 @@ export default {
   props: {
     modelValue: {},
     label: { type: String, default: () => "Channel Point Reward" },
+    density: { type: String }
   },
   computed: {
     ...mapModel(),

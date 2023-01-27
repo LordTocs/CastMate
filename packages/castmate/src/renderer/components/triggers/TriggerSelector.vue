@@ -8,6 +8,7 @@
     :item-value="getTriggerID"
     :value-comparator="comparator"
     hide-details
+    :menu-props="{ maxHeight: 400, location: 'bottom' }"
     :return-object="true"
   >
     <template #item="{ item, props }">
