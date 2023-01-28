@@ -2,6 +2,7 @@ import { Plugin } from './plugin.js'
 import { ipcMain } from "../utils/electronBridge.js"
 import _ from 'lodash'
 import logger from '../utils/logger.js';
+import util from 'util'
 
 let pluginManager = null;
 export class PluginManager {
@@ -51,13 +52,17 @@ export class PluginManager {
 			}
 			catch(err) {
 				logger.error(`Error Importing ${file} Plugin. `);
-				logger.error(err);
+				logger.error(`Error: ${util.inspect(err)}`);
 			}
 			return plugin
 		}))
 
+		this.plugins = this.plugins.filter(p => !!p)
+
 		this.templateFunctions = {};
 		for (let plugin of this.plugins) {
+			if (!plugin)
+				continue
 			this.templateFunctions[plugin.name] = plugin.templateFunctions;
 		}
 	}

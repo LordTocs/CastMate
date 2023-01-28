@@ -24,6 +24,7 @@
       v-model="defaultValue"
       label="Default Value"
     />
+    <v-checkbox v-model="serialized" label="Saved" />
   </div>
 </template>
 
@@ -39,7 +40,7 @@ export default {
   },
   emits: ["update:modelValue", "update:name"],
   computed: {
-    ...mapModelValues(["type"]),
+    ...mapModelValues(["type", "serialized"]),
     ...mapModel("name", "modelName"),
     defaultValue: {
       get() {

@@ -20,6 +20,9 @@ export class ActionQueue {
 		this.actions = {};
 
 		for (let plugin of plugins.plugins) {
+			if (!plugin)
+				continue
+
 			this.actions[plugin.name] = {}
 			for (let actionKey in plugin.actions) {
 				this.actions[plugin.name][actionKey] = plugin.actions[actionKey];

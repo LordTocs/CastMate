@@ -167,11 +167,15 @@ export function reactiveCopy(target, obj, onNewKey = null) {
 	}
 }
 
-export function onStateChange(obj, name, func)
+export function onStateChange(obj, name, func, options={ immediate: false})
 {
 	const watcher = new Watcher(func);
 
 	obj.__reactivity__[name].dependency.addSubscriber(watcher);
+
+	if (options.immediate) {
+		watcher.update();
+	}
 
 	return watcher;
 }

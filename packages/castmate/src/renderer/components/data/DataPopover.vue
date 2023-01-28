@@ -1,7 +1,7 @@
 <template>
     <v-menu v-model="modal" :close-on-content-click="false" location="center">
         <template #activator="{ props }">
-            <data-view v-bind="props" :value="modelValue" :schema="schema" style="min-width: 40px; min-height: 40px;"/>
+            <data-view v-bind=" { ...viewProps, ...props}" :value="modelValue" :schema="schema" style="min-width: 40px; min-height: 40px;"/>
         </template>
         <v-card>
             <data-input v-model="localData" :schema="schema" label="Value" class="mx-3 my-3" />
@@ -24,6 +24,7 @@ export default {
     props: {
         modelValue: {},
         schema: {},
+        viewProps: {}
     },
     emits: ['update:modelValue'],
     components: { DataView, DataInput },

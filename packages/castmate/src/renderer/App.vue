@@ -72,13 +72,13 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex"
-import { mapActions as mapPiniaActions } from "pinia"
 import SystemBar from "./components/layout/SystemBar.vue"
 import path from "path"
 import { shell } from "electron"
 import { useSettingsStore } from "./store/settings"
 import { useRemoteTemplateStore } from "./utils/templates"
 import { useResourceStore } from './store/resources'
+import { useVariableStore } from './store/variables'
 
 export default {
   components: {
@@ -112,7 +112,6 @@ export default {
   methods: {
     ...mapActions("ipc", ["init"]),
     ...mapActions("segments", ["loadSegments"]),
-    ...mapActions("variables", ["loadVariables"]),
     openSoundsFolder() {
       shell.openPath(path.join(this.paths.userFolder, "sounds"));
     },
@@ -120,7 +119,7 @@ export default {
   async mounted() {
     await this.init();
     await this.loadSegments();
-    await this.loadVariables();
+    await useVariableStore().init()
     await useResourceStore().init()
     await useSettingsStore().init()
     await useRemoteTemplateStore().init()

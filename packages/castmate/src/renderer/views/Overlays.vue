@@ -27,7 +27,7 @@ export default {
   components: { LinkTable, ConfirmDialog, NamedItemConfirmation, OverlayCreationDialog },
   computed: {
     ...mapState(useResourceStore, {
-      overlays: store => store.resources.overlays
+      overlays: store => store.resources.overlay
     }),
     overlayItems() {
       return this.overlays.map(o => ({id: o.id, name: o.config.name }))

@@ -132,19 +132,6 @@ export default {
 		{
 			this.filter.addWords(...badwords);
 		}
-
-		//TEMP CACHING OF LAST SUB
-		const lastSubFile = path.join(userFolder, "data", "lastSub.json")
-		if (fs.existsSync(lastSubFile))
-		{
-			try {
-				this.state.lastSubscriber = JSON.parse(await fs.promises.readFile(lastSubFile, "utf-8")).sub
-			}
-			catch
-			{}
-		}
-		
-
 	},
 	methods: {
 		filterMessage(message) {
@@ -673,9 +660,6 @@ export default {
 					})
 
 					this.state.lastSubscriber = message.userDisplayName
-					//Cache to a file
-					const lastSubFile = path.join(userFolder, "data", "lastSub.json")
-					fs.promises.writeFile(lastSubFile, JSON.stringify({ sub: message.userDisplayName }));
 				}
 
 				await this.querySubscribers();
@@ -1047,7 +1031,8 @@ export default {
 		lastSubscriber: {
 			type: String,
 			name: "Last Subscriber",
-			description: "Name of the person to subscribe"
+			description: "Name of the person to subscribe",
+			serialized: true
 		},
 		accessToken: {
 			type: String,

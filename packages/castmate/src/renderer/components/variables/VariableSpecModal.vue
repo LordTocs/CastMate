@@ -45,8 +45,8 @@
 
 <script>
 import VariableSpecEditor from "./VariableSpecEditor.vue";
-import { mapActions } from "vuex";
 import _cloneDeep from "lodash/cloneDeep";
+import { mapIpcs } from "../../utils/ipcMap";
 export default {
   components: { VariableSpecEditor },
   props: {
@@ -64,7 +64,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions("variables", ["updateVariable", "changeVariableName"]),
+    ...mapIpcs("variables", ['updateVariableSpec', 'addVariable', "changeVariableName"]),
     open(variableName, variableSpec) {
       this.variableName = variableName;
       this.varaibleSpec = variableSpec;
@@ -74,15 +74,10 @@ export default {
     },
     async save() {
       if (this.variableEditName != this.variableName) {
-        await this.changeVariableName({
-          oldName: this.variableName,
-          newName: this.variableEditName,
-        });
+        await this.changeVariableName(this.variableName, this.variableEditName );
       }
-      await this.updateVariable({
-        variableName: this.variableEditName,
-        variableSpec: this.variableEdit,
-      });
+
+      await this.updateVariableSpec(this.variableEditName, this.variableEdit);
 
       this.dialog = false;
     },
@@ -90,10 +85,7 @@ export default {
       this.dialog = false;
     },
     async create() {
-      await this.updateVariable({
-        variableName: this.variableEditName,
-        variableSpec: this.variableEdit,
-      });
+      await this.addVariable(this.variableEditName, this.variableEdit);
       this.dialog = false;
     },
   },

@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-table :headers="variableHeaders" :items="variableTable">
+    <v-table :headers="variableHeaders">
       <thead>
         <tr>
             <th>Variable Name</th>
@@ -10,25 +10,37 @@
             <th>Actions</th>
         </tr>
       </thead>
-      <tbody v-if="variableTable.length > 0">
-        <tr v-for="variable in variableTable" :key="variable.name">
+      <tbody v-if="variableList.length > 0">
+        <tr v-for="variable in variableList" :key="variable.name">
           <td> {{ variable.name }} </td>
-          <td> {{ variable.type }} </td>
-          <td> {{ variable.default }} </td>
-          <td> <data-popover :model-value="variable.value" @update:model-value="(value) => setVariableValue(variable.name, value)" :schema="{ type: variable.type }" /></td>
-          <td> 
+          <td> {{ variable.spec.type }} </td>
+          <td> {{ variable.spec.default }} </td>
+          <td class> 
+            <data-popover 
+              :model-value="variable.value" 
+              @update:model-value="(value) => setVariableValue(variable.name, value)" 
+              :schema="variable.spec"
+              :viewProps="{ style: { display: 'table-cell', verticalAlign: 'middle' }}"
+            />
+          </td>
+          <td>
+            <v-icon 
+              small
+              class="mr-2"
+              icon="mdi-refresh"
+              @click="resetVariable(variable.name)" 
+            /> 
             <v-icon
               small
               class="mr-2"
-              @click.stop="
-                $refs.editDlg.open(variable.name, {
-                  default: variable.default,
-                  type: variable.type,
-                })
-                "
               icon="mdi-cog"
-              />
-            <v-icon small @click.stop="deleteVar(variable.name)" icon="mdi-delete"/>
+              @click.stop="editDlg.open(variable.name, variable.spec)"
+            />
+            <v-icon 
+              small
+              icon="mdi-delete"
+              @click.stop="deleteVariable(variable.name)"
+            />
           </td>
         </tr>
       </tbody>
@@ -42,7 +54,14 @@
         </tr>
       </tbody>
     </v-table>
-    <v-btn @click="$refs.createDlg.open('', { type: 'Number', default: 0 })" color="primary" size="large" class="my-2"> Create Variable </v-btn>
+    <v-btn 
+      @click="createDlg.open('', { type: 'Number', default: 0, serialized: true })" 
+      color="primary" 
+      size="large" 
+      class="my-2"
+    > 
+      Create Variable 
+    </v-btn>
     <confirm-dialog ref="deleteDlg" />
     <variable-spec-modal ref="editDlg" />
     <variable-spec-modal
@@ -55,79 +74,55 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import VariableSpecModal from "../components/variables/VariableSpecModal.vue";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
-import { mapActions, mapGetters } from "vuex";
-import { mapIpcs } from "../utils/ipcMap";
-import _cloneDeep from "lodash/cloneDeep";
-import NumberInput from '../components/data/types/NumberInput.vue';
 import DataPopover from "../components/data/DataPopover.vue";
-//import { mapIpcs } from "../utils/ipcMap";
+import { computed, ref } from "vue"
+import { useVariableStore } from "../store/variables"
+import _cloneDeep from "lodash/cloneDeep"
+import { useIpc } from "../utils/ipcMap";
+import { useStore } from "vuex";
 
-export default {
-  components: { ConfirmDialog, VariableSpecModal, NumberInput, DataPopover },
-  computed: {
-    ...mapGetters("variables", ["variables"]),
-    ...mapGetters("ipc", ["stateLookup"]),
-    variableHeaders() {
-      return [
-        { text: "Variable Name", value: "name" },
-        { text: "Type", value: "type", sortable: false },
-        { text: "Default Value", value: "default", sortable: false },
-        { text: "Current Value", value: "value", sortable: false },
-        { text: "Actions", value: "actions", sortable: false },
-      ];
-    },
-    variableTable() {
-      return Object.keys(this.variables).map((varName) => ({
-        name: varName,
-        value: this.stateLookup.variables[varName],
-        default: this.variables[varName].default,
-        type: this.variables[varName].type,
-      }));
-    },
-  },
-  data() {
-    return {
-      valueEdit: null,
-    };
-  },
-  methods: {
-    ...mapActions("variables", [
-      "updateVariable",
-      "changeVariableName",
-      "removeVariable",
-    ]),
-    ...mapIpcs("variables", ["setVariableValue"]),
-    addVariable() {
-      this.updateVariable({
-        variableName: "",
-        variableSpec: {
-          type: "Number",
-          default: 0,
-        },
-      });
-    },
-    startEditValue(variableName) {
-      this.valueEdit = _cloneDeep(this.stateLookup.variables[variableName]);
-    },
-    async editValue(variableName) {
-      await this.setVariableValue(variableName, this.valueEdit);
-      this.valueEdit = null;
-    },
-    async deleteVar(variableName) {
-      if (
-        await this.$refs.deleteDlg.open(
-          "Confirm",
-          "Are you sure you want to delete this variable?"
-        )
-      ) {
-        await this.removeVariable({ variableName });
-      }
-    },
-  },
-};
+const store = useStore()
+const variableState = computed(() => store.getters['ipc/stateLookup'].variables)
+
+const variableHeaders = [
+  { text: "Variable Name", value: "name" },
+  { text: "Type", value: "type", sortable: false },
+  { text: "Default Value", value: "default", sortable: false },
+  { text: "Current Value", value: "value", sortable: false },
+  { text: "Actions", value: "actions", sortable: false },
+]
+
+const variableStore = useVariableStore()
+
+const variableList = computed(() => {
+  return Object.keys(variableStore.variableSpecs).map((varName) => ({
+      name: varName,
+      spec: variableStore.variableSpecs[varName],
+      value: variableState.value[varName],
+    }));
+})
+
+const editDlg = ref(null)
+const createDlg = ref(null)
+const setVariableValue = useIpc("variables", "setVariableValue")
+const resetVariable = useIpc("variables", "resetVariable")
+
+const deleteDlg = ref(null)
+const removeVariable = useIpc("variables", "removeVariable")
+async function deleteVariable(name) {
+    if (
+      await deleteDlg.value.open(
+        "Confirm",
+        "Are you sure you want to delete this variable?"
+      )
+    ) {
+      await removeVariable(name)
+    }
+  }
+
 </script>
 
 <style>

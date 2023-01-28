@@ -11,6 +11,7 @@ export const settingsFilePath = path.resolve(path.join(userFolder, "settings.yam
 export const secretsFilePath = path.resolve(path.join(userFolder, "secrets/secrets.yaml"));
 export const segmentsFilePath = path.resolve(path.join(userFolder, "segments.yaml"));
 export const variablesFilePath = path.resolve(path.join(userFolder, "variables.yaml"));
+export const stateFilePath = path.resolve(path.join(userFolder, "state.yaml"));
 
 
 export function ensureFolder(path)
@@ -45,6 +46,7 @@ export function ensureUserFolder()
 	ensureFile(settingsFilePath);
 	ensureFile(segmentsFilePath);
 	ensureFile(variablesFilePath);
+	ensureFile(stateFilePath)
 }
 
 ipcMain.handle("getPaths", async () =>

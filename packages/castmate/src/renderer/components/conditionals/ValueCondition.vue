@@ -45,6 +45,8 @@ import _cloneDeep from "lodash/cloneDeep";
 import DataInput from "../data/DataInput.vue";
 import { mapGetters } from "vuex";
 import { mapModelValues } from "../../utils/modelValue.js";
+import { mapState } from "pinia";
+import { useVariableStore } from "../../store/variables";
 export default {
   props: {
     modelValue: {},
@@ -53,7 +55,9 @@ export default {
   components: { StateSelector, DataInput },
   computed: {
     ...mapGetters("ipc", ["plugins", "stateLookup"]),
-    ...mapGetters("variables", ["variables"]),
+    ...mapState(useVariableStore, {
+        variables: store => store.variableSpecs
+    }),
     ...mapModelValues(["state", "operator", "compare"]),
     operators() {
       return [

@@ -45,14 +45,18 @@
 </template>
 
 <script>
+import { mapState } from "pinia";
 import { mapGetters } from "vuex";
+import { useVariableStore } from "../../store/variables";
 export default {
   props: {
     triggerSpec: {},
   },
   computed: {
     ...mapGetters("ipc", ["stateLookup", "plugins"]),
-    ...mapGetters("variables", ["variables"]),
+    ...mapState(useVariableStore, {
+      variables: store => store.variableSpecs
+    }),
     stateVariables() {
       const result = [];
       for (let pluginKey in this.stateLookup) {
@@ -62,11 +66,11 @@ export default {
             
           result.push({
             variable: `${pluginKey}.${stateKey}`,
-            color: this.plugins[pluginKey].color,
+            color: this.plugins[pluginKey]?.color || '#0f0f0f',
             type: (
-              this.plugins[pluginKey].stateSchemas[stateKey] ||
+              this.plugins[pluginKey]?.stateSchemas[stateKey] ||
               this.variables[stateKey]
-            ).type,
+            )?.type || 'Unknown',
           });
         }
       }

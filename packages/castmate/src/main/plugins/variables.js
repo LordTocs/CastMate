@@ -1,9 +1,12 @@
 import { createReactiveProperty, deleteReactiveProperty } from "../state/reactive.js"
-import { evalTemplate, template } from '../state/template.js'
+import { evalTemplate, template, templateNumber } from '../state/template.js'
 import { variablesFilePath } from '../utils/configuration.js'
 
 import { HotReloader } from '../utils/hot-reloader.js'
 import { StateManager } from "../state/state-manager.js"
+import fs from 'fs'
+import YAML from 'yaml'
+import { callIpcFunc } from "../utils/electronBridge.js"
 
 export default {
 	name: "variables",
@@ -12,92 +15,124 @@ export default {
 	color: "#D3934A",
 	async init() {
 		this.variableSpecs = {};
-		this.logger.info(`Watching ${variablesFilePath}`);
-		this.variableSettingsReloader = new HotReloader(variablesFilePath,
-			() => {
-				this.loadVariables();
-			},
-			() => {
-				this.logger.error('Oh no there was a variable file error.')
-			});
 
-		this.loadVariables();
+		this.logger.info('Loading Variables')
+		await this.load()
 
 	},
 	ipcMethods: {
+		getVariableSpecs() {
+			return this.variableSpecs
+		},
+		addVariable(name, spec) {
+			if (name in this.variableSpecs) {
+				return false;
+			}
+
+			this.createVariable(name, spec)
+			this.saveSpecs();
+			return true
+		},
+		getDefaultValue(spec) {
+			let defaultValue = spec.default
+			if (defaultValue == undefined) {
+				//Woops should have been more strict about casing in types!
+				if (spec.type && (spec.type == "string" || spec.type == "String")) {
+					defaultValue = "";
+				}
+				else {
+					defaultValue = 0;
+				}
+			}
+			return defaultValue
+		},
+		changeVariableName(oldName, newName) {
+
+		},
+		updateVariableSpec(name, spec) {
+			const currentSpec = this.variableSpecs[name]
+
+			if (!currentSpec)
+				return false;
+
+			//Save the current value
+			const currentValue = this.state[name]
+			//Delete the prop and anything the statemanager has for it.
+			deleteReactiveProperty(this.state, name);
+			StateManager.getInstance().removePluginReactiveProp(this, name)
+
+			//Recreate the prop
+			this.variableSpecs[name] = spec
+
+			if (currentSpec.type != spec.type) {
+				this.state[name] = this.getDefaultValue(spec)
+			}
+			else
+			{
+				//Restore the currentValue if we can
+				this.state[name] = currentValue
+			}
+
+			createReactiveProperty(this.state, name)
+			StateManager.getInstance().addPluginReactiveProp(this, name, spec)
+			this.profiles.redoDependencies();
+			this.saveSpecs();			
+
+			return true;
+		},
+		removeVariable(name) {
+			if (!(name in this.variableSpecs)) {
+				return false;
+			}
+
+			deleteReactiveProperty(this.state, name);
+			StateManager.getInstance().removePluginReactiveProp(this, name)
+			delete this.variableSpecs[name]
+			this.profiles.redoDependencies();
+			this.saveSpecs();
+			return true
+		},
+		resetVariable(name) {
+			if (!(name in this.state))
+				return;
+
+			this.state[name] = this.getDefaultValue(this.variableSpecs[name])
+		},
 		setVariableValue(name, value) {
 			if (!(name in this.state))
 				return;
 
 			this.state[name] = value;
-		}
+		},
 	},
 	methods: {
-		loadVariables() {
-			const variableData = this.variableSettingsReloader.data;
+		async load() {
+			const variableData = YAML.parse(await fs.promises.readFile(variablesFilePath, 'utf-8'))
 
-			this.logger.info("Reloading Variables...");
-			let needsDependencyUpdate = false;
-
-			for (let variableName in variableData) {
-				let variableSpec = variableData[variableName];
-				let defaultValue = variableSpec.default;
-
-				if (defaultValue == undefined) {
-					if (variableSpec.type && variableSpec.type == "string") {
-						defaultValue = "";
-					}
-					else {
-						defaultValue = 0;
-					}
-				}
-				if (variableSpec.type == "Number") {
-					defaultValue = Number(defaultValue);
-				}
-
-				if (variableName in this.variableSpecs) {
-					//Already have this variable.
-					if (this.variableSpecs[variableName].type != variableSpec.type) {
-						//We need to update the type and thus the default value.
-						this.logger.info(`Variable ${variableName} type has changed, resetting to default.`)
-						this.variableSpecs[variableName].type = variableSpec.type;
-						this.state[variableName] = defaultValue;
-					}
-				}
-				else {
-					//This is a new variable.
-					this.logger.info(`New Variable ${variableName}`);
-					this.variableSpecs[variableName] = variableSpec;
-					this.createVariable(variableName, defaultValue);
-					needsDependencyUpdate = true;
-				}
-			}
+			this.variableSpecs = variableData
 
 			for (let variableName in this.variableSpecs) {
-				if (!(variableName in variableData)) {
-					//This variable is gone, destroy it.
-					this.logger.info(`Deleting Variable ${variableName}`);
-					deleteReactiveProperty(this.state, variableName);
-					StateManager.getInstance().removePluginReactiveProp(this, variableName)
-					needsDependencyUpdate = true;
-					delete this.variableSpecs[variableName];
-				}
+				const variableSpec = this.variableSpecs[variableName];
+				this.logger.info(`Created Variable ${variableName}:${variableSpec.type} -> ${variableSpec.default}`)
+				this.createVariable(variableName, variableSpec)
 			}
+		},
+		async saveSpecs() {
+			try {
+				await fs.promises.writeFile(variablesFilePath, YAML.stringify(this.variableSpecs), 'utf-8')
+				callIpcFunc('variables_updateSpecs', this.variableSpecs)
+			}
+			catch(err) {
+				this.logger.error(`Failed writing to ${variablesFilePath}`)
+			}
+		},
+		createVariable(name, spec) {
+			this.variableSpecs[name] = spec
 
-			if (needsDependencyUpdate) {
-				this.profiles.redoDependencies();
-			}
-		},
-		createVariable(name, value) {
-			this.state[name] = value
+			this.state[name] = this.getDefaultValue(spec)
 			createReactiveProperty(this.state, name);
-			StateManager.getInstance().addPluginReactiveProp(this, name)
-		},
-		async handleTemplateNumber(value, context) {
-			if (typeof value === 'string' || value instanceof String) {
-				return Number(await evalTemplate(value, context))
-			}
-			return value;
+
+			StateManager.getInstance().addPluginReactiveProp(this, name, spec)
 		}
 	},
 	settings: {
@@ -132,7 +167,7 @@ export default {
 				//Set the value
 				let setValue = variableData.value;
 				if (typeof this.state[variableData.name] == 'number' || this.state[variableData.name] instanceof Number) {
-					setValue = await this.handleTemplateNumber(setValue, context);
+					setValue = await templateNumber(setValue, context);
 				} else {
 					setValue = await template(setValue, context);
 				}

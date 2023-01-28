@@ -184,6 +184,7 @@ export class ProfileManager
 			//create a new watcher
 			profile.watcher = new Watcher(() => this.recombine());
 			this.recombine();
+			
 			dependOnAllConditions(profile.conditions, StateManager.getInstance().rootState, profile.watcher);
 		}
 	}

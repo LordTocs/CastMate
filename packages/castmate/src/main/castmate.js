@@ -13,6 +13,7 @@ import { ipcMain, app, setIpcSender } from "./utils/electronBridge.js"
 import { ResourceManager } from './resources/resource-manager.js'
 import { OverlayManager }  from './overlays/overlay-manager.js'
 import { osInit } from './utils/os.js'
+import { StateManager } from "./state/state-manager.js";
 import { RemoteTemplateManager } from "./state/remote-template.js";
 import { SettingsManager } from "./pluginCore/settings-manager.js";
 
@@ -29,6 +30,9 @@ async function initInternal(mainWindowSender) {
 
 	let plugins = PluginManager.getInstance();
 	await plugins.load();
+
+	const stateManager = StateManager.getInstance();
+	await stateManager.loadSerialized();
 
 	RemoteTemplateManager.getInstance();
 
@@ -51,6 +55,8 @@ async function initInternal(mainWindowSender) {
 	await OverlayManager.getInstance().init()
 
 	await plugins.init(actions, profiles, analytics);
+
+	stateManager.finishLoad();
 
 	await profiles.load();
 
