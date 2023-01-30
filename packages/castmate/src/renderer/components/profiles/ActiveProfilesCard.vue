@@ -44,7 +44,6 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import { mapIpcs } from "../../utils/ipcMap";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
 

@@ -46,21 +46,24 @@
 
 <script>
 import { mapState } from "pinia";
-import { mapGetters } from "vuex";
+import { usePluginStore } from "../../store/plugins";
 import { useVariableStore } from "../../store/variables";
 export default {
   props: {
     triggerSpec: {},
   },
   computed: {
-    ...mapGetters("ipc", ["stateLookup", "plugins"]),
+    ...mapState(usePluginStore, {
+      rootState: "rootState",
+      plugins: "plugins"
+    }),
     ...mapState(useVariableStore, {
       variables: store => store.variableSpecs
     }),
     stateVariables() {
       const result = [];
-      for (let pluginKey in this.stateLookup) {
-        for (let stateKey in this.stateLookup[pluginKey]) {
+      for (let pluginKey in this.rootState) {
+        for (let stateKey in this.rootState[pluginKey]) {
           if (this.plugins[pluginKey]?.stateSchemas[stateKey]?.hidden) 
             continue;
             

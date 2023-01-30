@@ -32,20 +32,20 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { useStore } from 'vuex';
+import { usePluginStore } from '../../store/plugins';
 import { useIpc } from "../../utils/ipcMap.js"
 
 const props = defineProps({
     isBot: { type: Boolean, default: false },
 })
 
-const store = useStore();
+const pluginStore = usePluginStore();
 
 const accountName = computed(() => {
     if (props.isBot)
-        return store.getters['ipc/stateLookup'].twitch?.botName
+        return pluginStore.rootState.twitch?.botName
     else
-        return store.getters['ipc/stateLookup'].twitch?.channelName
+        return pluginStore.rootState.twitch?.channelName
 })
 
 const signedIn = computed(() => {
@@ -54,9 +54,9 @@ const signedIn = computed(() => {
 
 const profilePictureUrl = computed(() => {
     if (props.isBot)
-        return store.getters['ipc/stateLookup'].twitch?.botProfileUrl
+        return pluginStore.rootState.twitch?.botProfileUrl
     else
-        return store.getters['ipc/stateLookup'].twitch?.channelProfileUrl
+        return pluginStore.rootState.twitch?.channelProfileUrl
 })
 
 

@@ -1,18 +1,14 @@
 import Mixpanel from 'mixpanel'
-import { app, callIpcFunc, ipcMain } from './electronBridge.js'
+import { app, callIpcFunc, ipcMain, ipcFunc } from './electronBridge.js'
 import logger from './logger.js';
 
 export class Analytics {
     constructor() {
         this.analyticsId = null;
 
-        ipcMain.handle("analytics_track", async (ipcEvent, eventName, data) => {
-            this.track(eventName, data);
-        })
+        ipcFunc("analytics", "track", (name, data) => this.track(name, data))
 
-        ipcMain.handle("analytics_set", async (ipcEvent, data) => {
-            this.set(data);
-        })
+        ipcFunc("analytics", "set", (data) => this.set(data))
 
         const isProd = import.meta.env.PROD
         const key = import.meta.env.VITE_APP_MIXPANEL_PROJECT_TOKEN
@@ -32,7 +28,7 @@ export class Analytics {
     setUserId(id) {
         this.analyticsId = id;
 
-        callIpcFunc('analytics-id', id)
+        callIpcFunc('analytics_setId', id)
     }
 
     track(eventName, data) {

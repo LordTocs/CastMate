@@ -61,7 +61,7 @@ export class StateManager
         }
 
         this.stateWatchers[pluginName][prop] = onStateChange(this.rootState[pluginName], prop, () => {
-            callIpcFunc('state-update', {
+            callIpcFunc('state_update', {
                 [pluginName]: {
                     [prop]: this.rootState[pluginName][prop]
                 }
@@ -156,7 +156,7 @@ export class StateManager
 
         delete this.stateWatchers[pluginObj.name][prop]
 
-        callIpcFunc('state-removal', { [pluginObj.name]: prop})
+        callIpcFunc('state_removal', { [pluginObj.name]: prop})
     }
 
     getTemplateContext(localContext) {

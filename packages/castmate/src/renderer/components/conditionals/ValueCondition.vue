@@ -43,10 +43,10 @@
 import StateSelector from "../state/StateSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
 import DataInput from "../data/DataInput.vue";
-import { mapGetters } from "vuex";
 import { mapModelValues } from "../../utils/modelValue.js";
 import { mapState } from "pinia";
 import { useVariableStore } from "../../store/variables";
+import { usePluginStore } from "../../store/plugins";
 export default {
   props: {
     modelValue: {},
@@ -54,7 +54,10 @@ export default {
   emits: ["update:modelValue"],
   components: { StateSelector, DataInput },
   computed: {
-    ...mapGetters("ipc", ["plugins", "stateLookup"]),
+    ...mapState(usePluginStore, {
+      rootState: 'rootState',
+      plugins: 'plugins'
+    }),
     ...mapState(useVariableStore, {
         variables: store => store.variableSpecs
     }),
@@ -100,7 +103,7 @@ export default {
     },
     stateValue() {
       if (!this.modelValue || !this.modelValue.state) return undefined;
-      return this.stateLookup[this.modelValue.state.plugin][this.modelValue.state.key];
+      return this.rootState[this.modelValue.state.plugin][this.modelValue.state.key];
     },
   },
 };

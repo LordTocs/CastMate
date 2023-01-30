@@ -6,7 +6,7 @@
         <v-card-subtitle> Twitch Account of your Channel </v-card-subtitle>
         <v-card-text>
           <span v-if="channelName" class="text-h5">
-            <v-avatar> <img :src="stateLookup.twitch.channelProfileUrl" :alt="channelName" /> </v-avatar>
+            <v-avatar> <img :src="rootState.twitch.channelProfileUrl" :alt="channelName" /> </v-avatar>
             {{ channelName }}
           </span>
           <span v-else> Not Signed In </span>
@@ -37,7 +37,7 @@
         <v-card-subtitle> Twitch Account of your Chat Bot </v-card-subtitle>
         <v-card-text>
            <span v-if="botName" class="text-h5">
-            <v-avatar> <img :src="stateLookup.twitch.botProfileUrl" :alt="botName" /> </v-avatar>
+            <v-avatar> <img :src="rootState.twitch.botProfileUrl" :alt="botName" /> </v-avatar>
             {{ botName }}
           </span>
           <span v-else> Not Signed In </span>
@@ -66,7 +66,8 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 import { mapIpcs } from "../../utils/ipcMap";
 
 export default {
@@ -77,12 +78,14 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["stateLookup"]),
+    ...mapState(usePluginStore, {
+      rootState: 'rootState'
+    }),
     botName() {
-      return this.stateLookup.twitch.botName;
+      return this.rootState.twitch?.botName;
     },
     channelName() {
-      return this.stateLookup.twitch.channelName;
+      return this.rootState.twitch?.channelName;
     },
   },
   methods: {

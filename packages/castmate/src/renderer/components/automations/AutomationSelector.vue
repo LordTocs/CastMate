@@ -35,7 +35,6 @@
 
 <script>
 import { mapIpcs } from "../../utils/ipcMap";
-import { mapGetters } from "vuex";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
 import { mapModel } from "../../utils/modelValue";
 

@@ -18,7 +18,8 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 import DataView from "../data/DataView.vue";
 
 export default {
@@ -27,7 +28,9 @@ export default {
     action: {},
   },
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapState(usePluginStore, {
+      plugins: "plugins"
+    }),
     actionDefinition() {
       if (!this.action) return null;
       const plugin = this.plugins[this.action.plugin];

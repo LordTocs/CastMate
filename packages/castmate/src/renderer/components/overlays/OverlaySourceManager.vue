@@ -20,18 +20,18 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import { useStore } from 'vuex';
+import { usePluginStore } from '../../store/plugins';
 import { useSettingsStore } from '../../store/settings';
 import { useIpc } from '../../utils/ipcMap';
 import NamedItemModal from '../dialogs/NamedItemModal.vue';
 
 
-const store = useStore()
+const pluginStore = usePluginStore();
 
 const settingsStore = useSettingsStore();
 
-const currentScene = computed(() => store.getters['ipc/stateLookup'].obs?.scene)
-const isObsConnected = computed(() => store.getters['ipc/stateLookup'].obs?.connected)
+const currentScene = computed(() => pluginStore.rootState.obs?.scene)
+const isObsConnected = computed(() => pluginStore.rootState.obs?.connected)
 
 const props = defineProps({
     overlay: { },

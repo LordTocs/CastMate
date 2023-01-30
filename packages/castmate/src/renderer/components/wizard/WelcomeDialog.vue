@@ -145,6 +145,8 @@ import Twitch from "../plugins/twitch.vue";
 import ObsSettings from "./ObsSettings.vue";
 import { isFirstRun } from "../../utils/firstRun";
 import { mapIpcs } from "../../utils/ipcMap";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 export default {
   components: { Twitch, ObsSettings },
   data() {
@@ -154,12 +156,15 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["stateLookup", "paths"]),
+    ...mapGetters("ipc", ["paths"]),
+    ...mapState(usePluginStore, {
+      rootState: "rootState"
+    }),
     signedIn() {
-      return !!this.stateLookup.twitch.channelName;
+      return !!this.rootState.twitch.channelName;
     },
     obsConnected() {
-      return this.stateLookup.obs.connected;
+      return this.rootState.obs.connected;
     },
     ready() {
       return (

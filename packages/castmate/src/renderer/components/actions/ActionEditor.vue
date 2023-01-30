@@ -8,7 +8,8 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 import { mapModel } from "../../utils/modelValue";
 import DataInput from "../data/DataInput.vue";
 
@@ -21,7 +22,9 @@ export default {
   emits: ["update:modelValue"],
   components: { DataInput },
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapState(usePluginStore, {
+      plugins: 'plugins'
+    }),
     ...mapModel(),
     actionSpec() {
       const plugin = this.plugins[this.plugin];

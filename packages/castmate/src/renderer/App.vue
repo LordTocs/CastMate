@@ -79,6 +79,10 @@ import { useSettingsStore } from "./store/settings"
 import { useRemoteTemplateStore } from "./utils/templates"
 import { useResourceStore } from './store/resources'
 import { useVariableStore } from './store/variables'
+import { useAnalyticsStore } from "./utils/analytics"
+import { useOverlayStore } from "./store/overlays"
+import { usePluginStore } from "./store/plugins"
+import { mapState } from "pinia"
 
 export default {
   components: {
@@ -91,7 +95,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["inited", "pluginList", "paths"]),
+    ...mapGetters("ipc", ["paths"]),
+    ...mapState(usePluginStore, {
+      pluginList: 'pluginList'
+    }),
     uiPlugins() {
       return this.pluginList
         .filter(
@@ -119,6 +126,9 @@ export default {
   async mounted() {
     await this.init();
     await this.loadSegments();
+    await usePluginStore().init()
+    await useOverlayStore().init()
+    await useAnalyticsStore().init()
     await useVariableStore().init()
     await useResourceStore().init()
     await useSettingsStore().init()

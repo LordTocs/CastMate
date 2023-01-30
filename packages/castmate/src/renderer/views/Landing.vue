@@ -11,17 +11,17 @@
                 <twitch-account-display is-bot />
               </v-col>
               <v-col>
-                <strong> Viewers: </strong> {{ stateLookup.twitch.viewers }}
+                <strong> Viewers: </strong> {{ rootState.twitch.viewers }}
                 <br />
                 <strong> Followers: </strong>
-                {{ stateLookup.twitch.followers || 0 }} <br />
+                {{ rootState.twitch.followers || 0 }} <br />
                 <strong> Subscribers: </strong>
-                {{ stateLookup.twitch.subscribers || 0 }} <br />
+                {{ rootState.twitch.subscribers || 0 }} <br />
               </v-col>
             </v-row>
           </v-card-text>
-          <v-card-actions v-if="stateLookup.twitch.isAuthed">
-            <v-btn :href="`https://www.twitch.tv/dashboard/${stateLookup.twitch.channelName}`" target="_blank"
+          <v-card-actions v-if="rootState.twitch.isAuthed">
+            <v-btn :href="`https://www.twitch.tv/dashboard/${rootState.twitch.channelName}`" target="_blank"
               variant="outlined" size="small" prepend-icon="mdi-twitch">
               Twitch Dashboard
             </v-btn>
@@ -31,7 +31,7 @@
       <v-col>
         <v-card height="100%" class="d-flex flex-column">
           <v-card-title> OBS </v-card-title>
-          <v-card-text class="flex-grow-1" v-if="!stateLookup.obs.connected">
+          <v-card-text class="flex-grow-1" v-if="!rootState.obs.connected">
             <v-alert dense variant="outlined" type="warning">
               <v-row>
                 <v-col class="grow">
@@ -47,25 +47,25 @@
           </v-card-text>
           <v-card-text class="flex-grow-1" v-else>
             <strong> Streaming: </strong>
-            <v-icon :color="stateLookup.obs.streaming ? 'blue' : undefined">{{
-                stateLookup.obs.streaming
+            <v-icon :color="rootState.obs.streaming ? 'blue' : undefined">{{
+                rootState.obs.streaming
                   ? "mdi-broadcast"
                   : "mdi-broadcast-off"
             }}
             </v-icon>
             <br />
             <strong> Recording: </strong>
-            <v-icon :color="stateLookup.obs.recording ? 'red' : undefined">{{ stateLookup.obs.recording ? "mdi-record" :
+            <v-icon :color="rootState.obs.recording ? 'red' : undefined">{{ rootState.obs.recording ? "mdi-record" :
                 "mdi-record"
             }}
             </v-icon>
             <br />
           </v-card-text>
           <v-card-actions>
-            <v-btn v-if="stateLookup.obs.connected" @click="() => refereshAllBrowsers()" variant="outlined" prepend-icon="mdi-refresh" size="small">
+            <v-btn v-if="rootState.obs.connected" @click="() => refereshAllBrowsers()" variant="outlined" prepend-icon="mdi-refresh" size="small">
               Refresh Browsers
             </v-btn>
-            <v-btn v-if="!stateLookup.obs.connected" @click="() => openOBS()" variant="outlined" prepend-icon="mdi-open-in-app" size="small">
+            <v-btn v-if="!rootState.obs.connected" @click="() => openOBS()" variant="outlined" prepend-icon="mdi-open-in-app" size="small">
               Launch OBS
             </v-btn>
           </v-card-actions>
@@ -82,17 +82,20 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import ActiveProfilesCard from "../components/profiles/ActiveProfilesCard.vue";
 import WelcomeDialog from "../components/wizard/WelcomeDialog.vue";
 import { mapIpcs } from "../utils/ipcMap";
 import { trackAnalytic } from "../utils/analytics.js";
 import TwitchAccountDisplay from "../components/twitch/TwitchAccountDisplay.vue";
+import { mapState } from "pinia";
+import { usePluginStore } from "../store/plugins";
 
 export default {
   components: { ActiveProfilesCard, WelcomeDialog, TwitchAccountDisplay },
   computed: {
-    ...mapGetters("ipc", ["stateLookup"]),
+    ...mapState(usePluginStore, {
+      rootState: "rootState"
+    })
   },
   methods: {
     ...mapIpcs("obs", ["refereshAllBrowsers", "openOBS"]),

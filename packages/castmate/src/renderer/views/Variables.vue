@@ -82,10 +82,10 @@ import { computed, ref } from "vue"
 import { useVariableStore } from "../store/variables"
 import _cloneDeep from "lodash/cloneDeep"
 import { useIpc } from "../utils/ipcMap";
-import { useStore } from "vuex";
+import { usePluginStore } from "../store/plugins";
 
-const store = useStore()
-const variableState = computed(() => store.getters['ipc/stateLookup'].variables)
+const pluginStore = usePluginStore();
+const variableState = computed(() => pluginStore.rootState.variables)
 
 const variableHeaders = [
   { text: "Variable Name", value: "name" },

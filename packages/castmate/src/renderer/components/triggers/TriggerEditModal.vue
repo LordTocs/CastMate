@@ -60,7 +60,6 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import DataInput from "../data/DataInput.vue";
 import TriggerSelector from "./TriggerSelector.vue";
 import _cloneDeep from "lodash/cloneDeep";
@@ -69,6 +68,8 @@ import FlexScroller from "../layout/FlexScroller.vue";
 import { constructDefaultSchema } from "../../utils/objects";
 import TriggerContext from "./TriggerContext.vue";
 import { trackAnalytic } from "../../utils/analytics.js";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 
 export default {
   components: {
@@ -91,7 +92,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapState(usePluginStore, {
+      plugins: "plugins"
+    }),
     triggerDesc() {
       if (!this.localTriggerType) return null;
       return this.plugins[this.localTriggerType.pluginKey]?.triggers[

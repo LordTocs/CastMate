@@ -8,7 +8,7 @@ import { ProfileManager } from "./actions/profile-manager.js"
 import { WebServices } from "./webserver/webserver.js"
 import { PluginManager } from "./pluginCore/plugin-manager.js"
 import _ from 'lodash'
-import { ipcMain, app, setIpcSender } from "./utils/electronBridge.js"
+import { ipcMain, app, setIpcSender, ipcFunc } from "./utils/electronBridge.js"
 
 import { ResourceManager } from './resources/resource-manager.js'
 import { OverlayManager }  from './overlays/overlay-manager.js'
@@ -68,6 +68,10 @@ async function initInternal(mainWindowSender) {
 
 export async function initCastMate(mainWindowSender) {
 	let initPromise = initInternal(mainWindowSender);
+
+	ipcFunc("core", "waitForInit", async () => {
+		return await initPromise;
+	})	
 
 	ipcMain.handle('waitForInit', async () => {
 		return await initPromise;

@@ -79,7 +79,6 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import AutomationPreview from "../automations/AutomationPreview.vue";
 import DataView from "../data/DataView.vue";
 import _cloneDeep from "lodash/cloneDeep";
@@ -87,6 +86,8 @@ import TriggerListRow from "./TriggerListRow.vue";
 import TriggerEditModal from "./TriggerEditModal.vue";
 import { filterSchema } from "../../utils/objects";
 import { nanoid } from "nanoid/non-secure";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 
 export default {
   components: { DataView, AutomationPreview, TriggerListRow, TriggerEditModal },
@@ -100,7 +101,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapState(usePluginStore, {
+      plugins: "plugins"
+    }),
     visibleTriggers() {
       const result = {};
 

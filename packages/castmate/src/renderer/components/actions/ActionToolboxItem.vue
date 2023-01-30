@@ -18,14 +18,17 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'pinia';
+import { usePluginStore } from '../../store/plugins';
 
 export default {
     props: {
         pluginAction: {}
     },
     computed: {
-        ...mapGetters("ipc", ["plugins"]),
+        ...mapState(usePluginStore, {
+            plugins: "plugins"
+        }),
         actionDefinition() {
             return this.plugins[this.pluginAction.plugin]?.actions?.[this.pluginAction.action];
         }

@@ -72,7 +72,6 @@
 
 <script>
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
-import { mapGetters } from "vuex";
 import FlexScroller from "../layout/FlexScroller.vue";
 import ActionToolbox from "../actions/ActionToolbox.vue";
 import SequenceEditor from "../sequences/SequenceEditor.vue";
@@ -90,10 +89,8 @@ export default {
       dirty: false,
     };
   },
-  computed: {
-    ...mapGetters("io", ["saveAutomation", "getAutomation"]),
-  },
   methods: {
+    ...mapIpcs("io", ["saveAutomation", "getAutomation"]),
     async save() {
       await this.saveInternal();
       this.dirty = false;

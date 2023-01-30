@@ -12,8 +12,8 @@
         <span v-if="item" class="font-weight-black" :style="{ 'color': plugins[item.raw.plugin].color }">{{
             plugins[item.raw.plugin].uiName
         }}</span>.<span v-if="item">{{ item.raw.key }}</span>
-        <span v-if="item && stateLookup[item.raw.plugin][item.raw.key]" class="text-medium-emphasis ml-2">
-          ({{ stateLookup[item.raw.plugin][item.raw.key] }})
+        <span v-if="item && rootState[item.raw.plugin][item.raw.key]" class="text-medium-emphasis ml-2">
+          ({{ rootState[item.raw.plugin][item.raw.key] }})
         </span>
       </v-list-item>
     </template>
@@ -21,15 +21,16 @@
       <span v-if="item" class="font-weight-black" :style="{ 'color': plugins[item.raw.plugin].color }">{{
             plugins[item.raw.plugin].uiName
         }}</span>.<span v-if="item">{{ item.raw.key }}</span>
-      <span v-if="item && stateLookup[item.raw.plugin][item.raw.key]" class="text-medium-emphasis ml-2">
-        ({{ stateLookup[item.raw.plugin][item.raw.key] }})
+      <span v-if="item && rootState[item.raw.plugin][item.raw.key]" class="text-medium-emphasis ml-2">
+        ({{ rootState[item.raw.plugin][item.raw.key] }})
       </span>
     </template>
   </v-select>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 import { mapModel } from "../../utils/modelValue";
 export default {
   props: {
@@ -37,14 +38,18 @@ export default {
     label: {},
   },
   computed: {
-    ...mapGetters("ipc", ["stateLookup", "plugins", "stateSchemas"]),
+    ...mapState(usePluginStore, {
+      plugins: "plugins",
+      rootState: "rootState",
+      rootStateSchemas: "rootStateSchemas"
+    }),
     ...mapModel(),
     stateList() {
       const stateList = [];
-      for (let pluginName of Object.keys(this.stateLookup)) {
-        for (let stateKey of Object.keys(this.stateLookup[pluginName])) {
+      for (let pluginName of Object.keys(this.rootState)) {
+        for (let stateKey of Object.keys(this.rootState[pluginName])) {
           //If it's not in the stateSchemas it's a variable, so we always include it.
-          if (!this.stateSchemas[pluginName][stateKey] || !this.stateSchemas[pluginName][stateKey].hidden)
+          if (!this.rootStateSchemas[pluginName][stateKey] || !this.rootStateSchemas[pluginName][stateKey].hidden)
           {
             stateList.push({ plugin: pluginName, key: stateKey, id: `${pluginName}.${stateKey}` });
           }

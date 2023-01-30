@@ -1,10 +1,5 @@
 
 const { ipcRenderer } = require("electron");
-import { cleanVuePropSchema } from '../utils/vueSchemaUtils'
-import loadWidget, { getAllWidgets } from 'castmate-overlay-components'
-import { useIpc } from '../utils/ipcMap';
-
-const setOverlayTypes = useIpc("overlays", "setTypes")
 
 const builtInPlugin = {
 	name: 'castmate',
@@ -65,21 +60,7 @@ export default {
 	getters: {
 		paths: state => state.paths,
 		activeProfiles: state => state.activeProfiles,
-		plugins: state => ({ ...state.plugins, castmate: builtInPlugin }),
-		pluginList: state => [...Object.keys(state.plugins).map(name => state.plugins[name]), builtInPlugin],
 		inited: state => state.inited,
-		stateLookup: state => state.stateLookup,
-		analyticsId: state => state.analyticsId,
-		stateSchemas: state => {
-			const result = {};
-
-			const pluginList = [...Object.keys(state.plugins).map(name => state.plugins[name]), builtInPlugin];
-			for (let plugin of pluginList) {
-				result[plugin.name] = plugin.stateSchemas;
-			}
-
-			return result;
-		}
 	},
 	mutations: {
 		setInited(state) {
@@ -94,77 +75,19 @@ export default {
 		setActiveProfiles(state, activeProfiles) {
 			state.activeProfiles = activeProfiles;
 		},
-		setAnalyticsId(state, id) {
-			state.analyticsId = id;
-		},
-		applyState(state, update) {
-			for (let pluginKey in update) {
-				if (!state.stateLookup[pluginKey]) {
-					state.stateLookup[pluginKey] = {};
-				}
-				for (let stateKey in update[pluginKey]) {
-					state.stateLookup[pluginKey][stateKey] = update[pluginKey][stateKey];
-				}
-			}
-		},
-		removeState(state, removal) {
-			for (let pluginKey in removal) {
-				if (!state.stateLookup[pluginKey])
-					continue;
-
-				delete state.stateLookup[pluginKey][removal[pluginKey]];
-
-				if (Object.keys(state.stateLookup[pluginKey]) == 0) {
-					delete state.stateLookup[pluginKey];
-				}
-			}
-		}
 	},
 	actions: {
 		async init({ commit }) {
 			await ipcRenderer.invoke("waitForInit");
 			commit('setInited');
 
-			const plugins = await ipcRenderer.invoke('getPlugins');
-			commit('setPlugins', plugins);
-
 			const paths = await ipcRenderer.invoke('getPaths');
 			commit('setPaths', paths);
 
-			commit('applyState',  await ipcRenderer.invoke("state_getRootState"));
-
 			commit('setActiveProfiles',  await ipcRenderer.invoke('core_getActiveProfiles'));
-
-			//Load widget types
-			//TODO: This is kinda sloppy
-			const widgetIds = getAllWidgets()
-
-    		const widgetModules = await Promise.all(widgetIds.map((wid) => loadWidget(wid)))
-			
-			const widgetTypes = {};
-
-			for (let i = 0; i < widgetModules.length; ++i)
-			{
-				widgetTypes[widgetIds[i]] = {
-					...widgetModules[i].default.widget,
-					props: cleanVuePropSchema(widgetModules[i].default.props)
-				}
-			}
-
-			await setOverlayTypes(widgetTypes);
-		},
-		stateUpdate({ commit }, update) {
-			//console.log("applyState", update);
-			commit('applyState', update);
-		},
-		removeState({ commit }, varName) {
-			commit('removeState', varName);
 		},
 		setActiveProfiles({ commit }, activeProfiles) {
 			commit('setActiveProfiles', activeProfiles);
-		},
-		setAnalyticsId({ commit }, id) {
-			commit('setAnalyticsId', id);
-		},
+		}
 	}
 }

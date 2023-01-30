@@ -1,5 +1,5 @@
 import { Plugin } from './plugin.js'
-import { ipcMain } from "../utils/electronBridge.js"
+import { ipcFunc, ipcMain } from "../utils/electronBridge.js"
 import _ from 'lodash'
 import logger from '../utils/logger.js';
 import util from 'util'
@@ -77,7 +77,7 @@ export class PluginManager {
 			}
 		}
 
-		ipcMain.handle("getPlugins", async () => {
+		ipcFunc("core", "getPlugins", () => {
 			const pluginInfo = {};
 			for (let plugin of this.plugins) {
 				pluginInfo[plugin.name] = plugin.getUIDescription();

@@ -69,12 +69,13 @@
 <script>
 import ConditionsEditor from "../components/profiles/ConditionsEditor.vue";
 import AutomationInput from "../components/automations/AutomationInput.vue";
-import { mapGetters } from "vuex";
 import BooleanGroup from "../components/conditionals/BooleanGroup.vue";
 import FlexScroller from "../components/layout/FlexScroller.vue";
 import TriggerList from "../components/triggers/TriggerList.vue";
 import { mapIpcs } from "../utils/ipcMap";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
+import { mapState } from "pinia";
+import { usePluginStore } from "../store/plugins";
 
 export default {
   components: {
@@ -86,7 +87,9 @@ export default {
     ConfirmDialog
 },
   computed: {
-    ...mapGetters("ipc", ["pluginList"]),
+    ...mapState(usePluginStore, {
+      pluginList: "pluginList"
+    }),
     profileName() {
       return this.$route.params.profile;
     },

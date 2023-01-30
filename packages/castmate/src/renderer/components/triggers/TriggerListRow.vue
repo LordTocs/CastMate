@@ -60,7 +60,8 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 import AutomationPreview from "../automations/AutomationPreview.vue";
 import DataView from "../data/DataView.vue";
 import ConfirmDialog from "../dialogs/ConfirmDialog.vue";
@@ -74,7 +75,9 @@ export default {
     mapping: {},
   },
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapState(usePluginStore, {
+      plugins: "plugins"
+    })
   },
   methods: {
     async tryDelete() {

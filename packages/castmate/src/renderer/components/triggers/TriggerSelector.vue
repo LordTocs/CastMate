@@ -33,10 +33,11 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import _flatten from "lodash/flatten";
 import _isEqual from "lodash/isEqual";
 import { mapModel } from "../../utils/modelValue";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 export default {
   props: {
     modelValue: {},
@@ -44,7 +45,9 @@ export default {
   },
   emits: ["update:modelValue"],
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapState(usePluginStore, {
+      plugins: "plugins"
+    }),
     ...mapModel(),
     triggerList() {
       return _flatten(

@@ -20,23 +20,23 @@
       </draggable>
     </v-list-group>
   </v-list>
-  <!--
-         
-          -->
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import Draggable from "vuedraggable";
 import { constructDefaultSchema } from "../../utils/objects";
 import { nanoid } from "nanoid/non-secure";
 import _cloneDeep from "lodash/cloneDeep";
 import ActionToolboxItem from "./ActionToolboxItem.vue";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 
 export default {
   components: { Draggable, ActionToolboxItem },
   computed: {
-    ...mapGetters("ipc", ["pluginList"]),
+    ...mapState(usePluginStore, {
+      pluginList: 'pluginList'
+    }),
     actionPlugins() {
       return this.pluginList.filter(
         (plugin) => Object.keys(plugin.actions).length > 0

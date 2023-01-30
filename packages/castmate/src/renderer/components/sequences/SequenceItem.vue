@@ -49,11 +49,12 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import { mapModelValues } from "../../utils/modelValue";
 import ActionEditor from "../actions/ActionEditor.vue";
 import DataView from "../data/DataView.vue";
 import * as chromatism from "chromatism2";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 
 export default {
   props: {
@@ -68,7 +69,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapState(usePluginStore, {
+      plugins: "plugins"
+    }),
     ...mapModelValues(["data", "plugin", "action"]),
     actionDefinition() {
       const plugin = this.plugins[this.plugin];

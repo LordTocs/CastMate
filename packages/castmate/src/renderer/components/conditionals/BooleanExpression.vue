@@ -15,7 +15,8 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
+import { usePluginStore } from "../../store/plugins";
 import { mapModel } from "../../utils/modelValue";
 import ValueCondition from "./ValueCondition.vue";
 
@@ -23,7 +24,9 @@ export default {
   components: { ValueCondition },
   props: { modelValue: {} },
   computed: {
-    ...mapGetters("ipc", ["plugins"]),
+    ...mapState(usePluginStore, {
+      plugins: "plugins"
+    }),
     ...mapModel(),
     valuePlugin() {
       if (!this.modelValue || !this.modelValue.state || !this.modelValue.state.plugin)
