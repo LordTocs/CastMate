@@ -17,13 +17,13 @@
 <script setup>
 import { useModel } from '../../../utils/modelValue'
 import path from "path"
-import { useStore } from 'vuex';
 import { computed, ref } from 'vue';
 import _union from 'lodash/union'
 import recursiveReaddir from "recursive-readdir"
 
 import { ImageFormats, VideoFormats, SoundFormats } from '../../../utils/filetypes';
 import MediaListItem from '../../media/MediaListItem.vue';
+import { usePathStore } from '../../../store/paths';
 
 const topProps = defineProps({
     schema: {},
@@ -32,18 +32,14 @@ const topProps = defineProps({
     density: { type: String }
 })
 
-const store = useStore()
+const pathStore = usePathStore();
 
 const emit = defineEmits(['update:modelValue'])
 
 const modelObj = useModel(topProps, emit);
 
-const userFolder = computed(() => {
-    return store.getters['ipc/paths'].userFolder
-})
-
 const mediaPath = computed(() => { 
-    return path.join(userFolder.value, "media")
+    return path.join(pathStore.userFolder, "media")
 })
 
 const extensions = computed(() => {

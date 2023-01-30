@@ -1,4 +1,4 @@
-import { app, ipcMain } from "./electronBridge.js"
+import { app, ipcFunc, ipcMain } from "./electronBridge.js"
 import path from 'path'
 import fs from "fs"
 
@@ -49,13 +49,10 @@ export function ensureUserFolder()
 	ensureFile(stateFilePath)
 }
 
-ipcMain.handle("getPaths", async () =>
+ipcFunc("core", "getPaths", async () =>
 {
 	return {
 		userFolder,
-		secretsFilePath,
-		settingsFilePath,
-		segmentsFilePath,
-		variablesFilePath,
+		mediaFolder
 	};
 })

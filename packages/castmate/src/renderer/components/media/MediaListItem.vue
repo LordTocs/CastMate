@@ -14,7 +14,7 @@ import { computed, onMounted, useAttrs, watch, ref } from 'vue';
 import path from 'path'
 import { ImageFormats, SoundFormats, VideoFormats } from '../../utils/filetypes';
 import VideoThumbnail from './VideoThumbnail.vue';
-import { useStore } from 'vuex';
+import { usePathStore } from '../../store/paths';
 
 
 const props = defineProps({
@@ -22,15 +22,9 @@ const props = defineProps({
     active: { type: Boolean }
 })
 
-const store = useStore()
+const pathStore = usePathStore();
 
 const hover = ref(false)
-
-const mediaFolder = computed(() => {
-    if (!props.mediaFile)
-        return null
-    return path.dirname(props.mediaFile)
-})
 
 const mediaName = computed(() => {
     if (!props.mediaFile)
@@ -62,7 +56,7 @@ const isVideo = computed(() => {
 const fullMediaFilePath = computed(() => {
     if (!props.mediaFile)
         return null;
-    return path.join(store.getters['ipc/paths'].userFolder, "media", props.mediaFile)
+    return path.join(pathStore.userFolder, "media", props.mediaFile)
 })
 
 const attrs = useAttrs();

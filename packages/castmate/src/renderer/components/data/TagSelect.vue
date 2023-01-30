@@ -5,8 +5,8 @@
     closable-chips
     :label="label" 
     v-model="modelObj"
-    prepend-icon="mdi-magnify"
     :density="density"
+    :clearable="clearable"
   >
   </v-combobox>
 </template>
@@ -18,6 +18,7 @@ export default {
     modelValue: {},
     label: { type: String, default: () => "Tags"},
     density: { type: String },
+    clearable: { type: Boolean, default: false }
   },
   emits: ["update:modelValue"],
   computed: {

@@ -44,6 +44,8 @@
 </template>
 
 <script>
+import { mapState } from "pinia";
+import { useQueueStore } from "../../store/queues";
 import { mapIpcs } from "../../utils/ipcMap";
 import NamedItemModal from "../dialogs/NamedItemModal.vue";
 
@@ -53,6 +55,11 @@ export default {
     return {
       hasProfiles: true,
     };
+  },
+  computed: {
+    ...mapState(useQueueStore, {
+      activeProfiles: 'activeProfiles'
+    })
   },
   async mounted() {
     let profiles = await this.getProfiles();

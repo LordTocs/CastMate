@@ -7,8 +7,21 @@ import fs from 'fs'
 import { ipcFunc, ipcMain } from "../utils/electronBridge.js"
 import _cloneDeep from "lodash/cloneDeep"
 
+let automationManager = null;
 export class AutomationManager
 {
+    /**
+     * 
+     * @returns {AutomationManager}
+     */
+     static getInstance() {
+        if (!automationManager)
+        {
+            automationManager = new this();
+        }
+        return automationManager;
+    }
+	
 	constructor()
 	{
 		this.automations = {};

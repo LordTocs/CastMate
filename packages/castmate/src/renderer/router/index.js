@@ -8,9 +8,11 @@ import AutomationEditor from "../views/AutomationEditor.vue";
 import Overlays from "../views/Overlays.vue"
 import OverlayEditor from "../views/OverlayEditor.vue"
 
+import Plans from '../views/Plans.vue';
+import PlanEditor from '../views/PlanEditor.vue';
+
 import Plugin from "../views/Plugin.vue";
 import Rewards from "../views/Rewards.vue";
-import Segments from '../views/Segments.vue';
 import Variables from '../views/Variables.vue';
 import Landing from '../views/Landing.vue';
 import About from '../views/About.vue';
@@ -28,9 +30,14 @@ const routes = [
 		component: About,
 	},
 	{
-		path: '/segments',
-		name: "Segments",
-		component: Segments
+		path: '/streamplans',
+		name: "Stream Plans",
+		component: Plans
+	},
+	{
+		path: '/streamplans/:planId',
+		name: "Stream Plan Editor",
+		component: PlanEditor
 	},
 	{
 		path: "/profiles",

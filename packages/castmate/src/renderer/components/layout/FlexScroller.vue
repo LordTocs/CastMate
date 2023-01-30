@@ -9,7 +9,7 @@
 <script>
 export default {
   props: {
-    color: {},
+    color: { type: String, default: "transparent" },
     innerClass: {},
   },
 };
@@ -26,7 +26,5 @@ export default {
   right: 0;
   bottom: 0;
   overflow: auto;
-  display: flex;
-  flex-direction: column;
 }
 </style>

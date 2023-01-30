@@ -73,12 +73,14 @@ import { cleanVuePropSchema } from '../utils/vueSchemaUtils.js'
 import FlexScroller from '../components/layout/FlexScroller.vue'
 import { useResourceFunctions } from '../utils/resources'
 import _cloneDeep from 'lodash/cloneDeep'
-import { useStore } from 'vuex'
 import path from 'path'
+import { usePathStore } from '../store/paths'
 
-const store = useStore()
 
-const mediaFolder = computed(() => path.join(store.getters['ipc/paths'].userFolder, 'media'))
+const pathStore = usePathStore();
+
+
+const mediaFolder = computed(() => path.join(pathStore.userFolder, 'media'))
 
 provide('isEditor', true)
 provide('mediaFolder', mediaFolder)

@@ -140,13 +140,13 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import Twitch from "../plugins/twitch.vue";
 import ObsSettings from "./ObsSettings.vue";
 import { isFirstRun } from "../../utils/firstRun";
 import { mapIpcs } from "../../utils/ipcMap";
 import { mapState } from "pinia";
 import { usePluginStore } from "../../store/plugins";
+import { usePathStore } from "../../store/paths";
 export default {
   components: { Twitch, ObsSettings },
   data() {
@@ -156,7 +156,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["paths"]),
+    ...mapState(usePathStore, {
+      userFolder: "userFolder"
+    }),
     ...mapState(usePluginStore, {
       rootState: "rootState"
     }),
@@ -208,7 +210,7 @@ export default {
     },
   },
   async mounted() {
-    if (await isFirstRun(this.paths.userFolder)) {
+    if (await isFirstRun(this.userFolder)) {
       this.open();
     }
   },

@@ -21,10 +21,11 @@
 <script>
 import fs from "fs"
 import path from "path"
-import { mapGetters } from "vuex"
 import recursiveReaddir from "recursive-readdir"
 import { mapModel } from "../../utils/modelValue"
 import { shell } from "electron"
+import { mapState } from "pinia"
+import { usePathStore } from "../../store/paths"
 
 export default {
   props: {
@@ -38,13 +39,15 @@ export default {
   },
   emits: ["update:modelValue"],
   computed: {
-    ...mapGetters("ipc", ["paths"]),
+    ...mapState(usePathStore, {
+      userFolder: 'userFolder'
+    }),
     ...mapModel(),
     searchPath() {
-      return path.join(this.paths.userFolder, this.path);
+      return path.join(this.userFolder, this.path);
     },
     fullBasePath() {
-      return path.join(this.paths.userFolder, this.basePath);
+      return path.join(this.userFolder, this.basePath);
     },
   },
   data() {
@@ -79,10 +82,6 @@ export default {
       if (!this.recursive) {
         files = files.map((filename) => path.join(this.searchPath, filename));
       }
-
-      //console.log("UserFolder: ", this.paths.userFolder);
-      //console.log("File: ", files[0]);
-      //console.log("Relative", path.relative(this.paths.userFolder, files[0]));
 
       files = files.map((filename) => ({
         path: path.relative(

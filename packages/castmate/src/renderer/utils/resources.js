@@ -1,7 +1,7 @@
 import { ipcRenderer } from "electron";
 import { computed } from "vue"
 import { useResourceStore } from '../store/resources'
-
+import _cloneDeep from "lodash/cloneDeep"
 export function useResourceArray(resourceType) {
     const resourceStore = useResourceStore()
     return computed(() => {
@@ -42,10 +42,10 @@ export function useResourceFunctions(resourceType) {
             return await ipcRenderer.invoke(`resources_${resourceType}_getById`, id)
         },
         [`create`]: async function(config) {
-            return await ipcRenderer.invoke(`resources_${resourceType}_create`, config)
+            return await ipcRenderer.invoke(`resources_${resourceType}_create`, _cloneDeep(config))
         },
         [`setConfig`]: async function(id, config) {
-            return await ipcRenderer.invoke(`resources_${resourceType}_setConfig`, id, config)
+            return await ipcRenderer.invoke(`resources_${resourceType}_setConfig`, id, _cloneDeep(config))
         },
         [`delete`]: async function(id) {
             return await ipcRenderer.invoke(`resources_${resourceType}_delete`, id)

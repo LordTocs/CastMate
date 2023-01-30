@@ -269,7 +269,7 @@ export class ProfileManager
 		this.inactiveProfiles = inactiveProfiles;
 		this.activeProfiles = activeProfiles;
 
-		callIpcFunc('profiles-active', activeProfiles.map(p => p.name))
+		callIpcFunc("queues_setActiveProfiles", activeProfiles.map(p => p.name))
 
 		//Notify any plugins of profile changes.
 		for (let plugin of this.plugins.plugins)

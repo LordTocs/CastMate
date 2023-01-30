@@ -51,7 +51,7 @@ export class Resource {
     }
 
     _triggerUpdate() {
-        callIpcFunc('resources_updateResourceArray', { type: this.spec.type, resources: this.resources.map(r => this._transformForIPC(r)) })
+        callIpcFunc('resources_updateResourceArray', this.spec.type, this.resources.map(r => this._transformForIPC(r)))
     }
 
     getById(id) {

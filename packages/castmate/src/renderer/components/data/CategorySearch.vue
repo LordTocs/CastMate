@@ -9,7 +9,7 @@
     prepend-icon="mdi-magnify"
     label="Category"
     :density="density"
-    clearable
+    :clearable="clearable"
     :menu-props="{ maxHeight: 200, location: 'bottom' }"
   >
     <template #item="{ item, props }">
@@ -28,7 +28,8 @@ import { mapModel } from "../../utils/modelValue";
 export default {
   props: {
     modelValue: {},
-    density: { type: String}
+    density: { type: String},
+    clearable: { type: Boolean, default: true }
   },
   emits: ["update:modelValue"],
   computed: {

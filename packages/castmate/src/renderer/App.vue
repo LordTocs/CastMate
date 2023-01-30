@@ -18,7 +18,7 @@
         <v-divider></v-divider>
         <v-list-item link to="/overlays" prepend-icon="mdi-picture-in-picture-top-right" title="Overlays" />
         <v-divider></v-divider>
-        <v-list-item link to="/segments" prepend-icon="mdi-tag" title="Segments" />
+        <v-list-item link to="/streamplans" prepend-icon="mdi-notebook" title="Stream Plans" />
         <v-list-item link to="/variables" prepend-icon="mdi-variable" title="Variables" />
         <v-list-item link to="/rewards" prepend-icon="mdi-star-circle-outline" title="Rewards" />
         <v-divider></v-divider>
@@ -38,7 +38,7 @@
 
         </v-list-group>
         <v-divider></v-divider>
-        <v-list-item @click="openSoundsFolder" prepend-icon="mdi-folder-music" title="Open Sounds Folder" />
+        <v-list-item @click="openMediaFolder" prepend-icon="mdi-multimedia" title="Open Media Folder" />
         <v-list-item link to="/about" prepend-icon="mdi-information-outline" title="About" />
       </v-list>
     </v-navigation-drawer>
@@ -71,10 +71,10 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex"
 import SystemBar from "./components/layout/SystemBar.vue"
-import path from "path"
 import { shell } from "electron"
+import { useQueueStore } from "./store/queues"
+import { usePathStore } from "./store/paths"
 import { useSettingsStore } from "./store/settings"
 import { useRemoteTemplateStore } from "./utils/templates"
 import { useResourceStore } from './store/resources'
@@ -83,6 +83,7 @@ import { useAnalyticsStore } from "./utils/analytics"
 import { useOverlayStore } from "./store/overlays"
 import { usePluginStore } from "./store/plugins"
 import { mapState } from "pinia"
+import { mapIpcs } from "./utils/ipcMap"
 
 export default {
   components: {
@@ -95,7 +96,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("ipc", ["paths"]),
+    ...mapState(usePathStore, {
+      mediaFolder: 'mediaFolder',
+    }),
     ...mapState(usePluginStore, {
       pluginList: 'pluginList'
     }),
@@ -117,15 +120,15 @@ export default {
     },
   },
   methods: {
-    ...mapActions("ipc", ["init"]),
-    ...mapActions("segments", ["loadSegments"]),
-    openSoundsFolder() {
-      shell.openPath(path.join(this.paths.userFolder, "sounds"));
+    ...mapIpcs("core", ["waitForInit"]),
+    openMediaFolder() {
+      shell.openPath(this.mediaFolder);
     },
   },
   async mounted() {
+    await this.waitForInit();
     await this.init();
-    await this.loadSegments();
+    await useQueueStore().init()
     await usePluginStore().init()
     await useOverlayStore().init()
     await useAnalyticsStore().init()

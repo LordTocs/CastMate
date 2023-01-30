@@ -16,6 +16,7 @@ import { osInit } from './utils/os.js'
 import { StateManager } from "./state/state-manager.js";
 import { RemoteTemplateManager } from "./state/remote-template.js";
 import { SettingsManager } from "./pluginCore/settings-manager.js";
+import { StreamPlanManager } from "./planner/streamPlan.js";
 
 async function initInternal(mainWindowSender) {
 	logger.info(`Starting CastMate v${app.getVersion()}`);
@@ -34,12 +35,12 @@ async function initInternal(mainWindowSender) {
 	const stateManager = StateManager.getInstance();
 	await stateManager.loadSerialized();
 
+	//Force remote template manager creation
 	RemoteTemplateManager.getInstance();
 
-	const automations = new AutomationManager();
-	await automations.load();
+	await AutomationManager.getInstance().load();
 
-	const actions = new ActionQueue(plugins, automations);
+	const actions = ActionQueue.getInstance();
 
 	const webServices = WebServices.getInstance();
 
@@ -53,6 +54,7 @@ async function initInternal(mainWindowSender) {
 	await ResourceManager.getInstance().initialize()
 
 	await OverlayManager.getInstance().init()
+	await StreamPlanManager.getInstance().init()
 
 	await plugins.init(actions, profiles, analytics);
 
@@ -72,10 +74,6 @@ export async function initCastMate(mainWindowSender) {
 	ipcFunc("core", "waitForInit", async () => {
 		return await initPromise;
 	})	
-
-	ipcMain.handle('waitForInit', async () => {
-		return await initPromise;
-	})
 
 	await initPromise;
 }

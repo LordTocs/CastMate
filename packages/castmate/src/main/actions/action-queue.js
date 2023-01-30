@@ -4,13 +4,28 @@ import logger from '../utils/logger.js'
 import { ipcMain } from "../utils/electronBridge.js"
 import _ from 'lodash'
 import { StateManager } from "../state/state-manager.js"
+import { PluginManager } from "../pluginCore/plugin-manager.js"
+import { AutomationManager } from "../automations/automation-manager.js"
 
+let actionQueue = null;
 export class ActionQueue {
-	constructor(plugins, automations) {
+    /**
+     * 
+     * @returns {ActionQueue}
+     */
+     static getInstance() {
+        if (!actionQueue)
+        {
+            actionQueue = new this();
+        }
+        return actionQueue;
+    }
+
+	constructor() {
 		this.triggerMappings = {};
 		this.triggerHandlers = {};
 
-		this.automations = automations;
+		this.automations = AutomationManager.getInstance();
 
 		//Queue of automations to run synchronously.
 		this.queue = [];
@@ -18,6 +33,8 @@ export class ActionQueue {
 		this.queueMutex = new Mutex();
 
 		this.actions = {};
+
+		const plugins = PluginManager.getInstance();
 
 		for (let plugin of plugins.plugins) {
 			if (!plugin)
