@@ -3,11 +3,11 @@
     <v-tooltip location="top" :content-props="contentProps">
       <template v-slot:activator="{ props }">
         <v-sheet
-          class="mini-icon"
+          :class="{'mini-icon-small': size != 'x-small', 'mini-icon-x-small': size == 'x-small'}"
           :color="actionColor"
           v-bind="props"
         >
-          <v-icon small v-if="actionDefinition.icon"> {{ actionDefinition.icon }} </v-icon>
+          <v-icon :size="size" v-if="actionDefinition.icon"> {{ actionDefinition.icon }} </v-icon>
         </v-sheet>
       </template>
       <p class="my-1 text-subtitle">{{ actionDefinition.name }}</p>
@@ -26,6 +26,7 @@ export default {
   components: { DataView },
   props: {
     action: {},
+    size: { type: String, default: 'small'}
   },
   computed: {
     ...mapState(usePluginStore, {
@@ -51,12 +52,21 @@ export default {
 </script>
 
 <style scoped>
-.mini-icon {
+.mini-icon-small {
   width: 30px;
   height: 30px;
   border-radius: 5px;
   text-align: center;
   line-height: 30px;
+  display: inline-block;
+}
+
+.mini-icon-x-small {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  text-align: center;
+  line-height: 20px;
   display: inline-block;
 }
 </style>

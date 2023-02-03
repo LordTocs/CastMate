@@ -5,6 +5,7 @@
       :key="action.id"
       :action="action"
       class="mx-1"
+      :size="size"
     />
     <span v-if="overflow">...</span>
   </div>
@@ -17,6 +18,7 @@ export default {
   props: {
     automation: {},
     maxActions: { type: Number, default: () => 5 },
+    size: { type: String, default: 'small'}
   },
   computed: {
     clampedActions() {

@@ -3,6 +3,7 @@
       v-if="automation"
       :automation="isInline ? automation : loadedAutomation"
       :maxActions="maxActions"
+      :size="size"
     />
 </template>
 
@@ -14,6 +15,7 @@ export default {
   props: {
     automation: {},
     maxActions: { type: Number, default: () => 5 },
+    size: { type: String, default: 'small' }
   },
   data() {
     return {
