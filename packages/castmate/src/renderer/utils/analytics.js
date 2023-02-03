@@ -1,6 +1,3 @@
-
-import { store } from '../store/store';
-
 import { ipcRenderer } from 'electron';
 import _cloneDeep from "lodash/cloneDeep";
 import { defineStore } from 'pinia';
