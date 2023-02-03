@@ -53,7 +53,6 @@
 <script>
 import RewardEditor from "./RewardEditor.vue";
 import _cloneDeep from "lodash/cloneDeep"
-import { mapActions } from "vuex";
 import { trackAnalytic } from "../../utils/analytics.js";
 import { mapIpcs } from "../../utils/ipcMap";
 
