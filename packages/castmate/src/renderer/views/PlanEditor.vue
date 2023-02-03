@@ -16,9 +16,7 @@
                             </v-sheet>
                             <div class="flex-grow-1">
                                 <div class="px-2 py-3">
-                                    <v-text-field label="Name" :modelValue="plan.segments[index].name" />
-                                    <optional-stream-info :modelValue="plan.segments[index].streamInfo" @update:modelValue="updateStreamInfo(plan.segments[index], $event)" />
-                                    <automation-input label="Segment Start Automation" :modelValue="plan.segments[index].startAutomation" />                  
+                                    <segment-editor v-model="plan.segments[index]" />
                                 </div>
                                 <v-card-actions>
                                     <v-spacer />
@@ -40,29 +38,17 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Draggable from "vuedraggable";
 import AutomationInput from '../components/automations/AutomationInput.vue';
-import StringInput from '../components/data/types/StringInput.vue';
 import EditorShell from '../components/editor/EditorShell.vue';
 import FlexScroller from '../components/layout/FlexScroller.vue';
-import OptionalStreamInfo from '../components/segments/OptionalStreamInfo.vue';
 import { useResourceFunctions } from '../utils/resources';
 import { nanoid } from 'nanoid/non-secure';
+import SegmentEditor from '../components/segments/SegmentEditor.vue';
 
 const route = useRoute()
 
 const streamplanResource = useResourceFunctions("streamplan")
 const planId = computed(() => route.params.planId)
 const plan = ref(null)
-
-
-function updateStreamInfo(segment, newInfo) {
-    if (newInfo) {
-        segment.streamInfo = newInfo
-    }
-    else
-    {
-        delete segment.streamInfo
-    }
-}
 
 function addSegment() {
     console.log("Adding New Segment")

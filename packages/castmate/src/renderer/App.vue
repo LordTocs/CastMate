@@ -19,6 +19,7 @@
         <v-list-item link to="/overlays" prepend-icon="mdi-picture-in-picture-top-right" title="Overlays" />
         <v-divider></v-divider>
         <v-list-item link to="/streamplans" prepend-icon="mdi-notebook" title="Stream Plans" />
+        <v-divider></v-divider>
         <v-list-item link to="/variables" prepend-icon="mdi-variable" title="Variables" />
         <v-list-item link to="/rewards" prepend-icon="mdi-star-circle-outline" title="Rewards" />
         <v-divider></v-divider>
@@ -82,6 +83,7 @@ import { useVariableStore } from './store/variables'
 import { useAnalyticsStore } from "./utils/analytics"
 import { useOverlayStore } from "./store/overlays"
 import { usePluginStore } from "./store/plugins"
+import { useStreamPlanStore } from "./store/streamplan"
 import { mapState } from "pinia"
 import { mapIpcs } from "./utils/ipcMap"
 
@@ -127,7 +129,7 @@ export default {
   },
   async mounted() {
     await this.waitForInit();
-    await this.init();
+    await usePathStore().init()
     await useQueueStore().init()
     await usePluginStore().init()
     await useOverlayStore().init()
@@ -136,8 +138,9 @@ export default {
     await useResourceStore().init()
     await useSettingsStore().init()
     await useRemoteTemplateStore().init()
+    await useStreamPlanStore().init()
+
     this.loaded = true;
-    //ipcRenderer.invoke("updater.checkForUpdates");
   },
 };
 </script>

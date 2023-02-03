@@ -81,7 +81,6 @@
 </template>
 
 <script setup>
-import { useStore } from "vuex";
 import DataInput from "../components/data/DataInput.vue";
 import ConfirmDialog from "../components/dialogs/ConfirmDialog.vue";
 import { defineAsyncComponent, onMounted, watch, computed, ref, nextTick } from "vue";
@@ -89,13 +88,14 @@ import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from "vue-router";
 import { useIpc } from "../utils/ipcMap";
 import { useSettingsStore } from '../store/settings';
 import _cloneDeep from "lodash/cloneDeep"
+import { usePluginStore } from "../store/plugins";
 
 const route = useRoute();
-const store = useStore();
 const settingsStore = useSettingsStore()
+const pluginStore = usePluginStore();
 
 const pluginName = computed(() => route.params.pluginName);
-const plugin = computed(() => store.getters['ipc/plugins'][pluginName.value])
+const plugin = computed(() => pluginStore.plugins[pluginName.value])
 
 const settingKeys = computed(() => Object.keys(plugin.value.settings))
 const secretKeys = computed(() => Object.keys(plugin.value.secrets))

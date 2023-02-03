@@ -29,8 +29,6 @@ const emit = defineEmits(["update:modelValue"])
 function emitNewValue(valueName, value) {
     const newInfo = { ...props.modelValue }
 
-    console.log("Emitting New VAlue", valueName, value, newInfo )
-
     if (value && value.length > 0) {
         newInfo[valueName] = value
     } else {

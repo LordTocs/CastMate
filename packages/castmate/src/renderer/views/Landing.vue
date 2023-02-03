@@ -74,6 +74,11 @@
     </v-row>
     <v-row>
       <v-col>
+        <plan-card />
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
         <active-profiles-card />
       </v-col>
     </v-row>
@@ -89,9 +94,10 @@ import { trackAnalytic } from "../utils/analytics.js";
 import TwitchAccountDisplay from "../components/twitch/TwitchAccountDisplay.vue";
 import { mapState } from "pinia";
 import { usePluginStore } from "../store/plugins";
+import PlanCard from "../components/segments/PlanCard.vue";
 
 export default {
-  components: { ActiveProfilesCard, WelcomeDialog, TwitchAccountDisplay },
+  components: { ActiveProfilesCard, WelcomeDialog, TwitchAccountDisplay, PlanCard },
   computed: {
     ...mapState(usePluginStore, {
       rootState: "rootState"
