@@ -6,7 +6,7 @@
     @paste.stop=""
     :label="schema.name || label"
     :clearable="!schema.required"
-    :type="!secret ? 'text' : 'password'"
+    :type="!isSecret ? 'text' : 'password'"
     :density="density"
   />
   <enum-input
@@ -39,7 +39,10 @@ export default {
   },
   emits: ['update:modelValue'],
   computed: {
-    ...mapModel()
+    ...mapModel(),
+    isSecret() {
+      return this.secret || this.schema.secret
+    }
   }
 };
 </script>
