@@ -43,6 +43,11 @@ export default {
                 return
             }
             return await this.$refs.widget[funcName](...args);
+        },
+        async callWidgetBroadcast(funcName, ...args) {
+            if (this.$refs.widget?.[funcName]) {
+                await this.$refs.widget[funcName](...args);
+            }
         }
     }
 }

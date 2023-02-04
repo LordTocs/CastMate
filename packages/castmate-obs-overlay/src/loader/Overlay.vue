@@ -45,6 +45,12 @@ export default {
             widget.callWidgetFunc(funcName, ...args);
         })
 
+        this.bridge.on('widgetBroadcast', async (funcName, ...args) => {
+            for (let widget of this.$refs.widgets) {
+                widget.callWidgetBroadcast(funcName, ...args);
+            }
+        })
+
         this.bridge.connect();
         
         try {

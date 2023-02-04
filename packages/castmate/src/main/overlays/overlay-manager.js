@@ -81,6 +81,13 @@ export class OverlayManager {
             async (s) => s.socket.call('widgetFunc', widgetId, funcName, ...args).catch(err => null)))
     }
 
+    async broadcastOverlayFunc(funcName, ...args) {
+        await Promise.all(this.openSockets.map(async (s) => {
+            try { await s.socket.call('widgetBroadcast', funcName, ...args) }
+            catch(err) {}
+        }))
+    }
+
     /**
      * 
      * @returns {OverlayManager}
