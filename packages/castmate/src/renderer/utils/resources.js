@@ -9,6 +9,13 @@ export function useResourceArray(resourceType) {
     })
 }
 
+export function useResourceType(resourceType) {
+    const resourceStore = useResourceStore()
+    return computed(() => {
+        return resourceStore.types.find(t => t.type == resourceType);
+    })
+}
+
 
 function capitalizeType(typename) 
 {

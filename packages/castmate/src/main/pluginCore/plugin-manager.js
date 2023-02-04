@@ -39,7 +39,7 @@ export class PluginManager {
 			//"aoe3",
 			"aoe4",
 			"twinkly",
-			
+			"discord"
 		]
 
 		//Todo: This relative require is weird.
