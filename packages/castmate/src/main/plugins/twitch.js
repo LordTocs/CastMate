@@ -643,6 +643,7 @@ export default {
 			});
 
 			await this.pubSubClient.onSubscription(this.state.channelId, async (message) => {
+				this.state.lastSubscriber = message.userDisplayName
 				if (message.isGift) {
 					return; //Handle gifted subs elsewhere
 				}
@@ -658,8 +659,6 @@ export default {
 						message: message.message,
 						filteredMessage: this.filterMessage(message.message),
 					})
-
-					this.state.lastSubscriber = message.userDisplayName
 				}
 
 				await this.querySubscribers();
