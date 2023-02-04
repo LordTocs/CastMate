@@ -138,6 +138,7 @@ export default {
 				
 				this.state.connected = true;
 				this.analytics.set({ usesOBS: true });
+
 				return true;
 			} catch(error) {
 				//this.logger.error(`Error Connecting to OBS: ws://${hostname}:${port}`);
@@ -818,6 +819,157 @@ export default {
 
 				await this.obs.call('SetSceneItemTransform', { sceneName, sceneItemId, sceneItemTransform })
 			}
-		}
+		},
+		streamStartStop: {
+			name: "Stream Start/Stop",
+			description: "Start or Stop Streaming",
+			icon: "mdi-broadcast",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+					streaming: {
+						type: 'Toggle',
+						name: "Streaming",
+						required: true,
+						default: true,
+						trueIcon: "mdi-broadcast",
+						falseIcon: "mdi-broadcast-off",
+					}
+				}
+			},
+			async handler(data, context) {
+				let enabled = data.streaming
+				if (enabled == 'toggle') {
+					await this.obs.call('ToggleStream')
+				}
+				else {
+					if (enabled) {
+						await this.obs.call('StartStream')
+					}
+					else
+					{
+						await this.obs.call('StopStream')
+					}
+				}
+				
+			},
+		},
+		recordingStartStop: {
+			name: "Recording Start/Stop",
+			description: "Start or Stop Recording",
+			icon: "mdi-record",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+					recording: {
+						type: 'Toggle',
+						name: "Recording",
+						required: true,
+						default: true,
+						trueIcon: "mdi-record",
+						falseIcon: "mdi-stop",
+					}
+				}
+			},
+			async handler(data, context) {
+				let enabled = data.recording
+				if (enabled == 'toggle') {
+					await this.obs.call('ToggleRecord')
+				}
+				else {
+					if (enabled) {
+						await this.obs.call('StartRecord')
+					}
+					else
+					{
+						await this.obs.call('StopRecord')
+					}
+				}
+			},
+		},
+		virtualCamStartStop: {
+			name: "Virtual Camera Start/Stop",
+			description: "Start or Stop the Virtual Camera",
+			icon: "mdi-webcam",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+					virtualCam: {
+						type: 'Toggle',
+						name: "Virtual Camera",
+						required: true,
+						default: true,
+						trueIcon: "mdi-camera",
+						falseIcon: "mdi-camera-off",
+					}
+				}
+			},
+			async handler(data, context) {
+				let enabled = data.virtualCam
+				if (enabled == 'toggle') {
+					await this.obs.call('ToggleVirtualCam')
+				}
+				else {
+					if (enabled) {
+						await this.obs.call('StartVirtualCam')
+					}
+					else
+					{
+						await this.obs.call('StopVirtualCam')
+					}
+				}
+			},
+		},
+		replayBufferStartStop: {
+			name: "Replay Buffer Start/Stop",
+			description: "Start or Stop the Replay Buffer",
+			icon: "mdi-replay",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+					virtualCam: {
+						type: 'Toggle',
+						name: "Virtual Camera",
+						required: true,
+						default: true,
+						trueIcon: "mdi-camera",
+						falseIcon: "mdi-camera-off",
+					}
+				}
+			},
+			async handler(data, context) {
+				let enabled = data.virtualCam
+				if (enabled == 'toggle') {
+					await this.obs.call('ToggleReplayBuffer')
+				}
+				else {
+					if (enabled) {
+						await this.obs.call('StartReplayBuffer')
+					}
+					else
+					{
+						await this.obs.call('StopReplayBuffer')
+					}
+				}
+			},
+		},
+		replaySave: {
+			name: "Save Replay Buffer",
+			description: "Saves the replay buffer.",
+			icon: "mdi-content-save",
+			color: "#607A7F",
+			data: {
+				type: Object,
+				properties: {
+				}
+			},
+			async handler(data, context) {
+				await this.obs.call('SaveReplayBuffer')
+			},
+		},
 	}
 }
