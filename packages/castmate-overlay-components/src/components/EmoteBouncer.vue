@@ -17,6 +17,7 @@
 <script>
 import Matter from 'matter-js'
 import { EmoteService } from '../utils/emotes.js'
+import { mapCastMateState } from "../utils/castmate-state.js"
 
 const Engine = Matter.Engine;
 const Render = Matter.Render;
@@ -31,7 +32,7 @@ const Mouse = Matter.Mouse;
 const World = Matter.World;
 const Bodies = Matter.Bodies;
 export default {
-    inject: ['isEditor'],
+    inject: ['isEditor', 'stateProvider'],
     props: {
     },
     widget: {
@@ -48,6 +49,9 @@ export default {
             bodies: [],
             spawnId: 1,
         }
+    },
+    computed: {
+        ...mapCastMateState("twitch", ["channelId", "channelName"]),
     },
     methods: {
         onTwitchChat(chat) {
@@ -139,7 +143,7 @@ export default {
         if (this.isEditor)
             return;
 
-        this.emotes = new EmoteService();
+        this.emotes = new EmoteService(this.channelId, this.channelName);
 
         this.engine = Engine.create();
 
@@ -159,6 +163,14 @@ export default {
             
             this.updateBodyVDom();
         });
+    },
+    watch: {
+        channelId() {
+            this.emotes?.updateChannelId(this.channelId)
+        },
+        channelName() {
+            this.emotes?.updateChannelName(this.channelName)
+        }
     }
 }
 </script>

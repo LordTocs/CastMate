@@ -16,6 +16,7 @@
 // https://cdn.7tv.app/emote/60e5cded840f3a570108cd8d/1x
 
 import joypixels from 'emoji-toolkit'
+import axios from 'axios'
 
 let unicodeRegExp = new RegExp(joypixels.escapeRegExp(joypixels.unicodeCharRegex()), 'gi');
 
@@ -39,6 +40,20 @@ export class EmoteService {
 
             await this.initFFZ();
         }
+    }
+
+    async updateChannelId(channelId) {
+        this.channelId = channelId
+
+        await this.initBTTV();
+
+        await this.initFFZ();
+    }
+
+    async updateChannelName(channelName) {
+        this.channelName = channelName
+
+        await this.init7tv()
     }
 
     async initBTTV() {
@@ -84,6 +99,10 @@ export class EmoteService {
 
         this.sevenTVLookup = lookup;
         this.mergeLookups();
+
+        if (this.sevenEvents) {
+            this.sevenEvents.close();
+        }
 
         this.sevenEvents = new EventSource(`https://events.7tv.app/v1/channel-emotes?channel=${this.channelName}`);
 
