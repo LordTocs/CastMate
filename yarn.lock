@@ -1907,6 +1907,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-overlay-components@workspace:packages/castmate-overlay-components"
   dependencies:
+    emoji-toolkit: ^7.0.0
+    matter-js: ^0.18.0
     nanoid: ^4.0.0
     vue: ^3.2.37
   languageName: unknown
@@ -2775,6 +2777,13 @@ __metadata:
   version: 8.0.0
   resolution: "emoji-regex@npm:8.0.0"
   checksum: d4c5c39d5a9868b5fa152f00cada8a936868fd3367f33f71be515ecee4c803132d11b31a6222b2571b1e5f7e13890156a94880345594d0ce7e3c9895f560f192
+  languageName: node
+  linkType: hard
+
+"emoji-toolkit@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "emoji-toolkit@npm:7.0.0"
+  checksum: 0e1ad04dbbbd1ab6d0c735ed2ab24deb8ba2b9d9901367c5a7b12cf7c1f35803cd6082af26e96f7a2bd7371d8af7493aa24664e54df365729fdf6785f28860e3
   languageName: node
   linkType: hard
 
@@ -5243,6 +5252,13 @@ __metadata:
   dependencies:
     escape-string-regexp: ^4.0.0
   checksum: 8bee1a7ab7609c2c21d9c9254b6785fa708eadf289032b556d57a34e98fcd4c537659a004dafee6ce80ab157099e645c199dc52678dff1e7fb0a6684e0da4dbe
+  languageName: node
+  linkType: hard
+
+"matter-js@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "matter-js@npm:0.18.0"
+  checksum: c7f630348148c26064ad2147f2d68ce4d58095cec9a89069bf6db271a97922ccebd13809193eeffa60e73929a2216364a21265ecdc265f87c782179fcb836d21
   languageName: node
   linkType: hard
 

@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "emoji-toolkit": "^7.0.0",
+    "matter-js": "^0.18.0",
     "nanoid": "^4.0.0",
     "vue": "^3.2.37"
   }

@@ -12,6 +12,7 @@ import axios from 'axios'
 import { inRange } from "../utils/range.js"
 import { userFolder } from "../utils/configuration.js"
 import _ from "lodash"
+import { OverlayManager } from "../overlays/overlay-manager.js"
 
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
@@ -349,6 +350,14 @@ export default {
 						emoteOffsets: Object.fromEntries(msgInfo.emoteOffsets)
 					}
 				}));
+
+				OverlayManager.getInstance().broadcastOverlayFunc('onTwitchChat', {
+					message,
+					user,
+					userId: msgInfo.userInfo.userId,
+					color: msgInfo.userInfo.color,
+					emoteOffsets: Object.fromEntries(msgInfo.emoteOffsets)
+				})
 
 				let parsed = this.parseMessage(message);
 
