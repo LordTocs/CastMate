@@ -8,6 +8,25 @@ export class CastMateBridge extends EventEmitter
 		super()
 		this.overlayId = overlayId
         this.socket = null;
+
+	}
+	
+	async acquireState(pluginName, stateName) {
+		try {
+			return await this.rpcSocket.call('acquireState', pluginName, stateName)
+		}
+		catch(err) {
+			return null
+		}
+	}
+
+	async freeState(pluginName, stateName) {
+		try {
+			return await this.rpcSocket.call('freeState', pluginName, stateName)
+		}
+		catch(err) {
+			return null
+		}
 	}
 
 	connect()
@@ -26,6 +45,10 @@ export class CastMateBridge extends EventEmitter
 
 		this.rpcSocket.handle('widgetBroadcast', async (funcName, ...args) => {
 			this.emit('widgetBroadcast', funcName, ...args);
+		})
+
+		this.rpcSocket.handle('stateUpdate', (pluginName, stateName, value) => {
+			this.emit('stateUpdate', pluginName, stateName, value);
 		})
 
 		this.socket.addEventListener('open', () =>

@@ -75,15 +75,22 @@ import { useResourceFunctions } from '../utils/resources'
 import _cloneDeep from 'lodash/cloneDeep'
 import path from 'path'
 import { usePathStore } from '../store/paths'
+import { usePluginStore } from '../store/plugins'
 
 
 const pathStore = usePathStore();
 
+const pluginStore = usePluginStore();
 
 const mediaFolder = computed(() => path.join(pathStore.userFolder, 'media'))
 
 provide('isEditor', true)
 provide('mediaFolder', mediaFolder)
+provide('stateProvider', {
+    acquireState(pluginName, stateName) {
+    },
+    rootState: pluginStore.rootState
+})
 
 const route = useRoute();
 

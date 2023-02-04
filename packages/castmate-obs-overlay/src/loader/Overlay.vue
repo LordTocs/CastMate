@@ -8,21 +8,29 @@
 import WidgetLoader from './WidgetLoader.vue'
 import { CastMateBridge } from './utils/websocket.js'
 import axios from 'axios'
+import { StateProvider } from './utils/castmate-state'
 
 export default {
     components: { WidgetLoader },
+    beforeCreate() {
+        console.log("Creating State Provider")
+        this.stateProvider = new StateProvider()
+    },
     data() {
         return {
             config: null,
+            rootState: {}
         }
     },
     methods: {
 
     },
     provide() {
+        console.log("Providing!", this.stateProvider)
         return {
             isEditor: false,
-            mediaFolder: { value: `http://${window.location.host}/media/`}
+            mediaFolder: { value: `http://${window.location.host}/media/`},
+            stateProvider: this.stateProvider
         }
     },
     async mounted() {
@@ -30,6 +38,7 @@ export default {
         const overlayId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1); //Probably includes querystring????
 
         this.bridge = new CastMateBridge(overlayId);
+        this.stateProvider.init(this.rootState, this.bridge)
 
         this.bridge.on('configChanged', (newConfig) => this.config = newConfig);
 

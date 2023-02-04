@@ -7,8 +7,12 @@ import { RPCWebSocket } from '../utils/rpc-websocket.js'
 import { nanoid } from "nanoid/non-secure";
 import logger from "../utils/logger";
 import { WebServices } from "../webserver/webserver";
+import { StateManager } from "../state/state-manager";
+import { onStateChange } from "../state/reactive";
 
 let overlayManager = null;
+
+
 
 export class OverlayManager {
 
@@ -104,6 +108,7 @@ export class OverlayManager {
         await this.overlayResources.load();
 
         const overlayRoutes = express.Router();
+        const stateManager = StateManager.getInstance();
 
         overlayRoutes.get(`/:id/config`, async (req, res, next) => {
             const overlay = this.overlayResources.getById(req.params.id);
@@ -158,16 +163,37 @@ export class OverlayManager {
                     id: nanoid(),
                     socket: new RPCWebSocket(socket),
                     overlayId: params.get('overlay'),
+                    stateWatchers: []
                 }
 
                 socket.on('close', () => {
                     const idx = this.openSockets.findIndex(s => s.id == newSocket.id)
                     if (idx == -1) return;
                     console.log("Closing Overlay Connection", newSocket.id)
+
+                    for (let watcher of newSocket.stateWatchers) {
+                        watcher.watcher.unsubscribe();
+                    }
+
                     this.openSockets.splice(idx, 1);
                 })
 
                 this.openSockets.push(newSocket);
+
+                newSocket.socket.handle('acquireState', (pluginName, stateName) => {
+                    
+                    if (newSocket.stateWatchers.find(w => w.pluginName == pluginName && w.stateName == stateName))
+                        return stateManager.rootState[pluginName]?.[stateName]
+
+                    const watcher = onStateChange(stateManager.rootState[pluginName], stateName, () => {
+                        newSocket.socket.call('stateUpdate', pluginName, stateName, stateManager.rootState[pluginName][stateName])
+                    })
+
+                    newSocket.stateWatchers.push({ pluginName, stateName, watcher })
+
+                    return stateManager.rootState[pluginName]?.[stateName];
+                })
+
 
                 //We've just connected, it might be a reconnected overlay. Resend our config incase it's stale.
                 const overlay = this.overlayResources.getById(newSocket.overlayId)
