@@ -1,5 +1,6 @@
 //https://medium.com/vue-mastery/the-best-explanation-of-javascript-reactivity-fea6112dd80d
 import { AsyncLocalStorage } from 'node:async_hooks';
+import logger from '../utils/logger';
 
 const dependencyAsyncStorage = new AsyncLocalStorage();
 
@@ -121,6 +122,12 @@ export function reactiveCopyProp(target, obj, key) {
 			writable: true,
 			value: {}
 		});
+	}
+
+	if (!obj.__reactivity__)
+	{
+		logger.error("Attempted To reactive Copy from a non-reactive variable!")
+		return false
 	}
 
 	let sourceReactivity = obj.__reactivity__[key]
