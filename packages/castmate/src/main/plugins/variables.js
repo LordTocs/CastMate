@@ -109,10 +109,8 @@ export default {
 		async load() {
 			const variableData = YAML.parse(await fs.promises.readFile(variablesFilePath, 'utf-8'))
 
-			this.variableSpecs = variableData
-
-			for (let variableName in this.variableSpecs) {
-				const variableSpec = this.variableSpecs[variableName];
+			for (let variableName in variableData) {
+				const variableSpec = variableData[variableName];
 				this.logger.info(`Created Variable ${variableName}:${variableSpec.type} -> ${variableSpec.default}`)
 				this.createVariable(variableName, variableSpec)
 			}
@@ -128,7 +126,6 @@ export default {
 		},
 		createVariable(name, spec) {
 			this.variableSpecs[name] = spec
-
 			this.state[name] = this.getDefaultValue(spec)
 			createReactiveProperty(this.state, name);
 

@@ -25,6 +25,8 @@ export class StateManager
 
         this.initialState = null;
 
+        this.loading = true;
+
         ipcFunc('state', 'getRootState', () => {
             return _cloneDeep(this.rootState)
         })
@@ -56,7 +58,7 @@ export class StateManager
             })
 
             if (this.initialState) {
-                this.rootState[pluginName][prop] = this.initialState[pluginName][prop] ?? this.rootState[pluginName][prop]
+                this.rootState[pluginName][prop] = this.initialState[pluginName]?.[prop] ?? this.rootState[pluginName][prop]
             }
         }
 
@@ -100,6 +102,7 @@ export class StateManager
     async loadSerialized() {
         try {
             this.initialState = YAML.parse(await fs.promises.readFile(stateFilePath, 'utf-8'))
+            this.loading = false
         }
         catch(err) {
             logger.error(`Error Loading Initial Plugin State`)
