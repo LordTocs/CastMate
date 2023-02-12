@@ -6,17 +6,22 @@
         </v-card-subtitle>
         <v-divider />
         <div class="my-2">
-            <div class="d-flex flex-row mx-2 align-center" v-for="item,i in (modelValue || [])">
-                <data-input 
-                    :schema="itemSchema" 
-                    :model-value="item" 
-                    @update:model-value="(v) => updateItem(i, v)"
-                    :density="density"
-                    :secret="secret"
-                    :context="context"
-                />
-                <v-btn class="mx-2" icon="mdi-delete" @click="deleteItem(i)" size="x-small"/>
-            </div>
+            <template v-for="item,i in (modelValue || [])">
+                <div class="d-flex flex-row mx-2 align-center" >
+                    <div class="flex-grow-1">
+                        <data-input 
+                            :schema="itemSchema" 
+                            :model-value="item" 
+                            @update:model-value="(v) => updateItem(i, v)"
+                            :density="density"
+                            :secret="secret"
+                            :context="context"
+                        />
+                    </div>
+                    <v-btn class="mx-2" icon="mdi-delete" @click="deleteItem(i)" size="x-small"/>
+                </div>
+                <v-divider class="my-2"/>
+            </template>
         </div>
     </v-card>
 </template>
