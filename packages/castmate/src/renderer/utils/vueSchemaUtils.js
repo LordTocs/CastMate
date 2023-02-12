@@ -1,28 +1,41 @@
+import _cloneDeep from 'lodash/cloneDeep'
 
+function cleanVueSchema(schema) {
+    if (!schema)
+        return {};
 
+    const result = {
+        ...schema,
+        type: schema.type?.name
+    };
 
+    console.log("    Cleaning", schema)
+
+    if (typeof result.default === 'function')
+    {
+        result.default = result.default()
+    }
+
+    if (result.type === 'Object') {
+        //Convert the object's properties too
+        if (result.properties) {
+            for (let propKey in result.properties) {
+                result.properties[propKey] = cleanVueSchema(result.properties[propKey])
+            }
+        }
+    }
+    else if (result.type === 'Array') {
+        if (result.items) {
+            result.items = cleanVueSchema(result.items)
+        }
+    }
+    return result
+}
 
 function cleanVueObjectProps(objPropSchema) {
     const result = {}
     for (let propKey in objPropSchema) {
-        result[propKey] = {
-            ...objPropSchema[propKey],
-            type: objPropSchema[propKey].type.name
-        }
-
-        if (typeof result[propKey].default === 'function')
-        {
-            result[propKey].default = result[propKey].default()
-        }
-
-        if (result[propKey].type === 'Object')
-        {
-            //Recursively clean inner types
-            if (result[propKey].properties)
-            {
-                result[propKey].properties = cleanVueObjectProps(result[propKey].properties)
-            }
-        }
+        result[propKey] = cleanVueSchema(objPropSchema[propKey])
 
         delete result[propKey]['0']
         delete result[propKey]['1']
@@ -36,9 +49,15 @@ function cleanVueObjectProps(objPropSchema) {
  * @param {*} propSchema 
  */
  export function cleanVuePropSchema(propSchema) {
-    propSchema = { ...propSchema }
-    return {
+    propSchema = _cloneDeep(propSchema)
+    delete propSchema.size
+    delete propSchema.position
+
+    console.log("Cleaning", propSchema)
+    const result = {
         type: 'Object',
         properties: cleanVueObjectProps(propSchema)
     }
+    console.log("Cleaned To", result);
+    return result
 }
