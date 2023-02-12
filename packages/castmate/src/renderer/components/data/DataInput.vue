@@ -127,6 +127,11 @@
     v-model="modelObj"
     v-bind="allProps"
   />
+  <color-input 
+    v-else-if="schema.type == 'Color'"
+    v-model="modelObj"
+    v-bind="allProps"
+  />
 </template>
 
 <script>
@@ -152,6 +157,7 @@ import OverlayTransitionInput from "./types/OverlayTransitionInput.vue";
 import OverlayTransitionTimingInput from "./types/OverlayTransitionTimingInput.vue";
 import OverlayPaddingInput from "./types/OverlayPaddingInput.vue";
 import ToggleInput from "./types/ToggleInput.vue";
+import ColorInput from "./types/ColorInput.vue";
 
 export default {
   name: "data-input",
@@ -176,6 +182,7 @@ export default {
     OverlayTransitionTimingInput,
     OverlayPaddingInput,
     ToggleInput,
+    ColorInput
 },
   props: {
     schema: {},
