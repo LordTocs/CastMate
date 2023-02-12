@@ -1,6 +1,8 @@
 <template>
     <component 
         :is="dynamicComponent" 
+        :size="widgetConfig.size || {}"
+        :position="widgetConfig.size || {}"
         v-bind="widgetConfig.props ? widgetConfig.props : {}" 
         class="widget" 
         :style="widgetStyle" 

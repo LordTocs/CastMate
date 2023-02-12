@@ -1,5 +1,11 @@
 <template>
-    <component :is="dynamicComponent" v-bind="widgetProps" :isEditor="true" />
+    <component 
+        :is="dynamicComponent" 
+        v-bind="widgetProps" 
+        :size="widgetSize" 
+        :position="widgetPosition" 
+        :isEditor="true" 
+    />
 </template>
 
 <script setup>
@@ -25,10 +31,23 @@ const widgetProps = computed(() => {
     return templatedProps.value
 })
 
+const widgetSize = computed(() => {
+    if (!props.widgetConfig.size)
+        return {}
+    return props.widgetConfig.size
+})
+
+const widgetPosition = computed(() => {
+    if (!props.widgetConfig.position)
+        return {}
+    return props.widgetConfig.position
+})
+
 const dynamicComponent = computed(() => {
     const component = defineAsyncComponent({
         loader: async () => {
             const widget = await loadWidget(props.widgetConfig.type)
+            console.log(widget.default)
             propSchema.value = cleanVuePropSchema(widget.default.props)
             return widget
         }
