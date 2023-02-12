@@ -2,9 +2,15 @@
     <div class="d-flex flex-row">
         <v-menu :close-on-content-click="false" :contentProps="{ style: { minWidth: 'unset !important' }}">
             <template #activator="{ props }">
-                <v-input v-model="modelObj" v-bind="props" :density="topProps.density">
-                    <v-field :label="topProps.label" clearable :active="!!modelObj" style="cursor: pointer">
-                        <div class="d-flex flex-row align-center preview">
+                <v-input v-model="modelObj" :density="topProps.density" >
+                    <v-field 
+                        :label="topProps.label"
+                        :active="!!modelObj"
+                        :dirty="!!modelObj"
+                        :clearable="!schema?.required" 
+                        @click:clear="doClear"
+                    >
+                        <div class="v-field__input" v-bind="props" style="cursor: pointer">
                             <div class="swatch" :style="{ backgroundColor: modelObj }" v-if="!isFixedColor"> </div>
                             <div class="ref-swatch" v-else> {{ modelObj.ref }}</div>
                         </div>
@@ -16,7 +22,6 @@
                                     </v-btn>
                                 </template>
                             </v-tooltip>
-                            
                         </template>
                     </v-field>
                 </v-input>
@@ -29,12 +34,14 @@
     </template>
     
     <script setup>
+    //d-flex flex-row align-center preview
     import { computed } from 'vue';
     import { useModel } from '../../../utils/modelValue';
     const topProps = defineProps({
         modelValue: {},
         label: { type: String },
         colorRefs: { },
+        schema: {},
         density: { type: String },
     })
     const emit = defineEmits(['update:modelValue'])
@@ -69,6 +76,11 @@
             return null;
         return getInitials(topProps.modelValue.ref[0])
     })
+
+    function doClear() {
+        console.log("CLEAR!")
+        modelObj.value = undefined
+    }
     </script>
     
     <style scoped>
@@ -79,13 +91,16 @@
     }
     
     .swatch {
-        width: 30px;
-        height: 30px;
+        /*width: calc(var(--v-input-control-height) - (var(--v-field-padding-top, 10px) + var(--v-input-padding-top, 0)) - 8px);*/
+        width: 100%;
+        height: calc(var(--v-input-control-height) - (var(--v-field-padding-top, 10px) + var(--v-input-padding-top, 0)) - 8px);
+        margin: 4px 0;
         border-radius: 3px;
     }
-    
+
     .ref-swatch {
-        height: 30px;
+        width: 100%;
+        height: calc(var(--v-input-control-height) - (var(--v-field-padding-top, 10px) + var(--v-input-padding-top, 0)) - 8px);
         border-radius: 3px;
         padding-left: 10px;
         padding-right: 10px;
