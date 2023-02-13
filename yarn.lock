@@ -1979,7 +1979,7 @@ __metadata:
     vue-mixpanel: ^2.0.0
     vue-router: ^4.0.16
     vuedraggable: ^4.1.0
-    vuetify: ^3.0.0-beta.10
+    vuetify: ^3.1.4
     win32-api: ^19.8.1
     winston: ^3.3.3
     ws: ^8.2.3
@@ -8164,9 +8164,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vuetify@npm:^3.0.0-beta.10":
-  version: 3.0.4
-  resolution: "vuetify@npm:3.0.4"
+"vuetify@npm:^3.1.4":
+  version: 3.1.4
+  resolution: "vuetify@npm:3.1.4"
   peerDependencies:
     vite-plugin-vuetify: ^1.0.0-alpha.12
     vue: ^3.2.0
@@ -8179,7 +8179,7 @@ __metadata:
       optional: true
     webpack-plugin-vuetify:
       optional: true
-  checksum: 2b9901f8960d44844959cc26c7cc71c3aa5571f9cb917b15397138ca4ed7df65f5a1652816ec6796e9a5a50c8ac760e35bc70e88adaab459869aa671bc943dc8
+  checksum: 2ff93e0467204006b6466a5d43a9017810b2c69ff0bb597886d1a5445722e5339ab9d6247ee1202478ac4b92b4110428171e3aa5d737ecc50ec82053305f2421
   languageName: node
   linkType: hard
 
