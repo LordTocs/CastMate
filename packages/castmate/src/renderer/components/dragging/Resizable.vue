@@ -15,7 +15,7 @@
 <script setup>
 import _cloneDeep from 'lodash/cloneDeep'
 import { ref, computed, inject } from 'vue';
-import { useEventListener } from '../../utils/events.js';
+import { useWindowEventListener } from '../../utils/events.js';
 
 const dragHandles = [
     { id: 'tl',  class: 'handle-tl', hx: 0, hy: 0 },
@@ -120,7 +120,7 @@ function stopNextClick() {
 }
 
 
-useEventListener(window, 'mouseup', (ev) => {
+useWindowEventListener('mouseup', (ev) => {
     if (!grabbedHandle.value)
         return;
 
@@ -215,7 +215,7 @@ function snapEdgesToInt(edges) {
 }
 
 
-useEventListener(window, 'mousemove', (ev) => {
+useWindowEventListener('mousemove', (ev) => {
     if (!grabbedHandle.value)
         return;
 
