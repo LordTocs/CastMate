@@ -11,6 +11,27 @@
                 transform: `translate(${body.x - body.width/2}px, ${body.y - body.height/2}px) rotate(${body.angle}rad)`
             }"
          />
+         <template v-if="isEditor && useLaunchPosition">
+            <div
+                class="launch-indicator"
+                :style="{
+                    top: `${launchParameters?.launchY || 0 - 1}px`, 
+                    left: `${launchParameters?.launchX || 0 - 1}px`,
+                }"
+            >
+                <div class="launch-cone"
+                    :style="{ 
+                        top: `calc(50% - ${launchHeight/2}px)`,
+                        left: `50%`,
+                        transform: `rotate(${launchParameters.angle || 0}deg)`,
+                        clipPath: `path('${launchClipPath}')`,
+                        width: `${launchWidth}px`,
+                        height: `${launchHeight}px`
+                    }"
+                >
+                </div>
+            </div>
+         </template>
     </div>
 </template>
 
@@ -34,6 +55,20 @@ const Bodies = Matter.Bodies;
 export default {
     inject: ['isEditor', 'stateProvider'],
     props: {
+        lifetime: { type: Number, name: "Emote Life Time", default: 7 },
+        velocityMax: { type: Number, name: "Max Velocity", default: 0.4 },
+        shakeTime: { type: Number, name: "Time Between Shakes", default: 5},
+        useLaunchPosition: { type: Boolean, name: "Use Launch Parameters", default: false },
+        launchParameters: { 
+            type: Object,
+            name: "Launch Parameters",
+            properties: {
+                launchX: { type: Number, name: "X Position" },
+                launchY: { type: Number, name: "Y Position" },
+                angle: { type: Number, name: "Angle" },
+                spread: { type: Number, name: "Angle Spread" },
+            }
+        }
     },
     widget: {
         name: "Emote Bouncer",
@@ -52,6 +87,27 @@ export default {
     },
     computed: {
         ...mapCastMateState("twitch", ["channelId", "channelName"]),
+        launchWidth() {
+            return 400 * this.velocityMax;
+        },
+        launchHeight() {
+            return this.launchWidth * Math.sin((this.launchParameters?.spread || 0) * Math.PI / 180 / 2) * 2;
+        },
+        launchClipPath() {
+
+            const radius = this.launchWidth;
+            const spread = (this.launchParameters?.spread || 0)
+            const theta =  spread * Math.PI / 180 / 2;
+            const cosTheta = Math.cos(theta)
+            const sinTheta = Math.sin(theta)
+
+            const width = this.launchWidth
+            const height = this.launchHeight
+            
+            const arcPath = `M 0,${height/2 - 1} L${cosTheta*width},-1 A ${radius},${radius} ${spread} 0, 1, ${cosTheta*width}, ${height+1} L 0,${height/2+1} Z`
+
+            return arcPath;
+        }
     },
     methods: {
         onTwitchChat(chat) {
@@ -100,9 +156,21 @@ export default {
             let x = Math.random() * width;
             let y = Math.random() * height;
 
-            const velocityMax = 0.4;
+            if (this.useLaunchPosition) {
+                x = this.launchParameters?.launchX ?? 0
+                y = this.launchParameters?.launchY ?? 0
+            }
+
+            const velocityMax = this.velocityMax ?? 0.4;
             let velX = (Math.random() - 0.5) * velocityMax;
 			let velY = (Math.random() - 0.5) * velocityMax;
+
+            if (this.useLaunchPosition) {
+                const angle = Number(this.launchParameters?.angle) + (Math.random() - 0.5) * Number(this.launchParameters?.spread);
+
+                velX = Math.cos(angle * Math.PI / 180) * velocityMax;
+				velY = Math.sin(angle * Math.PI / 180) * velocityMax;
+            }
 
             const id = this.spawnId++;
 
@@ -123,7 +191,7 @@ export default {
 
             World.add(this.engine.world, [circleBody]);
 
-            const lifetime = 7;
+            const lifetime = this.lifetime || 7;
             setTimeout(() => {
                 World.remove(this.engine.world, circleBody);
 
@@ -157,8 +225,7 @@ export default {
 		Engine.run(this.engine);
 
         Events.on(this.engine, 'beforeUpdate', (event) => {
-            // apply random forces every 5 secs
-            if (event.timestamp % 5000 < 50)
+            if (this.shakeTime > 0 && event.timestamp % Math.ceil(this.shakeTime * 1000) < 50)
                 this.shake();
             
             this.updateBodyVDom();
@@ -186,5 +253,19 @@ export default {
 
 .bouncey-body {
     position: absolute
+}
+
+.launch-indicator {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 100%;
+    background-color: red;
+}
+
+.launch-cone {
+    position: relative;
+    transform-origin: center left;
+    background-image: linear-gradient(to right, #FF000080, transparent);
 }
 </style>
