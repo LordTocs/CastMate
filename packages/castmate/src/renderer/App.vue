@@ -84,6 +84,7 @@ import { useAnalyticsStore } from "./utils/analytics"
 import { useOverlayStore } from "./store/overlays"
 import { usePluginStore } from "./store/plugins"
 import { useStreamPlanStore } from "./store/streamplan"
+import { useOSStore } from "./store/os"
 import { mapState } from "pinia"
 import { mapIpcs } from "./utils/ipcMap"
 
@@ -139,6 +140,7 @@ export default {
     await useSettingsStore().init()
     await useRemoteTemplateStore().init()
     await useStreamPlanStore().init()
+    await useOSStore().init()
 
     this.loaded = true;
   },

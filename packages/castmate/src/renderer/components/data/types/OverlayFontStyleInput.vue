@@ -1,8 +1,16 @@
 <template>
     <v-input v-model="modelObj" :density="props.density" v-bind="$attrs">
-        <v-field :label="label" clearable :active="!!props.modelValue" style="cursor: pointer" @click.stop="(dialog=true)">
-            <div class="d-flex flex-row align-center preview">
-                <span :style="previewFontStyle">{{ previewText }}</span>
+        <v-field 
+            :label="label" 
+            clearable 
+            :active="!!props.modelValue" 
+            :dirty="!!props.modelValue" 
+            style="cursor: pointer" 
+            @click.stop="(dialog=true)"
+            @click:clear.stop="modelObj = undefined"
+        >
+            <div class="v-field__input">
+                <span :style="previewFontStyle" v-if="modelObj">{{ previewText }}</span>
             </div>
         </v-field>
     </v-input>

@@ -2,29 +2,37 @@
     <v-select
         :items="fonts || []"
         v-model="modelObj"
-        @focus="refreshFonts"
         :label="props.label"
         :density="props.density"
+        :menu-props="{ maxHeight: 400, location: 'bottom' }"
     >
         <template #item="{ item, props}">
             <v-list-item v-bind="props" class="d-flex flex-row justify-center py-1" title="">
-                <span :style="{ fontFamily: `${addQuotes(item.value)}`}" class="text-preview">{{item.value}}</span>
+                <span 
+                    :style="{ fontFamily: `${addQuotes(item.value)}`}"
+                    class="text-preview"
+                >
+                    {{item.value}}
+                </span>
             </v-list-item>
         </template>
         <template #selection="{ item }" >
             <div class="text-no-wrap">
-                <span :style="{ fontFamily: `${addQuotes(item.value)}`}" class="text-preview">{{item.value}}</span>
+                <span 
+                    :style="{ fontFamily: `${addQuotes(item.value)}`}" 
+                    class="text-preview"
+                >
+                    {{item.value}}
+                </span>
             </div>
         </template>
     </v-select>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useIpc } from '../../../utils/ipcMap';
+import { computed } from 'vue';
+import { useOSStore } from '../../../store/os';
 import { useModel } from '../../../utils/modelValue';
-
-const getFonts = useIpc('os', 'getFonts')
 
 const props = defineProps({ 
     modelValue: { type: String },
@@ -33,19 +41,14 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
-const fonts = ref(null)
+const osStore = useOSStore()
+const fonts = computed(() => osStore.fonts.map(f => ({ title: f, vaue: f})))
 
 const modelObj = useModel(props, emit)
-
-async function refreshFonts() {
-    fonts.value = (await getFonts()).map(f => ({ title: f, value: f }))
-}
 
 function addQuotes(str) {
     return `"${str}"`
 }
-
-
 
 </script>
 
