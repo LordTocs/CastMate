@@ -1,5 +1,5 @@
 <template>
-    <v-card variant="outlined">
+    <v-card variant="outlined" class="my-2">
         <v-card-subtitle class="d-flex flex-row py-2 align-center">
             <div class="flex-grow-1 "> {{ label || 'No label' }} </div> 
             <v-btn icon="mdi-plus" @click="addItem" size="x-small" />
