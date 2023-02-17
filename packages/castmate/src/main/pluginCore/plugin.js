@@ -169,6 +169,7 @@ export class Plugin
 			{
 				triggerObj.config = triggerSpec.config;
 				triggerObj.internalHandler = triggerSpec.handler.bind(this.pluginObj);
+				makeIPCEnumFunctions(this.pluginObj, this.name + "_triggers_config_" + triggerName, triggerSpec.config)
 			}
 			
 			this.triggers[triggerName] = triggerObj;
