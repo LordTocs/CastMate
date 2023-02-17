@@ -33,6 +33,7 @@
               v-if="triggerDesc && configSchema"
               :schema="configSchema"
               v-model="localMapping.config"
+              :context="localMapping.config"
             />
             <p v-else-if="triggerDesc" class="text-center my-4">
               No Configuration Needed
