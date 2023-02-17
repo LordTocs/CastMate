@@ -188,7 +188,7 @@ export default {
     schema: {},
     modelValue: {},
     label: {},
-    context: {},
+    context: { type: Object },
     secret: { type: Boolean, default: () => false },
     colorRefs: {},
     density:  { type: String }
