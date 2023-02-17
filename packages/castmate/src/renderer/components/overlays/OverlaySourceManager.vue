@@ -15,6 +15,7 @@
         </template>
         <v-btn icon="mdi-refresh" @click="findBrowserSource" size="x-small"/>
     </template>
+    <v-btn icon="mdi-open-in-app" class="mx-2" size="x-small" :href="`http://localhost:${port}/overlays/${props.overlayId}`" target="_blank"></v-btn>
     <named-item-modal ref="nameModal" :header="`Create Browser Source`" label="Source Name"  @created="createBrowserSource" />
 </template>
 
@@ -48,6 +49,7 @@ const createNewSource = useIpc('obs', 'createNewSource')
 const openOBS = useIpc('obs', 'openOBS');
 const getOBSRemoteHost = useIpc('obs', 'getOBSRemoteHost')
 
+const port = computed(() => settingsStore.settings?.castmate?.port || 85)
 
 const browserSourceName = ref(null);
 
@@ -68,8 +70,7 @@ watch(isObsConnected, () => {
 async function createBrowserSource(name) {
     console.log("Creating Source", name)
     const remoteHost = await getOBSRemoteHost();
-    const port = settingsStore.settings?.castmate?.port || 85
-    const url = `http://${remoteHost}:${port}/overlays/${props.overlayId}`
+    const url = `http://${remoteHost}:${port.value}/overlays/${props.overlayId}`
 
     await createNewSource('browser_source', name, currentScene.value, {
         width: props.overlay.width,
