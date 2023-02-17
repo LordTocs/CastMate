@@ -1,6 +1,14 @@
 <template>
   <v-container fluid>
-    <file-table :files="automationFiles" name="Automation" @nav="onNav" @create="onCreate" @duplicate="onDuplicate" @delete="onDelete"/>
+    <file-table 
+      :files="automationFiles" 
+      name="Automation" 
+      @nav="onNav" 
+      @create="onCreate" 
+      @duplicate="onDuplicate" 
+      @delete="onDelete"
+      @rename="onRename"
+    />
   </v-container>
 </template>
 
@@ -18,7 +26,7 @@ export default {
     };
   },
   methods: {
-    ...mapIpcs("io", ["getAutomations", "createAutomation", "deleteAutomation", "cloneAutomation"]),
+    ...mapIpcs("io", ["getAutomations", "createAutomation", "deleteAutomation", "cloneAutomation", "renameAutomation"]),
     async getFiles() {
       this.automationFiles = await this.getAutomations()
     },
@@ -40,6 +48,11 @@ export default {
     async onDelete(name) {
       await this.deleteAutomation(name);
       await this.getFiles();
+    },
+    async onRename(name, newName) {
+      if (await this.renameAutomation(name, newName)) {
+        await this.getFiles();
+      }
     }
   },
   async mounted() {

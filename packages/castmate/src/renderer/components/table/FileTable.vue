@@ -70,6 +70,9 @@ export default {
                     "Cancel"
                 )
             ) {
+                const newName = this.$refs.duplicateDlg.name
+                console.log("Rename", this.getName(file), newName)
+
                 this.$emit('rename', this.getName(file), newName);
             }
         },

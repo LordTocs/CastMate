@@ -115,6 +115,24 @@ export class AutomationManager
 			this.automations[newName] = config;
 			return true;
 		})
+		ipcFunc("io", "renameAutomation", async (name, newName) => {
+			if (!(name in this.automations) || newName in this.automations)
+				return false;
+			
+			try
+			{
+				await fs.promises.rename(path.join(userFolder, 'automations/', `${name}.yaml`), path.join(userFolder, 'automations/', `${newName}.yaml`))
+			}
+			catch (err)
+			{
+				logger.error(`Error renaming automation. ${err}`);
+				return false;
+			}
+
+			this.automations[newName] = this.automations[name]
+			delete this.automations[name]
+			return true;
+		})
 	}
 
 	async load()
