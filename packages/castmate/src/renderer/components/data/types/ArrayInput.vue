@@ -6,7 +6,7 @@
         </v-card-subtitle>
         <v-divider />
         <div class="my-2">
-            <draggable v-model="modelObj" handle=".array-handle">
+            <draggable v-model="modelObj" handle=".array-handle" :item-key="getItemIndex">
                 <template #item="{element, index}">
                     <v-card class="d-flex flex-row mx-2 my-2 align-stretch" elevation="2">
                         <div class="array-handle">
@@ -47,17 +47,27 @@ export default {
         label: { type: String, default: () => ""},
         density: { type: String },
         secret: { type: Boolean, default: false },
-        context: { type: {} },
+        context: { type: Object },
     },
     emits: ['update:modelValue'],
     components: { DataInput: defineAsyncComponent(() => import("../DataInput.vue")), Draggable },
     computed: {
-        ...mapModel(),
+        modelObj: {
+            get() {
+                return this.modelValue || [];
+            },
+            set(newValue) {
+                this.$emit(`update:modelValue`, newValue);
+            }
+        },
         itemSchema() {
             return this.schema?.items;
         }
     },
     methods: {
+        getItemIndex(item) {
+            return this.modelValue?.indexOf(item)
+        },
         updateItem(index, value) {
             const newValue = [...(this.modelValue || [])];
             newValue[index] = value;
