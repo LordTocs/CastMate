@@ -141,11 +141,14 @@ export default {
             const arcPath = `M 0,${height/2 - 1} L${cosTheta*width},-1 A ${radius},${radius} ${360/this.slices} 0, 1, ${cosTheta*width}, ${height+1} L 0,${height/2+1} Z`
             return arcPath
         },
+        globalIndex() {
+            return Math.ceil((-this.wheelAngle - this.degPerSlice/2) / this.degPerSlice)
+        },
         itemIndex() {
-            return slicedLoopIndex((-this.wheelAngle - this.degPerSlice/2) / this.degPerSlice, this.items?.length ?? 1 )
+            return slicedLoopIndex(this.globalIndex, this.items?.length ?? 1 )
         },
         slotIndex() {
-            return slicedLoopIndex((-this.wheelAngle - this.degPerSlice/2) / this.degPerSlice, this.slices)
+            return slicedLoopIndex(this.globalIndex, this.slices)
         },
         degPerSlice() {
             return (360 / this.slices);
@@ -206,15 +209,8 @@ export default {
             const dt = (timestamp - this.lastTimestamp) / 1000;
             this.lastTimestamp = timestamp;
 
-            const lastIndex = this.itemIndex
             this.wheelAngle += this.spinVelocity * dt;
-            const newIndex = this.itemIndex
 
-            if (lastIndex != newIndex) {
-                
-            }
-
-        
             //Damping
             const dampingBase = this.damping?.base ?? 6;
             const dampingCoefficient = this.damping?.coefficient ?? 0.1;
@@ -249,7 +245,7 @@ export default {
         }
     },
     watch: {
-        itemIndex() {
+        globalIndex() {
             console.log(this.itemIndex, this.slotIndex)
             if (!this.isEditor) {
                 const soundMedia = this.items?.[this.itemIndex].clickOverride ?? this.colors[this.slotIndex % (this.colors?.length || 1)]?.click
