@@ -11,7 +11,7 @@
                 v-for="slice,i in sliceData"
                 class="slice"
                 :style="{
-                    transform: `rotate(${-i*(360/slices) + wheelAngle}deg)`,
+                    transform: `rotate(${i*(360/slices) + wheelAngle}deg)`,
                     '--sliceColor': slice.color,
                     clipPath: `path('${clipPath}')`
                 }" 
@@ -25,6 +25,12 @@
 <script>
 import { Color, OverlayFontStyle } from "../typeProxies"
 
+function slicedLoopIndex(globalPosition, slices) {
+    const idx = Math.ceil(globalPosition) % slices
+
+    return idx < 0 ? slices + idx : idx
+}
+
 export default {
     widget: {
         name: "Wheel",
@@ -36,6 +42,7 @@ export default {
         },
         aspectRatio: 1
     },
+    inject: ['callbacks'],
     props: {
         size: { type: Object },
         slices: { type: Number, default: 12, name: "Slice Count" },
@@ -130,26 +137,46 @@ export default {
             return arcPath
         },
         itemIndex() {
-            return Math.floor((this.wheelAngle + 180) / (360 / this.slices));
+            
+            return slicedLoopIndex((-this.wheelAngle - this.degPerSlice/2) / this.degPerSlice, this.items?.length ?? 1 )
+        },
+        degPerSlice() {
+            return (360 / this.slices);
         },
         sliceData() {
             const result = [];
+            const dbgResult = [];
+            
+            const colors = this.colors ?? [ {color: "#BA0010"}, {color: "#A70010"} ]
+            const items = this.items?.length > 0 ? this.items : [{ text: "" }]
+            const degPerSlice = this.degPerSlice;
 
-            const colors = this.colors ?? [ {color: "#BA0010"}, {color: "#A70010"} ];
+            const updateSlotIndex = slicedLoopIndex((-this.wheelAngle - 180) / degPerSlice, this.slices)
+            const updateItemIndex = slicedLoopIndex((-this.wheelAngle - 180) / degPerSlice, items.length)
 
             for (let i = 0; i < this.slices; ++i) {
-                const idx = (i + this.itemIndex) % (this.items?.length || 1);
-                const colorIndex = (i + this.itemIndex) % colors.length;
-
-                const item = {
-                    text: this.items?.[idx]?.text ?? "",
-                    color: this.items?.[idx]?.colorOverride ?? colors[colorIndex].color,
-                    fontStyle: OverlayFontStyle.getStyleObj(this.items?.[idx]?.fontOverride ?? colors[colorIndex].font)
-                }
-
-                result.push(item)
+                result.push(null)
+                dbgResult.push(null)
             }
 
+            for (let i = 0; i < this.slices; ++i) {
+                const slotIdx = (updateSlotIndex + i) % this.slices
+                const itemIdx = (updateItemIndex + i) % items.length
+                const colorIndex = slicedLoopIndex(slotIdx, colors.length);
+
+                const item = {
+                    text: items[itemIdx]?.text ?? "",
+                    color: items[itemIdx]?.colorOverride ?? colors[colorIndex].color,
+                    fontStyle: OverlayFontStyle.getStyleObj(items[itemIdx]?.fontOverride ?? colors[colorIndex].font)
+                }
+
+                result[slotIdx] = item
+                dbgResult[slotIdx] = itemIdx
+            }
+
+            //console.log("Slice Data", this.wheelAngle, updateSlotIndex, updateItemIndex, dbgResult);
+
+            
             return result;
          }
     },
@@ -171,21 +198,28 @@ export default {
 
             const lastAngle = this.wheelAngle
 
-            const lastIndex = Math.floor((lastAngle + 180) / (360 / this.slices));
-			const index = Math.floor((this.wheelAngle + 180) / (360 / this.slices));
-
-
-
             this.wheelAngle += this.spinVelocity * dt;
 
+        
             //Damping
             const dampingBase = this.damping?.base ?? 6;
             const dampingCoefficient = this.damping?.coefficient ?? 0.1;
 
+            const lastVelocity = this.spinVelocity
             this.spinVelocity = Math.max(this.spinVelocity - (this.spinVelocity * dampingCoefficient + dampingBase) * dt, 0)
 
             if (this.spinVelocity > 0) {
                 this.requestNewFrame();
+            }
+            else {
+                if (lastVelocity > 0) {
+                    //Just Stopped
+                    //console.log("Stopped", this.wheelAngle)
+                    const result = this.items[this.itemIndex]?.text
+                    if (result) {
+                        this.callbacks.call('wheelLanded', result)
+                    }
+                }
             }
         },
         spinWheel(spinStrength) {

@@ -31,6 +31,7 @@ export class PluginManager {
 			"voicemod",
 			"time",
 			"kofi",
+			"overlays",
 			"http",
 			"os",
 			//"csgo",
