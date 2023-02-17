@@ -59,6 +59,16 @@ export class Profile {
 		await this.reloadConfig(profileConfig);
 	}
 
+	async rename(newName, newFilename) {
+		await fs.promises.rename(this.filename, newFilename)
+
+		this.name = newName
+		this.filename = newFilename
+
+		await this.reloadConfig(this.config);
+		this.onReload(this);
+	}
+
 	async saveConfig(profileConfig)
 	{
 		logger.info(`Saving Profile: ${this.name}`);

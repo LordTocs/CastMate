@@ -1,6 +1,14 @@
 <template>
   <v-container fluid>
-    <file-table :files="profiles" name="Profile" @nav="onNav" @create="onCreate" @duplicate="onDuplicate" @delete="onDelete"/>
+    <file-table 
+      :files="profiles" 
+      name="Profile" 
+      @nav="onNav" 
+      @create="onCreate" 
+      @duplicate="onDuplicate" 
+      @delete="onDelete"
+      @rename="onRename"
+    />
   </v-container>
 </template>
 
@@ -19,7 +27,7 @@ export default {
     };
   },
   methods: {
-    ...mapIpcs("io", ["getProfiles", "createProfile", "cloneProfile", "deleteProfile"]),
+    ...mapIpcs("io", ["getProfiles", "createProfile", "cloneProfile", "deleteProfile", "renameProfile"]),
     async getFiles() {
       this.profiles = await this.getProfiles();
     },
@@ -40,6 +48,10 @@ export default {
     },
     async onDelete(name) {
       await this.deleteProfile(name);
+      await this.getFiles();
+    },
+    async onRename(name, newName) {
+      await this.renameProfile(name, newName)
       await this.getFiles();
     }
   },

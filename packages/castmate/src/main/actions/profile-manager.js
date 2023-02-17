@@ -129,6 +129,22 @@ export class ProfileManager
 
 			return true;
 		})
+
+		ipcFunc("io", "renameProfile", async (name, newName) => {
+			const profileIndex = this.profiles.findIndex(p => p.name == name);
+
+			if (profileIndex < 0)
+				return false;
+
+			const existingProfile = this.profiles.find(p => p.name == newName);
+			if (existingProfile)
+				return false;
+
+			const profile = this.profiles[profileIndex]
+			await profile.rename(newName, path.join(userFolder, "profiles", `${newName}.yaml`))
+
+			return true
+		})
 	}
 
 	async load()
