@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { StateManager } from "../state/state-manager.js"
 import { PluginManager } from "../pluginCore/plugin-manager.js"
 import { AutomationManager } from "../automations/automation-manager.js"
+import util from 'util'
 
 let actionQueue = null;
 export class ActionQueue {
@@ -73,7 +74,7 @@ export class ActionQueue {
 							}
 						}
 						catch (err) {
-							logger.error(`Error in trigger Handler ${plugin.name}:${triggerName} - ${err}`);
+							logger.error(`Error in Trigger Handler ${plugin.name}:${triggerName} - ${util.inspect(err)}`);
 						}
 					}
 				}
