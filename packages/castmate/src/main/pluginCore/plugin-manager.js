@@ -36,7 +36,6 @@ export class PluginManager {
 			"os",
 			//"csgo",
 			"variables",
-			"websocket",
 			//"aoe3",
 			"aoe4",
 			"twinkly",
