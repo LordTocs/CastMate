@@ -1,6 +1,11 @@
 <template>
     <template v-if="config">
-        <widget-loader v-for="widgetConfig in config.widgets" :key="widgetConfig.id" :widgetConfig="widgetConfig" ref="widgets" />
+        <widget-loader 
+            v-for="widgetConfig in config.widgets" 
+            :key="widgetConfig.id" 
+            :widgetConfig="widgetConfig" 
+            ref="widgets" 
+        />
     </template>
 </template>
 
@@ -15,6 +20,9 @@ export default {
     beforeCreate() {
         console.log("Creating State Provider")
         this.stateProvider = new StateProvider()
+
+        const overlayId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1); //Probably includes querystring????
+        this.bridge = new CastMateBridge(overlayId);
     },
     data() {
         return {
@@ -30,14 +38,13 @@ export default {
         return {
             isEditor: false,
             mediaFolder: { value: `http://${window.location.host}/media/`},
-            stateProvider: this.stateProvider
+            stateProvider: this.stateProvider,
+            bridge: this.bridge
         }
     },
     async mounted() {
-        // Connect to the websocket
         const overlayId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1); //Probably includes querystring????
-
-        this.bridge = new CastMateBridge(overlayId);
+        // Connect to the websocket
         this.stateProvider.init(this.rootState, this.bridge)
 
         this.bridge.on('configChanged', (newConfig) => this.config = newConfig);

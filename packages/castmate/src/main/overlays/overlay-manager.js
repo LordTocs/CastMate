@@ -80,6 +80,12 @@ export class OverlayManager {
         return this.overlayTypes?.[id];
     }
 
+    async registerOverlayCallable(funcName, func) {
+        if (!this.overlayCallableBinds[funcName])
+            this.overlayCallableBinds[funcName] = [];
+        this.overlayCallableBinds[funcName].push(func)
+    }
+
     async callOverlayFunc(overlayId, widgetId, funcName, ...args) {
         await Promise.all(this.openSockets.filter((s) => s.overlayId == overlayId).map(
             async (s) => s.socket.call('widgetFunc', widgetId, funcName, ...args).catch(err => null)))
@@ -109,6 +115,8 @@ export class OverlayManager {
 
         const overlayRoutes = express.Router();
         const stateManager = StateManager.getInstance();
+
+        this.overlayCallableBinds = {};
 
         overlayRoutes.get(`/:id/config`, async (req, res, next) => {
             const overlay = this.overlayResources.getById(req.params.id);
@@ -179,6 +187,16 @@ export class OverlayManager {
                 })
 
                 this.openSockets.push(newSocket);
+
+                for (let func in this.overlayCallableBinds) {
+                    newSocket.socket.handle(func, (widgetId, ...args) => {
+                        const caller = { overlay: newSocket.overlayId, widget: widgetId}
+                        console.log("Handling", func, caller)
+                        for (let subFunc of this.overlayCallableBinds[func]) {
+                            subFunc(caller, ...args)
+                        }
+                    })
+                }
 
                 newSocket.socket.handle('acquireState', (pluginName, stateName) => {
                     

@@ -29,6 +29,11 @@ export class CastMateBridge extends EventEmitter
 		}
 	}
 
+	async call(funcName, ...args) {
+		console.log("Calling", funcName, ":", ...args)
+		return await this.rpcSocket.call(funcName, ...args)
+	}
+
 	connect()
 	{ 
 		this.socket = new WebSocket(`ws://${window.location.host}?overlay=${this.overlayId}`);

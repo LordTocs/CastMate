@@ -18,6 +18,16 @@ export default {
     props: {
         widgetConfig: {},
     },
+    inject: ['bridge'],
+    provide() {
+        return {
+            callbacks: {
+                call: async (event, ...args) => {
+                    return await this.bridge?.call(event, this.widgetConfig.id, ...args)
+                }
+            }
+        }
+    },
     computed: {
         dynamicComponent() {
             const component = defineAsyncComponent({
