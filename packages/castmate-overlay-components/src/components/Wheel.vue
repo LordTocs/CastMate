@@ -23,7 +23,8 @@
 </template>
 
 <script>
-import { Color, OverlayFontStyle } from "../typeProxies"
+import { Color, MediaFile, OverlayFontStyle } from "../typeProxies"
+import { useSoundPlayer } from "../utils/sound.js"
 
 function slicedLoopIndex(globalPosition, slices) {
     const idx = Math.ceil(globalPosition) % slices
@@ -42,7 +43,7 @@ export default {
         },
         aspectRatio: 1
     },
-    inject: ['callbacks'],
+    inject: ['callbacks', 'isEditor'],
     props: {
         size: { type: Object },
         slices: { type: Number, default: 12, name: "Slice Count" },
@@ -55,6 +56,7 @@ export default {
                     text: { type: String, name: "Text" },
                     colorOverride: { type: Color, name: "Color Override" },
                     fontOverride: { type: OverlayFontStyle, name: "Font Override", exampleText: "Item Name" },
+                    clickOverride: { type: MediaFile, name: "Sound Override", sound: true }
                 }
             }
         },
@@ -66,6 +68,7 @@ export default {
                 properties: {
                     color: { type: Color, name: "Color"},
                     font: { type: OverlayFontStyle, name: "Item Font", exampleText: "Item Name" },
+                    click: { type: MediaFile, name: "Sound", sound: true }
                 }
             },
             default: () => [ 
@@ -80,7 +83,8 @@ export default {
                             width: 2,
                             color: "#251600"
                         }
-                    }
+                    },
+                    click: "wheelClick.ogg"
                 }, 
                 {
                     color: "#A70010",
@@ -93,7 +97,8 @@ export default {
                             width: 2,
                             color: "#270000"
                         }
-                    }
+                    },
+                    click: "wheelClick.ogg"
                 } 
             ]
         },
@@ -137,8 +142,10 @@ export default {
             return arcPath
         },
         itemIndex() {
-            
             return slicedLoopIndex((-this.wheelAngle - this.degPerSlice/2) / this.degPerSlice, this.items?.length ?? 1 )
+        },
+        slotIndex() {
+            return slicedLoopIndex((-this.wheelAngle - this.degPerSlice/2) / this.degPerSlice, this.slices)
         },
         degPerSlice() {
             return (360 / this.slices);
@@ -180,9 +187,12 @@ export default {
             return result;
          }
     },
+    setup() {
+        return {
+            soundPlayer: useSoundPlayer()
+        }
+    },
     methods: {
-        initSlices() {
-        },
         requestNewFrame() {
             window.requestAnimationFrame((ts) => this.updateWheel(ts));
         },
@@ -196,9 +206,13 @@ export default {
             const dt = (timestamp - this.lastTimestamp) / 1000;
             this.lastTimestamp = timestamp;
 
-            const lastAngle = this.wheelAngle
-
+            const lastIndex = this.itemIndex
             this.wheelAngle += this.spinVelocity * dt;
+            const newIndex = this.itemIndex
+
+            if (lastIndex != newIndex) {
+                
+            }
 
         
             //Damping
@@ -214,7 +228,6 @@ export default {
             else {
                 if (lastVelocity > 0) {
                     //Just Stopped
-                    //console.log("Stopped", this.wheelAngle)
                     const result = this.items[this.itemIndex]?.text
                     if (result) {
                         this.callbacks.call('wheelLanded', result)
@@ -235,13 +248,15 @@ export default {
             }
         }
     },
-    mounted() {
-        this.initSlices();
-    },
     watch: {
-        slices() {
-            this.initSlices();
+        itemIndex() {
+            console.log(this.itemIndex, this.slotIndex)
+            if (!this.isEditor) {
+                const soundMedia = this.items?.[this.itemIndex].clickOverride ?? this.colors[this.slotIndex % (this.colors?.length || 1)]?.click
+                this.soundPlayer.playSound(soundMedia)
+            }
         }
+
     }
 }
 </script>
