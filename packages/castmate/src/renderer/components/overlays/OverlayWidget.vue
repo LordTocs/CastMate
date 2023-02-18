@@ -1,5 +1,10 @@
 <template>
-    <resizable v-model:transform="modelValue" v-model:selected="selected" :aspectRatio="widgetData?.aspectRatio">
+    <resizable 
+        v-model:transform="modelValue"
+        v-model:selected="selected"
+        :aspectRatio="widgetData?.aspectRatio"
+        :selectable="!props.modelValue?.locked"
+    >
         <!--Put a div over top to block any interaction with the underlying widget.
         <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"></div> -->
         <widget-loader :widgetConfig="props.modelValue" />

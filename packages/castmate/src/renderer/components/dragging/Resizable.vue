@@ -4,10 +4,21 @@
             <slot></slot>
         </div>
     </div>
-    <div :style="frameStyle" @click.stop="" :class="{ selected, 'drag-div': true }" v-if="selected" >
+    <div 
+        :style="frameStyle"
+        @click.stop=""
+        :class="{ selected: allowDrag, 'drag-div': true }" 
+        v-if="selectable" 
+    >
         <div class="drag-cover" @mousedown="onWidgetMouseDown"></div>
         <template v-if="selected">
-            <div v-for="handle in dragHandles" :key="handle.id" :class="['handle', handle.class]" @mousedown="onHandleMouseDown($event, handle)" @click.stop=""></div>
+            <div 
+                v-for="handle in dragHandles" 
+                :key="handle.id" 
+                :class="['handle', handle.class]" 
+                @mousedown="onHandleMouseDown($event, handle)" 
+                @click.stop=""
+            ></div>
         </template>
     </div>
 </template>
@@ -35,8 +46,10 @@ const props = defineProps({
     maxHeight: { type: Number },
     aspectRatio: { type: Number },
 
+    
     transform: { },
     
+    selectable: { type: Boolean, default: true},
     selected: { type: Boolean, default: () => false },
 })
 
@@ -55,6 +68,7 @@ const defineModel = (varName) => {
 
 const transform = defineModel('transform')
 const selected = defineModel('selected')
+const allowDrag = computed(() => props.selectable && props.selected)
 const renderScale = inject('renderScale');
 
 const frameStyle = computed(() => ({
@@ -99,6 +113,9 @@ const onWidgetMouseDown = (event) => {
     if (event.button != 0)
         return
     
+    if (!props.selectable)
+        return
+
     selected.value = true;
 
     let containerRect = dragFrame.value.getBoundingClientRect();
@@ -280,6 +297,7 @@ useWindowEventListener('mousemove', (ev) => {
 .selected {
     border: dashed 1px red;
     cursor: move;
+    z-index: 2 !important;
 }
 
 .unselected {
@@ -287,7 +305,7 @@ useWindowEventListener('mousemove', (ev) => {
 }
 
 .drag-div {
-    z-index: 1000;
+    z-index: 1;
 }
 
 .drag-cover {

@@ -26,9 +26,13 @@
                     tabindex="0" 
                     @keyup.delete.self="doDelete"
                 >
-                    <overlay-widget v-for="widget, i in (overlay?.widgets || [])" :key="widget.id" :modelValue="widget"
-                        @update:modelValue="updateWidget($event, i)" :selected="selectedWidgetId == widget.id"
-                        @update:selected="selectedWidgetId = widget.id" />
+                    <overlay-widget 
+                        v-for="widget, i in (overlay?.widgets || [])" 
+                        :key="widget.id" :modelValue="widget"
+                        @update:modelValue="updateWidget($event, i)" 
+                        :selected="selectedWidgetId == widget.id"
+                        @update:selected="selectedWidgetId = widget.id" 
+                    />
                 </drag-frame>
             </div>
         </div>
@@ -108,6 +112,7 @@ onMounted(async () => {
     }
 
     overlay.value = o.config
+    nextTick(() => dirty.value = false)
 })
 
 const saveSnack = ref(false)
@@ -163,7 +168,6 @@ const selectedWidgetProps = computed({
             return
 
         overlay.value.widgets[widgetIndex].props = value;
-        dirty.value = true
     }
 })
 
@@ -178,7 +182,6 @@ const selectedWidgetSize = computed({
             return
 
         overlay.value.widgets[widgetIndex].size = value;
-        dirty.value = true
     }
 })
 
@@ -193,7 +196,6 @@ const selectedWidgetPosition = computed({
             return
 
         overlay.value.widgets[widgetIndex].position = value;
-        dirty.value = true
     }
 })
 
@@ -235,8 +237,11 @@ watch(selectedWidgetId, async (newId) => {
 function updateWidget(newWidgetData, index) {
     //Use Object.assign() so we don't force reactivity at the array level, but instead at the property level.
     Object.assign(overlay.value.widgets[index], newWidgetData)
-    dirty.value = true;
 }
+
+watch(overlay, () => {
+    dirty.value = true
+}, { deep: true })
 
 function frameClicked() {
     selectedWidgetId.value = null;

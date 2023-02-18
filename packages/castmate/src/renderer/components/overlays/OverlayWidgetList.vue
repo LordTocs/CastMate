@@ -12,6 +12,7 @@
                     </template>
                     <template #append>
                         <v-btn icon="mdi-delete" size="x-small" variant='flat' class="mx-1" @click="deleteWidget(index)"></v-btn>
+                        <v-btn :icon="element.locked ? 'mdi-lock' : 'mdi-lock-open'" :active="element.locked" size="x-small" variant='flat' class="mx-1" @click="toggleLock(index)"></v-btn>
                     </template>
                 </v-list-item>
             </template>
@@ -44,6 +45,7 @@ import { ref, onMounted } from "vue"
 import loadWidget, { getAllWidgets } from 'castmate-overlay-components'
 import { nanoid } from "nanoid/non-secure"
 import { constructDefaultSchema } from "../../utils/objects"
+import _cloneDeep from "lodash/cloneDeep"
 
 const props = defineProps({
     modelValue: {},
@@ -86,6 +88,13 @@ function onSelect(index) {
 function deleteWidget(index) {
     const newArray = [...widgets.value]
     newArray.splice(index, 1)
+    widgets.value = newArray
+    emit('select', null)
+}
+
+function toggleLock(index) {
+    const newArray = _cloneDeep(widgets.value)
+    newArray[index].locked = !newArray[index].locked
     widgets.value = newArray
 }
 
