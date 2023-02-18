@@ -12,12 +12,12 @@
             <v-tooltip location="top" :content-props="tooltipProps">
                 <template #activator="{ props}">
                     <div class="d-flex flex-row align-center justify-center" v-bind="props">
-                        <category-view class="my-1" :category-id="segment.streamInfo.category" icon-only/> 
+                        <category-view class="my-1 mx-2" :category-id="segment.streamInfo.category" icon-only/> 
                         <span class="text-subtitle-1"> {{ segment.streamInfo.title }} </span>
                     </div>
                 </template>
                 <span class="text-subtitle-1"> {{  segment.streamInfo.title }} </span>
-                <category-view class="my-1" :category-id="segment.streamInfo.category" v-if="segment.streamInfo.category"/>
+                <category-view class="my-1 mx-2" :category-id="segment.streamInfo.category" v-if="segment.streamInfo.category"/>
                 <div class="d-flex flex-row flex-wrap">
                     <v-chip v-for="tag in segment.streamInfo.tags" size="x-small"> {{ tag }} </v-chip>
                 </div>
