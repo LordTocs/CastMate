@@ -8,6 +8,11 @@
 #include <iomanip>
 #include <iostream>
 
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+
 // REFERENCES
 
 // Grammar Object https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ms718871(v=vs.85)
@@ -113,6 +118,56 @@ class speech_engine;
 class command_grammar;
 class speech_recognizer;
 
+struct recognition_result
+{
+    std::u16string text;
+    float confidence;
+};
+
+//Handles a callback from any thread (via speech_recognizer_notify_sink)
+//Queues them up, and uses a ThreadSafeFunction to notify JS land.
+//invoke can technically be called from any thread so we queue things up and handle them
+//from a central thread to make ref counting threads possible.
+class speech_recognition_callback
+{
+public:
+    speech_recognition_callback();
+    ~speech_recognition_callback();
+
+    void set_callback(Napi::Env env, Napi::Function callback_function);
+    void invoke(const std::u16string &text, float confidence);
+private:
+
+    class context
+    {
+    public:
+        //Order here matters, make sure all our sync primitives are constructed
+        speech_recognition_callback* callback;
+        
+        std::mutex queue_mutex;
+        std::queue<recognition_result> invocations;
+        std::condition_variable queue_condition;
+        bool running;
+
+        //Then our tsfn
+        Napi::ThreadSafeFunction tsfn;
+        
+        //Then our thread last
+        std::thread queue_thread;
+        void queue_thread_func();
+
+        context(speech_recognition_callback* callback, Napi::Env env, Napi::Function callbackFunction);
+        void push(const std::u16string &text, float confidence);
+        void destroy();
+
+        static void finalizer(Napi::Env env, void* data, context* context);
+    };
+    friend class context;
+
+    //Probably should have an access mutex, but that's a story for another time.
+    context* active_context;
+};
+
 class speech_recognizer : public Napi::ObjectWrap<speech_recognizer>
 {
 public:
@@ -182,9 +237,11 @@ private:
     CComPtr<ISpRecoContext> recognition_context;
     CComPtr<ISpRecoGrammar> dictation_grammar;
     CComPtr<speech_recognizer_notify_sink> notifier;
+    speech_recognition_callback callback;
+
     CComPtr<ISpAudio> audio;
 
-    Napi::ThreadSafeFunction recognition_callback;
+    static void RecognitionCallbackFinalizer(Napi::Env env, speech_recognizer* finalizeData, void* context);
     Napi::Value set_recognition_callback(const Napi::CallbackInfo& info);
     Napi::Value enable_microphone(const Napi::CallbackInfo& info);
     Napi::Value disable_microphone(const Napi::CallbackInfo& info);
@@ -744,12 +801,6 @@ speech_recognizer::~speech_recognizer()
     notifier->recognizer = nullptr;
 }
 
-struct recognition_result
-{
-    std::u16string text;
-    float confidence;
-};
-
 void speech_recognizer::handle_recognition()
 {
     CSpEvent event;
@@ -781,18 +832,11 @@ void speech_recognizer::handle_recognition()
 
             if (SUCCEEDED(event.RecoResult()->GetText(SP_GETWHOLEPHRASE, SP_GETWHOLEPHRASE, true, &text, nullptr)))
             {
-                auto callback = [](Napi::Env env, Napi::Function jsCallback, recognition_result * data) {
-                    jsCallback.Call({Napi::String::New(env, data->text), Napi::Number::New(env, data->confidence)});
-                    //Delete the newed up string.
-                    delete data;
-                };
-
                 //Do the string conversion dance
                 std::wstring wstr(text.m_psz);
-                //New up the string here as it will be deleted by the js thread callback
-                recognition_result* data = new recognition_result { std::u16string(wstr.begin(), wstr.end()), confidence };
 
-                recognition_callback.NonBlockingCall(data, callback);
+                //New up the recognition result here, it will be deleted by the processing thread.
+                callback.invoke(std::u16string(wstr.begin(), wstr.end()), confidence);
             }
         }
         else if (event.eEventId == SPEI_SOUND_END)
@@ -814,9 +858,114 @@ void speech_recognizer::handle_recognition()
     }
 }
 
-void RecognitionCallbackFinalizer(Napi::Env env, void* finalizeData, void* context)
-{
+speech_recognition_callback::speech_recognition_callback()
+    : active_context(nullptr)
+{}
 
+speech_recognition_callback::~speech_recognition_callback()
+{
+    if (active_context != nullptr)
+    {
+        active_context->destroy();
+    }
+}
+
+void speech_recognition_callback::set_callback(Napi::Env env, Napi::Function callback_function)
+{
+    if (active_context != nullptr) 
+    {
+        active_context->destroy();
+    }
+    active_context = new context(this, env, callback_function);
+}
+
+void speech_recognition_callback::invoke(const std::u16string &text, float confidence)
+{
+    if (active_context != nullptr)
+    {
+        active_context->push(text, confidence);
+    }
+}
+
+speech_recognition_callback::context::context(speech_recognition_callback* callback, Napi::Env env, Napi::Function callback_function)
+    : callback(callback)
+    , running(true)
+    , tsfn(Napi::ThreadSafeFunction::New(
+        env,                           // Environment
+        callback_function,  // JS function from caller
+        "SpeechRecognizerThreadSafeCallback",      // Resource name
+        0,                             // Max queue size (0 = unlimited).
+        1,                             // Initial thread count
+        this,                            // Context,
+        finalizer, // Finalizer
+        (void*)nullptr                           // Finalizer Data
+    ))
+    , queue_thread(&speech_recognition_callback::context::queue_thread_func, this)
+{}
+
+void speech_recognition_callback::context::push(const std::u16string &text, float confidence)
+{
+    std::lock_guard<std::mutex> lk(queue_mutex);
+    invocations.push({ text, confidence});
+    queue_condition.notify_one();
+}
+
+void speech_recognition_callback::context::queue_thread_func()
+{
+    auto js_thread_callback = [](Napi::Env env, Napi::Function js_callback, recognition_result* data)
+    {
+        //env might be null if the tsfn is aborted
+        if (env != nullptr && js_callback != nullptr) {
+            js_callback.Call({Napi::String::New(env, data->text), Napi::Number::New(env, data->confidence)});
+        }
+        delete data;
+    };
+
+    while (running)
+    {
+        std::unique_lock<std::mutex> lk(queue_mutex);
+        queue_condition.wait(lk);
+
+        while (invocations.size() > 0)
+        {
+            recognition_result* result = new recognition_result(invocations.front());
+            invocations.pop();
+
+            napi_status status = tsfn.NonBlockingCall(result, js_thread_callback);
+            if (status != napi_ok) {
+                std::cerr << "Failed to call recognition callback" << std::endl;
+                delete result;
+            }
+        }
+
+        lk.unlock();
+    }
+
+    napi_status status = tsfn.Release();
+    if (status != napi_ok)
+    {
+        std::cerr << "Failed to relase tsfn" << std::endl;
+    }
+}
+
+void speech_recognition_callback::context::finalizer(Napi::Env env, void* data, speech_recognition_callback::context* context)
+{
+    std::cout << "Finalizer Called" << std::endl;
+    context->destroy();
+}
+
+void speech_recognition_callback::context::destroy()
+{
+    std::cout << "Destroying Callback" << std::endl;
+    running = false;
+    queue_condition.notify_one();
+    queue_thread.join();
+
+    if (callback->active_context == this) { //TODO: Probably should be CAS
+        callback->active_context = nullptr;
+    }
+    delete this;
+    std::cout << "Callback Obliterated" << std::endl;
 }
 
 Napi::Value speech_recognizer::set_recognition_callback(const Napi::CallbackInfo& info)
@@ -829,16 +978,7 @@ Napi::Value speech_recognizer::set_recognition_callback(const Napi::CallbackInfo
         return env.Undefined();
     }
 
-    recognition_callback = Napi::ThreadSafeFunction::New(
-        env,                           // Environment
-        info[0].As<Napi::Function>(),  // JS function from caller
-        "SpeechRecognizerThreadSafeCallback",      // Resource name
-        0,                             // Max queue size (0 = unlimited).
-        1,                             // Initial thread count
-        (void*)nullptr,                // Context,
-        RecognitionCallbackFinalizer,  // Finalizer
-        (void*)nullptr                 // Finalizer Data
-    );
+    callback.set_callback(env, info[0].As<Napi::Function>());
 
     return env.Undefined();
 }
