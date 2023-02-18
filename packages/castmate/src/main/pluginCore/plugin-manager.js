@@ -22,7 +22,6 @@ export class PluginManager {
 		let pluginFiles = [
 			"inputs",
 			"hue",
-			"notifications",
 			"obs",
 			"sounds",
 			"twitch",
