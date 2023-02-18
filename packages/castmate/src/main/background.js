@@ -22,7 +22,7 @@ autoUpdater.autoDownload = false;
 // Set application name for Windows 10+ notifications
 if (process.platform === 'win32') app.setAppUserModelId(app.getName())
 
-if (!app.requestSingleInstanceLock()) {
+if (!isDevelopment && !app.requestSingleInstanceLock()) {
 	app.quit()
 	process.exit(0)
 }
@@ -95,7 +95,7 @@ async function createWindow() {
 	})
 
 	win.on("closed", () => {
-		app.quit();
+		quit();
 	})
 
 	mainWindow = win;
@@ -207,13 +207,17 @@ app.whenReady().then(async () => {
 	doUpdateCheck();
 })
 
+function quit() {
+	app.quit();
+	process.exit(0)
+}
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
 	// On macOS it is common for applications and their menu bar
 	// to stay active until the user quits explicitly with Cmd + Q
 	if (process.platform !== 'darwin') {
-		app.quit()
+		quit()
 	}
 })
 
@@ -232,12 +236,14 @@ if (isDevelopment) {
 	if (process.platform === 'win32') {
 		process.on('message', (data) => {
 			if (data === 'graceful-exit') {
-				app.quit()
+				console.log("Graceful Exit");
+				quit()
+
 			}
 		})
 	} else {
 		process.on('SIGTERM', () => {
-			app.quit()
+			quit()
 		})
 	}
 }
