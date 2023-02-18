@@ -10,7 +10,9 @@ function resolveColorRef(color, refs) {
 
 
 export class Color {
-    
+    static [Symbol.hasInstance](instance) {
+        return typeof instance === 'string';
+    }
 }
 
 export class OverlayTransition {
@@ -20,6 +22,9 @@ export class OverlayTransition {
     animation: 'Fade'
 }
 */
+    static [Symbol.hasInstance](instance) {
+        return typeof instance === 'object';
+    }
 }
 
 export class OverlayTransitionTiming {
@@ -27,6 +32,9 @@ export class OverlayTransitionTiming {
     appearDelay: 1,
     vanishAdvance: 1,
 */
+    static [Symbol.hasInstance](instance) {
+        return typeof instance === 'object';
+    }
 }
 
 export class OverlayPadding {
@@ -38,6 +46,10 @@ export class OverlayPadding {
         bottom:
     }
     */
+
+    static [Symbol.hasInstance](instance) {
+        return typeof instance === 'object';
+    }
 
     static getStyleObject(overlayPadding) {
         const result = {};
@@ -59,7 +71,9 @@ export class OverlayPadding {
 }
 
 export class MediaFile {
-
+    static [Symbol.hasInstance](instance) {
+        return typeof instance === 'string';
+    }
 }
 
 export class OverlayFontStyle {
@@ -102,5 +116,9 @@ export class OverlayFontStyle {
         }
 
         return result;
+    }
+
+    static [Symbol.hasInstance](instance) {
+        return typeof instance === 'object';
     }
 }
