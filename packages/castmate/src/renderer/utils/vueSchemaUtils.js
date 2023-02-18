@@ -9,8 +9,6 @@ function cleanVueSchema(schema) {
         type: schema.type?.name
     };
 
-    console.log("    Cleaning", schema)
-
     if (typeof result.default === 'function')
     {
         result.default = result.default()
@@ -53,11 +51,9 @@ function cleanVueObjectProps(objPropSchema) {
     delete propSchema.size
     delete propSchema.position
 
-    console.log("Cleaning", propSchema)
     const result = {
         type: 'Object',
         properties: cleanVueObjectProps(propSchema)
     }
-    console.log("Cleaned To", result);
     return result
 }
