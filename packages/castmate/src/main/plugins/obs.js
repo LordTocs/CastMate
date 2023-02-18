@@ -237,6 +237,12 @@ export default {
 
 			return sceneItemId
 		},
+		async updateSourceSettings(sourceName, settings) {
+			await this.obs.call("SetInputSettings", {
+				inputName: sourceName,
+				inputSettings: settings
+			})
+		},
 		async findBrowserByUrlPattern(urlPattern) {
 			const { inputs } = await this.obs.call('GetInputList', {
 				inputKind: 'browser_source'

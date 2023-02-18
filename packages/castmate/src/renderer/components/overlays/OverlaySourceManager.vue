@@ -13,6 +13,7 @@
         <template v-else>
             <span class="mx-2"> <span class="text-medium-emphasis"> OBS Source:</span> {{ browserSourceName }} </span>
         </template>
+        <v-btn variant="outlined" prepend-icon="mdi-wrench" color="error" v-if="!valid" @click="fixBrowserSource"> Fix OBS Source </v-btn>
         <v-btn icon="mdi-refresh" @click="findBrowserSource" size="x-small"/>
     </template>
     <v-btn icon="mdi-open-in-app" class="mx-2" size="x-small" :href="`http://localhost:${port}/overlays/${props.overlayId}`" target="_blank"></v-btn>
@@ -53,12 +54,45 @@ const port = computed(() => settingsStore.settings?.castmate?.port || 85)
 
 const browserSourceName = ref(null);
 
+
+const valid = ref(false)
+
+async function getOverlayURL() {
+    const remoteHost = await getOBSRemoteHost();
+    return `http://${remoteHost}:${port.value}/overlays/${props.overlayId}`
+}
+
 async function findBrowserSource() {
     const source = await findBrowserByUrlPattern(urlPattern.value);
 
     browserSourceName.value = source.inputName
 
-    //Validate url
+    const expectedUrl = await getOverlayURL();
+
+    if (source) {
+        valid.value = source.inputSettings.url == expectedUrl && source.inputSettings.width == props.overlay.width && source.inputSettings.height == props.overlay.height;
+    }
+    else
+    {
+        valid.value = false
+    }
+    
+    console.log(source);
+}
+
+const updateSourceSettings = useIpc('obs', 'updateSourceSettings')
+
+async function fixBrowserSource() {
+    if (!browserSourceName.value)
+        return
+    
+    updateSourceSettings(browserSourceName.value, {
+        url: await getOverlayURL(),
+        width: props.overlay.width,
+        height: props.overlay.height,
+    })
+
+    valid.value = true
 }
 
 watch(isObsConnected, () => {
@@ -69,8 +103,7 @@ watch(isObsConnected, () => {
 
 async function createBrowserSource(name) {
     console.log("Creating Source", name)
-    const remoteHost = await getOBSRemoteHost();
-    const url = `http://${remoteHost}:${port.value}/overlays/${props.overlayId}`
+    const url = await getOverlayURL();
 
     await createNewSource('browser_source', name, currentScene.value, {
         width: props.overlay.width,
