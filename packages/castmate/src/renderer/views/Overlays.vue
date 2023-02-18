@@ -70,7 +70,22 @@ export default {
       ) {
           await this.deleteOverlay(overlay.id);
       }
-    }
+    },
+    async tryRename(overlayItem) {
+        if (
+            await this.$refs.duplicateDlg.open(
+                `Rename ${overlayItem.name}?`,
+                `New Overlay Name`,
+                "Rename",
+                "Cancel"
+            )
+        ) {
+            const newName = this.$refs.duplicateDlg.name
+
+            const overlay = await this.getOverlayById(overlayItem.id);
+            await this.setOverlayConfig(overlay.id, { ...overlay.config, name: newName });
+        }
+    },
   }
 }
 
