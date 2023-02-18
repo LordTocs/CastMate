@@ -3,7 +3,7 @@ module.exports = {
   productName: "CastMate",
   asar: true,
   directories: {
-    output: "release"
+    output: "../../release"
   },
   files: [
       "dist/**/*",
@@ -44,7 +44,7 @@ module.exports = {
   },
   extraResources: [
     {
-      "from": "node_modules/regedit/vbs",
+      "from": "../../node_modules/regedit/vbs",
       "to": "regedit/vbs",
       "filter": [
         "**/*"
@@ -53,8 +53,8 @@ module.exports = {
   ],
   extraFiles: [
     {
-      from: "web",
-      to: "web",
+      from: "../castmate-obs-overlay/dist/obs-overlay",
+      to: "obs-overlay",
     }
   ],
   publish: [{

@@ -11,6 +11,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { subpackage } from '../../vite-util/vite-subpackage-plugin'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+const dist = path.join(dirname, "dist");
 
 
 rmSync('dist', { recursive: true, force: true }) // v14.14.0
@@ -33,7 +34,7 @@ export default defineConfig({
           },
           build: {
             // target: 'node16.15',
-            outDir: 'dist/electron/main',
+            outDir: path.join(dist, 'electron/main'),
             rollupOptions: {
               // format: 'cjs',
               external: ['public-ip', 'ffi-napi', 'ref-napi', 'ref-struct-di', 'win32-api', 'obs-websocket-js', 'ws', 'fluent-ffmpeg'],
@@ -70,7 +71,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: "dist/electron/renderer",
+    outDir: path.join(dist, 'electron/renderer'),
     rollupOptions: {
       input: {
         main: resolve(dirname, 'index.html'),

@@ -134,6 +134,19 @@ export class OverlayManager {
         if (app.isPackaged)
         {
             //Serve static here!
+
+            overlayRoutes.get(`/:id`, (req, res, next) => {
+                const overlay = this.overlayResources.getById(req.params.id);
+                if (!overlay) {
+                    const error = new Error('Overlay Not Found')
+                    error.status = 404
+                    return next(error);
+                }
+
+                res.sendFile('overlay.html', { root: "./obs-overlay"})
+            })
+
+            overlayRoutes.use(express.static("./obs-overlay"))
         }
         else {
             const devProxy = httpProxy.createProxyServer({

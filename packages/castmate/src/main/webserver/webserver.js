@@ -91,11 +91,7 @@ export class WebServices extends EventEmitter
 
 		this.server.listen(this.port, () => {
 			logger.info(`Started Internal Webserver on port ${this.port}`);
-			this.app.use(express.static("./web"));
-			this.app.use("/user", express.static(path.join(userFolder, "data"), {
-				etag: false
-			}));
-
+			
 			this.app.use("/media", express.static(mediaFolder, {
 				etag: false
 			}))

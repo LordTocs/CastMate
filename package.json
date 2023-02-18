@@ -4,7 +4,8 @@
   "description": "",
   "private": true,
   "scripts": {
-    "build": "node ./vite-util/multi-vite.mjs build",
+    "build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build",
+    "buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish",
     "dev": "node ./vite-util/multi-vite.mjs"
   },
   "keywords": [],
