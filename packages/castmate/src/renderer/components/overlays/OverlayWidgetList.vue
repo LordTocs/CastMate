@@ -1,7 +1,7 @@
 <template>
     <v-list >
         <draggable 
-            v-model="widgets"
+            v-model="reverseWidgets"
             item-key="id"
             :group="{ name: 'widgets'}"
         >
@@ -41,7 +41,7 @@
 import Draggable from "vuedraggable"
 import { useModelValues } from "../../utils/modelValue"
 import { cleanVuePropSchema } from '../../utils/vueSchemaUtils'
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import loadWidget, { getAllWidgets } from 'castmate-overlay-components'
 import { nanoid } from "nanoid/non-secure"
 import { constructDefaultSchema } from "../../utils/objects"
@@ -55,6 +55,19 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'select'])
 
 const { widgets } = useModelValues(props, emit, ['widgets'])
+
+
+
+const reverseWidgets = computed({
+    get() {
+        if (!widgets.value)
+            return []
+        return [...widgets.value].reverse()
+    },
+    set(newValue) {
+        widgets.value = newValue.reverse();
+    }
+})
 
 const widgetTypes = ref({})
 
@@ -82,19 +95,22 @@ onMounted(async () => {
 })
 
 function onSelect(index) {
-    emit('select', props.modelValue?.widgets?.[index]?.id)
+    const rIdx = props?.modelValue?.widgets?.length - 1 - index;
+    emit('select', props.modelValue?.widgets?.[rIdx]?.id)
 }
 
 function deleteWidget(index) {
+    const rIdx = props?.modelValue?.widgets?.length - 1 - index;
     const newArray = [...widgets.value]
-    newArray.splice(index, 1)
+    newArray.splice(rIdx, 1)
     widgets.value = newArray
     emit('select', null)
 }
 
 function toggleLock(index) {
+    const rIdx = props?.modelValue?.widgets?.length - 1 - index;
     const newArray = _cloneDeep(widgets.value)
-    newArray[index].locked = !newArray[index].locked
+    newArray[rIdx].locked = !newArray[rIdx].locked
     widgets.value = newArray
 }
 
