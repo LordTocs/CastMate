@@ -3,9 +3,9 @@
 ///////////////////////////
 
 export function generateEmptyAutomation() {
-    return {
-        version: "1.0",
-        description: "",
-        actions: [],
-    }
+	return {
+		version: "1.0",
+		description: "",
+		actions: [],
+	}
 }

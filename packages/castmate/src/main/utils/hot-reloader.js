@@ -1,38 +1,30 @@
-import YAML from 'yaml'
+import YAML from "yaml"
 import fs from "fs"
 
-export class HotReloader
-{
-	constructor(filename, onChange, onError)
-	{
-		if (!onChange)
-			throw new Error("OnChange is required");
+export class HotReloader {
+	constructor(filename, onChange, onError) {
+		if (!onChange) throw new Error("OnChange is required")
 
-		this.filename = filename;
-		this.onChange = onChange;
-		this.onError = onError;
+		this.filename = filename
+		this.onChange = onChange
+		this.onError = onError
 
-		this.data = this._load();
+		this.data = this._load()
 		this.watcher = fs.watchFile(this.filename, () => {
-			try
-			{
-				const newData = this._load();
-				const oldData = this.data;
-				this.data = newData;
-				onChange(newData, oldData);
-			}
-			catch(err)
-			{
-				if (this.onError)
-				{
-					this.onError(err);
+			try {
+				const newData = this._load()
+				const oldData = this.data
+				this.data = newData
+				onChange(newData, oldData)
+			} catch (err) {
+				if (this.onError) {
+					this.onError(err)
 				}
 			}
-		});
+		})
 	}
 
-	_load()
-	{
-		return YAML.parse(fs.readFileSync(this.filename, 'utf-8')) || {};
+	_load() {
+		return YAML.parse(fs.readFileSync(this.filename, "utf-8")) || {}
 	}
 }

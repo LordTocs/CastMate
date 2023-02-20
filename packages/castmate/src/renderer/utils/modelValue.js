@@ -1,5 +1,5 @@
-import _cloneDeep from 'lodash/cloneDeep'
-import { computed } from 'vue';
+import _cloneDeep from "lodash/cloneDeep"
+import { computed } from "vue"
 
 /*
 //NESTED MODEL VALUES IS HARD D:
@@ -94,85 +94,84 @@ export function mapModelObj(schema) {
     }
 }
 */
-export function mapModelValues(subvalues, varname="modelValue") {
-    const result = {};
+export function mapModelValues(subvalues, varname = "modelValue") {
+	const result = {}
 
-    for (let sv of subvalues) {
-        result[sv] = {
-            get() {
-                return this[varname] ? this[varname][sv] : null;
-            },
-            set(newValue) {
-                const newObj = _cloneDeep(this[varname]);
-                newObj[sv] = newValue;
-                this.$emit(`update:${varname}`, newObj);
-            }
-        }
-    }
+	for (let sv of subvalues) {
+		result[sv] = {
+			get() {
+				return this[varname] ? this[varname][sv] : null
+			},
+			set(newValue) {
+				const newObj = _cloneDeep(this[varname])
+				newObj[sv] = newValue
+				this.$emit(`update:${varname}`, newObj)
+			},
+		}
+	}
 
-    return result;
+	return result
 }
 
-export function mapModel(varname="modelValue", as="modelObj") {
-    return {
-        [as]: {
-            get() {
-                return this[varname];
-            },
-            set(newValue) {
-                this.$emit(`update:${varname}`, newValue);
-            }
-        }
-    }
+export function mapModel(varname = "modelValue", as = "modelObj") {
+	return {
+		[as]: {
+			get() {
+				return this[varname]
+			},
+			set(newValue) {
+				this.$emit(`update:${varname}`, newValue)
+			},
+		},
+	}
 }
 
-export function defineModel(varName="modelValue", propSpec={}) {
-    const prop = defineProps({
-        [varName]: propSpec
-    })
+export function defineModel(varName = "modelValue", propSpec = {}) {
+	const prop = defineProps({
+		[varName]: propSpec,
+	})
 
-    const emitName = `update:${modelValue}`;
-    const emit = defineEmits([emitName])
+	const emitName = `update:${modelValue}`
+	const emit = defineEmits([emitName])
 
-    return computed({
-        get() {
-            return prop[varName];
-        },
-        set(value) {
-            emit(emitName, value)
-        }
-    })
+	return computed({
+		get() {
+			return prop[varName]
+		},
+		set(value) {
+			emit(emitName, value)
+		},
+	})
 }
 
-export function useModel(props, emit, varName="modelValue") {
-    const emitName = `update:${varName}`;
-    return computed({
-        get() {
-            return props[varName];
-        },
-        set(value) {
-            emit(emitName, value)
-        }
-    })
+export function useModel(props, emit, varName = "modelValue") {
+	const emitName = `update:${varName}`
+	return computed({
+		get() {
+			return props[varName]
+		},
+		set(value) {
+			emit(emitName, value)
+		},
+	})
 }
 
-export function useModelValues(props, emit, subValues, varName="modelValue")
-{
-    const result = {};
+export function useModelValues(props, emit, subValues, varName = "modelValue") {
+	const result = {}
 
-    for (let sv of subValues) {
-        result[sv] = computed({
-            get() {
-                return props[varName] ? props[varName][sv] : null;
-            },
-            set(newValue) {
-                const newObj = _cloneDeep(props[varName]) || {};
-                console.log(newObj)
-                newObj[sv] = newValue;
-                emit(`update:${varName}`, newObj);
-            }
-        })
-    }
+	for (let sv of subValues) {
+		result[sv] = computed({
+			get() {
+				return props[varName] ? props[varName][sv] : null
+			},
+			set(newValue) {
+				const newObj = _cloneDeep(props[varName]) || {}
+				console.log(newObj)
+				newObj[sv] = newValue
+				emit(`update:${varName}`, newObj)
+			},
+		})
+	}
 
-    return result;
+	return result
 }

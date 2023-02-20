@@ -1,51 +1,50 @@
 <template>
-  <v-text-field
-    v-if="!schema.enum"
-    v-model="modelObj"
-    @copy.stop=""
-    @paste.stop=""
-    :label="schema.name || label"
-    :clearable="!schema.required"
-    :type="!isSecret ? 'text' : 'password'"
-    :density="density"
-  />
-  <enum-input
-    v-else-if="schema.enum || schema.enumQuery"
-    :enum="schema.enum || schema.enumQuery"
-    :queryMode="!!schema.enumQuery"
-    v-model="modelObj"
-    :label="schema.name || label"
-    :clearable="!schema.required"
-    :context="context"
-    :template="schema.template"
-    :density="density"
-  />
+	<v-text-field
+		v-if="!schema.enum"
+		v-model="modelObj"
+		@copy.stop=""
+		@paste.stop=""
+		:label="schema.name || label"
+		:clearable="!schema.required"
+		:type="!isSecret ? 'text' : 'password'"
+		:density="density"
+	/>
+	<enum-input
+		v-else-if="schema.enum || schema.enumQuery"
+		:enum="schema.enum || schema.enumQuery"
+		:queryMode="!!schema.enumQuery"
+		v-model="modelObj"
+		:label="schema.name || label"
+		:clearable="!schema.required"
+		:context="context"
+		:template="schema.template"
+		:density="density"
+	/>
 </template>
 
 <script>
-import { mapModel } from "../../../utils/modelValue";
-import EnumInput from "./EnumInput.vue";
+import { mapModel } from "../../../utils/modelValue"
+import EnumInput from "./EnumInput.vue"
 export default {
-  components: {
-    EnumInput,
-  },
-  props: {
-    modelValue: {},
-    schema: {},
-    label: { type: String },
-    context: {},
-    secret: { type: Boolean, default: () => false },
-    density: { type: String },
-  },
-  emits: ['update:modelValue'],
-  computed: {
-    ...mapModel(),
-    isSecret() {
-      return this.secret || this.schema.secret
-    }
-  }
-};
+	components: {
+		EnumInput,
+	},
+	props: {
+		modelValue: {},
+		schema: {},
+		label: { type: String },
+		context: {},
+		secret: { type: Boolean, default: () => false },
+		density: { type: String },
+	},
+	emits: ["update:modelValue"],
+	computed: {
+		...mapModel(),
+		isSecret() {
+			return this.secret || this.schema.secret
+		},
+	},
+}
 </script>
 
-<style>
-</style>
+<style></style>

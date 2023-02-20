@@ -3,7 +3,7 @@
 // Electron uses ESM, but not for files loaded via configs BECAUSE REASONS
 // To work around this we use a .cjs to import the actual background ESM.
 
-(async function () {
-    globalThis.electron = await require("electron")
-    await import("./background.js")
-  })()
+;(async function () {
+	globalThis.electron = await require("electron")
+	await import("./background.js")
+})()

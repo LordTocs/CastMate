@@ -1,4 +1,5 @@
-const { SpeechEngine, AudioInput, SpeechRecognizer, CommandGrammar } = require('bindings')('ms-speech-native');
+const { SpeechEngine, AudioInput, SpeechRecognizer, CommandGrammar } =
+	require("bindings")("ms-speech-native")
 /*const { nextTick } = require('process')
 
 
@@ -42,7 +43,3 @@ nextTick(() => {
 */
 
 module.exports = { SpeechEngine, AudioInput, SpeechRecognizer, CommandGrammar }
-
-
-
-

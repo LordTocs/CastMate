@@ -1,59 +1,58 @@
-import _cloneDeep from 'lodash/cloneDeep'
+import _cloneDeep from "lodash/cloneDeep"
 
 function cleanVueSchema(schema) {
-    if (!schema)
-        return {};
+	if (!schema) return {}
 
-    const result = {
-        ...schema,
-        type: schema.type?.name
-    };
+	const result = {
+		...schema,
+		type: schema.type?.name,
+	}
 
-    if (typeof result.default === 'function')
-    {
-        result.default = result.default()
-    }
+	if (typeof result.default === "function") {
+		result.default = result.default()
+	}
 
-    if (result.type === 'Object') {
-        //Convert the object's properties too
-        if (result.properties) {
-            for (let propKey in result.properties) {
-                result.properties[propKey] = cleanVueSchema(result.properties[propKey])
-            }
-        }
-    }
-    else if (result.type === 'Array') {
-        if (result.items) {
-            result.items = cleanVueSchema(result.items)
-        }
-    }
-    return result
+	if (result.type === "Object") {
+		//Convert the object's properties too
+		if (result.properties) {
+			for (let propKey in result.properties) {
+				result.properties[propKey] = cleanVueSchema(
+					result.properties[propKey]
+				)
+			}
+		}
+	} else if (result.type === "Array") {
+		if (result.items) {
+			result.items = cleanVueSchema(result.items)
+		}
+	}
+	return result
 }
 
 function cleanVueObjectProps(objPropSchema) {
-    const result = {}
-    for (let propKey in objPropSchema) {
-        result[propKey] = cleanVueSchema(objPropSchema[propKey])
+	const result = {}
+	for (let propKey in objPropSchema) {
+		result[propKey] = cleanVueSchema(objPropSchema[propKey])
 
-        delete result[propKey]['0']
-        delete result[propKey]['1']
-    }
-    return result
+		delete result[propKey]["0"]
+		delete result[propKey]["1"]
+	}
+	return result
 }
 
 /**
  * Convert a vue props object from a compiled component into a compatible JSON schema object with data-input
- * 
- * @param {*} propSchema 
+ *
+ * @param {*} propSchema
  */
- export function cleanVuePropSchema(propSchema) {
-    propSchema = _cloneDeep(propSchema)
-    delete propSchema.size
-    delete propSchema.position
+export function cleanVuePropSchema(propSchema) {
+	propSchema = _cloneDeep(propSchema)
+	delete propSchema.size
+	delete propSchema.position
 
-    const result = {
-        type: 'Object',
-        properties: cleanVueObjectProps(propSchema)
-    }
-    return result
+	const result = {
+		type: "Object",
+		properties: cleanVueObjectProps(propSchema),
+	}
+	return result
 }

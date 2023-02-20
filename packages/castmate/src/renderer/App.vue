@@ -1,74 +1,150 @@
 <template>
-  <v-app style="max-height: 100vh">
-    <system-bar title="CastMate" />
-    
+	<v-app style="max-height: 100vh">
+		<system-bar title="CastMate" />
 
-    <v-navigation-drawer app v-model="navDrawer" style="-webkit-app-region: no-drag" v-if="loaded">
-      <v-list-item link to="/">
-        <v-list-item-title> 
-          <img src="./assets/logo-mark-dark.svg" style="height: 2.5em" class="my-1"> 
-        </v-list-item-title>
-      </v-list-item>
+		<v-navigation-drawer
+			app
+			v-model="navDrawer"
+			style="-webkit-app-region: no-drag"
+			v-if="loaded"
+		>
+			<v-list-item link to="/">
+				<v-list-item-title>
+					<img
+						src="./assets/logo-mark-dark.svg"
+						style="height: 2.5em"
+						class="my-1"
+					/>
+				</v-list-item-title>
+			</v-list-item>
 
-      <v-divider></v-divider>
+			<v-divider></v-divider>
 
-      <v-list dense nav>
-        <v-list-item link to="/profiles" prepend-icon="mdi-card-account-details-outline" title="Profiles" />
-        <v-list-item link to="/automations" prepend-icon="mdi-flash" title="Automations" />
-        <v-divider></v-divider>
-        <v-list-item link to="/overlays" prepend-icon="mdi-picture-in-picture-top-right" title="Overlays" />
-        <v-divider></v-divider>
-        <v-list-item link to="/streamplans" prepend-icon="mdi-notebook" title="Stream Plans" />
-        <v-divider></v-divider>
-        <v-list-item link to="/variables" prepend-icon="mdi-variable" title="Variables" />
-        <v-list-item link to="/rewards" prepend-icon="mdi-star-circle-outline" title="Rewards" />
-        <v-divider></v-divider>
-        <v-list-item tag="a" href="https://www.spellcast.gg/" target="_blank" title="SpellCast">
-          <template #prepend>
-            <img class="v-icon v-icon--size-default" src="./assets/spellcast-logo-square.svg" />
-          </template>
-        </v-list-item>
-        <v-divider></v-divider>
-        <v-list-group n-action class="settings">
-          <template #activator="{ props }">
-            <v-list-item v-bind="props" prepend-icon="mdi-cog" title="Settings" />
-          </template>
+			<v-list dense nav>
+				<v-list-item
+					link
+					to="/profiles"
+					prepend-icon="mdi-card-account-details-outline"
+					title="Profiles"
+				/>
+				<v-list-item
+					link
+					to="/automations"
+					prepend-icon="mdi-flash"
+					title="Automations"
+				/>
+				<v-divider></v-divider>
+				<v-list-item
+					link
+					to="/overlays"
+					prepend-icon="mdi-picture-in-picture-top-right"
+					title="Overlays"
+				/>
+				<v-divider></v-divider>
+				<v-list-item
+					link
+					to="/streamplans"
+					prepend-icon="mdi-notebook"
+					title="Stream Plans"
+				/>
+				<v-divider></v-divider>
+				<v-list-item
+					link
+					to="/variables"
+					prepend-icon="mdi-variable"
+					title="Variables"
+				/>
+				<v-list-item
+					link
+					to="/rewards"
+					prepend-icon="mdi-star-circle-outline"
+					title="Rewards"
+				/>
+				<v-divider></v-divider>
+				<v-list-item
+					tag="a"
+					href="https://www.spellcast.gg/"
+					target="_blank"
+					title="SpellCast"
+				>
+					<template #prepend>
+						<img
+							class="v-icon v-icon--size-default"
+							src="./assets/spellcast-logo-square.svg"
+						/>
+					</template>
+				</v-list-item>
+				<v-divider></v-divider>
+				<v-list-group n-action class="settings">
+					<template #activator="{ props }">
+						<v-list-item
+							v-bind="props"
+							prepend-icon="mdi-cog"
+							title="Settings"
+						/>
+					</template>
 
-          <v-list-item v-for="plugin in uiPlugins" :to="`/plugins/${plugin.name}`" :key="plugin.name"
-            :prepend-icon="plugin.icon ? plugin.icon : 'mdi-view-dashboard'" :title="plugin.uiName" />
+					<v-list-item
+						v-for="plugin in uiPlugins"
+						:to="`/plugins/${plugin.name}`"
+						:key="plugin.name"
+						:prepend-icon="
+							plugin.icon ? plugin.icon : 'mdi-view-dashboard'
+						"
+						:title="plugin.uiName"
+					/>
+				</v-list-group>
+				<v-divider></v-divider>
+				<v-list-item
+					@click="openMediaFolder"
+					prepend-icon="mdi-multimedia"
+					title="Open Media Folder"
+				/>
+				<v-list-item
+					link
+					to="/about"
+					prepend-icon="mdi-information-outline"
+					title="About"
+				/>
+			</v-list>
+		</v-navigation-drawer>
 
-        </v-list-group>
-        <v-divider></v-divider>
-        <v-list-item @click="openMediaFolder" prepend-icon="mdi-multimedia" title="Open Media Folder" />
-        <v-list-item link to="/about" prepend-icon="mdi-information-outline" title="About" />
-      </v-list>
-    </v-navigation-drawer>
+		<v-app-bar dense app v-if="loaded">
+			<v-app-bar-nav-icon
+				@click="navDrawer = !navDrawer"
+			></v-app-bar-nav-icon>
 
-    <v-app-bar dense app v-if="loaded">
-      <v-app-bar-nav-icon @click="navDrawer = !navDrawer"></v-app-bar-nav-icon>
+			<v-toolbar-title> {{ $route.name }}</v-toolbar-title>
 
-      <v-toolbar-title> {{ $route.name }}</v-toolbar-title>
+			<v-spacer></v-spacer>
+		</v-app-bar>
 
-      <v-spacer></v-spacer>
-    </v-app-bar>
-
-    <v-main style="max-height: 100%; overflow: auto;" v-if="loaded">
-      <router-view></router-view>
-    </v-main>
-    <v-main style="max-height: 100%" v-else>
-      <v-container fluid style="height: 100%">
-        <v-row justify="center">
-          <v-col cols="12" sm="4" style="justify-content: center; text-align: center">
-            <h1>Loading CastMate</h1>
-            <v-progress-circular indeterminate color="cyan" :size="100" :width="15" />
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-main>
-    <v-footer app>
-      <!-- -->
-    </v-footer>
-  </v-app>
+		<v-main style="max-height: 100%; overflow: auto" v-if="loaded">
+			<router-view></router-view>
+		</v-main>
+		<v-main style="max-height: 100%" v-else>
+			<v-container fluid style="height: 100%">
+				<v-row justify="center">
+					<v-col
+						cols="12"
+						sm="4"
+						style="justify-content: center; text-align: center"
+					>
+						<h1>Loading CastMate</h1>
+						<v-progress-circular
+							indeterminate
+							color="cyan"
+							:size="100"
+							:width="15"
+						/>
+					</v-col>
+				</v-row>
+			</v-container>
+		</v-main>
+		<v-footer app>
+			<!-- -->
+		</v-footer>
+	</v-app>
 </template>
 
 <script>
@@ -78,8 +154,8 @@ import { useQueueStore } from "./store/queues"
 import { usePathStore } from "./store/paths"
 import { useSettingsStore } from "./store/settings"
 import { useRemoteTemplateStore } from "./utils/templates"
-import { useResourceStore } from './store/resources'
-import { useVariableStore } from './store/variables'
+import { useResourceStore } from "./store/resources"
+import { useVariableStore } from "./store/variables"
 import { useAnalyticsStore } from "./utils/analytics"
 import { useOverlayStore } from "./store/overlays"
 import { usePluginStore } from "./store/plugins"
@@ -89,67 +165,67 @@ import { mapState } from "pinia"
 import { mapIpcs } from "./utils/ipcMap"
 
 export default {
-  components: {
-    SystemBar,
-  },
-  data() {
-    return {
-      navDrawer: null,
-      loaded: false,
-    };
-  },
-  computed: {
-    ...mapState(usePathStore, {
-      mediaFolder: 'mediaFolder',
-    }),
-    ...mapState(usePluginStore, {
-      pluginList: 'pluginList'
-    }),
-    uiPlugins() {
-      return this.pluginList
-        .filter(
-          (p) =>
-            p.settingsView ||
-            Object.keys(p.settings).length > 0 ||
-            Object.keys(p.secrets).length > 0
-        )
-        .sort((a, b) => {
-          let astr = a.uiName.toUpperCase();
-          let bstr = b.uiName.toUpperCase();
-          if (astr < bstr) return -1;
-          if (astr > bstr) return 1;
-          return 0;
-        });
-    },
-  },
-  methods: {
-    ...mapIpcs("core", ["waitForInit"]),
-    openMediaFolder() {
-      shell.openPath(this.mediaFolder);
-    },
-  },
-  async mounted() {
-    await this.waitForInit();
-    await usePathStore().init()
-    await useQueueStore().init()
-    await usePluginStore().init()
-    await useOverlayStore().init()
-    await useAnalyticsStore().init()
-    await useVariableStore().init()
-    await useResourceStore().init()
-    await useSettingsStore().init()
-    await useRemoteTemplateStore().init()
-    await useStreamPlanStore().init()
-    await useOSStore().init()
+	components: {
+		SystemBar,
+	},
+	data() {
+		return {
+			navDrawer: null,
+			loaded: false,
+		}
+	},
+	computed: {
+		...mapState(usePathStore, {
+			mediaFolder: "mediaFolder",
+		}),
+		...mapState(usePluginStore, {
+			pluginList: "pluginList",
+		}),
+		uiPlugins() {
+			return this.pluginList
+				.filter(
+					(p) =>
+						p.settingsView ||
+						Object.keys(p.settings).length > 0 ||
+						Object.keys(p.secrets).length > 0
+				)
+				.sort((a, b) => {
+					let astr = a.uiName.toUpperCase()
+					let bstr = b.uiName.toUpperCase()
+					if (astr < bstr) return -1
+					if (astr > bstr) return 1
+					return 0
+				})
+		},
+	},
+	methods: {
+		...mapIpcs("core", ["waitForInit"]),
+		openMediaFolder() {
+			shell.openPath(this.mediaFolder)
+		},
+	},
+	async mounted() {
+		await this.waitForInit()
+		await usePathStore().init()
+		await useQueueStore().init()
+		await usePluginStore().init()
+		await useOverlayStore().init()
+		await useAnalyticsStore().init()
+		await useVariableStore().init()
+		await useResourceStore().init()
+		await useSettingsStore().init()
+		await useRemoteTemplateStore().init()
+		await useStreamPlanStore().init()
+		await useOSStore().init()
 
-    this.loaded = true;
-  },
-};
+		this.loaded = true
+	},
+}
 </script>
 
 <style>
 html {
-  overflow: hidden !important;
+	overflow: hidden !important;
 }
 
 /*
@@ -161,30 +237,30 @@ html {
 
 /*Scroll Bars don't play nicely with the FABs so we shift it a little*/
 .v-speed-dial--right {
-  right: 32px;
+	right: 32px;
 }
 
 .v-speed-dial--bottom {
-  bottom: 32px;
+	bottom: 32px;
 }
 
 .v-btn--fixed.v-btn--right {
-  right: 32px;
+	right: 32px;
 }
 
 .v-btn--fixed.v-btn--bottom {
-  bottom: 32px;
+	bottom: 32px;
 }
 
 ::-webkit-scrollbar {
-  background-color: #424242;
+	background-color: #424242;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #616161;
+	background: #616161;
 }
 
 .settings .v-list-item {
-    --indent-padding: 0px !important;
+	--indent-padding: 0px !important;
 }
 </style>

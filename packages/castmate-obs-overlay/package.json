@@ -1,23 +1,23 @@
 {
-  "name": "castmate-obs-overlay",
-  "version": "0.0.1",
-  "description": "",
-  "main": "dist/obs-overlay/overlay.js",
-  "scripts": {
-    "dev": "vite --port 5174",
-    "build:test": "vite build --mode production"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "axios": "^1.1.3",
-    "castmate-overlay-components": "^0.0.1",
-    "events": "^3.3.0",
-    "path-browserify": "^1.0.1",
-    "pinia": "^2.0.30",
-    "vue": "^3.2.37"
-  },
-  "devDependencies": {
-    "vite-plugin-externals": "^0.5.1"
-  }
+	"name": "castmate-obs-overlay",
+	"version": "0.0.1",
+	"description": "",
+	"main": "dist/obs-overlay/overlay.js",
+	"scripts": {
+		"dev": "vite --port 5174",
+		"build:test": "vite build --mode production"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"axios": "^1.1.3",
+		"castmate-overlay-components": "^0.0.1",
+		"events": "^3.3.0",
+		"path-browserify": "^1.0.1",
+		"pinia": "^2.0.30",
+		"vue": "^3.2.37"
+	},
+	"devDependencies": {
+		"vite-plugin-externals": "^0.5.1"
+	}
 }

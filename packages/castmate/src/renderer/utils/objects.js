@@ -1,78 +1,81 @@
-import _cloneDeep from 'lodash/cloneDeep'
+import _cloneDeep from "lodash/cloneDeep"
 
 export function changeObjectKey(object, oldKey, newKey) {
-	const keyMap = { [oldKey]: newKey };
+	const keyMap = { [oldKey]: newKey }
 	const keyValues = Object.keys(object).map((key) => {
-		const newKey = key in keyMap ? keyMap[key] : key;
-		return { [newKey]: object[key] };
-	});
+		const newKey = key in keyMap ? keyMap[key] : key
+		return { [newKey]: object[key] }
+	})
 
-	return Object.assign({}, ...keyValues);
+	return Object.assign({}, ...keyValues)
 }
 
 export function constructDefaultSchema(schema) {
 	if (!schema) {
 		return null
-	}
-	else if (schema.type == "Object") {
-		const result = {};
+	} else if (schema.type == "Object") {
+		const result = {}
 		for (let prop in schema.properties) {
 			const value = constructDefaultSchema(schema.properties[prop])
 			if (value !== null) {
-				result[prop] = value;
+				result[prop] = value
 			}
 		}
-		return result;
-	}
-	else if (schema.default) {
+		return result
+	} else if (schema.default) {
 		return _cloneDeep(schema.default)
-	}
-	else {
-		return null;
+	} else {
+		return null
 	}
 }
 
 function filterSchemaInternal(object, schema, filterStr) {
 	if (object == undefined || object == null || schema == undefined) {
-		return undefined;
+		return undefined
 	}
-	if (schema.type == 'Object') {
-		let found = false;
+	if (schema.type == "Object") {
+		let found = false
 		for (let key in schema.properties) {
-			const result = filterSchemaInternal(object[key], schema.properties[key], filterStr);
+			const result = filterSchemaInternal(
+				object[key],
+				schema.properties[key],
+				filterStr
+			)
 			if (result !== undefined) {
-				found = true;
+				found = true
 			}
 			if (result) {
-				return true;
+				return true
 			}
 		}
-		return found ? false : undefined;
-	}
-	else {
+		return found ? false : undefined
+	} else {
 		if (schema.filter == true) {
-			const testStr = String(object).toLowerCase();
-			return testStr.includes(filterStr);
+			const testStr = String(object).toLowerCase()
+			return testStr.includes(filterStr)
 		}
 	}
-	return undefined;
+	return undefined
 }
 
 export function filterSchema(object, schema, filterStr, fallbackStr) {
-	if (filterStr == null || filterStr == undefined || filterStr == '')
-		return true;
+	if (filterStr == null || filterStr == undefined || filterStr == "")
+		return true
 
-	const result = filterSchemaInternal(object, schema, filterStr.toLowerCase());
+	const result = filterSchemaInternal(object, schema, filterStr.toLowerCase())
 	if (result != undefined) {
-		return result;
+		return result
 	}
-	return fallbackStr.toLowerCase().includes(filterStr.toLowerCase());
+	return fallbackStr.toLowerCase().includes(filterStr.toLowerCase())
 }
 
 function hashCode(s) {
-	return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+	return s.split("").reduce(function (a, b) {
+		a = (a << 5) - a + b.charCodeAt(0)
+		return a & a
+	}, 0)
 }
 
 export function jsonHash(obj) {
-	return hashCode(JSON.stringify(obj));
+	return hashCode(JSON.stringify(obj))
 }

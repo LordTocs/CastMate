@@ -1,14 +1,19 @@
 import { ipcMain, BrowserWindow, app } from "../utils/electronBridge.js"
-import { template } from '../state/template.js'
+import { template } from "../state/template.js"
 import path from "path"
 import { userFolder } from "../utils/configuration.js"
 import say from "say"
 import { customAlphabet } from "nanoid/non-secure"
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath } from "node:url"
 
-import { SpeechEngine, AudioInput, SpeechRecognizer, CommandGrammar } from 'ms-speech-api'
+import {
+	SpeechEngine,
+	AudioInput,
+	SpeechRecognizer,
+	CommandGrammar,
+} from "ms-speech-api"
 import { nextTick } from "process"
-import util from 'util'
+import util from "util"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -18,7 +23,7 @@ export default {
 	icon: "mdi-volume-high",
 	color: "#62894F",
 	async init() {
-		this.idgen = customAlphabet('1234567890abcdef', 10)
+		this.idgen = customAlphabet("1234567890abcdef", 10)
 
 		this.audioWindow = new BrowserWindow({
 			width: 100,
@@ -28,88 +33,95 @@ export default {
 				nodeIntegration: true,
 				contextIsolation: false,
 				enableRemoteModule: true,
-			}
-		});
+			},
+		})
 
 		//If we're packaged this file is in 'dist/electron/main' so we go up to electron and then into renderer
 		//If we're not packaged we nav up to the public directory
-		const htmlPath = app.isPackaged ? path.join(__dirname, '../renderer') : path.join(__dirname, '../../../public');
+		const htmlPath = app.isPackaged
+			? path.join(__dirname, "../renderer")
+			: path.join(__dirname, "../../../public")
 
-		this.audioWindow.loadFile(path.join(htmlPath, "sounds.html"));
+		this.audioWindow.loadFile(path.join(htmlPath, "sounds.html"))
 
-		this.audioWindowSender = this.audioWindow.webContents;
+		this.audioWindowSender = this.audioWindow.webContents
 
-		this.voiceCache = null;
+		this.voiceCache = null
 
-		this.speechRecognizer = new SpeechRecognizer(SpeechEngine.getDefaultEngine(), AudioInput.getDefaultInput());
+		this.speechRecognizer = new SpeechRecognizer(
+			SpeechEngine.getDefaultEngine(),
+			AudioInput.getDefaultInput()
+		)
 
 		this.speechRecognizer.setRecognitionCallback((phrase, confidence) => {
 			this.logger.info(`Voice Command(${confidence}): ${phrase}`)
 			this.triggers.voiceCommand({ phrase, confidence })
 		})
 
-		this.speechCommandGrammer = new CommandGrammar(this.speechRecognizer);
+		this.speechCommandGrammer = new CommandGrammar(this.speechRecognizer)
 
 		nextTick(() => {
 			//For whatever reason nextTick is required to properly start the damn mic.
-			this.speechRecognizer.enableMicrophone();
+			this.speechRecognizer.enableMicrophone()
 		})
 	},
 	async onProfilesChanged(activeProfiles, inactiveProfiles) {
-        this.activeCommands = new Set();
+		this.activeCommands = new Set()
 
-		this.speechCommandGrammer.deactivate();
-        //Handle rewards
-        for (let activeProf of activeProfiles) {
-			const speechTriggers = activeProf?.triggers?.sounds?.voiceCommand;
+		this.speechCommandGrammer.deactivate()
+		//Handle rewards
+		for (let activeProf of activeProfiles) {
+			const speechTriggers = activeProf?.triggers?.sounds?.voiceCommand
 
-			if (!speechTriggers)
-				continue;
+			if (!speechTriggers) continue
 
-			for (let speechTrigger of speechTriggers)
-			{
+			for (let speechTrigger of speechTriggers) {
 				if (speechTrigger.config.phrase) {
-					this.activeCommands.add(speechTrigger.config.phrase);
+					this.activeCommands.add(speechTrigger.config.phrase)
 				}
 			}
-        }
+		}
 
-        this.logger.info(`Active Speech Commands: ${util.inspect(this.activeCommands)}`);
+		this.logger.info(
+			`Active Speech Commands: ${util.inspect(this.activeCommands)}`
+		)
 
-        this.speechCommandGrammer.setCommands(Array.from(this.activeCommands));
+		this.speechCommandGrammer.setCommands(Array.from(this.activeCommands))
 
-		this.speechCommandGrammer.activate();
-    },
+		this.speechCommandGrammer.activate()
+	},
 	methods: {
 		getFullFilepath(filename) {
-			return path.resolve(path.join(userFolder, 'sounds', filename));
+			return path.resolve(path.join(userFolder, "sounds", filename))
 		},
 		playAudioFile(filename, volume) {
 			if (!this.audioWindowSender) {
-				this.logger.error("Audio Window Not Available");
-				return;
+				this.logger.error("Audio Window Not Available")
+				return
 			}
-			const globalVolume = this.settings.globalVolume != undefined ? (this.settings.globalVolume / 100) : 1.0;
+			const globalVolume =
+				this.settings.globalVolume != undefined
+					? this.settings.globalVolume / 100
+					: 1.0
 
-			this.audioWindowSender.send('play-sound', {
+			this.audioWindowSender.send("play-sound", {
 				source: filename,
-				volume: (volume != undefined ? (volume / 100) : 1.0) * globalVolume
-			});
+				volume:
+					(volume != undefined ? volume / 100 : 1.0) * globalVolume,
+			})
 		},
 		getVoices() {
-			if (!this.voiceCache)
-			{
+			if (!this.voiceCache) {
 				return new Promise((resolve, reject) => {
 					say.getInstalledVoices((err, voices) => {
-						if (err)
-							reject(err)
-						this.voiceCache = voices;
+						if (err) reject(err)
+						this.voiceCache = voices
 						resolve(voices)
 					})
 				})
 			}
-			return this.voiceCache;
-		}
+			return this.voiceCache
+		},
 	},
 	settings: {
 		globalVolume: {
@@ -118,10 +130,9 @@ export default {
 			description: "Global Volume control.",
 			slider: [0.0, 1.0],
 			default: 1.0,
-		}
+		},
 	},
-	secrets: {
-	},
+	secrets: {},
 	actions: {
 		sound: {
 			name: "Sound",
@@ -131,7 +142,7 @@ export default {
 					sound: {
 						type: "FilePath",
 						recursive: true,
-						path: './sounds/',
+						path: "./sounds/",
 						name: "Sound File",
 					},
 					volume: {
@@ -143,14 +154,17 @@ export default {
 							min: 0,
 							max: 100,
 							step: 1,
-						}
-					}
-				}
+						},
+					},
+				},
 			},
 			icon: "mdi-volume-high",
 			color: "#62894F",
 			async handler(soundData) {
-				this.playAudioFile(this.getFullFilepath(soundData.sound), soundData.volume);
+				this.playAudioFile(
+					this.getFullFilepath(soundData.sound),
+					soundData.volume
+				)
 			},
 		},
 		tts: {
@@ -170,8 +184,8 @@ export default {
 						required: true,
 						name: "Voice",
 						async enum() {
-							return await this.getVoices();
-						}
+							return await this.getVoices()
+						},
 					},
 					volume: {
 						type: Number,
@@ -182,26 +196,29 @@ export default {
 							min: 0,
 							max: 100,
 							step: 1,
-						}
-					}
-				}
+						},
+					},
+				},
 			},
 			async handler(data, context) {
-				const message = await template(data.message, context);
-				this.logger.info(`Speaking: ${message}`);
-				const soundPath = path.join(app.getPath("temp"), this.idgen() + ".wav");
+				const message = await template(data.message, context)
+				this.logger.info(`Speaking: ${message}`)
+				const soundPath = path.join(
+					app.getPath("temp"),
+					this.idgen() + ".wav"
+				)
 				say.export(message, data.voice, undefined, soundPath, (err) => {
 					if (err) {
-						this.logger.error(String(err));
-						return;
+						this.logger.error(String(err))
+						return
 					}
 
 					//this.logger.info(`Exporting to ${soundPath}`);
 
-					this.playAudioFile(soundPath, data.volume);
-				});
-			}
-		}
+					this.playAudioFile(soundPath, data.volume)
+				})
+			},
+		},
 	},
 	triggers: {
 		voiceCommand: {
@@ -210,9 +227,16 @@ export default {
 			config: {
 				type: Object,
 				properties: {
-					phrase: { type: String, name: "Phrase", filter: true},
-					confidence: { type: Number, name: "Confidence", default: 0.75, slider: { min: 0.0, max: 1.0}, required: true, preview: false }
-				}
+					phrase: { type: String, name: "Phrase", filter: true },
+					confidence: {
+						type: Number,
+						name: "Confidence",
+						default: 0.75,
+						slider: { min: 0.0, max: 1.0 },
+						required: true,
+						preview: false,
+					},
+				},
 			},
 			context: {
 				phrase: { type: String },
@@ -220,8 +244,11 @@ export default {
 			handler(config, context) {
 				if ((config.confidence ?? 0.75) > context.confidence)
 					return false
-				return context.phrase.toLowerCase().trim() == config.phrase.toLowerCase().trim();
-			}
-		}
-	}
+				return (
+					context.phrase.toLowerCase().trim() ==
+					config.phrase.toLowerCase().trim()
+				)
+			},
+		},
+	},
 }

@@ -1,90 +1,86 @@
-import { customAlphabet } from 'nanoid/non-secure';
+import { customAlphabet } from "nanoid/non-secure"
 
 export class RPCWebSocket {
-    constructor(socket) {
-        this.socket = socket;
+	constructor(socket) {
+		this.socket = socket
 
-        this.outstandingCalls = {};
-        this.handlers = {};
-        this.idGen = customAlphabet("abcdefghijklmnop0123456789", 10);
+		this.outstandingCalls = {}
+		this.handlers = {}
+		this.idGen = customAlphabet("abcdefghijklmnop0123456789", 10)
 
-        this.socket.onmessage = async (event) => {
-            let data = null;
-            try {
-                data = JSON.parse(event.data);
-            }
-            catch
-            {
-                return;
-            }
+		this.socket.onmessage = async (event) => {
+			let data = null
+			try {
+				data = JSON.parse(event.data)
+			} catch {
+				return
+			}
 
-            if ("responseId" in data) {
-                const outstandingCall = this.outstandingCalls[data.responseId];
-                if (!outstandingCall) {
-                    //error!
-                    return;
-                }
-                try {
-                    if (data.failed) {
-                        outstandingCall.reject();
-                    }
-                    else {
-                        outstandingCall.resolve(data.result);
-                    }
-                }
-                catch
-                {
-                    outstandingCall.reject();
-                }
-                finally {
-                    delete outstandingCall[data.responseId];
-                }
-            }
-            else if ("requestId" in data) {
-                const requestName = data.name;
-                const requestId = data.requestId;
-                if (!requestName) {
-                    return;
-                }
-                const args = data.args || [];
+			if ("responseId" in data) {
+				const outstandingCall = this.outstandingCalls[data.responseId]
+				if (!outstandingCall) {
+					//error!
+					return
+				}
+				try {
+					if (data.failed) {
+						outstandingCall.reject()
+					} else {
+						outstandingCall.resolve(data.result)
+					}
+				} catch {
+					outstandingCall.reject()
+				} finally {
+					delete outstandingCall[data.responseId]
+				}
+			} else if ("requestId" in data) {
+				const requestName = data.name
+				const requestId = data.requestId
+				if (!requestName) {
+					return
+				}
+				const args = data.args || []
 
-                this.handlers[requestName](requestId, ...args);
-            }
-        }
-    }
+				this.handlers[requestName](requestId, ...args)
+			}
+		}
+	}
 
-    handle(name, func) {
-        this.handlers[name] = async (requestId, ...args) => {
-            let result;
-            try {
-                result = await func(...args);
-            }
-            catch (err) {
-                await this.socket.send(JSON.stringify({
-                    responseId: requestId,
-                    failed: true
-                }))
-                return;
-            }
-            await this.socket.send(JSON.stringify({
-                responseId: requestId,
-                result
-            }))
-        }
-    }
+	handle(name, func) {
+		this.handlers[name] = async (requestId, ...args) => {
+			let result
+			try {
+				result = await func(...args)
+			} catch (err) {
+				await this.socket.send(
+					JSON.stringify({
+						responseId: requestId,
+						failed: true,
+					})
+				)
+				return
+			}
+			await this.socket.send(
+				JSON.stringify({
+					responseId: requestId,
+					result,
+				})
+			)
+		}
+	}
 
-    call(name, ...args) {
-        const promise = new Promise(async (resolve, reject) => {
-            const data = {
-                name,
-                requestId: this.idGen(),
-                args: [...args]
-            }
+	call(name, ...args) {
+		const promise = new Promise(async (resolve, reject) => {
+			const data = {
+				name,
+				requestId: this.idGen(),
+				args: [...args],
+			}
 
-            this.outstandingCalls[data.requestId] = { resolve, reject };
+			this.outstandingCalls[data.requestId] = { resolve, reject }
 
-            await this.socket.send(JSON.stringify(data));
-        })
-        return promise;
-    }
+			await this.socket.send(JSON.stringify(data))
+		})
+		return promise
+	}
 }

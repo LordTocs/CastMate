@@ -1,117 +1,115 @@
 //https://medium.com/vue-mastery/the-best-explanation-of-javascript-reactivity-fea6112dd80d
-import { AsyncLocalStorage } from 'node:async_hooks';
-import logger from '../utils/logger';
+import { AsyncLocalStorage } from "node:async_hooks"
+import logger from "../utils/logger"
 
-const dependencyAsyncStorage = new AsyncLocalStorage();
+const dependencyAsyncStorage = new AsyncLocalStorage()
 
 class Dependency {
 	constructor() {
-		this.subscribers = [];
+		this.subscribers = []
 	}
 
 	addSubscriber(watcher) {
 		if (this.subscribers.includes(watcher)) {
-			return;
+			return
 		}
 
-		this.subscribers.push(watcher);
-		watcher.dependencies.push(this);
+		this.subscribers.push(watcher)
+		watcher.dependencies.push(this)
 	}
 
 	removeSubscriber(watcher) {
-		let idx = this.subscribers.findIndex((w) => w == watcher);
+		let idx = this.subscribers.findIndex((w) => w == watcher)
 
 		if (idx != -1) {
-			this.subscribers.splice(idx, 1);
+			this.subscribers.splice(idx, 1)
 		}
 	}
 
 	notify() {
 		for (let subscriber of this.subscribers) {
-			subscriber.update();
+			subscriber.update()
 		}
 	}
 
 	depend() {
 		//Pull the watcher out of the sync store.
-		const watcher = dependencyAsyncStorage.getStore();
+		const watcher = dependencyAsyncStorage.getStore()
 		if (watcher) {
 			this.addSubscriber(watcher)
 		}
 	}
 }
 
-
 export class Watcher {
 	constructor(func) {
-		this.func = func;
-		this.dependencies = [];
+		this.func = func
+		this.dependencies = []
 	}
 
 	static async watchAsync(func) {
-		const watcher = new Watcher(func);
+		const watcher = new Watcher(func)
 
 		await dependencyAsyncStorage.run(watcher, async () => {
 			await func()
 		})
 
-		return watcher;
+		return watcher
 	}
 
 	update() {
-		this.func();
+		this.func()
 	}
 
 	unsubscribe() {
 		for (let dep of this.dependencies) {
-			dep.removeSubscriber(this);
+			dep.removeSubscriber(this)
 		}
 
-		this.dependencies = [];
+		this.dependencies = []
 	}
 }
 export function createReactiveProperty(obj, key) {
 	let observable = {
 		dependency: new Dependency(),
 		internalValue: obj[key],
-	};
+	}
 
 	if (!obj.__reactivity__) {
 		Object.defineProperty(obj, "__reactivity__", {
 			enumerable: false,
 			writable: true,
-			value: {}
-		});
+			value: {},
+		})
 	}
 
-	obj.__reactivity__[key] = observable;
+	obj.__reactivity__[key] = observable
 
 	Object.defineProperty(obj, key, {
 		get() {
-			observable.dependency.depend();
-			return observable.internalValue;
+			observable.dependency.depend()
+			return observable.internalValue
 		},
 		set(value) {
 			if (observable.internalValue !== value) {
-				observable.internalValue = value;
-				observable.dependency.notify();
+				observable.internalValue = value
+				observable.dependency.notify()
 			}
 		},
-		configurable: true
+		configurable: true,
 	})
 }
 
 export function deleteReactiveProperty(obj, key) {
-	if (!obj.__reactivity__)
-		return;
+	if (!obj.__reactivity__) return
 
-	delete obj.__reactivity__[key];
-	delete obj[key];
+	delete obj.__reactivity__[key]
+	delete obj[key]
 }
 
 export function reactify(obj) {
 	for (let key in obj) {
-		createReactiveProperty(obj, key);
+		createReactiveProperty(obj, key)
 	}
 }
 
@@ -120,70 +118,62 @@ export function reactiveCopyProp(target, obj, key) {
 		Object.defineProperty(target, "__reactivity__", {
 			enumerable: false,
 			writable: true,
-			value: {}
-		});
+			value: {},
+		})
 	}
 
-	if (!obj.__reactivity__)
-	{
+	if (!obj.__reactivity__) {
 		logger.error("Attempted To reactive Copy from a non-reactive variable!")
 		return false
 	}
 
 	let sourceReactivity = obj.__reactivity__[key]
-	if (!sourceReactivity)
-	{
-		return false;
+	if (!sourceReactivity) {
+		return false
 	}
 	//Share the reactivity info
-	target.__reactivity__[key] = sourceReactivity;
+	target.__reactivity__[key] = sourceReactivity
 
-	if (key in target)
-	{
-		delete target[key];
+	if (key in target) {
+		delete target[key]
 	}
 
 	Object.defineProperty(target, key, {
 		enumerable: true,
 		get: () => {
-			target.__reactivity__[key].dependency.depend();
-			return target.__reactivity__[key].internalValue;
+			target.__reactivity__[key].dependency.depend()
+			return target.__reactivity__[key].internalValue
 		},
 		set: (value) => {
 			if (target.__reactivity__[key].internalValue !== value) {
-				target.__reactivity__[key].internalValue = value;
-				target.__reactivity__[key].dependency.notify();
+				target.__reactivity__[key].internalValue = value
+				target.__reactivity__[key].dependency.notify()
 			}
 		},
-		configurable: true
+		configurable: true,
 	})
 }
 
-
 export function reactiveCopy(target, obj, onNewKey = null) {
 	for (let key in obj) {
-		
-		if (key in target)
-			continue;
+		if (key in target) continue
 
-		reactiveCopyProp(target, obj, key);
+		reactiveCopyProp(target, obj, key)
 
 		if (onNewKey) {
-			onNewKey(key);
+			onNewKey(key)
 		}
 	}
 }
 
-export function onStateChange(obj, name, func, options={ immediate: false})
-{
-	const watcher = new Watcher(func);
+export function onStateChange(obj, name, func, options = { immediate: false }) {
+	const watcher = new Watcher(func)
 
-	obj.__reactivity__[name].dependency.addSubscriber(watcher);
+	obj.__reactivity__[name].dependency.addSubscriber(watcher)
 
 	if (options.immediate) {
-		watcher.update();
+		watcher.update()
 	}
 
-	return watcher;
+	return watcher
 }
-

@@ -1,5 +1,5 @@
 <template>
-    <p class="select-dummy" ref="dummy">...</p>
+	<p class="select-dummy" ref="dummy">...</p>
 </template>
 
 <script>
@@ -9,22 +9,22 @@
 // some text in the dom so the oncopy event fires when Ctrl+C is pressed.
 
 export default {
-    methods: {
-        select() {
-            const range = document.createRange();
-            range.selectNodeContents(this.$refs.dummy);
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-        } 
-    }
+	methods: {
+		select() {
+			const range = document.createRange()
+			range.selectNodeContents(this.$refs.dummy)
+			const selection = window.getSelection()
+			selection.removeAllRanges()
+			selection.addRange(range)
+		},
+	},
 }
 </script>
 
 <style scoped>
-    .select-dummy {
-        font-size: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
+.select-dummy {
+	font-size: 0 !important;
+	padding: 0 !important;
+	margin: 0 !important;
+}
 </style>

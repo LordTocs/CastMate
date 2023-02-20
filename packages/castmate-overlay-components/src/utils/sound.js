@@ -1,30 +1,25 @@
-import { inject } from 'vue'
+import { inject } from "vue"
 
 export function useSoundPlayer() {
-    const isEditor = inject('isEditor')
-    const mediaFolder = inject('mediaFolder')
+	const isEditor = inject("isEditor")
+	const mediaFolder = inject("mediaFolder")
 
-    return {
-        playSound(mediaFile) {
-            console.log("Playing", mediaFile)
-            if (!mediaFile)
-                return
-            
-            let fullFile = null;
-            if (isEditor)
-            {
-                fullFile = `${path.resolve(mediaFolder.value, mediaFile)}`
-            }
-            else
-            {
-                fullFile = `http://${window.location.host}/media/${mediaFile}`
-            }
+	return {
+		playSound(mediaFile) {
+			console.log("Playing", mediaFile)
+			if (!mediaFile) return
 
-            let audio = new Audio(fullFile);
-            audio.addEventListener("canplaythrough", event =>
-            {
-                audio.play();
-            })
-        }
-    }
+			let fullFile = null
+			if (isEditor) {
+				fullFile = `${path.resolve(mediaFolder.value, mediaFile)}`
+			} else {
+				fullFile = `http://${window.location.host}/media/${mediaFile}`
+			}
+
+			let audio = new Audio(fullFile)
+			audio.addEventListener("canplaythrough", (event) => {
+				audio.play()
+			})
+		},
+	}
 }

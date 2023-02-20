@@ -1,42 +1,41 @@
 <template>
-    <div ref="frame">
-        <slot></slot>
-    </div>
+	<div ref="frame">
+		<slot></slot>
+	</div>
 </template>
 
 <script setup>
-import { computed, onMounted, provide, ref } from 'vue'
+import { computed, onMounted, provide, ref } from "vue"
 
 const props = defineProps({
-    workspaceWidth: { type: Number },
-    workspaceHeight: { type: Number }
+	workspaceWidth: { type: Number },
+	workspaceHeight: { type: Number },
 })
 
-const frame = ref(null);
-provide('dragFrame', frame);
+const frame = ref(null)
+provide("dragFrame", frame)
 
-const frameWidth = ref(0);
+const frameWidth = ref(0)
 
 const frameResizeObserver = new ResizeObserver((entries) => {
-    for (let entry of entries) {
-        //const sizeBox = entry.contentBoxSize[0];
-        frameWidth.value = entry.contentRect.width;
-    }
-});
-
-onMounted(() => {
-    frameResizeObserver.observe(frame.value);
+	for (let entry of entries) {
+		//const sizeBox = entry.contentBoxSize[0];
+		frameWidth.value = entry.contentRect.width
+	}
 })
 
+onMounted(() => {
+	frameResizeObserver.observe(frame.value)
+})
 
 const renderScale = computed(() => {
-    return frameWidth.value / props.workspaceWidth;
+	return frameWidth.value / props.workspaceWidth
 })
 
 defineExpose({
-    renderScale,
-    frame
+	renderScale,
+	frame,
 })
 
-provide('renderScale', renderScale);
+provide("renderScale", renderScale)
 </script>

@@ -1,48 +1,47 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
-import Profiles from "../views/Profiles.vue";
-import ProfileEditor from "../views/ProfileEditor.vue";
+import { createRouter, createWebHashHistory } from "vue-router"
+import Profiles from "../views/Profiles.vue"
+import ProfileEditor from "../views/ProfileEditor.vue"
 
-import Automations from "../views/Automations.vue";
-import AutomationEditor from "../views/AutomationEditor.vue";
+import Automations from "../views/Automations.vue"
+import AutomationEditor from "../views/AutomationEditor.vue"
 
 import Overlays from "../views/Overlays.vue"
 import OverlayEditor from "../views/OverlayEditor.vue"
 
-import Plans from '../views/Plans.vue';
-import PlanEditor from '../views/PlanEditor.vue';
+import Plans from "../views/Plans.vue"
+import PlanEditor from "../views/PlanEditor.vue"
 
-import Plugin from "../views/Plugin.vue";
-import Rewards from "../views/Rewards.vue";
-import Variables from '../views/Variables.vue';
-import Landing from '../views/Landing.vue';
-import About from '../views/About.vue';
-
+import Plugin from "../views/Plugin.vue"
+import Rewards from "../views/Rewards.vue"
+import Variables from "../views/Variables.vue"
+import Landing from "../views/Landing.vue"
+import About from "../views/About.vue"
 
 const routes = [
 	{
-		path: '/',
+		path: "/",
 		name: "CastMate",
-		component: Landing
+		component: Landing,
 	},
 	{
-		path: '/about',
+		path: "/about",
 		name: "About",
 		component: About,
 	},
 	{
-		path: '/streamplans',
+		path: "/streamplans",
 		name: "Stream Plans",
-		component: Plans
+		component: Plans,
 	},
 	{
-		path: '/streamplans/:planId',
+		path: "/streamplans/:planId",
 		name: "Stream Plan Editor",
-		component: PlanEditor
+		component: PlanEditor,
 	},
 	{
 		path: "/profiles",
 		name: "Profiles",
-		component: Profiles
+		component: Profiles,
 	},
 
 	{
@@ -53,7 +52,7 @@ const routes = [
 	{
 		path: "/profiles/:profile",
 		name: "Profile Editor",
-		component: ProfileEditor
+		component: ProfileEditor,
 	},
 	{
 		path: "/automations",
@@ -78,18 +77,18 @@ const routes = [
 	{
 		path: "/plugins/:pluginName",
 		name: "Plugin Settings",
-		component: Plugin
+		component: Plugin,
 	},
 	{
 		path: "/rewards",
 		name: "Channel Point Rewards",
-		component: Rewards
-	}
+		component: Rewards,
+	},
 ]
 
 const router = createRouter({
 	history: createWebHashHistory(),
-	routes
+	routes,
 })
 
 export default router

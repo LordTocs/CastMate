@@ -1,26 +1,26 @@
 {
-  "name": "castmate-monorepo",
-  "version": "0.4.0",
-  "description": "",
-  "private": true,
-  "scripts": {
-    "build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build",
-    "buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish",
-    "dev": "node ./vite-util/multi-vite.mjs",
-    "format": "prettier . --write"
-  },
-  "keywords": [],
-  "workspaces": [
-    "packages/*"
-  ],
-  "author": "LordTocs",
-  "license": "AGPL",
-  "devDependencies": {
-    "eslint": "^8.34.0",
-    "eslint-plugin-vue": "^9.9.0",
-    "prettier": "^2.8.4",
-    "vite": "^3.1.1",
-    "vite-plugin-inspect": "^0.7.1"
-  },
-  "packageManager": "yarn@3.2.4"
+	"name": "castmate-monorepo",
+	"version": "0.4.0",
+	"description": "",
+	"private": true,
+	"scripts": {
+		"build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build",
+		"buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish",
+		"dev": "node ./vite-util/multi-vite.mjs",
+		"format": "prettier . --write"
+	},
+	"keywords": [],
+	"workspaces": [
+		"packages/*"
+	],
+	"author": "LordTocs",
+	"license": "AGPL",
+	"devDependencies": {
+		"eslint": "^8.34.0",
+		"eslint-plugin-vue": "^9.9.0",
+		"prettier": "^2.8.4",
+		"vite": "^3.1.1",
+		"vite-plugin-inspect": "^0.7.1"
+	},
+	"packageManager": "yarn@3.2.4"
 }
