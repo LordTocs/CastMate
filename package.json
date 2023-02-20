@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build",
     "buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish",
-    "dev": "node ./vite-util/multi-vite.mjs"
+    "dev": "node ./vite-util/multi-vite.mjs",
+    "format": "prettier . --write"
   },
   "keywords": [],
   "workspaces": [
@@ -15,6 +16,9 @@
   "author": "LordTocs",
   "license": "AGPL",
   "devDependencies": {
+    "eslint": "^8.34.0",
+    "eslint-plugin-vue": "^9.9.0",
+    "prettier": "^2.8.4",
     "vite": "^3.1.1",
     "vite-plugin-inspect": "^0.7.1"
   },

@@ -1,0 +1,5 @@
+useTabs: true
+tabWidth: 4
+printWidth: 80
+vueIndentScriptAndStyle: false
+semi: false

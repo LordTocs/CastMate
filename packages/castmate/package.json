@@ -55,7 +55,6 @@
     "@mdi/font": "^6.5.95",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@vitejs/plugin-vue": "^3.0.3",
-    "@volar-plugins/prettyhtml": "^1.0.0",
     "electron": "20.0.1",
     "electron-builder": "^23.3.3",
     "electron-devtools-installer": "^3.2.0",
@@ -68,21 +67,6 @@
     "vue-router": "^4.0.16",
     "vuedraggable": "^4.1.0",
     "vuetify": "^3.1.4"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "rules": {
-      "strict": "off",
-      "no-unused-vars": "off",
-      "vue/no-unused-components": "off"
-    }
   },
   "browserslist": [
     "> 1%",
