@@ -90,7 +90,10 @@ export default {
 				this.$emit("rename", this.rewardEdit.title)
 			}
 			await this.updateReward(this.rewardEdit)
-			trackAnalytic("saveChannelReward")
+			trackAnalytic("saveChannelReward", {
+				title: this.rewardEdit.title,
+				cost: this.rewardEdit.cost
+			})
 			this.$emit("updated")
 			this.dialog = false
 		},
@@ -107,7 +110,10 @@ export default {
 			await this.createReward(this.rewardEdit)
 			this.dialog = false
 			this.$emit("created", this.rewardEdit.title)
-			trackAnalytic("createChannelReward")
+			trackAnalytic("createChannelReward", {
+				title: this.rewardEdit.title,
+				cost: this.rewardEdit.cost
+			})
 		},
 	},
 }

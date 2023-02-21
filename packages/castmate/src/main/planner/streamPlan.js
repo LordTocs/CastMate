@@ -1,6 +1,7 @@
 import { ActionQueue } from "../actions/action-queue"
 import { PluginManager } from "../pluginCore/plugin-manager"
 import { FileResource, Resource } from "../resources/resource"
+import { Analytics } from "../utils/analytics"
 import { callIpcFunc, ipcFunc } from "../utils/electronBridge"
 import logger from "../utils/logger"
 
@@ -8,11 +9,16 @@ export class StreamPlan extends FileResource {
 	static storageFolder = "streamplans/"
 
 	async start() {
-		if (this.config.startAutomation)
+		Analytics.getInstance().track("startStreamPlan", {
+			name: this.config.name,
+		})
+
+		if (this.config.startAutomation) {
 			ActionQueue.getInstance().startAutomation(
 				this.config.startAutomation,
 				{}
 			)
+		}
 		return true
 	}
 
@@ -38,10 +44,19 @@ export class StreamPlan extends FileResource {
 			)
 		}
 
+		Analytics.getInstance().track("startStreamSegment", {
+			name: segment.name,
+			hasStartAutomation: segment.startAutomation?.length > 0,
+			hasStreamInfo: !!segment.streamInfo,
+		})
+
 		return true
 	}
 
 	async end() {
+		Analytics.getInstance().track("endStreamPlan", {
+			name: this.config.name,
+		})
 		if (this.config.endAutomation)
 			ActionQueue.getInstance().startAutomation(
 				this.config.endAutomation,

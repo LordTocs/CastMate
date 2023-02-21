@@ -7,6 +7,7 @@ import { StateManager } from "../state/state-manager.js"
 import { PluginManager } from "../pluginCore/plugin-manager.js"
 import { AutomationManager } from "../automations/automation-manager.js"
 import util from "util"
+import { Analytics } from "../utils/analytics.js"
 
 let actionQueue = null
 export class ActionQueue {
@@ -236,6 +237,12 @@ export class ActionQueue {
 			return false
 		}
 
+		Analytics.getInstance().track("trigger", {
+			plugin,
+			trigger: name,
+			context: context,
+		})
+
 		return triggerHandler(context, ...args)
 	}
 
@@ -246,6 +253,13 @@ export class ActionQueue {
 	}
 
 	async _runAction(action, context) {
+		//Track analytic
+		Analytics.getInstance().track("action", {
+			plugin: action.plugin,
+			action: action.action,
+			data: action.data,
+		})
+
 		//Before delay is used by our offset calculations so it must stay.
 		if (action.beforeDelay) {
 			await sleep(action.beforeDelay * 1000)
@@ -258,7 +272,7 @@ export class ActionQueue {
 					.handler(action.data, context)
 					.catch((reason) => {
 						console.error(
-							`${action.plugin}${action.action} threw Exception!`
+							`${action.plugin}.${action.action} threw Exception!`
 						)
 						console.error(reason)
 					})

@@ -15,7 +15,6 @@ class DiscordWebHook extends FileResource {
 	}
 
 	async onLoaded() {
-		console.log("LOADED!")
 		this.client = new WebhookClient({ url: this.config.url })
 	}
 }

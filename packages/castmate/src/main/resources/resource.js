@@ -8,6 +8,7 @@ import YAML from "yaml"
 import { ResourceManager } from "./resource-manager"
 import { cleanSchemaForIPC } from "../utils/schema"
 import logger from "../utils/logger"
+import { Analytics } from "../utils/analytics"
 
 export class Resource {
 	constructor(type, spec) {
@@ -78,11 +79,15 @@ export class Resource {
 
 		this._triggerUpdate()
 
+		Analytics.getInstance().track("resourceCreated", {
+			type: this.name,
+			name: config.name,
+		})
+
 		return newResource
 	}
 
 	async load() {
-		console.log("Loading... ", this.name)
 		logger.info(`Loading ${this.name} Resources`)
 
 		this.resources = await this.resourceType.load()
@@ -96,6 +101,11 @@ export class Resource {
 
 		const r = this.resources[idx]
 		await r.deleteSelf()
+
+		Analytics.getInstance().track("resourceDeleted", {
+			type: this.name,
+			name: r.config?.name,
+		})
 
 		this.resources.splice(idx, 1)
 
@@ -130,6 +140,12 @@ export class Resource {
 		ipcFunc("resources", `${this.type}_setConfig`, async (id, config) => {
 			const r = this.getById(id)
 			await r?.setConfig(config)
+			if (r) {
+				Analytics.getInstance().track('updateResource', {
+					type: this.name,
+					name: r.config.name,
+				})
+			}
 			this._triggerUpdate()
 		})
 

@@ -2,7 +2,20 @@ import Mixpanel from "mixpanel"
 import { app, callIpcFunc, ipcMain, ipcFunc } from "./electronBridge.js"
 import logger from "./logger.js"
 
+let analytics = null;
 export class Analytics {
+	/**
+	 *
+	 * @returns {Analytics}
+	 */
+	static getInstance() {
+		if (!analytics) {
+			analytics = new Analytics();
+		}
+
+		return analytics
+	}
+
 	constructor() {
 		this.analyticsId = null
 
@@ -45,8 +58,7 @@ export class Analytics {
 			this.analyticsId,
 			{
 				...data,
-			},
-			{ $ignore_time: true }
+			}
 		)
 	}
 }

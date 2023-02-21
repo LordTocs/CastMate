@@ -53,7 +53,7 @@ async function initInternal(mainWindowSender) {
 	//Let loose the web server
 	webServices.start()
 
-	const analytics = new Analytics()
+	const analytics = Analytics.getInstance();
 
 	await ResourceManager.getInstance().initialize()
 

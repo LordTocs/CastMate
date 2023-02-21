@@ -120,13 +120,19 @@ export default {
 				automation: null,
 			}
 			this.localTriggerType = _cloneDeep(this.triggerType)
-			trackAnalytic("openTrigger")
+			trackAnalytic("openTrigger", {
+				plugin: this.localTriggerType.pluginKey,
+				trigger: this.localTriggerType.triggerKey,
+			})
 			this.dialog = true
 		},
 		async apply() {
 			await this.$refs.automationInput.saveEditedAutomation()
 			this.$emit("mapping", this.localTriggerType, this.localMapping)
-			trackAnalytic("saveTrigger", { type: this.localTriggerType })
+			trackAnalytic("saveTrigger", {
+				plugin: this.localTriggerType.pluginKey,
+				trigger: this.localTriggerType.triggerKey,
+			})
 			this.dialog = false
 		},
 		cancel() {

@@ -72,6 +72,7 @@ import loadWidget, { getAllWidgets } from "castmate-overlay-components"
 import { nanoid } from "nanoid/non-secure"
 import { constructDefaultSchema } from "../../utils/objects"
 import _cloneDeep from "lodash/cloneDeep"
+import { trackAnalytic } from "../../utils/analytics"
 
 const props = defineProps({
 	modelValue: {},
@@ -88,7 +89,7 @@ const reverseWidgets = computed({
 		return [...widgets.value].reverse()
 	},
 	set(newValue) {
-		widgets.value = newValue.reverse()
+		widgets.value = [...newValue].reverse()
 	},
 })
 
@@ -153,6 +154,10 @@ function getNewName(widgetTypeId) {
 function createWidget(widgetTypeId) {
 	const widgetType = widgetTypes.value[widgetTypeId]
 
+	trackAnalytic("createWidget", {
+		widget: widgetTypeId,
+	})
+
 	if (!widgetType) return
 
 	const newWidget = {
@@ -169,8 +174,6 @@ function createWidget(widgetTypeId) {
 			y: 0,
 		},
 	}
-
-	console.log("Emitting", newWidget)
 
 	widgets.value = [...widgets.value, newWidget]
 }

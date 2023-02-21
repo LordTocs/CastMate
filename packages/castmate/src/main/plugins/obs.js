@@ -76,6 +76,8 @@ export default {
 			this.state.streaming = outputActive
 			if (outputActive) {
 				this.analytics.track("goLive")
+			} else {
+				this.analytics.track("streamEnded")
 			}
 		})
 
