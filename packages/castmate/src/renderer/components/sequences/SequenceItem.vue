@@ -37,7 +37,7 @@
 						</v-card-subtitle>
 					</v-sheet>
 				</v-expand-transition>
-				<v-expand-transition>
+				<v-expand-transition v-if="validAction">
 					<v-sheet v-show="expanded" :color="darkestActionColor">
 						<v-card-text
 							class="grey darken-4"
@@ -82,12 +82,23 @@ export default {
 			plugins: "plugins",
 		}),
 		...mapModelValues(["data", "plugin", "action"]),
+		validAction() {
+			const plugin = this.plugins[this.plugin]
+			if (plugin) {
+				return !!plugin.actions[this.action]
+			}
+			return false
+		},
 		actionDefinition() {
 			const plugin = this.plugins[this.plugin]
 			if (plugin) {
 				return plugin.actions[this.action]
 			}
-			return undefined
+			return {
+				name: "UNKNOWN ACTION",
+				color: "#0f0f0f",
+				data: { type: Object, properties: {} }
+			}
 		},
 		actionColor() {
 			return this.actionDefinition?.color
