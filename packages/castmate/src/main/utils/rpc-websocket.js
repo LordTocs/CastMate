@@ -41,7 +41,20 @@ export class RPCWebSocket {
 				}
 				const args = data.args || []
 
-				this.handlers[requestName](requestId, ...args)
+				if (!(requestName in this.handlers))
+				{
+					console.error("Missing RPCSocket Handler", requestName)
+					this.socket.send(
+						JSON.stringify({
+							responseId: requestId,
+							failed: true,
+						})
+					)
+				}
+				else
+				{
+					this.handlers[requestName](requestId, ...args)
+				}
 			}
 		})
 	}
