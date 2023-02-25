@@ -83,11 +83,6 @@
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
-	<spellcast-hook-selector
-		v-else-if="schema.type == 'SpellcastHook'"
-		v-model="modelObj"
-		v-bind="allProps"
-	/>
 	<time-input
 		v-else-if="schema.type == 'Duration'"
 		v-model="modelObj"
@@ -145,7 +140,6 @@ import TimeInput from "./types/TimeInput.vue"
 import StringInput from "./types/StringInput.vue"
 import NumberInput from "./types/NumberInput.vue"
 import BooleanInput from "./types/BooleanInput.vue"
-import SpellcastHookSelector from "../spellcast/SpellcastHookSelector.vue"
 import ObjectInput from "./types/ObjectInput.vue"
 import ArrayInput from "./types/ArrayInput.vue"
 import AutomationSelector from "../automations/AutomationSelector.vue"
@@ -173,7 +167,6 @@ export default {
 		RangeInput,
 		TimeInput,
 		BooleanInput,
-		SpellcastHookSelector,
 		ResourceInput,
 		OverlayFontStyleInput,
 		MediaInput,

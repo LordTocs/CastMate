@@ -16,6 +16,7 @@ import Rewards from "../views/Rewards.vue"
 import Variables from "../views/Variables.vue"
 import Landing from "../views/Landing.vue"
 import About from "../views/About.vue"
+import SpellCast from "../views/SpellCast.vue"
 
 const routes = [
 	{
@@ -83,6 +84,11 @@ const routes = [
 		path: "/rewards",
 		name: "Channel Point Rewards",
 		component: Rewards,
+	},
+	{
+		path: "/spellcast",
+		name: "SpellCast",
+		component: SpellCast,
 	},
 ]
 

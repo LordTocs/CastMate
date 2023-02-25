@@ -34,6 +34,22 @@
 					title="Automations"
 				/>
 				<v-divider></v-divider>
+				<v-list-item link to="/spellcast" title="SpellCast">
+					<template #prepend>
+						<img
+							class="v-icon v-icon--size-default"
+							src="./assets/spellcast-logo-square.svg"
+						/>
+					</template>
+				</v-list-item>
+				<v-list-item
+					link
+					to="/rewards"
+					prepend-icon="mdi-star-circle-outline"
+					title="Rewards"
+				/>
+
+				<v-divider></v-divider>
 				<v-list-item
 					link
 					to="/overlays"
@@ -54,26 +70,6 @@
 					prepend-icon="mdi-variable"
 					title="Variables"
 				/>
-				<v-list-item
-					link
-					to="/rewards"
-					prepend-icon="mdi-star-circle-outline"
-					title="Rewards"
-				/>
-				<v-divider></v-divider>
-				<v-list-item
-					tag="a"
-					href="https://www.spellcast.gg/"
-					target="_blank"
-					title="SpellCast"
-				>
-					<template #prepend>
-						<img
-							class="v-icon v-icon--size-default"
-							src="./assets/spellcast-logo-square.svg"
-						/>
-					</template>
-				</v-list-item>
 				<v-divider></v-divider>
 				<v-list-group n-action class="settings">
 					<template #activator="{ props }">

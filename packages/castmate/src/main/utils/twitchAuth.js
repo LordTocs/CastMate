@@ -104,7 +104,8 @@ export class ElectronAuthManager {
 		this._accessToken = token
 		this._userId = tokenInfo.user_id
 
-		//Make sure the 
+		//TODO: Make sure the scopes match
+		//TODO: Fail the token early incase the cookies in the browser expire at the same time.
 
 		console.log("Creating Auth Provider", this._userId, this._clientId)
 

@@ -9,6 +9,7 @@ import { ResourceManager } from "./resource-manager"
 import { cleanSchemaForIPC } from "../utils/schema"
 import logger from "../utils/logger"
 import { Analytics } from "../utils/analytics"
+import _cloneDeep from "lodash/cloneDeep"
 
 export class Resource {
 	constructor(type, spec) {
@@ -95,6 +96,12 @@ export class Resource {
 		this._triggerUpdate()
 	}
 
+	async clear() {
+		this.resources = [];
+
+		this._triggerUpdate();
+	}
+
 	async deleteById(id) {
 		const idx = this.resources.findIndex((r) => r.id === id)
 		if (idx == -1) return
@@ -139,14 +146,35 @@ export class Resource {
 
 		ipcFunc("resources", `${this.type}_setConfig`, async (id, config) => {
 			const r = this.getById(id)
-			await r?.setConfig(config)
-			if (r) {
-				Analytics.getInstance().track('updateResource', {
-					type: this.name,
-					name: r.config.name,
-				})
-			}
+			if (!r) return null
+			await r.setConfig(config)
+
+			Analytics.getInstance().track('updateResource', {
+				type: this.name,
+				name: r.config.name,
+			})
+
 			this._triggerUpdate()
+			return this._transformForIPC(r)
+		})
+
+		ipcFunc("resources", `${this.type}_updateConfig`, async (id, configUpdate) => {
+			const r = this.getById(id)
+
+			if (!r) return
+
+			const newConfig = _cloneDeep(r.config)
+			Object.assign(newConfig, configUpdate)
+
+			Analytics.getInstance().track('updateResource', {
+				type: this.name,
+				name: r.config.name,
+			})
+
+			await r.setConfig(newConfig)
+			this._triggerUpdate()
+
+			return this._transformForIPC(r)
 		})
 
 		ipcFunc("resources", `${this.type}_create`, async (config) => {

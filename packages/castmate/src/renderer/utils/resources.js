@@ -78,6 +78,13 @@ export function useResourceFunctions(resourceType) {
 				_cloneDeep(config)
 			)
 		},
+		['updateConfig']: async function (id, configUpdate) {
+			return await ipcRenderer.invoke(
+				`resources_${resourceType}_updateConfig`,
+				id,
+				_cloneDeep(configUpdate)
+			)
+		},
 		[`delete`]: async function (id) {
 			return await ipcRenderer.invoke(
 				`resources_${resourceType}_delete`,
