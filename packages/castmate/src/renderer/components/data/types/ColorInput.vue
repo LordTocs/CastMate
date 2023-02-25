@@ -51,7 +51,11 @@
 			</template>
 			<div @mousedown="cardClick">
 				<v-card class="mx-1 my-1">
-					<v-color-picker v-model="sanitizedColor" />
+					<v-color-picker
+						v-model="sanitizedColor"
+						:show-swatches="topProps.schema?.enum"
+						:swatches="swatches"
+					/>
 					<select-dummy
 						ref="dummySelect"
 						@copy="copy"
@@ -86,6 +90,20 @@ const isFixedColor = computed(() => {
 	}
 
 	return !!topProps.modelValue.ref
+})
+
+const swatches = computed(() => {
+	if (!topProps.schema?.enum)
+		return []
+
+	const result = []
+	const chunkSize = 1;
+	const colors = topProps.schema.enum
+	for (let i = 0; i < colors.length; i += chunkSize) {
+		const chunk = colors.slice(i, i + chunkSize);
+		result.push(chunk)
+	}
+	return result
 })
 
 const sanitizedColor = computed({
