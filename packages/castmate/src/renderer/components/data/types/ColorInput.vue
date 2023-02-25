@@ -53,7 +53,7 @@
 				<v-card class="mx-1 my-1">
 					<v-color-picker
 						v-model="sanitizedColor"
-						:show-swatches="topProps.schema?.enum"
+						:show-swatches="!!topProps.schema?.enum"
 						:swatches="swatches"
 					/>
 					<select-dummy
