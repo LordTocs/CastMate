@@ -94,6 +94,7 @@
 							size="small"
 							icon="mdi-pencil"
 							class="mx-1"
+							variant="flat"
 							@click="$refs.editModals[i].open()"
 						/>
 					</td>
