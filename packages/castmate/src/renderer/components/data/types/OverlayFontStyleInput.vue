@@ -16,8 +16,8 @@
 			</div>
 		</v-field>
 	</v-input>
-	<v-dialog persistent v-model="dialog">
-		<v-card width="65vw">
+	<v-dialog persistent v-model="dialog" max-width="65vw">
+		<v-card>
 			<v-toolbar dense flat>
 				<v-toolbar-title class="font-weight-bold grey--text">
 					{{ props.label }}
