@@ -7,12 +7,11 @@ import { template, templateNumber } from "../state/template.js"
 import BadWords from "bad-words"
 import fs from "fs"
 import path from "path"
-import { WebSocket } from "ws"
-import axios from "axios"
 import { inRange } from "../utils/range.js"
 import { userFolder } from "../utils/configuration.js"
 import _ from "lodash"
 import { OverlayManager } from "../overlays/overlay-manager.js"
+import util from "util"
 
 //https://stackoverflow.com/questions/1968167/difference-between-dates-in-javascript/27717994
 function dateInterval(date1, date2) {
@@ -151,24 +150,15 @@ export default {
 
 			this.channelAuth = new ElectronAuthManager({
 				clientId,
-				redirectUri: `http://localhost/auth/channel/redirect`,
 				name: "Channel",
 			})
 			this.botAuth = new ElectronAuthManager({
 				clientId,
-				redirectUri: `http://localhost/auth/channel/redirect`,
 				name: "Bot",
 				scopes: ["chat:edit", "chat:read"],
 			})
 
-			const [channelAuthResult, botAuthResult] = await Promise.all([
-				this.channelAuth.trySilentAuth(),
-				await this.botAuth.trySilentAuth(),
-			])
-
-			if (channelAuthResult.error == "scopes_changed") {
-				this.state.scopesChanged = true
-			}
+			await Promise.all([this.channelAuth.init(), this.botAuth.init()])
 
 			await this.completeAuth()
 		},
@@ -202,7 +192,7 @@ export default {
 				await this.createApiClients()
 			} catch (err) {
 				this.logger.error(`Failed to create api clients`)
-				this.logger.error(`${err}`)
+				this.logger.error(`${util.inspect(err)}`)
 			}
 
 			if (!this.channelAuth || !this.channelAuth.isAuthed) {
@@ -247,21 +237,21 @@ export default {
 				await this.setupChatTriggers()
 			} catch (err) {
 				this.logger.error(`Failed to setup Chat Triggers`)
-				this.logger.error(`${err}`)
+				this.logger.error(`${util.inspect(err)}`)
 			}
 
 			try {
 				await this.setupEventSubTriggers()
 			} catch (err) {
 				this.logger.error(`Failed to setup EventSub`)
-				this.logger.error(`${err}`)
+				this.logger.error(`${util.inspect(err)}`)
 			}
 
 			try {
 				await this.setupPubSubTriggers()
 			} catch (err) {
 				this.logger.error(`Failed to set up PubSub Triggers`)
-				this.logger.error(`${err}`)
+				this.logger.error(`${util.inspect(err)}`)
 			}
 
 			await this.initConditions()
@@ -270,51 +260,50 @@ export default {
 				await this.initChannelRewards()
 			} catch (err) {
 				this.logger.error(`Failed to setup Channel Rewards`)
-				this.logger.error(`${err}`)
+				this.logger.error(`${util.inspect(err)}`)
 			}
 		},
 
 		async createApiClients() {
 			this.chatAuthProvider = null
 
-			if (this.channelAuth && this.channelAuth.isAuthed) {
+			if (this.channelAuth?.isAuthed) {
 				this.channelTwitchClient = new ApiClient({
-					authProvider: this.channelAuth,
+					authProvider: this.channelAuth.authProvider,
 				})
 
-				let channel = await this.channelTwitchClient.users.getMe(false)
+				const channel =
+					await this.channelTwitchClient.users.getUserById(
+						this.channelAuth.userId
+					)
 				this.state.channelName = channel.displayName
 				this.state.channelProfileUrl = channel.profilePictureUrl
-				this.state.channelId = await channel.id
-				this.state.accessToken =
-					this.channelAuth._accessToken.accessToken
-
+				this.state.channelId = this.channelAuth.userId
+				this.state.accessToken = this.channelAuth.accessToken
 				this.state.isAffiliate = channel.broadcasterType.length > 0
 
-				this.chatAuthProvider = this.channelAuth
+				this.chatAuthProvider = this.channelAuth.authProvider
 				this.logger.info(`Channel Signed in As ${channel.displayName}`)
 			} else {
 				this.state.channelName = null
 				this.state.channelProfileUrl = null
-
 				this.state.isAffiliate = false
-
 				this.state.channelId = null
-
 				this.logger.info(`Channel Not Signed In`)
 			}
 
-			if (this.botAuth && this.botAuth.isAuthed) {
+			if (this.botAuth?.isAuthed) {
 				this.botTwitchClient = new ApiClient({
-					authProvider: this.botAuth,
+					authProvider: this.botAuth.authProvider,
 				})
 
-				let bot = await this.botTwitchClient.users.getMe(false)
-
+				const bot = await this.botTwitchClient.users.getUserById(
+					this.botAuth.userId
+				)
 				this.state.botName = bot.displayName
 				this.state.botProfileUrl = bot.profilePictureUrl
-				this.chatAuthProvider = this.botAuth
-				this.botId = await bot.id
+				this.chatAuthProvider = this.botAuth.authProvider
+				this.botId = this.botAuth.userId
 				this.logger.info(`Bot Signed in As ${bot.displayName}`)
 			} else {
 				this.state.botName = null
@@ -470,7 +459,8 @@ export default {
 			const apiClient = this.channelTwitchClient
 
 			this.followerCache = new Set()
-			const followSub = eventSubClient.subscribeToChannelFollowEvents(
+			eventSubClient.onChannelFollow(
+				this.state.channelId,
 				this.state.channelId,
 				async (event) => {
 					if (this.followerCache.has(event.userId)) return
@@ -510,216 +500,205 @@ export default {
 				this.state.hypeTrainTotal = hypeTrainEvent.total
 			}
 
-			const trainBeginSub =
-				eventSubClient.subscribeToChannelHypeTrainBeginEvents(
-					this.state.channelId,
-					(event) => {
-						this.state.hypeTrainLevel = event.level
-						this.state.hypeTrainProgress = event.progress
-						this.state.hypeTrainGoal = event.goal
-						this.state.hypeTrainTotal = event.total
-						this.state.hypeTrainExists = true
-						this.logger.info(`Hype Train Started`)
-
-						this.triggers.hypeTrainStarted({
-							level: event.level,
-							progress: event.progress,
-							goal: event.goal,
-							total: event.total,
-						})
-					}
-				)
-
-			const trainProgressSub =
-				eventSubClient.subscribeToChannelHypeTrainProgressEvents(
-					this.state.channelId,
-					(event) => {
-						const levelUp = event.level > this.state.hypeTrainLevel
-
-						this.state.hypeTrainLevel = event.level
-						this.state.hypeTrainProgress = event.progress
-						this.state.hypeTrainGoal = event.goal
-						this.state.hypeTrainTotal = event.total
-
-						this.logger.info(`Hype Train Progressed`)
-
-						if (levelUp) {
-							this.triggers.hypeTrainLevelUp({
-								level: event.level,
-								progress: event.progress,
-								goal: event.goal,
-								total: event.total,
-							})
-						}
-					}
-				)
-
-			const trainEndSub =
-				eventSubClient.subscribeToChannelHypeTrainEndEvents(
-					this.state.channelId,
-					(event) => {
-						this.state.hypeTrainLevel = 0
-						this.state.hypeTrainProgress = 0
-						this.state.hypeTrainGoal = 0
-						this.state.hypeTrainTotal = 0
-						this.state.hypeTrainExists = false
-
-						this.logger.info(`Hype Train Ended`)
-
-						this.triggers.hypeTrainEnded({
-							level: event.level,
-							progress: event.progress,
-							goal: event.goal,
-							total: event.total,
-						})
-					}
-				)
-
-			const raidOutSub = eventSubClient.subscribeToChannelRaidEventsFrom(
+			eventSubClient.onChannelHypeTrainBegin(
 				this.state.channelId,
 				(event) => {
-					this.logger.info(
-						`Raided Out to ${event.raidedBroadcasterDisplayName}`
-					)
-					this.triggers.raidOut({
-						raidedUser: event.raidedBroadcasterDisplayName,
-						raidedUserId: event.raidedBroadcasterId,
-						raiders: event.viewers,
+					this.state.hypeTrainLevel = event.level
+					this.state.hypeTrainProgress = event.progress
+					this.state.hypeTrainGoal = event.goal
+					this.state.hypeTrainTotal = event.total
+					this.state.hypeTrainExists = true
+					this.logger.info(`Hype Train Started`)
+
+					this.triggers.hypeTrainStarted({
+						level: event.level,
+						progress: event.progress,
+						goal: event.goal,
+						total: event.total,
 					})
 				}
 			)
 
+			eventSubClient.onChannelHypeTrainProgress(
+				this.state.channelId,
+				(event) => {
+					const levelUp = event.level > this.state.hypeTrainLevel
+
+					this.state.hypeTrainLevel = event.level
+					this.state.hypeTrainProgress = event.progress
+					this.state.hypeTrainGoal = event.goal
+					this.state.hypeTrainTotal = event.total
+
+					this.logger.info(`Hype Train Progressed`)
+
+					if (levelUp) {
+						this.triggers.hypeTrainLevelUp({
+							level: event.level,
+							progress: event.progress,
+							goal: event.goal,
+							total: event.total,
+						})
+					}
+				}
+			)
+
+			eventSubClient.onChannelHypeTrainEnd(
+				this.state.channelId,
+				(event) => {
+					this.state.hypeTrainLevel = 0
+					this.state.hypeTrainProgress = 0
+					this.state.hypeTrainGoal = 0
+					this.state.hypeTrainTotal = 0
+					this.state.hypeTrainExists = false
+
+					this.logger.info(`Hype Train Ended`)
+
+					this.triggers.hypeTrainEnded({
+						level: event.level,
+						progress: event.progress,
+						goal: event.goal,
+						total: event.total,
+					})
+				}
+			)
+
+			eventSubClient.onChannelRaidFrom(this.state.channelId, (event) => {
+				this.logger.info(
+					`Raided Out to ${event.raidedBroadcasterDisplayName}`
+				)
+				this.triggers.raidOut({
+					raidedUser: event.raidedBroadcasterDisplayName,
+					raidedUserId: event.raidedBroadcasterId,
+					raiders: event.viewers,
+				})
+			})
+
 			//TODO: We need to update the state with the prediction progress, but that means reactive arrays.
 
-			const predictionBeginSub =
-				eventSubClient.subscribeToChannelPredictionBeginEvents(
-					this.state.channelId,
-					(event) => {
-						this.logger.info(`Prediction Started`)
+			eventSubClient.onChannelPredictionBegin(
+				this.state.channelId,
+				(event) => {
+					this.logger.info(`Prediction Started`)
 
-						this.state.predictionTitle = event.title
-						this.state.predictionExists = true
-						this.state.predictionOpen = true
-						let total = 0
-						for (let o of event.outcomes) {
-							total += o.channelPoints
-						}
-						this.state.predictionTotal = total
-
-						this.triggers.predictionStarted({
-							title: event.title,
-							outcomes: event.outcomes.map((o) => ({
-								title: o.title,
-								color: o.color,
-								points: 0,
-							})),
-						})
+					this.state.predictionTitle = event.title
+					this.state.predictionExists = true
+					this.state.predictionOpen = true
+					let total = 0
+					for (let o of event.outcomes) {
+						total += o.channelPoints
 					}
-				)
+					this.state.predictionTotal = total
 
-			const predictionProgressSub =
-				eventSubClient.subscribeToChannelPredictionProgressEvents(
-					this.state.channelId,
-					(event) => {
-						//this.triggers.predictionVote({ title: event.title, outcomes: event.outcomes.map(o => ({ title: o.title, color: o.color, points: o.channelPoints })) })
-						let total = 0
-						for (let o of event.outcomes) {
-							total += o.channelPoints
-						}
-						this.state.predictionTotal = total
+					this.triggers.predictionStarted({
+						title: event.title,
+						outcomes: event.outcomes.map((o) => ({
+							title: o.title,
+							color: o.color,
+							points: 0,
+						})),
+					})
+				}
+			)
+
+			eventSubClient.onChannelPredictionProgress(
+				this.state.channelId,
+				(event) => {
+					//this.triggers.predictionVote({ title: event.title, outcomes: event.outcomes.map(o => ({ title: o.title, color: o.color, points: o.channelPoints })) })
+					let total = 0
+					for (let o of event.outcomes) {
+						total += o.channelPoints
 					}
-				)
+					this.state.predictionTotal = total
+				}
+			)
 
-			const predictionLockSub =
-				eventSubClient.subscribeToChannelPredictionLockEvents(
-					this.state.channelId,
-					(event) => {
-						this.logger.info(`Prediction Locked`)
-						let total = 0
-						for (let o of event.outcomes) {
-							total += o.channelPoints
-						}
-
-						this.state.predictionOpen = false
-						this.state.predictionPending = true
-						this.state.predictionTitle = event.title
-
-						this.triggers.predictionLocked({
-							title: event.title,
-							total,
-							outcomes: event.outcomes.map((o) => ({
-								title: o.title,
-								color: o.color,
-								points: o.channelPoints,
-							})),
-						})
+			eventSubClient.onChannelPredictionLock(
+				this.state.channelId,
+				(event) => {
+					this.logger.info(`Prediction Locked`)
+					let total = 0
+					for (let o of event.outcomes) {
+						total += o.channelPoints
 					}
-				)
 
-			const predictionEndSub =
-				eventSubClient.subscribeToChannelPredictionEndEvents(
-					this.state.channelId,
-					(event) => {
-						this.logger.info(`Prediction Settled`)
-						let total = 0
-						for (let o of event.outcomes) {
-							total += o.channelPoints
-						}
+					this.state.predictionOpen = false
+					this.state.predictionPending = true
+					this.state.predictionTitle = event.title
 
-						this.state.predictionTitle = null
-						this.state.predictionPending = false
-						this.state.predictionExists = false
+					this.triggers.predictionLocked({
+						title: event.title,
+						total,
+						outcomes: event.outcomes.map((o) => ({
+							title: o.title,
+							color: o.color,
+							points: o.channelPoints,
+						})),
+					})
+				}
+			)
 
-						this.triggers.predictionSettled({
-							title: event.title,
-							total,
-							winner: {
-								title: event.winningOutcome.title,
-								color: event.winningOutcome.color,
-								points: event.winningOutcome.channelPoints,
-							},
-							outcomes: event.outcomes.map((o) => ({
-								title: o.title,
-								color: o.color,
-								points: o.channelPoints,
-							})),
-						})
+			await eventSubClient.onChannelPredictionEnd(
+				this.state.channelId,
+				(event) => {
+					this.logger.info(`Prediction Settled`)
+					let total = 0
+					for (let o of event.outcomes) {
+						total += o.channelPoints
 					}
-				)
+
+					this.state.predictionTitle = null
+					this.state.predictionPending = false
+					this.state.predictionExists = false
+
+					this.triggers.predictionSettled({
+						title: event.title,
+						total,
+						winner: {
+							title: event.winningOutcome.title,
+							color: event.winningOutcome.color,
+							points: event.winningOutcome.channelPoints,
+						},
+						outcomes: event.outcomes.map((o) => ({
+							title: o.title,
+							color: o.color,
+							points: o.channelPoints,
+						})),
+					})
+				}
+			)
 
 			////
 
-			const pollBeginSub =
-				eventSubClient.subscribeToChannelPollBeginEvents(
-					this.state.channelId,
-					(event) => {
-						this.logger.info(`Poll Started`)
+			await eventSubClient.onChannelPollBegin(
+				this.state.channelId,
+				(event) => {
+					this.logger.info(`Poll Started`)
 
-						const totalVotes = event.choices.reduce(
-							(total, choice) => total + choice.totalVotes
-						)
-						const choices = event.choices.map((c) => ({
-							title: c.title,
-							votes: c.totalVotes,
-							fraction: c.totalVotes / totalVotes,
-						}))
+					const totalVotes = event.choices.reduce(
+						(total, choice) => total + choice.totalVotes
+					)
+					const choices = event.choices.map((c) => ({
+						title: c.title,
+						votes: c.totalVotes,
+						fraction: c.totalVotes / totalVotes,
+					}))
 
-						this.state.pollExists = true
-						this.state.pollTitle = event.title
+					this.state.pollExists = true
+					this.state.pollTitle = event.title
 
-						this.triggers.pollStarted({
-							title: event.title,
-							choices,
-							totalVotes,
-						})
-					}
-				)
+					this.triggers.pollStarted({
+						title: event.title,
+						choices,
+						totalVotes,
+					})
+				}
+			)
 
 			/*eventSubClient.subscribeToChannelPollProgressEvents(this.state.channelId, (event) => {
 				this.logger.info(`Poll Progressed`)
 			})*/
 
-			const pollEndSub = eventSubClient.subscribeToChannelPollEndEvents(
+			await eventSubClient.onChannelPollEnd(
 				this.state.channelId,
 				(event) => {
 					this.logger.info(`Poll Ended`)
@@ -745,30 +724,13 @@ export default {
 				}
 			)
 
-			const subs = await Promise.all([
-				followSub,
-				trainBeginSub,
-				trainProgressSub,
-				trainEndSub,
-				raidOutSub,
-				predictionBeginSub,
-				predictionProgressSub,
-				predictionLockSub,
-				predictionEndSub,
-				pollBeginSub,
-				pollEndSub,
-			])
-
 			await eventSubClient.start()
 		},
 
 		async setupPubSubTriggers() {
-			this.basePubSubClient = new BasicPubSubClient()
-			this.pubSubClient = new PubSubClient(this.basePubSubClient)
-			await this.pubSubClient.registerUserListener(
-				this.channelAuth,
-				this.state.channelId
-			)
+			this.pubSubClient = new PubSubClient({
+				authProvider: this.channelAuth.authProvider,
+			})
 
 			await this.pubSubClient.onBits(this.state.channelId, (message) => {
 				this.logger.info(`Bits: ${message.bits}`)
@@ -942,6 +904,12 @@ export default {
 		getUserColor(userId) {
 			return this.colorCache[userId]
 		},
+
+		async isExtensionInstalled(id) {
+			const extensions = await this.getInstalledExtensions()
+
+			return !!extensions.getAllExtensions().find((e) => e.id == id)
+		},
 	},
 	ipcMethods: {
 		async getAuthStatus() {
@@ -952,21 +920,27 @@ export default {
 		},
 
 		async doBotAuth() {
-			let result = await this.botAuth.doAuth(true)
-			if (result) {
-				await this.completeAuth()
-				return true
+			try {
+				let result = await this.botAuth.doAuth(true)
+				if (result) {
+					await this.completeAuth()
+					return true
+				}
+			} finally {
+				return false
 			}
-			return false
 		},
 
 		async doChannelAuth() {
-			let result = await this.channelAuth.doAuth(true)
-			if (result) {
-				await this.completeAuth()
-				return true
+			try {
+				let result = await this.channelAuth.doAuth(true)
+				if (result) {
+					await this.completeAuth()
+					return true
+				}
+			} finally {
+				return false
 			}
-			return false
 		},
 
 		async searchCategories(query = "") {
@@ -1090,6 +1064,19 @@ export default {
 				id
 			)
 			this.rewards.splice(idx, 1)
+		},
+
+		async getInstalledExtensions() {
+			/** @type { ApiClient } */
+			const apiClient = this.channelTwitchClient
+
+			const extensions = await apiClient.users.getActiveExtensions(
+				this.state.channelId
+			)
+
+			//console.log("Extensions", extensions.getAllExtensions().map(e => ({ id: e.id, name: e.name, slot: e.slotType, slotId: e.slotId })));
+
+			return extensions
 		},
 	},
 	async onProfileLoad(profile, config) {

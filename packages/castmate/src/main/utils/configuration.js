@@ -23,9 +23,10 @@ export const variablesFilePath = path.resolve(
 )
 export const stateFilePath = path.resolve(path.join(userFolder, "state.yaml"))
 
-export function ensureFolder(path) {
-	if (!fs.existsSync(path)) {
-		fs.mkdirSync(path, { recursive: true })
+export function ensureFolder(pathlike) {
+	pathlike = path.dirname(pathlike)
+	if (!fs.existsSync(pathlike)) {
+		fs.mkdirSync(pathlike, { recursive: true })
 	}
 }
 

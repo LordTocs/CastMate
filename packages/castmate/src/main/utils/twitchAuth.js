@@ -1,7 +1,11 @@
 import qs from "querystring"
+import { userFolder } from "./configuration.js"
 import { BrowserWindow } from "./electronBridge.js"
+import { FileCache } from "./filecache.js"
 import logger from "./logger.js"
-
+import path from "path"
+import axios from "axios"
+import { StaticAuthProvider } from "@twurple/auth"
 const defaultScopes = [
 	"bits:read",
 
@@ -23,6 +27,8 @@ const defaultScopes = [
 	"channel:read:predictions", //Get the current prediction / prediction eventsub ... eventually
 	"channel:manage:predictions", //Start Predictions
 
+	"moderator:read:followers",
+
 	"clips:edit", //Create clips
 
 	"user:read:email",
@@ -32,31 +38,92 @@ const defaultScopes = [
 	"chat:read", //See the chat
 ]
 
+async function getTokenInfo(token) {
+	if (!token?.accessToken) return null
+	try {
+		const resp = await axios.get("https://id.twitch.tv/oauth2/validate", {
+			headers: {
+				Authorization: `Bearer ${token.accessToken}`,
+			},
+		})
+
+		if (resp.data?.user_id) {
+			return resp.data
+		} else {
+			return null
+		}
+	} catch {
+		return null
+	}
+}
+
 export class ElectronAuthManager {
-	constructor({ clientId, redirectUri, name, scopes }) {
+	constructor({ clientId, name, scopes }) {
 		this._clientId = clientId
-		this._redirectUri = redirectUri
+		this._redirectUri = `http://localhost/auth/channel/redirect`
 		this.name = name
 		this.scopes = scopes || defaultScopes
-	}
-
-	get clientId() {
-		return this._clientId
-	}
-
-	get currentScopes() {
-		return Array.from(this._currentScopes)
-	}
-
-	get tokenType() {
-		return "user"
+		this.cache = new FileCache(
+			path.join(userFolder, "secrets", "auth", `${name}.yaml`),
+			true
+		)
+		this.authProvider = null
 	}
 
 	get isAuthed() {
 		return this._accessToken != null
 	}
 
-	trySilentAuth() {
+	get accessToken() {
+		return this._accessToken?.accessToken
+	}
+
+	get userId() {
+		return this._userId
+	}
+
+	async init() {
+		const token = await this.cache.get()
+
+		if (await this._checkToken(token)) {
+			logger.info(`Valid Cached ${this.name} Token`)
+		 	return
+		}
+
+		logger.info(`No Cached ${this.name} Token. Trying Silent Auth`)
+		await this.trySilentAuth()
+	}
+
+	async _checkToken(token) {
+		const tokenInfo = await getTokenInfo(token)
+
+		if (!tokenInfo) {
+			return false
+		}
+
+		this._accessToken = token
+		this._userId = tokenInfo.user_id
+
+		//Make sure the 
+
+		console.log("Creating Auth Provider", this._userId, this._clientId)
+
+		this.authProvider = new StaticAuthProvider(
+			this._clientId,
+			token.accessToken,
+			token.scopes
+		)
+
+		return true
+	}
+
+	async _setToken(token) {
+		if (await this._checkToken(token)) {
+			await this.cache.set(token)
+		}
+	}
+
+	_trySilentAuth() {
 		//Tests if auth can succeed silently.
 		const promise = new Promise((resolve, reject) => {
 			logger.info(`Attempting ${this.name} Twitch Silent Auth`)
@@ -85,6 +152,7 @@ export class ElectronAuthManager {
 			let window = new BrowserWindow(windowOptions)
 
 			logger.info(`Doing Silent Auth ${this.name}`)
+
 			window.webContents.session.webRequest.onBeforeRequest(
 				(details, callback) => {
 					const url = new URL(details.url)
@@ -101,18 +169,19 @@ export class ElectronAuthManager {
 							window.destroy()
 							reject(respParams.error)
 						} else if (respParams.access_token) {
-							this._accessToken = {
+							logger.info("  Auth Success")
+							this._setToken({
 								accessToken: respParams.access_token,
-								scope: this.scopes,
+								scope: [...this.scopes],
 								refresh_token: null,
 								expiresIn: null,
 								obtainmentTimestamp: Date.now(),
-							}
+							})
+								.then(() => {
+									resolve({ token: this._accessToken })
+								})
+								.catch((err) => reject(err))
 
-							this._currentScopes = new Set(this.scopes)
-
-							logger.info("  Auth Success")
-							resolve({ accessToken: this._accessToken })
 							window.destroy()
 						} else {
 							logger.info("  Weird Extra Case")
@@ -172,8 +241,21 @@ export class ElectronAuthManager {
 			}
 
 			let window = new BrowserWindow(windowOptions)
+			let done = false
 
 			window.webContents.once("did-finish-load", () => window.show())
+
+			window.webContents.on("before-input-event", (_, input) => {
+				switch (input.key) {
+					case "Esc":
+					case "Escape":
+						window.close()
+						break
+
+					default:
+						break
+				}
+			})
 
 			window.webContents.session.webRequest.onBeforeRequest(
 				{ urls: [this._redirectUri] },
@@ -187,6 +269,7 @@ export class ElectronAuthManager {
 							details.url.substr(details.url.indexOf("#") + 1)
 						)
 						logger.info("RedirectUri Detected")
+						done = true
 						if (respParams.error || respParams.access_token) {
 							window.destroy()
 						}
@@ -197,18 +280,19 @@ export class ElectronAuthManager {
 							callback({ cancel: true })
 						} else if (respParams.access_token) {
 							logger.info("Access Token Success")
-							this._accessToken = {
+
+							this._setToken({
 								accessToken: respParams.access_token,
 								scope: this.scopes,
 								refresh_token: null,
 								expiresIn: null,
 								obtainmentTimestamp: Date.now(),
-							}
+							})
+								.then(() => {
+									resolve(this._accessToken)
+								})
+								.catch((err) => reject(err))
 
-							this._currentScopes = new Set(this.scopes)
-
-							//todo return this sucker.
-							resolve(this._accessToken)
 							callback({ cancel: true })
 						}
 					} else {
@@ -217,23 +301,15 @@ export class ElectronAuthManager {
 				}
 			)
 
+			window.on('closed', () => {
+				if (!done) {
+					reject(new Error("Window Closed"))
+				}
+			})
+
 			window.loadURL(authUrl)
 		})
 
 		return promise
-	}
-
-	async getAccessToken() {
-		if (this._accessToken) {
-			return this._accessToken
-		}
-	}
-
-	setAccessToken(token) {
-		this._accessToken = token
-	}
-
-	get refresh() {
-		return null
 	}
 }

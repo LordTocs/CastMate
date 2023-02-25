@@ -64,19 +64,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-fischer/connection@npm:^7.0.0, @d-fischer/connection@npm:^7.0.1":
-  version: 7.0.1
-  resolution: "@d-fischer/connection@npm:7.0.1"
+"@d-fischer/connection@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@d-fischer/connection@npm:8.0.2"
   dependencies:
     "@d-fischer/isomorphic-ws": ^7.0.0
-    "@d-fischer/logger": ^4.2.0
-    "@d-fischer/shared-utils": ^3.3.0
+    "@d-fischer/logger": ^4.2.1
+    "@d-fischer/shared-utils": ^3.5.0
     "@d-fischer/typed-event-emitter": ^3.3.0
     "@types/node": ^16.7.10
-    "@types/ws": ^8.5.3
+    "@types/ws": ^8.5.4
     tslib: ^2.4.1
     ws: ^8.11.0
-  checksum: 66627ea9f948c2f1ca7f7c96021cd1967d4ca7dde8ef5621e4fae0cc5a9340a0dbae9e9c20da5fbe7912856f67ad58431f0c3b6431e55b5b34bca21a2319260b
+  checksum: 6cc1066320c248e4f7db60373ab6fad24fad52553c87aa37af2d1c832b7e571dff2ddcfcdb50d73cf78b8f37706f9d136052f30e8876ed126250b83492df470a
   languageName: node
   linkType: hard
 
@@ -119,14 +119,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-fischer/logger@npm:^4.0.0, @d-fischer/logger@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "@d-fischer/logger@npm:4.2.0"
+"@d-fischer/logger@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "@d-fischer/logger@npm:4.2.1"
   dependencies:
+    "@d-fischer/detect-node": ^3.0.1
     "@d-fischer/shared-utils": ^3.2.0
-    detect-node: ^2.0.4
     tslib: ^2.0.3
-  checksum: 435dd93af1364c2c62033d3096355dcfe625c077407f8388ba91fa75b06210a6d13d7350335657c28367008b128b3bce3eb817d375ecc68b30df442cd598f23d
+  checksum: 381ad748ab7a0408248523326e1ce1d863d533b01437f6b7be7299edad26cdc046c6e06dc781484dce34dad041b273fb3fd6c0d46432193b90bb28dece466008
   languageName: node
   linkType: hard
 
@@ -151,20 +151,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-fischer/rate-limiter@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "@d-fischer/rate-limiter@npm:0.6.1"
+"@d-fischer/rate-limiter@npm:^0.7.2":
+  version: 0.7.2
+  resolution: "@d-fischer/rate-limiter@npm:0.7.2"
   dependencies:
-    "@d-fischer/logger": ^4.0.0
+    "@d-fischer/logger": ^4.2.1
     "@d-fischer/promise.allsettled": ^2.0.2
     "@d-fischer/shared-utils": ^3.2.0
     "@types/node": ^12.12.5
     tslib: ^2.0.3
-  checksum: 11320de08c90d04499fa2380e7f67a9eb8e3a7664a5f060c2875d0bc46e7d32bef9976ecf00e7ac78aaa30915ea6c9da20837ee2f6eb38973a6ba80fa5947857
+  checksum: 64a0debdadd1852709ec64f6f586f94b88c13937b61fb5f6faf952b47804a3b6ff677b4493f119b1e4f633ed2638346b4438d76245aa097dc6d68b07bcab3926
   languageName: node
   linkType: hard
 
-"@d-fischer/shared-utils@npm:^3.0.1, @d-fischer/shared-utils@npm:^3.2.0, @d-fischer/shared-utils@npm:^3.3.0":
+"@d-fischer/shared-utils@npm:^3.0.1, @d-fischer/shared-utils@npm:^3.2.0":
   version: 3.4.0
   resolution: "@d-fischer/shared-utils@npm:3.4.0"
   dependencies:
@@ -174,7 +174,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-fischer/shared-utils@npm:^3.4.0":
+"@d-fischer/shared-utils@npm:^3.4.0, @d-fischer/shared-utils@npm:^3.5.0":
   version: 3.5.0
   resolution: "@d-fischer/shared-utils@npm:3.5.0"
   dependencies:
@@ -599,127 +599,128 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@twurple/api-call@npm:5.3.4":
-  version: 5.3.4
-  resolution: "@twurple/api-call@npm:5.3.4"
+"@twurple/api-call@npm:6.0.4":
+  version: 6.0.4
+  resolution: "@twurple/api-call@npm:6.0.4"
   dependencies:
     "@d-fischer/cross-fetch": ^4.0.2
     "@d-fischer/qs": ^7.0.2
     "@d-fischer/shared-utils": ^3.4.0
-    "@twurple/common": 5.3.4
+    "@twurple/common": 6.0.4
     "@types/node-fetch": ^2.5.7
     tslib: ^2.0.3
-  checksum: ba45e9f48f8f3e2e996cc8433661997169d0de4a2661696658d665dcbd831f9dacbc56775f3cb335212f87b180816f12d0815edda43fec16063d2e5073df71b3
+  checksum: 105109dbaa4d48fe05f92bea23682b47c023d9ca59c93de73fd27717fa202eebf06109be7308a3fc3cee0d7c0e4bb0e7f400e6cd5698c94212aa4679cbf1a88d
   languageName: node
   linkType: hard
 
-"@twurple/api@npm:5.3.4, @twurple/api@npm:^5.3.4":
-  version: 5.3.4
-  resolution: "@twurple/api@npm:5.3.4"
+"@twurple/api@npm:6.0.4, @twurple/api@npm:^6.0.4":
+  version: 6.0.4
+  resolution: "@twurple/api@npm:6.0.4"
   dependencies:
     "@d-fischer/cache-decorators": ^3.0.0
     "@d-fischer/detect-node": ^3.0.1
-    "@d-fischer/logger": ^4.0.0
-    "@d-fischer/rate-limiter": ^0.6.1
+    "@d-fischer/logger": ^4.2.1
+    "@d-fischer/rate-limiter": ^0.7.2
     "@d-fischer/shared-utils": ^3.4.0
-    "@twurple/api-call": 5.3.4
-    "@twurple/common": 5.3.4
+    "@twurple/api-call": 6.0.4
+    "@twurple/common": 6.0.4
+    retry: ^0.13.1
     tslib: ^2.0.3
   peerDependencies:
-    "@twurple/auth": 5.3.4
-  checksum: c7942127edec233749209b466b26bccef3d343caeae15fddbbdc98290a5d08541514516399a32a92e724f85df0dc0ac9b8c79686522625cdb7628e67fb4594b4
+    "@twurple/auth": 6.0.4
+  checksum: effb22f462418c8af515a00cdce8954a6c6bf6581f31daf3d73dd08ce83a4a6c2999d3e09af0645b0e7c26e0131cf326d258d9a1372a391b2c45a06a274c6fe3
   languageName: node
   linkType: hard
 
-"@twurple/auth@npm:5.3.4, @twurple/auth@npm:^5.3.4":
-  version: 5.3.4
-  resolution: "@twurple/auth@npm:5.3.4"
+"@twurple/auth@npm:6.0.4, @twurple/auth@npm:^6.0.4":
+  version: 6.0.4
+  resolution: "@twurple/auth@npm:6.0.4"
   dependencies:
-    "@d-fischer/logger": ^4.0.0
+    "@d-fischer/logger": ^4.2.1
     "@d-fischer/shared-utils": ^3.4.0
-    "@twurple/api-call": 5.3.4
-    "@twurple/common": 5.3.4
+    "@twurple/api-call": 6.0.4
+    "@twurple/common": 6.0.4
     tslib: ^2.0.3
-  checksum: 923dadf5775b395f1f3ec3b7719654ee20cf50f1c3fb426402595ace8b6bf73c82bb540e49466745752d30b0018b52a764632c99f1eed02c4ee7ad7fae38f47f
+  checksum: 428c8b7138c674c7ed884b870dca5e4a69d2f29f163495845a01d73f9adc07743a90681c76c0585f6181651666e81cc8cf9b694fc30748423e04f22d6abc1795
   languageName: node
   linkType: hard
 
-"@twurple/chat@npm:^5.3.4":
-  version: 5.3.4
-  resolution: "@twurple/chat@npm:5.3.4"
+"@twurple/chat@npm:^6.0.4":
+  version: 6.0.4
+  resolution: "@twurple/chat@npm:6.0.4"
   dependencies:
     "@d-fischer/cache-decorators": ^3.0.0
     "@d-fischer/deprecate": ^2.0.2
-    "@d-fischer/logger": ^4.0.0
-    "@d-fischer/rate-limiter": ^0.6.1
+    "@d-fischer/logger": ^4.2.1
+    "@d-fischer/rate-limiter": ^0.7.2
     "@d-fischer/shared-utils": ^3.4.0
     "@d-fischer/typed-event-emitter": ^3.3.0
-    "@twurple/common": 5.3.4
-    ircv3: ^0.29.8
+    "@twurple/common": 6.0.4
+    ircv3: ^0.31.5
     tslib: ^2.0.3
   peerDependencies:
-    "@twurple/auth": 5.3.4
-  checksum: 1fd3cebd51b3f3e6b80ba160df09ad286e155391cd087679fc7cdc7d75760222fd90e4b5cf40cb8f79158103df90e4a32897315c55c0ecaa3f6704fa07ab8ea3
+    "@twurple/auth": 6.0.4
+  checksum: 44768f3c312f66962b89fdb02bcdf519046e4cbe6a1a5dd8dedc7f27f01b503b92553c27202d22b89d5679dbae60b1823f4ede2dd6491dc3eb2fbff6de4c4f34
   languageName: node
   linkType: hard
 
-"@twurple/common@npm:5.3.4":
-  version: 5.3.4
-  resolution: "@twurple/common@npm:5.3.4"
+"@twurple/common@npm:6.0.4":
+  version: 6.0.4
+  resolution: "@twurple/common@npm:6.0.4"
   dependencies:
     "@d-fischer/shared-utils": ^3.4.0
     klona: ^2.0.4
     tslib: ^2.0.3
-  checksum: 10c8cef3412aff1a651f55fbe8b113cc092cfd21337f343ceebeee16437f4b4822066aad39acacedf04e6aab4b17dbdbed00c8251d1597b8ce3d9bd344816402
+  checksum: de2d831988098ecfe7254c3819a31a50ae214f7aa041938db89535aadd7cb5fbdccab76370382d96cb350dd8883438c920cb35fc7fb228f1dee01e3b245ab8ff
   languageName: node
   linkType: hard
 
-"@twurple/eventsub-base@npm:5.3.4":
-  version: 5.3.4
-  resolution: "@twurple/eventsub-base@npm:5.3.4"
+"@twurple/eventsub-base@npm:6.0.4":
+  version: 6.0.4
+  resolution: "@twurple/eventsub-base@npm:6.0.4"
   dependencies:
-    "@d-fischer/logger": ^4.0.0
+    "@d-fischer/logger": ^4.2.1
     "@d-fischer/shared-utils": ^3.4.0
     "@d-fischer/typed-event-emitter": ^3.3.0
-    "@twurple/api": 5.3.4
-    "@twurple/auth": 5.3.4
-    "@twurple/common": 5.3.4
+    "@twurple/api": 6.0.4
+    "@twurple/auth": 6.0.4
+    "@twurple/common": 6.0.4
     tslib: ^2.0.3
-  checksum: 8fecc2c20338c37ca118a9678e4f6e24509a5389edbe3ef3524e175561aae613be8a138f401baeec27409ee7b93f251847020c766b21e5052675faaab8fb5a77
+  checksum: 144619f2efc6cdedc481a99f9b2adbda4807de5b1ff4cd615057d74b00210bd5b27793999563c2f3a70b4a8f6e0b212eeda054876210cbea940d99c88e87e370
   languageName: node
   linkType: hard
 
-"@twurple/eventsub-ws@npm:^5.3.4":
-  version: 5.3.4
-  resolution: "@twurple/eventsub-ws@npm:5.3.4"
+"@twurple/eventsub-ws@npm:^6.0.4":
+  version: 6.0.4
+  resolution: "@twurple/eventsub-ws@npm:6.0.4"
   dependencies:
-    "@d-fischer/connection": ^7.0.1
-    "@d-fischer/logger": ^4.0.0
+    "@d-fischer/connection": ^8.0.2
+    "@d-fischer/logger": ^4.2.1
     "@d-fischer/shared-utils": ^3.4.0
     "@d-fischer/typed-event-emitter": ^3.3.0
-    "@twurple/auth": 5.3.4
-    "@twurple/common": 5.3.4
-    "@twurple/eventsub-base": 5.3.4
-    tslib: ^2.0.3
-  peerDependencies:
-    "@twurple/api": 5.3.4
-  checksum: dbad9fa87123fc1f67b499691acfe4ef6579e43e1170035f5eaf34bcca8cff7baad0e3f89866e4c2aa65ac54bcb330fe88c0bbbd50b1d6f435720f7470194969
-  languageName: node
-  linkType: hard
-
-"@twurple/pubsub@npm:^5.3.4":
-  version: 5.3.4
-  resolution: "@twurple/pubsub@npm:5.3.4"
-  dependencies:
-    "@d-fischer/connection": ^7.0.0
-    "@d-fischer/logger": ^4.0.0
-    "@d-fischer/shared-utils": ^3.4.0
-    "@d-fischer/typed-event-emitter": ^3.3.0
-    "@twurple/common": 5.3.4
+    "@twurple/auth": 6.0.4
+    "@twurple/common": 6.0.4
+    "@twurple/eventsub-base": 6.0.4
     tslib: ^2.0.3
   peerDependencies:
-    "@twurple/auth": 5.3.4
-  checksum: b91380ed99ac122784b2a84dd54f9eb00a64ffba499b6e13bbf1953cbde9b5d1765ad83bc3142a2a049e0a6e672fa5aa2d3a1985dc8d9c2f5899721a9e83bfa4
+    "@twurple/api": 6.0.4
+  checksum: e7f88d7ffbf458e8c79a7b528beb1f3dadd08ff4bccffbb246642e7bcd8a255ec4bd6c2739d427cba2bbb891a7bd7aca6f3d810ef6848371188340688d071fb3
+  languageName: node
+  linkType: hard
+
+"@twurple/pubsub@npm:^6.0.4":
+  version: 6.0.4
+  resolution: "@twurple/pubsub@npm:6.0.4"
+  dependencies:
+    "@d-fischer/connection": ^8.0.2
+    "@d-fischer/logger": ^4.2.1
+    "@d-fischer/shared-utils": ^3.4.0
+    "@d-fischer/typed-event-emitter": ^3.3.0
+    "@twurple/common": 6.0.4
+    tslib: ^2.0.3
+  peerDependencies:
+    "@twurple/auth": 6.0.4
+  checksum: 15e0fd9f5a754869f32b70ff3727fa20f2bcd96ca7792a3549a284dd1589fa3a5d3b3a05f215ba4248889c98057130da19c2387bb99dd893c9c13ef9f7a6ccdb
   languageName: node
   linkType: hard
 
@@ -874,6 +875,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 0ce46f850d41383fcdc2149bcacc86d7232fa7a233f903d2246dff86e31701a02f8566f40af5f8b56d1834779255c04ec6ec78660fe0f9b2a69cf3d71937e4ae
+  languageName: node
+  linkType: hard
+
+"@types/ws@npm:^8.5.4":
+  version: 8.5.4
+  resolution: "@types/ws@npm:8.5.4"
+  dependencies:
+    "@types/node": "*"
+  checksum: fefbad20d211929bb996285c4e6f699b12192548afedbe4930ab4384f8a94577c9cd421acaad163cacd36b88649509970a05a0b8f20615b30c501ed5269038d1
   languageName: node
   linkType: hard
 
@@ -1674,11 +1684,11 @@ __metadata:
     "@mdi/font": ^6.5.95
     "@peter-murray/hue-bridge-model": ^2.0.4
     "@rollup/plugin-node-resolve": ^13.3.0
-    "@twurple/api": ^5.3.4
-    "@twurple/auth": ^5.3.4
-    "@twurple/chat": ^5.3.4
-    "@twurple/eventsub-ws": ^5.3.4
-    "@twurple/pubsub": ^5.3.4
+    "@twurple/api": ^6.0.4
+    "@twurple/auth": ^6.0.4
+    "@twurple/chat": ^6.0.4
+    "@twurple/eventsub-ws": ^6.0.4
+    "@twurple/pubsub": ^6.0.4
     "@vitejs/plugin-vue": ^3.0.3
     async-mutex: ^0.3.0
     axios: ^0.27.2
@@ -3873,19 +3883,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ircv3@npm:^0.29.8":
-  version: 0.29.10
-  resolution: "ircv3@npm:0.29.10"
+"ircv3@npm:^0.31.5":
+  version: 0.31.5
+  resolution: "ircv3@npm:0.31.5"
   dependencies:
-    "@d-fischer/connection": ^7.0.0
+    "@d-fischer/connection": ^8.0.2
     "@d-fischer/escape-string-regexp": ^5.0.0
-    "@d-fischer/logger": ^4.0.0
-    "@d-fischer/shared-utils": ^3.0.1
+    "@d-fischer/logger": ^4.2.1
+    "@d-fischer/shared-utils": ^3.5.0
     "@d-fischer/typed-event-emitter": ^3.3.0
     "@types/node": ^14.14.19
-    klona: ^2.0.4
-    tslib: ^2.0.3
-  checksum: c238391ac3caa44145faac4374305d42d45d82bbb1433d9a3c499719d8bdefa214a69909024e4277885cd9b96c04b343dba5503ca2cac135a0445c44d312c325
+    klona: ^2.0.5
+    tslib: ^2.4.1
+  checksum: 8bc43d7a3e2b55449b995b1e349a6eb3c4bdc1601d34718db86fa33ee837428564ddc7f83ec33f3e652d83e321053317c9022bc7664e62d37d9d25ff2f4fd4d0
   languageName: node
   linkType: hard
 
@@ -4286,6 +4296,13 @@ __metadata:
   version: 2.0.5
   resolution: "klona@npm:2.0.5"
   checksum: 8c976126ea252b766e648a4866e1bccff9d3b08432474ad80c559f6c7265cf7caede2498d463754d8c88c4759895edd8210c85c0d3155e6aae4968362889466f
+  languageName: node
+  linkType: hard
+
+"klona@npm:^2.0.5":
+  version: 2.0.6
+  resolution: "klona@npm:2.0.6"
+  checksum: ac9ee3732e42b96feb67faae4d27cf49494e8a3bf3fa7115ce242fe04786788e0aff4741a07a45a2462e2079aa983d73d38519c85d65b70ef11447bbc3c58ce7
   languageName: node
   linkType: hard
 
@@ -5581,6 +5598,13 @@ __metadata:
   version: 0.12.0
   resolution: "retry@npm:0.12.0"
   checksum: 623bd7d2e5119467ba66202d733ec3c2e2e26568074923bc0585b6b99db14f357e79bdedb63cab56cec47491c4a0da7e6021a7465ca6dc4f481d3898fdd3158c
+  languageName: node
+  linkType: hard
+
+"retry@npm:^0.13.1":
+  version: 0.13.1
+  resolution: "retry@npm:0.13.1"
+  checksum: 47c4d5be674f7c13eee4cfe927345023972197dbbdfba5d3af7e461d13b44de1bfd663bfc80d2f601f8ef3fc8164c16dd99655a221921954a65d044a2fc1233b
   languageName: node
   linkType: hard
 
