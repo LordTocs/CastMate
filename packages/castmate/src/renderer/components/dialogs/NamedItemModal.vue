@@ -1,6 +1,6 @@
 <template>
-	<v-dialog v-model="dialog" @keydown.esc="cancel">
-		<v-card width="35vw">
+	<v-dialog v-model="dialog" @keydown.esc="cancel" max-width="35vw">
+		<v-card>
 			<v-toolbar dense flat>
 				<v-toolbar-title
 					class="text-body-2 font-weight-bold grey--text"

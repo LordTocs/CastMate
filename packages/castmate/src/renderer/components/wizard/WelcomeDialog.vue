@@ -1,6 +1,11 @@
 <template>
-	<v-dialog persistent v-model="dialog" @keydown.esc="cancel">
-		<v-card width="85vw">
+	<v-dialog
+		persistent
+		v-model="dialog"
+		@keydown.esc="cancel"
+		max-width="85vw"
+	>
+		<v-card>
 			<p class="text-center text-h2 py-4" v-if="stage == 'welcome'">
 				Welcome to CastMate!
 			</p>

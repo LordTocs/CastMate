@@ -1,6 +1,11 @@
 <template>
-	<v-dialog v-model="dialog" width="85%" class="d-flex flex-row" persistent>
-		<v-card width="85vw">
+	<v-dialog
+		v-model="dialog"
+		max-width="85vw"
+		class="d-flex flex-row"
+		persistent
+	>
+		<v-card>
 			<v-toolbar dense flat>
 				<v-toolbar-title class="font-weight-bold grey--text">
 					{{ header }}
