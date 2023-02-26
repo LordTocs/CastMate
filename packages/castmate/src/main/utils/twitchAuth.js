@@ -13,6 +13,7 @@ const defaultScopes = [
 
 	"channel:manage:broadcast", //Change title/category, Stream Markers, Tags
 	"user:read:broadcast", //Get current values
+	"user:edit:broadcast", //Extensions
 
 	"channel:read:redemptions",
 	"channel:manage:redemptions", //Change channel point rewards
@@ -101,10 +102,18 @@ export class ElectronAuthManager {
 			return false
 		}
 
+		//TODO: Make sure the scopes match
+		const tokenScopes = new Set(tokenInfo.scopes)
+		for (let scope of this.scopes) {
+			if (!tokenScopes.has(scope)) {
+				logger.error(`Token Missing Scope:${scope}`)
+				return false
+			}
+		}
+
+		
 		this._accessToken = token
 		this._userId = tokenInfo.user_id
-
-		//TODO: Make sure the scopes match
 		//TODO: Fail the token early incase the cookies in the browser expire at the same time.
 
 		console.log("Creating Auth Provider", this._userId, this._clientId)
@@ -121,6 +130,10 @@ export class ElectronAuthManager {
 	async _setToken(token) {
 		if (await this._checkToken(token)) {
 			await this.cache.set(token)
+		} else {
+			this._accessToken = null
+			this._userId = null
+			this.authProvider = null
 		}
 	}
 

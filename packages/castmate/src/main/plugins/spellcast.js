@@ -64,6 +64,8 @@ class SpellCastButton {
 	}
 }
 
+const SPELLCAST_EXTENSION_ID = "d6rcoml9cel8i3y7amoqjsqtstwtun"
+
 export default {
 	name: "spellcast",
 	uiName: "SpellCast",
@@ -130,6 +132,7 @@ export default {
 			await this.connect()
 		} catch (err) {
 			this.logger.error("Error connecting to SpellCast")
+			this.logger.error(util.inspect(err))
 		}
 	},
 	ipcMethods: {
@@ -142,13 +145,28 @@ export default {
 				await this.connect()
 			}
 		},
+		async pokeSpellCastForConfig() {
+			this.getSpells(); //Run GetSpells, it will force user config
+		},
+		async activateExtension(slot) {
+			this.twitch.publicMethods.activateExtension(
+				SPELLCAST_EXTENSION_ID,
+				"component",
+				slot,
+				"0.0.1"
+			)
+		}
 	},
 	methods: {
 		async checkExtension() {
-			this.state.extensionActive =
-				await this.twitch.publicMethods.isExtensionInstalled(
-					"d6rcoml9cel8i3y7amoqjsqtstwtun"
-				)
+			console.log("Checking SpellCast Status")
+			const extensionStatus = await this.twitch.publicMethods.getExtensionInfo(
+				SPELLCAST_EXTENSION_ID
+			)
+
+			this.state.extensionActive = extensionStatus.active
+			this.state.extensionInstalled = extensionStatus.installed
+			this.state.extensionRequiresConfig = !extensionStatus.canActivate
 		},
 		async initApi() {
 			//TODO: Fix public methods accessor.
@@ -406,9 +424,19 @@ export default {
 			name: "Connected To Spellcast",
 			hidden: true,
 		},
-		extensionActive: {
+		extensionInstalled: {
 			type: Boolean,
 			name: "SpellCast Extension Installed",
+			hidden: true,
+		},
+		extensionActive: {
+			type: Boolean,
+			name: "SpellCast Extension Active",
+			hidden: true,
+		},
+		extensionRequiresConfig: {
+			type: Boolean,
+			name: "SpellCast Extension Is Awaiting Config String",
 			hidden: true,
 		},
 	},

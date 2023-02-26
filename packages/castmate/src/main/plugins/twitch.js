@@ -905,11 +905,35 @@ export default {
 			return this.colorCache[userId]
 		},
 
-		async isExtensionInstalled(id) {
-			const extensions = await this.getInstalledExtensions()
+		async getExtensionInfo(id) {
+			const installedExts = await this.getInstalledExtensions()
+			const activeExts = await this.getActiveExtensions()
 
-			return !!extensions.getAllExtensions().find((e) => e.id == id)
+			const installed = installedExts.find(e => e.id == id)
+			const active = activeExts.find(e => e.id == id)
+
+			console.log("Extension Info", {...installed}, {...active})
+
+			if (active) {
+				return { installed: true, active: true, canActivate: true }
+			}
+			else if (installed) {
+				return { installed: true, active: false, canActivate: installed.canActivate }
+			} else {
+				return { isntalled: false, active: false, canActivate: false }
+			}
+			
 		},
+
+		async activateExtension(id, type, slot, version) {
+			/** @type { ApiClient } */
+			const apiClient = this.channelTwitchClient
+			await apiClient.users.updateActiveExtensionsForAuthenticatedUser(this.state.channelId, {
+				[type]: {
+					[slot]: { id, active: true, version }
+				}
+			})
+		}
 	},
 	ipcMethods: {
 		async getAuthStatus() {
@@ -1070,13 +1094,26 @@ export default {
 			/** @type { ApiClient } */
 			const apiClient = this.channelTwitchClient
 
-			const extensions = await apiClient.users.getActiveExtensions(
+			const extensions = await apiClient.users.getExtensionsForAuthenticatedUser(
 				this.state.channelId
 			)
 
 			//console.log("Extensions", extensions.getAllExtensions().map(e => ({ id: e.id, name: e.name, slot: e.slotType, slotId: e.slotId })));
 
 			return extensions
+		},
+
+		async getActiveExtensions() {
+			/** @type { ApiClient } */
+			const apiClient = this.channelTwitchClient
+
+			const extensions = await apiClient.users.getActiveExtensions(
+				this.state.channelId
+			)
+
+			//console.log("Extensions", extensions.getAllExtensions().map(e => ({ id: e.id, name: e.name, slot: e.slotType, slotId: e.slotId })));
+
+			return extensions.getAllExtensions()
 		},
 	},
 	async onProfileLoad(profile, config) {
