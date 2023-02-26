@@ -425,10 +425,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mdi/font@npm:^6.5.95":
-  version: 6.9.96
-  resolution: "@mdi/font@npm:6.9.96"
-  checksum: 6d2b975501f6b1c2b03ed29baabfe1e5883636f9769353024e793f81fe51317ca3a5abe47ba931cecbc6449dc377810d0c2d6d9b1a4b01bbdcec9766cc8d409f
+"@mdi/font@npm:^7.1.96":
+  version: 7.1.96
+  resolution: "@mdi/font@npm:7.1.96"
+  checksum: db6dce72f553e844d049cc563cf89ae58dfd0f55f99f743ccbf1ca6ab644c940f50fbd78ecd91290a67ebb58fa5bae4983bbab782a6611456bd87566825c1ca4
   languageName: node
   linkType: hard
 
@@ -1681,7 +1681,7 @@ __metadata:
   resolution: "castmate@workspace:packages/castmate"
   dependencies:
     "@jaames/iro": ^5.5.2
-    "@mdi/font": ^6.5.95
+    "@mdi/font": ^7.1.96
     "@peter-murray/hue-bridge-model": ^2.0.4
     "@rollup/plugin-node-resolve": ^13.3.0
     "@twurple/api": ^6.0.4
