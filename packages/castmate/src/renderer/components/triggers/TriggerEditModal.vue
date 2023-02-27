@@ -126,8 +126,8 @@ export default {
 			}
 			this.localTriggerType = _cloneDeep(this.triggerType)
 			trackAnalytic("openTrigger", {
-				plugin: this.localTriggerType.pluginKey,
-				trigger: this.localTriggerType.triggerKey,
+				plugin: this.localTriggerType?.pluginKey,
+				trigger: this.localTriggerType?.triggerKey,
 			})
 			this.dialog = true
 		},
