@@ -28,7 +28,8 @@ const defaultScopes = [
 	"channel:read:predictions", //Get the current prediction / prediction eventsub ... eventually
 	"channel:manage:predictions", //Start Predictions
 
-	"moderator:read:followers",
+	"moderator:read:followers", //Follower eventsub
+	"moderator:manage:shoutouts", //create / react to shoutouts
 
 	"clips:edit", //Create clips
 
