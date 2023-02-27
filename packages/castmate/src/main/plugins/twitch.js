@@ -103,6 +103,13 @@ export default {
 	uiName: "Twitch",
 	icon: "mdi-twitch",
 	color: "#5E5172",
+	/**
+	 * @member {ApiClient} channelTwitchClient
+	 */
+
+	/**
+	 *
+	 */
 	async init() {
 		this.logger.info("Starting Twitch")
 
@@ -724,6 +731,18 @@ export default {
 				}
 			)
 
+			await eventSubClient.onChannelShoutoutCreate(
+				this.state.channelId, 
+				this.state.channelId,
+				(event) => {
+					this.triggers.shoutoutSent({
+						user: event.shoutedOutBroadcasterDisplayName,
+						userId: event.shoutedOutBroadcasterId,
+						userColor: this.colorCache[event.shoutedOutBroadcasterId],
+					})
+				}
+			)
+
 			await eventSubClient.start()
 		},
 
@@ -909,31 +928,36 @@ export default {
 			const installedExts = await this.getInstalledExtensions()
 			const activeExts = await this.getActiveExtensions()
 
-			const installed = installedExts.find(e => e.id == id)
-			const active = activeExts.find(e => e.id == id)
+			const installed = installedExts.find((e) => e.id == id)
+			const active = activeExts.find((e) => e.id == id)
 
-			console.log("Extension Info", {...installed}, {...active})
+			console.log("Extension Info", { ...installed }, { ...active })
 
 			if (active) {
 				return { installed: true, active: true, canActivate: true }
-			}
-			else if (installed) {
-				return { installed: true, active: false, canActivate: installed.canActivate }
+			} else if (installed) {
+				return {
+					installed: true,
+					active: false,
+					canActivate: installed.canActivate,
+				}
 			} else {
 				return { isntalled: false, active: false, canActivate: false }
 			}
-			
 		},
 
 		async activateExtension(id, type, slot, version) {
 			/** @type { ApiClient } */
 			const apiClient = this.channelTwitchClient
-			await apiClient.users.updateActiveExtensionsForAuthenticatedUser(this.state.channelId, {
-				[type]: {
-					[slot]: { id, active: true, version }
+			await apiClient.users.updateActiveExtensionsForAuthenticatedUser(
+				this.state.channelId,
+				{
+					[type]: {
+						[slot]: { id, active: true, version },
+					},
 				}
-			})
-		}
+			)
+		},
 	},
 	ipcMethods: {
 		async getAuthStatus() {
@@ -1094,9 +1118,10 @@ export default {
 			/** @type { ApiClient } */
 			const apiClient = this.channelTwitchClient
 
-			const extensions = await apiClient.users.getExtensionsForAuthenticatedUser(
-				this.state.channelId
-			)
+			const extensions =
+				await apiClient.users.getExtensionsForAuthenticatedUser(
+					this.state.channelId
+				)
 
 			//console.log("Extensions", extensions.getAllExtensions().map(e => ({ id: e.id, name: e.name, slot: e.slotType, slotId: e.slotId })));
 
@@ -1942,6 +1967,15 @@ export default {
 				return true
 			},
 		},
+		shoutoutSent: {
+			name: "Shout Out Sent",
+			description: "Fires when you use /shoutout",
+			context: {
+				user: { type: String },
+				userId: { type: String },
+				userColor: { type: String },
+			},
+		},
 	},
 	actions: {
 		sendChat: {
@@ -1958,6 +1992,30 @@ export default {
 					this.state.channelName.toLowerCase(),
 					await template(message, context)
 				)
+			},
+		},
+		sendShoutout: {
+			name: "Shoutout",
+			description: "Sends a shout out.",
+			icon: "mdi-bullhorn",
+			color: "#5E5172",
+			data: {
+				type: Object,
+				properties: {
+					user: { type: String, name: "Twitch Name", template: true },
+				},
+			},
+			async handler(data, context) {
+				/**
+				 * @type {ApiClient}
+				 */
+				const apiClient = this.channelTwitchClient
+
+				const userName = await template(data.user, context)
+
+				const user = await apiClient.users.getUserByName(userName)
+
+				await apiClient.chat.shoutoutUser(user)
 			},
 		},
 		streamTitle: {
