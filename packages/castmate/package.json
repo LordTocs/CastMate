@@ -31,6 +31,7 @@
 		"express": "^4.17.1",
 		"ffi-napi": "^4.0.3",
 		"font-list": "^1.4.5",
+		"fs-extra": "^11.1.0",
 		"http-proxy": "^1.18.1",
 		"lodash": "^4.17.21",
 		"maska": "^1.5.0",

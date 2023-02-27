@@ -2,13 +2,14 @@ import fs from "fs"
 import yaml from "yaml"
 import { ensureFolder } from "./configuration.js"
 import { safeStorage } from "./electronBridge.js"
+import path from 'path'
 
 export class FileCache {
 	constructor(filePath, secret = false) {
 		this.path = filePath
 		this.secret = secret
 		this.data = null
-		ensureFolder(filePath)
+		ensureFolder(path.dirname(filePath))
 	}
 
 	async _writeData() {

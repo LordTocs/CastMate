@@ -1,5 +1,6 @@
 import { app, ipcFunc, ipcMain } from "./electronBridge.js"
 import path from "path"
+import fse from 'fs-extra'
 import fs from "fs"
 
 const isDevelopment = !app.isPackaged
@@ -23,10 +24,12 @@ export const variablesFilePath = path.resolve(
 )
 export const stateFilePath = path.resolve(path.join(userFolder, "state.yaml"))
 
-export function ensureFolder(pathlike) {
-	pathlike = path.dirname(pathlike)
+export function ensureFolder(pathlike, onCreate) {
+	console.log("Ensuring", pathlike)
 	if (!fs.existsSync(pathlike)) {
 		fs.mkdirSync(pathlike, { recursive: true })
+
+		if (onCreate) onCreate()
 	}
 }
 
@@ -41,10 +44,19 @@ export function ensureUserFolder() {
 	ensureFolder(path.join(userFolder, "data"))
 	ensureFolder(path.join(userFolder, "profiles"))
 	ensureFolder(path.join(userFolder, "secrets"))
-	ensureFolder(path.join(userFolder, "sounds"))
+	//ensureFolder(path.join(userFolder, "sounds"))
 	ensureFolder(path.join(userFolder, "cache"))
 	ensureFolder(path.join(userFolder, "automations"))
-	ensureFolder(mediaFolder)
+	ensureFolder(mediaFolder, async () => {
+		const sounds = path.join(userFolder, "sounds")
+
+		//TODO: Copy starter media
+
+		if (fs.existsSync(sounds)) {
+			//Copy existing sounds to the media folder.
+			await fse.copy(sounds, mediaFolder)
+		}
+	})
 
 	ensureFile(secretsFilePath)
 	ensureFile(settingsFilePath)
