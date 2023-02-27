@@ -54,7 +54,7 @@ export default {
 		)
 
 		this.speechRecognizer.setRecognitionCallback((phrase, confidence) => {
-			this.logger.info(`Voice Command(${confidence}): ${phrase}`)
+			console.log(`Voice Command(${confidence}): ${phrase}`)
 			this.triggers.voiceCommand({ phrase, confidence })
 		})
 
@@ -92,7 +92,7 @@ export default {
 	},
 	methods: {
 		getFullFilepath(filename) {
-			return path.resolve(path.join(userFolder, "sounds", filename))
+			return path.resolve(path.join(userFolder, "media", filename))
 		},
 		playAudioFile(filename, volume) {
 			if (!this.audioWindowSender) {
@@ -140,9 +140,8 @@ export default {
 				type: Object,
 				properties: {
 					sound: {
-						type: "FilePath",
-						recursive: true,
-						path: "./sounds/",
+						type: "MediaFile",
+						sound: true,
 						name: "Sound File",
 					},
 					volume: {
