@@ -132,7 +132,7 @@ export default {
 	},
 	data() {
 		return {
-			wheelAngle: 0,
+			wheelAngle: this.isEditor ? 0 : Math.random() * 3000,
 			spinVelocity: 0,
 			lastTimestamp: null,
 		}
