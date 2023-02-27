@@ -96,7 +96,7 @@ function showCreate() {
 	const result = new Promise((resolve, reject) => {
 		const funcs = useResourceFunctions(props.resourceTypeId)
 		resourceConfig.value = constructDefaultSchema(resourceType.value.config)
-		title.value = `Create New ${resourceType.value.name}`
+		titleText.value = `Create New ${resourceType.value.name}`
 		okText.value = "CREATE"
 		dialog.value = true
 

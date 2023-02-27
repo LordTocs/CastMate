@@ -38,6 +38,7 @@ export class Resource {
 			typePlural: this.spec.typePlural
 				? this.spec.typePlural
 				: `${this.spec.type}s`,
+			inlineEdit: this.spec.inlineEdit ?? false,
 			description: this.spec.description,
 			config: cleanSchemaForIPC(
 				`${this.spec.type}_config`,

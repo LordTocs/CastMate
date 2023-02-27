@@ -80,6 +80,7 @@ export default {
 			type: "spell",
 			name: "Spell",
 			description: "SpellCast Spell",
+			inlineEdit: true,
 			config: {
 				type: Object,
 				properties: {
@@ -338,8 +339,6 @@ export default {
 					spellConfig
 				)
 				this.logger.info(`Created SpellHook ${newHook.data._id}`)
-
-				this.spellHooks.push(newHook.data)
 				return newHook.data
 			} catch (err) {
 				this.logger.error(`Error Creating Hook, ${err}`)
