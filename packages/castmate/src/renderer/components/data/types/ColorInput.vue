@@ -121,7 +121,6 @@ function getInitials(str) {
 }
 
 function doClear() {
-	console.log("CLEAR!")
 	modelObj.value = undefined
 }
 
