@@ -17,7 +17,8 @@ import Variables from "../views/Variables.vue"
 import Landing from "../views/Landing.vue"
 import About from "../views/About.vue"
 import SpellCast from "../views/SpellCast.vue"
-import { Analytics } from "../../main/utils/analytics"
+
+import { trackAnalytic } from "../utils/analytics"
 
 const routes = [
 	{
@@ -100,7 +101,7 @@ const router = createRouter({
 
 
 router.beforeEach((to, from) => {
-	Analytics.getInstance().track("accessRoute", {
+	trackAnalytic("accessRoute", {
 		route: to.fullPath
 	})
 	return true
