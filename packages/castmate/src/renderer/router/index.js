@@ -17,6 +17,7 @@ import Variables from "../views/Variables.vue"
 import Landing from "../views/Landing.vue"
 import About from "../views/About.vue"
 import SpellCast from "../views/SpellCast.vue"
+import { Analytics } from "../../main/utils/analytics"
 
 const routes = [
 	{
@@ -95,6 +96,14 @@ const routes = [
 const router = createRouter({
 	history: createWebHashHistory(),
 	routes,
+})
+
+
+router.beforeEach((to, from) => {
+	Analytics.getInstance().track("accessRoute", {
+		route: to.fullPath
+	})
+	return true
 })
 
 export default router
