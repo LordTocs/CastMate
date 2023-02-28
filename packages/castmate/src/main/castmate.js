@@ -33,11 +33,11 @@ async function initInternal(mainWindowSender) {
 
 	SettingsManager.getInstance().load()
 
-	let plugins = PluginManager.getInstance()
-	await plugins.load()
-
 	const stateManager = StateManager.getInstance()
 	await stateManager.loadSerialized()
+
+	let plugins = PluginManager.getInstance()
+	await plugins.load()
 
 	//Force remote template manager creation
 	RemoteTemplateManager.getInstance()

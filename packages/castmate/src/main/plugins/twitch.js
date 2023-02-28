@@ -832,7 +832,6 @@ export default {
 						this.state.channelId
 					)
 				this.state.subscribers = subscribers.total
-				//this.state.lastSubscriber = subscribers.data.length > 0 ? subscribers.data[0].userDisplayName : null
 			} catch (err) {
 				this.state.subscribers = 0
 				console.error(err)

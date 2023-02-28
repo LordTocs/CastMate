@@ -58,12 +58,6 @@ export class StateManager {
 				pluginName,
 				prop,
 			})
-
-			if (this.initialState) {
-				this.rootState[pluginName][prop] =
-					this.initialState[pluginName]?.[prop] ??
-					this.rootState[pluginName][prop]
-			}
 		}
 
 		this.stateWatchers[pluginName][prop] = onStateChange(
@@ -118,7 +112,6 @@ export class StateManager {
 			this.initialState = YAML.parse(
 				await fs.promises.readFile(stateFilePath, "utf-8")
 			)
-			this.loading = false
 		} catch (err) {
 			logger.error(`Error Loading Initial Plugin State`)
 		}
@@ -126,11 +119,16 @@ export class StateManager {
 
 	finishLoad() {
 		this.initialState = null
+		this.loading = false
 	}
 
 	registerPlugin(plugin) {
 		if (plugin.name in this.rootState) {
 			logger.error(`Double Registered Plugin ${plugin.name}`)
+		}
+
+		if (!this.initialState) {
+			logger.error('Initial State Missing at Plugin Registration')
 		}
 
 		this.rootState[plugin.name] = {}
@@ -140,6 +138,14 @@ export class StateManager {
 		reactiveCopy(this.rootState[plugin.name], plugin.pluginObj.state)
 
 		for (let prop in this.rootState[plugin.name]) {
+			
+			//Load the initial state.
+			if (plugin.stateSchemas[prop].serialized) {
+				this.rootState[plugin.name][prop] =
+					this.initialState[plugin.name]?.[prop] ?? //Fallback to the default if it's not 
+					this.rootState[plugin.name][prop]
+			}
+
 			this.createStateWatcher(
 				plugin.name,
 				prop,
@@ -152,6 +158,10 @@ export class StateManager {
 		let pluginState = this.rootState[pluginObj.name]
 		if (!pluginState) {
 			pluginState = this.rootState[pluginObj.name] = {}
+		}
+
+		if (this.initialState && schema.serialized) {
+			pluginObj.state[prop] = this.initialState[pluginObj.name][prop] ?? pluginObj.state[prop]
 		}
 
 		reactiveCopyProp(pluginState, pluginObj.state, prop)
