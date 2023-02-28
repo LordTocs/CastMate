@@ -12,13 +12,17 @@ export function osInit() {
 	})
 
 	ipcFunc("media", "getThumbnail", async (videoFile) => {
-		const thumbnail = await thumbsupply.generateThumbnail(videoFile, {
-			size: thumbsupply.ThumbSize.MEDIUM,
-			timestamp: "10%",
-			cacheDir: app.getPath("temp"),
-		})
+		try {
+			const thumbnail = await thumbsupply.generateThumbnail(videoFile, {
+				size: thumbsupply.ThumbSize.MEDIUM,
+				timestamp: "10%",
+				cacheDir: app.getPath("temp"),
+			})
 
-		return thumbnail
+			return thumbnail
+		} catch (err) {
+			return null
+		}
 	})
 }
 
