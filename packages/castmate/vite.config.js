@@ -47,23 +47,8 @@ export default defineConfig({
 							],
 						},
 					},
-					// esbuild: {
-					//   platform: 'node',
-					// },
 				}),
 			},
-			/*preload: {
-        input: {
-          preload: 'src/preload/preload.js'
-        },
-        vite: {
-          build: {
-            // For debug
-            sourcemap: 'inline',
-            outDir: 'dist/electron/preload',
-          }
-        }
-      },*/
 			renderer: {
 				resolve() {
 					return ["fs", "path", "fluent-ffmpeg"]
@@ -79,6 +64,7 @@ export default defineConfig({
 	},
 	build: {
 		outDir: path.join(dist, "electron/renderer"),
+		minify: false,
 		rollupOptions: {
 			input: {
 				main: resolve(dirname, "index.html"),
