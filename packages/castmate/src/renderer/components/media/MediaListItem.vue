@@ -75,9 +75,6 @@ watch(
 	}
 )
 
-onMounted(() => {
-	console.log("attrs", props.active, attrs)
-})
 </script>
 
 <style scoped>
