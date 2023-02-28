@@ -4,8 +4,8 @@ import { templateNumber } from "../state/template"
 
 export default {
 	name: "overlays",
-	uiName: "Overlays",
-	icon: "",
+	uiName: "Overlay",
+	icon: "mdi-picture-in-picture-top-right",
 	color: "#CC63A2",
 	async init() {
 		OverlayManager.getInstance().registerOverlayCallable(
