@@ -128,6 +128,11 @@
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
+	<folder-input
+		v-else-if="schema.type == 'Folder'"
+		v-model="modelObj"
+		v-bind="allProps"
+	/>
 </template>
 
 <script>
@@ -152,6 +157,7 @@ import OverlayTransitionTimingInput from "./types/OverlayTransitionTimingInput.v
 import OverlayPaddingInput from "./types/OverlayPaddingInput.vue"
 import ToggleInput from "./types/ToggleInput.vue"
 import ColorInput from "./types/ColorInput.vue"
+import FolderInput from "./types/FolderInput.vue"
 
 export default {
 	name: "data-input",
@@ -176,6 +182,7 @@ export default {
 		OverlayPaddingInput,
 		ToggleInput,
 		ColorInput,
+		FolderInput
 	},
 	props: {
 		schema: {},

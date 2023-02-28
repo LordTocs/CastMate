@@ -9,14 +9,17 @@ export const BrowserWindow = electron.BrowserWindow
 export const safeStorage = electron.safeStorage
 export const dialog = electron.dialog
 
-/** @type{Electron.WebContents} */
+/** @type {Electron.BrowserWindow} */
+export let mainWindow = null
+/** @type {Electron.WebContents} */
 let mainIpcSender = null
 /**
  *
- * @param {Electron.WebContents} ipcSender
+ * @param {Electron.BrowserWindow} ipcSender
  */
-export function setIpcSender(ipcSender) {
-	mainIpcSender = ipcSender
+export function setMainWindow(mainWindow) {
+	mainIpcSender = mainWindow.webContents
+	mainWindow = mainWindow
 }
 
 /**

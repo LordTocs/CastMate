@@ -12,7 +12,7 @@ import { ProfileManager } from "./actions/profile-manager.js"
 import { WebServices } from "./webserver/webserver.js"
 import { PluginManager } from "./pluginCore/plugin-manager.js"
 import _ from "lodash"
-import { ipcMain, app, setIpcSender, ipcFunc } from "./utils/electronBridge.js"
+import { ipcMain, app, setMainWindow, ipcFunc } from "./utils/electronBridge.js"
 
 import { ResourceManager } from "./resources/resource-manager.js"
 import { OverlayManager } from "./overlays/overlay-manager.js"
@@ -25,7 +25,7 @@ import { StreamPlanManager } from "./planner/streamPlan.js"
 async function initInternal(mainWindowSender) {
 	logger.info(`Starting CastMate v${app.getVersion()}`)
 
-	setIpcSender(mainWindowSender)
+	setMainWindow(mainWindowSender)
 
 	ensureUserFolder()
 
@@ -71,8 +71,8 @@ async function initInternal(mainWindowSender) {
 	webServices.startWebsockets()
 }
 
-export async function initCastMate(mainWindowSender) {
-	let initPromise = initInternal(mainWindowSender)
+export async function initCastMate(mainWindow) {
+	let initPromise = initInternal(mainWindow)
 
 	ipcFunc("core", "waitForInit", async () => {
 		return await initPromise

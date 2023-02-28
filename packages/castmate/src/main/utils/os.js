@@ -1,8 +1,8 @@
 import { getFonts } from "font-list"
-import { ipcFunc } from "./electronBridge.js"
+import { ipcFunc, mainWindow } from "./electronBridge.js"
 import logger from "./logger.js"
 import thumbsupply from "thumbsupply"
-import { app } from "./electronBridge.js"
+import { app, dialog } from "./electronBridge.js"
 
 export function osInit() {
 	logger.info("Initing OS Util Funcs")
@@ -23,6 +23,12 @@ export function osInit() {
 		} catch (err) {
 			return null
 		}
+	})
+
+	ipcFunc("os", "selectDir", async (existing) => {
+		const result = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'], defaultPath: existing })
+
+		return result?.filePaths?.[0]
 	})
 }
 

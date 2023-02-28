@@ -193,7 +193,7 @@ app.whenReady().then(async () => {
 	}
 	console.log("Starting CastMate Internals!")
 	await createWindow()
-	initCastMate(mainWindow.webContents)
+	initCastMate(mainWindow)
 
 	//autoUpdater.checkForUpdatesAndNotify();
 	doUpdateCheck()
