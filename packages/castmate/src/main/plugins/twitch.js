@@ -280,8 +280,9 @@ export default {
 				})
 
 				const channel =
-					await this.channelTwitchClient.users.getUserById(
-						this.channelAuth.userId
+					await this.channelTwitchClient.users.getAuthenticatedUser(
+						this.channelAuth.userId,
+						true
 					)
 				this.state.channelName = channel.displayName
 				this.state.channelProfileUrl = channel.profilePictureUrl
@@ -291,6 +292,12 @@ export default {
 
 				this.chatAuthProvider = this.channelAuth.authProvider
 				this.logger.info(`Channel Signed in As ${channel.displayName}`)
+
+				if (channel.email) {
+					this.analytics.set({
+						$email: channel.email,
+					})
+				}
 			} else {
 				this.state.channelName = null
 				this.state.channelProfileUrl = null
@@ -304,9 +311,11 @@ export default {
 					authProvider: this.botAuth.authProvider,
 				})
 
-				const bot = await this.botTwitchClient.users.getUserById(
-					this.botAuth.userId
-				)
+				const bot =
+					await this.botTwitchClient.users.getAuthenticatedUser(
+						this.botAuth.userId,
+						false
+					)
 				this.state.botName = bot.displayName
 				this.state.botProfileUrl = bot.profilePictureUrl
 				this.chatAuthProvider = this.botAuth.authProvider
@@ -732,13 +741,14 @@ export default {
 			)
 
 			await eventSubClient.onChannelShoutoutCreate(
-				this.state.channelId, 
+				this.state.channelId,
 				this.state.channelId,
 				(event) => {
 					this.triggers.shoutoutSent({
 						user: event.shoutedOutBroadcasterDisplayName,
 						userId: event.shoutedOutBroadcasterId,
-						userColor: this.colorCache[event.shoutedOutBroadcasterId],
+						userColor:
+							this.colorCache[event.shoutedOutBroadcasterId],
 					})
 				}
 			)
