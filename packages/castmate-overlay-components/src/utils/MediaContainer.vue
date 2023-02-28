@@ -1,5 +1,5 @@
 <template>
-	<div class="container">
+	<div class="container" :style="{ aspectRatio }">
 		<video
 			v-if="isVideo"
 			class="fill"
@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { computed, inject, nextTick, ref } from "vue"
+import { computed, inject, nextTick, ref, watch } from "vue"
 import { ImageFormats, VideoFormats } from "./filetypes.js"
 import path from "path"
 
@@ -76,6 +76,28 @@ const isVideo = computed(() => {
 	)
 })
 
+const aspectRatio = ref(1)
+
+watch(video, () => {
+	if (video.value) {
+		console.log("Video Element Created!")
+		video.value.addEventListener("loadedmetadata", () => {
+			console.log("Video Info Loaded", video.value.videoWidth, video.value.videoHeight)
+			aspectRatio.value = video.value.videoWidth / video.value.videoHeight
+		})
+	}
+})
+
+watch(img, () => {
+	if (img.value) {
+		console.log("Image Element Created!")
+		img.value.addEventListener('load', () => {
+			console.log("Image Info Loaded", img.value.naturalWidth, img.value.naturalHeight)
+			aspectRatio.value = img.value.naturalWidth / img.value.naturalHeight
+		})
+	}
+})
+
 defineExpose({
 	restart: () => {
 		if (isGIF.value && img.value) {
@@ -121,10 +143,6 @@ defineExpose({
 }
 
 .content {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	left: 0;
-	top: 0;
+	position: relative;
 }
 </style>

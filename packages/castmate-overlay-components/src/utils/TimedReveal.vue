@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue"
+import { computed, ref,onBeforeUnmount } from "vue"
 import Revealer from "./Revealer.vue"
 import { isNumber } from "./typeHelpers.js"
 
@@ -28,10 +28,14 @@ const transitionTime = computed(() => {
 
 const visible = ref(false)
 
+let appearTimeout = null
+let dissappearTimeout = null
+
 defineExpose({
 	appear(duration) {
-		setTimeout(() => {
+		appearTimeout = setTimeout(() => {
 			visible.value = true
+			appearTimeout = null
 		}, props.appearDelay * 1000)
 
 		const beginDissappearing = Math.max(
@@ -39,9 +43,21 @@ defineExpose({
 			duration - (props.vanishAdvance + transitionTime.value)
 		)
 
-		setTimeout(() => {
+		dissappearTimeout = setTimeout(() => {
 			visible.value = false
+			dissappearTimeout = null;
 		}, beginDissappearing * 1000)
 	},
+})
+
+onBeforeUnmount(() => {
+	if (appearTimeout) {
+		clearTimeout(appearTimeout)
+		appearTimeout = null
+	}
+	if (dissappearTimeout) {
+		clearTimeout(dissappearTimeout)
+		dissappearTimeout = null
+	}
 })
 </script>

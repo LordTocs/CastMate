@@ -4,40 +4,80 @@
 		:animation="alertAnimation"
 		:transition="alertTransition"
 	>
-		<media-container ref="media" class="alert" :media-file="media">
-			<div
-				class="alert-head"
-				:style="getPaddingStyle(titleFormat?.padding)"
-			>
-				<timed-reveal
-					ref="titleReveal"
-					:animation="titleAnimation"
-					:transition="titleFormat?.transition?.duration"
-					:appear-delay="titleFormat?.timing?.appearDelay"
-					:vanish-advance="titleFormat?.timing?.vanishAdvance"
+		<div>
+			<media-container ref="media" class="alert" :media-file="media">
+				<template v-if="!textBelowMedia">
+					<div
+						class="alert-head"
+						:style="getPaddingStyle(titleFormat?.padding)"
+					>
+						<timed-reveal
+							ref="titleReveal"
+							:animation="titleAnimation"
+							:transition="titleFormat?.transition?.duration"
+							:appear-delay="titleFormat?.timing?.appearDelay"
+							:vanish-advance="titleFormat?.timing?.vanishAdvance"
+						>
+							<p :style="getFontStyle(titleFormat?.style)">
+								{{ header }}
+							</p>
+						</timed-reveal>
+					</div>
+					<div
+						class="alert-body"
+						:style="getPaddingStyle(messageFormat?.padding)"
+					>
+						<timed-reveal
+							ref="messageReveal"
+							:animation="messageAnimation"
+							:transition="messageFormat?.transition?.duration"
+							:appear-delay="messageFormat?.timing?.appearDelay"
+							:vanish-advance="
+								messageFormat?.timing?.vanishAdvance
+							"
+						>
+							<p :style="getFontStyle(messageFormat?.style)">
+								{{ message }}
+							</p>
+						</timed-reveal>
+					</div>
+				</template>
+			</media-container>
+			<template v-if="textBelowMedia">
+				<div
+					class="alert-head"
+					:style="getPaddingStyle(titleFormat?.padding)"
 				>
-					<p :style="getFontStyle(titleFormat?.style)">
-						{{ header }}
-					</p>
-				</timed-reveal>
-			</div>
-			<div
-				class="alert-body"
-				:style="getPaddingStyle(messageFormat?.padding)"
-			>
-				<timed-reveal
-					ref="messageReveal"
-					:animation="messageAnimation"
-					:transition="messageFormat?.transition?.duration"
-					:appear-delay="messageFormat?.timing?.appearDelay"
-					:vanish-advance="messageFormat?.timing?.vanishAdvance"
+					<timed-reveal
+						ref="titleReveal"
+						:animation="titleAnimation"
+						:transition="titleFormat?.transition?.duration"
+						:appear-delay="titleFormat?.timing?.appearDelay"
+						:vanish-advance="titleFormat?.timing?.vanishAdvance"
+					>
+						<p :style="getFontStyle(titleFormat?.style)">
+							{{ header }}
+						</p>
+					</timed-reveal>
+				</div>
+				<div
+					class="alert-body"
+					:style="getPaddingStyle(messageFormat?.padding)"
 				>
-					<p :style="getFontStyle(messageFormat?.style)">
-						{{ message }}
-					</p>
-				</timed-reveal>
-			</div>
-		</media-container>
+					<timed-reveal
+						ref="messageReveal"
+						:animation="messageAnimation"
+						:transition="messageFormat?.transition?.duration"
+						:appear-delay="messageFormat?.timing?.appearDelay"
+						:vanish-advance="messageFormat?.timing?.vanishAdvance"
+					>
+						<p :style="getFontStyle(messageFormat?.style)">
+							{{ message }}
+						</p>
+					</timed-reveal>
+				</div>
+			</template>
+		</div>
 	</timed-reveal>
 </template>
 
@@ -66,6 +106,12 @@ export default {
 		},
 		duration: { type: Number, name: "Duration", default: 2 },
 		transition: { type: OverlayTransition, name: "Transition" },
+		textBelowMedia: {
+			type: Boolean,
+			name: "Text Below Media",
+			default: true,
+			required: true,
+		},
 		titleFormat: {
 			type: Object,
 			name: "Title",
@@ -143,9 +189,9 @@ export default {
 			this.message = message
 			this.colorRefs.alertColor = color
 
-			this.$refs.alertReveal.appear(this.duration)
-			this.$refs.titleReveal.appear(this.duration)
-			this.$refs.messageReveal.appear(this.duration)
+			this.$refs.alertReveal?.appear(this.duration)
+			this.$refs.titleReveal?.appear(this.duration)
+			this.$refs.messageReveal?.appear(this.duration)
 			this.$refs.media.restart()
 		},
 		setEditorTimer() {
@@ -186,8 +232,6 @@ p {
 }
 
 .alert {
-	width: 100%;
-	height: 100%;
 	color: white;
 }
 
