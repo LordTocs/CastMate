@@ -105,7 +105,11 @@ export default {
 			video: true,
 		},
 		duration: { type: Number, name: "Duration", default: 2 },
-		transition: { type: OverlayTransition, name: "Transition" },
+		transition: {
+			type: OverlayTransition,
+			name: "Transition",
+			default: () => ({ animation: "Fade", duration: 0.1 }),
+		},
 		textBelowMedia: {
 			type: Boolean,
 			name: "Text Below Media",
@@ -120,10 +124,33 @@ export default {
 					type: OverlayFontStyle,
 					name: "Style",
 					exampleText: "Title",
+					default: {
+						fontFamily: "Arial Rounded MT",
+						fontSize: 40,
+						fontColor: "#FFFFFF",
+						stroke: {
+							width: 1,
+							color: { ref: "alertColor" },
+						},
+					},
 				},
 				padding: { type: OverlayPadding, name: "Padding" },
-				transition: { type: OverlayTransition, name: "Transition" },
-				timing: { type: OverlayTransitionTiming, name: "Timing" },
+				transition: {
+					type: OverlayTransition,
+					name: "Transition",
+					default: {
+						duration: 0.1,
+						animation: "Fade",
+					},
+				},
+				timing: {
+					type: OverlayTransitionTiming,
+					name: "Timing",
+					default: {
+						appearDelay: 1,
+						vanishAdvance: 0.25,
+					},
+				},
 			},
 		},
 		messageFormat: {
@@ -134,10 +161,33 @@ export default {
 					type: OverlayFontStyle,
 					name: "Style",
 					exampleText: "Message",
+					default: {
+						fontFamily: "Arial Rounded MT",
+						fontSize: 30,
+						fontColor: "#FFFFFF",
+						stroke: {
+							width: 1,
+							color: { ref: "alertColor" },
+						},
+					},
 				},
 				padding: { type: OverlayPadding, name: "Padding" },
-				transition: { type: OverlayTransition, name: "Transition" },
-				timing: { type: OverlayTransitionTiming, name: "Timing" },
+				transition: {
+					type: OverlayTransition,
+					name: "Transition",
+					default: {
+						duration: 0.1,
+						animation: "Fade",
+					},
+				},
+				timing: {
+					type: OverlayTransitionTiming,
+					name: "Timing",
+					default: {
+						appearDelay: 1,
+						vanishAdvance: 0.25,
+					},
+				},
 			},
 		},
 	},
