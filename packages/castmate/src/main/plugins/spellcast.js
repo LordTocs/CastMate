@@ -168,6 +168,10 @@ export default {
 			this.state.extensionActive = extensionStatus.active
 			this.state.extensionInstalled = extensionStatus.installed
 			this.state.extensionRequiresConfig = !extensionStatus.canActivate
+
+			this.analytics.set({
+				usesSpellCast: extensionStatus.active
+			})
 		},
 		async initApi() {
 			//TODO: Fix public methods accessor.
