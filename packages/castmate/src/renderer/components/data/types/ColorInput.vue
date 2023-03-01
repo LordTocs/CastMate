@@ -4,6 +4,7 @@
 			v-model="menuOpen"
 			:close-on-content-click="false"
 			:contentProps="{ style: { minWidth: 'unset !important' } }"
+			v-if="!templateMode"
 		>
 			<template #activator="{ props }">
 				<v-input v-model="modelObj" :density="topProps.density">
@@ -28,9 +29,9 @@
 								{{ modelObj.ref }}
 							</div>
 						</div>
-						<template #append-inner v-if="topProps.colorRefs">
+						<template #append-inner>
 							<v-tooltip
-								v-for="colorRef in topProps.colorRefs"
+								v-for="colorRef in topProps.colorRefs || []"
 								:text="colorRef"
 							>
 								<template #activator="{ props }">
@@ -45,6 +46,14 @@
 									</v-btn>
 								</template>
 							</v-tooltip>
+							<v-btn
+								class="ml-1"
+								v-if="canTemplate"
+								size="x-small"
+								variant="tonal"
+								@click="templateMode = true"
+								icon="mdi-code-braces"
+							/>
 						</template>
 					</v-field>
 				</v-input>
@@ -65,14 +74,34 @@
 				</v-card>
 			</div>
 		</v-menu>
+		<v-text-field
+			v-model="modelObj"
+			:label="label"
+			:density="density"
+			clearable
+			v-else
+		>
+			<template #append-inner>
+				<v-btn
+					class="ml-1"
+					v-if="canTemplate"
+					size="x-small"
+					variant="tonal"
+					:active="true"
+					:disabled="!isColorString"
+					@click="templateMode = false"
+					icon="mdi-code-braces"
+				/>
+			</template>
+		</v-text-field>
 	</div>
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from "vue"
-import { useWindowEventListener } from "../../../utils/events"
+import { computed, nextTick, ref, watch, onMounted } from "vue"
 import { useModel } from "../../../utils/modelValue"
 import SelectDummy from "../../sequences/SelectDummy.vue"
+import { isHexColor } from "../../../utils/color"
 
 const topProps = defineProps({
 	modelValue: {},
@@ -84,6 +113,17 @@ const topProps = defineProps({
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useModel(topProps, emit)
 
+const templateMode = ref(false)
+
+const isColorString = computed(
+	() =>
+		isHexColor(topProps.modelValue) ||
+		topProps.modelValue == undefined ||
+		topProps.modelValue == null ||
+		topProps.modelValue.length == 0
+)
+const canTemplate = computed(() => !!topProps.schema?.template)
+
 const isFixedColor = computed(() => {
 	if (!(topProps.modelValue instanceof Object)) {
 		return false
@@ -93,17 +133,20 @@ const isFixedColor = computed(() => {
 })
 
 const swatches = computed(() => {
-	if (!topProps.schema?.enum)
-		return []
+	if (!topProps.schema?.enum) return []
 
 	const result = []
-	const chunkSize = 1;
+	const chunkSize = 1
 	const colors = topProps.schema.enum
 	for (let i = 0; i < colors.length; i += chunkSize) {
-		const chunk = colors.slice(i, i + chunkSize);
+		const chunk = colors.slice(i, i + chunkSize)
 		result.push(chunk)
 	}
 	return result
+})
+
+onMounted(() => {
+	templateMode.value = !isColorString.value
 })
 
 const sanitizedColor = computed({

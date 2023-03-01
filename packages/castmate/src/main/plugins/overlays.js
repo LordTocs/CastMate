@@ -75,7 +75,7 @@ export default {
 					},
 					header: { type: String, template: true, name: "Header" },
 					text: { type: String, template: true, name: "Text" },
-					color: { type: String, template: true, name: "Color" },
+					color: { type: "Color", template: true, name: "Color" },
 				},
 			},
 			async handler(notificationData, context) {
