@@ -1,6 +1,6 @@
 import { Overlay } from "../overlays/overlay"
 import { OverlayManager } from "../overlays/overlay-manager"
-import { templateNumber } from "../state/template"
+import { templateNumber, template } from "../state/template"
 
 export default {
 	name: "overlays",
