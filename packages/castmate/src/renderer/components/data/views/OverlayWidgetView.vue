@@ -13,7 +13,7 @@ import { computed } from "vue"
 import { useResourceArray } from "../../../utils/resources"
 
 const props = defineProps({
-	modelValue: { type: String },
+	modelValue: { },
 	schema: {},
 	label: { type: String },
 })
