@@ -204,7 +204,7 @@ export default {
 		},
 	},
 	ipcMethods: {
-		async refereshAllBrowsers() {
+		async refreshAllBrowsers() {
 			const browsers = await this.getAllSources("browser_source")
 			await Promise.all(
 				browsers.map((browser) =>
