@@ -104,7 +104,7 @@ export default {
 			image: true,
 			video: true,
 		},
-		duration: { type: Number, name: "Duration", default: 2 },
+		duration: { type: Number, name: "Duration", default: 4 },
 		transition: {
 			type: OverlayTransition,
 			name: "Transition",
@@ -125,8 +125,8 @@ export default {
 					name: "Style",
 					exampleText: "Title",
 					default: {
-						fontFamily: "Arial Rounded MT",
-						fontSize: 40,
+						fontFamily: "Impact",
+						fontSize: 65,
 						fontColor: "#FFFFFF",
 						stroke: {
 							width: 1,
@@ -162,8 +162,8 @@ export default {
 					name: "Style",
 					exampleText: "Message",
 					default: {
-						fontFamily: "Arial Rounded MT",
-						fontSize: 30,
+						fontFamily: "Impact",
+						fontSize: 50,
 						fontColor: "#FFFFFF",
 						stroke: {
 							width: 1,

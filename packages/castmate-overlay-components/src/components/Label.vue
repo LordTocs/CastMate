@@ -11,6 +11,15 @@ export default {
 			type: OverlayFontStyle,
 			name: "Style",
 			exampleText: "Text",
+			default: {
+				fontFamily: "Impact",
+				fontSize: 65,
+				fontColor: "#FFFFFF",
+				stroke: {
+					width: 4,
+					color: "#000000"
+				},
+			},
 		},
 	},
 	computed: {
