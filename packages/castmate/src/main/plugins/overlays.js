@@ -26,19 +26,11 @@ export default {
 			config: {
 				type: Object,
 				properties: {
-					overlay: { type: Overlay, name: "Overlay" },
 					wheel: {
-						type: String,
+						type: "OverlayWidget",
 						name: "Wheel",
+						widgetType: "Wheel",
 						required: true,
-						async enum({ overlay }) {
-							const overlayObj =
-								OverlayManager.getInstance().getById(overlay)
-							if (!overlayObj) return []
-							return overlayObj.config.widgets
-								.filter((w) => w.type == "Wheel")
-								.map((w) => ({ name: w.name, value: w.id }))
-						},
 					},
 					item: { type: String, name: "Item Name" },
 				},
@@ -50,8 +42,8 @@ export default {
 			},
 			handler(config, context) {
 				if (
-					config.overlay !== context.overlay ||
-					config.wheel !== context.wheel
+					config.wheel?.overlay !== context.overlay ||
+					config.wheel?.widget !== context.wheel
 				) {
 					return false
 				}
@@ -75,19 +67,11 @@ export default {
 			data: {
 				type: Object,
 				properties: {
-					overlay: { type: Overlay, name: "Overlay" },
-					alertBox: {
-						type: String,
+					alert: {
+						type: "OverlayWidget",
 						name: "Alert Box",
+						widgetType: "Alert",
 						required: true,
-						async enum({ overlay }) {
-							const overlayObj =
-								OverlayManager.getInstance().getById(overlay)
-							if (!overlayObj) return []
-							return overlayObj.config.widgets
-								.filter((w) => w.type == "Alert")
-								.map((w) => ({ name: w.name, value: w.id }))
-						},
 					},
 					header: { type: String, template: true, name: "Header" },
 					text: { type: String, template: true, name: "Text" },
@@ -121,8 +105,8 @@ export default {
 				}
 
 				OverlayManager.getInstance().callOverlayFunc(
-					notificationData.overlay,
-					notificationData.alertBox,
+					notificationData.alert.overlay,
+					notificationData.alert.widget,
 					"showAlert",
 					notification.header,
 					notification.text,
@@ -138,19 +122,11 @@ export default {
 			data: {
 				type: Object,
 				properties: {
-					overlay: { type: Overlay, name: "Overlay" },
 					wheel: {
-						type: String,
+						type: "OverlayWidget",
 						name: "Wheel",
+						widgetType: "Wheel",
 						required: true,
-						async enum({ overlay }) {
-							const overlayObj =
-								OverlayManager.getInstance().getById(overlay)
-							if (!overlayObj) return []
-							return overlayObj.config.widgets
-								.filter((w) => w.type == "Wheel")
-								.map((w) => ({ name: w.name, value: w.id }))
-						},
 					},
 					strength: {
 						type: Number,
@@ -164,8 +140,8 @@ export default {
 				const strength = await templateNumber(data.strength, context)
 
 				await OverlayManager.getInstance().callOverlayFunc(
-					data.overlay,
-					data.wheel,
+					data.wheel.overlay,
+					data.wheel.widget,
 					"spinWheel",
 					strength
 				)

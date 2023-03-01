@@ -20,17 +20,13 @@
 						class="flex-grow-0"
 						style="width: 350px"
 					/>
-					<v-sheet variant="outlined" rounded class="px-2 py-2 my-2">
+					<v-sheet variant="outlined" rounded class="py-2 my-2">
 						<template v-if="localTriggerType">
-							<p class="my-2">
-								{{ triggerDesc.name }}
-							</p>
-							<p class="text--secondary my-1">
+							<p class="text--secondary">
 								{{ triggerDesc.description }}
 							</p>
-							<v-divider />
+							<v-divider class="my-4" />
 						</template>
-
 						<data-input
 							v-if="triggerDesc && configSchema"
 							:schema="configSchema"

@@ -74,8 +74,14 @@
 		>{{ value.min != undefined && value.min != null ? value.min : `-∞` }} ⟶
 		{{ value.max != undefined && value.max != null ? value.max : `∞` }}
 	</p>
-	<resource-view 
-		v-else-if="schema.type == 'Resource' && value" 
+	<resource-view
+		v-else-if="schema.type == 'Resource' && value"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
+	<overlay-widget-view
+		v-else-if="schema.type == 'OverlayWidget' && value"
 		:schema="schema"
 		:modelValue="value"
 		:label="label"
@@ -84,9 +90,10 @@
 
 <script>
 import ColorSwatch from "./ColorSwatch.vue"
-import ResourceView from "./views/ResourceView.vue";
+import OverlayWidgetView from "./views/OverlayWidgetView.vue"
+import ResourceView from "./views/ResourceView.vue"
 export default {
-	components: { ColorSwatch, ResourceView },
+	components: { ColorSwatch, ResourceView, OverlayWidgetView },
 	name: "data-view",
 	props: {
 		schema: {},

@@ -133,6 +133,11 @@
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
+	<overlay-widget-input
+		v-else-if="schema.type == 'OverlayWidget'"
+		v-model="modelObj"
+		v-bind="allProps"
+	/>
 </template>
 
 <script>
@@ -158,6 +163,7 @@ import OverlayPaddingInput from "./types/OverlayPaddingInput.vue"
 import ToggleInput from "./types/ToggleInput.vue"
 import ColorInput from "./types/ColorInput.vue"
 import FolderInput from "./types/FolderInput.vue"
+import OverlayWidgetInput from "./types/OverlayWidgetInput.vue"
 
 export default {
 	name: "data-input",
@@ -182,7 +188,8 @@ export default {
 		OverlayPaddingInput,
 		ToggleInput,
 		ColorInput,
-		FolderInput
+		FolderInput,
+		OverlayWidgetInput,
 	},
 	props: {
 		schema: {},
