@@ -88,14 +88,7 @@ export class SettingsManager {
 
 		const plugin = PluginManager.getInstance().getPlugin(pluginName)
 
-		if (plugin) {
-			plugin.updateSettings(this.secrets[pluginName], oldSecrets)
-		} else if (pluginName == "castmate") {
-			if (settings.port != oldSettings.port) {
-				//Hardcode the port config
-				WebServices.getInstance().updatePort(settings.port)
-			}
-		}
+		plugin?.updateSecrets(this.secrets[pluginName], oldSecrets)
 
 		callIpcFunc("settings_updateSecrets", this.secrets)
 	}

@@ -163,7 +163,7 @@ const saveSnack = ref(false)
 async function save() {
 	await Promise.all([
 		changeSettings(pluginName.value, settings.value),
-		changeSecrets(pluginName.value, settings.value),
+		changeSecrets(pluginName.value, secrets.value),
 	])
 	dirty.value = false
 	saveSnack.value = true
