@@ -76,7 +76,7 @@ const isVideo = computed(() => {
 	)
 })
 
-const aspectRatio = ref(1)
+const aspectRatio = ref(0)
 
 watch(video, () => {
 	if (video.value) {
