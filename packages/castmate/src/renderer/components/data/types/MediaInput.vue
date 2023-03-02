@@ -11,6 +11,15 @@
 		<template #item="{ props, item }">
 			<media-list-item :media-file="item.value" @click="props.onClick" />
 		</template>
+
+		<template #append>
+			<v-btn
+				size="x-small"
+				variant="tonal"
+				icon="mdi-folder"
+				@click="openMediaFolder"
+			></v-btn>
+		</template>
 	</v-combobox>
 </template>
 
@@ -28,6 +37,7 @@ import {
 } from "../../../utils/filetypes"
 import MediaListItem from "../../media/MediaListItem.vue"
 import { usePathStore } from "../../../store/paths"
+import { shell } from "electron"
 
 const topProps = defineProps({
 	schema: {},
@@ -87,5 +97,9 @@ async function getFiles() {
 	})
 
 	return files.map((file) => path.relative(mediaPath.value, file))
+}
+
+function openMediaFolder() {
+	shell.openPath(pathStore.mediaFolder)
 }
 </script>
