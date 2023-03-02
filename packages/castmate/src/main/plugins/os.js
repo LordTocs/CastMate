@@ -147,7 +147,7 @@ export default {
 	name: "os",
 	uiName: "OS",
 	icon: "mdi-laptop",
-	color: "#FFA256",
+	color: "#CC9B78",
 	async init() {},
 	actions: {
 		shell: {
@@ -168,7 +168,7 @@ export default {
 				},
 			},
 			icon: "mdi-application-cog-outline",
-			color: "#FFA256",
+			color: "#CC9B78",
 			async handler(data, context) {
 				const command = await powershellTemplate(data.command, context)
 
