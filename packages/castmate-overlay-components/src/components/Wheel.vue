@@ -22,6 +22,18 @@
 				</div>
 			</div>
 		</div>
+		<div
+			class="clicker"
+			:style="{
+				backgroundColor: clicker?.color || '#A87B0B',
+				right: `${-(
+					(clicker?.width ?? 40) - (clicker?.inset ?? 10)
+				)}px`,
+				'--clickerWidth': `${clicker?.width ?? 40}px`,
+				'--clickerHeight': `${clicker?.height ?? 20}px`,
+				clipPath: `path('${clickerClipPath}')`,
+			}"
+		></div>
 	</div>
 </template>
 
@@ -117,6 +129,37 @@ export default {
 				},
 			],
 		},
+		clicker: {
+			name: "Clicker",
+			type: Object,
+			required: true,
+			properties: {
+				color: {
+					type: Color,
+					name: "Color",
+					default: "#A87B0B",
+					required: true,
+				},
+				height: {
+					type: Number,
+					name: "Height",
+					default: 40,
+					required: true,
+				},
+				width: {
+					type: Number,
+					name: "Width",
+					default: 80,
+					required: true,
+				},
+				inset: {
+					type: Number,
+					name: "Inset",
+					default: 40,
+					required: true,
+				},
+			},
+		},
 		damping: {
 			name: "Damping",
 			type: Object,
@@ -163,6 +206,11 @@ export default {
 				cosTheta * width
 			}, ${height + 1} L 0,${height / 2 + 1} Z`
 			return arcPath
+		},
+		clickerClipPath() {
+			const height = this.clicker?.height || 20
+			const width = this.clicker?.width || 40
+			return `M 0 ${height / 2} L${width},0 L${width},${height} Z`
 		},
 		globalIndex() {
 			return Math.ceil(
@@ -306,14 +354,19 @@ export default {
 	width: calc(2 * var(--radius));
 	height: calc(2 * var(--radius));
 	position: relative;
-	overflow: hidden;
-	/*border-radius: 100%;*/
 }
 
 .wheel {
 	height: 100%;
 	transform-origin: center center;
 	position: relative;
+}
+
+.clicker {
+	position: absolute;
+	width: var(--clickerWidth);
+	height: var(--clickerHeight);
+	top: calc(var(--radius) - var(--clickerHeight) / 2);
 }
 
 .slice {
