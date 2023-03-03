@@ -5,7 +5,7 @@
 				<v-col>
 					<data-input
 						:schema="
-							addRequired(this.plugins.obs.settings.hostname)
+							addRequired(pluginStore.plugins.obs.settings.hostname)
 						"
 						label="Hostname"
 						v-model="hostname"
@@ -13,7 +13,7 @@
 				</v-col>
 				<v-col>
 					<data-input
-						:schema="addRequired(this.plugins.obs.settings.port)"
+						:schema="addRequired(pluginStore.plugins.obs.settings.port)"
 						label="Port"
 						v-model="port"
 					/>
@@ -22,7 +22,7 @@
 			<v-row>
 				<v-col>
 					<data-input
-						:schema="addRequired(this.plugins.obs.secrets.password)"
+						:schema="addRequired(pluginStore.plugins.obs.secrets.password)"
 						label="Password"
 						v-model="password"
 						secret
@@ -47,7 +47,8 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue"
+import { onMounted, ref } from "vue"
+import { usePluginStore } from "../../store/plugins";
 import { useSettingsStore } from "../../store/settings"
 import { useIpc } from "../../utils/ipcMap"
 import DataInput from "../data/DataInput.vue"
@@ -63,14 +64,16 @@ function addRequired(schema) {
 const connected = ref(false)
 const trying = ref(false)
 
+const pluginStore = usePluginStore()
+
 const tryConnectSettings = useIpc("obs", "tryConnectSettings")
 
 async function tryConnect() {
 	trying.value = true
-	const result = await this.tryConnectSettings(
-		this.hostname,
-		this.port,
-		this.password
+	const result = await tryConnectSettings(
+		hostname.value,
+		port.value,
+		password.value
 	)
 	trying.value = false
 
@@ -85,12 +88,12 @@ const changeSecrets = useIpc("settings", "changeSecrets")
 
 async function save() {
 	await Promise.all([
-		changeSettings({
+		changeSettings("obs",{
 			...settingsStore.settings.obs,
 			hostname: hostname.value,
 			port: port.value,
 		}),
-		changeSecrets({
+		changeSecrets("obs",{
 			...settingsStore.secrets.obs,
 			password: password.value,
 		}),
