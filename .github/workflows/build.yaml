@@ -32,3 +32,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_APP_MIXPANEL_PROJECT_TOKEN: ${{ secrets.MIXPANEL_PROJECT_TOKEN }}
+          VITE_SPELLCAST_URL: https://api.spellcast.gg/
+          VITE_SPELLCAST_SOCKET_URL: wss://api.spellcast.gg/
