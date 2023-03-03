@@ -96,7 +96,7 @@ const streaming = computed(() => pluginStore.rootState.obs.streaming)
 const recording = computed(() => pluginStore.rootState.obs.recording)
 
 const isOBSConfigured = computed(() => {
-	return !!settingStore.settings.obs.hostname
+	return !!settingStore.settings?.obs?.hostname
 })
 
 const refreshAllBrowsers = useIpc("obs", "refreshAllBrowsers")
