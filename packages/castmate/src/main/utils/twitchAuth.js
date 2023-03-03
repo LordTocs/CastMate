@@ -93,7 +93,7 @@ export class ElectronAuthManager {
 		}
 
 		logger.info(`No Cached ${this.name} Token. Trying Silent Auth`)
-		await this.trySilentAuth()
+		await this._trySilentAuth()
 	}
 
 	async _checkToken(token) {
