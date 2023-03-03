@@ -1,7 +1,4 @@
 {
-	"excludeFiles": [
-		"!/settings.yaml",
-		"node_modules"
-	],
+	"excludeFiles": ["!/settings.yaml", "node_modules"],
 	"gitignore": "none"
 }

@@ -14,13 +14,12 @@ To build into an installer run `npm run build`
 
 ## Useful Documentation Links
 
-- [OBS Websocket Protocol (4.9.1)](https://github.com/obsproject/obs-websocket/blob/4.x-compat/docs/generated/protocol.md)
+-   [OBS Websocket Protocol (4.9.1)](https://github.com/obsproject/obs-websocket/blob/4.x-compat/docs/generated/protocol.md)
 
-- [Twitch Authentication](https://dev.twitch.tv/docs/authentication)
+-   [Twitch Authentication](https://dev.twitch.tv/docs/authentication)
 
-* [Twitch API](https://dev.twitch.tv/docs/api/)
+*   [Twitch API](https://dev.twitch.tv/docs/api/)
 
-- [Philips Hue](https://developers.meethue.com/develop/get-started-2/)
+-   [Philips Hue](https://developers.meethue.com/develop/get-started-2/)
 
-- [Twurple Docs](https://twurple.js.org/)
-
+-   [Twurple Docs](https://twurple.js.org/)

@@ -19,15 +19,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: "Install Node"
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
+          corepack: true
       - name: "Install Node Packages"
-        run: "npm install"
+        run: "yarn install"
       #- name: "Rebuild for Electron"
       #  run: "npm run rebuild"
       - name: "Build"
-        run: "npm run buildpublish"
+        run: "yarn run buildpublish"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_APP_MIXPANEL_PROJECT_TOKEN: ${{ secrets.MIXPANEL_PROJECT_TOKEN }}
