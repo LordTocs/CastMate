@@ -111,8 +111,9 @@ export class StateManager {
 		try {
 			this.initialState = YAML.parse(
 				await fs.promises.readFile(stateFilePath, "utf-8")
-			)
+			) || {}
 		} catch (err) {
+			this.initialState = {}
 			logger.error(`Error Loading Initial Plugin State`)
 		}
 	}

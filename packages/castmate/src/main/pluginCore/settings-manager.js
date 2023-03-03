@@ -6,6 +6,7 @@ import fs from "fs"
 import { secretsFilePath, settingsFilePath } from "../utils/configuration"
 import YAML from "yaml"
 import { WebServices } from "../webserver/webserver"
+import util from "util"
 
 let settingsManager = null
 
@@ -32,14 +33,27 @@ export class SettingsManager {
 	}
 
 	async load() {
-		const settingsText = await fs.promises.readFile(
-			settingsFilePath,
-			"utf-8"
-		)
-		this.settings = YAML.parse(settingsText)
+		try {
+			const settingsText = await fs.promises.readFile(
+				settingsFilePath,
+				"utf-8"
+			)
+			this.settings = YAML.parse(settingsText) || {}
+		} catch (err) {
+			logger.error(`Error loading settings: ${util.inspect(err)}`)
+			this.settings = {}
+		}
 
-		const secretsText = await fs.promises.readFile(secretsFilePath, "utf-8")
-		this.secrets = YAML.parse(secretsText)
+		try {
+			const secretsText = await fs.promises.readFile(
+				secretsFilePath,
+				"utf-8"
+			)
+			this.secrets = YAML.parse(secretsText) || {}
+		} catch (err) {
+			logger.error(`Error loading secrets: ${util.inspect(err)}`)
+			this.secrets = {}
+		}
 	}
 
 	async updateSettings(pluginName, settings) {
