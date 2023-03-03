@@ -7,8 +7,8 @@ export const useAnalyticsStore = defineStore("analytics", () => {
 	const id = ref(null)
 
 	async function init() {
-		ipcRenderer.on("analytics_setId", (event, id) => {
-			id.value = id
+		ipcRenderer.on("analytics_setId", (event, twitchId) => {
+			id.value = twitchId
 		})
 	}
 
