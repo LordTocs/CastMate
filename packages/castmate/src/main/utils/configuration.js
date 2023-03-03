@@ -1,10 +1,13 @@
 import { app, ipcFunc, ipcMain } from "./electronBridge.js"
 import path from "path"
-import fse from 'fs-extra'
+import fse from "fs-extra"
 import fs from "fs"
 
 const isDevelopment = !app.isPackaged
-const isPortable = process.argv.includes("--portable") || (isDevelopment && !process.argv.includes("--non-portable"));
+
+const isPortable =
+	process.argv.includes("--portable") ||
+	(isDevelopment && (import.meta.env.VITE_DEV_USE_GLOBAL != "true"))
 export const userFolder = path.resolve(
 	!isPortable ? path.join(app.getPath("userData"), "user") : "./user"
 )
@@ -35,11 +38,10 @@ export function ensureFolder(pathlike, onCreate) {
 export async function ensureContent(source, dest) {
 	await fse.copy(source, dest, {
 		filter: (src, dest) => {
-			if (fs.statSync(src).isDirectory())
-				return true
-			
+			if (fs.statSync(src).isDirectory()) return true
+
 			return !fs.existsSync(dest)
-		}
+		},
 	})
 }
 
@@ -51,7 +53,6 @@ export function ensureFile(path) {
 
 export function ensureUserFolder() {
 	console.log("User Folder", userFolder)
-	console.log("Args!", process.argv)
 	ensureFolder(userFolder)
 	ensureFolder(path.join(userFolder, "data"))
 	ensureFolder(path.join(userFolder, "profiles"))
