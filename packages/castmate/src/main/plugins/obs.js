@@ -46,6 +46,7 @@ export default {
 		this.obs = new OBSWebSocket()
 		this.state.recording = false
 		this.state.streaming = false
+		this.state.connected = false
 
 		this.sceneHistory = []
 
@@ -63,9 +64,11 @@ export default {
 			this.poppingScene = false
 		})
 		this.obs.on("ConnectionClosed", () => {
+			//console.log("OBS Connection Closed!")
 			this.state.connected = false
 			if (!this.forceStop) {
-				setTimeout(() => {
+				this.retryTimeout = setTimeout(() => {
+					this.retryTimeout = null
 					this.connectOBS()
 				}, 5000)
 			} else {
@@ -130,6 +133,13 @@ export default {
 			this.lastPort = port
 			this.lastPassword = password
 
+			//console.log("tryConnect", hostname, port, password)
+
+			if (this.retryTimeout) {
+				clearTimeout(this.retryTimeout)
+				this.retryTimeout = null
+			}
+
 			try {
 				await this.obs.connect(`ws://${hostname}:${port}`, password)
 				this.logger.info("OBS connected!")
@@ -153,8 +163,12 @@ export default {
 
 				return true
 			} catch (error) {
-				//this.logger.error(`Error Connecting to OBS: ws://${hostname}:${port}`);
-				//this.logger.error(`Failed to connect ${error.code}: ${error.message}`);
+				/*this.logger.error(
+					`Error Connecting to OBS: ws://${hostname}:${port}`
+				)
+				this.logger.error(
+					`Failed to connect ${error.code}: ${error.message}`
+				)*/
 				this.state.connected = false
 				return false
 			}
@@ -218,6 +232,7 @@ export default {
 		async tryConnectSettings(hostname, port, password) {
 			this.forceStop = true
 			await this.obs.disconnect()
+			//console.log("tryConnectSettings", hostname, port, password)
 			return await this.tryConnect(hostname, port, password)
 		},
 		async openOBS() {
