@@ -96,11 +96,19 @@
 					prepend-icon="mdi-multimedia"
 					title="Open Media Folder"
 				/>
+				<v-divider></v-divider>
 				<v-list-item
 					link
 					to="/about"
 					prepend-icon="mdi-information-outline"
 					title="About"
+				/>
+				<v-list-item
+					link
+					href="https://discord.gg/txt4DUzYJM"
+					prepend-icon="mdi-help"
+					target="_blank"
+					title="Support Discord"
 				/>
 			</v-list>
 		</v-navigation-drawer>
