@@ -146,8 +146,8 @@ async function load() {
 	const fullSettings = _cloneDeep(settingsStore.settings)
 	const fullSecrets = _cloneDeep(settingsStore.secrets)
 
-	settings.value = fullSettings[pluginName.value]
-	secrets.value = fullSecrets[pluginName.value]
+	settings.value = fullSettings[pluginName.value] || {}
+	secrets.value = fullSecrets[pluginName.value] || {}
 
 	nextTick(() => {
 		dirty.value = false
