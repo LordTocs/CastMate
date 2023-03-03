@@ -4,7 +4,7 @@ import fse from 'fs-extra'
 import fs from "fs"
 
 const isDevelopment = !app.isPackaged
-const isPortable = process.argv.includes("--portable") // || isDevelopment;
+const isPortable = process.argv.includes("--portable") || (isDevelopment && !process.argv.includes("--non-portable"));
 export const userFolder = path.resolve(
 	!isPortable ? path.join(app.getPath("userData"), "user") : "./user"
 )
@@ -25,12 +25,22 @@ export const variablesFilePath = path.resolve(
 export const stateFilePath = path.resolve(path.join(userFolder, "state.yaml"))
 
 export function ensureFolder(pathlike, onCreate) {
-	console.log("Ensuring", pathlike)
 	if (!fs.existsSync(pathlike)) {
 		fs.mkdirSync(pathlike, { recursive: true })
 
 		if (onCreate) onCreate()
 	}
+}
+
+export async function ensureContent(source, dest) {
+	await fse.copy(source, dest, {
+		filter: (src, dest) => {
+			if (fs.statSync(src).isDirectory())
+				return true
+			
+			return !fs.existsSync(dest)
+		}
+	})
 }
 
 export function ensureFile(path) {
@@ -40,6 +50,8 @@ export function ensureFile(path) {
 }
 
 export function ensureUserFolder() {
+	console.log("User Folder", userFolder)
+	console.log("Args!", process.argv)
 	ensureFolder(userFolder)
 	ensureFolder(path.join(userFolder, "data"))
 	ensureFolder(path.join(userFolder, "profiles"))
@@ -57,6 +69,8 @@ export function ensureUserFolder() {
 			await fse.copy(sounds, mediaFolder)
 		}
 	})
+
+	ensureContent("./starter_media", mediaFolder)
 
 	ensureFile(secretsFilePath)
 	ensureFile(settingsFilePath)
