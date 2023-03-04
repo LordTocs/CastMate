@@ -24,12 +24,28 @@ async function powershellCommand(command, workingDir) {
 	})
 }
 
+const SINGLE_QUOTE = "'"
+const DOUBLE_QUOTE = '"'
+const BACK_TICK = "`"
+
+const singleQuotes = ["'", "\u2018", "\u2019", "\u201A", "\u201B"]
+const doubleQuotes = ['"', "\u201C", "\u201D", "\u201E"]
+const dashes = ["-", "\u2013", "\u2014", "\u2015"]
+
+function isSingleQuote(char) {
+	return singleQuotes.includes(char)
+}
+
+function isDoubleQuote(char) {
+	return doubleQuotes.includes(char)
+}
+
 function powershellEscapeForSingleQuote(str) {
 	let result = ""
 
 	for (let c of str) {
-		if (c == "'") {
-			result += "'"
+		if (singleQuotes.includes(c)) {
+			result += c
 		}
 		result += c
 	}
@@ -39,7 +55,7 @@ function powershellEscapeForSingleQuote(str) {
 
 function powershellEscapeForDoubleQuote(str) {
 	let result = ""
-	const specialCharacters = ['"', "`", "$"]
+	const specialCharacters = [...doubleQuotes, "`", "$"]
 
 	for (let c of str) {
 		if (specialCharacters.includes(c)) {
@@ -53,7 +69,7 @@ function powershellEscapeForDoubleQuote(str) {
 
 function powershellEscapeWild(str) {
 	let result = ""
-	const specialCharacters = ['"', "`", "'", "-", "%", "|", "$"]
+	const specialCharacters = [...doubleQuotes, ...singleQuotes, "`", ...dashes, "%", "|", "$", "{", "}", "?"]
 
 	for (let c of str) {
 		if (specialCharacters.includes(c)) {
@@ -65,18 +81,15 @@ function powershellEscapeWild(str) {
 	return result
 }
 
-const SINGLE_QUOTE = "'"
-const DOUBLE_QUOTE = '"'
-const BACK_TICK = "`"
 function trackPowershellString(filler, parseContext) {
 	for (let i = 0; i < filler.length; ++i) {
 		const c = filler[i]
 		if (parseContext.strType == SINGLE_QUOTE) {
 			//In a ' string the only escape character is ' since everything else is verbatum
 
-			if (c == SINGLE_QUOTE) {
+			if (isSingleQuote(c)) {
 				const next = filler[i + 1]
-				if (next == SINGLE_QUOTE) {
+				if (isSingleQuote(next)) {
 					i++
 				} else {
 					parseContext.strType = null
@@ -84,9 +97,9 @@ function trackPowershellString(filler, parseContext) {
 			}
 		} else if (parseContext.strType == DOUBLE_QUOTE) {
 			//In a " string ` escaping works as well as "" escaping
-			if (c == DOUBLE_QUOTE) {
+			if (isDoubleQuote(c)) {
 				const next = filler[i + 1]
-				if (next == DOUBLE_QUOTE) {
+				if (isDoubleQuote(next)) {
 					i++
 				} else {
 					parseContext.strType = null
@@ -95,8 +108,10 @@ function trackPowershellString(filler, parseContext) {
 				i++
 			}
 		} else {
-			if (c == SINGLE_QUOTE || c == DOUBLE_QUOTE) {
-				parseContext.strType = c
+			if (isSingleQuote(c)) {
+				parseContext.strType = SINGLE_QUOTE
+			} else if (isDoubleQuote(c)) {
+				parseContext.strType = DOUBLE_QUOTE
 			}
 		}
 	}
