@@ -50,6 +50,10 @@ module.exports = {
 			from: "../castmate-obs-overlay/dist/obs-overlay",
 			to: "obs-overlay",
 		},
+		{
+			from: "starter_media",
+			to: "starter_media"
+		}
 	],
 	publish: [
 		{
