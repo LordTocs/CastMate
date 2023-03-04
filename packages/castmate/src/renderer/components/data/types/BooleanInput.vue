@@ -7,7 +7,7 @@
 		>
 			<label class="v-label">{{ schema.leftLabel }} </label>
 		</div>
-		<v-switch v-model="modelObj" inset density="compact" :density="density">
+		<v-switch v-model="modelObj" inset :density="density" color="primary">
 			<template v-slot:label>
 				{{ schema.name || label }}
 				<v-btn
