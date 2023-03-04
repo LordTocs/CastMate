@@ -300,7 +300,7 @@ export default {
 			console.log("Checking Pattern", urlPattern)
 
 			const input = inputSettingsAndName.find((i) => {
-				return i.inputSettings.url.match(urlRegex)
+				return i.inputSettings.url?.match(urlRegex)
 			})
 
 			return input
