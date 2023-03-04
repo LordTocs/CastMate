@@ -29,7 +29,7 @@
 			variant="outlined"
 			prepend-icon="mdi-wrench"
 			color="error"
-			v-if="!valid"
+			v-if="!valid && !!browserSourceName"
 			@click="fixBrowserSource"
 		>
 			Fix OBS Source
