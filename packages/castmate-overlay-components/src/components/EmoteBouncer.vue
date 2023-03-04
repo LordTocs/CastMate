@@ -54,9 +54,11 @@ const MouseConstraint = Matter.MouseConstraint
 const Mouse = Matter.Mouse
 const World = Matter.World
 const Bodies = Matter.Bodies
+const Vertices = Matter.Vertices
 export default {
 	inject: ["isEditor", "stateProvider"],
 	props: {
+		size: { type: Object },
 		lifetime: { type: Number, name: "Emote Life Time", default: 7 },
 		velocityMax: { type: Number, name: "Max Velocity", default: 0.4 },
 		shakeTime: { type: Number, name: "Time Between Shakes", default: 5 },
@@ -167,8 +169,8 @@ export default {
 			}
 		},
 		spawnImage(image) {
-			const width = this.$refs.bounceHouse.clientWidth
-			const height = this.$refs.bounceHouse.clientHeight
+			const width = this.size.width
+			const height = this.size.height
 
 			let x = Math.random() * width
 			let y = Math.random() * height
@@ -221,6 +223,20 @@ export default {
 				}
 			}, lifetime * 1000)
 		},
+		setNewRectangle(body, x, y, width, height) {
+			Body.setPosition(body, { x, y})
+			Body.setVertices(body, Vertices.fromPath('L 0 0 L ' + width + ' 0 L ' + width + ' ' + height + ' L 0 ' + height))
+		},
+		updateWalls() {
+			if (this.isEditor) return
+			
+			const width = this.size.width
+			const height = this.size.height
+			this.setNewRectangle(this.ground, width / 2, height + 40, width, 80)
+			this.setNewRectangle(this.ceiling, width / 2, -40, width, 80)
+			this.setNewRectangle(this.leftWall, -40, height / 2, 80, height)
+			this.setNewRectangle(this.rightWall, width + 40, height / 2, 80, height)
+		}
 	},
 	mounted() {
 		const width = this.$refs.bounceHouse.clientWidth
@@ -234,20 +250,20 @@ export default {
 
 		this.engine = Engine.create()
 
-		const ground = Bodies.rectangle(width / 2, height + 40, width, 80, {
+		this.ground = Bodies.rectangle(width / 2, height + 40, width, 80, {
 			isStatic: true,
 		})
-		const ceiling = Bodies.rectangle(width / 2, -40, width, 80, {
+		this.ceiling = Bodies.rectangle(width / 2, -40, width, 80, {
 			isStatic: true,
 		})
-		const leftWall = Bodies.rectangle(-40, height / 2, 80, height, {
+		this.leftWall = Bodies.rectangle(-40, height / 2, 80, height, {
 			isStatic: true,
 		})
-		const rightWall = Bodies.rectangle(width + 40, height / 2, 80, height, {
+		this.rightWall = Bodies.rectangle(width + 40, height / 2, 80, height, {
 			isStatic: true,
 		})
 
-		World.add(this.engine.world, [ground, ceiling, leftWall, rightWall])
+		World.add(this.engine.world, [this.ground, this.ceiling, this.leftWall, this.rightWall])
 
 		Engine.run(this.engine)
 
@@ -268,6 +284,12 @@ export default {
 		channelName() {
 			this.emotes?.updateChannelName(this.channelName)
 		},
+		size: {
+			deep: true,
+			handler() {
+				this.updateWalls()
+			}
+		}
 	},
 }
 </script>
