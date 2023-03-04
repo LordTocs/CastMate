@@ -161,16 +161,21 @@ export default {
 
 				if (!(variableData.name in this.state)) return
 
+				const spec = this.variableSpecs[variableData.name]
+				if (!spec) return
+
+				const isString = spec.type == "string" || spec.type == "String"
+				const isNumber = spec.type == "Number"
+
 				//Set the value
 				let setValue = variableData.value
-				if (
-					typeof this.state[variableData.name] == "number" ||
-					this.state[variableData.name] instanceof Number
-				) {
-					setValue = await templateNumber(setValue, context)
-				} else {
+
+				if (isNumber) {
+					setValue = Number(await templateNumber(setValue, context))
+				} else if (isString) {
 					setValue = await template(setValue, context)
 				}
+
 				this.logger.info(`Setting ${variableData.name} to ${setValue}`)
 				this.state[variableData.name] = setValue
 			},
@@ -186,7 +191,10 @@ export default {
 						type: String,
 						name: "Variable Name",
 						async enum() {
-							return Object.keys(this.state)
+							return Object.keys(this.variableSpecs).filter(
+								(name) =>
+									this.variableSpecs[name].type == "Number"
+							)
 						},
 					},
 					offset: {
@@ -201,11 +209,22 @@ export default {
 
 				if (!(variableData.name in this.state)) return
 
+				const spec = this.variableSpecs[variableData.name]
+				if (!spec) return
+
+				const isNumber = spec.type == "Number"
+
+				if (!isNumber) {
+					return
+				}
+
 				//Add the value
-				this.state[variableData.name] += variableData.offset
-				this.logger.info(
-					`Offseting ${variableData.name} by ${variableData.offset}`
-				)
+				const offset = Number(await templateNumber(
+					variableData.offset,
+					context
+				))
+				this.state[variableData.name] = Number(this.state[variableData.name] + offset) 
+				this.logger.info(`Offseting ${variableData.name} by ${offset}`)
 			},
 		},
 	},
