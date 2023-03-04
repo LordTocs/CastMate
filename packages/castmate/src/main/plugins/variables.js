@@ -168,16 +168,24 @@ export default {
 				const isNumber = spec.type == "Number"
 
 				//Set the value
-				let setValue = variableData.value
-
 				if (isNumber) {
-					setValue = Number(await templateNumber(setValue, context))
+					const setValue = Number(
+						await templateNumber(variableData.value, context)
+					)
+					if (!isNaN(setValue)) {
+						this.state[variableData.name] = setValue
+						this.logger.info(`Setting ${variableData.name} to ${setValue}`)
+					}
 				} else if (isString) {
-					setValue = await template(setValue, context)
+					const setValue = await template(
+						setValue,
+						context
+					)
+					this.state[variableData.name] = setValue
+					this.logger.info(`Setting ${variableData.name} to ${setValue}`)
 				}
 
-				this.logger.info(`Setting ${variableData.name} to ${setValue}`)
-				this.state[variableData.name] = setValue
+				
 			},
 		},
 		inc: {
@@ -219,12 +227,16 @@ export default {
 				}
 
 				//Add the value
-				const offset = Number(await templateNumber(
-					variableData.offset,
-					context
-				))
-				this.state[variableData.name] = Number(this.state[variableData.name] + offset) 
-				this.logger.info(`Offseting ${variableData.name} by ${offset}`)
+				const offset = Number(
+					await templateNumber(variableData.offset, context)
+				)
+				
+				if (!isNaN(offset)) {
+					this.state[variableData.name] = Number(
+						this.state[variableData.name] + offset
+					)
+					this.logger.info(`Offseting ${variableData.name} by ${offset}`)
+				}
 			},
 		},
 	},
