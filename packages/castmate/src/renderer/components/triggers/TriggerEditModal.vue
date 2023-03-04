@@ -19,6 +19,7 @@
 						@update:model-value="changeTriggerType"
 						class="flex-grow-0"
 						style="width: 350px"
+						density="compact"
 					/>
 					<v-sheet variant="outlined" rounded class="py-2 my-2">
 						<template v-if="localTriggerType">
@@ -32,6 +33,7 @@
 							:schema="configSchema"
 							v-model="localMapping.config"
 							:context="localMapping.config"
+							density="compact"
 						/>
 						<p v-else-if="triggerDesc" class="text-center my-4">
 							No Configuration Needed

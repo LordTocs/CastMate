@@ -86,14 +86,21 @@
 		:modelValue="value"
 		:label="label"
 	/>
+	<media-view
+		v-else-if="schema.type == 'MediaFile' && value"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
 </template>
 
 <script>
 import ColorSwatch from "./ColorSwatch.vue"
 import OverlayWidgetView from "./views/OverlayWidgetView.vue"
 import ResourceView from "./views/ResourceView.vue"
+import MediaView from "./views/MediaView.vue"
 export default {
-	components: { ColorSwatch, ResourceView, OverlayWidgetView },
+	components: { ColorSwatch, ResourceView, MediaView, OverlayWidgetView },
 	name: "data-view",
 	props: {
 		schema: {},

@@ -16,7 +16,7 @@
 				<v-chip
 					class="ma-2"
 					:color="plugins[item.raw.pluginKey].color"
-					size="small"
+					size="x-small"
 					variant="outlined"
 				>
 					<v-icon start :icon="plugins[item.raw.pluginKey].icon" />
@@ -33,7 +33,7 @@
 				<v-chip
 					class="ma-2"
 					:color="plugins[item.raw.pluginKey].color"
-					size="small"
+					size="x-small"
 					variant="outlined"
 				>
 					<v-icon start :icon="plugins[item.raw.pluginKey].icon" />
