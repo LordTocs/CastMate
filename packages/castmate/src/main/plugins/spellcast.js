@@ -270,8 +270,9 @@ export default {
 				this.getActiveButtons()
 			)
 			this.requestSocket.handle("runSpell", (buttonId, context) => {
+				this.logger.info(`Spell Request: ${buttonId}`)
 				return this.triggers.spellHook({
-					hookId: buttonId,
+					buttonId,
 					...context,
 					userColor: this.twitch.publicMethods.getUserColor(
 						context.userId
