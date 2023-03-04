@@ -1,8 +1,9 @@
 <template>
 	<v-card
 		variant="outlined"
-		width="250px"
-		class="d-flex flex-column mr-4"
+		max-width="250px"
+		min-width="250px"
+		class="d-flex flex-column mr-4 mb-3"
 		:class="{ 'selected-segment': active }"
 	>
 		<v-card-title class="d-flex flex-row justify-center">
