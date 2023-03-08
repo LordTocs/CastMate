@@ -4,6 +4,7 @@
 		:schema="schema"
 		:label="label"
 		:context="modelObj"
+		density="compact"
 	/>
 </template>
 
