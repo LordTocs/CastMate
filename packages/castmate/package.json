@@ -52,7 +52,6 @@
 		"yaml": "^2.1.1"
 	},
 	"devDependencies": {
-		"@jaames/iro": "^5.5.2",
 		"@mdi/font": "^7.1.96",
 		"@rollup/plugin-node-resolve": "^13.3.0",
 		"@vitejs/plugin-vue": "^3.0.3",

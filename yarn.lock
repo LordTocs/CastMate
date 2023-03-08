@@ -387,23 +387,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@irojs/iro-core@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@irojs/iro-core@npm:1.2.1"
-  checksum: 43436ddaa1cd1f558aadaca29a59d589cccbeb475fff5798270341d6f89358de8dab128f76f3ed18564aad30fdd14fccf89463a8327199e35e9e4756c747b6f3
-  languageName: node
-  linkType: hard
-
-"@jaames/iro@npm:^5.5.2":
-  version: 5.5.2
-  resolution: "@jaames/iro@npm:5.5.2"
-  dependencies:
-    "@irojs/iro-core": ^1.2.1
-    preact: ^10.0.0
-  checksum: 49e6ab0023e2b4ec9ba04d7b92d9707a88dfe31cf6d23074424628f9df6b11e0edf9b7ba7dd012d15665d1345c9b3d145c1f30523d5cc3124efa922509a25fae
-  languageName: node
-  linkType: hard
-
 "@malept/cross-spawn-promise@npm:^1.1.0":
   version: 1.1.1
   resolution: "@malept/cross-spawn-promise@npm:1.1.1"
@@ -1680,7 +1663,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate@workspace:packages/castmate"
   dependencies:
-    "@jaames/iro": ^5.5.2
     "@mdi/font": ^7.1.96
     "@peter-murray/hue-bridge-model": ^2.0.4
     "@rollup/plugin-node-resolve": ^13.3.0
@@ -5271,13 +5253,6 @@ __metadata:
     picocolors: ^1.0.0
     source-map-js: ^1.0.2
   checksum: 62782723a385f92b7525f66d29614624de7c5643855423db3a5efd9287e677650300192749adddbbb6734cea9b1d5f5fd4f6ea00ca3f9a95dbbb88f835f5ca64
-  languageName: node
-  linkType: hard
-
-"preact@npm:^10.0.0":
-  version: 10.11.3
-  resolution: "preact@npm:10.11.3"
-  checksum: 9387115aa0581e8226309e6456e9856f17dfc0e3d3e63f774de80f3d462a882ba7c60914c05942cb51d51e23e120dcfe904b8d392d46f29ad15802941fe7a367
   languageName: node
   linkType: hard
 

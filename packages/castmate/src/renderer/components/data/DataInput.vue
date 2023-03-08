@@ -67,12 +67,6 @@
 		:label="labelString"
 		:density="density"
 	/>
-	<color-picker
-		v-else-if="schema.type == 'LightColor'"
-		v-model="modelObj"
-		:schema="schema"
-		:clearable="!schema.required"
-	/>
 	<automation-selector
 		v-else-if="schema.type == 'Automation'"
 		v-model="modelObj"
@@ -128,6 +122,11 @@
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
+	<light-color-input
+		v-else-if="schema.type == 'LightColor'"
+		v-model="modelObj"
+		v-bind="allProps"
+	/>
 	<folder-input
 		v-else-if="schema.type == 'Folder'"
 		v-model="modelObj"
@@ -141,7 +140,6 @@
 </template>
 
 <script>
-import ColorPicker from "./ColorPicker.vue"
 import FileAutocomplete from "./FileAutocomplete.vue"
 import RewardSelector from "../rewards/RewardSelector.vue"
 
@@ -162,6 +160,7 @@ import OverlayTransitionTimingInput from "./types/OverlayTransitionTimingInput.v
 import OverlayPaddingInput from "./types/OverlayPaddingInput.vue"
 import ToggleInput from "./types/ToggleInput.vue"
 import ColorInput from "./types/ColorInput.vue"
+import LightColorInput from "./types/LightColorInput.vue"
 import FolderInput from "./types/FolderInput.vue"
 import OverlayWidgetInput from "./types/OverlayWidgetInput.vue"
 
@@ -173,7 +172,6 @@ export default {
 		NumberInput,
 		FileAutocomplete,
 		StringInput,
-		ColorPicker,
 		AutomationSelector,
 		RewardSelector,
 		RangeInput,
@@ -188,6 +186,7 @@ export default {
 		OverlayPaddingInput,
 		ToggleInput,
 		ColorInput,
+		LightColorInput,
 		FolderInput,
 		OverlayWidgetInput,
 	},

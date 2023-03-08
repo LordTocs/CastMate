@@ -1,5 +1,17 @@
 <template>
 	<div v-if="!schema || value === undefined" />
+	<div
+		v-else-if="schema.type == 'Object' && schema.properties"
+		:class="[{ 'horizontal-layout': horizontal }]"
+	>
+		<data-view
+			v-for="key in previewProperties"
+			:key="key"
+			:schema="schema.properties[key]"
+			:value="value[key]"
+			:horizontal="horizontal"
+		/>
+	</div>
 	<p
 		v-else-if="
 			schema.type == 'String' ||
@@ -44,30 +56,24 @@
 			{{ schema.falseIcon ? schema.falseIcon : "mdi-close-bold" }}
 		</v-icon>
 	</p>
-	<p v-else-if="schema.type == 'LightColor'">
-		<span class="text--secondary" v-if="schema.name || label">
-			{{ schema.name || label }}:
-		</span>
-		<color-swatch :value="value" />
-	</p>
+	<color-view
+		v-else-if="schema.type == 'Color'"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
+	<light-color-view
+		v-else-if="schema.type == 'LightColor'"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
 	<p v-else-if="schema.type == 'ChannelPointReward'">
 		<span class="text--secondary" v-if="schema.name || label">
 			{{ schema.name || label }}: </span
 		>{{ value }}
 		<!--reward-edit-button :rewardName="value" /-->
 	</p>
-	<div
-		v-else-if="schema.type == 'Object' && schema.properties"
-		:class="[{ 'horizontal-layout': horizontal }]"
-	>
-		<data-view
-			v-for="key in previewProperties"
-			:key="key"
-			:schema="schema.properties[key]"
-			:value="value[key]"
-			:horizontal="horizontal"
-		/>
-	</div>
 	<p v-else-if="schema.type == 'Range' && value">
 		<span class="text--secondary" v-if="schema.name || label">
 			{{ schema.name || label }}: </span
@@ -95,12 +101,19 @@
 </template>
 
 <script>
-import ColorSwatch from "./ColorSwatch.vue"
 import OverlayWidgetView from "./views/OverlayWidgetView.vue"
 import ResourceView from "./views/ResourceView.vue"
 import MediaView from "./views/MediaView.vue"
+import ColorView from "./views/ColorView.vue"
+import LightColorView from "./views/LightColorView.vue"
 export default {
-	components: { ColorSwatch, ResourceView, MediaView, OverlayWidgetView },
+	components: {
+		ResourceView,
+		MediaView,
+		OverlayWidgetView,
+		ColorView,
+		LightColorView,
+	},
 	name: "data-view",
 	props: {
 		schema: {},
