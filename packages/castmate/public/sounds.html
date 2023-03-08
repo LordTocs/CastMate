@@ -1,0 +1,17 @@
+<html>
+	<body style="background-color: blue">
+		<script>
+			const { ipcRenderer } = require("electron")
+			ipcRenderer.sendSync("sound-window", "hello!")
+
+			ipcRenderer.on("play-sound", (event, arg) => {
+				let audio = new Audio(`file://${arg.source}`)
+				audio.volume = arg.volume
+				audio.addEventListener("canplaythrough", (event) => {
+					audio.play()
+				})
+				event.returnValue = true
+			})
+		</script>
+	</body>
+</html>
