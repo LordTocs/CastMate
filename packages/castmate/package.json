@@ -19,6 +19,7 @@
 		"@twurple/chat": "^6.0.4",
 		"@twurple/eventsub-ws": "^6.0.4",
 		"@twurple/pubsub": "^6.0.4",
+		"@vueuse/core": "^9.13.0",
 		"async-mutex": "^0.3.0",
 		"axios": "^0.27.2",
 		"bad-words": "^3.0.4",
