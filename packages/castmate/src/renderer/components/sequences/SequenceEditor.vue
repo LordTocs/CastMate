@@ -17,7 +17,7 @@
 			handle=".handle"
 			:group="{ name: 'actions' }"
 			class="sequence-container"
-			@dragstart="onDragStart"
+			@dragstart="onSelectStart"
 			ref="dragHandler"
 		>
 			<template #header>
@@ -60,300 +60,287 @@
 				width: dragWidth + 'px',
 				height: dragHeight + 'px',
 			}"
-		/>
-		<!-- This div is necessary so that there's "selectable content" otherwise the copy events wont fire -->
-		<!--<div style="font-size: 0; height: 120px" draggable="false">...</div>-->
+		></div>
 		<select-dummy ref="selectDummy" />
 	</div>
 </template>
 
-<script>
+<script setup>
 import SequenceItem from "./SequenceItem.vue"
 import Draggable from "vuedraggable"
-import { ipcRenderer } from "electron"
 import _cloneDeep from "lodash/cloneDeep"
-import { nanoid } from "nanoid/non-secure"
-import { mapModel } from "../../utils/modelValue"
+import { useModel } from "../../utils/modelValue"
 import SelectDummy from "./SelectDummy.vue"
-export default {
-	components: { SequenceItem, Draggable, SelectDummy },
-	props: {
-		modelValue: {},
-	},
-	emits: ["update:modelValue"],
-	data() {
-		return {
-			selected: [],
-			selectBox: {
-				dragging: false,
-				startX: 0,
-				startY: 0,
-				endX: 0,
-				endY: 0,
-			},
+import { ref, computed, onMounted, onUnmounted } from "vue"
+import { useElementScroll } from "../../utils/events"
+
+const props = defineProps({
+	modelValue: {},
+})
+const emit = defineEmits(["update:modelValue"])
+const modelObj = useModel(props, emit)
+
+const selected = ref([])
+const selectBox = ref({
+	dragging: false,
+	startX: 0,
+	startY: 0,
+	endX: 0,
+	endY: 0,
+})
+
+const dragTop = computed(() =>
+	selectBox.value.endY < selectBox.value.startY
+		? selectBox.value.endY
+		: selectBox.value.startY
+)
+
+const dragLeft = computed(() =>
+	selectBox.value.endX < selectBox.value.startX
+		? selectBox.value.endX
+		: selectBox.value.startX
+)
+const dragWidth = computed(() =>
+	Math.abs(selectBox.value.endX - selectBox.value.startX)
+)
+const dragHeight = computed(() =>
+	Math.abs(selectBox.value.endY - selectBox.value.startY)
+)
+
+function updateAction(index, value) {
+	let newValue = [...modelObj.value]
+	newValue[index] = value
+	emit("update:modelValue", newValue)
+}
+function deleteAction(index) {
+	let newValue = [...modelObj.value]
+	newValue.splice(index, 1)
+	emit("update:modelValue", newValue)
+}
+
+const dragArea = ref(null)
+const selectDummy = ref(null)
+const dragHandler = ref(null)
+
+function rectOverlap(r1, r2) {
+	return (
+		r1.left < r2.right &&
+		r1.right > r2.left &&
+		r1.top < r2.bottom &&
+		r1.bottom > r2.top
+	)
+}
+
+const scroll = useElementScroll(dragArea)
+
+////////////////////////////////////////
+/////////////SELECTION//////////////////
+////////////////////////////////////////
+
+function onSelectStart() {
+	selected.value = []
+	abandonSelect()
+}
+
+function getItemRect(item, areaRect) {
+	const clientRect = item.getBoundingClientRect()
+
+	const resultRect = {
+		top: clientRect.top - areaRect.top + scroll.y.value,
+		left: clientRect.left - areaRect.left + scroll.x.value,
+		bottom: clientRect.bottom - areaRect.top + scroll.y.value,
+		right: clientRect.right - areaRect.left + scroll.x.value,
+	}
+
+	return resultRect
+}
+
+function selectOverlapping() {
+	if (!dragArea.value) {
+		return
+	}
+	dragArea.value.focus()
+	selectDummy.value.select()
+
+	const areaRect = dragArea.value.getBoundingClientRect()
+	const dragRect = {
+		top: dragTop.value,
+		left: dragLeft.value,
+		bottom: dragTop.value + dragHeight.value,
+		right: dragLeft.value + dragWidth.value
+	}
+
+	const newSelection = []
+
+	const items =
+		dragHandler.value.$el.querySelectorAll(".sequence-item")
+
+	for (let i = 0; i < items.length; ++i) {
+		const item = items[i]
+		const itemRect = getItemRect(item, areaRect)
+
+		if (rectOverlap(dragRect, itemRect)) {
+			newSelection.push(i)
 		}
-	},
-	computed: {
-		dragTop() {
-			return this.selectBox.endY < this.selectBox.startY
-				? this.selectBox.endY
-				: this.selectBox.startY
-		},
-		dragLeft() {
-			return this.selectBox.endX < this.selectBox.startX
-				? this.selectBox.endX
-				: this.selectBox.startX
-		},
-		dragWidth() {
-			return Math.abs(this.selectBox.endX - this.selectBox.startX)
-		},
-		dragHeight() {
-			return Math.abs(this.selectBox.endY - this.selectBox.startY)
-		},
-		...mapModel(),
-	},
-	methods: {
-		getDraggableId(item) {
-			return `${item.plugin}.${item.action}`
-		},
-		updateAction(index, value) {
-			let newValue = _cloneDeep(this.modelValue)
+	}
 
-			newValue[index] = value
+	selected.value = newSelection
+}
 
-			this.$emit("update:modelValue", newValue)
-		},
-		deleteAction(index) {
-			let newValue = _cloneDeep(this.modelValue)
+function startSelect(e) {
+	if (!dragArea.value) {
+		return
+	}
 
-			newValue.splice(index, 1)
+	const containerRect = dragArea.value.getBoundingClientRect()
+	const x = e.clientX - containerRect.left + scroll.x.value
+	const y = e.clientY - containerRect.top + scroll.y.value
+	//console.log("Start Select", x, y)
 
-			this.$emit("update:modelValue", newValue)
-		},
-		newActionGroup() {
-			let newValue = _cloneDeep(this.modelValue)
-			newValue.push({})
+	selectBox.value.startX = x
+	selectBox.value.startY = y
+	selectBox.value.endX = x
+	selectBox.value.endY = y
+	selectBox.value.dragging = true
 
-			this.$emit("update:modelValue", newValue)
-		},
-		rectOverlap(r1, r2) {
-			return (
-				r1.left < r2.right &&
-				r1.right > r2.left &&
-				r1.top < r2.bottom &&
-				r1.bottom > r2.top
-			)
-		},
-		onDragStart() {
-			this.selected = []
-			this.abandonSelect()
-		},
-		doSelect() {
-			if (!this.$refs.dragArea) {
-				return
-			}
-			this.$refs.dragArea.focus()
-			this.$refs.selectDummy.select()
-			const areaRect = this.$refs.dragArea.getBoundingClientRect()
-			const dragRect = {
-				top: areaRect.top + this.dragTop,
-				left: areaRect.left + this.dragLeft,
-				bottom: areaRect.top + this.dragTop + this.dragHeight,
-				right: areaRect.left + this.dragLeft + this.dragWidth,
-			}
+	selectOverlapping()
 
-			const newSelection = []
+	document.addEventListener("mousemove", moveSelect)
+}
 
-			const items =
-				this.$refs.dragHandler.$el.querySelectorAll(".sequence-item")
+function moveSelect(e) {
+	if (!dragArea.value) {
+		return
+	}
+	const containerRect = dragArea.value.getBoundingClientRect()
+	const x = e.clientX - containerRect.left + scroll.x.value
+	const y = e.clientY - containerRect.top + scroll.y.value
+	//console.log("Move Select", x, y)
 
-			for (let i = 0; i < items.length; ++i) {
-				const item = items[i]
-				const itemRect = item.getBoundingClientRect()
+	selectBox.value.endX = x
+	selectBox.value.endY = y
 
-				if (this.rectOverlap(dragRect, itemRect)) {
-					newSelection.push(i)
-				}
-			}
+	selectOverlapping()
+}
+function stopSelect(e) {
+	if (!dragArea.value) {
+		return
+	}
 
-			//console.log(this.$refs.sequenceItems);
+	if (!selectBox.value.dragging) return
 
-			/*for (let itemId in this.$refs.sequenceItems) {
-        const item = this.$refs.sequenceItems[itemId];
+	selectOverlapping()
+	abandonSelect()
+}
+function abandonSelect() {
+	selectBox.value.dragging = false
+	selectBox.value.startX = 0
+	selectBox.value.startY = 0
+	selectBox.value.endX = 0
+	selectBox.value.endY = 0
+	selectBox.value.dragging = false
 
-        console.log("ITEM!", itemId, item);
+	document.removeEventListener("mousemove", moveSelect)
+}
 
-        const itemRect = item.getBoundingClientRect
-          ? item.getBoundingClientRect()
-          : item.$el.getBoundingClientRect();
+////////////////////////////////////////
+/////////////COPY PASTE/////////////////
+////////////////////////////////////////
 
-        if (this.rectOverlap(dragRect, itemRect)) {
-          newSelection.push(Number(itemId));
-        }
-      }*/
+function copy(event) {
+	if (selected.value.length == 0) return
 
-			this.selected = newSelection
-		},
-		startSelect(e) {
-			if (!this.$refs.dragArea) {
-				return
-			}
-			let containerRect = this.$refs.dragArea.getBoundingClientRect()
-			const x = e.clientX - containerRect.left
-			const y = e.clientY - containerRect.top
+	const clipData = []
 
-			this.selectBox.startX = x
-			this.selectBox.startY = y
-			this.selectBox.endX = x
-			this.selectBox.endY = y
-			this.selectBox.dragging = true
+	for (let idx of selected.value) {
+		clipData.push(_cloneDeep(modelObj.value[idx]))
+	}
 
-			this.doSelect()
+	event.clipboardData.setData(
+		"application/json",
+		JSON.stringify(clipData)
+	)
+	event.preventDefault()
+}
+function paste(event) {
+	console.log("Paste!")
 
-			document.addEventListener("mousemove", this.moveSelect)
-		},
-		moveSelect(e) {
-			if (!this.$refs.dragArea) {
-				return
-			}
-			let containerRect = this.$refs.dragArea.getBoundingClientRect()
-			const x = e.clientX - containerRect.left
-			const y = e.clientY - containerRect.top
+	let paste = (event.clipboardData || window.clipboardData).getData(
+		"application/json"
+	)
 
-			this.selectBox.endX = x
-			this.selectBox.endY = y
+	if (!paste || paste.length == 0) {
+		return
+	}
 
-			this.doSelect()
-		},
-		stopSelect(e) {
-			if (!this.$refs.dragArea) {
-				return
-			}
-			if (!this.selectBox.dragging) return
-			let containerRect = this.$refs.dragArea.getBoundingClientRect()
-			const x = e.clientX - containerRect.left
-			const y = e.clientY - containerRect.top
+	try {
+		const pasteData = JSON.parse(paste)
 
-			this.doSelect()
+		for (let action of pasteData) {
+			action.id = nanoid()
+		}
 
-			this.abandonSelect()
-		},
-		abandonSelect() {
-			this.selectBox.dragging = false
-			this.selectBox.startX = 0
-			this.selectBox.startY = 0
-			this.selectBox.endX = 0
-			this.selectBox.endY = 0
-			this.selectBox.dragging = false
+		if (!(pasteData instanceof Array)) return
 
-			document.removeEventListener("mousemove", this.moveSelect)
-		},
-		copy(event) {
-			console.log("Copy!")
+		//TODO: Validate JSON
 
-			if (this.selected.length == 0) return
+		let newValue = [...modelObj.value]
 
-			const clipData = []
+		let insertIdx = newValue.length
 
-			for (let idx of this.selected) {
-				clipData.push(_cloneDeep(this.modelValue[idx]))
-			}
-
-			event.clipboardData.setData(
-				"application/json",
-				JSON.stringify(clipData)
-			)
-			event.preventDefault()
-		},
-		paste(event) {
-			console.log("Paste!")
-
-			let paste = (event.clipboardData || window.clipboardData).getData(
-				"application/json"
-			)
-
-			if (!paste || paste.length == 0) {
-				return
-			}
-
-			try {
-				const pasteData = JSON.parse(paste)
-
-				for (let action of pasteData) {
-					action.id = nanoid()
-				}
-
-				if (!(pasteData instanceof Array)) return
-
-				//TODO: Validate JSON
-
-				let newValue = _cloneDeep(this.modelValue)
-
-				let insertIdx = newValue.length
-				//If we have a current selection, overwrite it.
-				if (this.selected.length != 0) {
-					insertIdx = this.selected[0]
-
-					let removed = 0
-					for (let idx of this.selected) {
-						newValue.splice(idx - removed, 1)
-						removed += 1
-					}
-				}
-
-				newValue.splice(insertIdx, 0, ...pasteData)
-				this.$emit("update:modelValue", newValue)
-			} catch (err) {
-				console.log("error pasting")
-				console.log("Data: ", paste)
-				console.log(err)
-			} finally {
-				event.preventDefault()
-			}
-		},
-		cut(event) {
-			this.copy(event)
-			this.doDelete()
-		},
-		blur() {
-			this.clearSelection()
-		},
-		doDelete() {
-			if (this.selected.length == 0) {
-				return
-			}
-
-			let newValue = _cloneDeep(this.modelValue)
+		//If we have a current selection, overwrite it.
+		if (selected.value.length != 0) {
+			insertIdx = selected.value[0]
 
 			let removed = 0
-			for (let idx of this.selected) {
+			for (let idx of selected.value) {
 				newValue.splice(idx - removed, 1)
 				removed += 1
 			}
+		}
 
-			this.$emit("update:modelValue", newValue)
-
-			this.selected = []
-		},
-		clearSelection() {
-			this.selected = []
-		},
-	},
-	mounted() {
-		document.addEventListener("mouseup", this.stopSelect)
-		//document.addEventListener("touchend", this.stopSelect);
-
-		//this.$refs.dragArea.addEventListener("copy", this.copy);
-
-		//console.log("Bound copy event!");
-	},
-	destroyed() {
-		document.removeEventListener("mouseup", this.stopSelect)
-		//document.removeEventListener("touchend", this.stopSelect);
-
-		//this.$refs.dragArea.removeEventListener("copy", this.copy);
-	},
+		newValue.splice(insertIdx, 0, ...pasteData)
+		emit("update:modelValue", newValue)
+	} catch (err) {
+		console.log("error pasting")
+		console.log("Data: ", paste)
+		console.log(err)
+	} finally {
+		event.preventDefault()
+	}
 }
+function cut(event) {
+	copy(event)
+	doDelete()
+}
+
+function blur() {
+	selected.value = []
+}
+function doDelete() {
+	if (selected.value.length == 0) {
+		return
+	}
+
+	let newValue = [...modelObj.value]
+
+	let removed = 0
+	for (let idx of selected.value) {
+		newValue.splice(idx - removed, 1)
+		removed += 1
+	}
+
+	emit("update:modelValue", newValue)
+	selected.value = []
+}
+
+onMounted(() => {
+	document.addEventListener("mouseup", stopSelect)
+})
+
+onUnmounted(() => {
+	document.removeEventListener("mouseup", stopSelect)
+})
 </script>
 
 <style scoped>
