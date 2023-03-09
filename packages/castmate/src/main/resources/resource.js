@@ -10,6 +10,7 @@ import { cleanSchemaForIPC } from "../utils/schema"
 import logger from "../utils/logger"
 import { Analytics } from "../utils/analytics"
 import _cloneDeep from "lodash/cloneDeep"
+import { isReactive, onAllStateChange } from "../state/reactive"
 
 export class Resource {
 	constructor(type, spec) {
@@ -76,6 +77,21 @@ export class Resource {
 		const newResource = hasStaticCreate
 			? await this.resourceType.create(config)
 			: new this.resourceType(config)
+
+		if (!newResource)
+			return null
+
+		if (isReactive(newResource.state)) {
+			newResource._stateUpdaters = onAllStateChange(newResource.state, (key) => {
+				callIpcFunc(
+					"resources_updateResourceState",
+					this.spec.type,
+					newResource.id,
+					key,
+					newResource.state[key]
+				)
+			})
+		}
 
 		this.resources.push(newResource)
 

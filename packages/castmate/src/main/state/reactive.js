@@ -166,6 +166,11 @@ export function reactiveCopy(target, obj, onNewKey = null) {
 	}
 }
 
+export function isReactive(obj) {
+	if (!obj) return false
+	return !!obj.__reactivity__
+}
+
 export function onStateChange(obj, name, func, options = { immediate: false }) {
 	const watcher = new Watcher(func)
 
@@ -176,4 +181,25 @@ export function onStateChange(obj, name, func, options = { immediate: false }) {
 	}
 
 	return watcher
+}
+
+export function onAllStateChange(obj, func, options) {
+	if (!isReactive(obj)) {
+		return []
+	}
+
+	const result = []
+	for (let key in obj) {
+		result.push(
+			onStateChange(
+				obj,
+				key,
+				() => {
+					func(key)
+				},
+				options
+			)
+		)
+	}
+	return result
 }
