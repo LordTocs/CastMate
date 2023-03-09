@@ -21,6 +21,7 @@ import { StateManager } from "./state/state-manager.js"
 import { RemoteTemplateManager } from "./state/remote-template.js"
 import { SettingsManager } from "./pluginCore/settings-manager.js"
 import { StreamPlanManager } from "./planner/streamPlan.js"
+import { IoTManager } from "./iot/iot-manager.js"
 
 async function initInternal(mainWindowSender) {
 	logger.info(`Starting CastMate v${app.getVersion()}`)
@@ -56,11 +57,12 @@ async function initInternal(mainWindowSender) {
 	const analytics = Analytics.getInstance();
 
 	await ResourceManager.getInstance().initialize()
-
 	await OverlayManager.getInstance().init()
 	await StreamPlanManager.getInstance().init()
 
 	await plugins.init(actions, profiles, analytics)
+
+	await IoTManager.getInstance().init()
 
 	stateManager.finishLoad()
 

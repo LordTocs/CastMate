@@ -20,6 +20,7 @@ export class PluginManager {
 	async load() {
 		let pluginFiles = [
 			"inputs",
+			"iot",
 			"hue",
 			"obs",
 			"sounds",

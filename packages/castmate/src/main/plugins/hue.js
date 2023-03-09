@@ -4,11 +4,12 @@ import fs from "fs"
 import path from "path"
 import { userFolder } from "../utils/configuration.js"
 import axios from "axios"
-import _ from "lodash"
+import _, { clamp } from "lodash"
 import https from "https"
 import { AsyncCache } from "../utils/async-cache.js"
 import os from "os"
 import { sleep } from "../utils/sleep.js"
+import { Plug, Light } from "../iot/iot-manager.js"
 
 class HUEStateTracker {
 	constructor() {
@@ -106,6 +107,15 @@ class HUEApi {
 			}
 		})
 
+		result.lightCache = new AsyncCache(async () => {
+			try {
+				const resp = await result.api.get(`/resource/light`)
+				return resp.data.data
+			} catch (err) {
+				return []
+			}
+		})
+
 		await result.getGroups()
 
 		return result
@@ -138,6 +148,11 @@ class HUEApi {
 		const scenes = await this.sceneCache.get()
 		//console.log(scenes);
 		return scenes
+	}
+
+	async getLights() {
+		const lights = await this.lightCache.get()
+		return lights
 	}
 
 	async getGroupByName(name) {
@@ -174,56 +189,179 @@ class HUEApi {
 		}
 	}
 
-	async setGroupState(id, state) {
+	getUpdate(on, color, duration) {
 		const update = {}
 
-		if ("on" in state) {
-			update.on = { on: !!state.on }
+		if (on != null || on != undefined) {
+			update.on = { on: !!on }
 		}
-		if ("bri" in state) {
-			update.dimming = {
-				brightness: Math.max(Math.min(Number(state.bri), 100), 0),
+
+		if (color) {
+			if ("bri" in color) {
+				update.dimming = {
+					brightness: clamp(Number(color.bri), 0, 100),
+				}
 			}
-		}
-		if ("hue" in state || "sat" in state) {
-			const hue = Math.max(
-				Math.min(Number("hue" in state ? Number(state.hue) : 0), 360),
-				0
-			)
-			const sat = Math.max(
-				Math.min(Number("sat" in state ? Number(state.sat) : 100), 100),
-				0
-			)
-			const bri = Math.max(
-				Math.min(Number("bri" in state ? Number(state.bri) : 100), 100),
-				0
-			)
-			const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
-			update.color = {
-				xy: {
-					x: cie.x,
-					y: cie.y,
-				},
+			if ("hue" in color || "sat" in color) {
+				const hue = clamp(color.hue ?? 0, 0, 360)
+				const sat = clamp(color.sat ?? 100, 0, 100)
+				const bri = clamp(color.bri ?? 100, 0, 100)
+				const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
+				update.color = {
+					xy: {
+						x: cie.x,
+						y: cie.y,
+					},
+				}
+			}
+
+			if ("kelvin" in color) {
+				//Convert kelvin to mired. https://en.wikipedia.org/wiki/Mired
+				update.ct = 1000000 / color.kelvin
 			}
 		}
 
-		if ("transition" in state) {
+		if (duration != null || duration != undefined) {
 			update.dynamics = {
-				duration: Math.round(state.transition),
+				duration: Math.round(duration),
 			}
 		}
+
+		return update
+	}
+
+	async setLightState(id, on, color, duration) {
+		const update = this.getUpdate(on, color, duration)
+
+		try {
+			await this.api.put(`/resource/light/${id}`, update)
+		} catch (err) {
+			console.error(`HUE API ERROR: `)
+			for (let errorStr of err?.response?.data?.errors) {
+				console.error(errorStr)
+			}
+		}
+	}
+
+	async setGroupState(id, on, color, duration) {
+		console.log("Setting Group", id, on, color, duration)
+		const update = this.getUpdate(on, color, duration)
 
 		try {
 			await this.api.put(`/resource/grouped_light/${id}`, update)
 		} catch (err) {
 			console.error(`HUE API ERROR: `)
-			//this.logger.error(err);
-			//console.log(err?.response);
 			for (let errorStr of err?.response?.data?.errors) {
 				console.error(errorStr)
 			}
-			//throw err;
 		}
+	}
+}
+
+class HUEPlug extends Plug {
+	constructor(apiObj) {
+		super()
+		this.id = apiObj.id
+		this.config = {
+			name: apiObj?.metadata?.name,
+			plugin: "hue",
+		}
+	}
+
+	async setPlugState(newState) {
+		await super.setPlugState(newState)
+		const api = this._getPlugin().pluginObj.hue
+		await api?.setLightState(this.id, newState, null, 0)
+	}
+
+	async togglePlugState() {
+		await super.togglePlugState()
+	}
+}
+
+class HUEBulb extends Light {
+	constructor(apiObj) {
+		super()
+		this.id = apiObj.id
+		this.config = {
+			name: apiObj?.metadata?.name,
+			plugin: "hue",
+			hueArchtype: apiObj?.metadata?.archetype,
+		}
+	}
+
+	async setLightState(on, color, duration) {
+		const api = this._getPlugin().pluginObj.hue
+		await api?.setLightState(this.id, on, color, duration)
+	}
+}
+
+class HUEGroup extends Light {
+	constructor(apiObj) {
+		super()
+		const service = apiObj.services.find(s => s.rtype == 'grouped_light')
+
+		this.id = service?.rid
+		this.config = {
+			name: apiObj?.metadata?.name,
+			plugin: "hue",
+		}
+	}
+
+	async setLightState(on, color, duration) {
+		const api = this._getPlugin().pluginObj.hue
+		await api?.setGroupState(this.id, on, color, duration)
+	}
+}
+
+function isApiObjBulb(apiObj) {
+	return (
+		"color" in apiObj ||
+		"color_temperature" in apiObj ||
+		"dimming" in apiObj
+	)
+}
+
+class HUEIotProvider {
+	/**
+	 *
+	 * @param {HUEApi} api
+	 */
+	constructor(pluginObj) {
+		this.pluginObj = pluginObj
+	}
+
+	async loadPlugs() {
+		if (!this.pluginObj?.hue) {
+			console.error("API MISSING")
+			return []
+		}
+
+		const lights = await this.pluginObj.hue.getLights()
+
+		const plugs = lights.filter((l) => !isApiObjBulb(l))
+
+		return plugs.map((p) => new HUEPlug(p))
+	}
+
+	async loadLights() {
+		if (!this.pluginObj?.hue) {
+			console.error("API MISSING")
+			return []
+		}
+
+		const lights = await this.pluginObj.hue.getLights()
+
+		const groups = await this.pluginObj.hue.getGroups()
+
+		console.log(groups[0])
+
+		const bulbs = lights.filter((l) => isApiObjBulb(l))
+
+		return [
+			...bulbs.map((b) => new HUEBulb(b)),
+			...groups.map((g) => new HUEGroup(g)),
+		]
 	}
 }
 
@@ -234,6 +372,8 @@ export default {
 	color: "#7F743F",
 	async init() {
 		this.stateTracker = new HUEStateTracker()
+
+		this.iotProvider = new HUEIotProvider(this)
 
 		this.stateResetter = setInterval(() => {
 			this.stateTracker.lastState = {}
@@ -355,6 +495,7 @@ export default {
 		},
 		async initApi() {
 			try {
+				console.log("Connecting to HUE")
 				this.hue = await HUEApi.create(
 					this.bridgeIp,
 					this.hueUser.username
