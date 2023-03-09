@@ -12,6 +12,7 @@
         "**/dist": true,
         "**/node_modules": true,
         "**/bower_components": true,
-        "**/*.code-search": true
+        "**/*.code-search": true,
+        "yarn.lock": true
     }
 }
