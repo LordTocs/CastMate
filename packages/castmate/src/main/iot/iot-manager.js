@@ -42,12 +42,8 @@ export class Plug {
         return _flatten(providerArrays)
     }
 
-    async setPlugState(newState) {
+    async setPlugState(on) {
         
-    }
-
-    async togglePlugState() {
-
     }
 }
 
