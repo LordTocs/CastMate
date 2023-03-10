@@ -37,7 +37,7 @@ export const useResourceStore = defineStore("resources", () => {
 				const resourceArray = resources.value[type]
 
 				const idx = resourceArray.findIndex((r) => r.id == id)
-				if (idx != -1 && resourceArray[idx]?.state?.[key]) {
+				if (idx != -1) {
 					resourceArray[idx].state[key] = value
 				}
 			}

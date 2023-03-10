@@ -54,6 +54,7 @@ export class Resource {
 		return {
 			id: resource.id,
 			config: resource.config,
+			...(resource.state ? { state: resource.state } : {})
 		}
 	}
 
@@ -109,6 +110,20 @@ export class Resource {
 		logger.info(`Loading ${this.name} Resources`)
 
 		this.resources = await this.resourceType.load()
+
+		for (let resource of this.resources) {
+			if (isReactive(resource.state)) {
+				resource._stateUpdaters = onAllStateChange(resource.state, (key) => {
+					callIpcFunc(
+						"resources_updateResourceState",
+						this.spec.type,
+						resource.id,
+						key,
+						resource.state[key]
+					)
+				})
+			}
+		}
 
 		this._triggerUpdate()
 	}
