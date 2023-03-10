@@ -111,6 +111,7 @@ export function reactify(obj) {
 	for (let key in obj) {
 		createReactiveProperty(obj, key)
 	}
+	return obj
 }
 
 export function reactiveCopyProp(target, obj, key) {
