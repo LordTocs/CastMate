@@ -29,6 +29,7 @@
 		"cs-gamestate": "^2.2.3",
 		"discord.js": "^14.7.1",
 		"electron-updater": "^4.6.1",
+		"eventsource": "^2.0.2",
 		"express": "^4.17.1",
 		"ffi-napi": "^4.0.3",
 		"font-list": "^1.4.5",

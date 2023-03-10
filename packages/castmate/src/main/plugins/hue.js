@@ -10,64 +10,21 @@ import { AsyncCache } from "../utils/async-cache.js"
 import os from "os"
 import { sleep } from "../utils/sleep.js"
 import { Plug, Light } from "../iot/iot-manager.js"
+import EventSource from "eventsource"
+import { IoTManager } from "../iot/iot-manager.js"
+import { reactify } from "../state/reactive.js"
 
-class HUEStateTracker {
-	constructor() {
-		this.lastState = {}
-	}
 
-	getGroupColorState(group, requestedState) {
-		const deltaState = {}
-		if (!this.lastState[group]) {
-			this.lastState[group] = {}
-		}
-		const lastState = this.lastState[group]
+function xyToHueSat({x, y}) {
+	const z = 1.0 - x - y;
 
-		if (requestedState.bri != undefined) {
-			if (lastState.bri != requestedState.bri) {
-				deltaState.bri = requestedState.bri
-				lastState.bri = requestedState.bri
-			}
-		}
-		if (requestedState.sat != undefined) {
-			if (lastState.sat != requestedState.sat) {
-				deltaState.sat = requestedState.sat
-				lastState.sat = requestedState.sat
-			}
-		}
-		if (requestedState.hue != undefined) {
-			if (lastState.hue != requestedState.hue) {
-				deltaState.hue = requestedState.hue
-				lastState.hue = requestedState.hue
-				delete lastState.ct
-			}
-		}
-		if (requestedState.ct != undefined) {
-			if (lastState.temp != requestedState.ct) {
-				deltaState.ct = requestedState.ct
-				lastState.ct = requestedState.ct
-				delete lastState.hue
-				delete lastState.sat
-			}
-		}
-		if (requestedState.on != undefined) {
-			if (lastState.on != requestedState.on) {
-				deltaState.on = requestedState.on
-				lastState.on = requestedState.on
-				if (!requestedState.on) {
-					this.lastState[group] = {}
-				}
-			}
-		}
-		if (requestedState.transition != undefined) {
-			deltaState.transition = requestedState.transition
-		}
-		return deltaState
-	}
+	const Y = 100;
+	const X = (Y / y) * x;
+	const Z = (Y / y) * z;
 
-	clearGroupState(group) {
-		this.lastState[group] = {}
-	}
+	const hsv = chromatism.convert({ X, Y, Z}).hsv
+
+	return { hue: hsv.h, sat: hsv.s }
 }
 
 class HUEApi {
@@ -79,6 +36,8 @@ class HUEApi {
 			rejectUnauthorized: false,
 		})
 
+		result.bridgeIp = ip
+		result.key = key
 		result.api = axios.create({
 			baseURL: `https://${ip}/clip/v2`,
 			headers: {
@@ -87,38 +46,80 @@ class HUEApi {
 			httpsAgent,
 		})
 
-		result.groupCache = new AsyncCache(async () => {
-			try {
-				const resp = await result.api.get(`/resource/room`)
-				const groups = resp.data.data
-				return groups
-			} catch (err) {
-				return []
-			}
-		})
+		await result.getLights()
 
-		result.sceneCache = new AsyncCache(async () => {
-			try {
-				const resp = await result.api.get(`/resource/scene`)
-				const scenes = resp.data.data
-				return scenes
-			} catch (err) {
-				return []
-			}
-		})
-
-		result.lightCache = new AsyncCache(async () => {
-			try {
-				const resp = await result.api.get(`/resource/light`)
-				return resp.data.data
-			} catch (err) {
-				return []
-			}
-		})
-
-		await result.getGroups()
+		result._connectEventSource()
 
 		return result
+	}
+
+	_connectEventSource() {
+		console.log("Connecting HUE events")
+
+		console.log(
+			"HUE EVENTS: ",
+			`https://${this.bridgeIp}/eventstream/clip/v2`,
+			this.key
+		)
+
+		this.eventsource = new EventSource(
+			`https://${this.bridgeIp}/eventstream/clip/v2`,
+			{
+				headers: {
+					"hue-application-key": this.key,
+				},
+				https: { rejectUnauthorized: false },
+				rejectUnauthorized: false,
+			}
+		)
+
+		this.eventsource.onmessage = (message) => this._handleEvent(message)
+		this.eventsource.onerror = (err) => {
+			console.error("HUE EventError", err)
+			this.eventsource.close()
+			this.eventsource = null
+			this._tryReconnect()
+		}
+		this.eventsource.onopen = (event) => {
+			console.log("HUE EventSource Open", event)
+		}
+	}
+
+	_tryReconnect() {
+		this.shouldReconnect = true
+		this.reconnectTimeout = setTimeout(() => {
+			if (this.shouldReconnect) {
+				this._connectEventSource()
+			}
+		}, 5000)
+	}
+
+	_handleEvent(message) {
+		try {
+			const data = JSON.parse(message.data)
+			for (let event of data) {
+				if (event?.type == "update") {
+					for (let subEvent of event?.data) {
+						try {
+							this?.onHueUpdate(subEvent)
+						}
+						catch(err) {
+							console.error("Error Updating Hue", err)
+						}
+					}
+				}
+			}
+		} catch (err) {
+			
+		}
+	}
+
+	shutdown() {
+		this.eventsource?.close()
+		this.shouldReconnect = false
+		if (this.reconnectTimeout) {
+			clearTimeout(this.reconnectTimeout)
+		}
 	}
 
 	static async createKey(ip) {
@@ -139,20 +140,20 @@ class HUEApi {
 	}
 
 	async getGroups() {
-		const groups = await this.groupCache.get()
-		//console.log(groups);
+		const resp = await this.api.get(`/resource/room`)
+		const groups = resp.data.data
 		return groups
 	}
 
 	async getScenes() {
-		const scenes = await this.sceneCache.get()
-		//console.log(scenes);
+		const resp = await this.api.get(`/resource/scene`)
+		const scenes = resp.data.data
 		return scenes
 	}
 
 	async getLights() {
-		const lights = await this.lightCache.get()
-		return lights
+		const resp = await this.api.get(`/resource/light`)
+		return resp.data.data
 	}
 
 	async getGroupByName(name) {
@@ -266,16 +267,18 @@ class HUEPlug extends Plug {
 			name: apiObj?.metadata?.name,
 			plugin: "hue",
 		}
+		this.state = reactify({
+			on: !!apiObj?.on?.on,
+		})
 	}
 
-	async setPlugState(newState) {
-		await super.setPlugState(newState)
+	async setPlugState(on) {
+		await super.setPlugState(on)
+		if (on == "toggle") {
+			on = !this.state.on
+		}
 		const api = this._getPlugin().pluginObj.hue
-		await api?.setLightState(this.id, newState, null, 0)
-	}
-
-	async togglePlugState() {
-		await super.togglePlugState()
+		await api?.setLightState(this.id, on, null, 0)
 	}
 }
 
@@ -287,11 +290,39 @@ class HUEBulb extends Light {
 			name: apiObj?.metadata?.name,
 			plugin: "hue",
 			hueArchtype: apiObj?.metadata?.archetype,
+			rgb: { available: !!apiObj.color },
+			dimming: { available: !!apiObj.dimming },
+			kelvin: { available: !!apiObj.color_temperature }
 		}
+
+		if (this.config.kelvin.available) {
+			this.config.kelvin.min = 1000000 / apiObj.color_temperature?.mirek_schema?.mirek_minimum
+			this.config.kelvin.max = 1000000 / apiObj.color_temperature?.mirek_schema?.mirek_maximum
+		}
+
+		const color = {
+			bri: apiObj?.dimming?.brightness ?? 100,
+		}
+		if (apiObj?.color_temperature?.mirek_valid) {
+			color.kelvin = 1000000 / apiObj.color_temperature.mirek
+		} else if (apiObj?.color?.xy) {
+			const {hue, sat} = xyToHueSat(apiObj?.color?.xy)
+			color.hue = hue
+			color.sat = sat
+		}
+		console.log("Bulb Color", color)
+
+		this.state = reactify({
+			on: !!apiObj?.on?.on,
+			color
+		})
 	}
 
 	async setLightState(on, color, duration) {
 		const api = this._getPlugin().pluginObj.hue
+		if (on == "toggle") {
+			on = !this.state.on
+		}
 		await api?.setLightState(this.id, on, color, duration)
 	}
 }
@@ -299,17 +330,44 @@ class HUEBulb extends Light {
 class HUEGroup extends Light {
 	constructor(apiObj) {
 		super()
-		const service = apiObj.services.find(s => s.rtype == 'grouped_light')
+		const service = apiObj.services.find((s) => s.rtype == "grouped_light")
 
 		this.id = service?.rid
 		this.config = {
 			name: apiObj?.metadata?.name,
 			plugin: "hue",
+			rgb: { available: !!apiObj.color },
+			dimming: { available: !!apiObj.dimming },
+			kelvin: { available: !!apiObj.color_temperature }
 		}
+
+		if (this.config.kelvin.available) {
+			this.config.kelvin.min = 1000000 / apiObj.color_temperature?.mirek_schema?.mirek_minimum
+			this.config.kelvin.max = 1000000 / apiObj.color_temperature?.mirek_schema?.mirek_maximum
+		}
+
+		const color = {
+			bri: apiObj?.dimming?.brightness ?? 100,
+		}
+		if (apiObj?.color_temperature?.mirek_valid) {
+			color.kelvin = 1000000 / apiObj.color_temperature.mirek
+		} else if (apiObj?.color?.xy) {
+			const {hue, sat} = xyToHueSat(apiObj?.color?.xy)
+			color.hue = hue
+			color.sat = sat
+		}
+
+		this.state = reactify({
+			on: !!apiObj?.on?.on,
+			color
+		})
 	}
 
 	async setLightState(on, color, duration) {
 		const api = this._getPlugin().pluginObj.hue
+		if (on == "toggle") {
+			on = !this.state.on
+		}
 		await api?.setGroupState(this.id, on, color, duration)
 	}
 }
@@ -354,8 +412,6 @@ class HUEIotProvider {
 
 		const groups = await this.pluginObj.hue.getGroups()
 
-		console.log(groups[0])
-
 		const bulbs = lights.filter((l) => isApiObjBulb(l))
 
 		return [
@@ -371,13 +427,7 @@ export default {
 	icon: "mdi-lightbulb-on-outline",
 	color: "#7F743F",
 	async init() {
-		this.stateTracker = new HUEStateTracker()
-
 		this.iotProvider = new HUEIotProvider(this)
-
-		this.stateResetter = setInterval(() => {
-			this.stateTracker.lastState = {}
-		}, 60000)
 
 		this.bridgeCache = this.getCache("bridgeCache")
 
@@ -429,7 +479,7 @@ export default {
 			this.logger.info("Checking Cached Bridge")
 			if (!cached?.bridgeIp) {
 				this.logger.info("No Cached Bridge")
-				return false
+			return false
 			}
 
 			this.bridgeIp = cached.bridgeIp
@@ -495,11 +545,52 @@ export default {
 		},
 		async initApi() {
 			try {
+				this.hue?.shutdown()
+
 				console.log("Connecting to HUE")
+
 				this.hue = await HUEApi.create(
 					this.bridgeIp,
 					this.hueUser.username
 				)
+
+				this.hue.onHueUpdate = (update) => {
+					const plug = IoTManager.getInstance().plugs.getById(update.id)
+					const light = IoTManager.getInstance().lights.getById(update.id)
+
+					if (plug) {
+						if (update.on) {
+							plug.state.on = !!update.on.on
+						}
+					}
+					if (light) {
+						if (update.on) {
+							light.state.on = !!update.on.on
+						}
+						if (update.dimming || update.color || update.color_temperature) {
+							//We have to update the WHOLE color object because our reactivity isn't deep
+							const newColor = {
+								...light.state.color,
+								bri: update.dimming?.brightness ?? light.state.color.bri
+							}
+
+							if (update.color_temperature?.mirek_valid) {
+								newColor.kelvin = 1000000 / update.color_temperature.mirek;
+								delete newColor.hue
+								delete newColor.sat
+							} else if (update.color?.xy) {
+								
+								const {hue, sat} = xyToHueSat(update.color.xy)
+								newColor.hue = hue
+								newColor.sat = sat
+								delete newColor.kelvin
+							}
+
+							light.state.color = newColor
+						}
+					}
+				}
+
 				this.analytics.set({ usesHue: true })
 				return true
 			} catch (err) {
@@ -509,22 +600,6 @@ export default {
 				console.error(err)
 
 				return false
-			}
-		},
-		async handleTemplateNumber(value, context) {
-			if (typeof value === "string" || value instanceof String) {
-				return await evalTemplate(value, context)
-			}
-			return value
-		},
-		async getGroupNames() {
-			try {
-				return (await this.hue.getGroups()).map((g) => g.metadata.name)
-			} catch (err) {
-				for (let errorStr of err?.response?.data?.errors) {
-					console.error(errorStr)
-				}
-				return []
 			}
 		},
 		async getSceneNames(groupName) {
@@ -553,137 +628,7 @@ export default {
 			},
 		},
 	},
-	secrets: {},
 	actions: {
-		color: {
-			name: "Hue Light",
-			description: "Changes HUE lights.",
-			icon: "mdi-lightbulb-on-outline",
-			color: "#7F743F",
-			data: {
-				type: Object,
-				properties: {
-					on: {
-						type: Boolean,
-						name: "Light Switch",
-						required: true,
-						default: true,
-						trueIcon: "mdi-lightbulb-on",
-						falseIcon: "mdi-lightbulb-outline",
-					},
-					hsbk: {
-						type: "LightColor",
-						name: "Color",
-						tempRange: [2000, 6500],
-						required: true,
-					},
-					transition: {
-						type: Number,
-						template: true,
-						name: "Transition Time",
-						required: true,
-						default: 0.5,
-					},
-					group: {
-						type: String,
-						template: true,
-						name: "HUE Light Group",
-						async enum() {
-							return await this.getGroupNames()
-						},
-					},
-				},
-			},
-			async handler(lightData, context) {
-				lightData = _.cloneDeep(lightData)
-
-				let groupName = lightData.group || this.settings.defaultGroup
-
-				const requestedState = {}
-
-				if ("on" in lightData) {
-					lightData.on = await this.handleTemplateNumber(
-						lightData.on,
-						context
-					)
-
-					requestedState.on = !!lightData.on
-				}
-
-				if ("hsbk" in lightData) {
-					const mode = lightData.hsbk.mode || "color"
-
-					if (
-						"bri" in lightData.hsbk &&
-						(mode == "color" || mode == "template")
-					) {
-						lightData.hsbk.bri = await this.handleTemplateNumber(
-							lightData.hsbk.bri,
-							context
-						)
-
-						requestedState.bri = lightData.hsbk.bri
-					}
-					if (
-						"sat" in lightData.hsbk &&
-						(mode == "color" || mode == "template")
-					) {
-						lightData.hsbk.sat = await this.handleTemplateNumber(
-							lightData.hsbk.sat,
-							context
-						)
-
-						requestedState.sat = lightData.hsbk.sat
-					}
-					if (
-						"hue" in lightData.hsbk &&
-						(mode == "color" || mode == "template")
-					) {
-						lightData.hsbk.hue = await this.handleTemplateNumber(
-							lightData.hsbk.hue,
-							context
-						)
-
-						//Hue is 0-360
-						requestedState.hue = lightData.hsbk.hue
-					}
-					if (
-						"temp" in lightData.hsbk &&
-						(mode == "temp" || mode == "template")
-					) {
-						lightData.hsbk.temp = await this.handleTemplateNumber(
-							lightData.hsbk.temp,
-							context
-						)
-
-						//Convert kelvin to mired. https://en.wikipedia.org/wiki/Mired
-						requestedState.ct = 1000000 / lightData.hsbk.temp
-					}
-				}
-
-				this.logger.info(`Hue Lights: ${JSON.stringify(lightData)}`)
-
-				if ("transition" in lightData) {
-					lightData.transition = await this.handleTemplateNumber(
-						lightData.transition,
-						context
-					)
-
-					requestedState.transition = lightData.transition * 1000
-				}
-
-				//let state = this.stateTracker.getGroupColorState(groupName, requestedState);
-
-				let group = await this.hue.getGroupByName(groupName)
-
-				if (!group) return
-
-				const service = group.services.find(
-					(s) => s.rtype == "grouped_light"
-				)
-				await this.hue.setGroupState(service.rid, requestedState)
-			},
-		},
 		scene: {
 			name: "Hue Scene",
 			description: "Changes HUE lights to a hue scene",
