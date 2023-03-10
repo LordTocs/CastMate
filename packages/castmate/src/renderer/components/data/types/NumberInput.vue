@@ -1,66 +1,171 @@
 <template>
 	<v-text-field
-		v-model.lazy="modelObj"
+		v-if="templateMode"
 		:label="label"
-		:type="this.allowTemplate ? undefined : 'number'"
+		v-model="templateModel"
 		:clearable="clearable"
-		@copy.stop=""
-		@paste.stop=""
 		:placeholder="placeholder"
 		:density="density"
+		v-bind="$attrs"
 	>
 		<template #append-inner>
-			<p class="text-disabled">
+			<p class="text-disabled" v-if="unit">
 				{{ unit?.name }}
 			</p>
+			<v-btn
+				class="ml-1"
+				:active="true"
+				size="x-small"
+				variant="tonal"
+				:disabled="!isValueNumber"
+				@click="templateMode = false"
+				color="success"
+				icon="mdi-code-braces"
+			/>
 		</template>
 	</v-text-field>
+	<template v-else>
+		<v-text-field
+			v-if="!isEnum && !isSlider"
+			:label="label"
+			v-model.lazy="numberModel"
+			type="number"
+			:clearable="clearable"
+			:density="density"
+			:placeholder="placeholder"
+			v-bind="$attrs"
+		>
+			<template #append-inner>
+				<p class="text-disabled" v-if="unit">
+					{{ unit?.name }}
+				</p>
+				<v-btn
+					class="ml-1"
+					v-if="canTemplate"
+					size="x-small"
+					variant="tonal"
+					@click="templateMode = true"
+					icon="mdi-code-braces"
+				/>
+			</template>
+		</v-text-field>
+		<enum-input
+			v-else-if="isEnum"
+			v-model="numberModel"
+			:enum="props.schema.enum"
+			:label="label"
+			:clearable="clearable"
+			:density="density"
+			v-bind="$attrs"
+		>
+			<template #append-inner>
+				<p class="text-disabled" v-if="unit">
+					{{ unit?.name }}
+				</p>
+				<v-btn
+					class="ml-1"
+					v-if="canTemplate"
+					size="x-small"
+					variant="tonal"
+					@click="templateMode = true"
+					icon="mdi-code-braces"
+				/>
+			</template>
+		</enum-input>
+		<template v-else-if="isSlider">
+			<div class="text-caption" v-if="props.label">
+				{{ props.label }}
+			</div>
+			<v-slider
+				v-model="numberModel"
+				thumb-label
+				:min="min"
+				:max="max"
+				:step="step"
+				:density="density"
+			>
+				<template #append>
+					<v-btn
+						class="ml-1"
+						v-if="clearable"
+						size="x-small"
+						variant="tonal"
+						@click="clear"
+						icon="mdi-close"
+					/>
+					<v-btn
+						class="ml-1"
+						v-if="canTemplate"
+						size="x-small"
+						variant="tonal"
+						@click="templateMode = true"
+						icon="mdi-code-braces"
+					/>
+				</template>
+			</v-slider>
+		</template>
+	</template>
 </template>
 
-<script>
-export default {
-	props: {
-		modelValue: {},
-		label: {},
-		allowTemplate: { type: Boolean, default: () => false },
-		clearable: { type: Boolean, default: () => false },
-		placeholder: {},
-		unit: {},
-		density: { type: String },
+<script setup>
+import { computed, ref, onMounted } from "vue"
+import { useModel } from "../../../utils/modelValue"
+import EnumInput from "./EnumInput.vue"
+const props = defineProps({
+	modelValue: {},
+	schema: {},
+	label: {},
+	density: { type: String },
+	context: {},
+	secret: { type: Boolean },
+	colorRefs: {},
+})
+const emit = defineEmits(["update:modelValue"])
+const numberModel = computed({
+	get() {
+		return props.modelValue
 	},
-	computed: {
-		modelObj: {
-			get() {
-				return this.modelValue
-			},
-			set(newValue) {
-				if (
-					newValue === null ||
-					newValue == undefined ||
-					String(newValue).trim() == ""
-				) {
-					return this.clear()
-				}
+	set(value) {
+		if (value == null || String(value).trim() == "") {
+			return clear()
+		}
+		emit("update:modelValue", Number(value))
+	},
+})
+const templateModel = useModel(props, emit)
 
-				let number = Number(newValue)
+const placeholder = computed(() => props.schema?.placeholder)
+const unit = computed(() => props.schema?.unit)
+const isEnum = computed(() => !!props.schema?.enum)
+const isSlider = computed(() => props.schema?.slider ?? false)
+const min = computed(
+	() => props.schema?.min ?? (isSlider.value ? 0 : undefined)
+)
+const max = computed(
+	() => props.schema?.max ?? (isSlider.value ? 100 : undefined)
+)
+const step = computed(
+	() => props.schema?.step ?? (isSlider.value ? 1 : undefined)
+)
 
-				if (isNaN(number) && this.allowTemplate) {
-					this.$emit("update:modelValue", newValue)
-					return
-				} else if (!isNaN(number)) {
-					this.$emit("update:modelValue", number)
-				} else {
-					this.clear()
-				}
-			},
-		},
-	},
-	methods: {
-		clear() {
-			this.$emit("update:modelValue", undefined)
-		},
-	},
+const clearable = computed(() => !props.schema?.required)
+
+function clear() {
+	emit("update:modelValue", undefined)
 }
+
+const templateMode = ref(false)
+const canTemplate = computed(() => !!props.schema?.template)
+
+const isValueNumber = computed(() => {
+	if (props.modelValue == null) return true
+
+	return !isNaN(Number(props.modelValue))
+})
+
+onMounted(() => {
+	templateMode.value = !isValueNumber.value
+})
 </script>
 
 <style></style>

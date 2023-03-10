@@ -38,6 +38,14 @@
 			<v-label>
 				{{ props.label }}
 			</v-label>
+			<v-btn
+				class="ml-1"
+				v-if="clearable"
+				size="x-small"
+				variant="tonal"
+				@click="modelObj=undefined"
+				icon="mdi-close"
+			/>
 		</div>
 	</v-input>
 </template>
@@ -60,6 +68,8 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"])
 
 const modelObj = useModel(props, emit)
+
+const clearable = computed(() => !props.schema?.required)
 
 const thumbIcon = computed(() => {
 	if (props.modelValue === "toggle") return "mdi-swap-horizontal"

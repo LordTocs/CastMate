@@ -23,10 +23,28 @@
 							class="swatch"
 							:style="{ backgroundColor: previewColor }"
 						></div>
-						<div v-if="modelObj && isTemplated" class="swatch" style="background-image: linear-gradient(to right, #d654ff, #0860ff);">
+						<div
+							v-if="modelObj && isTemplated"
+							class="swatch"
+							style="
+								background-image: linear-gradient(
+									to right,
+									#d654ff,
+									#0860ff
+								);
+							"
+						>
 							<v-icon icon="mdi-code-braces" size="small" />
 						</div>
 					</div>
+					<template #append-inner>
+						<v-icon
+							class="ml-1"
+							v-if="canTemplate"
+							size="x-small"
+							icon="mdi-code-braces"
+						/>
+					</template>
 				</v-field>
 			</v-input>
 		</template>
@@ -190,9 +208,9 @@ function cut(ev) {
 	);
 	margin: 4px 0;
 	border-radius: 3px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
 }
 </style>
