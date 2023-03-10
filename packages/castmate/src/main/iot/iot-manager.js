@@ -49,12 +49,28 @@ export class Plug {
 
 export class IoTProvider {
 
+    constructor() {
+        this._manager = null
+    }
+
     async loadPlugs() {
 
     }
 
     async loadLights() {
 
+    }
+
+    async initServices() {
+
+    }
+
+    _addNewPlug(plug) {
+        this._manager.plugs.inject(plug)
+    }
+
+    _addNewLight(light) {
+        this._manager.lights.inject(light)
     }
 }
 
@@ -82,13 +98,6 @@ export class IoTManager {
                 properties: {
                     name: { type: String },
                     plugin: { type: String },
-                    spectrum: {
-                        type: Object,
-                        properties: {
-                            color: { },
-                            white: { },
-                        }
-                    }
                 }
             }
         })
@@ -112,13 +121,19 @@ export class IoTManager {
     async init()     {
         const plugins = PluginManager.getInstance()
 
+        const serviceInits = []
         for (let plugin of plugins.plugins) {
             if (plugin?.pluginObj?.iotProvider) {
                 logger.info(`Found iotProvider in ${plugin.name}`)
-                this.providers[plugin.name] = plugin.pluginObj.iotProvider
+                const provider = plugin.pluginObj.iotProvider
+                this.providers[plugin.name] = provider
+                provider._manager = this
+                serviceInits.push(provider.initServices().catch(err => console.error("Error Initing", plugin.name, "IotProvider", err)))
             }
         }
 
+        await Promise.all(serviceInits)
+        
         await this.lights.load()
         await this.plugs.load()
     }

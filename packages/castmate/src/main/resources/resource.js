@@ -82,6 +82,17 @@ export class Resource {
 		if (!newResource)
 			return null
 
+		await this.inject(newResource)
+
+		Analytics.getInstance().track("resourceCreated", {
+			type: this.name,
+			name: config.name,
+		})
+
+		return newResource
+	}
+
+	_setupReactivity(newResource) {
 		if (isReactive(newResource.state)) {
 			newResource._stateUpdaters = onAllStateChange(newResource.state, (key) => {
 				callIpcFunc(
@@ -93,17 +104,17 @@ export class Resource {
 				)
 			})
 		}
+	}
+
+	async inject(newResource) {
+		if (!newResource)
+			return
+
+		this._setupReactivity(newResource)
 
 		this.resources.push(newResource)
 
 		this._triggerUpdate()
-
-		Analytics.getInstance().track("resourceCreated", {
-			type: this.name,
-			name: config.name,
-		})
-
-		return newResource
 	}
 
 	async load() {
@@ -112,17 +123,7 @@ export class Resource {
 		this.resources = await this.resourceType.load()
 
 		for (let resource of this.resources) {
-			if (isReactive(resource.state)) {
-				resource._stateUpdaters = onAllStateChange(resource.state, (key) => {
-					callIpcFunc(
-						"resources_updateResourceState",
-						this.spec.type,
-						resource.id,
-						key,
-						resource.state[key]
-					)
-				})
-			}
+			this._setupReactivity(resource)
 		}
 
 		this._triggerUpdate()

@@ -9,7 +9,7 @@ import https from "https"
 import { AsyncCache } from "../utils/async-cache.js"
 import os from "os"
 import { sleep } from "../utils/sleep.js"
-import { Plug, Light } from "../iot/iot-manager.js"
+import { Plug, Light, IoTProvider } from "../iot/iot-manager.js"
 import EventSource from "eventsource"
 import { IoTManager } from "../iot/iot-manager.js"
 import { reactify } from "../state/reactive.js"
@@ -218,7 +218,9 @@ class HUEApi {
 
 			if ("kelvin" in color) {
 				//Convert kelvin to mired. https://en.wikipedia.org/wiki/Mired
-				update.ct = 1000000 / color.kelvin
+				update.color_temperature = {
+					mirek: Math.round(1000000 / color.kelvin)
+				}
 			}
 		}
 
@@ -233,14 +235,12 @@ class HUEApi {
 
 	async setLightState(id, on, color, duration) {
 		const update = this.getUpdate(on, color, duration)
-
+		console.log(update)
 		try {
 			await this.api.put(`/resource/light/${id}`, update)
 		} catch (err) {
 			console.error(`HUE API ERROR: `)
-			for (let errorStr of err?.response?.data?.errors) {
-				console.error(errorStr)
-			}
+			console.error(err?.response?.data)
 		}
 	}
 
@@ -252,7 +252,8 @@ class HUEApi {
 			await this.api.put(`/resource/grouped_light/${id}`, update)
 		} catch (err) {
 			console.error(`HUE API ERROR: `)
-			for (let errorStr of err?.response?.data?.errors) {
+			console.error(err?.response?.data)
+			for (let errorStr of err?.response?.data?.errors ?? []) {
 				console.error(errorStr)
 			}
 		}
@@ -310,7 +311,6 @@ class HUEBulb extends Light {
 			color.hue = hue
 			color.sat = sat
 		}
-		console.log("Bulb Color", color)
 
 		this.state = reactify({
 			on: !!apiObj?.on?.on,
@@ -380,12 +380,13 @@ function isApiObjBulb(apiObj) {
 	)
 }
 
-class HUEIotProvider {
+class HUEIotProvider extends IoTProvider {
 	/**
 	 *
 	 * @param {HUEApi} api
 	 */
 	constructor(pluginObj) {
+		super()
 		this.pluginObj = pluginObj
 	}
 

@@ -29,7 +29,7 @@ async function templateLightColor(lightColor, context) {
 
 export default {
 	name: "iot",
-	uiName: "Lights",
+	uiName: "Lights & IoT",
     icon: "mdi-lightbulb-on-outline",
 	color: "#7F743F",
 	async init() {},
