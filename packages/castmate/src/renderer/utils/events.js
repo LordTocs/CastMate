@@ -24,7 +24,6 @@ export function useElementScroll(element) {
 		element,
 		"scroll",
 		() => {
-			console.log("Element", element)
 			x.value = unref(element).scrollLeft
 			y.value = unref(element).scrollTop
 		},
