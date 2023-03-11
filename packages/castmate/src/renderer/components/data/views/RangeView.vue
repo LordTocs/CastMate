@@ -9,7 +9,7 @@
 
 <script setup>
 const props = defineProps({
-	modelValue: { type: String },
+	modelValue: {},
 	schema: {},
 	label: { type: String },
 })
