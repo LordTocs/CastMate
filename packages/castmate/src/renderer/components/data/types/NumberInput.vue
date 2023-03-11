@@ -90,6 +90,7 @@
 						v-if="clearable"
 						size="x-small"
 						variant="tonal"
+						:disabled="props.modelValue == null"
 						@click="clear"
 						icon="mdi-close"
 					/>
@@ -129,7 +130,7 @@ const numberModel = computed({
 		if (value == null || String(value).trim() == "") {
 			return clear()
 		}
-		emit("update:modelValue", Number(value))
+		emit("update:modelValue", value)
 	},
 })
 const templateModel = useModel(props, emit)

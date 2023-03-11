@@ -21,6 +21,7 @@
 					variant="tonal"
 					size="x-small"
 					class="ml-1"
+					:disabled="props.modelValue == null"
 					@click.stop="clear"
 					:density="density"
 				/>
