@@ -10,7 +10,7 @@
 					/>
 				</v-col>
 				<v-col>
-					<data-view :value="data" :schema="schema" />
+					<data-view :value="data" :schema="schema" density="compact" />
 				</v-col>
 			</v-row>
 		</v-card-text>
@@ -110,6 +110,24 @@ const schema = computed(() => ({
 			image: true,
 			video: true,
 		},
+        subgroup1: {
+            type: "Object",
+            name: "SubGroup 1",
+            properties: {
+                a: { type: "String", name: "A", template: true },
+                b: { type: "String", name: "B", template: true },
+                c: { type: "String", name: "C", template: true },
+            }
+        },
+        subgroup2: {
+            type: "Object",
+            name: "SubGroup 2",
+            properties: {
+                a: { type: "String", name: "A", template: true },
+                b: { type: "String", name: "B", template: true },
+                c: { type: "String", name: "C", template: true },
+            }
+        },
 	},
 }))
 </script>
