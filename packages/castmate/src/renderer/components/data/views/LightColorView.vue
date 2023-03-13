@@ -56,9 +56,9 @@ const lightType = computed({
 })
 
 const hue = computed(() => props.modelValue?.hue ?? 0)
-const sat = computed(() => props.modelValue?.sat ?? 100)
-const bri = computed(() => props.modelValue?.bri ?? 100)
-const kelvin = computed(() => props.modelValue?.kelvin ?? 4000)
+const sat = computed(() => props.modelValue?.sat ?? 0)
+const bri = computed(() => props.modelValue?.bri ?? 0)
+const kelvin = computed(() => props.modelValue?.kelvin ?? 0)
 
 const previewColor = computed(() => {
 	if (!props.modelValue) return "black"

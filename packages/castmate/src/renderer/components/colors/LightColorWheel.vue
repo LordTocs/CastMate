@@ -45,12 +45,6 @@ const hue = computed({
 
 		return props.modelValue?.hue ?? 0
 	},
-	set(newHue) {
-		emit(
-			"update:modelValue",
-			stripTemperature({ ...props.modelValue, hue: newHue })
-		)
-	},
 })
 
 const sat = computed({
@@ -60,12 +54,6 @@ const sat = computed({
 		}
 
 		return props.modelValue?.sat ?? 0
-	},
-	set(newSat) {
-		emit(
-			"update:modelValue",
-			stripTemperature({ ...props.modelValue, sat: newSat })
-		)
 	},
 })
 
@@ -77,11 +65,11 @@ const dotPosition = computed(() => {
 		x: Math.cos(hueAngleRad) * satRadius + radius,
 		y: Math.sin(hueAngleRad) * satRadius + radius,
 	}
-    return result
+	return result
 })
 
 function circleDegrees(deg) {
-    return (deg + 360) % 360
+	return (deg + 360) % 360
 }
 
 function posToHueSat(x, y) {
@@ -93,7 +81,10 @@ function posToHueSat(x, y) {
 	const angle = Math.atan2(y, x)
 	const dist = Math.min(Math.sqrt(x * x + y * y), radius)
 
-    const result = { hue: circleDegrees(90 + ((angle * 180) / Math.PI)), sat: (dist * 100) / radius }
+	const result = {
+		hue: circleDegrees(90 + (angle * 180) / Math.PI),
+		sat: (dist * 100) / radius,
+	}
 	return result
 }
 
@@ -125,11 +116,19 @@ function onMouseMove(e) {
 	const localY = coords.clientY - rect.top
 
 	const hueSat = posToHueSat(localX, localY)
-	emit("update:modelValue", { ...props.modelValue, ...hueSat })
+
+	const newValue = { ...props.modelValue, ...hueSat }
+
+	if (newValue.bri == null) { 
+		//If we're selecting with the color wheel and there's no bri, we should set it to 100
+		newValue.bri = 100
+	}
+
+	emit("update:modelValue", newValue)
 }
 
 function onMouseUp(e) {
-    dragging.value = false
+	dragging.value = false
 	window.removeEventListener("mousemove", onMouseMove)
 	window.removeEventListener("mouseup", onMouseUp)
 	window.removeEventListener("touchmove", onMouseMove)
@@ -137,7 +136,7 @@ function onMouseUp(e) {
 }
 
 onBeforeUnmount(() => {
-    window.removeEventListener("mousemove", onMouseMove)
+	window.removeEventListener("mousemove", onMouseMove)
 	window.removeEventListener("mouseup", onMouseUp)
 	window.removeEventListener("touchmove", onMouseMove)
 	window.removeEventListener("touchend", onMouseUp)

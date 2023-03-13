@@ -66,13 +66,7 @@ const kelvinGradient = computed(() => {
 const kelvin = computed({
 	get() {
 		return props.modelValue?.kelvin ?? 4000
-	},
-	set(newKelvin) {
-		emit(
-			"update:modelValue",
-			stripColor({ ...props.modelValue, kelvin: newKelvin })
-		)
-	},
+	}
 })
 
 function stripColor(obj) {
@@ -133,7 +127,14 @@ function onMouseMove(e) {
 	const localY = coords.clientY - rect.top
 
 	const kelvin = posToKelvin(localX, localY)
-	emit("update:modelValue", stripColor({ ...props.modelValue, kelvin }))
+
+	const newValue = { ...props.modelValue, kelvin }
+	if (newValue.bri == null) {
+		//If we're selecting with the temp slider and there's no bri, we should set it to 100
+		newValue.bri = 100
+	}
+
+	emit("update:modelValue", stripColor(newValue))
 }
 
 function onMouseUp(e) {

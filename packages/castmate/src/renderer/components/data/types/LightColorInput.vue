@@ -118,8 +118,8 @@ const lightType = computed({
 })
 
 const hue = computed(() => props.modelValue?.hue ?? 0)
-const sat = computed(() => props.modelValue?.sat ?? 100)
-const bri = computed(() => props.modelValue?.bri ?? 100)
+const sat = computed(() => props.modelValue?.sat ?? 0)
+const bri = computed(() => props.modelValue?.bri ?? 0)
 const kelvin = computed(() => props.modelValue?.kelvin ?? 4000)
 
 const previewColor = computed(() => {
@@ -129,7 +129,7 @@ const previewColor = computed(() => {
 		return chromatism.convert({ h: hue.value, s: sat.value, v: bri.value })
 			.cssrgb
 	} else if (lightType.value == "temperature") {
-		return kelvinToCSS(kelvin.value)
+		return kelvinToCSS(kelvin.value, bri.value)
 	}
 })
 

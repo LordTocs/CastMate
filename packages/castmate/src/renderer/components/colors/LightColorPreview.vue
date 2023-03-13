@@ -77,7 +77,7 @@ const kelvin = computed({
             return 0
         }
 
-        return props.modelValue?.kelvin ?? 4000
+        return props.modelValue?.kelvin ?? 0
     },
     set(newKelvin) {
         emit("update:modelValue", stripColor({ ...props.modelValue, kelvin: newKelvin}))
@@ -86,7 +86,7 @@ const kelvin = computed({
 
 const bri = computed({
 	get() {
-		return props.modelValue?.bri ?? 100
+		return props.modelValue?.bri ?? 0
 	},
 	set(newBri) {
 		emit("update:modelValue", { ...props.modelValue, bri: newBri })
