@@ -28,12 +28,15 @@
 		<v-text-field
 			v-if="!isEnum && !isSlider"
 			:label="label"
-			v-model.lazy="numberModel"
+			v-model="lazyNumberData"
 			type="number"
 			:clearable="clearable"
 			:density="density"
 			:placeholder="placeholder"
 			v-bind="$attrs"
+			:min="min"
+			:max="max"
+			@change="onChange"
 		>
 			<template #append-inner>
 				<p class="text-disabled" v-if="unit">
@@ -109,7 +112,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue"
+import { computed, ref, onMounted, watch } from "vue"
 import { useModel } from "../../../utils/modelValue"
 import EnumInput from "./EnumInput.vue"
 const props = defineProps({
@@ -122,6 +125,9 @@ const props = defineProps({
 	colorRefs: {},
 })
 const emit = defineEmits(["update:modelValue"])
+
+const lazyNumberData = ref(null)
+
 const numberModel = computed({
 	get() {
 		return props.modelValue
@@ -130,6 +136,7 @@ const numberModel = computed({
 		if (value == null || String(value).trim() == "") {
 			return clear()
 		}
+		console.log("Updating Number Model")
 		emit("update:modelValue", value)
 	},
 })
@@ -166,7 +173,21 @@ const isValueNumber = computed(() => {
 
 onMounted(() => {
 	templateMode.value = !isValueNumber.value
+	lazyNumberData.value =
+		props.modelValue != null ? String(props.modelValue) : ""
 })
+
+watch(
+	() => props.modelValue,
+	(newValue) => {
+		lazyNumberData.value = newValue != null ? String(newValue) : ""
+	}
+)
+
+function onChange() {
+	const newValue = Number(lazyNumberData.value)
+	emit("update:modelValue", isNaN(newValue) ? 0 : newValue)
+}
 </script>
 
 <style></style>
