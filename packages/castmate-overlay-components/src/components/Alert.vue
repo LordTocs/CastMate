@@ -3,6 +3,7 @@
 		ref="alertReveal"
 		:animation="alertAnimation"
 		:transition="alertTransition"
+		class="frame-sized"
 	>
 		<div>
 			<media-container ref="media" class="alert" :media-file="media">
@@ -282,7 +283,10 @@ p {
 }
 
 .alert {
+	position: relative;
 	color: white;
+	width: 100%;
+	height: 100%;
 }
 
 .alert-head {
@@ -293,5 +297,10 @@ p {
 .alert-body {
 	font-size: 30px;
 	text-align: center;
+}
+
+.frame-sized {
+	position: absolute;
+	inset: 0px;
 }
 </style>

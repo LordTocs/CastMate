@@ -1,5 +1,5 @@
 <template>
-	<div class="container" :style="{ aspectRatio }">
+	<div class="container">
 		<video
 			v-if="isVideo"
 			class="fill"
@@ -7,7 +7,13 @@
 			:muted="isEditor"
 			:src="url"
 		></video>
-		<img v-if="isImage" :src="imgSrc" ref="img" class="fill" />
+		<img
+			v-if="isImage"
+			:src="imgSrc"
+			ref="img"
+			class="fill"
+			:style="{ aspectRatio }"
+		/>
 		<div class="content">
 			<slot></slot>
 		</div>
@@ -82,7 +88,11 @@ watch(video, () => {
 	if (video.value) {
 		console.log("Video Element Created!")
 		video.value.addEventListener("loadedmetadata", () => {
-			console.log("Video Info Loaded", video.value.videoWidth, video.value.videoHeight)
+			console.log(
+				"Video Info Loaded",
+				video.value.videoWidth,
+				video.value.videoHeight
+			)
 			aspectRatio.value = video.value.videoWidth / video.value.videoHeight
 		})
 	}
@@ -91,8 +101,7 @@ watch(video, () => {
 watch(img, () => {
 	if (img.value) {
 		console.log("Image Element Created!")
-		img.value.addEventListener('load', () => {
-			console.log("Image Info Loaded", img.value.naturalWidth, img.value.naturalHeight)
+		img.value.addEventListener("load", () => {
 			aspectRatio.value = img.value.naturalWidth / img.value.naturalHeight
 		})
 	}
@@ -133,10 +142,6 @@ defineExpose({
 
 .fill {
 	position: absolute;
-	left: 0;
-	right: 0;
-	top: 0;
-	bottom: 0;
 	width: 100%;
 	height: 100%;
 	object-fit: contain;
