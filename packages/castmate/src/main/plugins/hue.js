@@ -224,9 +224,9 @@ class HUEApi {
 			}
 		}
 
-		if (duration != null || duration != undefined) {
+		if (duration != null) {
 			update.dynamics = {
-				duration: Math.round(duration),
+				duration: Math.round(duration * 1000),
 			}
 		}
 
