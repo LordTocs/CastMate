@@ -235,7 +235,6 @@ class HUEApi {
 
 	async setLightState(id, on, color, duration) {
 		const update = this.getUpdate(on, color, duration)
-		console.log(update)
 		try {
 			await this.api.put(`/resource/light/${id}`, update)
 		} catch (err) {
@@ -245,7 +244,6 @@ class HUEApi {
 	}
 
 	async setGroupState(id, on, color, duration) {
-		console.log("Setting Group", id, on, color, duration)
 		const update = this.getUpdate(on, color, duration)
 
 		try {
