@@ -73,6 +73,7 @@ import { useModel } from "../../utils/modelValue"
 import SelectDummy from "./SelectDummy.vue"
 import { ref, computed, onMounted, onUnmounted } from "vue"
 import { useElementScroll } from "../../utils/events"
+import { nanoid } from "nanoid/non-secure"
 
 const props = defineProps({
 	modelValue: {},
@@ -167,13 +168,12 @@ function selectOverlapping() {
 		top: dragTop.value,
 		left: dragLeft.value,
 		bottom: dragTop.value + dragHeight.value,
-		right: dragLeft.value + dragWidth.value
+		right: dragLeft.value + dragWidth.value,
 	}
 
 	const newSelection = []
 
-	const items =
-		dragHandler.value.$el.querySelectorAll(".sequence-item")
+	const items = dragHandler.value.$el.querySelectorAll(".sequence-item")
 
 	for (let i = 0; i < items.length; ++i) {
 		const item = items[i]
@@ -248,6 +248,7 @@ function abandonSelect() {
 ////////////////////////////////////////
 
 function copy(event) {
+	//console.log("COPY!", event)
 	if (selected.value.length == 0) return
 
 	const clipData = []
@@ -256,14 +257,11 @@ function copy(event) {
 		clipData.push(_cloneDeep(modelObj.value[idx]))
 	}
 
-	event.clipboardData.setData(
-		"application/json",
-		JSON.stringify(clipData)
-	)
+	event.clipboardData.setData("application/json", JSON.stringify(clipData))
 	event.preventDefault()
 }
 function paste(event) {
-	console.log("Paste!")
+	//console.log("Paste!")
 
 	let paste = (event.clipboardData || window.clipboardData).getData(
 		"application/json"
@@ -310,6 +308,7 @@ function paste(event) {
 	}
 }
 function cut(event) {
+	//console.log("CUT!")
 	copy(event)
 	doDelete()
 }
