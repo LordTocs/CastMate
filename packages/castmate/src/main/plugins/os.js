@@ -1,12 +1,30 @@
 import path from "path"
-import { evalTemplate, getNextTemplate, template } from "../state/template"
-import { exec } from "child_process"
+import {
+	evalTemplate,
+	getNextTemplate,
+	template,
+	templateSchema,
+} from "../state/template"
+import { ChildProcess, exec, spawn } from "child_process"
 
-async function shellCommand(command) {
-	return new Promise((resolve, reject) => {
-		exec(command, (err, stdout, stderr) => {
-			if (err) reject(err)
-			resolve(stdout)
+function isRunning(application) {
+	return new Promise(function (resolve, reject) {
+		const plat = process.platform
+		const cmd =
+			plat == "win32"
+				? "tasklist"
+				: plat == "darwin"
+				? "ps -ax | grep " + mac
+				: plat == "linux"
+				? "ps -A"
+				: ""
+		if (cmd === "" || application === "") {
+			resolve(false)
+		}
+		exec(cmd, function (err, stdout, stderr) {
+			resolve(
+				stdout.toLowerCase().indexOf(application.toLowerCase()) > -1
+			)
 		})
 	})
 }
@@ -69,7 +87,18 @@ function powershellEscapeForDoubleQuote(str) {
 
 function powershellEscapeWild(str) {
 	let result = ""
-	const specialCharacters = [...doubleQuotes, ...singleQuotes, "`", ...dashes, "%", "|", "$", "{", "}", "?"]
+	const specialCharacters = [
+		...doubleQuotes,
+		...singleQuotes,
+		"`",
+		...dashes,
+		"%",
+		"|",
+		"$",
+		"{",
+		"}",
+		"?",
+	]
 
 	for (let c of str) {
 		if (specialCharacters.includes(c)) {
@@ -192,6 +221,72 @@ export default {
 				const result = await powershellCommand(command, data.dir)
 
 				console.log(result)
+			},
+		},
+		launch: {
+			name: "Launch Application",
+			description:
+				"Easily Launch an Application. Working directory defaults to application folder",
+			color: "#CC9B78",
+			icon: "mdi-launch",
+			data: {
+				type: Object,
+				properties: {
+					application: {
+						type: "File",
+						name: "Application",
+						required: true,
+						filters: [{ name: "Application", extensions: ["exe"] }],
+					},
+					dir: {
+						type: "Folder",
+						name: "Working Directory",
+					},
+					args: {
+						type: Array,
+						items: { type: String, name: "Arg", template: true },
+						name: "Arguments",
+					},
+					ignoreIfRunning: {
+						type: Boolean,
+						name: "Ignore If Already Running",
+						default: true,
+						required: true,
+					},
+				},
+			},
+			async handler(data, context) {
+				if (data.ignoreIfRunning) {
+					if (await isRunning(path.basename(data.application))) {
+						return
+					}
+				}
+
+				let cwd = data.dir
+				if (!cwd) {
+					cwd = path.dirname(data.application)
+				}
+
+				const args = data.args
+					? await templateSchema(
+							data.args,
+							{
+								type: Array,
+								items: {
+									type: String,
+									name: "Arg",
+									template: true,
+								},
+								name: "Arguments",
+							},
+							context
+					  )
+					: []
+
+				spawn(data.application, args, {
+					cwd,
+					detached: true,
+				})
 			},
 		},
 	},

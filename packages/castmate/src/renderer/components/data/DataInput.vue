@@ -94,6 +94,11 @@
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
+	<file-input
+		v-else-if="schema.type == 'File'"
+		v-model="modelObj"
+		v-bind="allProps"
+	/>
 	<overlay-widget-input
 		v-else-if="schema.type == 'OverlayWidget'"
 		v-model="modelObj"
@@ -123,11 +128,13 @@ import LightColorInput from "./types/LightColorInput.vue"
 import FolderInput from "./types/FolderInput.vue"
 import OverlayWidgetInput from "./types/OverlayWidgetInput.vue"
 import { computed } from "vue"
+import FileInput from "./types/FileInput.vue"
+
 const props = defineProps({
 	schema: {},
 	modelValue: {},
 	label: {},
-	context: {  },
+	context: {},
 	secret: { type: Boolean, default: () => false },
 	colorRefs: {},
 	density: { type: String },
@@ -151,12 +158,13 @@ function clear() {
 }
 
 const modelObj = computed({
-	get() { return props.modelValue },
+	get() {
+		return props.modelValue
+	},
 	set(value) {
-		if (value == null)
-			return clear()
+		if (value == null) return clear()
 		emit("update:modelValue", value)
-	}
+	},
 })
 </script>
 

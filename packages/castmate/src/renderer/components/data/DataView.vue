@@ -18,8 +18,10 @@
 			schema.type == 'Number' ||
 			schema.type == 'FilePath' ||
 			schema.type == 'Automation' ||
-			schema.type == 'Duration' || 
-			schema.type == 'ChannelPointReward'
+			schema.type == 'Duration' ||
+			schema.type == 'ChannelPointReward' ||
+			schema.type == 'File' ||
+			schema.type == 'Folder'
 		"
 	>
 		<span class="text--secondary" v-if="schema.name || label">

@@ -3,6 +3,7 @@ import { ipcFunc, mainWindow } from "./electronBridge.js"
 import logger from "./logger.js"
 import thumbsupply from "thumbsupply"
 import { app, dialog } from "./electronBridge.js"
+import path from "path"
 
 export function osInit() {
 	logger.info("Initing OS Util Funcs")
@@ -26,9 +27,22 @@ export function osInit() {
 	})
 
 	ipcFunc("os", "selectDir", async (existing) => {
-		const result = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'], defaultPath: existing })
+		const result = await dialog.showOpenDialog(mainWindow, {
+			properties: ["openDirectory"],
+			defaultPath: existing,
+		})
 
 		return result?.filePaths?.[0]
+	})
+
+	ipcFunc("os", "selectFile", async (filters, existing) => {
+		const result = await dialog.showOpenDialog(mainWindow, {
+			properties: ["openFile"],
+			defaultPath: existing,
+			filters,
+		})
+
+		return result.filePaths?.[0]
 	})
 }
 
