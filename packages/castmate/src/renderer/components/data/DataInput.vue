@@ -127,7 +127,7 @@ const props = defineProps({
 	schema: {},
 	modelValue: {},
 	label: {},
-	context: { type: Object },
+	context: {  },
 	secret: { type: Boolean, default: () => false },
 	colorRefs: {},
 	density: { type: String },
