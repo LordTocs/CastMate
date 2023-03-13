@@ -94,13 +94,13 @@
 			</div>
 		</div>
 		<div v-if="templateMode && lightType == 'color'" class="px-2">
-			<number-input label="Hue" v-model="hue" :allowTemplate="true" />
-            <number-input label="Saturation" v-model="sat" :allowTemplate="true" />
-            <number-input label="Brightness" v-model="bri" :allowTemplate="true" />
+			<number-input label="Hue" v-model="hue" :schema="templateInputSchema" />
+            <number-input label="Saturation" v-model="sat" :schema="templateInputSchema" />
+            <number-input label="Brightness" v-model="bri" :schema="templateInputSchema" />
 		</div>
         <div v-if="templateMode && lightType == 'temperature'" class="px-2">
-            <number-input label="Kelvin" v-model="kelvin" :allowTemplate="true" />
-            <number-input label="Brightness" v-model="bri" :allowTemplate="true" />
+            <number-input label="Kelvin" v-model="kelvin" :schema="templateInputSchema" />
+            <number-input label="Brightness" v-model="bri" :schema="templateInputSchema" />
 		</div>
 	</v-sheet>
 </template>
@@ -263,6 +263,12 @@ const lightType = computed({
 		}
 	},
 })
+
+
+const templateInputSchema = computed(() => ({
+	type: "Number",
+	template: true,
+}))
 </script>
 
 <style scoped>
