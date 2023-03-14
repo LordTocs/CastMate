@@ -19,7 +19,10 @@
 							:appear-delay="titleFormat?.timing?.appearDelay"
 							:vanish-advance="titleFormat?.timing?.vanishAdvance"
 						>
-							<p :style="getFontStyle(titleFormat?.style)">
+							<p
+								class="message"
+								:style="getFontStyle(titleFormat?.style)"
+							>
 								{{ header }}
 							</p>
 						</timed-reveal>
@@ -37,7 +40,10 @@
 								messageFormat?.timing?.vanishAdvance
 							"
 						>
-							<p :style="getFontStyle(messageFormat?.style)">
+							<p
+								class="message"
+								:style="getFontStyle(messageFormat?.style)"
+							>
 								{{ message }}
 							</p>
 						</timed-reveal>
@@ -56,7 +62,10 @@
 						:appear-delay="titleFormat?.timing?.appearDelay"
 						:vanish-advance="titleFormat?.timing?.vanishAdvance"
 					>
-						<p :style="getFontStyle(titleFormat?.style)">
+						<p
+							class="message"
+							:style="getFontStyle(titleFormat?.style)"
+						>
 							{{ header }}
 						</p>
 					</timed-reveal>
@@ -72,7 +81,10 @@
 						:appear-delay="messageFormat?.timing?.appearDelay"
 						:vanish-advance="messageFormat?.timing?.vanishAdvance"
 					>
-						<p :style="getFontStyle(messageFormat?.style)">
+						<p
+							class="message"
+							:style="getFontStyle(messageFormat?.style)"
+						>
 							{{ message }}
 						</p>
 					</timed-reveal>
@@ -302,5 +314,9 @@ p {
 .frame-sized {
 	position: absolute;
 	inset: 0px;
+}
+
+.message {
+	white-space: pre-wrap;
 }
 </style>
