@@ -1,6 +1,6 @@
 <template>
 	<v-text-field
-		v-if="!isEnum || templateMode"
+		v-if="(!isEnum || templateMode) && !schema.area"
 		v-model="modelObj"
 		:label="schema.name || label"
 		:clearable="!schema.required"
@@ -26,6 +26,15 @@
 			</v-icon>
 		</template>
 	</v-text-field>
+	<v-textarea
+		v-else-if="schema.area"
+		v-model="modelObj"
+		:label="schema.name || label"
+		:clearable="!schema.required"
+		:density="density"
+		rows="2"
+		auto-grow
+	/>
 	<enum-input
 		v-else-if="isEnum && !secret"
 		:enum="props.schema.enum"
@@ -60,7 +69,7 @@ const props = defineProps({
 	context: {},
 	secret: { type: Boolean, default: () => false },
 	density: { type: String },
-	colorRefs: {}
+	colorRefs: {},
 })
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useModel(props, emit)
