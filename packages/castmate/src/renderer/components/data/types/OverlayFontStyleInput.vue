@@ -20,7 +20,21 @@
 		<v-card>
 			<v-toolbar dense flat>
 				<v-toolbar-title class="font-weight-bold grey--text">
-					{{ props.label }}
+					<div class="d-flex flex-row align-center justify-center">
+						{{ props.label }}
+						<v-spacer />
+						<v-btn
+							icon="mdi-content-copy"
+							class="mr-2"
+							:disabled="props.modelValue == null"
+							@click="copy"
+						/>
+						<v-btn
+							icon="mdi-content-paste"
+							class="mr-2"
+							@click="paste"
+						/>
+					</div>
 				</v-toolbar-title>
 			</v-toolbar>
 			<div class="px-4">
@@ -80,6 +94,8 @@ import ColorInput from "./ColorInput.vue"
 import FontStrokeInput from "../../text/FontStrokeInput.vue"
 import _cloneDeep from "lodash/cloneDeep"
 import FontShadowInput from "../../text/FontShadowInput.vue"
+import { useElectronClipboard } from "../../../utils/clipboard"
+import { pasteWithSchema } from "../../../utils/objects"
 
 const props = defineProps({
 	modelValue: {},
@@ -155,6 +171,44 @@ const previewText = computed(() => {
 	if (props.schema.exampleText) return props.schema.exampleText
 	return "Lorem Ipsum"
 })
+
+const clipboard = useElectronClipboard()
+function copy() {
+	clipboard.setData(props.modelValue)
+}
+
+function paste() {
+	const data = clipboard.getData()
+	if (data == null) return
+	const obj = _cloneDeep(props.modelValue) ?? {}
+	pasteWithSchema(obj, data, {
+		type: "Object",
+		properties: {
+			fontSize: { type: "Number" },
+			fontColor: { type: "String" },
+			fontFamily: { type: "String" },
+			fontWeight: { type: "Number" },
+			textAlign: { type: "String" },
+			stroke: {
+				type: "Object",
+				properties: {
+					width: { type: "Number" },
+					color: { type: "String" },
+				},
+			},
+			shadow: {
+				type: "Object",
+				properties: {
+					offsetX: { type: "Number" },
+					offsetY: { type: "Number" },
+					blur: { type: "Number" },
+					color: { type: "String" },
+				},
+			},
+		},
+	})
+	emit("update:modelValue", obj)
+}
 </script>
 
 <style scoped>
