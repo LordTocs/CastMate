@@ -313,9 +313,7 @@ export default {
 				if (lastVelocity > 0) {
 					//Just Stopped
 					const result = this.items[this.itemIndex]?.text
-					if (result) {
-						this.callbacks.call("wheelLanded", result)
-					}
+					this.callbacks.call("wheelLanded", result)
 				}
 			}
 		},
@@ -337,7 +335,7 @@ export default {
 			console.log(this.itemIndex, this.slotIndex)
 			if (!this.isEditor) {
 				const soundMedia =
-					this.items?.[this.itemIndex].clickOverride ??
+					this.items?.[this.itemIndex]?.clickOverride ??
 					this.colors[this.slotIndex % (this.colors?.length || 1)]
 						?.click
 				this.soundPlayer.playSound(soundMedia)
