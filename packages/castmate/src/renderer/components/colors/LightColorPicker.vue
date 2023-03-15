@@ -1,8 +1,8 @@
 <template>
 	<v-sheet class="v-color-picker" :style="{ width }">
-		<v-tabs v-model="lightType">
-			<v-tab value="color"> RGB </v-tab>
-			<v-tab value="temperature"> Temperature </v-tab>
+		<v-tabs v-model="lightType" v-if="hasColor || hasTemp">
+			<v-tab value="color" v-if="hasColor"> Color </v-tab>
+			<v-tab value="temperature" v-if="hasTemp"> Temperature </v-tab>
 		</v-tabs>
 
 		<div
@@ -14,17 +14,19 @@
 				v-model="modelObj"
 				:light-type="lightType"
 				class="mt-2"
-				v-if="!templateMode && lightType == 'color'"
+				v-if="!templateMode && lightType == 'color' && hasColor"
 			/>
 			<light-temperature-slider
 				style="width: 50px"
 				v-model="modelObj"
 				:light-type="lightType"
 				class="mt-2"
-				v-else-if="!templateMode && lightType == 'temperature'"
+				v-else-if="
+					!templateMode && lightType == 'temperature' && hasTemp
+				"
 			/>
 			<v-btn
-				v-if="props.templatable"
+				v-if="props.schema?.template"
 				class="template-btn"
 				size="x-small"
 				variant="tonal"
@@ -34,9 +36,16 @@
 			></v-btn>
 		</div>
 		<div class="v-color-picker__controls" v-if="!templateMode">
-			<light-color-preview v-model="modelObj" :light-type="lightType" />
-			<div class="v-color-picker-edit" v-if="lightType == 'color'">
-				<div class="v-color-picker-edit__input">
+			<light-color-preview
+				v-model="modelObj"
+				:light-type="lightType"
+				v-if="hasBri"
+			/>
+			<div class="v-color-picker-edit">
+				<div
+					class="v-color-picker-edit__input"
+					v-if="lightType == 'color' && hasColor"
+				>
 					<input
 						v-model="hue"
 						type="number"
@@ -46,7 +55,10 @@
 					/>
 					<span>Hue</span>
 				</div>
-				<div class="v-color-picker-edit__input">
+				<div
+					class="v-color-picker-edit__input"
+					v-if="lightType == 'color' && hasColor"
+				>
 					<input
 						v-model="sat"
 						type="number"
@@ -56,32 +68,20 @@
 					/>
 					<span>Saturation</span>
 				</div>
-				<div class="v-color-picker-edit__input">
-					<input
-						v-model="bri"
-						type="number"
-						min="0"
-						max="100"
-						step="0.01"
-					/>
-					<span>Brightness</span>
-				</div>
-			</div>
-			<div
-				class="v-color-picker-edit"
-				v-else-if="lightType == 'temperature'"
-			>
-				<div class="v-color-picker-edit__input">
+				<div
+					class="v-color-picker-edit__input"
+					v-if="lightType == 'temperature' && hasTemp"
+				>
 					<input
 						v-model="kelvin"
 						type="number"
-						min="2000"
-						max="6535"
+						:min="minKelvin"
+						:max="maxKelvin"
 						step="1"
 					/>
 					<span>Kelvin</span>
 				</div>
-				<div class="v-color-picker-edit__input">
+				<div class="v-color-picker-edit__input" v-if="hasBri">
 					<input
 						v-model="bri"
 						type="number"
@@ -94,13 +94,38 @@
 			</div>
 		</div>
 		<div v-if="templateMode && lightType == 'color'" class="px-2">
-			<number-input label="Hue" v-model="hue" :schema="templateInputSchema" />
-            <number-input label="Saturation" v-model="sat" :schema="templateInputSchema" />
-            <number-input label="Brightness" v-model="bri" :schema="templateInputSchema" />
+			<number-input
+				label="Hue"
+				v-model="hue"
+				:schema="templateInputSchema"
+				v-if="hasColor"
+			/>
+			<number-input
+				label="Saturation"
+				v-model="sat"
+				:schema="templateInputSchema"
+				v-if="hasColor"
+			/>
+			<number-input
+				label="Brightness"
+				v-model="bri"
+				:schema="templateInputSchema"
+				v-if="hasBri"
+			/>
 		</div>
-        <div v-if="templateMode && lightType == 'temperature'" class="px-2">
-            <number-input label="Kelvin" v-model="kelvin" :schema="templateInputSchema" />
-            <number-input label="Brightness" v-model="bri" :schema="templateInputSchema" />
+		<div v-if="templateMode && lightType == 'temperature'" class="px-2">
+			<number-input
+				label="Kelvin"
+				v-model="kelvin"
+				:schema="templateInputSchema"
+				v-if="hasTemp"
+			/>
+			<number-input
+				label="Brightness"
+				v-model="bri"
+				:schema="templateInputSchema"
+				v-if="hasTemp"
+			/>
 		</div>
 	</v-sheet>
 </template>
@@ -108,6 +133,7 @@
 <script setup>
 import { computed, ref, onMounted } from "vue"
 import { useModel } from "../../utils/modelValue"
+import { useResourceArray } from "../../utils/resources"
 import NumberInput from "../data/types/NumberInput.vue"
 import LightColorPreview from "./LightColorPreview.vue"
 import LightColorWheel from "./LightColorWheel.vue"
@@ -115,8 +141,9 @@ import LightTemperatureSlider from "./LightTemperatureSlider.vue"
 
 const props = defineProps({
 	modelValue: {},
-	templatable: { type: Boolean, default: false },
+	schema: {},
 	width: { default: "300px" },
+	context: {},
 })
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useModel(props, emit)
@@ -160,6 +187,28 @@ function isNumberOrNullish(value) {
 function isValueTemplated(value) {
 	return !isNumberOrNullish(value)
 }
+
+const lights = useResourceArray("light")
+const light = computed(() => {
+	if (!props.context) return undefined
+
+	if (!props.schema?.resource) return undefined
+
+	const id = props.context[props.schema.resource]
+
+	if (!id) return undefined
+
+	return lights.value.find((l) => l.id == id)
+})
+
+const hasColor = computed(() => light.value?.config?.rgb?.available ?? true)
+
+const hasTemp = computed(() => light.value?.config?.kelvin?.available ?? true)
+
+const hasBri = computed(() => light.value?.config?.dimming?.available ?? true)
+
+const minKelvin = computed(() => light.value?.config?.kelvin?.min ?? 2000)
+const maxKelvin = computed(() => light.value?.config?.kelvin?.max ?? 6535)
 
 onMounted(() => {
 	templateMode.value =
@@ -263,7 +312,6 @@ const lightType = computed({
 		}
 	},
 })
-
 
 const templateInputSchema = computed(() => ({
 	type: "Number",

@@ -14,15 +14,14 @@ import EventSource from "eventsource"
 import { IoTManager } from "../iot/iot-manager.js"
 import { reactify } from "../state/reactive.js"
 
+function xyToHueSat({ x, y }) {
+	const z = 1.0 - x - y
 
-function xyToHueSat({x, y}) {
-	const z = 1.0 - x - y;
+	const Y = 100
+	const X = (Y / y) * x
+	const Z = (Y / y) * z
 
-	const Y = 100;
-	const X = (Y / y) * x;
-	const Z = (Y / y) * z;
-
-	const hsv = chromatism.convert({ X, Y, Z}).hsv
+	const hsv = chromatism.convert({ X, Y, Z }).hsv
 
 	return { hue: hsv.h, sat: hsv.s }
 }
@@ -102,16 +101,13 @@ class HUEApi {
 					for (let subEvent of event?.data) {
 						try {
 							this?.onHueUpdate(subEvent)
-						}
-						catch(err) {
+						} catch (err) {
 							console.error("Error Updating Hue", err)
 						}
 					}
 				}
 			}
-		} catch (err) {
-			
-		}
+		} catch (err) {}
 	}
 
 	shutdown() {
@@ -219,7 +215,7 @@ class HUEApi {
 			if ("kelvin" in color) {
 				//Convert kelvin to mired. https://en.wikipedia.org/wiki/Mired
 				update.color_temperature = {
-					mirek: Math.round(1000000 / color.kelvin)
+					mirek: Math.round(1000000 / color.kelvin),
 				}
 			}
 		}
@@ -291,12 +287,14 @@ class HUEBulb extends Light {
 			hueArchtype: apiObj?.metadata?.archetype,
 			rgb: { available: !!apiObj.color },
 			dimming: { available: !!apiObj.dimming },
-			kelvin: { available: !!apiObj.color_temperature }
+			kelvin: { available: !!apiObj.color_temperature },
 		}
 
 		if (this.config.kelvin.available) {
-			this.config.kelvin.min = 1000000 / apiObj.color_temperature?.mirek_schema?.mirek_minimum
-			this.config.kelvin.max = 1000000 / apiObj.color_temperature?.mirek_schema?.mirek_maximum
+			this.config.kelvin.min =
+				1000000 / apiObj.color_temperature?.mirek_schema?.mirek_minimum
+			this.config.kelvin.max =
+				1000000 / apiObj.color_temperature?.mirek_schema?.mirek_maximum
 		}
 
 		const color = {
@@ -305,14 +303,14 @@ class HUEBulb extends Light {
 		if (apiObj?.color_temperature?.mirek_valid) {
 			color.kelvin = 1000000 / apiObj.color_temperature.mirek
 		} else if (apiObj?.color?.xy) {
-			const {hue, sat} = xyToHueSat(apiObj?.color?.xy)
+			const { hue, sat } = xyToHueSat(apiObj?.color?.xy)
 			color.hue = hue
 			color.sat = sat
 		}
 
 		this.state = reactify({
 			on: !!apiObj?.on?.on,
-			color
+			color,
 		})
 	}
 
@@ -331,17 +329,13 @@ class HUEGroup extends Light {
 		const service = apiObj.services.find((s) => s.rtype == "grouped_light")
 
 		this.id = service?.rid
+
 		this.config = {
 			name: apiObj?.metadata?.name,
 			plugin: "hue",
-			rgb: { available: !!apiObj.color },
-			dimming: { available: !!apiObj.dimming },
-			kelvin: { available: !!apiObj.color_temperature }
-		}
-
-		if (this.config.kelvin.available) {
-			this.config.kelvin.min = 1000000 / apiObj.color_temperature?.mirek_schema?.mirek_minimum
-			this.config.kelvin.max = 1000000 / apiObj.color_temperature?.mirek_schema?.mirek_maximum
+			rgb: { available: true },
+			dimming: { available: true },
+			kelvin: { available: true, min: 2000, max: 6535 },
 		}
 
 		const color = {
@@ -350,14 +344,14 @@ class HUEGroup extends Light {
 		if (apiObj?.color_temperature?.mirek_valid) {
 			color.kelvin = 1000000 / apiObj.color_temperature.mirek
 		} else if (apiObj?.color?.xy) {
-			const {hue, sat} = xyToHueSat(apiObj?.color?.xy)
+			const { hue, sat } = xyToHueSat(apiObj?.color?.xy)
 			color.hue = hue
 			color.sat = sat
 		}
 
 		this.state = reactify({
 			on: !!apiObj?.on?.on,
-			color
+			color,
 		})
 	}
 
@@ -478,7 +472,7 @@ export default {
 			this.logger.info("Checking Cached Bridge")
 			if (!cached?.bridgeIp) {
 				this.logger.info("No Cached Bridge")
-			return false
+				return false
 			}
 
 			this.bridgeIp = cached.bridgeIp
@@ -554,8 +548,12 @@ export default {
 				)
 
 				this.hue.onHueUpdate = (update) => {
-					const plug = IoTManager.getInstance().plugs.getById(update.id)
-					const light = IoTManager.getInstance().lights.getById(update.id)
+					const plug = IoTManager.getInstance().plugs.getById(
+						update.id
+					)
+					const light = IoTManager.getInstance().lights.getById(
+						update.id
+					)
 
 					if (plug) {
 						if (update.on) {
@@ -566,20 +564,26 @@ export default {
 						if (update.on) {
 							light.state.on = !!update.on.on
 						}
-						if (update.dimming || update.color || update.color_temperature) {
+						if (
+							update.dimming ||
+							update.color ||
+							update.color_temperature
+						) {
 							//We have to update the WHOLE color object because our reactivity isn't deep
 							const newColor = {
 								...light.state.color,
-								bri: update.dimming?.brightness ?? light.state.color.bri
+								bri:
+									update.dimming?.brightness ??
+									light.state.color.bri,
 							}
 
 							if (update.color_temperature?.mirek_valid) {
-								newColor.kelvin = 1000000 / update.color_temperature.mirek;
+								newColor.kelvin =
+									1000000 / update.color_temperature.mirek
 								delete newColor.hue
 								delete newColor.sat
 							} else if (update.color?.xy) {
-								
-								const {hue, sat} = xyToHueSat(update.color.xy)
+								const { hue, sat } = xyToHueSat(update.color.xy)
 								newColor.hue = hue
 								newColor.sat = sat
 								delete newColor.kelvin

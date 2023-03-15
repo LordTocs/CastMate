@@ -53,6 +53,8 @@
 				<light-color-picker
 					v-model="modelObj"
 					:templatable="canTemplate"
+					:context="props.context"
+					:schema="schema"
 				/>
 				<select-dummy
 					ref="dummySelect"
@@ -72,13 +74,13 @@ import * as chromatism from "chromatism2"
 import LightColorPicker from "../../colors/LightColorPicker.vue"
 import { useModel } from "../../../utils/modelValue"
 import SelectDummy from "../../sequences/SelectDummy.vue"
-import { isString } from "@vue/shared"
 
 const props = defineProps({
 	modelValue: {},
 	label: { type: String },
 	schema: {},
 	density: { type: String },
+	context: {},
 })
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useModel(props, emit)
