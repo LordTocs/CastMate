@@ -90,6 +90,7 @@
 					:active="true"
 					:disabled="!isColorString"
 					@click="templateMode = false"
+					color="success"
 					icon="mdi-code-braces"
 				/>
 			</template>
@@ -115,9 +116,14 @@ const modelObj = useModel(topProps, emit)
 
 const templateMode = ref(false)
 
+function isColorRef(obj) {
+	return !!obj?.ref
+}
+
 const isColorString = computed(
 	() =>
 		isHexColor(topProps.modelValue) ||
+		isColorRef(topProps.modelValue) ||
 		topProps.modelValue == undefined ||
 		topProps.modelValue == null ||
 		topProps.modelValue.length == 0

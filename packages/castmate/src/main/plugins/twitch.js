@@ -939,9 +939,7 @@ export default {
 
 			const installed = installedExts.find((e) => e.id == id)
 			const active = activeExts.find((e) => e.id == id)
-
-			console.log("Extension Info", { ...installed }, { ...active })
-
+			
 			if (active) {
 				return { installed: true, active: true, canActivate: true }
 			} else if (installed) {

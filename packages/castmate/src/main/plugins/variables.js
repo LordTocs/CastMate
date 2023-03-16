@@ -174,18 +174,17 @@ export default {
 					)
 					if (!isNaN(setValue)) {
 						this.state[variableData.name] = setValue
-						this.logger.info(`Setting ${variableData.name} to ${setValue}`)
+						this.logger.info(
+							`Setting ${variableData.name} to ${setValue}`
+						)
 					}
 				} else if (isString) {
-					const setValue = await template(
-						setValue,
-						context
-					)
+					const setValue = await template(variableData.value, context)
 					this.state[variableData.name] = setValue
-					this.logger.info(`Setting ${variableData.name} to ${setValue}`)
+					this.logger.info(
+						`Setting ${variableData.name} to ${setValue}`
+					)
 				}
-
-				
 			},
 		},
 		inc: {
@@ -230,12 +229,14 @@ export default {
 				const offset = Number(
 					await templateNumber(variableData.offset, context)
 				)
-				
+
 				if (!isNaN(offset)) {
 					this.state[variableData.name] = Number(
 						this.state[variableData.name] + offset
 					)
-					this.logger.info(`Offseting ${variableData.name} by ${offset}`)
+					this.logger.info(
+						`Offseting ${variableData.name} by ${offset}`
+					)
 				}
 			},
 		},

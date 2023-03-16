@@ -1,5 +1,5 @@
 <template>
-	<v-select
+	<v-autocomplete
 		v-model="modelObj"
 		:items="resourceItems"
 		item-title="config.name"
@@ -40,7 +40,7 @@
 				</v-menu>
 			</div>
 		</template>
-	</v-select>
+	</v-autocomplete>
 </template>
 
 <script setup>

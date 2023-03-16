@@ -20,6 +20,7 @@ export class PluginManager {
 	async load() {
 		let pluginFiles = [
 			"inputs",
+			"iot",
 			"hue",
 			"obs",
 			"sounds",
@@ -38,6 +39,7 @@ export class PluginManager {
 			"aoe4",
 			"twinkly",
 			"discord",
+			"tplink"
 		]
 
 		//Todo: This relative require is weird.

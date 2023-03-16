@@ -1,5 +1,6 @@
 {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
     "[vue]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
@@ -12,6 +13,7 @@
         "**/dist": true,
         "**/node_modules": true,
         "**/bower_components": true,
-        "**/*.code-search": true
+        "**/*.code-search": true,
+        "yarn.lock": true
     }
 }

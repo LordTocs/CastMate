@@ -103,8 +103,7 @@ export function mapModelValues(subvalues, varname = "modelValue") {
 				return this[varname] ? this[varname][sv] : null
 			},
 			set(newValue) {
-				const newObj = _cloneDeep(this[varname])
-				newObj[sv] = newValue
+				const newObj = {...this[varname], [sv]: newValue}
 				this.$emit(`update:${varname}`, newObj)
 			},
 		}
@@ -124,24 +123,6 @@ export function mapModel(varname = "modelValue", as = "modelObj") {
 			},
 		},
 	}
-}
-
-export function defineModel(varName = "modelValue", propSpec = {}) {
-	const prop = defineProps({
-		[varName]: propSpec,
-	})
-
-	const emitName = `update:${modelValue}`
-	const emit = defineEmits([emitName])
-
-	return computed({
-		get() {
-			return prop[varName]
-		},
-		set(value) {
-			emit(emitName, value)
-		},
-	})
 }
 
 export function useModel(props, emit, varName = "modelValue") {
@@ -165,9 +146,7 @@ export function useModelValues(props, emit, subValues, varName = "modelValue") {
 				return props[varName] ? props[varName][sv] : null
 			},
 			set(newValue) {
-				const newObj = _cloneDeep(props[varName]) || {}
-				console.log(newObj)
-				newObj[sv] = newValue
+				const newObj = {...props[varName], [sv]: newValue}
 				emit(`update:${varName}`, newObj)
 			},
 		})

@@ -67,9 +67,9 @@ const filteredItems = computed(() => {
 	let items = [...props.items]
 
 	if (search.value) {
-		const searchValue = search.value.toLowercase()
+		const searchValue = search.value.toLowerCase()
 		items = items.filter((i) =>
-			getName(i).toLowercase().includes(searchValue)
+			getName(i).toLowerCase().includes(searchValue)
 		)
 	}
 

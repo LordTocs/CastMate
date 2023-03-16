@@ -10,6 +10,7 @@ import { cleanSchemaForIPC } from "../utils/schema"
 import logger from "../utils/logger"
 import { Analytics } from "../utils/analytics"
 import _cloneDeep from "lodash/cloneDeep"
+import { isReactive, onAllStateChange } from "../state/reactive"
 
 export class Resource {
 	constructor(type, spec) {
@@ -53,6 +54,7 @@ export class Resource {
 		return {
 			id: resource.id,
 			config: resource.config,
+			...(resource.state ? { state: resource.state } : {})
 		}
 	}
 
@@ -77,9 +79,10 @@ export class Resource {
 			? await this.resourceType.create(config)
 			: new this.resourceType(config)
 
-		this.resources.push(newResource)
+		if (!newResource)
+			return null
 
-		this._triggerUpdate()
+		await this.inject(newResource)
 
 		Analytics.getInstance().track("resourceCreated", {
 			type: this.name,
@@ -89,10 +92,39 @@ export class Resource {
 		return newResource
 	}
 
+	_setupReactivity(newResource) {
+		if (isReactive(newResource.state)) {
+			newResource._stateUpdaters = onAllStateChange(newResource.state, (key) => {
+				callIpcFunc(
+					"resources_updateResourceState",
+					this.spec.type,
+					newResource.id,
+					key,
+					newResource.state[key]
+				)
+			})
+		}
+	}
+
+	async inject(newResource) {
+		if (!newResource)
+			return
+
+		this._setupReactivity(newResource)
+
+		this.resources.push(newResource)
+
+		this._triggerUpdate()
+	}
+
 	async load() {
 		logger.info(`Loading ${this.name} Resources`)
 
 		this.resources = await this.resourceType.load()
+
+		for (let resource of this.resources) {
+			this._setupReactivity(resource)
+		}
 
 		this._triggerUpdate()
 	}

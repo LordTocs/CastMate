@@ -1,6 +1,6 @@
 {
 	"name": "castmate",
-	"version": "0.4.1",
+	"version": "0.4.2",
 	"description": "CastMate is a broadcaster tool that allows Twitch viewers to interact with a broadcasters stream components through Chat Commands, Channel Point rewards, and more.",
 	"author": "LordTocs",
 	"scripts": {
@@ -19,6 +19,7 @@
 		"@twurple/chat": "^6.0.4",
 		"@twurple/eventsub-ws": "^6.0.4",
 		"@twurple/pubsub": "^6.0.4",
+		"@vueuse/core": "^9.13.0",
 		"async-mutex": "^0.3.0",
 		"axios": "^0.27.2",
 		"bad-words": "^3.0.4",
@@ -28,6 +29,7 @@
 		"cs-gamestate": "^2.2.3",
 		"discord.js": "^14.7.1",
 		"electron-updater": "^4.6.1",
+		"eventsource": "^2.0.2",
 		"express": "^4.17.1",
 		"ffi-napi": "^4.0.3",
 		"font-list": "^1.4.5",
@@ -46,13 +48,13 @@
 		"regedit": "^5.0.0",
 		"say": "^0.16.0",
 		"thumbsupply": "^0.4.0",
+		"tplink-smarthome-api": "^4.2.0",
 		"win32-api": "^19.8.1",
 		"winston": "^3.3.3",
 		"ws": "^8.2.3",
 		"yaml": "^2.1.1"
 	},
 	"devDependencies": {
-		"@jaames/iro": "^5.5.2",
 		"@mdi/font": "^7.1.96",
 		"@rollup/plugin-node-resolve": "^13.3.0",
 		"@vitejs/plugin-vue": "^3.0.3",

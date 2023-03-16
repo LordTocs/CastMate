@@ -19,6 +19,30 @@ export const useResourceStore = defineStore("resources", () => {
 			}
 		)
 
+		ipcRenderer.on(
+			"resources_updateResource",
+			(event, type, id, newValue) => {
+				const resourceArray = resources.value[type]
+
+				const idx = resourceArray.findIndex((r) => r.id == id)
+				if (idx != -1) {
+					resourceArray[idx] = newValue
+				}
+			}
+		)
+
+		ipcRenderer.on(
+			"resources_updateResourceState",
+			(event, type, id, key, value) => {
+				const resourceArray = resources.value[type]
+
+				const idx = resourceArray.findIndex((r) => r.id == id)
+				if (idx != -1) {
+					resourceArray[idx].state[key] = value
+				}
+			}
+		)
+
 		resourceTypes.value = await getResourceTypes()
 
 		const resourceArrays = await Promise.all(

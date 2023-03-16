@@ -237,13 +237,15 @@ export class ActionQueue {
 			return false
 		}
 
-		Analytics.getInstance().track("trigger", {
-			plugin,
-			trigger: name,
-			context: context,
-		})
-
-		return triggerHandler(context, ...args)
+		const result =  triggerHandler(context, ...args)
+		if (result) {
+			Analytics.getInstance().track("trigger", {
+				plugin,
+				trigger: name,
+				context: context,
+			})
+		}
+		return result
 	}
 
 	async _runAutomation(automation, context) {
