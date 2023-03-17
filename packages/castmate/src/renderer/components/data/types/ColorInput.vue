@@ -90,7 +90,6 @@
 					:active="true"
 					:disabled="!isColorString"
 					@click="templateMode = false"
-					color="success"
 					icon="mdi-code-braces"
 				/>
 			</template>
