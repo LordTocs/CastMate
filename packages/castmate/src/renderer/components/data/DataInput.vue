@@ -104,9 +104,16 @@
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
+	<dynamic-type-input
+		v-else-if="schema.type == 'Dynamic'"
+		v-model="modelObj"
+		v-bind="allProps"
+	/>
 </template>
 
 <script setup>
+import { computed } from "vue"
+
 import RewardSelector from "../rewards/RewardSelector.vue"
 import RangeInput from "./types/RangeInput.vue"
 import TimeInput from "./types/TimeInput.vue"
@@ -127,8 +134,8 @@ import ColorInput from "./types/ColorInput.vue"
 import LightColorInput from "./types/LightColorInput.vue"
 import FolderInput from "./types/FolderInput.vue"
 import OverlayWidgetInput from "./types/OverlayWidgetInput.vue"
-import { computed } from "vue"
 import FileInput from "./types/FileInput.vue"
+import DynamicTypeInput from "./types/DynamicTypeInput.vue"
 
 const props = defineProps({
 	schema: {},
