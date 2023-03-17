@@ -153,7 +153,28 @@ export default {
 							return Object.keys(this.state)
 						},
 					},
-					value: { type: Number, template: true, name: "Set Value" },
+					value: {
+						type: "Dynamic",
+						name: "Set Value",
+						async dynamicType(context) {
+							const spec = this.variableSpecs[context?.name]
+
+							const isString =
+								spec?.type == "string" || spec?.type == "String"
+							const isNumber = spec?.type == "Number"
+							if (isNumber) {
+								return {
+									type: "Number",
+									template: true,
+								}
+							} else {
+								return {
+									type: "String",
+									template: true,
+								}
+							}
+						},
+					},
 				},
 			},
 			async handler(variableData, context) {
