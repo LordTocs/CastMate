@@ -1,5 +1,6 @@
 import { ipcRenderer } from "electron"
 import _cloneDeep from "lodash/cloneDeep"
+import { unref } from "vue"
 
 export function mapIpcs(pluginName, functions) {
 	let result = {}
@@ -18,7 +19,7 @@ export function mapIpcs(pluginName, functions) {
 export function useIpc(pluginName, ipcMethod) {
 	return async function (...args) {
 		return await ipcRenderer.invoke(
-			`${pluginName}_${ipcMethod}`,
+			`${unref(pluginName)}_${unref(ipcMethod)}`,
 			...args.map((a) => _cloneDeep(a))
 		)
 	}
