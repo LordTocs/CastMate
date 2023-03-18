@@ -37,7 +37,10 @@ export class ProfileManager {
 
 	createIOFuncs() {
 		ipcFunc("io", "getProfiles", () => {
-			return this.profiles.map((p) => p.name)
+			return this.profiles.map((p) => ({
+				name: p.name,
+				activationMode: p.activationMode,
+			}))
 		})
 		ipcFunc("io", "getProfile", (name) => {
 			const profile = this.profiles.find((p) => p.name === name)
@@ -53,6 +56,16 @@ export class ProfileManager {
 				await profile.saveConfig(config)
 			}
 		})
+		ipcFunc(
+			"io",
+			"setProfileActivationMode",
+			async (name, activationMode) => {
+				const profile = this.profiles.find((p) => p.name == name)
+				if (profile) {
+					await profile.setActivationMode(activationMode)
+				}
+			}
+		)
 		ipcFunc("io", "createProfile", async (name, config) => {
 			const existingProfile = this.profiles.find((p) => p.name == name)
 			if (existingProfile) return false
@@ -249,11 +262,7 @@ export class ProfileManager {
 
 		let [activeProfiles, inactiveProfiles] = _.partition(
 			this.profiles,
-			(profile) =>
-				evalConditional(
-					profile.conditions,
-					StateManager.getInstance().rootState
-				)
+			(profile) => profile.shouldBeActive()
 		)
 
 		logger.info(
