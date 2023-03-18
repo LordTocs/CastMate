@@ -11,6 +11,7 @@ class TPLinkBulb extends Light {
 		this.config = {
 			name: light.alias,
 			plugin: "tplink",
+			type: "bulb",
 			rgb: { available: light.supportsColor },
 			kelvin: { available: light.supportsColorTemperature },
 			dimming: { available: light.supportsBrightness },
@@ -65,25 +66,25 @@ class TPLinkBulb extends Light {
 
 		if (color != null) {
 			if ("bri" in color) {
-				update.brightness = color.bri
+				update.brightness = Math.ceil(clamp(color.bri, 0, 100))
 			}
 			if ("hue" in color || "sat" in color) {
-				const hue = clamp(color.hue ?? 0, 0, 360)
-				const sat = clamp(color.sat ?? 100, 0, 100)
+				const hue = Math.ceil(clamp(color.hue ?? 0, 0, 360))
+				const sat = Math.ceil(clamp(color.sat ?? 100, 0, 100))
 				update.hue = hue
 				update.saturation = sat
 			}
 
 			if ("kelvin" in color) {
-				update.color_temp = color.kelvin
+				update.color_temp = Math.ceil(color.kelvin)
 			}
 		}
 
 		if (duration != null) {
-			update.transition_period = duration * 1000
+			update.transition_period = Math.ceil(duration * 1000)
 		}
 
-		await this.light.setLightState(update)
+		await this.light.lighting.setLightState(update)
 	}
 }
 
@@ -136,7 +137,6 @@ class TPLinkIoTProvider extends IoTProvider {
 		})
 
 		this.client.on("bulb-new", async (light) => {
-			await light.getInfo()
 			this._addNewLight(
 				new TPLinkBulb(light, await light.lighting.getLightState())
 			)
@@ -170,8 +170,5 @@ export default {
 	color: "#7F743F",
 	async init() {
 		this.iotProvider = new TPLinkIoTProvider(this)
-	},
-	ipcMethods: {
-		doDiscovery() {},
 	},
 }
