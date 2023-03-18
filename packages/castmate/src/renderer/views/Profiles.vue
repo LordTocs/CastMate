@@ -17,7 +17,7 @@
 		<v-table class="profile-table">
 			<thead>
 				<tr>
-					<th>Mode</th>
+					<th style="text-align: center">Activation</th>
 					<th colspan="2">Profile</th>
 					<th></th>
 				</tr>
