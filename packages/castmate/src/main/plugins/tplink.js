@@ -7,9 +7,10 @@ class TPLinkBulb extends Light {
 	constructor(light, lightState) {
 		super()
 		this.light = light
-		this.id = light.id
+		this.id = "tplink." + light.id
 		this.config = {
 			name: light.alias,
+			tplinkId: light.id,
 			plugin: "tplink",
 			type: "bulb",
 			rgb: { available: light.supportsColor },
@@ -92,9 +93,10 @@ class TPLinkPlug extends Plug {
 	constructor(plug, powerState) {
 		super()
 		this.plug = plug
-		this.id = plug.id
+		this.id = "tplink." + plug.id
 
 		this.config = {
+			tplinkId: plug.id,
 			name: plug.alias,
 			plugin: "tplink",
 		}

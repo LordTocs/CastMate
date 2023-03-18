@@ -156,15 +156,6 @@ class HUEApi {
 		return resp.data.data
 	}
 
-	async getSceneByName(groupId, sceneName) {
-		const scenes = await this.sceneCache.get()
-
-		const scene = scenes.find(
-			(s) => s.metadata.name == sceneName && s.group.rid == groupId
-		)
-		return scene
-	}
-
 	async applyScene(sceneId) {
 		const recall = {
 			recall: {
@@ -253,8 +244,9 @@ class HUEApi {
 class HUEPlug extends Plug {
 	constructor(apiObj) {
 		super()
-		this.id = apiObj.id
+		this.id = "hue." + apiObj.id
 		this.config = {
+			hueId: apiObj.id,
 			name: apiObj?.metadata?.name,
 			plugin: "hue",
 			type: "bulb",
@@ -270,16 +262,17 @@ class HUEPlug extends Plug {
 			on = !this.state.on
 		}
 		const api = this._getPlugin().pluginObj.hue
-		await api?.setLightState(this.id, on, null, 0)
+		await api?.setLightState(this.config.hueId, on, null, 0)
 	}
 }
 
 class HUEBulb extends Light {
 	constructor(apiObj) {
 		super()
-		this.id = apiObj.id
+		this.id = "hue." + apiObj.id
 		this.config = {
 			name: apiObj?.metadata?.name,
+			hueId: apiObj.id,
 			plugin: "hue",
 			hueArchtype: apiObj?.metadata?.archetype,
 			rgb: { available: !!apiObj.color },
@@ -316,7 +309,7 @@ class HUEBulb extends Light {
 		if (on == "toggle") {
 			on = !this.state.on
 		}
-		await api?.setLightState(this.id, on, color, duration)
+		await api?.setLightState(this.config.hueId, on, color, duration)
 	}
 }
 
@@ -327,12 +320,13 @@ class HUEGroup extends Light {
 		console.log("GROUP", apiObj)
 		const service = apiObj.services.find((s) => s.rtype == "grouped_light")
 
-		this.id = apiObj.id
+		this.id = "hue." + apiObj.id
 
 		this.config = {
 			name: apiObj?.metadata?.name,
 			plugin: "hue",
 			type: "group",
+			hueRoomId: apiObj.id,
 			hueGroupId: service?.rid,
 			rgb: { available: true },
 			dimming: { available: true },
@@ -642,8 +636,17 @@ export default {
 						name: "Scene",
 						async enum(context) {
 							let scenes = await this.hue.getScenes()
+
+							const lightGroup =
+								IoTManager.getInstance().lights.getById(
+									context.group
+								)
+
+							if (!lightGroup) return
+
 							scenes = scenes.filter(
-								(s) => s.group.rid == context.group
+								(s) =>
+									s.group.rid == lightGroup.config.hueRoomId
 							)
 							return scenes.map((s) => ({
 								name: s.metadata.name,
