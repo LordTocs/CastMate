@@ -8,10 +8,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed } from "vue"
 
 const props = defineProps({
-	modelValue: { type: String },
+	modelValue: {},
 	schema: {},
 	label: { type: String },
 })
@@ -19,6 +19,7 @@ const props = defineProps({
 const falseIcon = computed(() => props.schema?.falseIcon ?? "mdi-close-thick")
 const trueIcon = computed(() => props.schema?.trueIcon ?? "mdi-check-bold")
 
-const icon = computed(() => props.modelValue ? trueIcon.value : falseIcon.value)
-
+const icon = computed(() =>
+	props.modelValue ? trueIcon.value : falseIcon.value
+)
 </script>
