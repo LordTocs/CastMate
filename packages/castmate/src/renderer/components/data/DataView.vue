@@ -99,9 +99,11 @@ const props = defineProps({
 })
 
 const previewProperties = computed(() =>
-	Object.keys(props.value).filter(
-		(k) => props.schema.properties[k]?.preview != false
-	)
+	Object.keys(props.schema.properties).filter((k) => {
+		if (!(k in props.value)) return false
+		if (props.schema.properties[k].preview === false) return false
+		return true
+	})
 )
 </script>
 
