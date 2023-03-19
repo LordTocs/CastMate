@@ -61,7 +61,7 @@ class TPLinkBulb extends Light {
 		}
 
 		if (on == "toggle") {
-			const powerState = await light.getPowerState()
+			const powerState = await this.light.getPowerState()
 			update.on_off = !powerState
 		}
 
