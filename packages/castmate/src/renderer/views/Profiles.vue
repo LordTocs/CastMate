@@ -53,7 +53,7 @@
 							<v-icon
 								v-else
 								icon="mdi-close-circle"
-								color="rgba(255,255,255,0.5)"
+								color="rgba(255,255,255,0.2)"
 							/>
 						</div>
 					</td>
