@@ -317,7 +317,6 @@ class HUEGroup extends Light {
 	constructor(apiObj) {
 		super()
 
-		console.log("GROUP", apiObj)
 		const service = apiObj.services.find((s) => s.rtype == "grouped_light")
 
 		this.id = "hue." + apiObj.id
