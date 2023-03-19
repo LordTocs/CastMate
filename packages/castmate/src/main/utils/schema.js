@@ -1,11 +1,32 @@
 import { ipcMain } from "./electronBridge.js"
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
-import _ from "lodash"
+import _, { isString } from "lodash"
+
+function cleanFuncForIPC(thisObj, propName, rootName) {
+	const maybeFunc = thisObj[propName]
+	if (maybeFunc instanceof Function || maybeFunc instanceof AsyncFunction) {
+		thisObj[propName] = rootName + "_" + propName
+	}
+}
+
+function isStringType(type) {
+	return type == "String" || type == String
+}
+
+function isObjectType(type) {
+	return type == "Object" || type == Object
+}
+
+function isArrayType(type) {
+	return type == "Array" || type == Array
+}
+
+isString
 
 export function cleanSchemaForIPC(rootName, schema) {
 	let result = { ...schema }
 
-	if (schema.type == Object || schema.type == "Object") {
+	if (isObjectType(schema.type)) {
 		result.type = "Object"
 		if (schema.properties) {
 			result.properties = {}
@@ -16,18 +37,13 @@ export function cleanSchemaForIPC(rootName, schema) {
 				)
 			}
 		}
-	} else if (schema.type == "Array" || schema.type == Array) {
+	} else if (isArrayType(schema.type)) {
 		result.type = "Array"
 		if (schema.items?.type) {
 			result.items = cleanSchemaForIPC(rootName + "_items", schema.items)
 		}
 	} else {
-		if (
-			!(
-				typeof schema.type == "string" || schema.type instanceof String
-			) &&
-			schema.type
-		) {
+		if (schema.type && !isString(schema.type)) {
 			if (schema.type.resourceContainer) {
 				result.type = "Resource"
 				result.resourceType = schema.type.resourceContainer?.spec?.type
@@ -36,18 +52,9 @@ export function cleanSchemaForIPC(rootName, schema) {
 			}
 		}
 
-		if (
-			schema.enum instanceof Function ||
-			schema.enum instanceof AsyncFunction
-		) {
-			result.enum = rootName + "_enum"
-		}
-		if (
-			schema.enumQuery instanceof Function ||
-			schema.enumQuery instanceof AsyncFunction
-		) {
-			result.enumQuery = rootName + "_enumQuery"
-		}
+		cleanFuncForIPC(result, "enum", rootName)
+		cleanFuncForIPC(result, "enumQuery", rootName)
+		cleanFuncForIPC(result, "dynamicType", rootName)
 	}
 
 	return result
@@ -83,6 +90,11 @@ export function makeIPCEnumFunctions(thisObj, rootName, schema) {
 	} else {
 		createIPCFunction(thisObj, rootName + "_enum", schema.enum)
 		createIPCFunction(thisObj, rootName + "_enumQuery", schema.enumQuery)
+		createIPCFunction(
+			thisObj,
+			rootName + "_dynamicType",
+			schema.dynamicType
+		)
 	}
 }
 

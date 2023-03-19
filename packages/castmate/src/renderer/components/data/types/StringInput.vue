@@ -15,7 +15,6 @@
 				variant="tonal"
 				@click="templateMode = false"
 				icon="mdi-code-braces"
-				color="success"
 			/>
 			<v-icon
 				class="ml-1"

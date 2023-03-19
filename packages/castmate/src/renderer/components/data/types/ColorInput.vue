@@ -90,7 +90,6 @@
 					:active="true"
 					:disabled="!isColorString"
 					@click="templateMode = false"
-					color="success"
 					icon="mdi-code-braces"
 				/>
 			</template>
@@ -201,10 +200,12 @@ function paste(ev) {
 
 	if (color && color.length > 0) {
 		//Attempting to paste color
-		if (!color.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/))
+		if (!color.match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/))
 			return
 
-		modelObj.value = color
+		const formattedColor = (color[0] != "#" ? "#" : "") + color
+
+		modelObj.value = formattedColor
 	} else if (refColor) {
 		try {
 			const refColorPOJO = JSON.parse(refColor)

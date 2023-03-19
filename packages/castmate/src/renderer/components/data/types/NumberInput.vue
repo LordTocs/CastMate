@@ -19,7 +19,6 @@
 				variant="tonal"
 				:disabled="!isValueNumber"
 				@click="templateMode = false"
-				color="success"
 				icon="mdi-code-braces"
 			/>
 		</template>

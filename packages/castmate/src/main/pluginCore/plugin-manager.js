@@ -19,27 +19,28 @@ export class PluginManager {
 
 	async load() {
 		let pluginFiles = [
-			"inputs",
-			"iot",
-			"hue",
-			"obs",
-			"sounds",
 			"twitch",
 			"spellcast",
+			"obs",
+			"overlays",
+			"sounds",
+			"iot",
+			"inputs",
+			"discord",
 			"minecraft",
 			"voicemod",
+			"variables",
 			"time",
 			"kofi",
-			"overlays",
 			"http",
 			"os",
 			//"csgo",
-			"variables",
+
 			//"aoe3",
 			"aoe4",
+			"hue",
 			"twinkly",
-			"discord",
-			"tplink"
+			"tplink",
 		]
 
 		//Todo: This relative require is weird.
