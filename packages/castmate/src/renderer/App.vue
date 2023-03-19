@@ -46,7 +46,7 @@
 					link
 					to="/rewards"
 					prepend-icon="mdi-star-circle-outline"
-					title="Rewards"
+					title="Channel Point Rewards"
 				/>
 
 				<v-divider></v-divider>
