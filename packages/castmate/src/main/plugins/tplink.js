@@ -123,7 +123,7 @@ class TPLinkPlug extends Plug {
 
 class TPLinkIoTProvider extends IoTProvider {
 	constructor(pluginObj) {
-		super()
+		super("tplink")
 		this.pluginObj = pluginObj
 		this.client = new Client({
 			/*logger: {
