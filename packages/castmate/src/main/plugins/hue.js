@@ -626,15 +626,6 @@ export default {
 			}
 		},
 	},
-	settings: {
-		defaultGroup: {
-			type: String,
-			name: "Default HUE Group",
-			async enum() {
-				return await this.getGroupNames()
-			},
-		},
-	},
 	actions: {
 		scene: {
 			name: "Hue Scene",
