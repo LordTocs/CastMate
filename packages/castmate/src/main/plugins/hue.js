@@ -111,6 +111,10 @@ class HUEApi {
 							console.error("Error Updating Hue", err)
 						}
 					}
+				} else if (event?.type == "add") {
+					console.log("Add Event", event, event?.data)
+				} else if (event?.type == "error") {
+					console.log("Error Event", event)
 				}
 			}
 		} catch (err) {}
@@ -372,7 +376,7 @@ class HUEIotProvider extends IoTProvider {
 	 * @param {HUEApi} api
 	 */
 	constructor(pluginObj) {
-		super()
+		super("hue")
 		this.pluginObj = pluginObj
 	}
 
@@ -405,6 +409,21 @@ class HUEIotProvider extends IoTProvider {
 			...bulbs.map((b) => new HUEBulb(b)),
 			...groups.map((g) => new HUEGroup(g)),
 		]
+	}
+
+	async onReconnect() {
+		if (!this.inited) return
+
+		const plugs = await this.loadPlugs()
+		const lights = await this.loadLights()
+
+		for (let light of lights) {
+			this._addNewLight(light)
+		}
+
+		for (let plug of plugs) {
+			this._addNewPlug(plug)
+		}
 	}
 }
 
@@ -537,6 +556,7 @@ export default {
 		async initApi() {
 			try {
 				this.hue?.shutdown()
+				this.iotProvider.clearResources()
 
 				console.log("Connecting to HUE")
 
@@ -593,6 +613,8 @@ export default {
 				}
 
 				this.analytics.set({ usesHue: true })
+
+				this.iotProvider.onReconnect()
 				return true
 			} catch (err) {
 				console.error(
@@ -602,15 +624,6 @@ export default {
 
 				return false
 			}
-		},
-	},
-	settings: {
-		defaultGroup: {
-			type: String,
-			name: "Default HUE Group",
-			async enum() {
-				return await this.getGroupNames()
-			},
 		},
 	},
 	actions: {

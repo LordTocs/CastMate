@@ -61,7 +61,7 @@ class TPLinkBulb extends Light {
 		}
 
 		if (on == "toggle") {
-			const powerState = await light.getPowerState()
+			const powerState = await this.light.getPowerState()
 			update.on_off = !powerState
 		}
 
@@ -123,7 +123,7 @@ class TPLinkPlug extends Plug {
 
 class TPLinkIoTProvider extends IoTProvider {
 	constructor(pluginObj) {
-		super()
+		super("tplink")
 		this.pluginObj = pluginObj
 		this.client = new Client({
 			/*logger: {

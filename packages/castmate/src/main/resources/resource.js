@@ -54,7 +54,7 @@ export class Resource {
 		return {
 			id: resource.id,
 			config: resource.config,
-			...(resource.state ? { state: resource.state } : {})
+			...(resource.state ? { state: resource.state } : {}),
 		}
 	}
 
@@ -79,8 +79,7 @@ export class Resource {
 			? await this.resourceType.create(config)
 			: new this.resourceType(config)
 
-		if (!newResource)
-			return null
+		if (!newResource) return null
 
 		await this.inject(newResource)
 
@@ -94,25 +93,59 @@ export class Resource {
 
 	_setupReactivity(newResource) {
 		if (isReactive(newResource.state)) {
-			newResource._stateUpdaters = onAllStateChange(newResource.state, (key) => {
-				callIpcFunc(
-					"resources_updateResourceState",
-					this.spec.type,
-					newResource.id,
-					key,
-					newResource.state[key]
-				)
-			})
+			newResource._stateUpdaters = onAllStateChange(
+				newResource.state,
+				(key) => {
+					callIpcFunc(
+						"resources_updateResourceState",
+						this.spec.type,
+						newResource.id,
+						key,
+						newResource.state[key]
+					)
+				}
+			)
 		}
 	}
 
 	async inject(newResource) {
-		if (!newResource)
-			return
+		if (!newResource) return
 
 		this._setupReactivity(newResource)
 
 		this.resources.push(newResource)
+
+		this._triggerUpdate()
+	}
+
+	//Deletes without analytics
+	async deleteByIdInternal(id) {
+		const idx = this.resources.findIndex((r) => r.id === id)
+		if (idx == -1) return
+
+		const r = this.resources[idx]
+		await r.deleteSelf?.()
+
+		this.resources.splice(idx, 1)
+
+		this._triggerUpdate()
+	}
+
+	async deleteMany(ids) {
+		//There's a better way to do this. Too bad!
+		const indices = ids
+			.map((id) => this.resources.findIndex((r) => r.id === id))
+			.filter((idx) => idx != -1)
+			.sort((a, b) => a - b)
+
+		let removed = 0
+		for (let idx of indices) {
+			const actualIdx = idx - removed
+			await this.resources[actualIdx]?.deleteSelf?.()
+
+			this.resources.splice(actualIdx, 1)
+			removed += 1
+		}
 
 		this._triggerUpdate()
 	}
@@ -130,26 +163,18 @@ export class Resource {
 	}
 
 	async clear() {
-		this.resources = [];
+		this.resources = []
 
-		this._triggerUpdate();
+		this._triggerUpdate()
 	}
 
 	async deleteById(id) {
-		const idx = this.resources.findIndex((r) => r.id === id)
-		if (idx == -1) return
-
-		const r = this.resources[idx]
-		await r.deleteSelf()
+		await this.deleteByIdInternal(id)
 
 		Analytics.getInstance().track("resourceDeleted", {
 			type: this.name,
 			name: r.config?.name,
 		})
-
-		this.resources.splice(idx, 1)
-
-		this._triggerUpdate()
 	}
 
 	async clone(id) {
@@ -182,7 +207,7 @@ export class Resource {
 			if (!r) return null
 			await r.setConfig(config)
 
-			Analytics.getInstance().track('updateResource', {
+			Analytics.getInstance().track("updateResource", {
 				type: this.name,
 				name: r.config.name,
 			})
@@ -191,24 +216,28 @@ export class Resource {
 			return this._transformForIPC(r)
 		})
 
-		ipcFunc("resources", `${this.type}_updateConfig`, async (id, configUpdate) => {
-			const r = this.getById(id)
+		ipcFunc(
+			"resources",
+			`${this.type}_updateConfig`,
+			async (id, configUpdate) => {
+				const r = this.getById(id)
 
-			if (!r) return
+				if (!r) return
 
-			const newConfig = _cloneDeep(r.config)
-			Object.assign(newConfig, configUpdate)
+				const newConfig = _cloneDeep(r.config)
+				Object.assign(newConfig, configUpdate)
 
-			Analytics.getInstance().track('updateResource', {
-				type: this.name,
-				name: r.config.name,
-			})
+				Analytics.getInstance().track("updateResource", {
+					type: this.name,
+					name: r.config.name,
+				})
 
-			await r.setConfig(newConfig)
-			this._triggerUpdate()
+				await r.setConfig(newConfig)
+				this._triggerUpdate()
 
-			return this._transformForIPC(r)
-		})
+				return this._transformForIPC(r)
+			}
+		)
 
 		ipcFunc("resources", `${this.type}_create`, async (config) => {
 			return this._transformForIPC(await this.create(config))
