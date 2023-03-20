@@ -283,10 +283,20 @@ export default {
 					  )
 					: []
 
-				spawn(data.application, args, {
-					cwd,
-					detached: true,
-				})
+				spawn(
+					"cmd",
+					[
+						"/c",
+						"start",
+						"CastMate Launch",
+						data.application,
+						...args,
+					],
+					{
+						cwd,
+						detached: true,
+					}
+				)
 			},
 		},
 	},
