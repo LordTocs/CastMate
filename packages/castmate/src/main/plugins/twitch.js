@@ -666,20 +666,24 @@ export default {
 					this.state.predictionPending = false
 					this.state.predictionExists = false
 
-					this.triggers.predictionSettled({
-						title: event.title,
-						total,
-						winner: {
-							title: event.winningOutcome.title,
-							color: event.winningOutcome.color,
-							points: event.winningOutcome.channelPoints,
-						},
-						outcomes: event.outcomes.map((o) => ({
-							title: o.title,
-							color: o.color,
-							points: o.channelPoints,
-						})),
-					})
+					try {
+						this.triggers.predictionSettled({
+							title: event.title,
+							total,
+							winner: {
+								title: event.winningOutcome.title,
+								color: event.winningOutcome.color,
+								points: event.winningOutcome.channelPoints,
+							},
+							outcomes: event.outcomes.map((o) => ({
+								title: o.title,
+								color: o.color,
+								points: o.channelPoints,
+							})),
+						})
+					} catch (err) {
+						console.log("HELL FREEZES OVER", err)
+					}
 				}
 			)
 
@@ -752,6 +756,8 @@ export default {
 					})
 				}
 			)
+
+			await eventSubClient.on
 
 			await eventSubClient.start()
 		},
@@ -939,7 +945,7 @@ export default {
 
 			const installed = installedExts.find((e) => e.id == id)
 			const active = activeExts.find((e) => e.id == id)
-			
+
 			if (active) {
 				return { installed: true, active: true, canActivate: true }
 			} else if (installed) {
