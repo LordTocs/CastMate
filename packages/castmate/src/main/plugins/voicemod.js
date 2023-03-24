@@ -193,7 +193,7 @@ export default {
 	},
 	actions: {
 		selectVoice: {
-			name: "Select Voice",
+			name: "Change Voice",
 			description: "Select which voice to use in VoiceMod",
 			data: {
 				type: Object,
@@ -207,7 +207,10 @@ export default {
 							const { voices } = await this.voiceCache.get()
 							return voices
 								.filter((v) => v.enabled)
-								.map((v) => v.id)
+								.map((v) => ({
+									value: v.id,
+									name: v.friendlyName,
+								}))
 						},
 					},
 				},
