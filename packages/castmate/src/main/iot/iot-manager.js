@@ -78,6 +78,8 @@ export class IoTProvider {
 	}
 
 	async clearResources() {
+		if (!this._manager) return
+
 		const lights = this._manager.lights.resources.filter(
 			(l) => l.config.plugin == this._pluginName
 		)
