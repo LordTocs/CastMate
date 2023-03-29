@@ -894,6 +894,7 @@ export default {
 				backgroundColor: r.backgroundColor,
 				prompt: r.prompt,
 				cost: r.cost,
+				globalCooldown: r.globalCooldown || 0,
 				userInputRequired: r.userInputRequired,
 				autoFulfill: r.autoFulfill,
 				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
@@ -1064,6 +1065,7 @@ export default {
 				cost: r.cost,
 				userInputRequired: r.userInputRequired,
 				autoFulfill: r.autoFulfill,
+				globalCooldown: r.globalCooldown || 0,
 				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
 				maxRedemptionsPerUserPerStream:
 					r.maxRedemptionsPerUserPerStream,
@@ -1096,23 +1098,25 @@ export default {
 			const idx = this.rewards.findIndex((r) => r.id == rewardDef.id)
 			if (idx == -1) return false
 
+			const rewardUpdate = {
+				title: rewardDef.title,
+				prompt: rewardDef.prompt,
+				backgroundColor: rewardDef.backgroundColor,
+				cost: rewardDef.cost,
+				userInputRequired: !!rewardDef.userInputRequired,
+				autoFulfill: !!rewardDef.autoFulfill,
+				globalCooldown: rewardDef.globalCooldown || 0,
+				maxRedemptionsPerStream:
+					rewardDef.maxRedemptionsPerStream || null,
+				maxRedemptionsPerUserPerStream:
+					rewardDef.maxRedemptionsPerUserPerStream || null,
+			}
+
 			const reward =
 				await this.channelTwitchClient.channelPoints.updateCustomReward(
 					this.state.channelId,
 					rewardDef.id,
-					{
-						title: rewardDef.title,
-						prompt: rewardDef.prompt,
-						backgroundColor: rewardDef.backgroundColor,
-						cost: rewardDef.cost,
-						userInputRequired: !!rewardDef.userInputRequired,
-						autoFulfill: !!rewardDef.autoFulfill,
-						globalCooldown: rewardDef.globalCooldown || 0,
-						maxRedemptionsPerStream:
-							rewardDef.maxRedemptionsPerStream || null,
-						maxRedemptionsPerUserPerStream:
-							rewardDef.maxRedemptionsPerUserPerStream || null,
-					}
+					rewardUpdate
 				)
 
 			this.rewards[idx] = reward
