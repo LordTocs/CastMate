@@ -20,6 +20,7 @@ const builtInPlugin = {
 				type: "Number",
 				required: true,
 				unit: { name: "Seconds", short: "s" },
+				template: true,
 			},
 			description: "Puts a delay after the current action",
 		},
