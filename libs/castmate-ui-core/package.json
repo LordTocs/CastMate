@@ -1,14 +1,16 @@
 {
-  "name": "vue-docking",
+  "name": "castmate-ui-core",
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "main": "src/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vueuse/core": "^9.13.0",
     "vue": "^3.2.47"
   },
   "devDependencies": {
