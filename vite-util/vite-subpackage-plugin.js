@@ -27,3 +27,31 @@ export function subpackage(name) {
 		},
 	]
 }
+
+export function library(name) {
+	const packageJson = JSON.parse(
+		fs.readFileSync(`../../libs/${name}/package.json`)
+	)
+
+	const entry = path.resolve(`../../libs/${name}`, packageJson.devMain)
+
+	return [
+		{
+			name: `${name}-sub:serve`,
+			apply: "serve",
+			config(config, { command }) {
+				if (command == "build") return
+
+				const alias = {}
+
+				alias[name] = entry
+				console.log("Aliasing", name, "to", entry)
+
+				if (!config.resolve) config.resolve = {}
+				if (!config.resolve.alias) config.resolve.alias = {}
+
+				Object.assign(config.resolve.alias, alias)
+			},
+		},
+	]
+}
