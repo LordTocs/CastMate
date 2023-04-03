@@ -2,7 +2,7 @@
 // In CastMate our templates are async and thus we must be able to asynchronously gather depdendencies
 
 import { AsyncLocalStorage } from "node:async_hooks"
-import { isArray, isSymbol } from "../util/type-helpers"
+import { isArray, isObject, isSymbol } from "../util/type-helpers"
 
 const activeEffectStorage = new AsyncLocalStorage<ReactiveEffect>()
 
@@ -97,10 +97,14 @@ function shouldTrack(target: object, propKey: PropertyKey) {
 
 class ReactiveProxy<T extends object> {
 	get(target: T, propKey: PropertyKey, receiver: any) {
-		const result = Reflect.get(target, propKey, receiver)
+		let result = Reflect.get(target, propKey, receiver) as T
 
 		if (shouldTrack(target, propKey)) {
 			DependencyStorage.getPropDependency(target, propKey).track()
+		}
+
+		if (isObject(result)) {
+			result = reactify(result)
 		}
 
 		return result
@@ -129,7 +133,13 @@ class ReactiveProxy<T extends object> {
 	}
 }
 
-export function createReactive<T extends object>(obj: T) {
+const proxyMap = new WeakMap<object, any>()
+
+export function reactify<T extends object>(obj: T) {
+	const existing = proxyMap.get(obj)
+	if (existing != null) return existing as T
+
+	//TODO: async race here
 	return new Proxy(obj, new ReactiveProxy<T>())
 }
 
@@ -137,4 +147,34 @@ export async function autoRerun(func: () => any) {
 	const effect = new ReactiveEffect(func)
 	await effect.run()
 	return effect
+}
+
+export function Reactive<This extends object, T>(
+	target: ClassAccessorDecoratorTarget<This, T>,
+	context: ClassAccessorDecoratorContext<This, T>
+): ClassAccessorDecoratorResult<This, T> {
+	return {
+		get(this: This) {
+			let result = target.get.call(this)
+
+			if (shouldTrack(this, context.name)) {
+				DependencyStorage.getPropDependency(this, context.name).track()
+			}
+
+			if (isObject(result)) {
+				result = reactify(result)
+			}
+
+			return result
+		},
+		set(this: This, newValue: T) {
+			const result = target.set.call(this, newValue)
+
+			if (shouldTrack(this, context.name)) {
+				DependencyStorage.getPropDependency(this, context.name).notify()
+			}
+
+			return result
+		},
+	}
 }
