@@ -38,7 +38,7 @@
 		"lodash": "^4.17.21",
 		"maska": "^1.5.0",
 		"mixpanel": "^0.16.0",
-		"ms-speech-api": "^0.0.1",
+		"ms-speech-api": "workspace:^",
 		"nanoid": "^4.0.0",
 		"obs-websocket-js": "^5.0.1",
 		"pinia": "^2.0.29",
