@@ -1,28 +1,44 @@
-export interface ResourceStub {
-	config: Record<string, any>
-	state: Record<string, any>
-}
+import { ResourceRegistry } from "./resource-registry"
 
-export type Resource = { id: String } & ResourceStub
-
-abstract class ResourceBase {
+export interface ResourceBase {
 	id: string
 }
 
-function ResourceInit<Input extends new (...args: any) => any>(
-	constructor: Input,
-	context: ClassDecoratorContext
+export interface ResourceStub {
+	config: Record<string, any>
+	state?: Record<string, any>
+}
+
+export type Resource = ResourceBase & ResourceStub
+
+export interface ResourceConstructor<T extends Resource = any> {
+	new (...args: any[]): T
+	create?(config: object): Promise<T>
+	storage: ResourceStorage<T>
+}
+
+export interface ResourceStorage<T extends Resource> {
+	getById(id: string): T
+	[Symbol.iterator](): IterableIterator<T>
+	inject(resource: T): void
+}
+
+export function RegisterResource<TConstructor extends ResourceConstructor>(
+	target: TConstructor,
+	context: ClassDecoratorContext<TConstructor>
 ) {
 	context.addInitializer(function () {
-		context.name
+		//Any of my metadata work here
+		ResourceRegistry.getInstance().register(context.name, target)
 	})
 }
 
 export function ResourceType<T>() {
 	class Storage {
-		resources: Array<ResourceBase>
+		//Doesn't actually implement ResourceStorage because we can't satisfy extends Resource, we'll just force cast later
+		private resources: Array<ResourceBase> = []
 
-		getById(id: String): T {
+		getById(id: string): T {
 			return this.resources.find((r) => r.id == id) as T
 		}
 
@@ -37,9 +53,8 @@ export function ResourceType<T>() {
 		}
 	}
 
-	return @ResourceInit class extends ResourceBase {
+	return class ResourceType implements ResourceBase {
 		static storage: Storage = new Storage()
+		id: string
 	}
 }
-
-
