@@ -23,6 +23,14 @@ export interface ResourceStorage<T extends Resource> {
 	inject(resource: T): void
 }
 
+export function ExtractStorageAny<
+	TConstructor extends new (...args: any[]) => any
+>(constructor: TConstructor) {
+	const resourceConstructor =
+		constructor as unknown as ResourceConstructor<any>
+	return resourceConstructor.storage
+}
+
 export function RegisterResource<TConstructor extends ResourceConstructor>(
 	target: TConstructor,
 	context: ClassDecoratorContext<TConstructor>
@@ -54,7 +62,11 @@ export function ResourceType<T>() {
 	}
 
 	return class ResourceType implements ResourceBase {
-		static storage: Storage = new Storage()
 		id: string
+
+		static storage: Storage = new Storage()
+		static getById(id: string) {
+			return this.storage.getById(id)
+		}
 	}
 }

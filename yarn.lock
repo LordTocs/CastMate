@@ -1936,6 +1936,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-core@workspace:libs/castmate-core"
   dependencies:
+    nanoid: ^4.0.2
     reflect-metadata: ^0.1.13
     typescript: ^5.0.3
   languageName: unknown
@@ -5233,6 +5234,15 @@ __metadata:
   bin:
     nanoid: bin/nanoid.js
   checksum: 7d5946df5c6d383694195b781ae7b5067c149d164ec71e910d6b06676309c3459b68af570b944fb5ecd5065d19df464f05700d141d70bb712ff8ca06642fd8df
+  languageName: node
+  linkType: hard
+
+"nanoid@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "nanoid@npm:4.0.2"
+  bin:
+    nanoid: bin/nanoid.js
+  checksum: 747c399cea4664dd0be1d0ec498ffd1ef8f1f5221676fc8b577e3f46f66d9afcddb9595d63d19a2e78d0bc6cc33984f65e66bf1682c850b9e26288883d96b53f
   languageName: node
   linkType: hard
 
