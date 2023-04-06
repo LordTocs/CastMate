@@ -69,7 +69,7 @@ type SchemaMetaDataFunction = Function & {
     __schema__?: SchemaMetaData
 }
 
-abstract class SchemaObjectBase {
+export abstract class SchemaObjectBase {
     static toJSONSchema() : any {
         const schema = (this.constructor as SchemaMetaDataFunction).__schema__
     }
