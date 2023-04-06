@@ -35,10 +35,3 @@ function FileResource<T>() {
 		}
 	}
 }
-
-@RegisterResource
-class TestFileResource extends FileResource<TestFileResource>() {
-	config: {
-		hello: string
-	}
-}
