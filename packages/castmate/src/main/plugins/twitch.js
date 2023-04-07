@@ -1065,7 +1065,8 @@ export default {
 				cost: r.cost,
 				userInputRequired: r.userInputRequired,
 				autoFulfill: r.autoFulfill,
-				globalCooldown: r.globalCooldown || 0,
+				globalCooldown:
+					r.globalCooldown > 0 ? r.globalCooldown : undefined,
 				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
 				maxRedemptionsPerUserPerStream:
 					r.maxRedemptionsPerUserPerStream,
@@ -1073,25 +1074,34 @@ export default {
 		},
 
 		async createReward(rewardDef) {
-			const reward =
-				await this.channelTwitchClient.channelPoints.createCustomReward(
-					this.state.channelId,
-					{
-						title: rewardDef.title,
-						prompt: rewardDef.prompt,
-						backgroundColor: rewardDef.backgroundColor,
-						cost: rewardDef.cost,
-						userInputRequired: !!rewardDef.userInputRequired,
-						autoFulfill: !!rewardDef.autoFulfill,
-						globalCooldown: rewardDef.globalCooldown || 0,
-						maxRedemptionsPerStream:
-							rewardDef.maxRedemptionsPerStream || null,
-						maxRedemptionsPerUserPerStream:
-							rewardDef.maxRedemptionsPerUserPerStream || null,
-					}
-				)
+			try {
+				const reward =
+					await this.channelTwitchClient.channelPoints.createCustomReward(
+						this.state.channelId,
+						{
+							title: rewardDef.title,
+							prompt: rewardDef.prompt,
+							backgroundColor: rewardDef.backgroundColor,
+							cost: rewardDef.cost,
+							userInputRequired: !!rewardDef.userInputRequired,
+							autoFulfill: !!rewardDef.autoFulfill,
+							globalCooldown: rewardDef.globalCooldown || 0,
+							maxRedemptionsPerStream:
+								rewardDef.maxRedemptionsPerStream || null,
+							maxRedemptionsPerUserPerStream:
+								rewardDef.maxRedemptionsPerUserPerStream ||
+								null,
+						}
+					)
 
-			this.rewards.push(reward)
+				this.rewards.push(reward)
+			} catch (err) {
+				const bodyStr = err?.body
+				if (!bodyStr) throw err
+				const body = JSON.parse(bodyStr)
+				console.log(body.message)
+				throw body.message
+			}
 		},
 
 		async updateReward(rewardDef) {
@@ -1112,12 +1122,21 @@ export default {
 					rewardDef.maxRedemptionsPerUserPerStream || null,
 			}
 
-			const reward =
-				await this.channelTwitchClient.channelPoints.updateCustomReward(
-					this.state.channelId,
-					rewardDef.id,
-					rewardUpdate
-				)
+			let reward = null
+			try {
+				reward =
+					await this.channelTwitchClient.channelPoints.updateCustomReward(
+						this.state.channelId,
+						rewardDef.id,
+						rewardUpdate
+					)
+			} catch (err) {
+				const bodyStr = err?.body
+				if (!bodyStr) throw err
+				const body = JSON.parse(bodyStr)
+				console.log(body.message)
+				throw body.message
+			}
 
 			this.rewards[idx] = reward
 		},

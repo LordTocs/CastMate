@@ -48,6 +48,9 @@
 					Delete
 				</v-btn>
 			</v-card-actions>
+			<v-snackbar v-model="errorSnack" color="error">
+				{{ errorMessage }}
+			</v-snackbar>
 		</v-card>
 	</v-dialog>
 </template>
@@ -72,12 +75,14 @@ export default {
 			rewardEdit: {},
 			dialog: false,
 			valid: false,
+			errorSnack: false,
+			errorMessage: null,
 		}
 	},
 	methods: {
 		...mapIpcs("twitch", ["createReward", "updateReward", "deleteReward"]),
 		open() {
-			this.rewardEdit = _cloneDeep(this.reward) || {}
+			this.rewardEdit = _cloneDeep(this.reward) || { cost: 1 }
 			this.dialog = true
 		},
 		async save() {
@@ -89,10 +94,22 @@ export default {
 				)
 				this.$emit("rename", this.rewardEdit.title)
 			}
-			await this.updateReward(this.rewardEdit)
+			try {
+				await this.updateReward(this.rewardEdit)
+			} catch (err) {
+				const splitIdx = err.message.indexOf(":")
+				let errorText = err.message.substr(splitIdx + 2)
+				if (errorText == "UPDATE_CUSTOM_REWARD_DUPLICATE_REWARD") {
+					//Special case for this error
+					errorText = `A reward with the name "${this.rewardEdit.title}" already exists.`
+				}
+				this.errorMessage = errorText
+				this.errorSnack = true
+				return
+			}
 			trackAnalytic("saveChannelReward", {
 				title: this.rewardEdit.title,
-				cost: this.rewardEdit.cost
+				cost: this.rewardEdit.cost,
 			})
 			this.$emit("updated")
 			this.dialog = false
@@ -107,12 +124,24 @@ export default {
 			this.dialog = false
 		},
 		async create() {
-			await this.createReward(this.rewardEdit)
+			try {
+				await this.createReward(this.rewardEdit)
+			} catch (err) {
+				const splitIdx = err.message.indexOf(":")
+				let errorText = err.message.substr(splitIdx + 2)
+				if (errorText == "CREATE_CUSTOM_REWARD_DUPLICATE_REWARD") {
+					//Special case for this error
+					errorText = `A reward with the name "${this.rewardEdit.title}" already exists.`
+				}
+				this.errorMessage = errorText
+				this.errorSnack = true
+				return
+			}
 			this.dialog = false
 			this.$emit("created", this.rewardEdit.title)
 			trackAnalytic("createChannelReward", {
 				title: this.rewardEdit.title,
-				cost: this.rewardEdit.cost
+				cost: this.rewardEdit.cost,
 			})
 		},
 	},
