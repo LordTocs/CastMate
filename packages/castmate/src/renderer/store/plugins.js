@@ -95,6 +95,16 @@ export const usePluginStore = defineStore("plugins", () => {
 				}
 			}
 		})
+
+		//TODO: Put this somewhere cooler
+		ipcRenderer.on("play-sound", (event, arg) => {
+			let audio = new Audio(`file://${arg.source}`)
+			audio.volume = arg.volume
+			audio.addEventListener("canplaythrough", (event) => {
+				audio.play()
+			})
+			event.returnValue = true
+		})
 	}
 
 	const pluginList = computed(() =>
