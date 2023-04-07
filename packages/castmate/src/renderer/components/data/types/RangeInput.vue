@@ -46,10 +46,54 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"])
 const canTemplate = computed(() => !!props.schema?.template)
 
+const minValue = computed({
+	get() {
+		return props.modelValue?.min
+	},
+	set(newMin) {
+		let newValue = { ...props.modelValue }
+
+		if (newMin == null) {
+			delete newValue.min
+
+			if (newValue.max == null) {
+				newValue = undefined
+			}
+		} else {
+			newValue.min = newMin
+		}
+
+		emit("update:modelValue", newValue)
+	},
+})
+
+const maxValue = computed({
+	get() {
+		return props.modelValue?.max
+	},
+	set(newMax) {
+		let newValue = { ...props.modelValue }
+
+		console.log(newMax)
+		if (newMax == null) {
+			delete newValue.max
+
+			if (newValue.min == null) {
+				newValue = undefined
+			}
+		} else {
+			newValue.max = newMax
+		}
+
+		emit("update:modelValue", newValue)
+	},
+})
+
+/*
 const { min: minValue, max: maxValue } = useModelValues(props, emit, [
 	"min",
 	"max",
-])
+])*/
 </script>
 
 <style scoped>

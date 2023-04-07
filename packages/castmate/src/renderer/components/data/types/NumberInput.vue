@@ -35,6 +35,7 @@
 			v-bind="$attrs"
 			:min="min"
 			:max="max"
+			@click:clear="clear"
 			@change="onChange"
 		>
 			<template #append-inner>
@@ -158,6 +159,8 @@ const step = computed(
 const clearable = computed(() => !props.schema?.required)
 
 function clear() {
+	console.log("CLEAR!")
+	lazyNumberData.value = null
 	emit("update:modelValue", undefined)
 }
 
