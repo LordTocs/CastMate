@@ -1,10 +1,10 @@
 <template>
 	<v-text-field
 		v-model="modelObj"
-		placeholder="hhhh:mm:ss"
+		placeholder="hh:mm:ss"
 		:label="label"
 		v-maska="{
-			mask: ['#*:T#:T#', 'T#:T#', 'T#', '#'],
+			mask: ['##:T#:T#', 'T#:T#', 'T#', '#'],
 			tokens: { T: { pattern: /[0-6]/ } },
 		}"
 		:density="density"
