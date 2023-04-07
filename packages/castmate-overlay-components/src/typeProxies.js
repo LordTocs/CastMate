@@ -14,6 +14,13 @@ export class Color {
 	}
 }
 
+export class Range {
+	constructor() {
+		this.min = undefined
+		this.max = undefined
+	}
+}
+
 export class OverlayTransition {
 	/*
 {

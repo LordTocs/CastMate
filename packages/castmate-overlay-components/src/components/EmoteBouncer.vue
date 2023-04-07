@@ -59,9 +59,48 @@ export default {
 	inject: ["isEditor", "stateProvider"],
 	props: {
 		size: { type: Object },
-		lifetime: { type: Number, name: "Emote Life Time", default: 7 },
-		velocityMax: { type: Number, name: "Max Velocity", default: 0.4 },
-		shakeTime: { type: Number, name: "Time Between Shakes", default: 5 },
+		lifetime: {
+			type: Number,
+			name: "Emote Life Time",
+			default: 7,
+			template: true,
+		},
+		emoteSize: {
+			type: Range,
+			name: "Emote Size",
+			default: () => ({ min: 80, max: 80 }),
+			template: true,
+		},
+		velocityMax: {
+			type: Number,
+			name: "Launch Velocity Max",
+			default: 0.4,
+			template: true,
+		},
+		shakeTime: {
+			type: Number,
+			name: "Time Between Shakes",
+			default: 5,
+			template: true,
+		},
+		shakeStrength: {
+			type: Number,
+			name: "Shake Strength Multiplier",
+			default: 1,
+			template: true,
+		},
+		gravityXScale: {
+			type: Number,
+			name: "Gravity X Scale",
+			default: 0.0,
+			template: true,
+		},
+		gravityYScale: {
+			type: Number,
+			name: "Gravity Y Scale",
+			default: 1.0,
+			template: true,
+		},
 		useLaunchPosition: {
 			type: Boolean,
 			name: "Use Launch Parameters",
@@ -77,6 +116,25 @@ export default {
 				spread: { type: Number, name: "Angle Spread" },
 			},
 		},
+		spamPrevention: {
+			type: Object,
+			name: "Spam Prevention",
+			properties: {
+				emoteRatio: {
+					type: Number,
+					name: "Emote Ratio",
+					default: 1,
+				},
+				emoteCap: {
+					type: Number,
+					name: "Total Emote Cap",
+				},
+				emoteCapPerMessage: {
+					type: Number,
+					name: "Max Emotes per Chat Message",
+				},
+			},
+		},
 	},
 	widget: {
 		name: "Emote Bouncer",
@@ -90,6 +148,7 @@ export default {
 	data() {
 		return {
 			bodies: [],
+			emoteRatioCounts: {},
 			spawnId: 1,
 		}
 	},
@@ -130,9 +189,44 @@ export default {
 		onTwitchChat(chat) {
 			const emotes = this.emotes.parseMessage(chat)
 
+			const emoteRatio = this.spamPrevention?.emoteRatio ?? 1
+			const emoteCap = this.spamPrevention?.emoteCap ?? 0
+			const emoteCapPerMessage =
+				this.spamPrevention?.emoteCapPerMessage ?? 0
+
+			let spawnedThisMessage = 0
+
+			const doChatSpawn = (emote) => {
+				const bodyCount = this.bodies.length //There are 4 static bodies.
+				if (emoteCap > 0 && bodyCount >= emoteCap) {
+					//Remove the first element that isn't static.
+					this.destroyBody(this.bodies[0].id)
+				}
+
+				if (
+					emoteCapPerMessage > 0 &&
+					spawnedThisMessage >= emoteCapPerMessage
+				) {
+					return
+				}
+
+				this.spawnImage(emote)
+				spawnedThisMessage++
+			}
+
 			if (emotes) {
 				for (let emote of emotes) {
-					this.spawnImage(emote)
+					if (emoteRatio == 1) {
+						doChatSpawn(emote)
+					} else {
+						this.emoteRatioCounts[emote] =
+							(this.emoteRatioCounts[emote] ?? 0) + 1
+
+						if (this.emoteRatioCounts[emote] >= emoteRatio) {
+							doChatSpawn(emote)
+							this.emoteRatioCounts[emote] = 0
+						}
+					}
 				}
 			}
 		},
@@ -156,17 +250,63 @@ export default {
 
 			for (let body of bodies) {
 				if (!body.isStatic) {
-					const forceMagnitude = 0.02 * body.mass
+					const forceMagnitude =
+						0.02 * body.mass * (this.shakeStrength ?? 1.0)
 
-					Body.applyForce(body, body.position, {
-						x:
-							(forceMagnitude +
-								Common.random() * forceMagnitude) *
-							Common.choose([1, -1]),
-						y: -forceMagnitude + Common.random() * -forceMagnitude,
-					})
+					//Warp force to be opposed to gravity
+					const gravity = {
+						x: this.engine.gravity.x,
+						y: this.engine.gravity.y,
+					}
+					const gravityMag = Math.sqrt(
+						gravity.x * gravity.x + gravity.y * gravity.y
+					)
+
+					if (gravityMag > 0) {
+						const forceX = Common.random(-1, 1) * forceMagnitude
+						const forceY = Common.random(0, 2) * -forceMagnitude
+
+						gravity.x /= gravityMag
+						gravity.y /= gravityMag
+
+						const gravityTangent = { x: -gravity.y, y: gravity.x }
+
+						const gravityAlignedForce = {
+							x: forceX * gravityTangent.x + forceY * gravity.x,
+							y: forceX * gravityTangent.y + forceY * gravity.y,
+						}
+
+						Body.applyForce(body, body.position, {
+							x: gravityAlignedForce.x,
+							y: gravityAlignedForce.y,
+						})
+					} else {
+						const forceX = Common.random(-2, 2) * forceMagnitude
+						const forceY = Common.random(-2, 2) * -forceMagnitude
+
+						Body.applyForce(body, body.position, {
+							x: forceX,
+							y: forceY,
+						})
+					}
 				}
 			}
+		},
+		destroyBody(id) {
+			if (!this.bodyMap.has(id)) return
+
+			const { body, timeout } = this.bodyMap.get(id)
+
+			World.remove(this.engine.world, body)
+
+			const idx = this.bodies.findIndex((b) => b.id == id)
+			if (idx >= 0) {
+				this.bodies.splice(idx, 1)
+			}
+
+			clearTimeout(timeout)
+
+			this.bodyMap.delete(id)
 		},
 		spawnImage(image) {
 			const width = this.size.width
@@ -186,9 +326,9 @@ export default {
 
 			if (this.useLaunchPosition) {
 				const angle =
-					Number(this.launchParameters?.angle) +
+					Number(this.launchParameters?.angle ?? 0) +
 					(Math.random() - 0.5) *
-						Number(this.launchParameters?.spread)
+						Number(this.launchParameters?.spread ?? 25)
 
 				velX = Math.cos((angle * Math.PI) / 180) * velocityMax
 				velY = Math.sin((angle * Math.PI) / 180) * velocityMax
@@ -196,17 +336,26 @@ export default {
 
 			const id = this.spawnId++
 
+			let imgWidth = Common.random(
+				this.emoteSize?.min ?? 80,
+				this.emoteSize?.max ?? 80
+			)
+			if (imgWidth == 0) {
+				imgWidth = 80
+			}
+			let imgHeight = imgWidth
+
 			this.bodies.push({
 				src: image,
 				id,
-				width: 80,
-				height: 80,
+				width: imgWidth,
+				height: imgHeight,
 				x,
 				y,
 				angle: 0,
 			})
 
-			const circleBody = Bodies.circle(x, y, 40, {})
+			const circleBody = Bodies.circle(x, y, imgWidth / 2, {})
 			circleBody.vueId = id
 
 			Body.applyForce(circleBody, { x, y }, { x: velX, y: velY })
@@ -214,29 +363,44 @@ export default {
 			World.add(this.engine.world, [circleBody])
 
 			const lifetime = this.lifetime || 7
-			setTimeout(() => {
-				World.remove(this.engine.world, circleBody)
-
-				const idx = this.bodies.findIndex((b) => b.id == id)
-				if (idx >= 0) {
-					this.bodies.splice(idx, 1)
-				}
+			const timeout = setTimeout(() => {
+				this.destroyBody(id)
 			}, lifetime * 1000)
+
+			this.bodyMap.set(id, { body: circleBody, timeout })
 		},
 		setNewRectangle(body, x, y, width, height) {
-			Body.setPosition(body, { x, y})
-			Body.setVertices(body, Vertices.fromPath('L 0 0 L ' + width + ' 0 L ' + width + ' ' + height + ' L 0 ' + height))
+			Body.setPosition(body, { x, y })
+			Body.setVertices(
+				body,
+				Vertices.fromPath(
+					"L 0 0 L " +
+						width +
+						" 0 L " +
+						width +
+						" " +
+						height +
+						" L 0 " +
+						height
+				)
+			)
 		},
 		updateWalls() {
 			if (this.isEditor) return
-			
+
 			const width = this.size.width
 			const height = this.size.height
 			this.setNewRectangle(this.ground, width / 2, height + 40, width, 80)
 			this.setNewRectangle(this.ceiling, width / 2, -40, width, 80)
 			this.setNewRectangle(this.leftWall, -40, height / 2, 80, height)
-			this.setNewRectangle(this.rightWall, width + 40, height / 2, 80, height)
-		}
+			this.setNewRectangle(
+				this.rightWall,
+				width + 40,
+				height / 2,
+				80,
+				height
+			)
+		},
 	},
 	mounted() {
 		const width = this.$refs.bounceHouse.clientWidth
@@ -245,6 +409,8 @@ export default {
 		console.log("Mounting Bounce House", Matter, width, height)
 
 		if (this.isEditor) return
+
+		this.bodyMap = new Map()
 
 		this.emotes = new EmoteService(this.channelId, this.channelName)
 
@@ -263,7 +429,15 @@ export default {
 			isStatic: true,
 		})
 
-		World.add(this.engine.world, [this.ground, this.ceiling, this.leftWall, this.rightWall])
+		World.add(this.engine.world, [
+			this.ground,
+			this.ceiling,
+			this.leftWall,
+			this.rightWall,
+		])
+
+		this.engine.gravity.x = this.gravityXScale ?? 0
+		this.engine.gravity.y = this.gravityYScale ?? 1.0
 
 		Engine.run(this.engine)
 
@@ -288,8 +462,14 @@ export default {
 			deep: true,
 			handler() {
 				this.updateWalls()
-			}
-		}
+			},
+		},
+		gravityXScale() {
+			this.engine.gravity.x = this.gravityXScale ?? 0
+		},
+		gravityYScale() {
+			this.engine.gravity.y = this.gravityYScale ?? 1.0
+		},
 	},
 }
 </script>
