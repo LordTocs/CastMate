@@ -2136,7 +2136,7 @@ export default {
 		},
 		sendWhisper: {
 			name: "Whisper",
-			description: "Sends a whisper from the streamer's account a user",
+			description: "Sends a whisper",
 			icon: "mdi-account-voice",
 			color: "#5E5172",
 			data: {
