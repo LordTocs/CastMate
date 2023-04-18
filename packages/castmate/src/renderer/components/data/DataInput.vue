@@ -10,41 +10,14 @@
 		v-bind="allProps"
 	/>
 	<number-input
-		v-else-if="schema.type == 'Number' && !schema.slider && !schema.enum"
+		v-else-if="schema.type == 'Number'"
 		v-model="modelObj"
-		:allowTemplate="!!schema.template"
-		:clearable="!schema.required"
-		:unit="schema.unit"
 		v-bind="allProps"
 	/>
 	<resource-input
 		v-else-if="schema.type == 'Resource'"
 		v-model="modelObj"
 		v-bind="allProps"
-	/>
-	<template v-else-if="schema.type == 'Number' && schema.slider">
-		<div class="text-caption">{{ labelString }}</div>
-		<v-slider
-			v-model="modelObj"
-			:name="labelString"
-			:min="schema.slider.min"
-			:max="schema.slider.max"
-			:step="schema.slider.step"
-			:density="density"
-			color="white"
-			:append-icon="!schema.required ? 'mdi-close' : undefined"
-			@click:append="clear"
-		/>
-	</template>
-	<enum-input
-		v-else-if="schema.type == 'Number' && schema.enum"
-		:enum="schema.enum || schema.enumQuery"
-		:queryMode="!!schema.enumQuery"
-		v-model="modelObj"
-		:label="labelString"
-		:clearable="!schema.required"
-		:context="context"
-		:template="schema.template"
 	/>
 	<string-input
 		v-else-if="schema.type == 'String'"
@@ -55,23 +28,6 @@
 		v-else-if="schema.type == 'Boolean'"
 		v-model="modelObj"
 		v-bind="allProps"
-	/>
-	<file-autocomplete
-		v-else-if="schema.type == 'FilePath'"
-		v-model="modelObj"
-		:recursive="!!schema.recursive"
-		:path="schema.path"
-		:basePath="schema.basePath"
-		:clearable="!schema.required"
-		:ext="schema.exts || []"
-		:label="labelString"
-		:density="density"
-	/>
-	<color-picker
-		v-else-if="schema.type == 'LightColor'"
-		v-model="modelObj"
-		:schema="schema"
-		:clearable="!schema.required"
 	/>
 	<automation-selector
 		v-else-if="schema.type == 'Automation'"
@@ -128,8 +84,18 @@
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
+	<light-color-input
+		v-else-if="schema.type == 'LightColor'"
+		v-model="modelObj"
+		v-bind="allProps"
+	/>
 	<folder-input
 		v-else-if="schema.type == 'Folder'"
+		v-model="modelObj"
+		v-bind="allProps"
+	/>
+	<file-input
+		v-else-if="schema.type == 'File'"
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
@@ -138,13 +104,17 @@
 		v-model="modelObj"
 		v-bind="allProps"
 	/>
+	<dynamic-type-input
+		v-else-if="schema.type == 'Dynamic'"
+		v-model="modelObj"
+		v-bind="allProps"
+	/>
 </template>
 
-<script>
-import ColorPicker from "./ColorPicker.vue"
-import FileAutocomplete from "./FileAutocomplete.vue"
-import RewardSelector from "../rewards/RewardSelector.vue"
+<script setup>
+import { computed } from "vue"
 
+import RewardSelector from "../rewards/RewardSelector.vue"
 import RangeInput from "./types/RangeInput.vue"
 import TimeInput from "./types/TimeInput.vue"
 import StringInput from "./types/StringInput.vue"
@@ -156,84 +126,53 @@ import AutomationSelector from "../automations/AutomationSelector.vue"
 import ResourceInput from "./types/ResourceInput.vue"
 import OverlayFontStyleInput from "./types/OverlayFontStyleInput.vue"
 import MediaInput from "./types/MediaInput.vue"
-import EnumInput from "./types/EnumInput.vue"
 import OverlayTransitionInput from "./types/OverlayTransitionInput.vue"
 import OverlayTransitionTimingInput from "./types/OverlayTransitionTimingInput.vue"
 import OverlayPaddingInput from "./types/OverlayPaddingInput.vue"
 import ToggleInput from "./types/ToggleInput.vue"
 import ColorInput from "./types/ColorInput.vue"
+import LightColorInput from "./types/LightColorInput.vue"
 import FolderInput from "./types/FolderInput.vue"
 import OverlayWidgetInput from "./types/OverlayWidgetInput.vue"
+import FileInput from "./types/FileInput.vue"
+import DynamicTypeInput from "./types/DynamicTypeInput.vue"
 
-export default {
-	name: "data-input",
-	components: {
-		ObjectInput,
-		ArrayInput,
-		NumberInput,
-		FileAutocomplete,
-		StringInput,
-		ColorPicker,
-		AutomationSelector,
-		RewardSelector,
-		RangeInput,
-		TimeInput,
-		BooleanInput,
-		ResourceInput,
-		OverlayFontStyleInput,
-		MediaInput,
-		EnumInput,
-		OverlayTransitionInput,
-		OverlayTransitionTimingInput,
-		OverlayPaddingInput,
-		ToggleInput,
-		ColorInput,
-		FolderInput,
-		OverlayWidgetInput,
-	},
-	props: {
-		schema: {},
-		modelValue: {},
-		label: {},
-		context: { type: Object },
-		secret: { type: Boolean, default: () => false },
-		colorRefs: {},
-		density: { type: String },
-	},
-	emits: ["update:modelValue"],
-	computed: {
-		labelString() {
-			return this.schema?.name || this.label
-		},
-		allProps() {
-			return {
-				schema: this.schema,
-				context: this.context,
-				secret: this.secret,
-				colorRefs: this.colorRefs,
-				label: this.labelString,
-				density: this.density,
-			}
-		},
-		modelObj: {
-			get() {
-				return this.modelValue
-			},
-			set(newValue) {
-				if (newValue === null) {
-					//Need this to handle clearable returning null instead of undefined.
-					this.clear()
-				}
-				this.$emit("update:modelValue", newValue)
-			},
-		},
-	},
-	methods: {
-		clear() {
-			this.$emit("update:modelValue", undefined)
-		},
-	},
+const props = defineProps({
+	schema: {},
+	modelValue: {},
+	label: {},
+	context: {},
+	secret: { type: Boolean, default: () => false },
+	colorRefs: {},
+	density: { type: String },
+})
+const emit = defineEmits(["update:modelValue"])
+const labelString = computed(() => props.schema?.name || props.label)
+
+const allProps = computed(() => {
+	return {
+		schema: props.schema,
+		context: props.context,
+		secret: props.secret,
+		colorRefs: props.colorRefs,
+		label: labelString.value,
+		density: props.density,
+	}
+})
+
+function clear() {
+	emit("update:modelValue", undefined)
 }
+
+const modelObj = computed({
+	get() {
+		return props.modelValue
+	},
+	set(value) {
+		if (value == null) return clear()
+		emit("update:modelValue", value)
+	},
+})
 </script>
 
 <style>

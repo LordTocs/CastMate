@@ -90,9 +90,9 @@ export default {
 			return false
 		},
 		actionDefinition() {
-			const plugin = this.plugins[this.plugin]
-			if (plugin) {
-				return plugin.actions[this.action]
+			const action = this.plugins[this.plugin]?.actions?.[this.action]
+			if (action) {
+				return action
 			}
 			return {
 				name: "UNKNOWN ACTION",

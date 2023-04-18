@@ -153,10 +153,10 @@ export default {
 
 				//Get the stream status
 				const streamStatus = await this.obs.call("GetStreamStatus")
-				this.state.streaming = streamStatus.outputActive
+				this.state.streaming = !!streamStatus.outputActive 
 
 				const recordStatus = await this.obs.call("GetRecordStatus")
-				this.state.recording = recordStatus.outputActive
+				this.state.recording = !!recordStatus.outputActive
 
 				this.state.connected = true
 				this.analytics.set({ usesOBS: true })

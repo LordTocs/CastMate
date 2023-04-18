@@ -3,6 +3,7 @@
 		ref="alertReveal"
 		:animation="alertAnimation"
 		:transition="alertTransition"
+		class="frame-sized"
 	>
 		<div>
 			<media-container ref="media" class="alert" :media-file="media">
@@ -18,7 +19,10 @@
 							:appear-delay="titleFormat?.timing?.appearDelay"
 							:vanish-advance="titleFormat?.timing?.vanishAdvance"
 						>
-							<p :style="getFontStyle(titleFormat?.style)">
+							<p
+								class="message"
+								:style="getFontStyle(titleFormat?.style)"
+							>
 								{{ header }}
 							</p>
 						</timed-reveal>
@@ -36,7 +40,10 @@
 								messageFormat?.timing?.vanishAdvance
 							"
 						>
-							<p :style="getFontStyle(messageFormat?.style)">
+							<p
+								class="message"
+								:style="getFontStyle(messageFormat?.style)"
+							>
 								{{ message }}
 							</p>
 						</timed-reveal>
@@ -55,7 +62,10 @@
 						:appear-delay="titleFormat?.timing?.appearDelay"
 						:vanish-advance="titleFormat?.timing?.vanishAdvance"
 					>
-						<p :style="getFontStyle(titleFormat?.style)">
+						<p
+							class="message"
+							:style="getFontStyle(titleFormat?.style)"
+						>
 							{{ header }}
 						</p>
 					</timed-reveal>
@@ -71,7 +81,10 @@
 						:appear-delay="messageFormat?.timing?.appearDelay"
 						:vanish-advance="messageFormat?.timing?.vanishAdvance"
 					>
-						<p :style="getFontStyle(messageFormat?.style)">
+						<p
+							class="message"
+							:style="getFontStyle(messageFormat?.style)"
+						>
 							{{ message }}
 						</p>
 					</timed-reveal>
@@ -282,7 +295,10 @@ p {
 }
 
 .alert {
+	position: relative;
 	color: white;
+	width: 100%;
+	height: 100%;
 }
 
 .alert-head {
@@ -293,5 +309,14 @@ p {
 .alert-body {
 	font-size: 30px;
 	text-align: center;
+}
+
+.frame-sized {
+	position: absolute;
+	inset: 0px;
+}
+
+.message {
+	white-space: pre-wrap;
 }
 </style>

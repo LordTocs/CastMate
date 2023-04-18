@@ -21,13 +21,6 @@
 					</template>
 					<template #append>
 						<v-btn
-							icon="mdi-delete"
-							size="x-small"
-							variant="flat"
-							class="mx-1"
-							@click="deleteWidget(index)"
-						></v-btn>
-						<v-btn
 							:icon="
 								element.locked ? 'mdi-lock' : 'mdi-lock-open'
 							"
@@ -36,7 +29,36 @@
 							variant="flat"
 							class="mx-1"
 							@click="toggleLock(index)"
-						></v-btn>
+						/>
+						<v-menu bottom right>
+							<template
+								v-slot:activator="{ props: activatorProps }"
+							>
+								<v-btn
+									variant="flat"
+									size="small"
+									icon="mdi-dots-vertical"
+									v-bind="activatorProps"
+								/>
+							</template>
+							<v-list>
+								<v-list-item link :disabled="!props.modelValue">
+									<v-list-item-title
+										@click="deleteWidget(index)"
+									>
+										Delete
+									</v-list-item-title>
+								</v-list-item>
+								<v-list-item
+									link
+									@click="duplicateWidget(index)"
+								>
+									<v-list-item-title>
+										Duplicate
+									</v-list-item-title>
+								</v-list-item>
+							</v-list>
+						</v-menu>
 					</template>
 				</v-list-item>
 			</template>
@@ -131,11 +153,21 @@ function deleteWidget(index) {
 	emit("select", null)
 }
 
+function duplicateWidget(index) {
+	const rIdx = (props?.modelValue?.widgets?.length ?? 0) - 1 - index
+
+	const newWidget = _cloneDeep(widgets.value[rIdx])
+	newWidget.id = nanoid()
+	newWidget.locked = false
+	newWidget.name = getNewName(newWidget.type)
+	newWidget.position = { x: 0, y: 0 }
+
+	widgets.value.splice(0, 0, newWidget)
+}
+
 function toggleLock(index) {
 	const rIdx = props?.modelValue?.widgets?.length - 1 - index
-	const newArray = _cloneDeep(widgets.value)
-	newArray[rIdx].locked = !newArray[rIdx].locked
-	widgets.value = newArray
+	widgets.value[rIdx].locked = !widgets.value[rIdx].locked
 }
 
 function getNewName(widgetTypeId) {
@@ -175,6 +207,6 @@ function createWidget(widgetTypeId) {
 		},
 	}
 
-	widgets.value = [...widgets.value, newWidget]
+	widgets.value.push(newWidget)
 }
 </script>

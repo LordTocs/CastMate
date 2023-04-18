@@ -1,5 +1,10 @@
 <template>
-	<v-input v-model="modelObj" class="v-switch" :density="props.density">
+	<v-input
+		v-model="modelObj"
+		class="v-switch v-toggle"
+		:density="props.density"
+		:hide-details="hideDetails"
+	>
 		<div class="toggle-control">
 			<v-label
 				style="padding-inline-start: 0px; padding-inline-end: 10px"
@@ -19,15 +24,16 @@
 					class="toggle-control-thumb-holder"
 					:class="{
 						'toggle-control-on': props.modelValue === true,
-						'toggle-control-off': !props.modelValue,
+						'toggle-control-off': props.modelValue === false,
 						'toggle-control-switch': props.modelValue === 'toggle',
+						'toggle-control-indeterminate': indeterminate,
 					}"
 					@click="cycleInput"
 					v-ripple
 				>
 					<div class="v-switch__thumb">
 						<v-icon
-							v-if="thumbIcon"
+							v-if="thumbIcon && !indeterminate"
 							style="color: white"
 							:icon="thumbIcon"
 							size="x-small"
@@ -38,6 +44,15 @@
 			<v-label>
 				{{ props.label }}
 			</v-label>
+			<v-btn
+				class="ml-1"
+				v-if="clearable"
+				size="x-small"
+				variant="tonal"
+				:disabled="props.modelValue == null"
+				@click="modelObj = undefined"
+				icon="mdi-close"
+			/>
 		</div>
 	</v-input>
 </template>
@@ -55,16 +70,27 @@ const props = defineProps({
 	colorRefs: {},
 	label: { type: String },
 	density: { type: String },
+	hideDetails: { type: Boolean },
 })
 
 const emit = defineEmits(["update:modelValue"])
 
 const modelObj = useModel(props, emit)
 
+const clearable = computed(() => !props.schema?.required)
+
+const indeterminate = computed(() => props.modelValue == null)
+
+const falseIcon = computed(() => props.schema?.falseIcon ?? "mdi-close-thick")
+const trueIcon = computed(() => props.schema?.trueIcon ?? "mdi-check-bold")
+const toggleIcon = computed(
+	() => props.schema?.toggleIcon ?? "mdi-swap-horizontal"
+)
+
 const thumbIcon = computed(() => {
-	if (props.modelValue === "toggle") return "mdi-swap-horizontal"
-	if (props.modelValue === true) return props.schema?.trueIcon
-	if (!props.modelValue) return props.schema?.falseIcon
+	if (props.modelValue === "toggle") return toggleIcon.value
+	if (props.modelValue === true) return trueIcon.value
+	if (!props.modelValue) return falseIcon.value
 })
 
 function cycleInput() {
@@ -79,6 +105,10 @@ function cycleInput() {
 </script>
 
 <style scoped>
+.v-toggle {
+	min-width: 92px;
+}
+
 .v-switch__track {
 	width: 72px;
 	display: flex;
@@ -122,5 +152,11 @@ function cycleInput() {
 
 .toggle-control-switch {
 	transform: translateX(0px);
+}
+
+.toggle-control-indeterminate {
+	transform: translateX(0px);
+	transform: scale(0.6);
+	box-shadow: none;
 }
 </style>

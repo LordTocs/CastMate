@@ -12,6 +12,15 @@
 			<v-divider vertical />
 			<div class="mx-4 d-flex flex-column justify-end">
 				<p class="text-subtitle-1 text-center">
+					<twitch-mini-account-display :is-bot="true" />
+				</p>
+				<p class="text-subtitle-2 text-medium-emphasis text-center">
+					{{ botName ?? "Bot Account" }}
+				</p>
+			</div>
+			<v-divider vertical />
+			<div class="mx-4 d-flex flex-column justify-end">
+				<p class="text-subtitle-1 text-center">
 					{{ streaming ? viewers : "---" }}
 				</p>
 				<p class="text-subtitle-2 text-medium-emphasis text-center">
@@ -76,5 +85,9 @@ const streaming = computed(() => pluginStore.rootState.obs.streaming)
 
 const accountName = computed(() => {
 	return pluginStore.rootState.twitch?.channelName
+})
+
+const botName = computed(() => {
+	return pluginStore.rootState.twitch?.botName
 })
 </script>

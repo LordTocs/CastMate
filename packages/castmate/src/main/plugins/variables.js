@@ -153,7 +153,28 @@ export default {
 							return Object.keys(this.state)
 						},
 					},
-					value: { type: Number, template: true, name: "Set Value" },
+					value: {
+						type: "Dynamic",
+						name: "Set Value",
+						async dynamicType(context) {
+							const spec = this.variableSpecs[context?.name]
+
+							const isString =
+								spec?.type == "string" || spec?.type == "String"
+							const isNumber = spec?.type == "Number"
+							if (isNumber) {
+								return {
+									type: "Number",
+									template: true,
+								}
+							} else {
+								return {
+									type: "String",
+									template: true,
+								}
+							}
+						},
+					},
 				},
 			},
 			async handler(variableData, context) {
@@ -174,18 +195,17 @@ export default {
 					)
 					if (!isNaN(setValue)) {
 						this.state[variableData.name] = setValue
-						this.logger.info(`Setting ${variableData.name} to ${setValue}`)
+						this.logger.info(
+							`Setting ${variableData.name} to ${setValue}`
+						)
 					}
 				} else if (isString) {
-					const setValue = await template(
-						setValue,
-						context
-					)
+					const setValue = await template(variableData.value, context)
 					this.state[variableData.name] = setValue
-					this.logger.info(`Setting ${variableData.name} to ${setValue}`)
+					this.logger.info(
+						`Setting ${variableData.name} to ${setValue}`
+					)
 				}
-
-				
 			},
 		},
 		inc: {
@@ -230,12 +250,14 @@ export default {
 				const offset = Number(
 					await templateNumber(variableData.offset, context)
 				)
-				
+
 				if (!isNaN(offset)) {
 					this.state[variableData.name] = Number(
 						this.state[variableData.name] + offset
 					)
-					this.logger.info(`Offseting ${variableData.name} by ${offset}`)
+					this.logger.info(
+						`Offseting ${variableData.name} by ${offset}`
+					)
 				}
 			},
 		},

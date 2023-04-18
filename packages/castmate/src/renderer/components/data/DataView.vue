@@ -1,61 +1,5 @@
 <template>
 	<div v-if="!schema || value === undefined" />
-	<p
-		v-else-if="
-			schema.type == 'String' ||
-			schema.type == 'Number' ||
-			schema.type == 'FilePath' ||
-			schema.type == 'Automation' ||
-			schema.type == 'Duration'
-		"
-	>
-		<span class="text--secondary" v-if="schema.name || label">
-			{{ schema.name || label }}:
-		</span>
-		{{ value }}{{ schema.unit ? schema.unit.short : "" }}
-	</p>
-	<p v-else-if="schema.type == 'Boolean'">
-		<span class="text--secondary" v-if="schema.name || label">
-			{{ schema.name || label }}:
-		</span>
-		<v-icon>
-			{{
-				value
-					? schema.trueIcon
-						? schema.trueIcon
-						: "mdi-check-bold"
-					: schema.falseIcon
-					? schema.falseIcon
-					: "mdi-close-bold"
-			}}
-		</v-icon>
-	</p>
-	<p v-else-if="schema.type == 'Toggle'">
-		<span class="text--secondary" v-if="schema.name || label">
-			{{ schema.name || label }}:
-		</span>
-		<v-icon v-if="value === true">
-			{{ schema.trueIcon ? schema.trueIcon : "mdi-check-bold" }}
-		</v-icon>
-		<v-icon v-else-if="value === 'toggle'">
-			{{ schema.toggleIcon ? schema.toggleIcon : "mdi-swap-horizontal" }}
-		</v-icon>
-		<v-icon v-else-if="!value">
-			{{ schema.falseIcon ? schema.falseIcon : "mdi-close-bold" }}
-		</v-icon>
-	</p>
-	<p v-else-if="schema.type == 'LightColor'">
-		<span class="text--secondary" v-if="schema.name || label">
-			{{ schema.name || label }}:
-		</span>
-		<color-swatch :value="value" />
-	</p>
-	<p v-else-if="schema.type == 'ChannelPointReward'">
-		<span class="text--secondary" v-if="schema.name || label">
-			{{ schema.name || label }}: </span
-		>{{ value }}
-		<!--reward-edit-button :rewardName="value" /-->
-	</p>
 	<div
 		v-else-if="schema.type == 'Object' && schema.properties"
 		:class="[{ 'horizontal-layout': horizontal }]"
@@ -68,12 +12,53 @@
 			:horizontal="horizontal"
 		/>
 	</div>
-	<p v-else-if="schema.type == 'Range' && value">
+	<p
+		v-else-if="
+			schema.type == 'String' ||
+			schema.type == 'Number' ||
+			schema.type == 'FilePath' ||
+			schema.type == 'Automation' ||
+			schema.type == 'Duration' ||
+			schema.type == 'ChannelPointReward' ||
+			schema.type == 'File' ||
+			schema.type == 'Folder'
+		"
+	>
 		<span class="text--secondary" v-if="schema.name || label">
-			{{ schema.name || label }}: </span
-		>{{ value.min != undefined && value.min != null ? value.min : `-∞` }} ⟶
-		{{ value.max != undefined && value.max != null ? value.max : `∞` }}
+			{{ schema.name || label }}:
+		</span>
+		{{ value }}{{ schema.unit ? schema.unit.short : "" }}
 	</p>
+	<boolean-view
+		v-else-if="schema.type == 'Boolean'"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
+	<toggle-view
+		v-else-if="schema.type == 'Toggle'"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
+	<color-view
+		v-else-if="schema.type == 'Color'"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
+	<light-color-view
+		v-else-if="schema.type == 'LightColor'"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
+	<range-view
+		v-else-if="schema.type == 'Range' && value"
+		:schema="schema"
+		:modelValue="value"
+		:label="label"
+	/>
 	<resource-view
 		v-else-if="schema.type == 'Resource' && value"
 		:schema="schema"
@@ -94,28 +79,32 @@
 	/>
 </template>
 
-<script>
-import ColorSwatch from "./ColorSwatch.vue"
+<script setup>
 import OverlayWidgetView from "./views/OverlayWidgetView.vue"
 import ResourceView from "./views/ResourceView.vue"
 import MediaView from "./views/MediaView.vue"
-export default {
-	components: { ColorSwatch, ResourceView, MediaView, OverlayWidgetView },
-	name: "data-view",
-	props: {
-		schema: {},
-		value: {},
-		label: {},
-		horizontal: { type: Boolean, default: () => false },
-	},
-	computed: {
-		previewProperties() {
-			return Object.keys(this.value).filter(
-				(k) => this.schema.properties[k]?.preview != false
-			)
-		},
-	},
-}
+import ColorView from "./views/ColorView.vue"
+import LightColorView from "./views/LightColorView.vue"
+import BooleanView from "./views/BooleanView.vue"
+import ToggleView from "./views/ToggleView.vue"
+
+import { computed } from "vue"
+import RangeView from "./views/RangeView.vue"
+
+const props = defineProps({
+	schema: {},
+	value: {},
+	label: {},
+	horizontal: { type: Boolean, default: () => false },
+})
+
+const previewProperties = computed(() =>
+	Object.keys(props.schema.properties).filter((k) => {
+		if (!(k in props.value)) return false
+		if (props.schema.properties[k].preview === false) return false
+		return true
+	})
+)
 </script>
 
 <style scoped>

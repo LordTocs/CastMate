@@ -1,5 +1,5 @@
 <template>
-	<v-select
+	<v-autocomplete
 		v-model="modelObj"
 		:items="resourceItems"
 		item-title="config.name"
@@ -11,7 +11,10 @@
 	>
 		<template #append v-if="resourceType?.inlineEdit">
 			<div class="d-flex flex-row align-center">
-				<resource-dialog :resource-type-id="props.schema.resourceType" ref="dlg" />
+				<resource-dialog
+					:resource-type-id="props.schema.resourceType"
+					ref="dlg"
+				/>
 				<v-menu bottom right>
 					<template v-slot:activator="{ props: activatorProps }">
 						<v-btn
@@ -23,7 +26,9 @@
 					</template>
 					<v-list>
 						<v-list-item link :disabled="!props.modelValue">
-							<v-list-item-title @click="dlg.showEdit(props.modelValue)">
+							<v-list-item-title
+								@click="dlg.showEdit(props.modelValue)"
+							>
 								Edit {{ resourceType.name }}
 							</v-list-item-title>
 						</v-list-item>
@@ -40,15 +45,15 @@
 				</v-menu>
 			</div>
 		</template>
-	</v-select>
+	</v-autocomplete>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue"
 import { useModel } from "../../../utils/modelValue.js"
 import { useResourceArray, useResourceType } from "../../../utils/resources.js"
-import ResourceDialog from "../../dialogs/ResourceDialog.vue";
-
+import ResourceDialog from "../../dialogs/ResourceDialog.vue"
+import _isMatch from "lodash/isMatch"
 const props = defineProps({
 	modelValue: {},
 	schema: {},
@@ -63,7 +68,14 @@ const emit = defineEmits(["update:modelValue"])
 const modelObj = useModel(props, emit)
 
 const resourceType = useResourceType(props.schema.resourceType)
-const resourceItems = useResourceArray(props.schema.resourceType)
+const rawResourceItems = useResourceArray(props.schema.resourceType)
+
+const resourceItems = computed(() => {
+	if (!props.schema?.filter) return rawResourceItems.value
+	return rawResourceItems.value.filter((f) =>
+		_isMatch(f?.config, props.schema.filter)
+	)
+})
 
 async function doCreate() {
 	const newResource = await dlg.value.showCreate()

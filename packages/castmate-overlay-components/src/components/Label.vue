@@ -1,12 +1,17 @@
 <template>
-	<p :style="fontStyle">{{ message }}</p>
+	<p class="overlay-label" :style="fontStyle">{{ message }}</p>
 </template>
 
 <script>
 import { OverlayFontStyle } from "../typeProxies.js"
 export default {
 	props: {
-		message: { type: String, default: () => "Text Label", template: true },
+		message: {
+			type: String,
+			default: () => "Text Label",
+			template: true,
+			area: true,
+		},
 		textStyle: {
 			type: OverlayFontStyle,
 			name: "Style",
@@ -17,7 +22,7 @@ export default {
 				fontColor: "#FFFFFF",
 				stroke: {
 					width: 4,
-					color: "#000000"
+					color: "#000000",
 				},
 			},
 		},
@@ -39,4 +44,8 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.overlay-label {
+	white-space: pre-wrap;
+}
+</style>

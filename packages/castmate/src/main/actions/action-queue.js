@@ -8,6 +8,7 @@ import { PluginManager } from "../pluginCore/plugin-manager.js"
 import { AutomationManager } from "../automations/automation-manager.js"
 import util from "util"
 import { Analytics } from "../utils/analytics.js"
+import { templateNumber } from "../state/template"
 
 let actionQueue = null
 export class ActionQueue {
@@ -237,13 +238,15 @@ export class ActionQueue {
 			return false
 		}
 
-		Analytics.getInstance().track("trigger", {
-			plugin,
-			trigger: name,
-			context: context,
-		})
-
-		return triggerHandler(context, ...args)
+		const result = triggerHandler(context, ...args)
+		if (result) {
+			Analytics.getInstance().track("trigger", {
+				plugin,
+				trigger: name,
+				context: context,
+			})
+		}
+		return result
 	}
 
 	async _runAutomation(automation, context) {
@@ -288,7 +291,11 @@ export class ActionQueue {
 			}
 
 			if (action.action === "delay") {
-				await sleep(action.data * 1000)
+				try {
+					await sleep(
+						(await templateNumber(action.data, context)) * 1000
+					)
+				} catch (err) {}
 			}
 		}
 	}

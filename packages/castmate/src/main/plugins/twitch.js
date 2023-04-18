@@ -122,6 +122,7 @@ export default {
 		this.state.viewers = 0
 
 		this.commandTimes = {}
+		this.whisperTimes = {}
 
 		let badwords = []
 		const badwordsFile = path.join(userFolder, "data", "badwords.json")
@@ -162,7 +163,14 @@ export default {
 			this.botAuth = new ElectronAuthManager({
 				clientId,
 				name: "Bot",
-				scopes: ["chat:edit", "chat:read"],
+				scopes: [
+					"chat:edit",
+					"chat:read",
+					"whispers:edit",
+					"whispers:read",
+					"user:manage:whispers",
+					"moderator:manage:announcements",
+				],
 			})
 
 			await Promise.all([this.channelAuth.init(), this.botAuth.init()])
@@ -359,61 +367,78 @@ export default {
 
 			this.logger.info(`Connected to Chat`)
 
+			/**
+			 * @type {ChatClient}
+			 */
+			const chatClient = this.chatClient
 			//Setup triggers
-			this.chatClient.onMessage(
-				async (channel, user, message, msgInfo) => {
-					if (this.colorCache)
-						this.colorCache[msgInfo.userInfo.userId] =
-							msgInfo.userInfo.color
+			chatClient.onMessage(async (channel, user, message, msgInfo) => {
+				if (this.colorCache)
+					this.colorCache[msgInfo.userInfo.userId] =
+						msgInfo.userInfo.color
 
-					this.webServices.websocketServer.broadcast(
-						JSON.stringify({
-							chat: {
-								user,
-								color: msgInfo.userInfo.color,
-								message,
-								emoteOffsets: Object.fromEntries(
-									msgInfo.emoteOffsets
-								),
-							},
-						})
-					)
-
-					OverlayManager.getInstance().broadcastOverlayFunc(
-						"onTwitchChat",
-						{
-							message,
+				this.webServices.websocketServer.broadcast(
+					JSON.stringify({
+						chat: {
 							user,
-							userId: msgInfo.userInfo.userId,
 							color: msgInfo.userInfo.color,
+							message,
 							emoteOffsets: Object.fromEntries(
 								msgInfo.emoteOffsets
 							),
-						}
-					)
+						},
+					})
+				)
 
-					let parsed = this.parseMessage(message)
-
-					const context = {
-						command: parsed.command,
-						user: msgInfo.userInfo.displayName,
-						userId: msgInfo.userInfo.userId,
-						args: parsed.args,
-						argString: parsed.string,
-						userColor: msgInfo.userInfo.color,
+				OverlayManager.getInstance().broadcastOverlayFunc(
+					"onTwitchChat",
+					{
 						message,
-						filteredMessage: this.filterMessage(message),
+						user,
+						userId: msgInfo.userInfo.userId,
+						color: msgInfo.userInfo.color,
+						emoteOffsets: Object.fromEntries(msgInfo.emoteOffsets),
 					}
+				)
 
-					if (msgInfo.tags.get("first-msg") !== "0") {
-						this.triggers.firstTimeChat(context)
-					}
+				let parsed = this.parseMessage(message)
 
-					this.triggers.chat(context, msgInfo.userInfo)
+				const context = {
+					command: parsed.command,
+					user: msgInfo.userInfo.displayName,
+					userId: msgInfo.userInfo.userId,
+					args: parsed.args,
+					argString: parsed.string,
+					userColor: msgInfo.userInfo.color,
+					message,
+					filteredMessage: this.filterMessage(message),
 				}
-			)
 
-			this.chatClient.onRaid((channel, user, raidInfo, msgInfo) => {
+				if (msgInfo.tags.get("first-msg") !== "0") {
+					this.triggers.firstTimeChat(context)
+				}
+
+				this.triggers.chat(context, msgInfo.userInfo)
+			})
+
+			chatClient.onWhisper((user, message, msgInfo) => {
+				let parsed = this.parseMessage(message)
+
+				const context = {
+					command: parsed.command,
+					user: msgInfo.userInfo.displayName,
+					userId: msgInfo.userInfo.userId,
+					args: parsed.args,
+					argString: parsed.string,
+					userColor: msgInfo.userInfo.color,
+					message,
+					filteredMessage: this.filterMessage(message),
+				}
+
+				this.triggers.whisper(context)
+			})
+
+			chatClient.onRaid((channel, user, raidInfo, msgInfo) => {
 				this.triggers.raid({
 					raiders: raidInfo.viewerCount,
 					user: raidInfo.displayName,
@@ -421,13 +446,13 @@ export default {
 				})
 			})
 
-			this.chatClient.onBan((channel, user, msg) => {
+			chatClient.onBan((channel, user, msg) => {
 				this.triggers.ban({
 					user,
 				})
 			})
 
-			this.chatClient.onTimeout((channel, user, msg) => {
+			chatClient.onTimeout((channel, user, msg) => {
 				this.triggers.timeout({
 					user,
 				})
@@ -436,7 +461,7 @@ export default {
 			//See here https://twurple.js.org/docs/examples/chat/sub-gift-spam.html
 			const giftCounts = new Map()
 
-			this.chatClient.onCommunitySub((channel, user, subInfo) => {
+			chatClient.onCommunitySub((channel, user, subInfo) => {
 				const previousGiftCount = giftCounts.get(user) || 0
 				giftCounts.set(user, previousGiftCount + subInfo.count)
 				this.triggers.giftedSub({
@@ -447,7 +472,7 @@ export default {
 				})
 			})
 
-			this.chatClient.onSubGift((channel, recipient, subInfo) => {
+			chatClient.onSubGift((channel, recipient, subInfo) => {
 				const user = subInfo.gifter
 				const previousGiftCount = giftCounts.get(user) || 0
 				if (previousGiftCount > 0) {
@@ -666,20 +691,24 @@ export default {
 					this.state.predictionPending = false
 					this.state.predictionExists = false
 
-					this.triggers.predictionSettled({
-						title: event.title,
-						total,
-						winner: {
-							title: event.winningOutcome.title,
-							color: event.winningOutcome.color,
-							points: event.winningOutcome.channelPoints,
-						},
-						outcomes: event.outcomes.map((o) => ({
-							title: o.title,
-							color: o.color,
-							points: o.channelPoints,
-						})),
-					})
+					try {
+						this.triggers.predictionSettled({
+							title: event.title,
+							total,
+							winner: {
+								title: event.winningOutcome.title,
+								color: event.winningOutcome.color,
+								points: event.winningOutcome.channelPoints,
+							},
+							outcomes: event.outcomes.map((o) => ({
+								title: o.title,
+								color: o.color,
+								points: o.channelPoints,
+							})),
+						})
+					} catch (err) {
+						console.log("HELL FREEZES OVER", err)
+					}
 				}
 			)
 
@@ -752,6 +781,8 @@ export default {
 					})
 				}
 			)
+
+			await eventSubClient.on
 
 			await eventSubClient.start()
 		},
@@ -888,6 +919,7 @@ export default {
 				backgroundColor: r.backgroundColor,
 				prompt: r.prompt,
 				cost: r.cost,
+				globalCooldown: r.globalCooldown || 0,
 				userInputRequired: r.userInputRequired,
 				autoFulfill: r.autoFulfill,
 				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
@@ -939,8 +971,6 @@ export default {
 
 			const installed = installedExts.find((e) => e.id == id)
 			const active = activeExts.find((e) => e.id == id)
-
-			console.log("Extension Info", { ...installed }, { ...active })
 
 			if (active) {
 				return { installed: true, active: true, canActivate: true }
@@ -1060,6 +1090,8 @@ export default {
 				cost: r.cost,
 				userInputRequired: r.userInputRequired,
 				autoFulfill: r.autoFulfill,
+				globalCooldown:
+					r.globalCooldown > 0 ? r.globalCooldown : undefined,
 				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
 				maxRedemptionsPerUserPerStream:
 					r.maxRedemptionsPerUserPerStream,
@@ -1067,49 +1099,69 @@ export default {
 		},
 
 		async createReward(rewardDef) {
-			const reward =
-				await this.channelTwitchClient.channelPoints.createCustomReward(
-					this.state.channelId,
-					{
-						title: rewardDef.title,
-						prompt: rewardDef.prompt,
-						backgroundColor: rewardDef.backgroundColor,
-						cost: rewardDef.cost,
-						userInputRequired: !!rewardDef.userInputRequired,
-						autoFulfill: !!rewardDef.autoFulfill,
-						globalCooldown: rewardDef.globalCooldown || 0,
-						maxRedemptionsPerStream:
-							rewardDef.maxRedemptionsPerStream || null,
-						maxRedemptionsPerUserPerStream:
-							rewardDef.maxRedemptionsPerUserPerStream || null,
-					}
-				)
+			try {
+				const reward =
+					await this.channelTwitchClient.channelPoints.createCustomReward(
+						this.state.channelId,
+						{
+							title: rewardDef.title,
+							prompt: rewardDef.prompt,
+							backgroundColor: rewardDef.backgroundColor,
+							cost: rewardDef.cost,
+							userInputRequired: !!rewardDef.userInputRequired,
+							autoFulfill: !!rewardDef.autoFulfill,
+							globalCooldown: rewardDef.globalCooldown || 0,
+							maxRedemptionsPerStream:
+								rewardDef.maxRedemptionsPerStream || null,
+							maxRedemptionsPerUserPerStream:
+								rewardDef.maxRedemptionsPerUserPerStream ||
+								null,
+						}
+					)
 
-			this.rewards.push(reward)
+				this.rewards.push(reward)
+			} catch (err) {
+				const bodyStr = err?.body
+				if (!bodyStr) throw err
+				const body = JSON.parse(bodyStr)
+				console.log(body.message)
+				throw body.message
+			}
 		},
 
 		async updateReward(rewardDef) {
 			const idx = this.rewards.findIndex((r) => r.id == rewardDef.id)
 			if (idx == -1) return false
 
-			const reward =
-				await this.channelTwitchClient.channelPoints.updateCustomReward(
-					this.state.channelId,
-					rewardDef.id,
-					{
-						title: rewardDef.title,
-						prompt: rewardDef.prompt,
-						backgroundColor: rewardDef.backgroundColor,
-						cost: rewardDef.cost,
-						userInputRequired: !!rewardDef.userInputRequired,
-						autoFulfill: !!rewardDef.autoFulfill,
-						globalCooldown: rewardDef.globalCooldown || 0,
-						maxRedemptionsPerStream:
-							rewardDef.maxRedemptionsPerStream || null,
-						maxRedemptionsPerUserPerStream:
-							rewardDef.maxRedemptionsPerUserPerStream || null,
-					}
-				)
+			const rewardUpdate = {
+				title: rewardDef.title,
+				prompt: rewardDef.prompt,
+				backgroundColor: rewardDef.backgroundColor,
+				cost: rewardDef.cost,
+				userInputRequired: !!rewardDef.userInputRequired,
+				autoFulfill: !!rewardDef.autoFulfill,
+				globalCooldown: rewardDef.globalCooldown || 0,
+				maxRedemptionsPerStream:
+					rewardDef.maxRedemptionsPerStream || null,
+				maxRedemptionsPerUserPerStream:
+					rewardDef.maxRedemptionsPerUserPerStream || null,
+			}
+
+			let reward = null
+			try {
+				reward =
+					await this.channelTwitchClient.channelPoints.updateCustomReward(
+						this.state.channelId,
+						rewardDef.id,
+						rewardUpdate
+					)
+			} catch (err) {
+				const bodyStr = err?.body
+				if (!bodyStr) throw err
+				const body = JSON.parse(bodyStr)
+				console.log(body.message)
+				throw body.message
+			}
 
 			this.rewards[idx] = reward
 		},
@@ -1985,6 +2037,85 @@ export default {
 				userColor: { type: String },
 			},
 		},
+		whisper: {
+			name: "Whisper Command",
+			description: "Fires when your bot receives a whisper",
+			config: {
+				type: Object,
+				properties: {
+					command: {
+						type: String,
+						name: "Command",
+						filter: true,
+						template: true,
+					},
+					match: {
+						type: String,
+						enum: ["Start", "Anywhere", "Regex"],
+						default: "Start",
+						preview: false,
+						name: "Match",
+					},
+					cooldown: {
+						type: Number,
+						name: "Cooldown",
+						preview: false,
+						unit: { name: "Seconds", short: "s" },
+					},
+					users: {
+						type: Array,
+						name: "User List",
+						items: { type: String },
+					},
+				},
+			},
+			context: {
+				command: { type: String },
+				user: { type: String },
+				userId: { type: String },
+				args: { type: Array },
+				argString: { type: String },
+				userColor: { type: String },
+				message: { type: String },
+				filteredMessage: { type: String },
+				matches: { type: Array },
+			},
+			async handler(config, context, mapping) {
+				const command = config.command
+					? await template(config.command, context)
+					: ""
+
+				console.log("WHISPERED", context.message)
+				let matches = doMatch(context.message, command, config.match)
+
+				if (!matches) {
+					return false
+				}
+
+				if (Array.isArray(matches)) {
+					context.matches = matches //If we got an array back from doMatch it's a regexp match.
+				}
+
+				if (config.cooldown) {
+					const now = Date.now()
+					const last = this.whisperTimes[mapping.id]
+					if (now - last < config.cooldown * 1000) {
+						return false
+					}
+					this.whisperTimes[mapping.id] = now
+				}
+
+				if (config.users && config.users.length > 0) {
+					const resolvedUserList = await Promise.all(
+						config.users.map((u) => template(u, context))
+					)
+
+					if (!resolvedUserList.includes(context.user)) return false
+				}
+
+				return true
+			},
+		},
 	},
 	actions: {
 		sendChat: {
@@ -2001,6 +2132,64 @@ export default {
 					this.state.channelName.toLowerCase(),
 					await template(message, context)
 				)
+			},
+		},
+		sendWhisper: {
+			name: "Whisper",
+			description: "Sends a whisper",
+			icon: "mdi-account-voice",
+			color: "#5E5172",
+			data: {
+				type: Object,
+				properties: {
+					user: { type: String, name: "To", template: true },
+					message: { type: String, name: "Message", template: true },
+				},
+			},
+			async handler(data, context) {
+				const message = await template(data.message, context)
+				const name = await template(data.user, context)
+				/**
+				 * @type { ApiClient }
+				 */
+				const api = this.botTwitchClient
+
+				const user = await api.users.getUserByName(name)
+				api.whispers.sendWhisper(this.botId, user.id, message)
+			},
+		},
+		sendAnnoucement: {
+			name: "Annoucement",
+			description: "Sends an annoucement in chat",
+			icon: "mdi-chat-alert",
+			color: "#5E5172",
+			data: {
+				type: Object,
+				properties: {
+					message: {
+						type: String,
+						name: "Message",
+						template: true,
+						required: true,
+					},
+					color: {
+						type: String,
+						name: "Color",
+						enum: ["primary", "blue", "green", "orange", "purple"],
+						default: "primary",
+					},
+				},
+			},
+			async handler(data, context) {
+				const message = await template(data.message, context)
+				/**
+				 * @type { ApiClient }
+				 */
+				const api = this.botTwitchClient
+				api.chat.sendAnnouncement(this.state.channelId, this.botId, {
+					message,
+					color: data.color,
+				})
 			},
 		},
 		sendShoutout: {

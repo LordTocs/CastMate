@@ -1,10 +1,15 @@
 <template>
 	<v-form ref="form" v-model="modelValid">
-		<v-text-field label="Name" v-model="title" />
+		<v-text-field label="Title" v-model="title" />
 		<v-text-field label="Description" v-model="prompt" />
+		<color-input label="Background Color" v-model="backgroundColor" />
 		<number-input
 			label="Cost"
 			v-model="cost"
+			:schema="{
+				required: true,
+				min: 1,
+			}"
 			:rules="[(v) => v > 0 || `Rewards require a cost`]"
 		/>
 		<number-input
@@ -29,10 +34,11 @@
 
 <script>
 import { mapModel, mapModelValues } from "../../utils/modelValue"
+import ColorInput from "../data/types/ColorInput.vue"
 import NumberInput from "../data/types/NumberInput.vue"
 
 export default {
-	components: { NumberInput },
+	components: { NumberInput, ColorInput },
 	props: {
 		modelValue: {},
 		valid: {},
@@ -42,6 +48,7 @@ export default {
 		...mapModelValues([
 			"title",
 			"prompt",
+			"backgroundColor",
 			"cost",
 			"userInputRequired",
 			"autoFulfill",

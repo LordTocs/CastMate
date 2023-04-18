@@ -16,7 +16,7 @@
 					>{{ plugins[item.raw.plugin].uiName }}</span
 				>.<span v-if="item">{{ item.raw.key }}</span>
 				<span
-					v-if="item && rootState[item.raw.plugin][item.raw.key]"
+					v-if="item && rootState[item.raw.plugin][item.raw.key] != null"
 					class="text-medium-emphasis ml-2"
 				>
 					({{ rootState[item.raw.plugin][item.raw.key] }})
@@ -31,7 +31,7 @@
 				>{{ plugins[item.raw.plugin].uiName }}</span
 			>.<span v-if="item">{{ item.raw.key }}</span>
 			<span
-				v-if="item && rootState[item.raw.plugin][item.raw.key]"
+				v-if="item && rootState[item.raw.plugin][item.raw.key] != null"
 				class="text-medium-emphasis ml-2"
 			>
 				({{ rootState[item.raw.plugin][item.raw.key] }})

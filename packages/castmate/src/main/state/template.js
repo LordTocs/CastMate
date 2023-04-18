@@ -89,8 +89,10 @@ export function getNextTemplate(templateStr, searchStart) {
 export async function template(templateStr, data, escapeFunction) {
 	//Extract stuff inbetween {{ }}
 	let resultStr = ""
+	if (!templateStr) return resultStr
 
 	let searchStart = 0
+
 	while (true) {
 		const { filler, template, endIndex } = getNextTemplate(
 			templateStr,

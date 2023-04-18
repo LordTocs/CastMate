@@ -19,12 +19,6 @@
 					icon="mdi-content-copy"
 					@click.stop="tryDuplicate(item)"
 				/>
-				<v-btn
-					size="small"
-					class="mx-1"
-					icon="mdi-pencil"
-					@click.stop="tryRename(item)"
-				/>
 			</template>
 		</link-table>
 	</v-container>
