@@ -1,37 +1,39 @@
-import { ExtractStorageAny, RegisterResource, ResourceType } from "./resource"
+import { SchemaObj, SchemaType } from "../data/schema"
+import {
+	ResourceSpec,
+	defineResource,
+	ExtractStorageAny,
+	ResourceConstructor,
+	RegisterResource,
+	ResourceStorage,
+	Resource,
+	ResourceConfig,
+} from "./resource"
+import * as fs from "fs/promises"
+import * as path from "path"
 import { nanoid } from "nanoid/non-secure"
+import * as YAML from "yaml"
 
-interface FileResourceAnyConstructor<T> {
-	new (id: string, config: any): T
+export async function saveResource<T extends Resource>(r: T, folder: string) {
+	await fs.writeFile(path.join(folder, `${r.id}.yaml`), YAML.stringify(r.config), "utf-8")
+	return r
 }
 
-function FileResource<T>() {
-	return class extends ResourceType<T>() {
-		private static _construct(id: string, config: any): T {
-			const result =
-				new (this as unknown as FileResourceAnyConstructor<T>)(
-					id,
-					config
-				)
-			return result
-		}
+export async function loadResource<TConstructor extends ResourceConstructor>(
+	constructor: TConstructor,
+	file: string
+): Promise<InstanceType<TConstructor>> {
+	const strData = await fs.readFile(file, "utf-8")
+	const data = YAML.parse(strData)
+	const id = path.basename(file, ".yaml")
+	return new constructor(id, data)
+}
 
-		//Impossible to extract type due to improper errors in the TS compiler
-		static async create(config: any) {
-			const resource = this._construct(nanoid(), config)
-			//SERIALIZE HERE
-			return resource
-		}
+export async function loadResources<TConstructor extends ResourceConstructor>(
+	constructor: TConstructor,
+	folder: string
+) {
+	const dir = await fs.readdir(folder)
 
-		static async load() {
-			const allConfigs: any[] = [] //Load here
-			const allResources = allConfigs.map((config) =>
-				this._construct("filenamehere", config)
-			)
-
-			const storage = ExtractStorageAny(this)
-
-			allResources.map((r) => storage.inject(r))
-		}
-	}
+	return await Promise.all(dir.map((v) => loadResource(constructor, path.join(folder, v))))
 }

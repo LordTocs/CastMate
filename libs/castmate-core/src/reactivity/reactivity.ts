@@ -60,10 +60,10 @@ export namespace DependencyStorage {
 	export function getPropDependency(obj: any, propKey: PropertyKey) {
 		let objMap = getObjectDependencies(obj)
 
-		let dependency = objMap.get(propKey)
+		let dependency = objMap?.get(propKey)
 		if (dependency == null) {
 			dependency = new ReactiveDependency()
-			objMap.set(propKey, dependency)
+			objMap?.set(propKey, dependency)
 		}
 		return dependency
 	}

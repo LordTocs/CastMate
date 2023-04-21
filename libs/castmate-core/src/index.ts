@@ -1,53 +1,160 @@
-import { SchemaObject, SchemaProp } from "./data/schema"
+import { nanoid } from "nanoid"
+import { defineAction } from "./queue-system/action"
+import { defineTrigger } from "./queue-system/trigger"
 import { Reactive, autoRerun } from "./reactivity/reactivity"
-import { RegisterResource, ResourceType } from "./resources/resource"
+import { loadResources, saveResource } from "./resources/file-resource"
+import {
+	ExtendedResource,
+	RegisterResource,
+	ResourceConfig,
+	ResourceStorage,
+	defineResource,
+	extendResource,
+} from "./resources/resource"
 import { ResourceRegistry } from "./resources/resource-registry"
-
-class ChannelPointRewardConfig extends SchemaObject<ChannelPointRewardConfig>() {
-	@SchemaProp({
-		name: "Text",
-	})
-	text: string = "Yo"
-}
-
-class ChannelPointRewardState extends SchemaObject<ChannelPointRewardState>() {
-	@SchemaProp({
-		name: "Blept",
-	})
-	blept: string = "Yo"
-}
 
 ResourceRegistry.initialize()
 
+defineAction({
+	name: "TestAction",
+	config: {
+		type: Object,
+		properties: {
+			hello: { type: String },
+		},
+	},
+	async invoke(config, contextData, abortSignal) {
+		//Make smartlight api call here
+	},
+})
+
+defineTrigger({
+	name: "Test Trigger",
+	config: {
+		type: Object,
+		properties: {
+			message: { type: String, required: true, default: "foo!" },
+		},
+	},
+	context: {
+		type: Object,
+		properties: {
+			message: { type: String },
+		},
+	},
+	async handle(config, context) {
+		return context.message?.startsWith(config.message) ?? false
+	},
+})
+
+//Resources
+
 @RegisterResource
-class ChannelPointReward extends ResourceType<ChannelPointReward>() {
-	config: ChannelPointRewardConfig = new ChannelPointRewardConfig()
-
-	@Reactive
-	accessor state: ChannelPointRewardState = new ChannelPointRewardState()
+class TestResource extends defineResource({
+	config: {
+		type: Object,
+		properties: {
+			hello: { type: String },
+		},
+	},
+	state: {
+		type: Object,
+		properties: {
+			goodbye: { type: String },
+		},
+	},
+}) {
+	static readonly storage = new ResourceStorage<TestResource>()
 }
 
-ResourceRegistry.getInstance().create("ChannelPointReward")
+// Resource Inheritence
 
-for (let cpr of ChannelPointReward.storage) {
-	console.log("CPR:", cpr)
-}
+@RegisterResource
+class LightResource extends defineResource({
+	config: {
+		type: Object,
+		properties: {
+			hasColor: { type: Boolean, required: true, default: false },
+			hasTemperature: { type: Boolean, required: true, default: false },
+		},
+	},
+	state: {
+		type: Object,
+		properties: {
+			on: { type: Boolean, required: true, default: false },
+		},
+	},
+}) {
+	static storage = new ResourceStorage<LightResource>()
 
-/*
-class LightConfig extends SchemaObject<LightConfig>() {}
+	async setLightState(on: boolean) {}
 
-const Light = defineResource(
-	class Light {
-		id: string
-		config: LightConfig
+	static async load() {
+		await this.loadDerived()
 	}
-)
+}
 
-class HUELight extends Light {}
+@ExtendedResource
+class BrandLightResource extends extendResource(
+	{
+		config: {
+			type: Object,
+			properties: {
+				brandId: { type: String, required: true, default: "" },
+			},
+		},
+		state: {
+			type: Object,
+			properties: {},
+		},
+	},
+	LightResource
+) {
+	async setLightState(on: boolean) {}
 
-class TPLinkLight extends Light {}
-*/
+	static async load() {
+		//Query the hub here.
+	}
+}
 
+///
+
+class SavedResource extends defineResource({
+	config: {
+		type: Object,
+		properties: {
+			hello: { type: String },
+		},
+	},
+	state: {
+		type: Object,
+		properties: {},
+	},
+}) {
+	static storage = new ResourceStorage<SavedResource>()
+
+	async setConfig(config: ResourceConfig<SavedResource>): Promise<void> {
+		await super.setConfig(config)
+
+		await saveResource(this, "/test")
+	}
+
+	static async load() {
+		const resources = await loadResources(SavedResource, "/test")
+
+		//Do some init work
+
+		this.storage.inject(...resources)
+	}
+
+	static async create(config: ResourceConfig<SavedResource>): Promise<SavedResource> {
+		const resource = new SavedResource(nanoid(), config)
+		await saveResource(resource, "/test")
+		this.storage.inject(resource)
+
+		return resource
+	}
+}
 // REACTIVITY
 
 class Foo {

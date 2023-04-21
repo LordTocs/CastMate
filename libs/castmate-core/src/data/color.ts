@@ -1,23 +1,23 @@
-import { BaseSchemaDesc } from "./schema"
-
-interface HSLColor {
-	h: number
-	s: number
-	l: number
-}
-
 type RGB = `rgb(${number}, ${number}, ${number})`
 type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`
 type HEX = `#${string}`
 
 export type Color = RGB | RGBA | HEX
+type ColorConstructor = { new (...args: any[]): any }
+const Color: ColorConstructor = class {
+	constructor() {
+		throw new Error("Uh oh, Color's aren't real classes")
+	}
+}
 
-export interface ColorSchemaDesc extends BaseSchemaDesc {
-	template: Boolean
+export interface SchemaColor {
+	type: ColorConstructor
+	template?: boolean
+	enum: Color[]
 }
 
 declare module "./schema" {
 	interface SchemaTypeMap {
-		Color: [Color, ColorSchemaDesc]
+		Color: [SchemaColor, Color]
 	}
 }

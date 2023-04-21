@@ -6,7 +6,8 @@
 		"preserveConstEnums": true,
 		"outDir": "dist",
 		"sourceMap": true,
-		"target": "ES6"
+		"target": "ES6",
+		"strictNullChecks": true
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "**/*.spec.ts"]

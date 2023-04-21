@@ -1,6 +1,6 @@
 import { Color } from "../data/color"
 import { SemanticVersion } from "../util/type-helpers"
-import { SchemaObjectBase } from "../data/schema"
+import { Schema, SchemaType } from "../data/schema"
 
 interface TriggerMetaData {
 	name: string
@@ -11,20 +11,24 @@ interface TriggerMetaData {
 }
 
 interface TriggerDefinitionSpec<
-	Config extends SchemaObjectBase,
-	ContextData extends SchemaObjectBase
+	ConfigSchema extends Schema,
+	ContextDataSchema extends Schema
 > extends TriggerMetaData {
-	handle(config: Config, context: ContextData): Promise<boolean>
+	config: ConfigSchema
+	context: ContextDataSchema
+	handle(
+		config: SchemaType<ConfigSchema>,
+		context: SchemaType<ContextDataSchema>
+	): Promise<boolean>
 }
 
 class TriggerDefinition<
-	Config extends SchemaObjectBase,
-	ContextData extends SchemaObjectBase
+	ConfigSchema extends Schema,
+	ContextDataSchema extends Schema
 > {
-	private spec: TriggerDefinitionSpec<Config, ContextData>
-	constructor(spec: TriggerDefinitionSpec<Config, ContextData>) {
-		this.spec = spec
-	}
+	constructor(
+		private spec: TriggerDefinitionSpec<ConfigSchema, ContextDataSchema>
+	) {}
 
 	get name() {
 		return this.spec.name
@@ -45,11 +49,18 @@ class TriggerDefinition<
 	get version() {
 		return this.spec.version
 	}
+
+	async handle(
+		config: SchemaType<ConfigSchema>,
+		context: SchemaType<ContextDataSchema>
+	): Promise<boolean> {
+		return await this.spec.handle(config, context)
+	}
 }
 
 export function defineTrigger<
-	Config extends SchemaObjectBase,
-	ContextData extends SchemaObjectBase
+	Config extends Schema,
+	ContextData extends Schema
 >(spec: TriggerDefinitionSpec<Config, ContextData>) {
 	return new TriggerDefinition<Config, ContextData>({
 		icon: "mdi-pencil",

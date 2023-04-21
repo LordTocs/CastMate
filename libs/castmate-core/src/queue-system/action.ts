@@ -1,6 +1,6 @@
 import { Color } from "../data/color"
+import { Schema, SchemaType } from "../data/schema"
 import { SemanticVersion } from "../util/type-helpers"
-import { SchemaObjectBase } from "../data/schema"
 
 interface ActionMetaData {
 	name: string
@@ -13,22 +13,24 @@ interface ActionMetaData {
 type ActionInvokeContextData = Record<PropertyKey, any>
 
 interface ActionDefinitionSpec<
-	Config extends SchemaObjectBase,
-	Result extends SchemaObjectBase | void = void
+	ConfigSchema extends Schema,
+	ResultSchema extends Schema | undefined
 > extends ActionMetaData {
+	config: ConfigSchema
+	result?: ResultSchema
 	invoke(
-		config: Config,
+		config: Readonly<SchemaType<ConfigSchema>>,
 		contextData?: ActionInvokeContextData,
 		abortSignal?: AbortSignal
-	): Promise<Result>
+	): Promise<ResultSchema extends Schema ? SchemaType<ResultSchema> : void>
 }
 
 class ActionDefinition<
-	Config extends SchemaObjectBase,
-	Result extends SchemaObjectBase | void = void
+	ConfigSchema extends Schema,
+	ResultSchema extends Schema | undefined
 > {
-	private spec: ActionDefinitionSpec<Config, Result>
-	constructor(spec: ActionDefinitionSpec<Config, Result>) {
+	private spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>
+	constructor(spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>) {
 		this.spec = spec
 	}
 
@@ -51,13 +53,23 @@ class ActionDefinition<
 	get version() {
 		return this.spec.version
 	}
+
+	async invoke(
+		config: Readonly<SchemaType<ConfigSchema>>,
+		contextData: ActionInvokeContextData,
+		abortSignal: AbortSignal
+	) {
+		if (abortSignal.aborted) return
+
+		return await this.spec.invoke(config, contextData, abortSignal)
+	}
 }
 
 export function defineAction<
-	Config extends SchemaObjectBase,
-	Result extends SchemaObjectBase | void = void
->(spec: ActionDefinitionSpec<Config, Result>) {
-	return new ActionDefinition<Config, Result>({
+	ConfigSchema extends Schema,
+	ResultSchema extends Schema | undefined
+>(spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>) {
+	return new ActionDefinition<ConfigSchema, ResultSchema>({
 		icon: "mdi-pencil",
 		color: "#f0f0f0",
 		version: "0.0.0",

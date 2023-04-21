@@ -11,6 +11,14 @@ interface ActionInfo {
 	config: any
 }
 
+interface SubFlow extends SequenceActions {
+	config: any
+}
+
+interface FlowAction extends ActionInfo {
+	subFlows: SubFlow[]
+}
+
 interface InstantAction extends ActionInfo {}
 
 interface TimeAction extends ActionInfo {
@@ -23,7 +31,7 @@ interface ActionStack {
 }
 
 interface SequenceActions {
-	actions: (InstantAction | TimeAction | ActionStack)[]
+	actions: (InstantAction | TimeAction | ActionStack | FlowAction)[]
 }
 
 interface OffsetActions extends SequenceActions {

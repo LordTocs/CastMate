@@ -19,3 +19,5 @@ export function Service<ConstructorType extends new (...args: any[]) => any>(
 		}
 	}
 }
+
+///
