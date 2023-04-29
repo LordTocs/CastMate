@@ -67,11 +67,13 @@ export const usePluginStore = defineStore("plugins", () => {
 	const getRootState = useIpc("state", "getRootState")
 
 	async function init() {
+		console.log("Initing Plugin Store")
 		plugins.value = { castmate: builtInPlugin, ...(await getPlugins()) }
 
 		rootState.value = await getRootState()
 
 		//TODO: Do invidiual updates so we don't cause an invalidation on the WHOLE thing
+		ipcRenderer.removeAllListeners("state_update")
 		ipcRenderer.on("state_update", (event, stateUpdate) => {
 			for (let pluginKey in stateUpdate) {
 				if (!rootState.value[pluginKey]) {
@@ -84,6 +86,7 @@ export const usePluginStore = defineStore("plugins", () => {
 			}
 		})
 
+		ipcRenderer.removeAllListeners("state_removal")
 		ipcRenderer.on("state_removal", (event, removal) => {
 			for (let pluginKey in removal) {
 				if (!rootState.value[pluginKey]) continue
@@ -97,12 +100,18 @@ export const usePluginStore = defineStore("plugins", () => {
 		})
 
 		//TODO: Put this somewhere cooler
+		ipcRenderer.removeAllListeners("play-sound")
 		ipcRenderer.on("play-sound", (event, arg) => {
+			console.log("Playing", arg.source)
 			let audio = new Audio(`file://${arg.source}`)
 			audio.volume = arg.volume
-			audio.addEventListener("canplaythrough", (event) => {
-				audio.play()
-			})
+			audio.addEventListener(
+				"canplaythrough",
+				(event) => {
+					audio.play()
+				},
+				{ once: true }
+			)
 			event.returnValue = true
 		})
 	}
