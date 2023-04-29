@@ -42,6 +42,7 @@ export class PluginManager {
 			"twinkly",
 			"tplink",
 			"govee",
+			"elgato",
 		]
 
 		//Todo: This relative require is weird.

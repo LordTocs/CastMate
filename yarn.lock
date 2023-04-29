@@ -1286,6 +1286,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"array-flatten@npm:^2.1.0":
+  version: 2.1.2
+  resolution: "array-flatten@npm:2.1.2"
+  checksum: e8988aac1fbfcdaae343d08c9a06a6fddd2c6141721eeeea45c3cf523bf4431d29a46602929455ed548c7a3e0769928cdc630405427297e7081bd118fdec9262
+  languageName: node
+  linkType: hard
+
 "array.prototype.map@npm:^1.0.3":
   version: 1.0.5
   resolution: "array.prototype.map@npm:1.0.5"
@@ -1482,6 +1489,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bonjour@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "bonjour@npm:3.5.0"
+  dependencies:
+    array-flatten: ^2.1.0
+    deep-equal: ^1.0.1
+    dns-equal: ^1.0.0
+    dns-txt: ^2.0.2
+    multicast-dns: ^6.0.1
+    multicast-dns-service-types: ^1.1.0
+  checksum: 2cfbe9fa861f4507b5ff3853eeae3ef03a231ede2b7363efedd80880ea3c0576f64416f98056c96e429ed68ff38dc4a70c0583d1eb4dab72e491ca44a0f03444
+  languageName: node
+  linkType: hard
+
 "boolbase@npm:^1.0.0":
   version: 1.0.0
   resolution: "boolbase@npm:1.0.0"
@@ -1557,6 +1578,13 @@ __metadata:
   version: 1.1.2
   resolution: "buffer-from@npm:1.1.2"
   checksum: 0448524a562b37d4d7ed9efd91685a5b77a50672c556ea254ac9a6d30e3403a517d8981f10e565db24e8339413b43c97ca2951f10e399c6125a0d8911f5679bb
+  languageName: node
+  linkType: hard
+
+"buffer-indexof@npm:^1.0.0":
+  version: 1.1.1
+  resolution: "buffer-indexof@npm:1.1.1"
+  checksum: 0967abc2981a8e7d776324c6b84811e4d84a7ead89b54a3bb8791437f0c4751afd060406b06db90a436f1cf771867331b5ecf5c4aca95b4ccb9f6cb146c22ebc
   languageName: node
   linkType: hard
 
@@ -1753,6 +1781,7 @@ __metadata:
     axios: ^0.27.2
     bad-words: ^3.0.4
     body-parser: ^1.19.0
+    bonjour: ^3.5.0
     chromatism2: ^3.0.2
     color: ^4.0.2
     cs-gamestate: ^2.2.3
@@ -2173,6 +2202,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deep-equal@npm:^1.0.1":
+  version: 1.1.1
+  resolution: "deep-equal@npm:1.1.1"
+  dependencies:
+    is-arguments: ^1.0.4
+    is-date-object: ^1.0.1
+    is-regex: ^1.0.4
+    object-is: ^1.0.1
+    object-keys: ^1.1.1
+    regexp.prototype.flags: ^1.2.0
+  checksum: f92686f2c5bcdf714a75a5fa7a9e47cb374a8ec9307e717b8d1ce61f56a75aaebf5619c2a12b8087a705b5a2f60d0292c35f8b58cb1f72e3268a3a15cab9f78d
+  languageName: node
+  linkType: hard
+
 "deep-is@npm:^0.1.3":
   version: 0.1.4
   resolution: "deep-is@npm:0.1.4"
@@ -2201,6 +2244,16 @@ __metadata:
     has-property-descriptors: ^1.0.0
     object-keys: ^1.1.1
   checksum: ce0aef3f9eb193562b5cfb79b2d2c86b6a109dfc9fdcb5f45d680631a1a908c06824ddcdb72b7573b54e26ace07f0a23420aaba0d5c627b34d2c1de8ef527e2b
+  languageName: node
+  linkType: hard
+
+"define-properties@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "define-properties@npm:1.2.0"
+  dependencies:
+    has-property-descriptors: ^1.0.0
+    object-keys: ^1.1.1
+  checksum: e60aee6a19b102df4e2b1f301816804e81ab48bb91f00d0d935f269bf4b3f79c88b39e4f89eaa132890d23267335fd1140dfcd8d5ccd61031a0a2c41a54e33a6
   languageName: node
   linkType: hard
 
@@ -2320,6 +2373,32 @@ __metadata:
   bin:
     dmg-license: bin/dmg-license.js
   conditions: os=darwin
+  languageName: node
+  linkType: hard
+
+"dns-equal@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "dns-equal@npm:1.0.0"
+  checksum: a8471ac849c7c13824f053babea1bc26e2f359394dd5a460f8340d8abd13434be01e3327a5c59d212f8c8997817450efd3f3ac77bec709b21979cf0235644524
+  languageName: node
+  linkType: hard
+
+"dns-packet@npm:^1.3.1":
+  version: 1.3.4
+  resolution: "dns-packet@npm:1.3.4"
+  dependencies:
+    ip: ^1.1.0
+    safe-buffer: ^5.0.1
+  checksum: 7dd87f85cb4f9d1a99c03470730e3d9385e67dc94f6c13868c4034424a5378631e492f9f1fbc43d3c42f319fbbfe18b6488bb9527c32d34692c52bf1f5eedf69
+  languageName: node
+  linkType: hard
+
+"dns-txt@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "dns-txt@npm:2.0.2"
+  dependencies:
+    buffer-indexof: ^1.0.0
+  checksum: 80130b665379ecd991687ae079fbee25d091e03e4c4cef41e7643b977849ac48c2f56bfcb3727e53594d29029b833749811110d9f3fbee1b26a6e6f8096a5cef
   languageName: node
   linkType: hard
 
@@ -3484,7 +3563,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"functions-have-names@npm:^1.2.2":
+"functions-have-names@npm:^1.2.2, functions-have-names@npm:^1.2.3":
   version: 1.2.3
   resolution: "functions-have-names@npm:1.2.3"
   checksum: c3f1f5ba20f4e962efb71344ce0a40722163e85bee2101ce25f88214e78182d2d2476aa85ef37950c579eb6cf6ee811c17b3101bb84004bb75655f3e33f3fdb5
@@ -3964,6 +4043,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ip@npm:^1.1.0":
+  version: 1.1.8
+  resolution: "ip@npm:1.1.8"
+  checksum: a2ade53eb339fb0cbe9e69a44caab10d6e3784662285eb5d2677117ee4facc33a64679051c35e0dfdb1a3983a51ce2f5d2cb36446d52e10d01881789b76e28fb
+  languageName: node
+  linkType: hard
+
 "ip@npm:^2.0.0":
   version: 2.0.0
   resolution: "ip@npm:2.0.0"
@@ -3994,7 +4080,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-arguments@npm:^1.1.0":
+"is-arguments@npm:^1.0.4, is-arguments@npm:^1.1.0":
   version: 1.1.1
   resolution: "is-arguments@npm:1.1.1"
   dependencies:
@@ -4142,7 +4228,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-regex@npm:^1.1.4":
+"is-regex@npm:^1.0.4, is-regex@npm:^1.1.4":
   version: 1.1.4
   resolution: "is-regex@npm:1.1.4"
   dependencies:
@@ -4893,6 +4979,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"multicast-dns-service-types@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "multicast-dns-service-types@npm:1.1.0"
+  checksum: 0979fca1cce85484d256e4db3af591d941b41a61f134da3607213d2624c12ed5b8a246565cb19a9b3cb542819e8fbc71a90b07e77023ee6a9515540fe1d371f7
+  languageName: node
+  linkType: hard
+
+"multicast-dns@npm:^6.0.1":
+  version: 6.2.3
+  resolution: "multicast-dns@npm:6.2.3"
+  dependencies:
+    dns-packet: ^1.3.1
+    thunky: ^1.0.2
+  bin:
+    multicast-dns: cli.js
+  checksum: f515b49ca964429ab48a4ac8041fcf969c927aeb49ab65288bd982e52c849a870fc3b03565780b0d194a1a02da8821f28b6425e48e95b8107bc9fcc92f571a6f
+  languageName: node
+  linkType: hard
+
 "nanoid@npm:^3.3.4":
   version: 3.3.4
   resolution: "nanoid@npm:3.3.4"
@@ -5086,6 +5191,16 @@ __metadata:
   version: 1.12.2
   resolution: "object-inspect@npm:1.12.2"
   checksum: a534fc1b8534284ed71f25ce3a496013b7ea030f3d1b77118f6b7b1713829262be9e6243acbcb3ef8c626e2b64186112cb7f6db74e37b2789b9c789ca23048b2
+  languageName: node
+  linkType: hard
+
+"object-is@npm:^1.0.1":
+  version: 1.1.5
+  resolution: "object-is@npm:1.1.5"
+  dependencies:
+    call-bind: ^1.0.2
+    define-properties: ^1.1.3
+  checksum: 989b18c4cba258a6b74dc1d74a41805c1a1425bce29f6cabb50dcb1a6a651ea9104a1b07046739a49a5bb1bc49727bcb00efd5c55f932f6ea04ec8927a7901fe
   languageName: node
   linkType: hard
 
@@ -5666,6 +5781,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"regexp.prototype.flags@npm:^1.2.0":
+  version: 1.5.0
+  resolution: "regexp.prototype.flags@npm:1.5.0"
+  dependencies:
+    call-bind: ^1.0.2
+    define-properties: ^1.2.0
+    functions-have-names: ^1.2.3
+  checksum: c541687cdbdfff1b9a07f6e44879f82c66bbf07665f9a7544c5fd16acdb3ec8d1436caab01662d2fbcad403f3499d49ab0b77fbc7ef29ef961d98cc4bc9755b4
+  languageName: node
+  linkType: hard
+
 "regexp.prototype.flags@npm:^1.4.3":
   version: 1.4.3
   resolution: "regexp.prototype.flags@npm:1.4.3"
@@ -5809,7 +5935,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-buffer@npm:5.2.1, safe-buffer@npm:~5.2.0":
+"safe-buffer@npm:5.2.1, safe-buffer@npm:^5.0.1, safe-buffer@npm:~5.2.0":
   version: 5.2.1
   resolution: "safe-buffer@npm:5.2.1"
   checksum: b99c4b41fdd67a6aaf280fcd05e9ffb0813654894223afb78a31f14a19ad220bba8aba1cb14eddce1fcfb037155fe6de4e861784eb434f7d11ed58d1e70dd491
@@ -6330,6 +6456,13 @@ __metadata:
     lodash: ^4.17.11
     mime-types: ^2.1.20
   checksum: 68bae956be6f0e123b539c4f968f7714442d19b9d6b7b0fbac62a429be95e4555eb7febba36ddc5a208f43ea42c8eb24a545055d8cadae224d07635bef92538c
+  languageName: node
+  linkType: hard
+
+"thunky@npm:^1.0.2":
+  version: 1.1.0
+  resolution: "thunky@npm:1.1.0"
+  checksum: 993096c472b6b8f30e29dc777a8d17720e4cab448375041f20c0cb802a09a7fb2217f2a3e8cdc11851faa71c957e2db309357367fc9d7af3cb7a4d00f4b66034
   languageName: node
   linkType: hard
 
