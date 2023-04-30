@@ -108,7 +108,6 @@ class ElgatoIoTProvider extends IoTProvider {
 	}
 
 	async initServices() {
-		console.log("ELGATO INIT")
 		this.keylightBrowser = this.bonjour.find({ type: "elg" })
 		this.keylightBrowser.on("up", async (service) => {
 			const light = new ElgatoKeyLight(service)
