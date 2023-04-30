@@ -90,6 +90,18 @@ export class IoTProvider {
 		await this._manager.lights.deleteMany(lights.map((l) => l.id))
 		await this._manager.plugs.deleteMany(plugs.map((p) => p.id))
 	}
+
+	get lights() {
+		return this._manager.lights.resources.filter(
+			(l) => l.config.plugin == this._pluginName
+		)
+	}
+
+	get plugs() {
+		return this._manager.plugs.resources.filter(
+			(l) => l.config.plugin == this._pluginName
+		)
+	}
 }
 
 let iotManager = null

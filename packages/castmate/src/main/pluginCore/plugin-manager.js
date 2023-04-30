@@ -41,6 +41,8 @@ export class PluginManager {
 			"hue",
 			"twinkly",
 			"tplink",
+			"govee",
+			"elgato",
 		]
 
 		//Todo: This relative require is weird.
