@@ -141,6 +141,7 @@ async function createBrowserSource(name) {
 	})
 
 	browserSourceName.value = name
+	valid.value = true
 }
 
 const nameModal = ref(null)
