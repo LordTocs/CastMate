@@ -29,6 +29,7 @@ export default defineConfig({
 						alias: {
 							"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
 						},
+						preserveSymlinks: true,
 					},
 					build: {
 						// target: 'node16.15',
@@ -61,6 +62,7 @@ export default defineConfig({
 		alias: {
 			"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
 		},
+		preserveSymlinks: true,
 	},
 	build: {
 		outDir: path.join(dist, "electron/renderer"),

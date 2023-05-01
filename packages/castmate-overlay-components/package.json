@@ -2,7 +2,12 @@
 	"name": "castmate-overlay-components",
 	"version": "0.0.1",
 	"description": "",
-	"main": "src/widgetLoader.js",
+	"exports": {
+		".": {
+			"import": "./dist/overlay-components/castmate-overlay-components.mjs",
+			"require": "./dist/overlay-components/castmate-overlay-components.umd.js"
+		}
+	},
 	"devMain": "src/widgetLoader.js",
 	"scripts": {
 		"build:test": "vite build --mode production"

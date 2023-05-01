@@ -22,7 +22,7 @@ class ElgatoKeyLight extends Light {
 		super()
 
 		const ip = service.referer.address
-		const port = 9123 //service.referer.port //For somereason you don't use the port in bonjour
+		const port = service.port
 		this.axios = axios.create({
 			baseURL: `http://${ip}:${port}/elgato`,
 		})
@@ -108,13 +108,19 @@ class ElgatoIoTProvider extends IoTProvider {
 	}
 
 	async initServices() {
-		this.keylightBrowser = this.bonjour.find({ type: "elg" })
-		this.keylightBrowser.on("up", async (service) => {
-			const light = new ElgatoKeyLight(service)
-			await light.init()
+		this.keylightBrowser = this.bonjour.find(
+			{ type: "elg" },
+			async (service) => {
+				const light = new ElgatoKeyLight(service)
+				try {
+					await light.init()
 
-			this._addNewLight(light)
-		})
+					await this._addNewLight(light)
+				} catch (err) {
+					console.error(err)
+				}
+			}
+		)
 	}
 
 	async loadPlugs() {

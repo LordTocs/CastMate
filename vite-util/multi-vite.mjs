@@ -99,7 +99,7 @@ async function servePackageSpawn(config, name) {
 }
 
 async function build() {
-	//await buildPackageSpawn("castmate-overlay-components")
+	await buildPackageSpawn("castmate-overlay-components")
 	await buildPackageSpawn("castmate-obs-overlay")
 	await buildPackageSpawn("castmate")
 }

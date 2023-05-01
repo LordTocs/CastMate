@@ -8,15 +8,18 @@ const dist = path.join(dirname, "dist")
 
 export default defineConfig({
 	plugins: [vue()],
+	resolve: {
+		preserveSymlinks: true,
+	},
 	build: {
 		outDir: path.join(dist, "overlay-components"),
 		lib: {
-			entry: path.resolve(dirname, "./src/widgetLoader.js"),
+			entry: "src/widgetLoader.js",
 			name: "CastMateOverlayComponents",
 			fileName: "castmate-overlay-components",
 		},
 		rollupOptions: {
-			external: ["vue"],
+			external: ["vue", "path"],
 			output: {
 				// Provide global variables to use in the UMD build
 				// for externalized deps

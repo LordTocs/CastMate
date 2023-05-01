@@ -109,8 +109,10 @@ export class Resource {
 	}
 
 	async inject(newResource) {
-		if (!newResource) return
-
+		if (!newResource) {
+			console.log("Failed Injecting Resource", newResource)
+			return
+		}
 		this._setupReactivity(newResource)
 
 		this.resources.push(newResource)
