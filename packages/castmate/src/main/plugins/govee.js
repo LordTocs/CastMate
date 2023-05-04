@@ -231,16 +231,21 @@ class GoveeIoTProvider extends IoTProvider {
 	constructor(pluginObj) {
 		super("govee")
 		this.pluginObj = pluginObj
-		this.cloudClient = new GoveeCloud({
-			apiKey: API_KEY,
-			mac: "",
-			model: "",
-		})
 	}
 
 	startPolling() {
+		if (!this.pluginObj.secrets.goveeCloudKey) {
+			return
+		}
+
+		this.cloudClient = new GoveeCloud({
+			apiKey: this.pluginObj.secrets.goveeCloudKey,
+			mac: "",
+			model: "",
+		})
+
 		this.poll()
-		setInterval(() => {
+		this.pollingInterval = setInterval(() => {
 			this.poll()
 		}, 30 * 1000)
 	}
@@ -284,6 +289,18 @@ class GoveeIoTProvider extends IoTProvider {
 		})
 	}
 
+	async reset() {
+		if (this.pollingInterval) {
+			clearInterval(this.pollingInterval)
+		}
+		await this.clearResources()
+	}
+
+	async secretsChanged() {
+		await this.reset()
+		this.startPolling()
+	}
+
 	async initServices() {
 		this.startPolling()
 	}
@@ -304,5 +321,11 @@ export default {
 	color: "#7F743F",
 	async init() {
 		this.iotProvider = new GoveeIoTProvider(this)
+	},
+	async onSecretsReload() {
+		this.iotProvider.secretsChanged()
+	},
+	secrets: {
+		goveeCloudKey: { type: String, name: "Govee Cloud API Key" },
 	},
 }
