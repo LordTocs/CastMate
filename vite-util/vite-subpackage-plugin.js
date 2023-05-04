@@ -14,15 +14,12 @@ export function subpackage(name) {
 			config(config, { command }) {
 				if (command == "build") return
 
-				const alias = {}
-
-				alias[name] = entry
 				console.log("Aliasing", name, "to", entry)
 
 				if (!config.resolve) config.resolve = {}
-				if (!config.resolve.alias) config.resolve.alias = {}
+				if (!config.resolve.alias) config.resolve.alias = []
 
-				Object.assign(config.resolve.alias, alias)
+				config.resolve.alias.push({ find: name, replacement: entry })
 			},
 		},
 	]
