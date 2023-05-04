@@ -2,16 +2,18 @@ import vue from "@vitejs/plugin-vue"
 import { defineConfig } from "vite"
 import path from "path"
 import { fileURLToPath } from "node:url"
+import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const dist = path.join(dirname, "dist")
 
 export default defineConfig({
-	plugins: [vue()],
+	plugins: [vue(), cssInjectedByJsPlugin()],
 	resolve: {
 		preserveSymlinks: true,
 	},
 	build: {
+		minify: false,
 		outDir: path.join(dist, "overlay-components"),
 		lib: {
 			entry: "src/widgetLoader.js",

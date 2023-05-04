@@ -3,94 +3,94 @@ import path, { resolve } from "path"
 import { rmSync } from "fs"
 import vue from "@vitejs/plugin-vue"
 import electron from "vite-plugin-electron"
+import renderer from "vite-plugin-electron-renderer"
 import vuetify from "vite-plugin-vuetify"
 import { fileURLToPath } from "node:url"
 import { nodeResolve } from "@rollup/plugin-node-resolve"
-
 import { subpackage } from "../../vite-util/vite-subpackage-plugin"
+import pkg from "./package.json"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const dist = path.join(dirname, "dist")
 
-rmSync("dist", { recursive: true, force: true }) // v14.14.0
+export default defineConfig(({ command }) => {
+	rmSync("dist", { recursive: true, force: true }) // v14.14.0
 
-export default defineConfig({
-	plugins: [
-		vue(),
-		vuetify({
-			autoImport: true,
-		}),
-		electron({
-			main: {
+	const isServe = command === "serve"
+	const isBuild = command === "build"
+	const sourcemap = isServe || !!process.env.VSCODE_DEBUG
+
+	const additionalExternals = ["ref-napi", "ref-struct-di", "fluent-ffmpeg"]
+	return {
+		plugins: [
+			vue(),
+			vuetify({
+				autoImport: true,
+			}),
+			electron({
 				entry: "src/main/backgroundLoader.cjs",
-				vite: withDebug({
+				onstart(options) {
+					if (process.env.VSCODE_DEBUG) {
+						console.log("[startup] Electron App") //See the vscode debug script.
+					} else {
+						options.startup()
+					}
+				},
+				vite: {
 					plugins: [nodeResolve(["node"])],
 					resolve: {
 						alias: {
-							"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
+							"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg",
 						},
 						preserveSymlinks: true,
 					},
 					build: {
-						// target: 'node16.15',
+						minify: false,
 						outDir: path.join(dist, "electron/main"),
 						rollupOptions: {
-							// format: 'cjs',
 							external: [
-								"public-ip",
-								"ffi-napi",
-								"ref-napi",
-								"ref-struct-di",
-								"win32-api",
-								"obs-websocket-js",
-								"ws",
-								"fluent-ffmpeg",
+								...Object.keys(
+									"dependencies" in pkg
+										? pkg.dependencies
+										: {}
+								),
+								...additionalExternals,
 							],
 						},
 					},
-				}),
-			},
-			renderer: {
-				resolve() {
-					return ["fs", "path", "fluent-ffmpeg"]
 				},
+			}),
+			renderer({
+				resolve: {
+					fs: { type: "cjs" },
+					path: { type: "cjs" },
+					"fluent-ffmpeg": { type: "cjs" },
+				},
+			}),
+			subpackage("castmate-overlay-components"),
+		],
+		resolve: {
+			alias: {
+				"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg",
 			},
-		}),
-		subpackage("castmate-overlay-components"),
-	],
-	resolve: {
-		alias: {
-			"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
+			preserveSymlinks: true,
 		},
-		preserveSymlinks: true,
-	},
-	build: {
-		outDir: path.join(dist, "electron/renderer"),
-		minify: false,
-		rollupOptions: {
-			input: {
-				main: resolve(dirname, "index.html"),
-				updater: resolve(dirname, "updater.html"),
-			},
-			external: ["fluent-ffmpeg"],
+		esbuild: {
+			minifyIdentifiers: false,
 		},
-	},
-})
-
-function withDebug(config) {
-	if (process.env.VSCODE_DEBUG) {
-		if (!config.build) config.build = {}
-		config.build.sourcemap = true
-		config.plugins = (config.plugins || []).concat({
-			name: "electron-vite-debug",
-			configResolved(config) {
-				const index = config.plugins.findIndex(
-					(p) => p.name === "electron-main-watcher"
-				)
-				// At present, Vite can only modify plugins in configResolved hook.
-				config.plugins.splice(index, 1)
+		build: {
+			outDir: path.join(dist, "electron/renderer"),
+			minify: false,
+			rollupOptions: {
+				input: {
+					main: resolve(dirname, "index.html"),
+					updater: resolve(dirname, "updater.html"),
+				},
+				external: ["fluent-ffmpeg"],
 			},
-		})
+			commonjsOptions: {
+				esmExternals: true,
+			},
+		},
 	}
-	return config
-}
+})

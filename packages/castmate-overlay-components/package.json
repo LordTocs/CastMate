@@ -20,5 +20,8 @@
 		"matter-js": "^0.18.0",
 		"nanoid": "^4.0.0",
 		"vue": "^3.2.37"
+	},
+	"devDependencies": {
+		"vite-plugin-css-injected-by-js": "^3.1.0"
 	}
 }

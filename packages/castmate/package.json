@@ -8,9 +8,6 @@
 		"electron:buildpublish": "electron-builder --config electron-builder-config.cjs --publish always"
 	},
 	"main": "dist/electron/main/backgroundLoader.js",
-	"engines": {
-		"node": "^14.18.0 || >=16.0.0"
-	},
 	"electronVersion": "20.0.1",
 	"dependencies": {
 		"@j3lte/govee-lan-controller": "^1.0.1",
@@ -20,7 +17,6 @@
 		"@twurple/chat": "^6.2.0",
 		"@twurple/eventsub-ws": "^6.2.0",
 		"@twurple/pubsub": "^6.2.0",
-		"@vueuse/core": "^9.13.0",
 		"async-mutex": "^0.3.0",
 		"axios": "^0.27.2",
 		"bad-words": "^3.0.4",
@@ -60,20 +56,21 @@
 	"devDependencies": {
 		"@mdi/font": "^7.1.96",
 		"@rollup/plugin-node-resolve": "^13.3.0",
-		"@vitejs/plugin-vue": "^3.0.3",
+		"@vitejs/plugin-vue": "^4.2.1",
+		"@vueuse/core": "^9.13.0",
 		"castmate-overlay-components": "^0.0.1",
 		"electron": "20.0.1",
 		"electron-builder": "^23.3.3",
 		"electron-devtools-installer": "^3.2.0",
 		"eslint": "^8.17.0",
-		"vite-plugin-electron": "^0.9.0",
-		"vite-plugin-electron-renderer": "^0.9.0",
-		"vite-plugin-vuetify": "^1.0.0-alpha.12",
+		"vite-plugin-electron": "^0.11.2",
+		"vite-plugin-electron-renderer": "^0.14.1",
+		"vite-plugin-vuetify": "^1.0.2",
 		"vue": "^3.2.37",
 		"vue-mixpanel": "^2.0.0",
 		"vue-router": "^4.0.16",
 		"vuedraggable": "^4.1.0",
-		"vuetify": "^3.1.4"
+		"vuetify": "^3.2.1"
 	},
 	"browserslist": [
 		"> 1%",

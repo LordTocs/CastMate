@@ -1073,13 +1073,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^3.0.3":
-  version: 3.2.0
-  resolution: "@vitejs/plugin-vue@npm:3.2.0"
+"@vitejs/plugin-vue@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "@vitejs/plugin-vue@npm:4.2.1"
   peerDependencies:
-    vite: ^3.0.0
+    vite: ^4.0.0
     vue: ^3.2.25
-  checksum: 64774f770e0e21ce7eb36743d614e3f197a35f5b67b2d3800c61766e649f43dc497bb037738ffafd607eb488064ab132c23766190e7ab557a0b88c0051f7a794
+  checksum: a7266a45378d5fd7813699cf97dfac0e313dc63bd245a1c932848b2b5dc58aede922231d5a534baeeb7e2842c7172f17194a4833bd6a7a6ed61dc0a31d60c7c9
   languageName: node
   linkType: hard
 
@@ -1202,16 +1202,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vuetify/loader-shared@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "@vuetify/loader-shared@npm:1.7.0"
+"@vuetify/loader-shared@npm:^1.7.1":
+  version: 1.7.1
+  resolution: "@vuetify/loader-shared@npm:1.7.1"
   dependencies:
     find-cache-dir: ^3.3.2
     upath: ^2.0.1
   peerDependencies:
     vue: ^3.0.0
     vuetify: ^3.0.0-beta.4
-  checksum: 986dae84049c5ffebd6f00a70463a10785beaf9c6d13b8ad7c5a22a5fb243b64b06937bcd18f35fa681dfa0a0197c71cc32e9c7f52cc6a45094ca6a814135dc1
+  checksum: 5777955e593afbb947c8be28a8625021846901e16ab982edfbbb74d9beb15f95490390ab1b0c6ec47e8b05389547eb69c79173cca04389f0203795071bb04994
   languageName: node
   linkType: hard
 
@@ -1898,6 +1898,7 @@ __metadata:
     emoji-toolkit: ^7.0.0
     matter-js: ^0.18.0
     nanoid: ^4.0.0
+    vite-plugin-css-injected-by-js: ^3.1.0
     vue: ^3.2.37
   languageName: unknown
   linkType: soft
@@ -1915,13 +1916,14 @@ __metadata:
     "@twurple/chat": ^6.2.0
     "@twurple/eventsub-ws": ^6.2.0
     "@twurple/pubsub": ^6.2.0
-    "@vitejs/plugin-vue": ^3.0.3
+    "@vitejs/plugin-vue": ^4.2.1
     "@vueuse/core": ^9.13.0
     async-mutex: ^0.3.0
     axios: ^0.27.2
     bad-words: ^3.0.4
     body-parser: ^1.19.0
     bonjour: ^3.5.0
+    castmate-overlay-components: ^0.0.1
     chromatism2: ^3.0.2
     color: ^4.0.2
     cs-gamestate: ^2.2.3
@@ -1952,14 +1954,14 @@ __metadata:
     say: ^0.16.0
     thumbsupply: ^0.4.0
     tplink-smarthome-api: ^4.2.0
-    vite-plugin-electron: ^0.9.0
-    vite-plugin-electron-renderer: ^0.9.0
-    vite-plugin-vuetify: ^1.0.0-alpha.12
+    vite-plugin-electron: ^0.11.2
+    vite-plugin-electron-renderer: ^0.14.1
+    vite-plugin-vuetify: ^1.0.2
     vue: ^3.2.37
     vue-mixpanel: ^2.0.0
     vue-router: ^4.0.16
     vuedraggable: ^4.1.0
-    vuetify: ^3.1.4
+    vuetify: ^3.2.1
     win32-api: ^19.8.1
     winston: ^3.3.3
     ws: ^8.2.3
@@ -4518,6 +4520,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lib-esm@npm:~0.3.0":
+  version: 0.3.0
+  resolution: "lib-esm@npm:0.3.0"
+  checksum: 9abd931570c3984b34b5965ce55181312ff35533834390cef65c24b3a1f0170d2e14c9c50f3b3e28914d85db199baf7e00a1408f2730061035a7ac949da5c1fa
+  languageName: node
+  linkType: hard
+
 "lie@npm:~3.3.0":
   version: 3.3.0
   resolution: "lie@npm:3.3.0"
@@ -6795,19 +6804,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-electron-renderer@npm:0.9.3, vite-plugin-electron-renderer@npm:^0.9.0":
-  version: 0.9.3
-  resolution: "vite-plugin-electron-renderer@npm:0.9.3"
-  checksum: 2337cac3afb4b1e6a921f869bef1ed6dcd28e1f8346ac2bcbcbc7a938c67c9cc9103b44b4dad10d7936244bff727dbf6e7e730d1f11a27755ed6571b2a598d03
+"vite-plugin-css-injected-by-js@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "vite-plugin-css-injected-by-js@npm:3.1.0"
+  peerDependencies:
+    vite: ">2.0.0-0"
+  checksum: 2f48b23a52d2c7e4d4a172107406e788bac5132c7b9650ab6e8f1906ed8c60fd4ff82b49f7e073233c348590d3a390173d482000faec8d2fee60e2bc915c5388
   languageName: node
   linkType: hard
 
-"vite-plugin-electron@npm:^0.9.0":
-  version: 0.9.3
-  resolution: "vite-plugin-electron@npm:0.9.3"
+"vite-plugin-electron-renderer@npm:^0.14.1":
+  version: 0.14.1
+  resolution: "vite-plugin-electron-renderer@npm:0.14.1"
   dependencies:
-    vite-plugin-electron-renderer: 0.9.3
-  checksum: fd01c2a2a399eb68e57bb3bfb6dd822b976bf011c5f49dac30f23bbe1d6801c30bdf1a34c730686d7f4942942099df936ff1cbd1776a629a07d5d6fe4c997d80
+    lib-esm: ~0.3.0
+  checksum: 45c4cdcb8179bac824fc2116f110880904a5f8be850ed7f1e88af530296197512860b4a6cee0c49854ade73616f287fc205ec812c0aa4eba5f5ac931c05da890
+  languageName: node
+  linkType: hard
+
+"vite-plugin-electron@npm:^0.11.2":
+  version: 0.11.2
+  resolution: "vite-plugin-electron@npm:0.11.2"
+  checksum: 541b818023bd7ba851e3bafb1cf55008758f73ec46df90355be80111749e800c7992a366b8298369c39f9b8f0f5466ea5b536f7e80f3b6564c56b8ffcb99e0fd
   languageName: node
   linkType: hard
 
@@ -6841,17 +6859,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-vuetify@npm:^1.0.0-alpha.12":
-  version: 1.0.0
-  resolution: "vite-plugin-vuetify@npm:1.0.0"
+"vite-plugin-vuetify@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "vite-plugin-vuetify@npm:1.0.2"
   dependencies:
-    "@vuetify/loader-shared": ^1.7.0
+    "@vuetify/loader-shared": ^1.7.1
     debug: ^4.3.3
     upath: ^2.0.1
   peerDependencies:
-    vite: ^2.7.0 || ^3.0.0
+    vite: ^2.7.0 || ^3.0.0 || ^4.0.0
     vuetify: ^3.0.0-beta.4
-  checksum: 3b179aa1314ece8e798aa5760309f967bced3e30b653699be20bf25226bdcf5befc5159dc9ce343ccd46ea7c9dcda7bad62418cd6d5cf2cd14bf0c1912d84c7c
+  checksum: 262759ee5bb364fac453c71a2523bf4476421d50c4c80e0a54569e7a7c0dc12fe70ccd890ebfed19adb3d37e9f2b82b7691e99bfea0e01b32f1493a9d76d942f
   languageName: node
   linkType: hard
 
@@ -6969,9 +6987,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vuetify@npm:^3.1.4":
-  version: 3.1.4
-  resolution: "vuetify@npm:3.1.4"
+"vuetify@npm:^3.2.1":
+  version: 3.2.1
+  resolution: "vuetify@npm:3.2.1"
   peerDependencies:
     vite-plugin-vuetify: ^1.0.0-alpha.12
     vue: ^3.2.0
@@ -6984,7 +7002,7 @@ __metadata:
       optional: true
     webpack-plugin-vuetify:
       optional: true
-  checksum: 2ff93e0467204006b6466a5d43a9017810b2c69ff0bb597886d1a5445722e5339ab9d6247ee1202478ac4b92b4110428171e3aa5d737ecc50ec82053305f2421
+  checksum: d3a9fe11a4ba82a01166b99d6c3484edfea28d3d61a1611d0ac49995c6f80876228ec1af3d7214bb7ee5beda0a9c333a59191b5a4c06b322b2ec904a9c7bd18c
   languageName: node
   linkType: hard
 

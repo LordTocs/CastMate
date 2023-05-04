@@ -5,34 +5,6 @@ import { IoTProvider, Light, Plug } from "../iot/iot-manager"
 import { reactify } from "../state/reactive"
 import * as chromatism from "chromatism2"
 
-const API_KEY = "3639a3fb-3e47-4f94-a7c9-beafa2d7f0c8" //Secret? Not Secret? Hello?
-
-/* from docs
-"devices": [
-    {
-        "device": "99:E5:A4:C1:38:29:DA:7B",
-        "model": "H6159",
-        "deviceName": "test light",
-        "controllable": true,
-        "retrievable": true,
-        "supportCmds": [
-            "turn",
-            "brightness",
-            "color",
-            "colorTem"
-        ],
-        "properties": {
-            "colorTem": {
-                "range": {
-                    "min": 2000,
-                    "max": 9000
-                }
-            }
-        }
-    },
-]
-*/
-
 class GoveeBulb extends Light {
 	constructor(cloudDesc) {
 		super()
