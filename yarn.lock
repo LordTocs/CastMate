@@ -639,13 +639,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@peter-murray/hue-bridge-model@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@peter-murray/hue-bridge-model@npm:2.0.4"
-  checksum: 08948cc6fe2f9ffeed551dc687e9a76197d6e8b42c5fe7d50e6da45b0c9dd04fd94f0232b8dfdd437ae64df052352e6812518f28cd67d6d8e1ad81e9b491d8b3
-  languageName: node
-  linkType: hard
-
 "@polka/url@npm:^1.0.0-next.20":
   version: 1.0.0-next.21
   resolution: "@polka/url@npm:1.0.0-next.21"
@@ -1909,7 +1902,6 @@ __metadata:
   dependencies:
     "@j3lte/govee-lan-controller": ^1.0.1
     "@mdi/font": ^7.1.96
-    "@peter-murray/hue-bridge-model": ^2.0.4
     "@rollup/plugin-node-resolve": ^13.3.0
     "@twurple/api": ^6.2.0
     "@twurple/auth": ^6.2.0

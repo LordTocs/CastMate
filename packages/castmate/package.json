@@ -11,7 +11,6 @@
 	"electronVersion": "20.0.1",
 	"dependencies": {
 		"@j3lte/govee-lan-controller": "^1.0.1",
-		"@peter-murray/hue-bridge-model": "^2.0.4",
 		"@twurple/api": "^6.2.0",
 		"@twurple/auth": "^6.2.0",
 		"@twurple/chat": "^6.2.0",
@@ -34,7 +33,6 @@
 		"fs-extra": "^11.1.0",
 		"http-proxy": "^1.18.1",
 		"lodash": "^4.17.21",
-		"maska": "^1.5.0",
 		"mixpanel": "^0.16.0",
 		"ms-speech-api": "^0.0.1",
 		"nanoid": "^4.0.0",
@@ -63,6 +61,7 @@
 		"electron-builder": "^23.3.3",
 		"electron-devtools-installer": "^3.2.0",
 		"eslint": "^8.17.0",
+		"maska": "^1.5.0",
 		"vite-plugin-electron": "^0.11.2",
 		"vite-plugin-electron-renderer": "^0.14.1",
 		"vite-plugin-vuetify": "^1.0.2",
