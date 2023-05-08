@@ -113,6 +113,7 @@ class ElgatoIoTProvider extends IoTProvider {
 			async (service) => {
 				const light = new ElgatoKeyLight(service)
 				try {
+					//console.log("Elgato Light!")
 					await light.init()
 
 					await this._addNewLight(light)

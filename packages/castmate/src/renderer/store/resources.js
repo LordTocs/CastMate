@@ -16,6 +16,7 @@ export const useResourceStore = defineStore("resources", () => {
 			"resources_updateResourceArray",
 			(event, type, resourceArray) => {
 				resources.value[type] = resourceArray
+				//console.log("Update Resource Array", type, resourceArray)
 			}
 		)
 
