@@ -19,7 +19,14 @@ export function subpackage(name) {
 				if (!config.resolve) config.resolve = {}
 				if (!config.resolve.alias) config.resolve.alias = []
 
-				config.resolve.alias.push({ find: name, replacement: entry })
+				if (Array.isArray(config.resolve.alias)) {
+					config.resolve.alias.push({
+						find: name,
+						replacement: entry,
+					})
+				} else {
+					config.resolve.alias[name] = entry
+				}
 			},
 		},
 	]
