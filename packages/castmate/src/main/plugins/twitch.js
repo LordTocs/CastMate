@@ -2159,7 +2159,7 @@ export default {
 			},
 		},
 		sendAnnoucement: {
-			name: "Annoucement",
+			name: "Make Annoucement",
 			description: "Sends an annoucement in chat",
 			icon: "mdi-chat-alert",
 			color: "#5E5172",
@@ -2284,7 +2284,7 @@ export default {
 			},
 			async handler() {
 				await this.channelTwitchClient.clips.createClip({
-					channelId: this.state.channelId,
+					channel: this.state.channelId,
 				})
 			},
 		},
