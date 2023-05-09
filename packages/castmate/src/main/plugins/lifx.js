@@ -51,7 +51,7 @@ class LIFXBulb extends Light {
 					state.color.sat = data.color.saturation
 				}
 
-				resolve(state.color)
+				resolve(state)
 			})
 		})
 	}
