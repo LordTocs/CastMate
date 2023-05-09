@@ -43,6 +43,7 @@ export class PluginManager {
 			"tplink",
 			"govee",
 			"elgato",
+			"lifx",
 		]
 
 		//Todo: This relative require is weird.

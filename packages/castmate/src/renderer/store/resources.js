@@ -16,6 +16,7 @@ export const useResourceStore = defineStore("resources", () => {
 			"resources_updateResourceArray",
 			(event, type, resourceArray) => {
 				resources.value[type] = resourceArray
+				//console.log("Update Resource Array", type, resourceArray)
 			}
 		)
 
@@ -35,6 +36,13 @@ export const useResourceStore = defineStore("resources", () => {
 			"resources_updateResourceState",
 			(event, type, id, key, value) => {
 				const resourceArray = resources.value[type]
+
+				if (!resourceArray) {
+					console.error(
+						"Updating resource state before the array exists!"
+					)
+					return
+				}
 
 				const idx = resourceArray.findIndex((r) => r.id == id)
 				if (idx != -1) {

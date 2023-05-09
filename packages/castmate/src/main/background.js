@@ -41,7 +41,7 @@ const ROOT_PATH = {
 const iconPath = app.isPackaged ? renderer : "src/renderer/assets/icons"
 
 const preload = path.join(__dirname, "../preload/preload.js")
-const url = `http://${process.env["VITE_DEV_SERVER_HOSTNAME"]}:${process.env["VITE_DEV_SERVER_PORT"]}`
+const url = `http://localhost:5173`
 
 let mainWindow = null
 

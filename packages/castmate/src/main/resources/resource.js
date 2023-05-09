@@ -11,6 +11,7 @@ import logger from "../utils/logger"
 import { Analytics } from "../utils/analytics"
 import _cloneDeep from "lodash/cloneDeep"
 import { isReactive, onAllStateChange } from "../state/reactive"
+import { Mutex } from "async-mutex"
 
 export class Resource {
 	constructor(type, spec) {
@@ -18,6 +19,7 @@ export class Resource {
 		this.resourceType = type
 		type.resourceContainer = this
 		this.resources = []
+		this.resourceMutex = new Mutex()
 
 		this.createIOFuncs()
 
@@ -59,11 +61,13 @@ export class Resource {
 	}
 
 	_triggerUpdate() {
-		callIpcFunc(
-			"resources_updateResourceArray",
+		const result = this.resources.map((r) => this._transformForIPC(r))
+		/*console.log(
+			"Updating",
 			this.spec.type,
-			this.resources.map((r) => this._transformForIPC(r))
-		)
+			result.map((o) => o.id)
+		)*/
+		callIpcFunc("resources_updateResourceArray", this.spec.type, result)
 	}
 
 	getById(id) {
@@ -109,11 +113,17 @@ export class Resource {
 	}
 
 	async inject(newResource) {
-		if (!newResource) return
-
+		if (!newResource) {
+			console.log("Failed Injecting Resource", newResource)
+			return
+		}
 		this._setupReactivity(newResource)
 
+		console.log("Injecting", this.spec.type, newResource.id)
+
+		const release = await this.resourceMutex.acquire()
 		this.resources.push(newResource)
+		release()
 
 		this._triggerUpdate()
 	}
@@ -126,13 +136,16 @@ export class Resource {
 		const r = this.resources[idx]
 		await r.deleteSelf?.()
 
+		const release = await this.resourceMutex.acquire()
 		this.resources.splice(idx, 1)
+		release()
 
 		this._triggerUpdate()
 	}
 
 	async deleteMany(ids) {
 		//There's a better way to do this. Too bad!
+		const release = await this.resourceMutex.acquire()
 		const indices = ids
 			.map((id) => this.resources.findIndex((r) => r.id === id))
 			.filter((idx) => idx != -1)
@@ -141,11 +154,18 @@ export class Resource {
 		let removed = 0
 		for (let idx of indices) {
 			const actualIdx = idx - removed
+
+			console.log(
+				"DELETING",
+				this.resources[actualIdx].toIpcDescription()
+			)
+
 			await this.resources[actualIdx]?.deleteSelf?.()
 
 			this.resources.splice(actualIdx, 1)
 			removed += 1
 		}
+		release()
 
 		this._triggerUpdate()
 	}
@@ -153,7 +173,7 @@ export class Resource {
 	async load() {
 		logger.info(`Loading ${this.name} Resources`)
 
-		this.resources = await this.resourceType.load()
+		this.resources.push(...(await this.resourceType.load()))
 
 		for (let resource of this.resources) {
 			this._setupReactivity(resource)
@@ -163,7 +183,9 @@ export class Resource {
 	}
 
 	async clear() {
+		const release = await this.resourceMutex.acquire()
 		this.resources = []
+		release()
 
 		this._triggerUpdate()
 	}
@@ -194,8 +216,18 @@ export class Resource {
 	}
 
 	createIOFuncs() {
-		ipcFunc("resources", `${this.type}_get`, () => {
-			return this.resources.map((r) => this._transformForIPC(r)) //????
+		ipcFunc("resources", `${this.type}_get`, async () => {
+			let release
+			try {
+				release = await this.resourceMutex.acquire()
+				const result = this.resources.map((r) =>
+					this._transformForIPC(r)
+				) //????
+				//console.log("Resources", this.type, result)
+				return result
+			} finally {
+				release()
+			}
 		})
 
 		ipcFunc("resources", `${this.type}_getById`, (id) => {

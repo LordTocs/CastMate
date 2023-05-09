@@ -1,6 +1,6 @@
 {
 	"name": "castmate-monorepo",
-	"version": "0.4.7",
+	"version": "0.4.8",
 	"description": "",
 	"private": true,
 	"scripts": {
@@ -19,7 +19,7 @@
 		"eslint": "^8.34.0",
 		"eslint-plugin-vue": "^9.9.0",
 		"prettier": "^2.8.4",
-		"vite": "^3.1.1",
+		"vite": "^4.3.3",
 		"vite-plugin-inspect": "^0.7.1"
 	},
 	"packageManager": "yarn@3.2.4"

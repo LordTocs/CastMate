@@ -127,14 +127,13 @@ class TPLinkIoTProvider extends IoTProvider {
 		this.pluginObj = pluginObj
 		this.client = new Client({
 			/*logger: {
-                debug: (...args) => console.log(...args),
-                info: (...args) => console.log(...args),
-                warn: (...args) => console.log(...args),
-                error: (...args) => console.log(...args),
-            }*/
+				debug: (...args) => console.log(...args),
+				info: (...args) => console.log(...args),
+				warn: (...args) => console.log(...args),
+				error: (...args) => console.log(...args),
+			},*/
 		})
 		this.client.on("plug-new", async (plug) => {
-			console.log("NEW TPLINK PLUG")
 			this._addNewPlug(new TPLinkPlug(plug, await plug.getPowerState()))
 		})
 

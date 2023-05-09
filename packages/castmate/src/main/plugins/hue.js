@@ -380,13 +380,71 @@ class HUEIotProvider extends IoTProvider {
 		this.pluginObj = pluginObj
 	}
 
+	async initServices() {
+		console.log("Connecting to HUE")
+
+		this.hue?.shutdown()
+		this.clearResources()
+
+		if (!this.pluginObj.bridgeIp || !this.pluginObj.hueUser) {
+			return
+		}
+
+		this.hue = await HUEApi.create(
+			this.pluginObj.bridgeIp,
+			this.pluginObj.hueUser.username
+		)
+
+		this.hue.onHueUpdate = (update) => {
+			const plug = IoTManager.getInstance().plugs.getById(update.id)
+			const light = IoTManager.getInstance().lights.getById(update.id)
+
+			if (plug) {
+				if (update.on) {
+					plug.state.on = !!update.on.on
+				}
+			}
+			if (light) {
+				if (update.on) {
+					light.state.on = !!update.on.on
+				}
+				if (
+					update.dimming ||
+					update.color ||
+					update.color_temperature
+				) {
+					//We have to update the WHOLE color object because our reactivity isn't deep
+					const newColor = {
+						...light.state.color,
+						bri:
+							update.dimming?.brightness ?? light.state.color.bri,
+					}
+
+					if (update.color_temperature?.mirek_valid) {
+						newColor.kelvin =
+							1000000 / update.color_temperature.mirek
+						delete newColor.hue
+						delete newColor.sat
+					} else if (update.color?.xy) {
+						const { hue, sat } = xyToHueSat(update.color.xy)
+						newColor.hue = hue
+						newColor.sat = sat
+						delete newColor.kelvin
+					}
+
+					light.state.color = newColor
+				}
+			}
+		}
+	}
+
 	async loadPlugs() {
-		if (!this.pluginObj?.hue) {
+		if (!this.hue) {
 			console.error("API MISSING")
 			return []
 		}
 
-		const lights = await this.pluginObj.hue.getLights()
+		const lights = await this.hue.getLights()
 
 		const plugs = lights.filter((l) => !isApiObjBulb(l))
 
@@ -394,14 +452,14 @@ class HUEIotProvider extends IoTProvider {
 	}
 
 	async loadLights() {
-		if (!this.pluginObj?.hue) {
+		if (!this.hue) {
 			console.error("API MISSING")
 			return []
 		}
 
-		const lights = await this.pluginObj.hue.getLights()
+		const lights = await this.hue.getLights()
 
-		const groups = await this.pluginObj.hue.getGroups()
+		const groups = await this.hue.getGroups()
 
 		const bulbs = lights.filter((l) => isApiObjBulb(l))
 
@@ -411,8 +469,10 @@ class HUEIotProvider extends IoTProvider {
 		]
 	}
 
-	async onReconnect() {
+	async reauth() {
 		if (!this.inited) return
+
+		await this.initServices()
 
 		const plugs = await this.loadPlugs()
 		const lights = await this.loadLights()
@@ -451,15 +511,11 @@ export default {
 			return false
 		}
 
-		if (!(await this.initApi())) {
-			return false
-		}
-
 		return true
 	},
 	ipcMethods: {
 		async getHubStatus() {
-			return !!this.hue
+			return !!this.iotProvider.hue
 		},
 		async searchForHub() {
 			return await this.forceAuth()
@@ -478,9 +534,7 @@ export default {
 				return false
 			}
 
-			if (!(await this.initApi())) {
-				return false
-			}
+			await this.iotProvider.reauth()
 
 			return true
 		},
@@ -519,6 +573,7 @@ export default {
 				)
 				return true
 			} catch (err) {
+				console.log("Error loading key", err)
 				return false
 			}
 		},
@@ -553,78 +608,6 @@ export default {
 
 			return false
 		},
-		async initApi() {
-			try {
-				this.hue?.shutdown()
-				this.iotProvider.clearResources()
-
-				console.log("Connecting to HUE")
-
-				this.hue = await HUEApi.create(
-					this.bridgeIp,
-					this.hueUser.username
-				)
-
-				this.hue.onHueUpdate = (update) => {
-					const plug = IoTManager.getInstance().plugs.getById(
-						update.id
-					)
-					const light = IoTManager.getInstance().lights.getById(
-						update.id
-					)
-
-					if (plug) {
-						if (update.on) {
-							plug.state.on = !!update.on.on
-						}
-					}
-					if (light) {
-						if (update.on) {
-							light.state.on = !!update.on.on
-						}
-						if (
-							update.dimming ||
-							update.color ||
-							update.color_temperature
-						) {
-							//We have to update the WHOLE color object because our reactivity isn't deep
-							const newColor = {
-								...light.state.color,
-								bri:
-									update.dimming?.brightness ??
-									light.state.color.bri,
-							}
-
-							if (update.color_temperature?.mirek_valid) {
-								newColor.kelvin =
-									1000000 / update.color_temperature.mirek
-								delete newColor.hue
-								delete newColor.sat
-							} else if (update.color?.xy) {
-								const { hue, sat } = xyToHueSat(update.color.xy)
-								newColor.hue = hue
-								newColor.sat = sat
-								delete newColor.kelvin
-							}
-
-							light.state.color = newColor
-						}
-					}
-				}
-
-				this.analytics.set({ usesHue: true })
-
-				this.iotProvider.onReconnect()
-				return true
-			} catch (err) {
-				console.error(
-					"Unable to connect with user to bridge. Abandoning"
-				)
-				console.error(err)
-
-				return false
-			}
-		},
 	},
 	actions: {
 		scene: {
@@ -647,7 +630,7 @@ export default {
 						type: String,
 						name: "Scene",
 						async enum(context) {
-							let scenes = await this.hue.getScenes()
+							let scenes = await this.iotProvider.hue.getScenes()
 
 							const lightGroup =
 								IoTManager.getInstance().lights.getById(
@@ -670,7 +653,7 @@ export default {
 				},
 			},
 			async handler(sceneData) {
-				this.hue.applyScene(sceneData.scene)
+				this.iotProvider.hue.applyScene(sceneData.scene)
 			},
 		},
 	},

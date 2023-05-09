@@ -13,6 +13,7 @@ import { FileCache } from "../utils/filecache.js"
 import { StateManager } from "../state/state-manager.js"
 import { SettingsManager } from "./settings-manager.js"
 import { WebServices } from "../webserver/webserver.js"
+import util from "util"
 
 export class Plugin {
 	constructor(config) {
@@ -104,7 +105,9 @@ export class Plugin {
 			} catch (err) {
 				// TODO: Throw exception to UI
 				logger.error(
-					`Error loading ${this.name} plugin. Error Msg: ${err}.`
+					`Error loading ${
+						this.name
+					} plugin. Error Msg: ${util.inspect(err)}.`
 				)
 			}
 		}

@@ -1,4 +1,4 @@
-import OBSWebSocket from "obs-websocket-js" // For more info: https://www.npmjs.com/package/obs-websocket-js
+import * as OBSWS from "obs-websocket-js" // For more info: https://www.npmjs.com/package/obs-websocket-js
 import { template } from "../state/template.js"
 import { app } from "../utils/electronBridge.js"
 import ChildProcess from "child_process"
@@ -6,6 +6,9 @@ import regedit from "regedit"
 import util from "util"
 import os from "os"
 import { getLocalIP } from "../utils/os.js"
+
+//Rollup is BULLSHIT
+const OBSWebSocket = OBSWS.default.default
 
 if (app.isPackaged) {
 	console.log(
@@ -153,7 +156,7 @@ export default {
 
 				//Get the stream status
 				const streamStatus = await this.obs.call("GetStreamStatus")
-				this.state.streaming = !!streamStatus.outputActive 
+				this.state.streaming = !!streamStatus.outputActive
 
 				const recordStatus = await this.obs.call("GetRecordStatus")
 				this.state.recording = !!recordStatus.outputActive

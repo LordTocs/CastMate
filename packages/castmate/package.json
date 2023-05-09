@@ -1,6 +1,6 @@
 {
 	"name": "castmate",
-	"version": "0.4.7",
+	"version": "0.4.8",
 	"description": "CastMate is a broadcaster tool that allows Twitch viewers to interact with a broadcasters stream components through Chat Commands, Channel Point rewards, and more.",
 	"author": "LordTocs",
 	"scripts": {
@@ -8,19 +8,14 @@
 		"electron:buildpublish": "electron-builder --config electron-builder-config.cjs --publish always"
 	},
 	"main": "dist/electron/main/backgroundLoader.js",
-	"engines": {
-		"node": "^14.18.0 || >=16.0.0"
-	},
 	"electronVersion": "20.0.1",
 	"dependencies": {
 		"@j3lte/govee-lan-controller": "^1.0.1",
-		"@peter-murray/hue-bridge-model": "^2.0.4",
 		"@twurple/api": "^6.2.0",
 		"@twurple/auth": "^6.2.0",
 		"@twurple/chat": "^6.2.0",
 		"@twurple/eventsub-ws": "^6.2.0",
 		"@twurple/pubsub": "^6.2.0",
-		"@vueuse/core": "^9.13.0",
 		"async-mutex": "^0.3.0",
 		"axios": "^0.27.2",
 		"bad-words": "^3.0.4",
@@ -37,8 +32,8 @@
 		"font-list": "^1.4.5",
 		"fs-extra": "^11.1.0",
 		"http-proxy": "^1.18.1",
+		"lifx-lan-client": "^2.1.0",
 		"lodash": "^4.17.21",
-		"maska": "^1.5.0",
 		"mixpanel": "^0.16.0",
 		"ms-speech-api": "^0.0.1",
 		"nanoid": "^4.0.0",
@@ -60,19 +55,22 @@
 	"devDependencies": {
 		"@mdi/font": "^7.1.96",
 		"@rollup/plugin-node-resolve": "^13.3.0",
-		"@vitejs/plugin-vue": "^3.0.3",
+		"@vitejs/plugin-vue": "^4.2.1",
+		"@vueuse/core": "^9.13.0",
+		"castmate-overlay-components": "^0.0.1",
 		"electron": "20.0.1",
 		"electron-builder": "^23.3.3",
 		"electron-devtools-installer": "^3.2.0",
 		"eslint": "^8.17.0",
-		"vite-plugin-electron": "^0.9.0",
-		"vite-plugin-electron-renderer": "^0.9.0",
-		"vite-plugin-vuetify": "^1.0.0-alpha.12",
+		"maska": "^1.5.0",
+		"vite-plugin-electron": "^0.11.2",
+		"vite-plugin-electron-renderer": "^0.14.1",
+		"vite-plugin-vuetify": "^1.0.2",
 		"vue": "^3.2.37",
 		"vue-mixpanel": "^2.0.0",
 		"vue-router": "^4.0.16",
 		"vuedraggable": "^4.1.0",
-		"vuetify": "^3.1.4"
+		"vuetify": "^3.2.1"
 	},
 	"browserslist": [
 		"> 1%",
