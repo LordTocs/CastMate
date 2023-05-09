@@ -265,7 +265,7 @@ class HUEPlug extends Plug {
 		if (on == "toggle") {
 			on = !this.state.on
 		}
-		const api = this._getPlugin().pluginObj.hue
+		const api = this._getPlugin().hue
 		await api?.setLightState(this.config.hueId, on, null, 0)
 	}
 }
@@ -309,7 +309,7 @@ class HUEBulb extends Light {
 	}
 
 	async setLightState(on, color, duration) {
-		const api = this._getPlugin().pluginObj.hue
+		const api = this._getPlugin().hue
 		if (on == "toggle") {
 			on = !this.state.on
 		}
@@ -354,7 +354,7 @@ class HUEGroup extends Light {
 	}
 
 	async setLightState(on, color, duration) {
-		const api = this._getPlugin().pluginObj.hue
+		const api = this._getPlugin().hue
 		if (on == "toggle") {
 			on = !this.state.on
 		}
@@ -396,8 +396,14 @@ class HUEIotProvider extends IoTProvider {
 		)
 
 		this.hue.onHueUpdate = (update) => {
-			const plug = IoTManager.getInstance().plugs.getById(update.id)
-			const light = IoTManager.getInstance().lights.getById(update.id)
+			const plug = IoTManager.getInstance().plugs.getById(
+				`hue.${update.id}`
+			)
+			const light = IoTManager.getInstance().lights.getById(
+				`hue.${update.id}`
+			)
+
+			console.log(update, plug?.id, light?.id)
 
 			if (plug) {
 				if (update.on) {
