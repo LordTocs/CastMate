@@ -32,6 +32,7 @@
 		"font-list": "^1.4.5",
 		"fs-extra": "^11.1.0",
 		"http-proxy": "^1.18.1",
+		"lifx-lan-client": "^2.1.0",
 		"lodash": "^4.17.21",
 		"mixpanel": "^0.16.0",
 		"ms-speech-api": "^0.0.1",

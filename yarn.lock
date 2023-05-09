@@ -1931,6 +1931,7 @@ __metadata:
     font-list: ^1.4.5
     fs-extra: ^11.1.0
     http-proxy: ^1.18.1
+    lifx-lan-client: ^2.1.0
     lodash: ^4.17.21
     maska: ^1.5.0
     mixpanel: ^0.16.0
@@ -4525,6 +4526,16 @@ __metadata:
   dependencies:
     immediate: ~3.0.5
   checksum: 33102302cf19766f97919a6a98d481e01393288b17a6aa1f030a3542031df42736edde8dab29ffdbf90bebeffc48c761eb1d064dc77592ca3ba3556f9fe6d2a8
+  languageName: node
+  linkType: hard
+
+"lifx-lan-client@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "lifx-lan-client@npm:2.1.0"
+  dependencies:
+    eventemitter3: ^4.0.7
+    lodash: ^4.17.15
+  checksum: 5ad4fd01fc46cdbba69e7d4f1864fb2cc5bcb622a13f212beda939cb8a8e8f7441e2da6dbfb904ae168729dba68c8e2abb3708f58de845e460468dc198b244b3
   languageName: node
   linkType: hard
 
