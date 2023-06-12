@@ -6,7 +6,7 @@ export type Color = RGB | RGBA | HEX
 type ColorConstructor = { new (...args: any[]): any }
 const Color: ColorConstructor = class {
 	constructor() {
-		throw new Error("Uh oh, Color's aren't real classes")
+		return "#000000"
 	}
 }
 
