@@ -7,6 +7,7 @@ import {
 	RegisterResource,
 	defineResource,
 	ResourceStorage,
+	defineState,
 } from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
 
@@ -44,6 +45,8 @@ export default definePlugin(
 	() => {
 		onLoad(() => {})
 
+		const obsDefault = defineState("obsDefault", { type: OBSConnection, required: true })
+
 		//Plugin Intiialization
 		defineAction({
 			id: "changeScene",
@@ -53,7 +56,12 @@ export default definePlugin(
 			config: {
 				type: Object,
 				properties: {
-					obs: { type: OBSConnection, name: "OBS Connection", required: true },
+					obs: {
+						type: OBSConnection,
+						name: "OBS Connection",
+						required: true,
+						default: () => obsDefault.value,
+					},
 					scene: { type: String, name: "Scene", required: true },
 				},
 			},

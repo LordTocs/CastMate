@@ -149,6 +149,45 @@ export async function autoRerun(func: () => any) {
 	return effect
 }
 
+export interface ReactiveRef<T> {
+	value: T
+}
+
+export function reactiveRef<T>(initialValue: T): ReactiveRef<T> {
+	return reactify<ReactiveRef<T>>({
+		value: initialValue,
+	})
+}
+
+export interface ReactiveComputed<T> {
+	readonly value: T
+}
+
+interface ReactiveComputedImpl<T> extends ReactiveComputed<T> {
+	__effect: ReactiveEffect<T>
+}
+
+export function reactiveComputed<T>(func: () => T): ReactiveComputed<T> {
+	const result: ReactiveComputedImpl<T> = {
+		//TODO: Does "this" work like this?
+		__effect: new ReactiveEffect<T>(() => {
+			this.cached = func()
+			return this.cached
+		}),
+		get value(): T {
+			DependencyStorage.getPropDependency(this, "value").track()
+
+			if (isObject(this.cached)) {
+				this.cached = reactify(this.cached)
+			}
+
+			return this.cached
+		},
+	}
+
+	return result
+}
+
 export function Reactive<This extends object, T>(
 	target: ClassAccessorDecoratorTarget<This, T>,
 	context: ClassAccessorDecoratorContext<This, T>

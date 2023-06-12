@@ -1,9 +1,10 @@
-import { Color } from "castmate-schema"
+import { Color, Schema, constructDefault, SchemaType } from "castmate-schema"
 import { ActionDefinition, defineAction } from "../queue-system/action"
 import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { EventList } from "../util/events"
 import { SemanticVersion } from "../util/type-helpers"
+import { reactify, reactiveRef } from "../reactivity/reactivity"
 
 interface PluginSpec {
 	id: string
@@ -57,11 +58,35 @@ interface PluginPrivates {
 	unloader: EventList
 }
 
+interface StateObj<StateSchema extends Schema> {
+	value: SchemaType<StateSchema>
+}
+
+interface StateDefinition<StateSchema extends Schema = any> {
+	schema: StateSchema
+	obj: StateObj<StateSchema>
+}
+
+export function defineState<T extends Schema>(id: string, schema: T) {
+	if (!initingPlugin) throw new Error()
+
+	const initial = constructDefault(schema)
+	const result = reactiveRef<SchemaType<T>>(initial)
+
+	initingPlugin.state.set(id, {
+		schema,
+		obj: result,
+	})
+
+	return result
+}
+
 export let initingPlugin: Plugin | null = null
 
 export class Plugin {
 	actions: Map<string, ActionDefinition> = new Map()
 	triggers: Map<string, TriggerDefinition> = new Map()
+	state: Map<string, StateDefinition> = new Map()
 
 	private loader = new EventList()
 	private unloader = new EventList()

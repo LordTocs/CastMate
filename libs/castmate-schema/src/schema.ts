@@ -35,17 +35,6 @@ interface SchemaBoolean {
 	falseIcon?: string
 }
 
-interface ResourceType {
-	id: string
-}
-type ResourceTypeConstructor = { new (...args: any[]): ResourceType }
-
-type SchemaResource = {
-	type: ResourceTypeConstructor
-} & SchemaBase
-
-type SchemaResourceType<T extends SchemaResource> = InstanceType<T["type"]>
-
 export type SchemaObj = {
 	type: ObjectConstructor
 	properties: Record<string, Schema>
@@ -70,9 +59,9 @@ type SchemaPropTypeInner<T extends Schema> = Extract<
 	T extends { type: infer Constructor } ? [{ type: Constructor }, any] : [never, any]
 >[1]
 
-type SchemaPropType<T extends Schema> = T["required"] extends true
-	? SchemaPropTypeInner<T>
-	: SchemaPropTypeInner<T> | undefined
+type SchemaApplyRequired<SchemaT extends Schema, T> = SchemaT["required"] extends true ? T : T | undefined
+
+type SchemaPropType<T extends Schema> = SchemaPropTypeInner<T>
 
 type SchemaObjType<T extends SchemaObj> = {
 	[Property in keyof T["properties"]]: SchemaType<T["properties"][Property]>
@@ -80,15 +69,29 @@ type SchemaObjType<T extends SchemaObj> = {
 
 type SchemaArrayType<T extends SchemaArray> = Array<SchemaType<T["items"]>>
 
+interface ResourceType {
+	id: string
+}
+type ResourceTypeConstructor = { new (...args: any[]): ResourceType }
+
+type SchemaResource = {
+	type: ResourceTypeConstructor
+} & SchemaBase
+
+type SchemaResourceType<T extends SchemaResource> = InstanceType<T["type"]>
+
 export type Schema = SchemaTypes | SchemaObj | SchemaArray | SchemaResource
 
 export type SchemaType<T extends Schema> = T extends SchemaObj
 	? SchemaObjType<T>
-	: T extends SchemaArray
-	? SchemaArrayType<T>
-	: T extends SchemaResource
-	? SchemaResourceType<T>
-	: SchemaPropType<T>
+	: SchemaApplyRequired<
+			T,
+			T extends SchemaArray
+				? SchemaArrayType<T>
+				: T extends SchemaResource
+				? SchemaResourceType<T>
+				: SchemaPropType<T>
+	  >
 
 export type SchemaClassType<T extends Schema> = SchemaType<T> & {
 	constructor: SchemaConstructor<T>
@@ -112,14 +115,20 @@ export function defineSchema<T extends SchemaObj>(name: string, schema: T): Sche
 
 function constructDefaultObjOnto<T extends SchemaObj>(target: Record<string, any>, schema: T) {
 	for (let prop in schema.properties) {
-		const newValue = constructDefault(schema.properties[prop])
-		if (newValue != undefined) {
-			target[prop] = newValue
+		if (canConstructDefault(schema.properties[prop])) {
+			const newValue = constructDefault(schema.properties[prop])
+			if (newValue != undefined) {
+				target[prop] = newValue
+			}
 		}
 	}
 }
 
-export function constructDefault<T extends Schema>(schema: T): SchemaType<T> | undefined {
+function canConstructDefault<T extends Schema>(schema: T) {
+	return schema.type == Object || schema.required
+}
+
+export function constructDefault<T extends Schema>(schema: T): SchemaType<T> {
 	if (schema.type == Object) {
 		const result: Record<string, any> = {}
 
@@ -132,9 +141,14 @@ export function constructDefault<T extends Schema>(schema: T): SchemaType<T> | u
 		if (schema.default) {
 			return cloneDeep(schema.default)
 		} else {
+			if (schema.type == Array) {
+				return [] as SchemaType<T>
+			}
 			return new schema.type() as SchemaType<T>
 		}
 	}
+	//Type system too stupid to realize !schema.required allows undefined.
+	//@ts-ignore
 	return undefined
 }
 /*
