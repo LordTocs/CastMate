@@ -6,24 +6,25 @@
 	></div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useEventListener } from "@vueuse/core"
+import { ref } from "vue"
 
 const props = defineProps({
 	horizontal: { type: Boolean, default: false },
 })
 
-const grabbed = ref(false)
+const grabbed = ref<boolean>(false)
 
 function onMouseDown(ev) {
 	grabbed.value = true
 }
 
-useEventListener("mousemove", window, (ev) => {
+useEventListener("mousemove", (ev) => {
 	ev.preventDefault()
 })
 
-useEventListener("mouseup", window, (ev) => {
+useEventListener("mouseup", (ev) => {
 	ev.preventDefault()
 	ev.stopPropagation()
 	grabbed.value = false

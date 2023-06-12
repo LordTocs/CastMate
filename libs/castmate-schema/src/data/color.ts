@@ -16,7 +16,7 @@ export interface SchemaColor {
 	enum: Color[]
 }
 
-declare module "./schema" {
+declare module "../schema" {
 	interface SchemaTypeMap {
 		Color: [SchemaColor, Color]
 	}

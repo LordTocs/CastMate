@@ -16,7 +16,7 @@ interface SchemaLightColor {
 	template: Boolean
 }
 
-declare module "./schema" {
+declare module "../schema" {
 	interface SchemaTypeMap {
 		LightColor: [SchemaLightColor, LightColor]
 	}

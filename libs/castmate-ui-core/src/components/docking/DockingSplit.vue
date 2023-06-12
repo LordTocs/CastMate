@@ -1,20 +1,14 @@
 <template>
-	<div
-		class="frame-split"
-		:class="{ horizontal: props.horizontal, vertical: !props.horizontal }"
-	>
+	<div class="frame-split" :class="{ horizontal: props.horizontal, vertical: !props.horizontal }">
 		<template v-for="(view, i) in views">
 			<docking-frame v-if="!isSplit(view)" />
 			<docking-split v-else />
-			<docking-divider
-				v-if="i < views.length - 1"
-				:horizontal="props.horizontal"
-			/>
+			<docking-divider v-if="i < views.length - 1" :horizontal="props.horizontal" />
 		</template>
 	</div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue"
 import DockingDivider from "./DockingDivider.vue"
 import DockingFrame from "./DockingFrame.vue"

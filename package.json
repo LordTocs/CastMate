@@ -12,7 +12,8 @@
 	"keywords": [],
 	"workspaces": [
 		"packages/*",
-		"libs/*"
+		"libs/*",
+		"plugins/*"
 	],
 	"author": "LordTocs",
 	"license": "AGPL",

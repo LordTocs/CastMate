@@ -1,24 +1,20 @@
 {
-  "name": "castmate-core",
+  "name": "castmate-plugin-obs-main",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
-  "devMain": "src/index.ts",
+  "main": "src/main.ts",
+  "devMain": "src/main.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/lodash": "^4.14.192",
     "typescript": "^5.0.3"
   },
   "dependencies": {
+    "castmate-core": "workspace:^",
     "castmate-schema": "workspace:^",
-    "electron": "^24.1.2",
-    "lodash": "^4.17.21",
-    "nanoid": "^4.0.2",
-    "reflect-metadata": "^0.1.13",
-    "yaml": "^2.2.1"
+    "obs-websocket-js": "^5.0.3"
   }
 }

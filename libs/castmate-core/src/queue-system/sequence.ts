@@ -1,7 +1,10 @@
+import { PluginManager } from "../plugins/plugin-manager"
 import { setAbortableTimeout } from "../util/abort-utils"
 import { SemanticVersion } from "../util/type-helpers"
 
-export interface Sequence extends SequenceActions {}
+export class Sequence implements SequenceActions {
+	actions: (InstantAction | TimeAction | ActionStack | FlowAction)[]
+}
 
 interface ActionInfo {
 	id: string
@@ -42,17 +45,14 @@ interface OffsetActions extends SequenceActions {
 interface SequenceDebugger {
 	markStart(id: string): void
 	markEnd(id: string): void
-	logError(err: any): void
+	logResult(id: string, result: any): void
+	logError(id: string, err: any): void
 }
 
 class SequenceRunner {
 	private abortController = new AbortController()
 
-	constructor(
-		private sequence: Sequence,
-		private context: any,
-		private dbg?: SequenceDebugger
-	) {}
+	constructor(private sequence: Sequence, private context: any, private dbg?: SequenceDebugger) {}
 
 	abort() {
 		this.abortController.abort()
@@ -66,10 +66,16 @@ class SequenceRunner {
 	private async runActionBase(action: ActionInfo) {
 		this.dbg?.markStart(action.id)
 		try {
-			//EXECUTE ACTION HERE
+			const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
+			if (!actionDef) {
+				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
+			}
+			const result = await actionDef.invoke(action.config, this.context, this.abortController.signal)
+			this.dbg?.logResult(action.id, result)
+			return result
 		} catch (err) {
-			this.dbg?.logError(err)
-			throw err
+			this.dbg?.logError(action.id, err)
+			return undefined
 		} finally {
 			this.dbg?.markEnd(action.id)
 		}
@@ -92,16 +98,8 @@ class SequenceRunner {
 	 * @param actionStack
 	 */
 	private async runActionStack(actionStack: ActionStack) {
-		const promises = actionStack.stack.map(async (action) => {
-			try {
-				return await this.runActionBase(action)
-			} catch (err) {
-				//TODO: Handle ERROR
-				return null
-			}
-		})
-
-		const results = await Promise.all(promises)
+		const promises = actionStack.stack.map((action) => this.runActionBase(action))
+		return await Promise.all(promises)
 	}
 	/**
 	 * Sequences run actions one after another, each waiting on the prior

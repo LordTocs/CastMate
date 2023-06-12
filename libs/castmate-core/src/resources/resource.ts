@@ -6,7 +6,7 @@ import {
 	SchemaConstructor,
 	squashSchemas,
 	SquashedSchemas,
-} from "../data/schema"
+} from "castmate-schema"
 import { Reactive } from "../reactivity/reactivity"
 import { ResourceRegistry } from "./resource-registry"
 
@@ -27,6 +27,10 @@ export class ResourceStorage<T extends Resource> {
 
 	getById(id: string) {
 		return this.resources.find((r) => r.id == id)
+	}
+
+	get length() {
+		return this.resources.length
 	}
 
 	*[Symbol.iterator]() {

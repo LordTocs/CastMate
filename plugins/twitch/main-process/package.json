@@ -1,5 +1,5 @@
 {
-  "name": "castmate-core",
+  "name": "castmate-plugin-twitch-main",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
@@ -10,15 +10,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/lodash": "^4.14.192",
     "typescript": "^5.0.3"
   },
   "dependencies": {
-    "castmate-schema": "workspace:^",
-    "electron": "^24.1.2",
-    "lodash": "^4.17.21",
-    "nanoid": "^4.0.2",
-    "reflect-metadata": "^0.1.13",
-    "yaml": "^2.2.1"
+    "@twurple/api": "^6.2.1",
+    "@twurple/auth": "^6.2.1",
+    "@twurple/chat": "^6.2.1",
+    "@twurple/eventsub-ws": "^6.2.1",
+    "@twurple/pubsub": "^6.2.1",
+    "castmate-core": "workspace:^",
+    "castmate-schema": "workspace:^"
   }
 }

@@ -13,13 +13,7 @@ type SV3Label = `${number}.${number}.${number}${string}`
 
 export type SemanticVersion = SV3 | SV3Label
 
-export type Immutable<T> = T extends
-	| Function
-	| boolean
-	| number
-	| string
-	| null
-	| undefined
+export type Immutable<T> = T extends Function | boolean | number | string | null | undefined
 	? T
 	: T extends Array<infer U>
 	? ReadonlyArray<Immutable<U>>
@@ -31,5 +25,6 @@ export type Immutable<T> = T extends
 
 export type MapToUnion<T> = T[keyof T]
 
-export type ConstructedType<T extends new (...args: any[]) => any> =
-	T extends new (...args: any[]) => infer R ? R : never
+export type ConstructedType<T extends new (...args: any[]) => any> = T extends new (...args: any[]) => infer R
+	? R
+	: never

@@ -1,7 +1,8 @@
-import { MapToUnion } from "./../util/type-helpers"
 import { cloneDeep } from "lodash"
 //TODO: How to type default
 //TODO: How to enforce default's existance when required: true
+
+export type MapToUnion<T> = T[keyof T]
 
 interface SchemaNotRequired {
 	required?: false
@@ -9,7 +10,7 @@ interface SchemaNotRequired {
 
 interface SchemaRequired {
 	required: true
-	default: any
+	default?: any
 }
 
 type SchemaBase = {
@@ -34,9 +35,25 @@ interface SchemaBoolean {
 	falseIcon?: string
 }
 
+interface ResourceType {
+	id: string
+}
+type ResourceTypeConstructor = { new (...args: any[]): ResourceType }
+
+type SchemaResource = {
+	type: ResourceTypeConstructor
+} & SchemaBase
+
+type SchemaResourceType<T extends SchemaResource> = InstanceType<T["type"]>
+
 export type SchemaObj = {
 	type: ObjectConstructor
 	properties: Record<string, Schema>
+} & SchemaBase
+
+export type SchemaArray = {
+	type: ArrayConstructor
+	items: Schema
 } & SchemaBase
 
 interface SchemaTypeMap {
@@ -61,9 +78,17 @@ type SchemaObjType<T extends SchemaObj> = {
 	[Property in keyof T["properties"]]: SchemaType<T["properties"][Property]>
 }
 
-export type Schema = SchemaTypes | SchemaObj
+type SchemaArrayType<T extends SchemaArray> = Array<SchemaType<T["items"]>>
 
-export type SchemaType<T extends Schema> = T extends SchemaObj ? SchemaObjType<T> : SchemaPropType<T>
+export type Schema = SchemaTypes | SchemaObj | SchemaArray | SchemaResource
+
+export type SchemaType<T extends Schema> = T extends SchemaObj
+	? SchemaObjType<T>
+	: T extends SchemaArray
+	? SchemaArrayType<T>
+	: T extends SchemaResource
+	? SchemaResourceType<T>
+	: SchemaPropType<T>
 
 export type SchemaClassType<T extends Schema> = SchemaType<T> & {
 	constructor: SchemaConstructor<T>
@@ -104,7 +129,11 @@ export function constructDefault<T extends Schema>(schema: T): SchemaType<T> | u
 
 		return result as SchemaType<T>
 	} else if (schema.required) {
-		return cloneDeep(schema.default)
+		if (schema.default) {
+			return cloneDeep(schema.default)
+		} else {
+			return new schema.type() as SchemaType<T>
+		}
 	}
 	return undefined
 }
@@ -125,11 +154,7 @@ type SquashedObjSchemas<A extends SchemaObj, B extends SchemaObj> = Omit<A, "pro
 */
 type SquashedObjSchemas<A extends SchemaObj, B extends SchemaObj> = A & B
 
-export type SquashedSchemas<A extends Schema, B extends Schema> = A extends SchemaObj
-	? B extends SchemaObj
-		? SquashedObjSchemas<A, B>
-		: never
-	: A & B
+export type SquashedSchemas<A extends Schema, B extends Schema> = A & B
 
 function squashObjSchemas<A extends SchemaObj, B extends SchemaObj>(a: A, b: B): SquashedObjSchemas<A, B> {
 	const properties: Record<string, any> = {}
@@ -161,6 +186,8 @@ export function squashSchemas<A extends Schema, B extends Schema>(a?: A, b?: B):
 			a as ExtractSchemaObj<A>,
 			b as ExtractSchemaObj<B>
 		) as unknown as SquashedSchemas<A, B>
+	} else if (a.type == Array && b.type == Array && "items" in a && "items" in b) {
+		return { ...a, ...b, items: squashSchemas(a.items, b.items) }
 	} else if (a.type == b.type) {
 		return { ...a, ...b } as SquashedSchemas<A, B>
 	}
@@ -213,6 +240,7 @@ const TestType = defineSchema("TestType", {
 	properties: {
 		num: { type: Number, template: true, required: true, default: 10 },
 		str: { type: String },
+		arr: { type: Array, items: { type: String, required: true }, required: true },
 	},
 })
 type TestType = InstanceType<typeof TestType>
