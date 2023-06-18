@@ -56,7 +56,6 @@ export default defineConfig({
 			},
 		}),
 		subpackage("castmate-overlay-components"),
-		library("castmate-ui-core"),
 	],
 	resolve: {
 		alias: {
@@ -83,9 +82,7 @@ function withDebug(config) {
 		config.plugins = (config.plugins || []).concat({
 			name: "electron-vite-debug",
 			configResolved(config) {
-				const index = config.plugins.findIndex(
-					(p) => p.name === "electron-main-watcher"
-				)
+				const index = config.plugins.findIndex((p) => p.name === "electron-main-watcher")
 				// At present, Vite can only modify plugins in configResolved hook.
 				config.plugins.splice(index, 1)
 			},
