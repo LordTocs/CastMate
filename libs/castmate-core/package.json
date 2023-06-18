@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "castmate-schema": "workspace:^",
-    "electron": "^24.1.2",
+    "electron": "^20.0.1",
     "lodash": "^4.17.21",
     "nanoid": "^4.0.2",
     "reflect-metadata": "^0.1.13",

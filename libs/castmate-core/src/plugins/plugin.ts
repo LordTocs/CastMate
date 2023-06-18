@@ -1,9 +1,9 @@
-import { Color, Schema, constructDefault, SchemaType } from "castmate-schema"
+import { Color, Schema, constructDefault, SchemaType, IPCActionDefinition, IPCPluginDefinition } from "castmate-schema"
 import { ActionDefinition, defineAction } from "../queue-system/action"
 import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { EventList } from "../util/events"
-import { SemanticVersion } from "../util/type-helpers"
+import { SemanticVersion, mapMap } from "../util/type-helpers"
 import { reactify, reactiveRef } from "../reactivity/reactivity"
 
 interface PluginSpec {
@@ -139,6 +139,19 @@ export class Plugin {
 			return false
 		}
 		return true
+	}
+
+	toIPC(): IPCPluginDefinition {
+		return {
+			id: this.id,
+			name: this.name,
+			description: this.description,
+			icon: this.icon,
+			color: this.color,
+			version: this.version,
+			actions: mapMap(this.actions, (k, v) => v.toIPC()),
+			triggers: mapMap(this.triggers, (k, v) => v.toIPC()),
+		}
 	}
 }
 

@@ -28,3 +28,16 @@ export type MapToUnion<T> = T[keyof T]
 export type ConstructedType<T extends new (...args: any[]) => any> = T extends new (...args: any[]) => infer R
 	? R
 	: never
+
+export function mapMap<K, V, T>(map: Map<K, V>, mapFunc: (key: K, value: V) => T): Map<K, T> {
+	const result: Map<K, T> = new Map()
+
+	for (let key of map.keys()) {
+		const v = map.get(key)
+		if (v != undefined) {
+			result.set(key, mapFunc(key, v))
+		}
+	}
+
+	return result
+}

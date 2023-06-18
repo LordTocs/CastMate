@@ -1,3 +1,5 @@
+import { registerType } from "../schema"
+
 type RGB = `rgb(${number}, ${number}, ${number})`
 type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`
 type HEX = `#${string}`
@@ -21,3 +23,7 @@ declare module "../schema" {
 		Color: [SchemaColor, Color]
 	}
 }
+
+registerType("Color", {
+	constructor: Color,
+})

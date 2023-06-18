@@ -18,11 +18,18 @@
 	"author": "LordTocs",
 	"license": "AGPL",
 	"devDependencies": {
+		"@vitejs/plugin-vue": "^4.2.3",
+		"@vue/tsconfig": "^0.4.0",
+		"@vueuse/core": "^9.13.0",
+		"electron": "25.1.1",
 		"eslint": "^8.34.0",
 		"eslint-plugin-vue": "^9.9.0",
+		"pinia": "^2.1.4",
 		"prettier": "^2.8.4",
-		"vite": "^3.1.1",
-		"vite-plugin-inspect": "^0.7.1"
+		"vite": "^4.3.9",
+		"vite-plugin-dts": "^2.3.0",
+		"vue": "^3.3.4",
+		"vue-router": "^4.2.2"
 	},
 	"packageManager": "yarn@3.2.4"
 }

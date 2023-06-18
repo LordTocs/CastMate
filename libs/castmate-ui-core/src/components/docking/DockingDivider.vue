@@ -1,7 +1,7 @@
 <template>
 	<div
 		class="divider"
-		:class="{ horizontal: props.horizontal, vertical: !props.horizontal }"
+		:class="{ horizontal: direction == 'horizontal', vertical: direction == 'vertical' }"
 		@mousedown="onMouseDown"
 	></div>
 </template>
@@ -10,13 +10,13 @@
 import { useEventListener } from "@vueuse/core"
 import { ref } from "vue"
 
-const props = defineProps({
-	horizontal: { type: Boolean, default: false },
-})
+const props = defineProps<{
+	direction: "horizontal" | "vertical"
+}>()
 
 const grabbed = ref<boolean>(false)
 
-function onMouseDown(ev) {
+function onMouseDown(ev: MouseEvent) {
 	grabbed.value = true
 }
 
@@ -37,13 +37,13 @@ useEventListener("mouseup", (ev) => {
 }
 
 .horizontal {
-	height: 10px;
+	height: 3px;
 	width: 100%;
 	cursor: row-resize;
 }
 
 .vertical {
-	width: 10px;
+	width: 3px;
 	height: 100%;
 	cursor: col-resize;
 }

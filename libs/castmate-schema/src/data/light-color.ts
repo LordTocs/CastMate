@@ -1,13 +1,19 @@
+import { registerType } from "../schema"
+
 export interface LightColor {
 	hue?: number
 	sat?: number
 	bri?: number
 }
 
-type LightColorConstructor = { new (...args: any[]): any }
-const LightColor: LightColorConstructor = class {
+type LightColorConstructor = { new (...args: any[]): LightColor }
+export const LightColor: LightColorConstructor = class {
 	constructor() {
-		throw new Error("Uh oh, LightColor's aren't real classes")
+		return {
+			hue: 0,
+			sat: 0,
+			bri: 0,
+		}
 	}
 }
 
@@ -21,3 +27,7 @@ declare module "../schema" {
 		LightColor: [SchemaLightColor, LightColor]
 	}
 }
+
+registerType("LightColor", {
+	constructor: LightColor,
+})

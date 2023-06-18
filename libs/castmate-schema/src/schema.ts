@@ -4,27 +4,27 @@ import { cloneDeep } from "lodash"
 
 export type MapToUnion<T> = T[keyof T]
 
-interface SchemaNotRequired {
-	required?: false
-}
+type EnumItem<T> = T | EnumPair<T>
 
-interface SchemaRequired {
-	required: true
-	default?: any
+//TODO: Can we type context?
+export interface Enumable<T> {
+	enum?: Array<EnumItem<T>> | (() => Promise<Array<EnumItem<T>>>) | ((context: any) => Promise<Array<EnumItem<T>>>)
 }
 
 type SchemaBase = {
 	name?: string
-} & (SchemaNotRequired | SchemaRequired)
+	required?: boolean
+	default?: any
+}
 
-interface SchemaNumber {
+interface SchemaNumber extends Enumable<number> {
 	type: NumberConstructor
 	min?: number
 	max?: number
 	template?: boolean
 }
 
-interface SchemaString {
+interface SchemaString extends Enumable<string> {
 	type: StringConstructor
 	template?: boolean
 }
@@ -33,6 +33,11 @@ interface SchemaBoolean {
 	type: BooleanConstructor
 	trueIcon?: string
 	falseIcon?: string
+}
+
+interface EnumPair<T> {
+	value: T
+	name: string
 }
 
 export type SchemaObj = {
@@ -52,7 +57,7 @@ interface SchemaTypeMap {
 }
 
 type SchemaTypeUnion = MapToUnion<SchemaTypeMap>
-type SchemaTypes = SchemaTypeUnion[0] & SchemaBase
+export type SchemaTypes = SchemaTypeUnion[0] & SchemaBase
 
 type SchemaPropTypeInner<T extends Schema> = Extract<
 	SchemaTypeUnion,
@@ -74,9 +79,9 @@ interface ResourceType {
 }
 type ResourceTypeConstructor = { new (...args: any[]): ResourceType }
 
-type SchemaResource = {
+export interface SchemaResource extends SchemaBase {
 	type: ResourceTypeConstructor
-} & SchemaBase
+}
 
 type SchemaResourceType<T extends SchemaResource> = InstanceType<T["type"]>
 
@@ -208,6 +213,74 @@ export function squashSchemas<A extends Schema, B extends Schema>(a?: A, b?: B):
 
 	throw new Error("INCOMPATIBLE SCHEMAS")
 }
+
+///
+
+type DataConstructor = { new (...args: any): any }
+export interface DataTypeMetaData<T = any> {
+	constructor: new (...args: any) => T
+	template?: (value: T, context: any, schema: any) => T
+}
+
+interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
+	name: string
+}
+
+const dataNameLookup: Map<string, FullDataTypeMetaData> = new Map()
+const dataConstructorLookup: Map<DataConstructor, FullDataTypeMetaData> = new Map()
+
+export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
+	const fullMetaData = { ...metaData, name }
+	dataNameLookup.set(name, fullMetaData)
+	dataConstructorLookup.set(metaData.constructor, fullMetaData)
+}
+
+export function getTypeByName<T = any>(name: string) {
+	return dataNameLookup.get(name) as FullDataTypeMetaData<T> | undefined
+}
+
+export function getTypeByConstructor<T = any>(constructor: new (...args: any) => T) {
+	return dataConstructorLookup.get(constructor) as FullDataTypeMetaData<T> | undefined
+}
+
+type Modify<T, R> = Omit<T, keyof R> & R
+
+type IPCHandleEnumable<T> = T extends Enumable<infer V> ? Modify<T, { enum?: string | Array<V> }> : T
+
+export type IPCify<T extends Schema, Mods> = IPCHandleEnumable<Modify<T, Mods>>
+
+export type IPCSchemaTypes = IPCify<
+	SchemaTypes,
+	{
+		type: string
+	}
+>
+
+export type IPCSchemaObj = IPCify<
+	SchemaObj,
+	{
+		type: "Object"
+		properties: Record<string, IPCSchema>
+	}
+>
+
+export type IPCSchemaArray = IPCify<
+	SchemaArray,
+	{
+		type: "Array"
+		items: IPCSchema
+	}
+>
+
+export type IPCSchemaResource = IPCify<
+	SchemaResource,
+	{
+		type: "Resource"
+		resourceId: string
+	}
+>
+
+export type IPCSchema = IPCSchemaTypes | IPCSchemaObj | IPCSchemaArray | IPCSchemaResource
 
 /////////////////////////////////
 

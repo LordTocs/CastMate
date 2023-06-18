@@ -4,14 +4,14 @@ import path from "path"
 import { fileURLToPath } from "node:url"
 
 import { subpackage } from "../../vite-util/vite-subpackage-plugin"
-import Inspect from "vite-plugin-inspect"
+//import Inspect from "vite-plugin-inspect"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const dist = path.join(dirname, "dist")
 
 export default defineConfig({
 	base: "/overlays/",
-	plugins: [Inspect(), vue(), subpackage("castmate-overlay-components")],
+	plugins: [vue(), subpackage("castmate-overlay-components")],
 	resolve: {
 		alias: {
 			path: "path-browserify",

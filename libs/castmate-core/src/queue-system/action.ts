@@ -1,7 +1,9 @@
+import { IPCActionDefinition } from "castmate-schema"
 import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
 import { SemanticVersion } from "../util/type-helpers"
+import { ipcConvertSchema } from "../util/ipc-schema"
 
 interface ActionMetaData {
 	id: string
@@ -33,6 +35,7 @@ export interface ActionDefinition {
 	readonly color?: Color
 
 	invoke(config: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
+	toIPC(): IPCActionDefinition
 }
 
 class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>
@@ -75,6 +78,18 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 		if (abortSignal.aborted) return
 
 		return await this.spec.invoke(config, contextData, abortSignal)
+	}
+
+	toIPC(): IPCActionDefinition {
+		return {
+			id: this.id,
+			name: this.name,
+			description: this.description,
+			icon: this.icon,
+			color: this.color,
+			config: ipcConvertSchema(this.spec.config),
+			result: this.spec.result ? ipcConvertSchema(this.spec.result) : undefined,
+		}
 	}
 }
 

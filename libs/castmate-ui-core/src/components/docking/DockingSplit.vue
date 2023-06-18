@@ -1,52 +1,71 @@
 <template>
-	<div class="frame-split" :class="{ horizontal: props.horizontal, vertical: !props.horizontal }">
-		<template v-for="(view, i) in views">
-			<docking-frame v-if="!isSplit(view)" />
-			<docking-split v-else />
-			<docking-divider v-if="i < views.length - 1" :horizontal="props.horizontal" />
+	<div class="docked-split" :class="{ horizontal, vertical }">
+		<template v-for="(division, i) in modelObj.divisions" :key="division.id">
+			<docking-split
+				v-if="modelObj.divisions[i].type == 'split'"
+				v-model="(modelObj.divisions[i] as DockedSplit)"
+				:style="getSplitStyle(i)"
+			/>
+			<docking-frame v-else v-model="(modelObj.divisions[i] as DockedFrame)" :style="getSplitStyle(i)" />
+			<docking-divider
+				v-if="i != modelObj.divisions.length - 1"
+				v-model="modelObj.dividers[i]"
+				:direction="modelObj.direction"
+			/>
 		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue"
-import DockingDivider from "./DockingDivider.vue"
+import { type DockedSplit, type DockedFrame } from "../../util/docking"
 import DockingFrame from "./DockingFrame.vue"
-/*
-[
-	{ width: 0.5 }
-	{ width: 0.5 }
-	{ width:}
-]
+import DockingDivider from "./DockingDivider.vue"
+import { useVModel } from "@vueuse/core"
 
-*/
-const props = defineProps({
-	modelValue: {},
-	horizontal: { props: Boolean, default: false },
-})
+const props = defineProps<{
+	modelValue: DockedSplit
+}>()
 
 const emit = defineEmits(["update:modelValue"])
 
-const views = computed(() => props.modelValue ?? [])
+const modelObj = useVModel(props, "modelValue", emit)
 
-function isSplit(view) {
-	return false
+const horizontal = computed(() => props.modelValue.direction == "horizontal")
+const vertical = computed(() => props.modelValue.direction == "vertical")
+
+const sizes = computed(() => {
+	let remaining = 1
+
+	for (const divider of props.modelValue.dividers) {
+		remaining -= divider
+	}
+
+	return [...props.modelValue.dividers, remaining]
+})
+
+function getSplitStyle(index: number) {
+	return {
+		[horizontal.value ? "width" : "height"]: `calc(${sizes.value[index] * 100}% - ${
+			props.modelValue.dividers.length * 3
+		}px)`,
+	}
 }
 </script>
 
 <style scoped>
-.docking-view {
-	background-color: blue;
-}
-
-.frame-split {
+.docked-split {
 	width: 100%;
 	height: 100%;
 }
 
 .horizontal {
+	display: flex;
+	flex-direction: row;
 }
 
 .vertical {
+	display: flex;
+	flex-direction: column;
 }
 </style>

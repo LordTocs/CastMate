@@ -2,6 +2,8 @@ import { Color } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
+import { ipcConvertSchema } from "../util/ipc-schema"
+import { IPCTriggerDefinition } from "castmate-schema"
 
 interface TriggerMetaData {
 	id: string
@@ -27,6 +29,7 @@ export interface TriggerDefinition {
 	readonly version: string
 
 	handle(config: any, context: any): Promise<boolean>
+	toIPC(): IPCTriggerDefinition
 }
 
 class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema extends Schema> {
@@ -58,6 +61,19 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 
 	async handle(config: SchemaType<ConfigSchema>, context: SchemaType<ContextDataSchema>): Promise<boolean> {
 		return await this.spec.handle(config, context)
+	}
+
+	toIPC(): IPCTriggerDefinition {
+		return {
+			id: this.id,
+			name: this.name,
+			description: this.description,
+			icon: this.icon,
+			color: this.color,
+			version: this.version,
+			config: ipcConvertSchema(this.spec.config),
+			context: ipcConvertSchema(this.spec.context),
+		}
 	}
 }
 
