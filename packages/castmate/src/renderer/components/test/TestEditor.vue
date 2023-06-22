@@ -1,3 +1,11 @@
 <template>
-	<h1>HELLO</h1>
+	<h1>Blah {{ modelValue?.name }}</h1>
 </template>
+
+<script setup lang="ts">
+const props = defineProps<{
+	modelValue: {
+		name?: string
+	}
+}>()
+</script>

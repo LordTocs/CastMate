@@ -1,14 +1,10 @@
 <template>
-	<div
-		class="divider"
-		:class="{ horizontal: direction == 'horizontal', vertical: direction == 'vertical' }"
-		@mousedown="onMouseDown"
-	></div>
+	<div class="divider" :class="{ horizontal, vertical, grabbed }" @mousedown="onMouseDown"></div>
 </template>
 
 <script setup lang="ts">
 import { useEventListener } from "@vueuse/core"
-import { ref } from "vue"
+import { ref, computed } from "vue"
 
 const props = defineProps<{
 	direction: "horizontal" | "vertical"
@@ -29,20 +25,29 @@ useEventListener("mouseup", (ev) => {
 	ev.stopPropagation()
 	grabbed.value = false
 })
+
+const horizontal = computed(() => props.direction == "horizontal")
+const vertical = computed(() => props.direction == "vertical")
+
+const clientAxis = computed(() => (props.direction == "horizontal" ? "clientX" : "clientY"))
 </script>
 
 <style scoped>
 .divider {
-	background-color: red;
+	background-color: var(--surface-border);
 }
 
-.horizontal {
+.grabbed {
+	background-color: var(--primary-color);
+}
+
+.vertical {
 	height: 3px;
 	width: 100%;
 	cursor: row-resize;
 }
 
-.vertical {
+.horizontal {
 	width: 3px;
 	height: 100%;
 	cursor: col-resize;

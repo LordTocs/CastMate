@@ -7,28 +7,81 @@
 
 <script setup lang="ts">
 import SystemBar from "./components/system/SystemBar.vue"
-import { DockingArea, type DockedSplit } from "castmate-ui-core"
+import { useDocumentStore, DockingArea, type DockedArea } from "castmate-ui-core"
 import TestEditor from "./components/test/TestEditor.vue"
-import { ref } from "vue"
+import { onMounted, ref } from "vue"
+import { nanoid } from "nanoid/non-secure"
 
-const dockedInfo = ref<DockedSplit>({
+const documentStore = useDocumentStore()
+
+onMounted(() => {
+	const docs = [
+		documentStore.addDocument(
+			{
+				name: "Test 1",
+			},
+			"test"
+		),
+		documentStore.addDocument(
+			{
+				name: "Test 2",
+			},
+			"test"
+		),
+		documentStore.addDocument(
+			{
+				name: "Test 3",
+			},
+			"test"
+		),
+		documentStore.addDocument(
+			{
+				name: "Test 4",
+			},
+			"test"
+		),
+	]
+
+	dockedInfo.value.divisions.push({
+		id: nanoid(),
+		type: "frame",
+		currentTab: docs[0].id,
+		tabs: [
+			{
+				id: nanoid(),
+				documentId: docs[0].id,
+			},
+			{
+				id: nanoid(),
+				documentId: docs[1].id,
+			},
+		],
+	})
+	dockedInfo.value.divisions.push({
+		id: nanoid(),
+		type: "frame",
+		currentTab: docs[2].id,
+		tabs: [
+			{
+				id: nanoid(),
+				documentId: docs[2].id,
+			},
+			{
+				id: nanoid(),
+				documentId: docs[3].id,
+			},
+		],
+	})
+	dockedInfo.value.dividers.push(0.5)
+})
+
+const dockedInfo = ref<DockedArea>({
 	id: "abc",
 	type: "split",
 	direction: "horizontal",
-	divisions: [
-		{
-			id: "bcd",
-			type: "frame",
-			currentTab: "cde",
-			tabs: [
-				{
-					id: "cde",
-					document: { value: "hello" },
-					component: TestEditor,
-				},
-			],
-		},
-	],
+	dividers: [],
+	divisions: [],
+	dragging: false,
 })
 </script>
 

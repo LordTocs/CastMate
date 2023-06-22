@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.0.3"
+    "typescript": "*"
   },
   "dependencies": {
     "@twurple/api": "^6.2.1",

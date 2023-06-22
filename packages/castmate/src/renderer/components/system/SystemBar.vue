@@ -13,14 +13,14 @@
 <script setup lang="ts">
 import PButton from "primevue/button"
 import PMenubar from "primevue/menubar"
-import { type MenuItem } from "primevue/menuitem"
+//import PMenuItem, { type MenuItem } from "primevue/menuitem" //WTF man
 import { ref } from "vue"
 
 const props = defineProps<{
 	title: string
 }>()
 
-const menuItems = ref<MenuItem[]>([
+const menuItems = ref([
 	{
 		label: "File",
 		icon: "pi pi-fw pi-file",

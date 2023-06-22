@@ -4,7 +4,6 @@ import { rmSync } from "fs"
 import vue from "@vitejs/plugin-vue"
 import electron from "vite-plugin-electron"
 import renderer from "vite-plugin-electron-renderer"
-import dts from "vite-plugin-dts"
 
 import { fileURLToPath } from "node:url"
 //import { nodeResolve } from "@rollup/plugin-node-resolve"

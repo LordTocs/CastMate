@@ -10,11 +10,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.0.3"
+    "typescript": "*"
   },
   "dependencies": {
     "castmate-core": "workspace:^",
     "castmate-schema": "workspace:^",
-    "obs-websocket-js": "^5.0.3"
+    "obs-websocket-js": "*"
   }
 }

@@ -3,21 +3,23 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "main": "src/main.ts",
   "devMain": "src/main.ts",
-  "types": "./dist/main.d.ts",
+  "types": "./dist/types/main.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vue-tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@vueuse/core": "*",
-    "vue": "*"
+    "pinia": "*",
+    "vue": "*",
+    "nanoid": "*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "*",
-    "@vue/tsconfig": "*",
-    "vite": "*"
+    "typescript": "*",
+    "vite": "*",
+    "vue-tsc": "*"
   }
 }

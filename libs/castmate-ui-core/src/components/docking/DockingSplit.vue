@@ -1,5 +1,5 @@
 <template>
-	<div class="docked-split" :class="{ horizontal, vertical }">
+	<!-- <div class="docked-split" :class="{ horizontal, vertical }">
 		<template v-for="(division, i) in modelObj.divisions" :key="division.id">
 			<docking-split
 				v-if="modelObj.divisions[i].type == 'split'"
@@ -13,7 +13,16 @@
 				:direction="modelObj.direction"
 			/>
 		</template>
-	</div>
+	</div> -->
+	<p-splitter class="docked-split" :layout="modelValue.direction">
+		<p-splitter-panel v-for="(division, i) in modelObj.divisions" :key="division.id">
+			<docking-split
+				v-if="modelObj.divisions[i].type == 'split'"
+				v-model="(modelObj.divisions[i] as DockedSplit)"
+			/>
+			<docking-frame v-else v-model="(modelObj.divisions[i] as DockedFrame)" />
+		</p-splitter-panel>
+	</p-splitter>
 </template>
 
 <script setup lang="ts">
@@ -21,6 +30,9 @@ import { computed } from "vue"
 import { type DockedSplit, type DockedFrame } from "../../util/docking"
 import DockingFrame from "./DockingFrame.vue"
 import DockingDivider from "./DockingDivider.vue"
+
+import PSplitter from "primevue/splitter"
+import PSplitterPanel from "primevue/splitterpanel"
 import { useVModel } from "@vueuse/core"
 
 const props = defineProps<{
