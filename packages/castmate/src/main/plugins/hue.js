@@ -403,7 +403,7 @@ class HUEIotProvider extends IoTProvider {
 				`hue.${update.id}`
 			)
 
-			console.log(update, plug?.id, light?.id)
+			//console.log(update, plug?.id, light?.id)
 
 			if (plug) {
 				if (update.on) {
