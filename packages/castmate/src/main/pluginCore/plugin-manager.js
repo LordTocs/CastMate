@@ -44,6 +44,7 @@ export class PluginManager {
 			"govee",
 			"elgato",
 			"lifx",
+			"wyze",
 		]
 
 		//Todo: This relative require is weird.
