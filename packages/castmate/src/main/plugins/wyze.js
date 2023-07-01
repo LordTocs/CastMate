@@ -1,10 +1,11 @@
-import { IoTProvider, Plug } from "../iot/iot-manager"
-import Wyze from "wyze-node"
+import { IoTProvider, Light, Plug } from "../iot/iot-manager"
 import { reactify } from "../state/reactive"
 import moment from "moment"
 import axios from "axios"
 import md5 from "md5"
 import logger from "../utils/logger"
+import { clamp, isBoolean } from "lodash"
+import * as chromatism from "chromatism2"
 
 const LIGHT_PRODUCT_TYPES = ["MeshLight"]
 const PLUG_PRODUCT_TYPES = ["Plug"]
@@ -22,6 +23,35 @@ const WYZE_SV = "9d74946e652647e9b6c9d59326aef104"
 
 function getProp(propList, propName) {
 	return propList.find((i) => i.pid === propName)
+}
+
+const WyzeProps = {
+	power: "P3",
+	color: "P1507",
+	brightness: "P1501",
+	colorTemp: "P1502", //Kelvin [1800, 6500]
+}
+
+const WyzePropsReverse = {}
+
+for (let k in WyzeProps) {
+	WyzePropsReverse[WyzeProps[k]] = k
+}
+
+function propsToWyzeList(props = {}) {
+	return Object.keys(props).map((k) => {
+		const wyzePid = WyzeProps[k]
+		let value = props[k]
+
+		if (isBoolean(value)) {
+			value = value ? 1 : 0
+		}
+
+		return {
+			pid: wyzePid,
+			pvalue: value.toString(),
+		}
+	})
 }
 
 class WyzeApi {
@@ -156,14 +186,35 @@ class WyzeApi {
 		return result
 	}
 
-	async _runAction(instanceId, providerKey, actionKey) {
-		const result = await this._apiRequest("/app/v2/auto/run_action", {
-			provider_key: providerKey,
-			instance_id: instanceId,
+	async _runAction(mac, model, actionKey, props) {
+		const data = {
+			provider_key: model,
+			instance_id: mac,
 			action_key: actionKey,
-			action_params: {}, //??
-			custom_string: "", //??
-		})
+			action_params: props
+				? {
+						list: [
+							{
+								mac,
+								plist: propsToWyzeList(props),
+							},
+						],
+				  }
+				: {},
+			custom_string: "",
+		}
+
+		const result = await this._apiRequest("/app/v2/auto/run_action", data)
+
+		console.log(
+			"Action",
+			actionKey,
+			mac,
+			model,
+			data.action_params.list?.[0]?.plist
+		)
+
+		console.log(result.data)
 
 		return result
 	}
@@ -172,8 +223,7 @@ class WyzeApi {
 		const result = await this._apiRequest(
 			"/app/v2/home_page/get_object_list"
 		)
-		console.log("OBJ LIST", result.data)
-		return result.data.data.device_list
+		return result.data.data.device_list ?? []
 	}
 
 	async turnOff(deviceMac, deviceModel) {
@@ -199,9 +249,26 @@ class WyzeApi {
 	async getDeviceState(deviceMac, deviceModel) {
 		const info = await this.getDeviceInfo(deviceMac, deviceModel)
 
-		return {
-			on: getProp(info.property_list, "P3")?.value === "1",
+		const result = {}
+
+		for (const prop of info.property_list) {
+			const propName = WyzePropsReverse[prop.pid]
+			if (propName) {
+				const value = prop.value
+				if (propName != "color") {
+					const num = Number.parseInt(value)
+					if (!isNaN(num)) {
+						result[propName] = num
+					}
+				} else {
+					result[propName] = value
+				}
+			}
 		}
+
+		console.log("DeviceState", deviceMac, deviceModel, result)
+
+		return result
 	}
 }
 
@@ -228,11 +295,11 @@ class WyzePlug extends Plug {
 
 	async setPlugState(on) {
 		if (on === "toggle") {
-			const { on: currentOn } = await this.wyze.getDeviceState(
+			const { power } = await this.wyze.getDeviceState(
 				this.mac,
 				this.model
 			)
-			on = !currentOn
+			on = !power
 		}
 
 		if (on) {
@@ -240,6 +307,67 @@ class WyzePlug extends Plug {
 		} else {
 			await this.wyze.turnOff(this.mac, this.model)
 		}
+	}
+}
+
+class WyzeBulb extends Light {
+	constructor(wyzeDevice, wyze) {
+		super()
+
+		this.id = "wyze." + wyzeDevice.mac
+		this.mac = wyzeDevice.mac
+		this.model = wyzeDevice.product_model
+
+		this.wyze = wyze
+
+		this.config = {
+			name: wyzeDevice.nickname,
+			plugin: "wyze",
+			type: "bulb",
+			rgb: { available: true },
+			dimming: { available: true },
+			kelvin: { available: true, min: 1800, max: 6500 },
+		}
+	}
+
+	async setLightState(on, color, duration) {
+		if (on === "toggle") {
+			const { power } = await this.wyze.getDeviceState(
+				this.mac,
+				this.model
+			)
+			on = !power
+		}
+
+		const props = {}
+
+		if (on != null) {
+			props.power = on ? "1" : "0"
+		}
+
+		if ("bri" in color) {
+			props.brightness = clamp(Number(color.bri), 0, 100)
+		}
+
+		if ("hue" in color || "sat" in color) {
+			const hue = clamp(color.hue ?? 0, 0, 360)
+			const sat = clamp(color.sat ?? 100, 0, 100)
+			const bri = clamp(color.bri ?? 100, 0, 100)
+			props.color = chromatism
+				.convert({ h: hue, s: sat, v: bri })
+				.hex.substring(1)
+		}
+
+		if ("kelvin" in color) {
+			props.colorTemp = clamp(Math.round(color.kelvin), 2000, 6500)
+		}
+
+		await this.wyze._runAction(
+			this.mac,
+			this.model,
+			"set_mesh_property",
+			props
+		)
 	}
 }
 
@@ -251,6 +379,17 @@ class WyzeIotProvider extends IoTProvider {
 		this.wyze = new WyzeApi(this.pluginObj)
 	}
 
+	setupPolling() {
+		if (this.pollingInterval) {
+			clearInterval(this.pollingInterval)
+			this.pollingInterval = null
+		}
+		this.pollingInterval = setInterval(
+			() => this.refreshDevices(),
+			30 * 1000
+		)
+	}
+
 	async relog() {
 		await this.clearResources()
 
@@ -258,32 +397,50 @@ class WyzeIotProvider extends IoTProvider {
 
 		if (await this.wyze.login()) {
 			await this.refreshDevices()
+			this.setupPolling()
 		}
 	}
 
 	async refreshDevices() {
 		try {
+			const existingLights = this.lights
+			const existingPlugs = this.plugs
+
 			const devices = await this.wyze.getDevices()
 
-			for (let device of devices) {
+			const newDevices = devices.filter((wd) => {
+				const l = existingLights.find((l) => l.mac == wd.mac)
+				const p = existingPlugs.find((p) => p.mac == wd.mac)
+				return (p == null) & (l == null)
+			})
+
+			for (let device of newDevices) {
 				if (PLUG_PRODUCT_TYPES.includes(device.product_type)) {
 					//PLUG
 					console.log("Plug!", device)
 					const plug = new WyzePlug(device, this.wyze)
+
 					await this._addNewPlug(plug)
 				} else if (LIGHT_PRODUCT_TYPES.includes(device.product_type)) {
-					//console.log("LIGHT", device)
+					console.log("LIGHT", device)
+					const bulb = new WyzeBulb(device, this.wyze)
+					await this._addNewLight(bulb)
 				} else {
 					console.log("UNKNOWN", device.nickname, device.product_type)
 				}
 			}
-		} catch {
+		} catch (err) {
 			//No auth
+			console.log("ERROR WITH WYZE", err)
+			return false
 		}
+		return true
 	}
 
 	async initServices() {
-		await this.refreshDevices()
+		if (await this.refreshDevices()) {
+			this.setupPolling()
+		}
 	}
 
 	async loadPlugs() {
