@@ -202,15 +202,15 @@ class WyzeApi {
 
 		const result = await this._apiRequest("/app/v2/auto/run_action", data)
 
-		console.log(
-			"Action",
-			actionKey,
-			mac,
-			model,
-			data.action_params.list?.[0]?.plist
-		)
+		// console.log(
+		// 	"Action",
+		// 	actionKey,
+		// 	mac,
+		// 	model,
+		// 	data.action_params.list?.[0]?.plist
+		// )
 
-		console.log(result.data)
+		//console.log(result.data)
 
 		return result
 	}
@@ -262,7 +262,7 @@ class WyzeApi {
 			}
 		}
 
-		console.log("DeviceState", deviceMac, deviceModel, result)
+		// console.log("DeviceState", deviceMac, deviceModel, result)
 
 		return result
 	}
@@ -413,12 +413,12 @@ class WyzeIotProvider extends IoTProvider {
 			for (let device of newDevices) {
 				if (PLUG_PRODUCT_TYPES.includes(device.product_type)) {
 					//PLUG
-					console.log("Plug!", device)
+					// console.log("Plug!", device)
 					const plug = new WyzePlug(device, this.wyze)
 
 					await this._addNewPlug(plug)
 				} else if (LIGHT_PRODUCT_TYPES.includes(device.product_type)) {
-					console.log("LIGHT", device)
+					// console.log("LIGHT", device)
 					const bulb = new WyzeBulb(device, this.wyze)
 					await this._addNewLight(bulb)
 				} else {
