@@ -55,6 +55,8 @@ export default {
 	},
 	methods: {
 		parseTimeStr(str) {
+			if (!str) return 0
+
 			let [hours, minutes, seconds] = str.split(":")
 			if (seconds == undefined) {
 				seconds = minutes
@@ -78,6 +80,8 @@ export default {
 			)
 
 			if (existingTimer) return
+
+			if (timerObj.interval == 0) return
 
 			const startInterval = () => {
 				let msInterval = 1000 * timerObj.interval
