@@ -21,10 +21,6 @@ const WYZE_APP_VERSION = "com.hualai.WyzeCam___2.3.69"
 const WYZE_SC = "9f275790cab94a72bd206c8876429f3c"
 const WYZE_SV = "9d74946e652647e9b6c9d59326aef104"
 
-function getProp(propList, propName) {
-	return propList.find((i) => i.pid === propName)
-}
-
 const WyzeProps = {
 	power: "P3",
 	color: "P1507",
