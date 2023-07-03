@@ -19,14 +19,67 @@ onMounted(() => {
 		documentStore.addDocument(
 			{
 				name: "Test 1",
+				triggers: [
+					{
+						id: "abc",
+						plugin: "castmate",
+						trigger: "test",
+						queue: "main",
+						config: {},
+						sequence: {
+							actions: [],
+						},
+					},
+					{
+						id: "bcd",
+						plugin: "castmate",
+						trigger: "test",
+						queue: "main",
+						config: {},
+						sequence: {
+							actions: [],
+						},
+					},
+					{
+						id: "cde",
+						plugin: "castmate",
+						trigger: "test",
+						queue: "main",
+						config: {},
+						sequence: {
+							actions: [],
+						},
+					},
+					{
+						id: "def",
+						plugin: "castmate",
+						trigger: "test",
+						queue: "main",
+						config: {},
+						sequence: {
+							actions: [],
+						},
+					},
+					{
+						id: "efg",
+						plugin: "castmate",
+						trigger: "test",
+						queue: "main",
+						config: {},
+						sequence: {
+							actions: [],
+						},
+					},
+				],
 			},
-			"test"
+			"profile"
 		),
 		documentStore.addDocument(
 			{
 				name: "Test 2",
+				triggers: [],
 			},
-			"test"
+			"profile"
 		),
 		documentStore.addDocument(
 			{

@@ -7,6 +7,10 @@ export * from "./queue-system/trigger"
 export * from "./resources/resource"
 export * from "./resources/resource-registry"
 export * from "./resources/file-resource"
+
+export * from "./profile/profile"
+export * from "./queue-system/action-queue"
+
 /*
 import { nanoid } from "nanoid"
 import { defineAction } from "./queue-system/action"

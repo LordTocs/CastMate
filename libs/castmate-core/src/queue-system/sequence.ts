@@ -2,45 +2,15 @@ import { PluginManager } from "../plugins/plugin-manager"
 import { setAbortableTimeout } from "../util/abort-utils"
 import { SemanticVersion } from "../util/type-helpers"
 
-export class Sequence implements SequenceActions {
-	actions: (InstantAction | TimeAction | ActionStack | FlowAction)[]
-}
-
-interface ActionInfo {
-	id: string
-	plugin: string
-	action: string
-	version: SemanticVersion
-	config: any
-}
-
-interface SubFlow extends SequenceActions {
-	config: any
-}
-
-interface FlowAction extends ActionInfo {
-	subFlows: SubFlow[]
-}
-
-interface InstantAction extends ActionInfo {}
-
-interface TimeAction extends ActionInfo {
-	offsets: OffsetActions[]
-}
-
-interface ActionStack {
-	id: string
-	stack: InstantAction[]
-}
-
-interface SequenceActions {
-	actions: (InstantAction | TimeAction | ActionStack | FlowAction)[]
-}
-
-interface OffsetActions extends SequenceActions {
-	id: string
-	offset: number
-}
+import {
+	Sequence,
+	ActionInfo,
+	ActionStack,
+	TimeAction,
+	InstantAction,
+	SequenceActions,
+	OffsetActions,
+} from "castmate-schema"
 
 interface SequenceDebugger {
 	markStart(id: string): void

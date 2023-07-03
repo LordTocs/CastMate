@@ -1,5 +1,5 @@
 import { RegisterResource, ResourceStorage, defineResource } from "../resources/resource"
-import { Sequence } from "./sequence"
+import { Sequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 
 interface QueuedSequenceData<ContextData = any> {

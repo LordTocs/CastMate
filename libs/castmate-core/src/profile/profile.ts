@@ -1,6 +1,6 @@
 import { defineResource } from "../resources/resource"
 
-class Profile extends defineResource({
+export class Profile extends defineResource({
 	config: {
 		type: Object,
 		properties: {

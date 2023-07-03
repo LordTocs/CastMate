@@ -1,20 +1,15 @@
 <template>
-	<div class="tab">
-		<component :is="documentComponent" v-if="documentComponent && document" v-model="document.data" />
-	</div>
+	<document-editor :document-id="props.modelValue.documentId" class="tab" />
 </template>
 
 <script setup lang="ts">
 import { useVModel } from "@vueuse/core"
 import { type DockedTab } from "../../util/docking"
-import { useDocument, useDocumentComponent } from "../../util/document"
+import DocumentEditor from "../document/DocumentEditor.vue"
 
 const props = defineProps<{
 	modelValue: DockedTab
 }>()
-
-const document = useDocument(props.modelValue.documentId)
-const documentComponent = useDocumentComponent(document.value?.type)
 
 const emit = defineEmits(["update:modelValue"])
 
@@ -23,7 +18,7 @@ const modelObj = useVModel(props, "modelValue", emit)
 
 <style scoped>
 .tab {
-	display: relative;
+	display: flex;
 	background-color: var(--surface-a);
 	flex: 1;
 }

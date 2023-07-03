@@ -1,4 +1,4 @@
-import { useDocumentStore } from "./../../../../libs/castmate-ui-core/src/util/document"
+import { useDocumentStore } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
 
@@ -9,8 +9,15 @@ import "primevue/resources/themes/lara-dark-blue/theme.css"
 //core
 import "primevue/resources/primevue.min.css"
 
+import "primeicons/primeicons.css"
+import "primeflex/primeflex.css"
+
+import "@mdi/font/css/materialdesignicons.css"
+
 import { createPinia } from "pinia"
 import TestEditorVue from "./components/test/TestEditor.vue"
+import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
+import { initData } from "castmate-ui-core"
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -23,5 +30,8 @@ app.use(PrimeVue)
 app.use(pinia)
 
 useDocumentStore().registerDocumentComponent("test", TestEditorVue)
+useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
+
+initData()
 
 app.mount("#app")

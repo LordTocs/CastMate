@@ -12,9 +12,10 @@
   },
   "dependencies": {
     "@vueuse/core": "*",
+    "castmate-schema": "workspace:^",
+    "nanoid": "*",
     "pinia": "*",
-    "vue": "*",
-    "nanoid": "*"
+    "vue": "*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "*",

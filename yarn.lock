@@ -2668,6 +2668,7 @@ __metadata:
     nanoid: ^4.0.2
     pinia: ^2.1.4
     prettier: ^2.8.4
+    primeflex: ^3.3.1
     primevue: ^3.29.2
     typescript: ^5.1.3
     vite: ^4.3.9
@@ -2820,6 +2821,8 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    nanoid: "*"
     pinia: "*"
     typescript: "*"
     vite: "*"
@@ -2843,6 +2846,8 @@ __metadata:
   dependencies:
     "@mdi/font": ^7.1.96
     "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
     electron: "*"
@@ -2850,7 +2855,10 @@ __metadata:
     electron-devtools-installer: ^3.2.0
     electron-updater: ^4.6.1
     eslint: ^8.17.0
+    nanoid: "*"
     pinia: "*"
+    primeflex: "*"
+    primeicons: ^6.0.1
     primevue: "*"
     vite: "*"
     vite-plugin-electron: ^0.12.0
@@ -6412,6 +6420,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nanoid@npm:*, nanoid@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "nanoid@npm:4.0.2"
+  bin:
+    nanoid: bin/nanoid.js
+  checksum: 747c399cea4664dd0be1d0ec498ffd1ef8f1f5221676fc8b577e3f46f66d9afcddb9595d63d19a2e78d0bc6cc33984f65e66bf1682c850b9e26288883d96b53f
+  languageName: node
+  linkType: hard
+
 "nanoid@npm:^3.3.4":
   version: 3.3.4
   resolution: "nanoid@npm:3.3.4"
@@ -6436,15 +6453,6 @@ __metadata:
   bin:
     nanoid: bin/nanoid.js
   checksum: 7d5946df5c6d383694195b781ae7b5067c149d164ec71e910d6b06676309c3459b68af570b944fb5ecd5065d19df464f05700d141d70bb712ff8ca06642fd8df
-  languageName: node
-  linkType: hard
-
-"nanoid@npm:^4.0.2":
-  version: 4.0.2
-  resolution: "nanoid@npm:4.0.2"
-  bin:
-    nanoid: bin/nanoid.js
-  checksum: 747c399cea4664dd0be1d0ec498ffd1ef8f1f5221676fc8b577e3f46f66d9afcddb9595d63d19a2e78d0bc6cc33984f65e66bf1682c850b9e26288883d96b53f
   languageName: node
   linkType: hard
 
@@ -7090,6 +7098,20 @@ __metadata:
   bin:
     prettier: bin-prettier.js
   checksum: c173064bf3df57b6d93d19aa98753b9b9dd7657212e33b41ada8e2e9f9884066bb9ca0b4005b89b3ab137efffdf8fbe0b462785aba20364798ff4303aadda57e
+  languageName: node
+  linkType: hard
+
+"primeflex@npm:*, primeflex@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "primeflex@npm:3.3.1"
+  checksum: 3811f48d9b453141a13bdbfb17f272d01a0bb02fc507d4b77dcd5471feccd4d9e80f10f67dfdfc8571672a568c1aadf03179dd6a4d8536b3f60f7fa060e5bfad
+  languageName: node
+  linkType: hard
+
+"primeicons@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "primeicons@npm:6.0.1"
+  checksum: a1412fee16ddbd24e06052a7e94b973cf6f68fadb5349192101388f2681f822b3bde077948e6d53e9949f87148b495e4bf2b149ad07242de068d2e7233f4446c
   languageName: node
   linkType: hard
 
