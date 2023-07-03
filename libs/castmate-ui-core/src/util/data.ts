@@ -7,7 +7,14 @@ import {
 	type AsyncComponentOptions,
 	defineAsyncComponent,
 	ref,
+	computed,
+	type MaybeRef,
+	unref,
 } from "vue"
+
+import StringInputVue from "../components/data/inputs/StringInput.vue"
+import NumberInputVue from "../components/data/inputs/NumberInput.vue"
+import ObjectInputVue from "../components/data/inputs/ObjectInput.vue"
 
 export interface DataInputCommonProps<SchemaType> {
 	schema: SchemaType
@@ -65,20 +72,30 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 	}
 }
 
-export const useDataInputs = defineStore("data-components", () => {
+export const useDataInputStore = defineStore("data-components", () => {
 	const componentMap = ref<Map<string, Component>>(new Map())
 
-	function registerInputComponent<
-		T extends Component = {
-			new (): ComponentPublicInstance
-		}
-	>(type: string, source: AsyncComponentLoader<T> | AsyncComponentOptions<T>) {
-		componentMap.value.set(type, defineAsyncComponent(source))
+	function registerInputComponent(type: new (...args: any[]) => any, component: Component) {
+		componentMap.value.set(type.name, component)
 	}
 
-	function getInputComponent(type: string) {
-		return componentMap.value.get(type)
+	function getInputComponent(type: new (...args: any[]) => any) {
+		return componentMap.value.get(type.name)
 	}
 
 	return { registerInputComponent, getInputComponent }
 })
+
+export function useDataComponent(type: new (...args: any[]) => any) {
+	const inputStore = useDataInputStore()
+
+	return computed(() => inputStore.getInputComponent(type))
+}
+
+export function initData() {
+	const inputStore = useDataInputStore()
+
+	inputStore.registerInputComponent(String, StringInputVue)
+	inputStore.registerInputComponent(Number, NumberInputVue)
+	inputStore.registerInputComponent(Object, ObjectInputVue)
+}

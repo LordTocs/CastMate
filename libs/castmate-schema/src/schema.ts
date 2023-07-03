@@ -11,25 +11,28 @@ export interface Enumable<T> {
 	enum?: Array<EnumItem<T>> | (() => Promise<Array<EnumItem<T>>>) | ((context: any) => Promise<Array<EnumItem<T>>>)
 }
 
-type SchemaBase = {
+export type SchemaBase = {
 	name?: string
 	required?: boolean
 	default?: any
 }
 
-interface SchemaNumber extends Enumable<number> {
+export interface SchemaNumber extends Enumable<number> {
 	type: NumberConstructor
 	min?: number
 	max?: number
+	step?: number
+	slider?: boolean
+	unit?: string
 	template?: boolean
 }
 
-interface SchemaString extends Enumable<string> {
+export interface SchemaString extends Enumable<string> {
 	type: StringConstructor
 	template?: boolean
 }
 
-interface SchemaBoolean {
+export interface SchemaBoolean {
 	type: BooleanConstructor
 	trueIcon?: string
 	falseIcon?: string
