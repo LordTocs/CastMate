@@ -2,13 +2,13 @@
 	<div class="docking-frame">
 		<docking-tab-row v-model="modelObj" />
 		<div class="tab-area">
-			<docking-frame-drop-area />
 			<docking-tab-body
 				v-for="(tab, i) in modelObj.tabs"
 				:key="tab.id"
 				v-model="modelObj.tabs[i]"
 				v-show="tab.id == modelObj.currentTab"
 			/>
+			<docking-frame-drop-area />
 		</div>
 	</div>
 </template>
