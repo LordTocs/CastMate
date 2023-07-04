@@ -10,7 +10,7 @@ const props = defineProps<{
 	documentId: string
 }>()
 
-const document = useDocument(props.documentId)
+const document = useDocument(() => props.documentId)
 const documentComponent = useDocumentComponent(document.value?.type)
 
 const documentData = computed({
@@ -28,6 +28,4 @@ const documentData = computed({
 })
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
