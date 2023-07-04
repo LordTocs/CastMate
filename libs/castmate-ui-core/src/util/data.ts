@@ -2,14 +2,15 @@ import { type Schema, type IPCSchema, getTypeByName } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
 	type Component,
-	type ComponentPublicInstance,
-	type AsyncComponentLoader,
-	type AsyncComponentOptions,
-	defineAsyncComponent,
 	ref,
 	computed,
 	type MaybeRef,
+	type MaybeRefOrGetter,
 	unref,
+	shallowReactive,
+	shallowReadonly,
+	toValue,
+	markRaw,
 } from "vue"
 
 import StringInputVue from "../components/data/inputs/StringInput.vue"
@@ -76,7 +77,7 @@ export const useDataInputStore = defineStore("data-components", () => {
 	const componentMap = ref<Map<string, Component>>(new Map())
 
 	function registerInputComponent(type: new (...args: any[]) => any, component: Component) {
-		componentMap.value.set(type.name, component)
+		componentMap.value.set(type.name, markRaw(component))
 	}
 
 	function getInputComponent(type: new (...args: any[]) => any) {
@@ -86,10 +87,10 @@ export const useDataInputStore = defineStore("data-components", () => {
 	return { registerInputComponent, getInputComponent }
 })
 
-export function useDataComponent(type: new (...args: any[]) => any) {
+export function useDataComponent(type: MaybeRefOrGetter<new (...args: any[]) => any>) {
 	const inputStore = useDataInputStore()
 
-	return computed(() => inputStore.getInputComponent(type))
+	return computed(() => inputStore.getInputComponent(toValue(type)))
 }
 
 export function initData() {

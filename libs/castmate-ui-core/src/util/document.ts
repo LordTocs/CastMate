@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid/non-secure"
 import { defineStore } from "pinia"
-import { type MaybeRef, computed, ref, unref, type Component } from "vue"
+import { type MaybeRefOrGetter, computed, ref, unref, type Component, shallowReactive, toValue, markRaw } from "vue"
 
 type DataWithName = {
 	name?: string
@@ -11,6 +11,14 @@ export interface Document {
 	type: string
 	dirty: boolean
 	data: DataWithName
+}
+
+export interface DocumentData {
+	id: string
+}
+
+export interface DocumentDataSelection {
+	selectedIds: string[]
 }
 
 export const useDocumentStore = defineStore("documents", () => {
@@ -33,7 +41,7 @@ export const useDocumentStore = defineStore("documents", () => {
 	}
 
 	function registerDocumentComponent(type: string, component: Component) {
-		documentComponents.value.set(type, component)
+		documentComponents.value.set(type, markRaw(component))
 	}
 
 	return {
@@ -44,11 +52,11 @@ export const useDocumentStore = defineStore("documents", () => {
 	}
 })
 
-export function useDocumentComponent(type: MaybeRef<string | undefined>) {
+export function useDocumentComponent(type: MaybeRefOrGetter<string | undefined>) {
 	const documentStore = useDocumentStore()
 
 	return computed(() => {
-		const typeActual = unref(type)
+		const typeActual = toValue(type)
 		if (!typeActual) {
 			return undefined
 		}
@@ -56,10 +64,10 @@ export function useDocumentComponent(type: MaybeRef<string | undefined>) {
 	})
 }
 
-export function useDocument(id: MaybeRef<string>) {
+export function useDocument(id: MaybeRefOrGetter<string>) {
 	const documentStore = useDocumentStore()
 
 	return computed(() => {
-		return documentStore.documents?.get(unref(id))
+		return documentStore.documents?.get(toValue(id))
 	})
 }
