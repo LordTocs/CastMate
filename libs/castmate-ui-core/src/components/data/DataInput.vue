@@ -19,5 +19,5 @@ const emit = defineEmits(["update:modelValue"])
 
 const modelObj = useVModel(props, "modelValue", emit)
 
-const inputComponent = useDataComponent(props.schema.type)
+const inputComponent = useDataComponent(() => props.schema.type)
 </script>
