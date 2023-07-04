@@ -6,6 +6,7 @@ import PrimeVue from "primevue/config"
 
 //theme
 import "primevue/resources/themes/lara-dark-blue/theme.css"
+import "./css/theme.css"
 //core
 import "primevue/resources/primevue.min.css"
 
