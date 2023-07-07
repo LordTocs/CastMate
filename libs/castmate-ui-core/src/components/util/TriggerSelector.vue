@@ -35,7 +35,7 @@ interface TriggerValue {
 const props = withDefaults(
 	defineProps<{
 		modelValue: TriggerValue | undefined
-		label: string
+		label?: string
 	}>(),
 	{ label: "Trigger" }
 )
