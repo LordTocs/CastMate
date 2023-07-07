@@ -1,7 +1,9 @@
 <template>
 	<div class="trigger-card">
 		<div class="header">
-			<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
+			<div class="drag-handle">
+				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
+			</div>
 			<div class="flex flex-row flex-grow-1 align-items-center">
 				<span class="trigger-name">
 					{{ trigger?.name }}
@@ -13,7 +15,7 @@
 			<div class="config">
 				<trigger-selector v-model="triggerModel" class="mb-4 mt-4" />
 				<template v-if="trigger">
-					<data-input :schema="trigger.config" v-model="config" />
+					<data-input :schema="trigger.config" v-model="modelObj.config" />
 				</template>
 			</div>
 			<div class="automation"></div>
@@ -26,10 +28,9 @@ import { computed, ref } from "vue"
 import PButton from "primevue/button"
 import { type TriggerData } from "castmate-schema"
 import { useTrigger, DataInput, TriggerSelector } from "castmate-ui-core"
+import { useVModel } from "@vueuse/core"
 
 const open = ref(false)
-
-const config = ref(undefined)
 
 const props = defineProps<{
 	modelValue: TriggerData
@@ -53,6 +54,7 @@ const triggerModel = computed({
 const trigger = useTrigger(() => props.modelValue)
 
 const emit = defineEmits(["update:modelValue"])
+const modelObj = useVModel(props, "modelValue", emit)
 
 //const plugin = usePlugin(props.modelValue.plugin)
 </script>
@@ -82,7 +84,7 @@ const emit = defineEmits(["update:modelValue"])
 .config {
 	background-color: var(--surface-b);
 	min-height: 300px;
-	flex: 1;
+	user-select: none;
 }
 
 .automation {
@@ -92,5 +94,11 @@ const emit = defineEmits(["update:modelValue"])
 .trigger-name {
 	user-select: none;
 	line-height: 1rem;
+}
+
+.drag-handle {
+	cursor: grab;
+	background-color: red;
+	user-select: none;
 }
 </style>
