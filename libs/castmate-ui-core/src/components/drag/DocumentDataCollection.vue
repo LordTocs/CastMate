@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Component, ref } from "vue"
+import { type Component, ref, type VNode, computed } from "vue"
 import { useVModel } from "@vueuse/core"
 import { type DocumentData, type DocumentDataSelection } from "../../util/document"
 import _cloneDeep from "lodash/cloneDeep"
@@ -52,10 +52,14 @@ const modelObj = useVModel(props, "modelValue", emit)
 
 ///DRAG HANDLERS
 
+type VueHTMLElement = HTMLElement & {
+	__vnode: VNode
+}
+
 const draggingItems = ref(false)
 const dragArea = ref<HTMLElement | null>(null)
 const dragHovering = ref(false)
-const dataComponents = ref<HTMLElement[]>([])
+const dataComponents = ref<VueHTMLElement[]>([])
 const insertionIndex = ref<number>(0)
 
 function dragOver(evt: DragEvent) {
@@ -72,7 +76,7 @@ function dragOver(evt: DragEvent) {
 		return
 	}
 
-	console.log("DropEffect D", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
+	//console.log("DropEffect D", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
 
 	if (evt.dataTransfer.effectAllowed == "move") evt.dataTransfer.dropEffect = "move"
 	if (evt.dataTransfer.effectAllowed == "copy") evt.dataTransfer.dropEffect = "copy"
@@ -88,7 +92,7 @@ interface FromTo {
 }
 
 function dragEnter(evt: DragEvent) {
-	console.log("DropEffect E", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
+	//console.log("DropEffect E", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
 
 	if (!evt.dataTransfer) {
 		console.log("No transfer")
@@ -113,7 +117,7 @@ function dragEnter(evt: DragEvent) {
 }
 
 function dragExit(evt: DragEvent) {
-	console.log("DropEffect L", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
+	//console.log("DropEffect L", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
 
 	if (!evt.dataTransfer) {
 		console.log("No transfer")
@@ -136,11 +140,17 @@ function dragExit(evt: DragEvent) {
 	dragHovering.value = false
 }
 
+const orderedDataComponents = computed(() => {
+	return modelObj.value.map((i) => dataComponents.value.find((c) => c.__vnode.key == i.id))
+})
+
 function getInsertionIndex(clientY: number) {
 	let result = 0
 
-	for (let i = 0; i < dataComponents.value.length; ++i) {
-		const component = dataComponents.value[i]
+	for (let i = 0; i < orderedDataComponents.value.length; ++i) {
+		const component = orderedDataComponents.value[i]
+
+		if (!component) continue
 
 		const boundingRect = component.getBoundingClientRect()
 
@@ -150,7 +160,7 @@ function getInsertionIndex(clientY: number) {
 			result = i + 1
 		}
 
-		if (component.clientTop > clientY) {
+		if (boundingRect.top > clientY) {
 			break
 		}
 	}
@@ -178,6 +188,8 @@ function dropped(evt: DragEvent) {
 	const dataStr = evt.dataTransfer.getData(props.dataType)
 	let data: DocumentData[] = []
 
+	console.log("Inserting at", insertionIdx)
+
 	try {
 		data = JSON.parse(dataStr)
 	} catch (err) {
@@ -199,7 +211,7 @@ function dropped(evt: DragEvent) {
 				continue
 			}
 
-			if (idx <= insertionIdx) {
+			if (idx < insertionIdx) {
 				--insertionIdx
 			}
 
@@ -208,6 +220,7 @@ function dropped(evt: DragEvent) {
 	}
 
 	if (evt.dataTransfer.effectAllowed == "move" || evt.dataTransfer.effectAllowed == "copy") {
+		console.log("Final inserting at", insertionIdx)
 		modelObj.value.splice(insertionIdx, 0, ...data)
 	}
 }
@@ -251,7 +264,7 @@ function itemMouseDown(i: number, evt: MouseEvent) {
 }
 
 function itemDragStart(i: number, evt: DragEvent) {
-	console.log("Drag Start", evt.target, evt)
+	//console.log("Drag Start", evt.target, evt)
 
 	if (!evt.target) return
 	if (!evt.dataTransfer) return
@@ -274,7 +287,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 	if (!evt.dataTransfer) return
 	dragTarget = null
 
-	console.log("DragEnd", evt.dataTransfer.dropEffect, evt.dataTransfer.effectAllowed)
+	//console.log("DragEnd", evt.dataTransfer.dropEffect, evt.dataTransfer.effectAllowed)
 
 	if (evt.dataTransfer.dropEffect == "none") {
 		//No drop
