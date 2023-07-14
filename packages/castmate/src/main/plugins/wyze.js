@@ -88,6 +88,10 @@ class WyzeApi {
 
 	async login() {
 		try {
+			if (!this.username || !this.password) {
+				return false
+			}
+
 			logger.info("Doing Wyze Login")
 			const result = await axios.post(
 				`${WYZE_AUTH_URL}/user/login`,
@@ -142,6 +146,18 @@ class WyzeApi {
 			accessToken,
 			refreshToken,
 		})
+	}
+
+	async tryAuth() {
+		const { accessToken } = await this.getTokens()
+
+		if (!accessToken) {
+			if (!(await this.login())) {
+				return false
+			}
+		}
+
+		return true
 	}
 
 	async _apiRequest(path, data) {
@@ -387,6 +403,11 @@ class WyzeIotProvider extends IoTProvider {
 	}
 
 	async relog() {
+		if (this.relogging) {
+			return
+		}
+		this.relogging = true
+
 		await this.clearResources()
 
 		await this.wyze.clearTokens()
@@ -395,10 +416,15 @@ class WyzeIotProvider extends IoTProvider {
 			await this.refreshDevices()
 			this.setupPolling()
 		}
+		this.relogging = false
 	}
 
 	async refreshDevices() {
 		try {
+			if (!(await this.wyze.tryAuth())) {
+				return false
+			}
+
 			const existingLights = this.lights
 			const existingPlugs = this.plugs
 
