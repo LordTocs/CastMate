@@ -98,6 +98,22 @@ function doMatch(input, compare, matchType) {
 	}
 }
 
+function convertRewardObj(r) {
+	return {
+		id: r.id,
+		title: r.title,
+		backgroundColor: r.backgroundColor,
+		prompt: r.prompt,
+		cost: r.cost,
+		globalCooldown: r.globalCooldown || 0,
+		userInputRequired: r.userInputRequired,
+		autoFulfill: r.autoFulfill,
+		maxRedemptionsPerStream: r.maxRedemptionsPerStream,
+		maxRedemptionsPerUserPerStream: r.maxRedemptionsPerUserPerStream,
+		isEnabled: r.isEnabled,
+	}
+}
+
 export default {
 	name: "twitch",
 	uiName: "Twitch",
@@ -913,20 +929,7 @@ export default {
 					this.state.channelId,
 					true
 				)
-			).map((r) => ({
-				id: r.id,
-				title: r.title,
-				backgroundColor: r.backgroundColor,
-				prompt: r.prompt,
-				cost: r.cost,
-				globalCooldown: r.globalCooldown || 0,
-				userInputRequired: r.userInputRequired,
-				autoFulfill: r.autoFulfill,
-				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
-				maxRedemptionsPerUserPerStream:
-					r.maxRedemptionsPerUserPerStream,
-				isEnabled: r.isEnabled,
-			}))
+			).map(convertRewardObj)
 			this.logger.info(`Got rewards, ${this.rewards.length}`)
 		},
 
@@ -1082,20 +1085,7 @@ export default {
 		},
 
 		getRewards() {
-			return this.rewards.map((r) => ({
-				id: r.id,
-				title: r.title,
-				backgroundColor: r.backgroundColor,
-				prompt: r.prompt,
-				cost: r.cost,
-				userInputRequired: r.userInputRequired,
-				autoFulfill: r.autoFulfill,
-				globalCooldown:
-					r.globalCooldown > 0 ? r.globalCooldown : undefined,
-				maxRedemptionsPerStream: r.maxRedemptionsPerStream,
-				maxRedemptionsPerUserPerStream:
-					r.maxRedemptionsPerUserPerStream,
-			}))
+			return this.rewards.map(convertRewardObj)
 		},
 
 		async createReward(rewardDef) {
@@ -1119,7 +1109,7 @@ export default {
 						}
 					)
 
-				this.rewards.push(reward)
+				this.rewards.push(convertRewardObj(reward))
 			} catch (err) {
 				const bodyStr = err?.body
 				if (!bodyStr) throw err
@@ -1163,7 +1153,7 @@ export default {
 				throw body.message
 			}
 
-			this.rewards[idx] = reward
+			this.rewards[idx] = convertRewardObj(reward)
 		},
 
 		async deleteReward(id) {

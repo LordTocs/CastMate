@@ -10,6 +10,7 @@
 	"main": "dist/electron/main/backgroundLoader.js",
 	"electronVersion": "20.0.1",
 	"dependencies": {
+		"@azure/web-pubsub-client": "^1.0.0-beta.3",
 		"@j3lte/govee-lan-controller": "^1.0.1",
 		"@twurple/api": "^6.2.0",
 		"@twurple/auth": "^6.2.0",
