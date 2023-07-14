@@ -4,6 +4,7 @@ import GoveeCloud from "node-govee-led"
 import { IoTProvider, Light, Plug } from "../iot/iot-manager"
 import { reactify } from "../state/reactive"
 import * as chromatism from "chromatism2"
+import logger from "../utils/logger"
 
 class GoveeBulb extends Light {
 	constructor(cloudDesc) {
@@ -427,9 +428,11 @@ class GoveeIoTProvider extends IoTProvider {
 			}
 		)
 
-		await this.goveeLan.waitForReady()
-
-		this.startLanPolling()
+		// TODO: Why does the LAN search sometimes fail?
+		this.goveeLan.waitForReady().then(() => {
+			logger.info("Successfully Started Govee LAN")
+			this.startLanPolling()
+		})
 	}
 
 	async loadPlugs() {
