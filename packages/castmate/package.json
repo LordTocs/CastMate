@@ -10,6 +10,7 @@
 	"main": "dist/electron/main/backgroundLoader.js",
 	"electronVersion": "20.0.1",
 	"dependencies": {
+		"@azure/web-pubsub-client": "^1.0.0-beta.3",
 		"@j3lte/govee-lan-controller": "^1.0.1",
 		"@twurple/api": "^6.2.0",
 		"@twurple/auth": "^6.2.0",
@@ -34,7 +35,9 @@
 		"http-proxy": "^1.18.1",
 		"lifx-lan-client": "^2.1.0",
 		"lodash": "^4.17.21",
+		"md5": "^2.3.0",
 		"mixpanel": "^0.16.0",
+		"moment": "^2.29.4",
 		"ms-speech-api": "^0.0.1",
 		"nanoid": "^4.0.0",
 		"node-govee-led": "^1.5.1",

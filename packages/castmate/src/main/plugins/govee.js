@@ -4,6 +4,7 @@ import GoveeCloud from "node-govee-led"
 import { IoTProvider, Light, Plug } from "../iot/iot-manager"
 import { reactify } from "../state/reactive"
 import * as chromatism from "chromatism2"
+import logger from "../utils/logger"
 
 class GoveeBulb extends Light {
 	constructor(cloudDesc) {
@@ -23,6 +24,7 @@ class GoveeBulb extends Light {
 			name: cloudDesc.deviceName,
 			goveeId: id,
 			plugin: "govee",
+			cloud: true,
 			type: "bulb",
 			rgb: {
 				available: cloudDesc.supportCmds?.includes("color") ?? false,
@@ -61,7 +63,7 @@ class GoveeBulb extends Light {
 		const state = await this.cloudDevice.getState()
 
 		if (state.properties) {
-			;(this.state.on == state.properties.powerState) == "on"
+			this.state.on = state.properties.powerState == "on"
 
 			const bri = this.state.properties.brightness
 			const kelvin = this.state.properties.colorTem
@@ -142,6 +144,117 @@ class GoveeBulb extends Light {
 	}
 }
 
+class GoveeLanLight extends Light {
+	/**
+	 *
+	 * @param {import("@j3lte/govee-lan-controller").Device} goveeDevice
+	 */
+	constructor(goveeDevice) {
+		super()
+		this.device = goveeDevice
+
+		//console.log(goveeDevice)
+
+		this.id = "govee." + this.device.id
+		this.config = {
+			name: this.device.name,
+			goveeId: this.device.id,
+			plugin: "govee",
+			type: "bulb",
+			rgb: {
+				available: true,
+			},
+			kelvin: {
+				available: false,
+			},
+			dimming: {
+				available: true,
+			},
+		}
+
+		this.state = reactify({
+			on: false,
+			color: null,
+		})
+
+		this.device.triggerUpdate()
+
+		this.device.on(
+			"state_change",
+			/**
+			 *
+			 * @param {import("@j3lte/govee-lan-controller/build/types/types").GoveeDeviceStatusData} state
+			 */
+			(state) => {
+				this.state.on = state.onOff != 0
+
+				const hsv = chromatism.convert(state.color).hsv
+
+				this.state.color = {
+					hue: hsv.h,
+					sat: hsv.s,
+					bri: state.brightness,
+				}
+			}
+		)
+	}
+
+	async setLightState(on, color, duration) {
+		if (on == "toggle") {
+			on = !this.state.on
+		}
+
+		if (on == false) {
+			//console.log("Turning Off")
+			await this.device.turnOff()
+			this.state.on = on
+			return
+		}
+
+		if (color) {
+			const newColor = { ...this.state.color }
+
+			if ("hue" in color || "sat" in color) {
+				if (color.hue != null) newColor.hue = color.hue
+				if (color.sat != null) newColor.sat = color.sat
+
+				delete newColor.kelvin
+			}
+
+			if ("bri" in color) {
+				newColor.bri = color.bri
+			}
+
+			/*
+			if ("kelvin" in color) {
+				delete newColor.hue
+				delete newColor.sat
+
+				newColor.kelvin = color.kelvin
+			}*/
+
+			this.state.color = newColor
+
+			const rgb = chromatism.convert({
+				h: newColor.hue,
+				s: newColor.sat,
+				v: 100,
+			}).rgb
+
+			await this.device.setColorRGB(rgb)
+			await this.device.setBrightness(newColor.bri)
+
+			//console.log("Setting Color/Bri", rgb, newColor.bri)
+		}
+
+		if (on == true) {
+			//console.log("Turning On")
+			await this.device.turnOn()
+			this.state.on = on
+		}
+	}
+}
+
 class GoveePlug extends Plug {
 	constructor(cloudDesc) {
 		super()
@@ -159,6 +272,7 @@ class GoveePlug extends Plug {
 			name: cloudDesc.deviceName,
 			goveeId: id,
 			plugin: "govee",
+			cloud: true,
 		}
 
 		this.state = reactify({
@@ -205,7 +319,7 @@ class GoveeIoTProvider extends IoTProvider {
 		this.pluginObj = pluginObj
 	}
 
-	startPolling() {
+	startCloudPolling() {
 		if (!this.pluginObj.secrets.goveeCloudKey) {
 			return
 		}
@@ -270,11 +384,55 @@ class GoveeIoTProvider extends IoTProvider {
 
 	async secretsChanged() {
 		await this.reset()
-		this.startPolling()
+		this.startCloudPolling()
+	}
+
+	async startLanPolling() {
+		if (this.lanInterval) {
+			clearInterval(this.lanInterval)
+		}
+
+		this.lanInterval = setInterval(() => {
+			//console.log("Govee Lan Poll")
+			this.goveeLan?.discover()
+		}, 60000)
+
+		//console.log("Govee Lan Poll")
+		this.goveeLan?.discover()
 	}
 
 	async initServices() {
-		this.startPolling()
+		this.startCloudPolling()
+
+		this.goveeLan = new Govee({
+			discover: false,
+		})
+
+		this.goveeLan.on(
+			"new_device",
+			/**
+			 *
+			 * @param {import("@j3lte/govee-lan-controller").Device} device
+			 */
+			async (device) => {
+				const lanlight = new GoveeLanLight(device)
+
+				const existingLight = this.lights.find((l) => {
+					l.config.goveeId == device.id
+				})
+				if (existingLight) {
+					await this._removeLight(existingLight)
+				}
+
+				await this._addNewLight(lanlight)
+			}
+		)
+
+		// TODO: Why does the LAN search sometimes fail?
+		this.goveeLan.waitForReady().then(() => {
+			logger.info("Successfully Started Govee LAN")
+			this.startLanPolling()
+		})
 	}
 
 	async loadPlugs() {

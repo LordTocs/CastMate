@@ -134,7 +134,7 @@ class HUEApi {
 				devicetype: `CastMate#${os.userInfo().username}`,
 			})
 
-			console.log(resp.data)
+			//console.log(resp.data)
 
 			if (resp.data?.[0]?.success?.username) {
 				return resp.data[0].success.username
@@ -403,7 +403,7 @@ class HUEIotProvider extends IoTProvider {
 				`hue.${update.id}`
 			)
 
-			console.log(update, plug?.id, light?.id)
+			//console.log(update, plug?.id, light?.id)
 
 			if (plug) {
 				if (update.on) {
