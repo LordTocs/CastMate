@@ -413,9 +413,17 @@ class GoveeIoTProvider extends IoTProvider {
 			 *
 			 * @param {import("@j3lte/govee-lan-controller").Device} device
 			 */
-			(device) => {
+			async (device) => {
 				const lanlight = new GoveeLanLight(device)
-				this._addNewLight(lanlight)
+
+				const existingLight = this.lights.find((l) => {
+					l.config.goveeId == device.id
+				})
+				if (existingLight) {
+					await this._removeLight(existingLight)
+				}
+
+				await this._addNewLight(lanlight)
 			}
 		)
 
