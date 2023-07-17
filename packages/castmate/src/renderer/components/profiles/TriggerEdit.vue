@@ -1,5 +1,8 @@
 <template>
-	<div class="trigger-card">
+	<div
+		class="trigger-card"
+		:style="{ '--trigger-color': trigger?.color, '--darker-trigger-color': darkerTriggerColor }"
+	>
 		<div class="header">
 			<div class="drag-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
@@ -18,7 +21,9 @@
 					<data-input :schema="trigger.config" v-model="modelObj.config" />
 				</template>
 			</div>
-			<div class="automation"></div>
+			<div class="automation">
+				<automation-edit v-model="modelObj.sequenece" />
+			</div>
 		</div>
 	</div>
 </template>
@@ -29,6 +34,8 @@ import PButton from "primevue/button"
 import { type TriggerData } from "castmate-schema"
 import { useTrigger, DataInput, TriggerSelector } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
+import AutomationEdit from "../automation/AutomationEdit.vue"
+import * as chromatism from "chromatism2"
 
 const open = ref(false)
 
@@ -53,6 +60,10 @@ const triggerModel = computed({
 
 const trigger = useTrigger(() => props.modelValue)
 
+const darkerTriggerColor = computed(() =>
+	trigger.value?.color ? chromatism.shade(-20, trigger.value.color).hex : "#3f3f3f"
+)
+
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useVModel(props, "modelValue", emit)
 
@@ -61,7 +72,7 @@ const modelObj = useVModel(props, "modelValue", emit)
 
 <style scoped>
 .trigger-card {
-	border: 2px solid var(--surface-c);
+	border: 2px solid var(--trigger-color);
 	border-radius: var(--border-radius);
 	background-color: var(--surface-a);
 
@@ -70,7 +81,9 @@ const modelObj = useVModel(props, "modelValue", emit)
 }
 
 .header {
-	background-color: var(--surface-b);
+	background-color: var(--darker-trigger-color);
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
 
 	display: flex;
 	flex-direction: row;
@@ -98,7 +111,6 @@ const modelObj = useVModel(props, "modelValue", emit)
 
 .drag-handle {
 	cursor: grab;
-	background-color: red;
 	user-select: none;
 }
 </style>

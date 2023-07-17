@@ -123,6 +123,7 @@ function computeObjectDiff(a: Obj, b: Obj) {
 
 interface ArrayDiff {
 	type: "array"
+	ops: ArrayDiffOp[]
 }
 
 interface ArrayDiffOpInsert {
@@ -145,7 +146,7 @@ interface ArrayDiffOpDiff {
 
 type ArrayDiffOp = ArrayDiffOpDiff | ArrayDiffOpDelete | ArrayDiffOpInsert
 
-function computeArrayDiff(a: any[], b: any[]) {
+function computeArrayDiff(a: any[], b: any[]): ArrayDiff | undefined {
 	const result: ArrayDiffOp[] = []
 
 	let index = 0
@@ -178,5 +179,5 @@ function computeArrayDiff(a: any[], b: any[]) {
 		index++
 	}
 
-	return result.length > 0 ? result : undefined
+	return result.length > 0 ? { type: "array", ops: result } : undefined
 }
