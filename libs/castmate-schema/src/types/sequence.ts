@@ -26,6 +26,9 @@ export interface InstantAction extends ActionInfo {}
 
 export interface TimeAction extends ActionInfo {
 	offsets: OffsetActions[]
+	config: {
+		duration: number
+	}
 }
 
 export interface ActionStack {
