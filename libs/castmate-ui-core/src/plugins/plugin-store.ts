@@ -52,7 +52,7 @@ export const usePluginStore = defineStore("plugins", () => {
 				name: "Fake",
 				description: "Faking a Trigger",
 				icon: "Blarg",
-				color: "#8DC1C0",
+				color: "#5E5172",
 				config: {
 					type: Object,
 					properties: {
@@ -87,5 +87,25 @@ export function useTrigger(selection: MaybeRefOrGetter<TriggerSelection | undefi
 
 		if (!selectionValue.plugin || !selectionValue.trigger) return undefined
 		return pluginStore.pluginMap.get(selectionValue.plugin)?.triggers?.[selectionValue.trigger]
+	})
+}
+
+export interface ActionSelection {
+	plugin?: string
+	action?: string
+}
+
+export function useAction(selection: MaybeRefOrGetter<ActionSelection | undefined>) {
+	const pluginStore = usePluginStore()
+
+	return computed(() => {
+		const selectionValue = toValue(selection)
+
+		if (!selectionValue) {
+			return undefined
+		}
+
+		if (!selectionValue.plugin || !selectionValue.action) return undefined
+		return pluginStore.pluginMap.get(selectionValue.plugin)?.actions?.[selectionValue.action]
 	})
 }
