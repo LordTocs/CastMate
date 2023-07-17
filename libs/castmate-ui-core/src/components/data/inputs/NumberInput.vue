@@ -16,8 +16,13 @@
 			</template>
 			<label for="l"> {{ props.schema.name }}</label>
 		</span>
-		<p-button v-if="canTemplate" icon="mdi mdi-code-braces" @click="templateMode = !templateMode" />
-		<p-button v-if="!schema.required" icon="pi pi-times" @click="clear" />
+		<p-button
+			v-if="canTemplate"
+			class="flex-none"
+			icon="mdi mdi-code-braces"
+			@click="templateMode = !templateMode"
+		/>
+		<p-button v-if="!schema.required" class="flex-none" icon="pi pi-times" @click="clear" />
 	</div>
 </template>
 

@@ -4,10 +4,10 @@
 			<p-input-text id="l" v-model="model" />
 			<label for="l"> {{ props.schema.name }}</label>
 		</span>
-		<span v-if="schema.template" class="p-inputgroup-addon">
-			<i class="mdi mdi-code-braces" />
+		<span v-if="schema.template" class="p-inputgroup-addon" style="width: 2.857rem">
+			<i class="mdi mdi-code-braces flex-none" />
 		</span>
-		<p-button v-if="!schema.required" icon="pi pi-times" @click="clear" />
+		<p-button class="flex-none" v-if="!schema.required" icon="pi pi-times" @click="clear" />
 	</div>
 </template>
 
