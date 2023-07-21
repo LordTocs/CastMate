@@ -2824,6 +2824,7 @@ __metadata:
     "@vueuse/core": "*"
     castmate-schema: "workspace:^"
     chromatism2: "*"
+    electron: "*"
     nanoid: "*"
     pinia: "*"
     typescript: "*"

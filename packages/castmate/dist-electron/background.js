@@ -15107,8 +15107,8 @@ function createWindow(htmlFile, width, height, urlQuery = {}, icon = "icon.png")
       nodeIntegration: true,
       contextIsolation: false,
       webSecurity: false
-    }
-    //frame: false,
+    },
+    frame: false
   });
   if (process.env.VITE_DEV_SERVER_URL) {
     const url = require$$1.posix.join(process.env.VITE_DEV_SERVER_URL, "html", htmlFile);
@@ -15116,8 +15116,40 @@ function createWindow(htmlFile, width, height, urlQuery = {}, icon = "icon.png")
   } else {
     win.loadFile(require$$1.join(__dirname, `../../../dist/html/${htmlFile}`));
   }
+  win.addListener("maximize", () => {
+    console.log("maximized");
+    win.webContents.send("windowFuncs_stateChanged", "maximized");
+  });
+  win.addListener("minimize", () => {
+    console.log("minimized");
+    win.webContents.send("windowFuncs_stateChanged", "minimized");
+  });
+  win.addListener("unmaximize", () => {
+    console.log("unmaximized");
+    win.webContents.send("windowFuncs_stateChanged", "unmaximized");
+  });
   return win;
 }
+require$$0$1.ipcMain.handle("windowFuncs_minimize", async (event) => {
+  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
+  win == null ? void 0 : win.minimize();
+});
+require$$0$1.ipcMain.handle("windowFuncs_maximize", async (event) => {
+  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
+  win == null ? void 0 : win.maximize();
+});
+require$$0$1.ipcMain.handle("windowFuncs_restore", async (event) => {
+  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
+  win == null ? void 0 : win.unmaximize();
+});
+require$$0$1.ipcMain.handle("windowFuncs_close", async (event) => {
+  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
+  win == null ? void 0 : win.close();
+});
+require$$0$1.ipcMain.handle("windowFuncs_isMaximized", async (event) => {
+  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
+  return win == null ? void 0 : win.isMaximized();
+});
 if (process.platform === "win32")
   require$$0$1.app.setAppUserModelId(require$$0$1.app.getName());
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
@@ -15153,26 +15185,6 @@ require$$0$1.app.on("window-all-closed", () => {
 require$$0$1.app.on("activate", () => {
   if (require$$0$1.BrowserWindow.getAllWindows().length === 0)
     createMainWindow();
-});
-require$$0$1.ipcMain.handle("windowFuncs_minimize", async (event) => {
-  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
-  win == null ? void 0 : win.minimize();
-});
-require$$0$1.ipcMain.handle("windowFuncs_maximize", async (event) => {
-  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
-  win == null ? void 0 : win.maximize();
-});
-require$$0$1.ipcMain.handle("windowFuncs_restore", async (event) => {
-  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
-  win == null ? void 0 : win.unmaximize();
-});
-require$$0$1.ipcMain.handle("windowFuncs_close", async (event) => {
-  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
-  win == null ? void 0 : win.close();
-});
-require$$0$1.ipcMain.handle("windowFuncs_isMaximized", async (event) => {
-  const win = require$$0$1.BrowserWindow.fromWebContents(event.sender);
-  return win == null ? void 0 : win.isMaximized();
 });
 {
   if (process.platform === "win32") {

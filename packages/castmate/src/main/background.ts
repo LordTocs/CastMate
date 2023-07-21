@@ -62,32 +62,6 @@ app.on("activate", () => {
 	if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
 })
 
-//WINDOW FUNCTIONS
-ipcMain.handle("windowFuncs_minimize", async (event) => {
-	const win = BrowserWindow.fromWebContents(event.sender)
-	win?.minimize()
-})
-
-ipcMain.handle("windowFuncs_maximize", async (event) => {
-	const win = BrowserWindow.fromWebContents(event.sender)
-	win?.maximize()
-})
-
-ipcMain.handle("windowFuncs_restore", async (event) => {
-	const win = BrowserWindow.fromWebContents(event.sender)
-	win?.unmaximize()
-})
-
-ipcMain.handle("windowFuncs_close", async (event) => {
-	const win = BrowserWindow.fromWebContents(event.sender)
-	win?.close()
-})
-
-ipcMain.handle("windowFuncs_isMaximized", async (event) => {
-	const win = BrowserWindow.fromWebContents(event.sender)
-	return win?.isMaximized()
-})
-
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
 	if (process.platform === "win32") {

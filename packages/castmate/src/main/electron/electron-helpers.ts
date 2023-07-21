@@ -1,4 +1,4 @@
-import { BrowserWindow, app, shell } from "electron"
+import { BrowserWindow, app, shell, ipcMain } from "electron"
 import path from "path"
 
 const viteDevURL = `http://${process.env["VITE_DEV_SERVER_HOSTNAME"]}:${process.env["VITE_DEV_SERVER_PORT"]}`
@@ -22,7 +22,7 @@ export function createWindow(
 			contextIsolation: false,
 			webSecurity: false,
 		},
-		//frame: false,
+		frame: false,
 	})
 
 	if (process.env.VITE_DEV_SERVER_URL) {
@@ -33,6 +33,21 @@ export function createWindow(
 		win.loadFile(path.join(__dirname, `../../../dist/html/${htmlFile}`))
 	}
 
+	win.addListener("maximize", () => {
+		console.log("maximized")
+		win.webContents.send("windowFuncs_stateChanged", "maximized")
+	})
+
+	win.addListener("minimize", () => {
+		console.log("minimized")
+		win.webContents.send("windowFuncs_stateChanged", "minimized")
+	})
+
+	win.addListener("unmaximize", () => {
+		console.log("unmaximized")
+		win.webContents.send("windowFuncs_stateChanged", "unmaximized")
+	})
+
 	/*
 	win.webContents.on("new-window", function (e, url) {
 		e.preventDefault()
@@ -42,3 +57,29 @@ export function createWindow(
 
 	return win
 }
+
+//WINDOW FUNCTIONS
+ipcMain.handle("windowFuncs_minimize", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender)
+	win?.minimize()
+})
+
+ipcMain.handle("windowFuncs_maximize", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender)
+	win?.maximize()
+})
+
+ipcMain.handle("windowFuncs_restore", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender)
+	win?.unmaximize()
+})
+
+ipcMain.handle("windowFuncs_close", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender)
+	win?.close()
+})
+
+ipcMain.handle("windowFuncs_isMaximized", async (event) => {
+	const win = BrowserWindow.fromWebContents(event.sender)
+	return win?.isMaximized()
+})

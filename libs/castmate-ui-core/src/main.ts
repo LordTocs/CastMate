@@ -16,3 +16,5 @@ export * from "./util/data"
 export * from "./plugins/plugin-store"
 
 export * from "./util/panning"
+
+export * from "./util/electron"
