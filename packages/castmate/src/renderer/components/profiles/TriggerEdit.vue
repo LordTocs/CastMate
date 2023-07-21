@@ -92,6 +92,8 @@ const modelObj = useVModel(props, "modelValue", emit)
 .body {
 	display: flex;
 	flex-direction: row;
+
+	min-height: 600px;
 }
 
 .config {

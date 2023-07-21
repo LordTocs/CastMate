@@ -1,4 +1,4 @@
-import { Sequence } from "./sequence"
+import { FloatingSequence, Sequence } from "./sequence"
 
 export interface TriggerData {
 	id: string
@@ -6,7 +6,8 @@ export interface TriggerData {
 	trigger?: string
 	queue: string | null
 	config: any
-	sequenece: Sequence
+	sequence: Sequence
+	floatingSequences: FloatingSequence[]
 }
 
 export interface ProfileData {

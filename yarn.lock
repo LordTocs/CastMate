@@ -2662,6 +2662,7 @@ __metadata:
     "@vitejs/plugin-vue": ^4.2.3
     "@vue/tsconfig": ^0.4.0
     "@vueuse/core": ^9.13.0
+    chromatism2: ^3.0.2
     electron: 25.1.1
     eslint: ^8.34.0
     eslint-plugin-vue: ^9.9.0
@@ -2822,6 +2823,7 @@ __metadata:
     "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
     castmate-schema: "workspace:^"
+    chromatism2: "*"
     nanoid: "*"
     pinia: "*"
     typescript: "*"
@@ -2850,7 +2852,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
-    chromatism2: ^3.0.2
+    chromatism2: "*"
     electron: "*"
     electron-builder: ^24.4.0
     electron-devtools-installer: ^3.2.0
@@ -2887,7 +2889,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chromatism2@npm:^3.0.2":
+"chromatism2@npm:*, chromatism2@npm:^3.0.2":
   version: 3.0.2
   resolution: "chromatism2@npm:3.0.2"
   checksum: 76d3565350305b6bb43fcbfabdcfa45685789392758bdae46d65f03562064a10c8444bb944d328e640641a3006d2a811adb19868f6a20b605fd1d52ff78f392f

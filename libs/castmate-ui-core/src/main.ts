@@ -6,9 +6,13 @@ export { default as DocumentDataCollection } from "./components/drag/DocumentDat
 
 export { default as TriggerSelector } from "./components/util/TriggerSelector.vue"
 
+export { default as PanArea } from "./components/panning/PanArea.vue"
+
 export * from "./util/diff"
 export * from "./util/docking"
 export * from "./util/document"
 export * from "./util/data"
 
 export * from "./plugins/plugin-store"
+
+export * from "./util/panning"

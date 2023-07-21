@@ -4,6 +4,8 @@ import { PluginData } from "castmate-schema"
 
 import { computed, unref, type MaybeRefOrGetter, toValue } from "vue"
 
+import * as chromatism from "chromatism2"
+
 export const usePluginStore = defineStore("plugins", () => {
 	const pluginMap: Map<string, PluginData> = new Map()
 
@@ -17,8 +19,9 @@ export const usePluginStore = defineStore("plugins", () => {
 				id: "delay",
 				name: "Delay",
 				description: "Delays",
-				icon: "mdi-pencil",
+				icon: "mdi-timer-sand",
 				color: "#8DC1C0",
+				type: "time",
 				config: {
 					type: Object,
 					properties: {
@@ -26,6 +29,35 @@ export const usePluginStore = defineStore("plugins", () => {
 						str2: { type: String, name: "String Value 2!" },
 						num: { type: Number, name: "Number Value" },
 						bool: { type: Boolean, name: "Boolean Value" },
+					},
+				},
+			},
+			blah: {
+				id: "blah",
+				name: "Chat",
+				description: "Blahs",
+				icon: "mdi-chat",
+				color: "#5E5172",
+				type: "instant",
+				config: {
+					type: Object,
+					properties: {
+						num: { type: Number, name: "Number Value" },
+					},
+				},
+			},
+			tts: {
+				id: "tts",
+				name: "TTS",
+				description: "Blahs",
+				icon: "mdi-account-voice",
+				color: "#62894F",
+				type: "time-indefinite",
+				config: {
+					type: Object,
+					properties: {
+						duration: { type: Number, name: "Duration" },
+						num: { type: Number, name: "Number Value" },
 					},
 				},
 			},
@@ -108,4 +140,37 @@ export function useAction(selection: MaybeRefOrGetter<ActionSelection | undefine
 		if (!selectionValue.plugin || !selectionValue.action) return undefined
 		return pluginStore.pluginMap.get(selectionValue.plugin)?.actions?.[selectionValue.action]
 	})
+}
+
+export function useColors(colorProvider: MaybeRefOrGetter<{ color: string } | undefined>) {
+	const defaultColor = "#3e3e3e"
+
+	const colorProvValue = toValue(colorProvider)
+
+	const color = computed(() => colorProvValue?.color ?? defaultColor)
+	const darkerColor = computed(() => chromatism.shade(-20, color.value).hex)
+	const darkestColor = computed(() => chromatism.shade(-30, color.value).hex)
+	const lighterColor = computed(() => chromatism.shade(20, color.value).hex)
+
+	return { color, darkerColor, darkestColor, lighterColor }
+}
+
+export function useActionColors(selection: MaybeRefOrGetter<ActionSelection | undefined>) {
+	const action = useAction(selection)
+
+	const {
+		color: actionColor,
+		darkerColor: darkerActionColor,
+		darkestColor: darkestActionColor,
+		lighterColor: lighterActionColor,
+	} = useColors(action)
+
+	const style = computed(() => ({
+		"--action-color": actionColor.value,
+		"--darker-action-color": darkerActionColor.value,
+		"--darkest-action-color": darkestActionColor.value,
+		"--lighter-action-color": lighterActionColor.value,
+	}))
+
+	return { darkestActionColor, darkerActionColor, actionColor, lighterActionColor, actionColorStyle: style }
 }

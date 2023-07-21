@@ -29,6 +29,7 @@ onMounted(() => {
 						sequence: {
 							actions: [],
 						},
+						floatingSequences: [],
 					},
 					{
 						id: "bcd",
@@ -39,6 +40,7 @@ onMounted(() => {
 						sequence: {
 							actions: [],
 						},
+						floatingSequences: [],
 					},
 					{
 						id: "cde",
@@ -49,6 +51,7 @@ onMounted(() => {
 						sequence: {
 							actions: [],
 						},
+						floatingSequences: [],
 					},
 					{
 						id: "def",
@@ -59,6 +62,7 @@ onMounted(() => {
 						sequence: {
 							actions: [],
 						},
+						floatingSequences: [],
 					},
 					{
 						id: "efg",
@@ -69,6 +73,7 @@ onMounted(() => {
 						sequence: {
 							actions: [],
 						},
+						floatingSequences: [],
 					},
 				],
 			},
@@ -110,7 +115,7 @@ onMounted(() => {
 			},
 		],
 	})
-	dockedInfo.value.divisions.push({
+	/*dockedInfo.value.divisions.push({
 		id: nanoid(),
 		type: "frame",
 		currentTab: docs[2].id,
@@ -125,7 +130,7 @@ onMounted(() => {
 			},
 		],
 	})
-	dockedInfo.value.dividers.push(0.5)
+	dockedInfo.value.dividers.push(0.5)*/
 })
 
 const dockedInfo = ref<DockedArea>({

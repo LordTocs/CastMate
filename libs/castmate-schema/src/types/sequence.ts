@@ -1,9 +1,14 @@
-export class Sequence implements SequenceActions {
+export interface SequenceActions {
 	actions: (InstantAction | TimeAction | ActionStack | FlowAction)[]
+}
 
-	constructor() {
-		this.actions = []
-	}
+export interface Sequence extends SequenceActions {}
+
+export type NonStackActionInfo = InstantAction | TimeAction | FlowAction
+
+export interface FloatingSequence extends Sequence {
+	x: number
+	y: number
 }
 
 export interface ActionInfo {
@@ -24,6 +29,12 @@ export interface FlowAction extends ActionInfo {
 
 export interface InstantAction extends ActionInfo {}
 
+export interface TimeActionInfo {
+	minLength: number
+	duration: number
+	maxLength: number | undefined
+}
+
 export interface TimeAction extends ActionInfo {
 	offsets: OffsetActions[]
 	config: {
@@ -36,11 +47,19 @@ export interface ActionStack {
 	stack: InstantAction[]
 }
 
-export interface SequenceActions {
-	actions: (InstantAction | TimeAction | ActionStack | FlowAction)[]
-}
-
 export interface OffsetActions extends SequenceActions {
 	id: string
 	offset: number
+}
+
+export function isActionStack(action: InstantAction | TimeAction | ActionStack | FlowAction): action is ActionStack {
+	return "stack" in action
+}
+
+export function isFlowAction(action: InstantAction | TimeAction | ActionStack | FlowAction): action is FlowAction {
+	return "subFlows" in action
+}
+
+export function isTimeAction(action: InstantAction | TimeAction | ActionStack | FlowAction): action is TimeAction {
+	return "offsets" in action
 }

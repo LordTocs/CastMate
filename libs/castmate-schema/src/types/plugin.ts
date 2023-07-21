@@ -7,6 +7,7 @@ export interface ActionTypeData {
 	icon: string
 	config: SchemaObj
 	color: string
+	type: "instant" | "time-indefinite" | "time" | "flow"
 }
 
 export interface TriggerTypeData {
