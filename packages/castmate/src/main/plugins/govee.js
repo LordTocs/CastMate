@@ -5,6 +5,7 @@ import { IoTProvider, Light, Plug } from "../iot/iot-manager"
 import { reactify } from "../state/reactive"
 import * as chromatism from "chromatism2"
 import logger from "../utils/logger"
+import util from "util"
 
 class GoveeBulb extends Light {
 	constructor(cloudDesc) {
@@ -387,7 +388,7 @@ class GoveeIoTProvider extends IoTProvider {
 		this.startCloudPolling()
 	}
 
-	async startLanPolling() {
+	startLanPolling() {
 		if (this.lanInterval) {
 			clearInterval(this.lanInterval)
 		}
@@ -429,10 +430,16 @@ class GoveeIoTProvider extends IoTProvider {
 		)
 
 		// TODO: Why does the LAN search sometimes fail?
-		this.goveeLan.waitForReady().then(() => {
-			logger.info("Successfully Started Govee LAN")
-			this.startLanPolling()
-		})
+		this.goveeLan
+			.waitForReady()
+			.then(() => {
+				logger.info("Successfully Started Govee LAN")
+				this.startLanPolling()
+			})
+			.catch((err) => {
+				logger.error(`Failed to start Govee LAN Controller`)
+				logger.error(util.inspect(err))
+			})
 	}
 
 	async loadPlugs() {
