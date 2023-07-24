@@ -16,10 +16,10 @@ const WYZE_API_KEY = "WMXHYf79Nr5gIlt3r0r7p9Tcw5bvs6BB4U8O8nGJ"
 const WYZE_AUTH_URL = "https://auth-prod.api.wyze.com"
 const WYZE_API_URL = "https://api.wyzecam.com:8443"
 const WYZE_USER_AGENT = "wyze_ios_2.21.35"
-const WYZE_PHONE_ID = "bc151f39-787b-4871-be27-5a20fd0a1937"
-const WYZE_APP_VERSION = "com.hualai.WyzeCam___2.3.69"
-const WYZE_SC = "9f275790cab94a72bd206c8876429f3c"
-const WYZE_SV = "9d74946e652647e9b6c9d59326aef104"
+const WYZE_PHONE_ID = "wyze_developer_api"
+const WYZE_APP_VERSION = "wyze_developer_api"
+const WYZE_SC = "wyze_developer_api"
+const WYZE_SV = "wyze_developer_api"
 
 const WyzeProps = {
 	power: "P3",
@@ -63,6 +63,14 @@ class WyzeApi {
 		return this.pluginObj.secrets.password
 	}
 
+	get keyId() {
+		return this.pluginObj.secrets.keyId
+	}
+
+	get apiKey() {
+		return this.pluginObj.secrets.apiKey
+	}
+
 	async clearTokens() {
 		await this.pluginObj.wyzeAuthCache.set({})
 	}
@@ -88,20 +96,26 @@ class WyzeApi {
 
 	async login() {
 		try {
-			if (!this.username || !this.password) {
+			if (
+				!this.username ||
+				!this.password ||
+				!this.apiKey ||
+				!this.keyId
+			) {
 				return false
 			}
 
 			logger.info("Doing Wyze Login")
 			const result = await axios.post(
-				`${WYZE_AUTH_URL}/user/login`,
-				this._formatRequestBody({
+				`https://auth-prod.api.wyze.com/api/user/login`,
+				{
 					email: this.username,
 					password: md5(md5(md5(this.password))),
-				}),
+				},
 				{
 					headers: {
-						"x-api-key": WYZE_API_KEY,
+						Keyid: this.keyId,
+						Apikey: this.apiKey,
 						"user-agent": WYZE_USER_AGENT,
 						"phone-id": WYZE_PHONE_ID,
 					},
@@ -123,7 +137,7 @@ class WyzeApi {
 
 			return true
 		} catch (err) {
-			console.error("LOGIN ERR", err)
+			console.error("LOGIN ERR")
 			logger.info("Wyze Login Failed")
 			return false
 		}
@@ -496,6 +510,14 @@ export default {
 			type: String,
 			name: "Wyze Account Password",
 		},
+		keyId: {
+			type: String,
+			name: "Wyze API Key ID",
+		},
+		apiKey: {
+			type: String,
+			name: "Wyze API Key",
+		},
 	},
 	settings: {
 		username: {
@@ -503,4 +525,5 @@ export default {
 			name: "Wyze Account Username",
 		},
 	},
+	settingsView: "wyze",
 }
