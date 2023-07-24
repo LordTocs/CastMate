@@ -148,8 +148,10 @@ useEventListener(window, "mouseup", (ev: MouseEvent) => {
 .time-slider {
 	background-color: var(--lighter-action-color);
 	height: calc(var(--time-handle-height) + 2 * var(--border-radius));
-	width: var(--time-handle-width);
+	width: calc(3 * var(--time-handle-width));
 	cursor: ew-resize;
+
+	clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
 }
 
 .offset-sequence {
