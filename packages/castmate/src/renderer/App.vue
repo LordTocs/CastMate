@@ -1,14 +1,17 @@
 <template>
 	<div class="app">
 		<system-bar title="Hello World"></system-bar>
-		<docking-area style="flex: 1" v-model="dockedInfo" />
+		<div class="app-row">
+			<project-view />
+			<docking-area style="flex: 1" v-model="dockedInfo" />
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import SystemBar from "./components/system/SystemBar.vue"
 import { useDocumentStore, DockingArea, type DockedArea } from "castmate-ui-core"
-import TestEditor from "./components/test/TestEditor.vue"
+import ProjectView from "./components/layout/ProjectView.vue"
 import { onMounted, ref } from "vue"
 import { nanoid } from "nanoid/non-secure"
 
@@ -159,5 +162,11 @@ body {
 	position: relative;
 	display: flex;
 	flex-direction: column;
+}
+
+.app-row {
+	flex: 1;
+	display: flex;
+	flex-direction: row;
 }
 </style>
