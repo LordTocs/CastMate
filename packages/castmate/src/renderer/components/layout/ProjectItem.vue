@@ -12,7 +12,7 @@
 const props = withDefaults(
 	defineProps<{
 		title: string
-		indent: number
+		indent?: number
 		icon?: string
 	}>(),
 	{ indent: 0 }
