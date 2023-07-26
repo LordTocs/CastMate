@@ -1,7 +1,9 @@
 <template>
-	<pan-area class="automation-edit grid-paper" v-model:panState="panState" zoom-y="false">
-		<sequence-edit v-model="testSeq" :floating="false" />
-	</pan-area>
+	<div ref="editArea" class="automation-edit">
+		<pan-area class="automation-edit grid-paper" v-model:panState="panState" zoom-y="false">
+			<sequence-edit v-model="testSeq" :floating="false" />
+		</pan-area>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -12,6 +14,7 @@ import { ActionInfo } from "castmate-schema"
 import { useEventListener } from "@vueuse/core"
 import { PanArea } from "castmate-ui-core"
 import SequenceEdit from "./SequenceEdit.vue"
+import { AutomationEditState, useRootAutomationEditState } from "../../util/automation-dragdrop"
 
 const props = defineProps<{
 	modelValue: Sequence
@@ -19,9 +22,9 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue"])
 const zoom = ref(1)
-const editArea = ref<HTMLElement | undefined>(undefined)
+const editArea = ref<HTMLElement | null>(null)
 
-provide("pan-area", editArea)
+const automationEditState = useRootAutomationEditState(editArea)
 
 const panState = ref({
 	panX: 0,
@@ -49,7 +52,7 @@ const testSeq = ref<Sequence>({
 			config: {},
 		},
 		{
-			id: "acb",
+			id: "qrs",
 			plugin: "castmate",
 			action: "tts",
 			config: {

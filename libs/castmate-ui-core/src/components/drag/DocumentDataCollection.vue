@@ -63,18 +63,16 @@ const dataComponents = ref<VueHTMLElement[]>([])
 const insertionIndex = ref<number>(0)
 
 function dragOver(evt: DragEvent) {
-	evt.preventDefault()
-	evt.stopPropagation()
-
 	if (!evt.dataTransfer) {
-		console.log("NO DATA")
 		return
 	}
 
 	if (!evt.dataTransfer.types.includes(props.dataType)) {
-		console.log("No Types")
 		return
 	}
+
+	evt.preventDefault()
+	evt.stopPropagation()
 
 	//console.log("DropEffect D", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
 
@@ -99,13 +97,12 @@ function dragEnter(evt: DragEvent) {
 		return
 	}
 
-	evt.preventDefault()
-	evt.stopPropagation()
-
 	if (!evt.dataTransfer.types.includes(props.dataType)) {
-		console.log("No Types")
 		return
 	}
+
+	evt.preventDefault()
+	evt.stopPropagation()
 
 	//evt.dataTransfer.dropEffect = "move"
 
@@ -124,13 +121,12 @@ function dragExit(evt: DragEvent) {
 		return
 	}
 
-	evt.preventDefault()
-	evt.stopPropagation()
-
 	if (!evt.dataTransfer.types.includes(props.dataType)) {
-		console.log("No Types")
 		return
 	}
+
+	evt.preventDefault()
+	evt.stopPropagation()
 
 	const ft = evt as FromTo
 	if (ft.fromElement && dragArea.value?.contains(ft.fromElement)) {
@@ -175,7 +171,6 @@ function dropped(evt: DragEvent) {
 	}
 
 	if (!evt.dataTransfer.types.includes(props.dataType)) {
-		console.log("No Types")
 		return
 	}
 
@@ -294,7 +289,6 @@ function itemDragEnd(i: number, evt: DragEvent) {
 	} else if (evt.dataTransfer.dropEffect == "move") {
 		//Dropped somewhere
 		if (!dragHovering.value) {
-			console.log("External Move")
 			//These items are dropped into another frame, remove them from our model
 			modelObj.value = modelObj.value.filter((i) => !selection.value.selectedIds.includes(i.id))
 		}

@@ -2,7 +2,7 @@
 	<div class="timeline-container" :class="{ indefinite }" :style="{ '--duration': props.modelValue.config.duration }">
 		<div class="time-action" ref="actionElement" :style="{ ...actionColorStyle }">
 			<div class="time-action-content">
-				<div class="time-action-header">
+				<div class="time-action-header action-handle">
 					<i class="mdi flex-none" :class="action?.icon" />
 					{{ action?.name }}
 				</div>
@@ -13,6 +13,12 @@
 			</div>
 			<duration-handle v-model="model.config.duration" />
 		</div>
+		<automation-drop-zone
+			:drop-key="`${modelValue.id}-bottom`"
+			drop-axis="horizontal"
+			drop-location="start"
+			style="left: 0; top: var(--timeline-height); right: 0; height: calc(var(--timeline-height) / 2)"
+		/>
 		<div class="timeline-sequences">
 			<offset-sequence-edit v-for="(o, i) in model.offsets" :key="o.id" v-model="model.offsets[i]" />
 		</div>
@@ -25,6 +31,7 @@ import { computed, useModel, ref, provide } from "vue"
 import DurationHandle from "./DurationHandle.vue"
 import { useAction, useActionColors } from "castmate-ui-core"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
+import AutomationDropZone from "./AutomationDropZone.vue"
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -58,6 +65,7 @@ provide(
 .time-action {
 	display: flex;
 	flex-direction: row;
+	position: relative;
 
 	width: calc(var(--duration) * var(--zoom-x) * 40px);
 	height: var(--timeline-height);

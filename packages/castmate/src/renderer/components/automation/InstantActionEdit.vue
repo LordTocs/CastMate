@@ -1,9 +1,15 @@
 <template>
-	<div class="instant-action" :class="{ 'top-point': topPoint }" :style="{ ...actionColorStyle }">
-		<div class="instant-action-header">
+	<div class="instant-action" :style="{ ...actionColorStyle }">
+		<div class="instant-action-header action-handle">
 			<i class="mdi flex-none" :class="action?.icon" />
 			{{ action?.name }}
 		</div>
+		<automation-drop-zone
+			:drop-key="`${modelValue.id}-bottom`"
+			drop-axis="horizontal"
+			drop-location="middle"
+			style="left: 0; top: calc(var(--timeline-height) / 2); right: 0; height: var(--timeline-height)"
+		/>
 	</div>
 </template>
 
@@ -11,13 +17,15 @@
 import { InstantAction } from "castmate-schema"
 import { useAction, useActionColors } from "castmate-ui-core"
 import { useModel } from "vue"
-
+import AutomationDropZone from "./AutomationDropZone.vue"
 const props = withDefaults(
 	defineProps<{
 		modelValue: InstantAction
-		topPoint: boolean
+		inStack?: boolean
 	}>(),
-	{ topPoint: false }
+	{
+		inStack: false,
+	}
 )
 
 const modelObj = useModel(props, "modelValue")
@@ -27,7 +35,12 @@ const { actionColorStyle } = useActionColors(() => props.modelValue)
 </script>
 
 <style scoped>
+.action-dragging .instant-action {
+	/* border: solid 2px red; */
+}
+
 .instant-action {
+	position: relative;
 	border-radius: var(--border-radius);
 	background-color: var(--action-color);
 	border: solid 2px var(--lighter-action-color);
