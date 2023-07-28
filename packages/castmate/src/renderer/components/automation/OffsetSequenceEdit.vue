@@ -80,7 +80,7 @@ function onMouseDown(ev: MouseEvent) {
 
 		dragOffset.value = offset.x
 
-		console.log("Offset", offset)
+		//console.log("Offset", offset)
 	}
 }
 
@@ -120,7 +120,7 @@ function adjustPos(ev: MouseEvent) {
 
 	time = _clamp(time, timeInfo.value.minLength, timeInfo.value.duration)
 
-	console.log("Adjust", time)
+	//console.log("Adjust", time)
 
 	modelObj.value.offset = time
 }

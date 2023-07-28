@@ -35,9 +35,9 @@ const { actionColorStyle } = useActionColors(() => props.modelValue)
 </script>
 
 <style scoped>
-.action-dragging .instant-action {
-	/* border: solid 2px red; */
-}
+/* .action-dragging .instant-action {
+	border: solid 2px red;
+} */
 
 .instant-action {
 	position: relative;

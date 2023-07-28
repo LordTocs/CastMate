@@ -29,8 +29,9 @@ const action = computed({
 
 const actionStack = ref<HTMLElement | null>(null)
 const { dragging } = useSequenceDrag(
-	actionStack,
+	computed(() => (props.offset != 0 ? actionStack.value : null)),
 	() => {
+		console.log("Stack Clone")
 		const stack = _cloneDeep(modelObj.value.stack.slice(props.offset))
 
 		if (stack.length == 1) {

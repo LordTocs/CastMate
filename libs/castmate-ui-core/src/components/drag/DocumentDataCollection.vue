@@ -165,7 +165,6 @@ function getInsertionIndex(clientY: number) {
 }
 
 function dropped(evt: DragEvent) {
-	console.log("Dropped", evt.target, evt)
 	if (!evt.dataTransfer) {
 		return
 	}
@@ -304,8 +303,6 @@ function itemDragEnd(i: number, evt: DragEvent) {
 .drag-area {
 	padding-top: 1rem;
 	padding-bottom: 1rem;
-}
-.draggable-item {
 }
 
 .draggable-item:not(:last-of-type) {

@@ -4,13 +4,14 @@
 		<action-stack-edit v-else-if="isActionStack(action)" v-model="(action as ActionStack)" />
 		<instant-action-edit v-else v-model="(action as InstantAction)" />
 		<automation-drop-zone
+			:force-on="dragging && modelValue.actions.length > 1"
 			drop-axis="vertical"
 			drop-location="middle"
 			:drop-key="`${action.id}-left`"
 			style="left: calc(var(--instant-width) / -2); width: var(--instant-width); height: var(--timeline-height)"
 		/>
 		<automation-drop-zone
-			v-if="offset == 0"
+			v-if="offset == modelValue.actions.length - 1"
 			drop-axis="vertical"
 			drop-location="middle"
 			:drop-key="`${action.id}-right`"

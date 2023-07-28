@@ -3,24 +3,29 @@
 		class="drop-zone"
 		:class="{ 'target-zone': automationEditState?.dropCandidate.value == dropKey }"
 		ref="dropZone"
-		v-if="automationEditState?.dragging?.value"
+		v-if="automationEditState?.dragging?.value && (!isBeingDragged || forceOn)"
 	></div>
 </template>
 
 <script setup lang="ts">
-import { VueElement, getCurrentInstance, onMounted, onUnmounted, ref } from "vue"
+import { Ref, inject, onMounted, onUnmounted, ref } from "vue"
 import { useAutomationEditState } from "../../util/automation-dragdrop"
-import { useEventListener } from "@vueuse/core"
 
-const props = defineProps<{
-	dropKey: string
-	dropAxis: "horizontal" | "vertical"
-	dropLocation: "start" | "middle"
-}>()
+const props = withDefaults(
+	defineProps<{
+		dropKey: string
+		forceOn?: boolean
+		dropAxis: "horizontal" | "vertical"
+		dropLocation: "start" | "middle"
+	}>(),
+	{ forceOn: false }
+)
 
 const automationEditState = useAutomationEditState()
 
 const dropZone = ref<HTMLElement | null>(null)
+
+const isBeingDragged = inject<Ref<boolean>>("sequenceDragging")
 
 function computeOffset(ev: MouseEvent) {
 	let offset = { x: 0, y: 0, width: 0, height: 0 }

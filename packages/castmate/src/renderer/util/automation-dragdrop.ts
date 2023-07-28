@@ -10,6 +10,8 @@ import {
 	VueElement,
 	getCurrentInstance,
 	toValue,
+	computed,
+	ComputedRef,
 } from "vue"
 
 import { useEventListener } from "@vueuse/core"
@@ -30,22 +32,6 @@ export interface AutomationEditState {
 	getZone(ev: MouseEvent): DropZone | undefined
 	registerDropZone(key: string, zone: DropZone): void
 	unregisterDropZone(key: string): void
-}
-
-function blowUpRect(rect: DOMRect) {
-	return DOMRect.fromRect({
-		x: rect.x - 60,
-		y: rect.y,
-		width: rect.width + 120,
-		height: rect.height + 60,
-	})
-}
-
-function inRect(ev: { clientX: number; clientY: number }, rect: DOMRect) {
-	if (rect.left > ev.clientX || rect.right < ev.clientX || rect.top > ev.clientY || rect.bottom < ev.clientY) {
-		return false
-	}
-	return true
 }
 
 export function useRootAutomationEditState(automationElem: MaybeRefOrGetter<HTMLElement | null>): AutomationEditState {
@@ -76,14 +62,16 @@ export function useRootAutomationEditState(automationElem: MaybeRefOrGetter<HTML
 			dropZones.value.delete(key)
 		},
 		getZone(ev: MouseEvent) {
-			const dropZones = collectDropZones(ev)
+			const overlapZones = collectDropZones(ev)
+
+			//console.log("Zones", overlapZones.length, "/", dropZones.value.size)
 
 			let minZone: DropZone | undefined
 			let minZoneDistance: number = 100000
 
-			for (let zone of dropZones) {
+			for (let zone of overlapZones) {
 				const d = zone.computeDistance(ev)
-				console.log(zone.key, d)
+				//console.log(zone.key, d)
 				if (d < minZoneDistance) {
 					minZone = zone
 					minZoneDistance = d
@@ -95,13 +83,78 @@ export function useRootAutomationEditState(automationElem: MaybeRefOrGetter<HTML
 	}
 
 	useEventListener(automationElem, "dragover", (ev: DragEvent) => {
-		const rootElem = toValue(automationElem)
-		if (rootElem) {
-			let minZone = automationEditState.getZone(ev)
+		if (!ev.dataTransfer) return
+		if (!ev.dataTransfer.types.includes("automation-sequence")) return
 
-			if (minZone) {
-				dropCandidate.value = minZone.key
-			}
+		const rootElem = toValue(automationElem)
+		if (!rootElem) return
+
+		let minZone = automationEditState.getZone(ev)
+
+		dropCandidate.value = minZone?.key ?? null
+
+		if (ev.dataTransfer.effectAllowed == "move") ev.dataTransfer.dropEffect = "move"
+		if (ev.dataTransfer.effectAllowed == "copy") ev.dataTransfer.dropEffect = "copy"
+
+		ev.preventDefault()
+		ev.stopPropagation()
+	})
+
+	interface FromTo {
+		fromElement?: HTMLElement
+		toElement?: HTMLElement
+	}
+
+	useEventListener(automationElem, "dragenter", (ev: DragEvent) => {
+		if (!ev.dataTransfer) return
+		if (!ev.dataTransfer.types.includes("automation-sequence")) return
+
+		const ft = ev as FromTo
+
+		if (ft.toElement && !toValue(automationElem)?.contains(ft.toElement)) {
+			return
+		}
+
+		automationEditState.dragging.value = true
+		ev.preventDefault()
+		ev.stopPropagation()
+	})
+
+	useEventListener(automationElem, "dragleave", (ev: DragEvent) => {
+		if (!ev.dataTransfer) return
+		if (!ev.dataTransfer.types.includes("automation-sequence")) return
+
+		const ft = ev as FromTo
+
+		if (ft.fromElement && toValue(automationElem)?.contains(ft.fromElement)) {
+			return
+		}
+
+		automationEditState.dragging.value = false
+		ev.preventDefault()
+		ev.stopPropagation()
+	})
+
+	useEventListener(automationElem, "drop", (ev: DragEvent) => {
+		if (!ev.dataTransfer) return
+		if (!ev.dataTransfer.types.includes("automation-sequence")) return
+
+		automationEditState.dragging.value = false
+		ev.preventDefault()
+		ev.stopPropagation()
+
+		const data: Sequence = JSON.parse(ev.dataTransfer.getData("automation-sequence"))
+
+		const dropZone = automationEditState.getZone(ev)
+
+		if (dropZone) {
+			nextTick(() => {
+				console.log("Dropping in", dropZone.key)
+			})
+
+			dropZone.doDrop()
+		} else {
+			//Create new floating sequence
 		}
 	})
 
@@ -122,6 +175,10 @@ export function useSequenceDrag(
 	const dragTarget = shallowRef<HTMLElement | null>(null)
 
 	const dragging = ref<boolean>(false)
+	const parentDragging = inject<ComputedRef<boolean>>("sequenceDragging")
+
+	const childDragging = computed(() => parentDragging?.value || dragging.value)
+	provide("sequenceDragging", childDragging)
 
 	const automationEditState = useAutomationEditState()
 
@@ -129,14 +186,9 @@ export function useSequenceDrag(
 
 	useEventListener(element, "mousedown", (ev: MouseEvent) => {
 		dragTarget.value = ev.target as HTMLElement
-		if (isChildOfClass(dragTarget.value, "action-handle")) {
-			console.log("In Handle")
-		}
 	})
 
 	useEventListener(element, "dragstart", (ev: DragEvent) => {
-		console.log("DragStart", (ev.target as HTMLElement).className)
-
 		if (!ev.target) return
 		if (!ev.dataTransfer) return
 		if (!automationEditState) return
@@ -147,15 +199,14 @@ export function useSequenceDrag(
 			return
 		}
 
+		console.log("DragStart", toValue(element)?.className)
+
 		//Grab data here
 		const sequence = sequenceCloner()
 		ev.dataTransfer.effectAllowed = ev.altKey ? "copy" : "move"
 		ev.dataTransfer.setData("automation-sequence", JSON.stringify(sequence))
-		console.log("Dragging", sequence)
 
 		dragging.value = true
-
-		automationEditState.dragging.value = true
 		ev.stopPropagation()
 	})
 
@@ -174,9 +225,8 @@ export function useSequenceDrag(
 		}
 
 		dragging.value = false
-		automationEditState.dragging.value = false
 		ev.stopPropagation()
 	})
 
-	return { dragging }
+	return { dragging: computed(() => dragging.value) }
 }
