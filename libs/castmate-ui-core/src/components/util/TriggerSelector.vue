@@ -15,7 +15,7 @@
 				</div>
 			</template>
 		</p-auto-complete>
-		<label for="ac"> {{ label }} </label>
+		<label for="ac" v-if="label"> {{ label }} </label>
 	</span>
 </template>
 
@@ -37,7 +37,7 @@ const props = withDefaults(
 		modelValue: TriggerValue | undefined
 		label?: string
 	}>(),
-	{ label: "Trigger" }
+	{}
 )
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useVModel(props, "modelValue", emit)

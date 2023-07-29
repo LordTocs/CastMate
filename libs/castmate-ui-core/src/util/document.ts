@@ -11,6 +11,7 @@ export interface Document {
 	type: string
 	dirty: boolean
 	data: DataWithName
+	viewData: any
 }
 
 export interface DocumentData {
@@ -25,7 +26,7 @@ export const useDocumentStore = defineStore("documents", () => {
 	const documents = ref<Map<string, Document>>(new Map())
 	const documentComponents = ref<Map<string, Component>>(new Map())
 
-	function addDocument(data: DataWithName, type: string) {
+	function addDocument(data: DataWithName, view: any, type: string) {
 		const id = nanoid()
 
 		documents.value.set(id, {
@@ -33,6 +34,7 @@ export const useDocumentStore = defineStore("documents", () => {
 			type,
 			dirty: false,
 			data,
+			viewData: view,
 		})
 
 		const document = documents.value.get(id)

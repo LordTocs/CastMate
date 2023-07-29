@@ -67,7 +67,7 @@ export const usePluginStore = defineStore("plugins", () => {
 				id: "test",
 				name: "Test",
 				description: "Testing a trigger",
-				icon: "Blarg",
+				icon: "mdi-star",
 				color: "#8DC1C0",
 				config: {
 					type: Object,
@@ -83,7 +83,7 @@ export const usePluginStore = defineStore("plugins", () => {
 				id: "fake",
 				name: "Fake",
 				description: "Faking a Trigger",
-				icon: "Blarg",
+				icon: "mdi-pencil",
 				color: "#5E5172",
 				config: {
 					type: Object,

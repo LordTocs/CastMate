@@ -1,19 +1,4 @@
 <template>
-	<!-- <div class="docked-split" :class="{ horizontal, vertical }">
-		<template v-for="(division, i) in modelObj.divisions" :key="division.id">
-			<docking-split
-				v-if="modelObj.divisions[i].type == 'split'"
-				v-model="(modelObj.divisions[i] as DockedSplit)"
-				:style="getSplitStyle(i)"
-			/>
-			<docking-frame v-else v-model="(modelObj.divisions[i] as DockedFrame)" :style="getSplitStyle(i)" />
-			<docking-divider
-				v-if="i != modelObj.divisions.length - 1"
-				v-model="modelObj.dividers[i]"
-				:direction="modelObj.direction"
-			/>
-		</template>
-	</div> -->
 	<p-splitter class="docked-split" :layout="modelValue.direction">
 		<p-splitter-panel v-for="(division, i) in modelObj.divisions" :key="division.id">
 			<docking-split

@@ -1,12 +1,5 @@
 <template>
-	<div
-		class="drag-area"
-		ref="dragArea"
-		@dragover="dragOver"
-		@dragenter="dragEnter"
-		@dragleave="dragExit"
-		@drop="dropped"
-	>
+	<div class="drag-area" ref="dragArea">
 		<div
 			class="draggable-item"
 			v-for="(data, i) in props.modelValue"
@@ -17,21 +10,28 @@
 			@dragend="itemDragEnd(i, $event)"
 			draggable="true"
 		>
-			<component :is="dataComponent" v-model="modelObj[i]" :selected="selection"></component>
+			<component
+				:is="dataComponent"
+				v-model="modelObj[i]"
+				v-model:view="view[i]"
+				:selected="selection"
+			></component>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { type Component, ref, type VNode, computed } from "vue"
+import { type Component, ref, type VNode, computed, useModel } from "vue"
 import { useVModel } from "@vueuse/core"
 import { type DocumentData, type DocumentDataSelection } from "../../util/document"
 import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
+import { DragEventWithDataTransfer, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../util/dragging"
 
 const props = withDefaults(
 	defineProps<{
 		modelValue: DocumentData[]
+		view: any[]
 		dataComponent: Component
 		dataType?: string
 		handleClass?: string
@@ -39,6 +39,7 @@ const props = withDefaults(
 	{
 		dataType: "document-data",
 		handleClass: "drag-handle",
+		view: () => [],
 	}
 )
 
@@ -46,9 +47,8 @@ const selection = ref<DocumentDataSelection>({
 	selectedIds: [],
 })
 
-const emit = defineEmits(["update:modelValue"])
-
-const modelObj = useVModel(props, "modelValue", emit)
+const modelObj = useModel(props, "modelValue")
+const view = useModel(props, "view")
 
 ///DRAG HANDLERS
 
@@ -62,79 +62,80 @@ const dragHovering = ref(false)
 const dataComponents = ref<VueHTMLElement[]>([])
 const insertionIndex = ref<number>(0)
 
-function dragOver(evt: DragEvent) {
-	if (!evt.dataTransfer) {
-		return
+useDragOver(
+	dragArea,
+	() => props.dataType,
+	(ev: DragEventWithDataTransfer) => {
+		if (ev.dataTransfer.effectAllowed == "move") ev.dataTransfer.dropEffect = "move"
+		if (ev.dataTransfer.effectAllowed == "copy") ev.dataTransfer.dropEffect = "copy"
+
+		insertionIndex.value = getInsertionIndex(ev.clientY)
 	}
+)
 
-	if (!evt.dataTransfer.types.includes(props.dataType)) {
-		return
+useDragEnter(
+	dragArea,
+	() => props.dataType,
+	(ev: DragEventWithDataTransfer) => {
+		dragHovering.value = true
 	}
+)
 
-	evt.preventDefault()
-	evt.stopPropagation()
-
-	//console.log("DropEffect D", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
-
-	if (evt.dataTransfer.effectAllowed == "move") evt.dataTransfer.dropEffect = "move"
-	if (evt.dataTransfer.effectAllowed == "copy") evt.dataTransfer.dropEffect = "copy"
-
-	insertionIndex.value = getInsertionIndex(evt.clientY)
-
-	return false
-}
-
-interface FromTo {
-	fromElement?: HTMLElement
-	toElement?: HTMLElement
-}
-
-function dragEnter(evt: DragEvent) {
-	//console.log("DropEffect E", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
-
-	if (!evt.dataTransfer) {
-		console.log("No transfer")
-		return
+useDragLeave(
+	dragArea,
+	() => props.dataType,
+	(ev: DragEventWithDataTransfer) => {
+		dragHovering.value = false
 	}
+)
 
-	if (!evt.dataTransfer.types.includes(props.dataType)) {
-		return
+useDrop(
+	dragArea,
+	() => props.dataType,
+	(ev: DragEventWithDataTransfer) => {
+		dragHovering.value = false
+
+		let insertionIdx = getInsertionIndex(ev.clientY)
+		const dataStr = ev.dataTransfer.getData(props.dataType)
+		let data: DocumentData[] = []
+
+		console.log("Inserting at", insertionIdx)
+
+		try {
+			data = JSON.parse(dataStr)
+		} catch (err) {
+			console.error("HOW DID WE GET HERE?")
+			return
+		}
+
+		//console.log("DropEffect", evt.dataTransfer.dropEffect, evt.dataTransfer.effectAllowed)
+		if (ev.dataTransfer.effectAllowed == "move" && draggingItems.value) {
+			//We're moving internal items
+			//Adjust the insertion index and remove the items from the model
+
+			console.log("internal move")
+
+			for (const id of selection.value.selectedIds) {
+				const idx = modelObj.value.findIndex((i) => i.id == id)
+
+				if (idx < 0) {
+					continue
+				}
+
+				if (idx < insertionIdx) {
+					--insertionIdx
+				}
+
+				modelObj.value.splice(idx, 1)
+			}
+		}
+
+		if (ev.dataTransfer.effectAllowed == "move" || ev.dataTransfer.effectAllowed == "copy") {
+			console.log("Final inserting at", insertionIdx)
+			modelObj.value.splice(insertionIdx, 0, ...data)
+		}
 	}
-
-	evt.preventDefault()
-	evt.stopPropagation()
-
-	//evt.dataTransfer.dropEffect = "move"
-
-	if (dragHovering.value) {
-		return
-	}
-
-	dragHovering.value = true
-}
-
-function dragExit(evt: DragEvent) {
-	//console.log("DropEffect L", evt.dataTransfer?.dropEffect, evt.dataTransfer?.effectAllowed)
-
-	if (!evt.dataTransfer) {
-		console.log("No transfer")
-		return
-	}
-
-	if (!evt.dataTransfer.types.includes(props.dataType)) {
-		return
-	}
-
-	evt.preventDefault()
-	evt.stopPropagation()
-
-	const ft = evt as FromTo
-	if (ft.fromElement && dragArea.value?.contains(ft.fromElement)) {
-		return
-	}
-
-	dragHovering.value = false
-}
+)
 
 const orderedDataComponents = computed(() => {
 	return modelObj.value.map((i) => dataComponents.value.find((c) => c.__vnode.key == i.id))
@@ -162,61 +163,6 @@ function getInsertionIndex(clientY: number) {
 	}
 
 	return result
-}
-
-function dropped(evt: DragEvent) {
-	if (!evt.dataTransfer) {
-		return
-	}
-
-	if (!evt.dataTransfer.types.includes(props.dataType)) {
-		return
-	}
-
-	if (!dragArea.value) return
-
-	evt.preventDefault()
-	evt.stopPropagation()
-
-	let insertionIdx = getInsertionIndex(evt.clientY)
-	const dataStr = evt.dataTransfer.getData(props.dataType)
-	let data: DocumentData[] = []
-
-	console.log("Inserting at", insertionIdx)
-
-	try {
-		data = JSON.parse(dataStr)
-	} catch (err) {
-		console.error("HOW DID WE GET HERE?")
-		return
-	}
-
-	//console.log("DropEffect", evt.dataTransfer.dropEffect, evt.dataTransfer.effectAllowed)
-	if (evt.dataTransfer.effectAllowed == "move" && draggingItems.value) {
-		//We're moving internal items
-		//Adjust the insertion index and remove the items from the model
-
-		console.log("internal move")
-
-		for (const id of selection.value.selectedIds) {
-			const idx = modelObj.value.findIndex((i) => i.id == id)
-
-			if (idx < 0) {
-				continue
-			}
-
-			if (idx < insertionIdx) {
-				--insertionIdx
-			}
-
-			modelObj.value.splice(idx, 1)
-		}
-	}
-
-	if (evt.dataTransfer.effectAllowed == "move" || evt.dataTransfer.effectAllowed == "copy") {
-		console.log("Final inserting at", insertionIdx)
-		modelObj.value.splice(insertionIdx, 0, ...data)
-	}
 }
 
 function isChildOfClass(element: HTMLElement, clazz: string) {

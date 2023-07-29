@@ -15,7 +15,14 @@ import {
 } from "vue"
 
 import { useEventListener } from "@vueuse/core"
-import { isChildOfClass } from "castmate-ui-core"
+import {
+	DragEventWithDataTransfer,
+	isChildOfClass,
+	useDragEnter,
+	useDragLeave,
+	useDragOver,
+	useDrop,
+} from "castmate-ui-core"
 
 export interface DropZone {
 	get key(): string
@@ -82,66 +89,25 @@ export function useRootAutomationEditState(automationElem: MaybeRefOrGetter<HTML
 		},
 	}
 
-	useEventListener(automationElem, "dragover", (ev: DragEvent) => {
-		if (!ev.dataTransfer) return
-		if (!ev.dataTransfer.types.includes("automation-sequence")) return
-
-		const rootElem = toValue(automationElem)
-		if (!rootElem) return
-
+	useDragOver(automationElem, "automation-sequence", (ev: DragEventWithDataTransfer) => {
 		let minZone = automationEditState.getZone(ev)
 
 		dropCandidate.value = minZone?.key ?? null
 
 		if (ev.dataTransfer.effectAllowed == "move") ev.dataTransfer.dropEffect = "move"
 		if (ev.dataTransfer.effectAllowed == "copy") ev.dataTransfer.dropEffect = "copy"
-
-		ev.preventDefault()
-		ev.stopPropagation()
 	})
 
-	interface FromTo {
-		fromElement?: HTMLElement
-		toElement?: HTMLElement
-	}
-
-	useEventListener(automationElem, "dragenter", (ev: DragEvent) => {
-		if (!ev.dataTransfer) return
-		if (!ev.dataTransfer.types.includes("automation-sequence")) return
-
-		const ft = ev as FromTo
-
-		if (ft.toElement && !toValue(automationElem)?.contains(ft.toElement)) {
-			return
-		}
-
+	useDragEnter(automationElem, "automation-sequence", (ev: DragEventWithDataTransfer) => {
 		automationEditState.dragging.value = true
-		ev.preventDefault()
-		ev.stopPropagation()
 	})
 
-	useEventListener(automationElem, "dragleave", (ev: DragEvent) => {
-		if (!ev.dataTransfer) return
-		if (!ev.dataTransfer.types.includes("automation-sequence")) return
-
-		const ft = ev as FromTo
-
-		if (ft.fromElement && toValue(automationElem)?.contains(ft.fromElement)) {
-			return
-		}
-
+	useDragLeave(automationElem, "automation-sequence", (ev: DragEventWithDataTransfer) => {
 		automationEditState.dragging.value = false
-		ev.preventDefault()
-		ev.stopPropagation()
 	})
 
-	useEventListener(automationElem, "drop", (ev: DragEvent) => {
-		if (!ev.dataTransfer) return
-		if (!ev.dataTransfer.types.includes("automation-sequence")) return
-
+	useDrop(automationElem, "automation-sequence", (ev: DragEventWithDataTransfer) => {
 		automationEditState.dragging.value = false
-		ev.preventDefault()
-		ev.stopPropagation()
 
 		const data: Sequence = JSON.parse(ev.dataTransfer.getData("automation-sequence"))
 

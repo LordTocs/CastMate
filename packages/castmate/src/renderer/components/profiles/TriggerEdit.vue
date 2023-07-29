@@ -7,41 +7,72 @@
 			<div class="drag-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
 			</div>
-			<div class="flex flex-row flex-grow-1 align-items-center">
+			<div class="flex flex-row flex-grow-1 align-items-center" v-if="!open">
 				<span class="trigger-name">
+					<i :class="['mdi', trigger?.icon]" />
 					{{ trigger?.name }}
 				</span>
 			</div>
-			<p-button :icon="open ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'" @click="open = !open" />
+			<div class="flex flex-row flex-grow-1 align-items-center" v-else>
+				<trigger-selector v-model="triggerModel" />
+			</div>
+			<p-button text :icon="open ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'" @click="open = !open" />
 		</div>
 		<div class="body" v-if="open">
 			<div class="config">
-				<trigger-selector v-model="triggerModel" class="mb-4 mt-4" />
 				<template v-if="trigger">
 					<data-input :schema="trigger.config" v-model="modelObj.config" />
 				</template>
 			</div>
 			<div class="automation">
-				<automation-edit v-model="modelObj.sequenece" />
+				<automation-edit v-model="modelObj.sequence" v-model:view="view.sequenceView" />
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue"
+import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import { type TriggerData } from "castmate-schema"
-import { useTrigger, DataInput, TriggerSelector } from "castmate-ui-core"
+import { useTrigger, DataInput, TriggerSelector, TriggerView } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
 import AutomationEdit from "../automation/AutomationEdit.vue"
 import * as chromatism from "chromatism2"
 
-const open = ref(false)
+const props = withDefaults(
+	defineProps<{
+		modelValue: TriggerData
+		view: TriggerView
+	}>(),
+	{
+		view: () => ({
+			id: "",
+			open: false,
+			sequenceView: {
+				panState: {
+					panX: 0,
+					panY: 0,
+					zoomX: 1,
+					zoomY: 1,
+					panning: false,
+				},
+				selection: [],
+			},
+		}),
+	}
+)
 
-const props = defineProps<{
-	modelValue: TriggerData
-}>()
+const view = useModel(props, "view")
+
+const open = computed<boolean>({
+	get() {
+		return !!view.value.open
+	},
+	set(v) {
+		view.value.open = v
+	},
+})
 
 const triggerModel = computed({
 	get() {

@@ -1,5 +1,10 @@
 <template>
-	<component :is="documentComponent" v-if="documentComponent && document" v-model="documentData" />
+	<component
+		:is="documentComponent"
+		v-if="documentComponent && document"
+		v-model="documentData"
+		v-model:view="documentView"
+	/>
 </template>
 
 <script setup lang="ts">
@@ -24,6 +29,19 @@ const documentData = computed({
 
 		document.value.dirty = true
 		document.value.data = data
+	},
+})
+
+const documentView = computed({
+	get() {
+		return document.value?.viewData
+	},
+	set(data) {
+		if (!document.value) return
+
+		if (!data) return
+
+		document.value.viewData = data
 	},
 })
 </script>

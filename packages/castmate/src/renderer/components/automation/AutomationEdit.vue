@@ -1,113 +1,29 @@
 <template>
 	<div ref="editArea" class="automation-edit">
-		<pan-area class="automation-edit grid-paper" v-model:panState="panState" zoom-y="false">
-			<sequence-edit v-model="testSeq" :floating="false" />
+		<pan-area class="automation-edit grid-paper" v-model:panState="view.panState" :zoom-y="false">
+			<sequence-edit v-model="model" :floating="false" />
 		</pan-area>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { provide, ref } from "vue"
+import { ref, useModel } from "vue"
 import { type Sequence } from "castmate-schema"
-import ActionElement from "./ActionElement.vue"
-import { ActionInfo } from "castmate-schema"
-import { useEventListener } from "@vueuse/core"
-import { PanArea } from "castmate-ui-core"
+import { PanArea, SequenceView } from "castmate-ui-core"
 import SequenceEdit from "./SequenceEdit.vue"
-import { AutomationEditState, useRootAutomationEditState } from "../../util/automation-dragdrop"
+import { useRootAutomationEditState } from "../../util/automation-dragdrop"
 
 const props = defineProps<{
 	modelValue: Sequence
+	view: SequenceView
 }>()
 
-const emit = defineEmits(["update:modelValue"])
-const zoom = ref(1)
 const editArea = ref<HTMLElement | null>(null)
 
-const automationEditState = useRootAutomationEditState(editArea)
+const model = useModel(props, "modelValue")
+const view = useModel(props, "view")
 
-const panState = ref({
-	panX: 0,
-	panY: 0,
-	zoomX: 1,
-	zoomY: 1,
-	panning: false,
-})
-
-const testSeq = ref<Sequence>({
-	actions: [
-		{
-			id: "acb",
-			plugin: "castmate",
-			action: "delay",
-			config: {
-				duration: 1.5,
-			},
-			offsets: [],
-		},
-		{
-			id: "cad",
-			plugin: "castmate",
-			action: "blah",
-			config: {},
-		},
-		{
-			id: "qrs",
-			plugin: "castmate",
-			action: "tts",
-			config: {
-				duration: 3,
-			},
-			offsets: [
-				{
-					id: "fff",
-					offset: 1.0,
-					actions: [
-						{
-							id: "ytg",
-							plugin: "castmate",
-							action: "blah",
-							config: {},
-						},
-					],
-				},
-			],
-		},
-		{
-			id: "cde",
-			stack: [
-				{
-					id: "def",
-					plugin: "castmate",
-					action: "blah",
-					config: {},
-				},
-				{
-					id: "efg",
-					plugin: "castmate",
-					action: "blah",
-					config: {},
-				},
-			],
-		},
-	],
-})
-
-const test = ref<ActionInfo>({
-	id: "acb",
-	plugin: "castmate",
-	action: "delay",
-	config: {
-		duration: 1.5,
-	},
-})
-
-const test2 = ref<ActionInfo>({
-	id: "cad",
-	plugin: "castmate",
-	action: "blah",
-	config: {},
-})
+useRootAutomationEditState(editArea)
 </script>
 
 <style scoped>

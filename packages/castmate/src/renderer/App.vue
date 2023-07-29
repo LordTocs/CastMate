@@ -30,7 +30,62 @@ onMounted(() => {
 						queue: "main",
 						config: {},
 						sequence: {
-							actions: [],
+							actions: [
+								{
+									id: "acb",
+									plugin: "castmate",
+									action: "delay",
+									config: {
+										duration: 1.5,
+									},
+									offsets: [],
+								},
+								{
+									id: "cad",
+									plugin: "castmate",
+									action: "blah",
+									config: {},
+								},
+								{
+									id: "qrs",
+									plugin: "castmate",
+									action: "tts",
+									config: {
+										duration: 3,
+									},
+									offsets: [
+										{
+											id: "fff",
+											offset: 1.0,
+											actions: [
+												{
+													id: "ytg",
+													plugin: "castmate",
+													action: "blah",
+													config: {},
+												},
+											],
+										},
+									],
+								},
+								{
+									id: "cde",
+									stack: [
+										{
+											id: "def",
+											plugin: "castmate",
+											action: "blah",
+											config: {},
+										},
+										{
+											id: "efg",
+											plugin: "castmate",
+											action: "blah",
+											config: {},
+										},
+									],
+								},
+							],
 						},
 						floatingSequences: [],
 					},
@@ -41,42 +96,98 @@ onMounted(() => {
 						queue: "main",
 						config: {},
 						sequence: {
-							actions: [],
+							actions: [
+								{
+									id: "acb",
+									plugin: "castmate",
+									action: "delay",
+									config: {
+										duration: 1.5,
+									},
+									offsets: [],
+								},
+								{
+									id: "cad",
+									plugin: "castmate",
+									action: "blah",
+									config: {},
+								},
+								{
+									id: "qrs",
+									plugin: "castmate",
+									action: "tts",
+									config: {
+										duration: 3,
+									},
+									offsets: [
+										{
+											id: "fff",
+											offset: 1.0,
+											actions: [
+												{
+													id: "ytg",
+													plugin: "castmate",
+													action: "blah",
+													config: {},
+												},
+											],
+										},
+									],
+								},
+								{
+									id: "cde",
+									stack: [
+										{
+											id: "def",
+											plugin: "castmate",
+											action: "blah",
+											config: {},
+										},
+										{
+											id: "efg",
+											plugin: "castmate",
+											action: "blah",
+											config: {},
+										},
+									],
+								},
+							],
 						},
 						floatingSequences: [],
 					},
+				],
+			},
+			{
+				scrollX: 0,
+				scrollY: 0,
+				triggers: [
 					{
-						id: "cde",
-						plugin: "castmate",
-						trigger: "test",
-						queue: "main",
-						config: {},
-						sequence: {
-							actions: [],
+						id: "abc",
+						open: false,
+						sequenceView: {
+							panState: {
+								panX: 0,
+								panY: 0,
+								zoomX: 1,
+								zoomY: 1,
+								panning: false,
+							},
+							selection: [],
 						},
-						floatingSequences: [],
 					},
 					{
-						id: "def",
-						plugin: "castmate",
-						trigger: "test",
-						queue: "main",
-						config: {},
-						sequence: {
-							actions: [],
+						id: "bcd",
+						open: false,
+						sequenceView: {
+							panState: {
+								panX: 0,
+								panY: 0,
+								zoomX: 1,
+								zoomY: 1,
+								panning: false,
+							},
+							selection: [],
 						},
-						floatingSequences: [],
-					},
-					{
-						id: "efg",
-						plugin: "castmate",
-						trigger: "test",
-						queue: "main",
-						config: {},
-						sequence: {
-							actions: [],
-						},
-						floatingSequences: [],
 					},
 				],
 			},
@@ -87,19 +198,12 @@ onMounted(() => {
 				name: "Test 2",
 				triggers: [],
 			},
+			{
+				scrollX: 0,
+				scrollY: 0,
+				triggers: [],
+			},
 			"profile"
-		),
-		documentStore.addDocument(
-			{
-				name: "Test 3",
-			},
-			"test"
-		),
-		documentStore.addDocument(
-			{
-				name: "Test 4",
-			},
-			"test"
 		),
 	]
 
@@ -118,22 +222,6 @@ onMounted(() => {
 			},
 		],
 	})
-	/*dockedInfo.value.divisions.push({
-		id: nanoid(),
-		type: "frame",
-		currentTab: docs[2].id,
-		tabs: [
-			{
-				id: nanoid(),
-				documentId: docs[2].id,
-			},
-			{
-				id: nanoid(),
-				documentId: docs[3].id,
-			},
-		],
-	})
-	dockedInfo.value.dividers.push(0.5)*/
 })
 
 const dockedInfo = ref<DockedArea>({

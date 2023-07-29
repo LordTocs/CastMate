@@ -30,7 +30,17 @@ const props = withDefaults(
 		zoomY: boolean
 		panState: PanState
 	}>(),
-	{ zoomX: true, zoomY: true }
+	{
+		zoomX: true,
+		zoomY: true,
+		panState: () => ({
+			panX: 0,
+			panY: 0,
+			zoomX: 1,
+			zoomY: 1,
+			panning: false,
+		}),
+	}
 )
 
 const emit = defineEmits(["update:panState"])
