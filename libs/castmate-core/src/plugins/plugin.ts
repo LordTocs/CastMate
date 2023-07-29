@@ -39,14 +39,14 @@ export function defineRendererInvoker<T extends (...args: any[]) => void>(name: 
 	return defineCallableIPC<T>(initingPlugin.id, name)
 }
 
-export function onLoad(loadFunc: () => Promise<any> | void) {
+export function onLoad(loadFunc: () => Promise<any> | any) {
 	if (!initingPlugin) throw new Error()
 
 	const privates = initingPlugin as unknown as PluginPrivates
 	privates.loader.register(loadFunc)
 }
 
-export function onUnload(unloadFunc: () => Promise<any>) {
+export function onUnload(unloadFunc: () => Promise<any> | any) {
 	if (!initingPlugin) throw new Error()
 
 	const privates = initingPlugin as unknown as PluginPrivates
