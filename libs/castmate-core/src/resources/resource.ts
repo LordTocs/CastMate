@@ -9,20 +9,15 @@ import {
 } from "castmate-schema"
 import { Reactive } from "../reactivity/reactivity"
 import { ResourceRegistry } from "./resource-registry"
+import { ConstructedType } from "../util/type-helpers"
 
 export interface ResourceBase {
-	id: string
+	readonly id: string
+	readonly config: any
+	state: any
 }
 
-export interface ResourceStub {
-	config: Record<string, any>
-	state?: Record<string, any>
-}
-
-export type Resource = ResourceBase & ResourceStub
-
-export class ResourceStorage<T extends Resource> {
-	//Doesn't actually implement ResourceStorage because we can't satisfy extends Resource, we'll just force cast later
+export class ResourceStorage<T extends ResourceBase> {
 	private resources: Array<T> = []
 
 	getById(id: string) {
@@ -45,20 +40,8 @@ export class ResourceStorage<T extends Resource> {
 	}
 }
 
-interface DerivedResourceConstructor {
-	new (...args: any[]): any
-	getSpec(): ResourceSpec<any, any>
-	load?(): Promise<void>
-	registerSuper(): void
-}
-
-export interface ResourceConstructor<
-	T extends Resource = any,
-	ConfigSchema extends SchemaObj = any,
-	StateSchema extends SchemaObj = any
-> {
+export interface ResourceConstructor<T extends ResourceBase = any> {
 	new (...args: any[]): T
-	getSpec(): ResourceSpec<ConfigSchema, StateSchema>
 	create?(config: object): Promise<T>
 	load?(): Promise<void>
 	storage: ResourceStorage<T>
@@ -69,117 +52,78 @@ export function RegisterResource<TConstructor extends ResourceConstructor>(
 	context: ClassDecoratorContext<TConstructor>
 ) {
 	context.addInitializer(function () {
-		//Any of my metadata work here
 		if (context.name != null) {
-			ResourceRegistry.getInstance().register(context.name, target)
+			//ResourceRegistry.getInstance().register(context.name, target)
+			//Register here
 		} else {
-			throw new Error("Resources cannot be anonymous")
+			throw new Error("Resources cannot be anonymous classes.")
 		}
 	})
 }
 
-export function ExtractStorageAny<TConstructor extends new (...args: any[]) => any>(constructor: TConstructor) {
-	const resourceConstructor = constructor as unknown as ResourceConstructor<any>
-	return resourceConstructor.storage
-}
+export class Resource<ConfigType extends object, StateType extends object = {}> implements ResourceBase {
+	readonly id: string
 
-export interface ResourceSpec<ConfigSchema extends SchemaObj, StateSchema extends SchemaObj> {
-	config: ConfigSchema
-	state: StateSchema
-}
+	//Handle JSON.stringify
+	toJSON() {
+		return this.id
+	}
 
-export function defineResource<ConfigSchema extends SchemaObj, StateSchema extends SchemaObj>(
-	spec: ResourceSpec<ConfigSchema, StateSchema>
-) {
-	return class ResourceType {
-		readonly id: string
+	private _config: ConfigType
+	get config() {
+		return this._config
+	}
 
-		//Config
+	async setConfig(config: Partial<ConfigType>) {
+		Object.assign(this._config, config)
+	}
 
-		private _config: SchemaType<ConfigSchema>
-		get config(): SchemaType<ConfigSchema> {
-			return this._config
+	toIPC() {
+		return {
+			id: this.id,
+			config: this.config,
+			state: this.state,
 		}
+	}
 
-		async setConfig(config: SchemaType<ConfigSchema>) {
-			this._config = config
-			//TODO: Send to UI
-		}
+	@Reactive
+	accessor state: StateType
 
-		constructor(id: string, config: SchemaType<ConfigSchema>) {
-			this.id = id
-			this._config = config
-		}
+	static async init() {
+		//@ts-ignore
+		ResourceRegistry.getInstance().register(this.name, this)
+	}
 
-		//State
-
-		@Reactive
-		accessor state: SchemaType<StateSchema>
-
-		//MetaData
-
-		static getSpec() {
-			return spec
-		}
-
-		private static _derivedResourceConstructors: DerivedResourceConstructor[] = []
-
-		static registerDerivedResource(constructor: DerivedResourceConstructor) {
-			this._derivedResourceConstructors.push(constructor)
-		}
-
-		static async loadDerived() {
-			return await Promise.all(this._derivedResourceConstructors.map((dc) => dc.load?.()))
-		}
+	static async uninit() {
+		//@ts-ignore
+		ResourceRegistry.getInstance().unregister(this)
 	}
 }
 
-export type ResourceConfig<T extends Resource> = T["config"]
-export type ResourceState<T extends Resource> = T["state"]
-
-interface ResourceSchemaInferConstructor<ConfigSchema extends SchemaObj = any, StateSchema extends SchemaObj = any> {
-	new (...args: any[]): any
-	getSpec(): ResourceSpec<ConfigSchema, StateSchema>
-	registerDerivedResource(constructor: DerivedResourceConstructor): void
+/*
+interface LightConfig {
+	brand: string
+	supportsColor: boolean
+	supportsColorTemp: boolean
+	minColorTemp?: number
+	maxColorTemp?: number
 }
 
-export function ExtendedResource<TConstructor extends DerivedResourceConstructor>(
-	constructor: TConstructor,
-	context: ClassDecoratorContext
-) {
-	context.addInitializer(function () {
-		constructor.registerSuper()
-	})
+interface LightState {
+	color: string
 }
 
-export function extendResource<
-	ConfigSchema extends SchemaObj,
-	StateSchema extends SchemaObj,
-	BaseConfigSchema extends SchemaObj,
-	BaseStateSchema extends SchemaObj,
-	BaseConstructor extends ResourceSchemaInferConstructor<BaseConfigSchema, BaseStateSchema>
->(spec: ResourceSpec<ConfigSchema, StateSchema>, baseResourceConstructor: BaseConstructor) {
-	const combinedSpec = {
-		config: squashSchemas(baseResourceConstructor.getSpec().config, spec.config),
-		state: squashSchemas(baseResourceConstructor.getSpec().state, spec.state),
-	}
 
-	return class ExtendedResource extends baseResourceConstructor {
-		config: SchemaType<typeof combinedSpec.config>
-
-		@Reactive
-		accessor state: SchemaType<typeof combinedSpec.state>
-
-		static getSpec(): ResourceSpec<typeof combinedSpec.config, typeof combinedSpec.state> {
-			return combinedSpec
-		}
-
-		static registerSuper() {
-			super.registerDerivedResource(this)
-		}
+@RegisterResource
+class Light extends Resource<LightConfig, LightState> {
+	static async load() {
+		super.load()
 	}
 }
 
-export function serializeToIPC<R extends Resource, T extends ResourceConstructor<R>>(rConstructor: T) {
-	rConstructor.getSpec().config
+class BrandLight extends Light {
+	static async load() {}
+
+	static async unload() {}
 }
+*/

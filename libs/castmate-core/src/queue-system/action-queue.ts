@@ -1,4 +1,4 @@
-import { RegisterResource, ResourceStorage, defineResource } from "../resources/resource"
+import { RegisterResource, ResourceStorage, Resource } from "../resources/resource"
 import { Sequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 
@@ -8,33 +8,17 @@ interface QueuedSequenceData<ContextData = any> {
 	sequence: Sequence
 }
 
+interface ActionQueueConfig {
+	name: string
+	paused: boolean
+}
+
+interface ActionQueueState {
+	queue: any[]
+}
+
 @RegisterResource
-export class ActionQueue extends defineResource({
-	config: {
-		type: Object,
-		properties: {
-			name: { type: String, required: true, default: "" },
-			paused: { type: Boolean, required: true, default: false },
-		},
-	},
-	state: {
-		type: Object,
-		properties: {
-			queue: {
-				type: Array,
-				items: {
-					type: Object,
-					properties: {
-						id: { type: String },
-						sequence: { type: Object, properties: {} },
-						context: { type: Object, properties: {} },
-					},
-				},
-				required: true,
-			},
-		},
-	},
-}) {
+export class ActionQueue extends Resource<ActionQueueConfig, ActionQueueState> {
 	static storage = new ResourceStorage<ActionQueue>()
 
 	enqueue(context: Record<string, any>, sequence: Sequence) {

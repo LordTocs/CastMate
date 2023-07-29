@@ -6,7 +6,8 @@ export * from "./queue-system/sequence"
 export * from "./queue-system/trigger"
 export * from "./resources/resource"
 export * from "./resources/resource-registry"
-export * from "./resources/file-resource"
+//export * from "./resources/file-resource"
+export * from "./accounts/account"
 
 export * from "./profile/profile"
 export * from "./queue-system/action-queue"
@@ -61,114 +62,6 @@ defineTrigger({
 	},
 })
 
-//Resources
-
-@RegisterResource
-class TestResource extends defineResource({
-	config: {
-		type: Object,
-		properties: {
-			hello: { type: String },
-		},
-	},
-	state: {
-		type: Object,
-		properties: {
-			goodbye: { type: String },
-		},
-	},
-}) {
-	static readonly storage = new ResourceStorage<TestResource>()
-}
-
-// Resource Inheritence
-
-@RegisterResource
-class LightResource extends defineResource({
-	config: {
-		type: Object,
-		properties: {
-			hasColor: { type: Boolean, required: true, default: false },
-			hasTemperature: { type: Boolean, required: true, default: false },
-		},
-	},
-	state: {
-		type: Object,
-		properties: {
-			on: { type: Boolean, required: true, default: false },
-		},
-	},
-}) {
-	static storage = new ResourceStorage<LightResource>()
-
-	async setLightState(on: boolean) {}
-
-	static async load() {
-		await this.loadDerived()
-	}
-}
-
-@ExtendedResource
-class BrandLightResource extends extendResource(
-	{
-		config: {
-			type: Object,
-			properties: {
-				brandId: { type: String, required: true, default: "" },
-			},
-		},
-		state: {
-			type: Object,
-			properties: {},
-		},
-	},
-	LightResource
-) {
-	async setLightState(on: boolean) {}
-
-	static async load() {
-		//Query the hub here.
-	}
-}
-
-///
-
-class SavedResource extends defineResource({
-	config: {
-		type: Object,
-		properties: {
-			hello: { type: String },
-		},
-	},
-	state: {
-		type: Object,
-		properties: {},
-	},
-}) {
-	static storage = new ResourceStorage<SavedResource>()
-
-	async setConfig(config: ResourceConfig<SavedResource>): Promise<void> {
-		await super.setConfig(config)
-
-		await saveResource(this, "/test")
-	}
-
-	static async load() {
-		const resources = await loadResources(SavedResource, "/test")
-
-		//Do some init work
-
-		this.storage.inject(...resources)
-	}
-
-	static async create(config: ResourceConfig<SavedResource>): Promise<SavedResource> {
-		const resource = new SavedResource(nanoid(), config)
-		await saveResource(resource, "/test")
-		this.storage.inject(resource)
-
-		return resource
-	}
-}
 // REACTIVITY
 
 class Foo {
