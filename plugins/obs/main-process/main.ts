@@ -5,32 +5,26 @@ import {
 	onUnload,
 	definePlugin,
 	RegisterResource,
-	defineResource,
 	ResourceStorage,
+	Resource,
 	defineState,
 } from "castmate-core"
 import { Toggle } from "castmate-schema"
 import OBSWebSocket from "obs-websocket-js"
 
+interface OBSConnectionConfig {
+	name: string
+	host: string
+	port: number
+}
+
+interface OBSConnectionState {
+	connected: boolean
+	scene: string
+}
+
 @RegisterResource
-class OBSConnection extends defineResource({
-	config: {
-		type: Object,
-		properties: {
-			name: { type: String, required: true, default: "OBS" },
-			host: { type: String, required: true, default: "localhost" },
-			port: { type: Number, required: true, default: 4455 },
-			default: { type: Boolean, required: true, default: false },
-		},
-	},
-	state: {
-		type: Object,
-		properties: {
-			connected: { type: Boolean, required: true, default: false },
-			scene: { type: String },
-		},
-	},
-}) {
+class OBSConnection extends Resource<OBSConnectionConfig, OBSConnectionState> {
 	static storage = new ResourceStorage<OBSConnection>()
 
 	connection: OBSWebSocket
