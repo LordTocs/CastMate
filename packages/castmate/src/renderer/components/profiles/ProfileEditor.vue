@@ -2,13 +2,18 @@
 	<flex-scroller ref="scroller" v-model:scroll-y="view.scrollY" v-model:scroll-x="view.scrollX">
 		<div class="profile-edit">
 			<h1>Triggers</h1>
-			<div class="trigger-area">
-				<document-data-collection
-					v-model="model.triggers"
-					v-model:view="view.triggers"
-					:data-component="TriggerEdit"
-				/>
-			</div>
+
+			<document-data-collection
+				class="trigger-area"
+				v-model="model.triggers"
+				v-model:view="view.triggers"
+				:data-component="TriggerEdit"
+			>
+				<template #no-items>
+					<h3>Add a trigger</h3>
+				</template>
+			</document-data-collection>
+
 			<h1>Activation Conditions</h1>
 		</div>
 	</flex-scroller>

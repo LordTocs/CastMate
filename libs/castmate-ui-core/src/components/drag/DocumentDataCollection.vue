@@ -1,5 +1,6 @@
 <template>
 	<div class="drag-area" ref="dragArea">
+		<slot name="no-items" v-if="props.modelValue.length == 0"></slot>
 		<div
 			class="draggable-item"
 			v-for="(data, i) in props.modelValue"
@@ -96,13 +97,17 @@ useDrop(
 		dragHovering.value = false
 
 		let insertionIdx = getInsertionIndex(ev.clientY)
-		const dataStr = ev.dataTransfer.getData(props.dataType)
-		let data: DocumentData[] = []
-
 		console.log("Inserting at", insertionIdx)
+
+		const dataStr = ev.dataTransfer.getData(props.dataType)
+		const viewStr = ev.dataTransfer.getData(`${props.dataType}-view`)
+
+		let data: DocumentData[] = []
+		let viewData: any[] = []
 
 		try {
 			data = JSON.parse(dataStr)
+			viewData = JSON.parse(viewStr)
 		} catch (err) {
 			console.error("HOW DID WE GET HERE?")
 			return
@@ -133,6 +138,7 @@ useDrop(
 		if (ev.dataTransfer.effectAllowed == "move" || ev.dataTransfer.effectAllowed == "copy") {
 			console.log("Final inserting at", insertionIdx)
 			modelObj.value.splice(insertionIdx, 0, ...data)
+			view.value.splice(insertionIdx, 0, ...viewData)
 		}
 	}
 )
@@ -195,6 +201,24 @@ function getSelectedData(copy: boolean) {
 	return result
 }
 
+function getSelectedViewData(copy: boolean) {
+	const result = []
+
+	for (const id of selection.value.selectedIds) {
+		const item = view.value.find((v) => v.id == id)
+
+		if (item) {
+			const itemDupe = _cloneDeep(item)
+			if (copy) {
+				itemDupe.id = nanoid()
+			}
+			result.push(itemDupe)
+		}
+	}
+
+	return result
+}
+
 /// DRAG ITEM HANDLERS
 
 //In order to check if the handle class is respected we need to save off the mousedown event's target, since dragevent originates from the draggable div
@@ -218,6 +242,7 @@ function itemDragStart(i: number, evt: DragEvent) {
 
 		evt.dataTransfer.effectAllowed = evt.altKey ? "copy" : "move"
 		evt.dataTransfer.setData(props.dataType, JSON.stringify(getSelectedData(evt.altKey)))
+		evt.dataTransfer.setData(`${props.dataType}-view`, JSON.stringify(getSelectedViewData(evt.altKey)))
 	} else {
 		evt.preventDefault()
 	}
@@ -236,6 +261,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 		if (!dragHovering.value) {
 			//These items are dropped into another frame, remove them from our model
 			modelObj.value = modelObj.value.filter((i) => !selection.value.selectedIds.includes(i.id))
+			view.value = view.value.filter((i) => !selection.value.selectedIds.includes(i.id))
 		}
 	} else if (evt.dataTransfer.dropEffect == "copy") {
 		//Copied somewhere
