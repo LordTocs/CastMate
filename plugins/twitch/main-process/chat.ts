@@ -1,9 +1,10 @@
 import { ChatClient } from "@twurple/chat"
 import { defineTrigger, defineAction } from "castmate-core"
+import { TwitchAccount } from "./auth"
 
-export function setupChat(channelAuth, botAuth) {
+export function setupChat() {
 	const chatClient = new ChatClient({
-		authProvider: botAuth ?? channelAuth,
+		//authProvider: //botAuth ?? channelAuth,
 	})
 
 	defineAction({
@@ -16,7 +17,10 @@ export function setupChat(channelAuth, botAuth) {
 				message: { type: String, template: true, required: true, default: "" },
 			},
 		},
-		async invoke(config, context, abortSignal) {},
+		async invoke(config, context, abortSignal) {
+			//TODO: Channel
+			await chatClient.say("lordtocs", config.message)
+		},
 	})
 
 	const chat = defineTrigger({

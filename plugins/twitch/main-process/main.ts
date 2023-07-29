@@ -1,4 +1,7 @@
-import { defineAction, definePlugin, onLoad } from "castmate-core"
+import { defineAction, definePlugin, onLoad, onUnload } from "castmate-core"
+import { TwitchAccount } from "./auth"
+import { setupChat } from "./chat"
+import { setupChannelPointRewards } from "./channelpoints"
 
 export default definePlugin(
 	{
@@ -8,6 +11,13 @@ export default definePlugin(
 		icon: "mdi-twitch",
 	},
 	() => {
-		onLoad(() => {})
+		onLoad(() => {
+			TwitchAccount.load()
+		})
+
+		onUnload(() => {})
+
+		setupChat()
+		setupChannelPointRewards()
 	}
 )
