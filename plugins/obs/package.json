@@ -5,7 +5,7 @@
     "type": "module",
     "main": "src/main.js",
     "workspaces": [
-        "main-process",
+        "main",
         "overlay",
         "renderer"
     ]
