@@ -51,14 +51,14 @@ export function RegisterResource<TConstructor extends ResourceConstructor>(
 	target: TConstructor,
 	context: ClassDecoratorContext<TConstructor>
 ) {
-	context.addInitializer(function () {
-		if (context.name != null) {
-			//ResourceRegistry.getInstance().register(context.name, target)
-			//Register here
-		} else {
-			throw new Error("Resources cannot be anonymous classes.")
-		}
-	})
+	// context.addInitializer(function () {
+	// 	if (context.name != null) {
+	// 		//ResourceRegistry.getInstance().register(context.name, target)
+	// 		//Register here
+	// 	} else {
+	// 		throw new Error("Resources cannot be anonymous classes.")
+	// 	}
+	// })
 }
 
 export class Resource<ConfigType extends object, StateType extends object = {}> implements ResourceBase {
@@ -89,12 +89,12 @@ export class Resource<ConfigType extends object, StateType extends object = {}> 
 	@Reactive
 	accessor state: StateType
 
-	static async init() {
+	static async initialize() {
 		//@ts-ignore
 		ResourceRegistry.getInstance().register(this.name, this)
 	}
 
-	static async uninit() {
+	static async uninitialize() {
 		//@ts-ignore
 		ResourceRegistry.getInstance().unregister(this)
 	}

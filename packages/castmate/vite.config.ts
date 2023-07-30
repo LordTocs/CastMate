@@ -8,7 +8,7 @@ import renderer from "vite-plugin-electron-renderer"
 import { fileURLToPath } from "node:url"
 //import { nodeResolve } from "@rollup/plugin-node-resolve"
 
-import { library } from "castmate-vite"
+import { library, plugins } from "castmate-vite"
 //import { library, subpackage } from "../../vite-util/vite-subpackage-plugin"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -22,9 +22,16 @@ export default defineConfig({
 		renderer(),
 		electron({
 			entry: "src/main/background.ts",
+			vite: {
+				plugins: [plugins("../../plugins", "main")],
+				build: {
+					minify: false,
+				},
+			},
 		}),
 		//subpackage("castmate-overlay-components"),
 		library("castmate-ui-core"),
+		plugins("../../plugins"),
 	],
 	/*resolve: {
 		alias: {

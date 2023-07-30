@@ -1,14 +1,11 @@
-import { defineResource } from "../resources/resource"
+import { Resource, RegisterResource, ResourceStorage } from "../resources/resource"
 
-export class Profile extends defineResource({
-	config: {
-		type: Object,
-		properties: {
-			name: { type: String },
-		},
-	},
-	state: {
-		type: Object,
-		properties: {},
-	},
-}) {}
+export interface ProfileConfig {}
+
+export interface ProfileState {
+	action: boolean
+}
+
+export class Profile extends Resource<ProfileConfig, ProfileState> {
+	static storage = new ResourceStorage<Profile>()
+}

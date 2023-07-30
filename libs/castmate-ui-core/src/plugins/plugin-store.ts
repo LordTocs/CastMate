@@ -95,6 +95,8 @@ export const usePluginStore = defineStore("plugins", () => {
 		},
 	})
 
+	async function initialize() {}
+
 	return { pluginMap: computed(() => pluginMap) }
 })
 

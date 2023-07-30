@@ -2,10 +2,16 @@ import fs from "fs"
 import path from "path"
 import { UserConfig, PluginOption } from "vite"
 
-export function library(name: string): PluginOption {
-	const packageJson = JSON.parse(fs.readFileSync(`../../libs/${name}/package.json`, "utf8"))
+export function aliasPackage(name: string, dir: string): PluginOption[] {
+	const packagePath = path.join(dir, name, "package.json")
 
-	const entry = path.resolve(`../../libs/${name}`, packageJson.devMain)
+	if (!fs.existsSync(packagePath)) {
+		return []
+	}
+
+	const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"))
+
+	const entry = path.resolve(path.join(dir, name), packageJson.devMain)
 	return [
 		{
 			name: `${name}-sub:serve`,
@@ -31,4 +37,8 @@ export function library(name: string): PluginOption {
 			},
 		},
 	]
+}
+
+export function library(name: string): PluginOption {
+	return aliasPackage(name, "../../libs")
 }

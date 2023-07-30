@@ -21,6 +21,7 @@
 		/* "noFallthroughCasesInSwitch": true */
 		"paths": {
 			"castmate-ui-core": ["../../libs/castmate-ui-core/src/main.ts"]
+			// "castmate-plugin-twitch-main": ["../../plugins/twitch/main/src/main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
