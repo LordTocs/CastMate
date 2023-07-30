@@ -1,4 +1,4 @@
-import { RegisterResource, Resource, ResourceStorage, defineTrigger } from "castmate-core"
+import { RegisterResource, Resource, ResourceStorage, defineTrigger, onLoad } from "castmate-core"
 
 interface TwitchChannelPointRewardInfo {
 	title: string
@@ -26,6 +26,10 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig> {
 }
 
 export function setupChannelPointRewards() {
+	onLoad(() => {
+		ChannelPointReward.initialize()
+	})
+
 	defineTrigger({
 		id: "redemption",
 		name: "Channel Point Reward",

@@ -12,7 +12,7 @@ export default definePlugin(
 	},
 	() => {
 		onLoad(() => {
-			TwitchAccount.load()
+			TwitchAccount.initialize()
 		})
 
 		onUnload(() => {})
