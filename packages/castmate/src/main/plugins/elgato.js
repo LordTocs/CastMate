@@ -161,7 +161,7 @@ class ElgatoLightStrip extends Light {
 			dimming: {
 				available: true,
 			},
-			numberOfLights: lights.numberOfLights,
+			numberOfLights: lights.data.numberOfLights,
 		}
 
 		this.startPolling()
