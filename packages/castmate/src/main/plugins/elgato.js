@@ -56,7 +56,7 @@ class ElgatoKeyLight extends Light {
 		const info = await this.axios.get("accessory-info")
 
 		this.config = {
-			name: info.data.displayName,
+			name: info.data.displayName ?? info.data.productName,
 			plugin: "elgato",
 			type: "bulb",
 			rgb: {
@@ -147,7 +147,7 @@ class ElgatoLightStrip extends Light {
 		const lights = await this.axios.get("lights")
 
 		this.config = {
-			name: info.data.displayName,
+			name: info.data.displayName ?? info.data.productName,
 			plugin: "elgato",
 			type: "bulb",
 			rgb: {
@@ -214,9 +214,9 @@ class ElgatoIoTProvider extends IoTProvider {
 		this.keylightBrowser = this.bonjour.find(
 			{ type: "elg" },
 			async (service) => {
-				console.log(util.inspect(service))
-				if (service.txt.md.includes("Key")) {
-					const light = new ElgatoKeyLight(service)
+				if (service.txt.md.includes("Light Strip")) {
+					//Light strip?
+					const light = new ElgatoLightStrip(service)
 					try {
 						//console.log("Elgato Light!")
 						await light.init()
@@ -226,8 +226,7 @@ class ElgatoIoTProvider extends IoTProvider {
 						console.error(err)
 					}
 				} else {
-					//Light strip?
-					const light = new ElgatoLightStrip(service)
+					const light = new ElgatoKeyLight(service)
 					try {
 						//console.log("Elgato Light!")
 						await light.init()
