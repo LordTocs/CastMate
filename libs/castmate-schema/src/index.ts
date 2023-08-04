@@ -9,4 +9,5 @@ export * from "./ipc/plugin"
 
 export * from "./types/profile"
 export * from "./types/sequence"
-export * from "./types/plugin"
+
+export * from "./util/type-helpers"

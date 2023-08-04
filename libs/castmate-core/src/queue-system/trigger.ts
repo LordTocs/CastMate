@@ -85,8 +85,8 @@ export function defineTrigger<Config extends Schema, ContextData extends Schema>
 	}
 
 	const impl = new TriggerImplementation<Config, ContextData>({
-		icon: "mdi-pencil",
-		color: "#f0f0f0",
+		icon: "mdi mdi-alert-circle-outline",
+		color: initingPlugin.color,
 		version: "0.0.0",
 		...spec,
 	})

@@ -11,6 +11,7 @@ import {
 	shallowReadonly,
 	toValue,
 	markRaw,
+	toRaw,
 } from "vue"
 
 import StringInputVue from "../components/data/inputs/StringInput.vue"
@@ -37,7 +38,7 @@ interface ResourceProxy {
 
 declare module "castmate-schema" {
 	interface SchemaResource {
-		resourceId: string
+		resourceType: string
 	}
 }
 
@@ -53,17 +54,17 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 	} else if (ipcSchema.type === "Array" && "items" in ipcSchema) {
 		return {
 			...ipcSchema,
-			type: Array,
+			type: toRaw(Array),
 			items: ipcParseSchema(ipcSchema.items),
 		}
-	} else if (ipcSchema.type === "Resource" && "resourceId" in ipcSchema) {
+	} else if (ipcSchema.type === "Resource" && "resourceType" in ipcSchema) {
 		return {
 			...ipcSchema,
-			type: ResourceProxy,
-			resourceId: ipcSchema.resourceId,
+			type: toRaw(ResourceProxy),
+			resourceType: ipcSchema.resourceType,
 		}
 	} else {
-		const type = getTypeByName(ipcSchema.type)?.constructor
+		const type = toRaw(getTypeByName(ipcSchema.type)?.constructor)
 		if (!type) {
 			throw new Error(`Unknown IPC Type ${ipcSchema.type}`)
 		}

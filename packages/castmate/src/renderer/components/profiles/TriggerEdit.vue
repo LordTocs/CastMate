@@ -9,7 +9,7 @@
 			</div>
 			<div class="flex flex-row flex-grow-1 align-items-center" v-if="!open">
 				<span class="trigger-name">
-					<i :class="['mdi', trigger?.icon]" />
+					<i :class="[trigger?.icon]" />
 					{{ trigger?.name }}
 				</span>
 			</div>

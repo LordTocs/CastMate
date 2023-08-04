@@ -1,9 +1,17 @@
-import { Color, Schema, constructDefault, SchemaType, IPCActionDefinition, IPCPluginDefinition } from "castmate-schema"
+import {
+	Color,
+	Schema,
+	constructDefault,
+	SchemaType,
+	IPCActionDefinition,
+	IPCPluginDefinition,
+	mapRecord,
+} from "castmate-schema"
 import { ActionDefinition, defineAction } from "../queue-system/action"
 import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { EventList } from "../util/events"
-import { SemanticVersion, mapRecord } from "../util/type-helpers"
+import { SemanticVersion } from "../util/type-helpers"
 import { reactify, reactiveRef } from "../reactivity/reactivity"
 
 interface PluginSpec {

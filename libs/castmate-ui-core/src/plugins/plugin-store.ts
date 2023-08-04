@@ -1,108 +1,98 @@
 import { defineStore } from "pinia"
 
-import { IPCPluginDefinition } from "castmate-schema"
+import { IPCActionDefinition, IPCPluginDefinition, IPCTriggerDefinition, Schema, Color, mapKeys } from "castmate-schema"
 
 import { computed, ref, unref, type MaybeRefOrGetter, toValue } from "vue"
 
 import * as chromatism from "chromatism2"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
+import { ipcParseSchema } from "../util/data"
+
+interface ActionDefinition {
+	readonly id: string
+	readonly name: string
+	readonly description?: string
+	readonly icon?: string
+	readonly color?: Color
+
+	config: Schema
+	result?: Schema
+}
+
+function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
+	const actionDef = {
+		id: def.id,
+		name: def.name,
+		description: def.description,
+		config: ipcParseSchema(def.config),
+		...(def.result ? { result: ipcParseSchema(def.result) } : {}),
+	}
+
+	return actionDef
+}
+
+interface TriggerDefinition {
+	readonly id: string
+	readonly name: string
+	readonly description?: string
+	readonly icon?: string
+	readonly color?: Color
+	readonly version: string
+	config: Schema
+	context: Schema
+}
+
+function ipcParseTriggerDefinition(def: IPCTriggerDefinition): TriggerDefinition {
+	const triggerDef = {
+		id: def.id,
+		name: def.name,
+		description: def.description,
+		icon: def.icon,
+		color: def.color,
+		version: def.version,
+		config: ipcParseSchema(def.config),
+		context: ipcParseSchema(def.context),
+	}
+
+	return triggerDef
+}
+
+interface PluginDefinition {
+	readonly id: string
+	readonly name: string
+	readonly description?: string
+	readonly icon: string
+	readonly color: Color
+	readonly version: string
+
+	actions: Record<string, ActionDefinition>
+	triggers: Record<string, TriggerDefinition>
+}
+
+function ipcParsePluginDefinition(def: IPCPluginDefinition): PluginDefinition {
+	const pluginDef = {
+		id: def.id,
+		name: def.name,
+		description: def.description,
+		icon: def.icon,
+		color: def.color,
+		version: def.version,
+		actions: mapKeys(def.actions, (key, value) => ipcParseActionDefinition(value)),
+		triggers: mapKeys(def.triggers, (key, value) => ipcParseTriggerDefinition(value)),
+	}
+
+	return pluginDef
+}
 
 export const usePluginStore = defineStore("plugins", () => {
-	const pluginMap = ref<Map<string, IPCPluginDefinition>>(new Map())
+	const pluginMap = ref<Map<string, PluginDefinition>>(new Map())
 
 	const getPluginIds = useIpcCaller<() => string[]>("plugins", "getPluginIds")
 	const getPlugin = useIpcCaller<(id: string) => IPCPluginDefinition>("plugins", "getPlugin")
 
-	/*
-	pluginMap.set("castmate", {
-		id: "castmate",
-		name: "CastMate",
-		icon: "mdi-pencil",
-		color: "#8DC1C0",
-		actions: {
-			delay: {
-				id: "delay",
-				name: "Delay",
-				description: "Delays",
-				icon: "mdi-timer-sand",
-				color: "#8DC1C0",
-				type: "time",
-				config: {
-					type: Object,
-					properties: {
-						str: { type: String, name: "String Value" },
-						str2: { type: String, name: "String Value 2!" },
-						num: { type: Number, name: "Number Value" },
-						bool: { type: Boolean, name: "Boolean Value" },
-					},
-				},
-			},
-			blah: {
-				id: "blah",
-				name: "Chat",
-				description: "Blahs",
-				icon: "mdi-chat",
-				color: "#5E5172",
-				type: "instant",
-				config: {
-					type: Object,
-					properties: {
-						num: { type: Number, name: "Number Value" },
-					},
-				},
-			},
-			tts: {
-				id: "tts",
-				name: "TTS",
-				description: "Blahs",
-				icon: "mdi-account-voice",
-				color: "#62894F",
-				type: "time-indefinite",
-				config: {
-					type: Object,
-					properties: {
-						duration: { type: Number, name: "Duration" },
-						num: { type: Number, name: "Number Value" },
-					},
-				},
-			},
-		},
-		triggers: {
-			test: {
-				id: "test",
-				name: "Test",
-				description: "Testing a trigger",
-				icon: "mdi-star",
-				color: "#8DC1C0",
-				config: {
-					type: Object,
-					properties: {
-						str: { type: String, name: "String Value", template: true },
-						str2: { type: String, name: "String Value 2!" },
-						num: { type: Number, name: "Number Value", template: true, unit: "m" },
-						bool: { type: Boolean, name: "Boolean Value" },
-					},
-				},
-			},
-			fake: {
-				id: "fake",
-				name: "Fake",
-				description: "Faking a Trigger",
-				icon: "mdi-pencil",
-				color: "#5E5172",
-				config: {
-					type: Object,
-					properties: {
-						num: { type: Number, name: "Number Value", template: true, unit: "m" },
-					},
-				},
-			},
-		},
-	})
-*/
 	async function initialize() {
 		handleIpcMessage("plugins", "registerPlugin", (event, plugin: IPCPluginDefinition) => {
-			pluginMap.value.set(plugin.id, plugin)
+			pluginMap.value.set(plugin.id, ipcParsePluginDefinition(plugin))
 		})
 
 		handleIpcMessage("plugins", "unregisterPlugin", (event, id: string) => {
@@ -114,7 +104,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		const plugins = await Promise.all(ids.map((id) => getPlugin(id)))
 
 		for (let i = 0; i < ids.length; ++i) {
-			pluginMap.value.set(ids[i], plugins[i])
+			pluginMap.value.set(ids[i], ipcParsePluginDefinition(plugins[i]))
 		}
 	}
 

@@ -10,6 +10,7 @@ export function setupChat() {
 	defineAction({
 		id: "chat",
 		name: "Send Chat",
+		icon: "mdi mdi-chat",
 		version: "0.0.1",
 		config: {
 			type: Object,
@@ -26,6 +27,7 @@ export function setupChat() {
 	const chat = defineTrigger({
 		id: "chat",
 		name: "Chat Command",
+		icon: "mdi mdi-chat",
 		version: "0.0.1",
 		config: {
 			type: Object,
