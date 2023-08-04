@@ -212,7 +212,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 							accessToken,
 						})
 							.then(() => {
-								this.setConfig({
+								this.applyConfig({
 									scopes,
 								})
 							})

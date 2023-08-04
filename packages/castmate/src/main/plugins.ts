@@ -3,6 +3,4 @@ import twitchPlugin from "castmate-plugin-twitch-main"
 
 export async function loadPlugins() {
 	PluginManager.getInstance().registerPlugin(twitchPlugin)
-
-	PluginManager.getInstance().load()
 }

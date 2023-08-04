@@ -1,4 +1,5 @@
 import { Enumable, IPCSchema, Schema, getTypeByConstructor } from "castmate-schema"
+import { isResourceConstructor } from "../resources/resource"
 
 function convertIPCEnum(schema: Enumable<any>) {
 	if (schema.enum) {
@@ -26,9 +27,16 @@ export function ipcConvertSchema<T extends Schema>(schema: T): IPCSchema {
 			type: "Array",
 			items: ipcConvertSchema(schema.items),
 		}
+	} else if (isResourceConstructor(schema.type)) {
+		return {
+			...schema,
+			type: "Resource",
+			resourceType: schema.type.storage.name,
+		}
 	} else {
 		const typeName = getTypeByConstructor(schema.type)?.name
 		if (!typeName) {
+			console.error("Unconvertable Schema Type: ", schema)
 			throw new Error("Unconvertable Schema Type")
 		}
 		return { ...schema, ...convertIPCEnum(schema as Enumable<any>), type: typeName }

@@ -41,3 +41,16 @@ export function mapMap<K, V, T>(map: Map<K, V>, mapFunc: (key: K, value: V) => T
 
 	return result
 }
+
+export function mapRecord<V, T>(map: Map<string, V>, mapFunc: (key: string, value: V) => T): Record<string, T> {
+	const result: Record<string, T> = {}
+
+	for (let key of map.keys()) {
+		const v = map.get(key)
+		if (v != undefined) {
+			result[key] = mapFunc(key, v)
+		}
+	}
+
+	return result
+}

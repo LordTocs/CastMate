@@ -238,6 +238,16 @@ export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
 	dataConstructorLookup.set(metaData.constructor, fullMetaData)
 }
 
+registerType("String", {
+	constructor: String,
+})
+registerType("Number", {
+	constructor: Number,
+})
+registerType("Boolean", {
+	constructor: Boolean,
+})
+
 export function getTypeByName<T = any>(name: string) {
 	return dataNameLookup.get(name) as FullDataTypeMetaData<T> | undefined
 }
@@ -279,7 +289,7 @@ export type IPCSchemaResource = IPCify<
 	SchemaResource,
 	{
 		type: "Resource"
-		resourceId: string
+		resourceType: string
 	}
 >
 

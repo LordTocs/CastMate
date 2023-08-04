@@ -10,7 +10,7 @@ export interface IPCPluginDefinition {
 	readonly color: Color
 	readonly version: string
 
-	actions: Map<string, IPCActionDefinition>
-	triggers: Map<string, IPCTriggerDefinition>
+	actions: Record<string, IPCActionDefinition>
+	triggers: Record<string, IPCTriggerDefinition>
 	//TODO: Map<string, IPCStateDefinition>
 }

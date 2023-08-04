@@ -1,14 +1,19 @@
 import { defineStore } from "pinia"
 
-import { PluginData } from "castmate-schema"
+import { IPCPluginDefinition } from "castmate-schema"
 
-import { computed, unref, type MaybeRefOrGetter, toValue } from "vue"
+import { computed, ref, unref, type MaybeRefOrGetter, toValue } from "vue"
 
 import * as chromatism from "chromatism2"
+import { handleIpcMessage, useIpcCaller } from "../util/electron"
 
 export const usePluginStore = defineStore("plugins", () => {
-	const pluginMap: Map<string, PluginData> = new Map()
+	const pluginMap = ref<Map<string, IPCPluginDefinition>>(new Map())
 
+	const getPluginIds = useIpcCaller<() => string[]>("plugins", "getPluginIds")
+	const getPlugin = useIpcCaller<(id: string) => IPCPluginDefinition>("plugins", "getPlugin")
+
+	/*
 	pluginMap.set("castmate", {
 		id: "castmate",
 		name: "CastMate",
@@ -94,10 +99,26 @@ export const usePluginStore = defineStore("plugins", () => {
 			},
 		},
 	})
+*/
+	async function initialize() {
+		handleIpcMessage("plugins", "registerPlugin", (event, plugin: IPCPluginDefinition) => {
+			pluginMap.value.set(plugin.id, plugin)
+		})
 
-	async function initialize() {}
+		handleIpcMessage("plugins", "unregisterPlugin", (event, id: string) => {
+			pluginMap.value.delete(id)
+		})
 
-	return { pluginMap: computed(() => pluginMap) }
+		const ids = await getPluginIds()
+
+		const plugins = await Promise.all(ids.map((id) => getPlugin(id)))
+
+		for (let i = 0; i < ids.length; ++i) {
+			pluginMap.value.set(ids[i], plugins[i])
+		}
+	}
+
+	return { pluginMap: computed(() => pluginMap.value), initialize }
 })
 
 export function usePlugin(id: MaybeRefOrGetter<string>) {
@@ -120,6 +141,7 @@ export function useTrigger(selection: MaybeRefOrGetter<TriggerSelection | undefi
 		}
 
 		if (!selectionValue.plugin || !selectionValue.trigger) return undefined
+
 		return pluginStore.pluginMap.get(selectionValue.plugin)?.triggers?.[selectionValue.trigger]
 	})
 }
@@ -144,7 +166,7 @@ export function useAction(selection: MaybeRefOrGetter<ActionSelection | undefine
 	})
 }
 
-export function useColors(colorProvider: MaybeRefOrGetter<{ color: string } | undefined>) {
+export function useColors(colorProvider: MaybeRefOrGetter<{ color?: string } | undefined>) {
 	const defaultColor = "#3e3e3e"
 
 	const colorProvValue = toValue(colorProvider)

@@ -3,7 +3,7 @@ import { ActionDefinition, defineAction } from "../queue-system/action"
 import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { EventList } from "../util/events"
-import { SemanticVersion, mapMap } from "../util/type-helpers"
+import { SemanticVersion, mapRecord } from "../util/type-helpers"
 import { reactify, reactiveRef } from "../reactivity/reactivity"
 
 interface PluginSpec {
@@ -149,8 +149,8 @@ export class Plugin {
 			icon: this.icon,
 			color: this.color,
 			version: this.version,
-			actions: mapMap(this.actions, (k, v) => v.toIPC()),
-			triggers: mapMap(this.triggers, (k, v) => v.toIPC()),
+			actions: mapRecord(this.actions, (k, v) => v.toIPC()),
+			triggers: mapRecord(this.triggers, (k, v) => v.toIPC()),
 		}
 	}
 }

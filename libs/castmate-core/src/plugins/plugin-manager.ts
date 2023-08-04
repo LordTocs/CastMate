@@ -1,5 +1,20 @@
+import { IPCPluginDefinition } from "castmate-schema"
+import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Service } from "../util/service"
 import { Plugin } from "./plugin"
+
+const rendererRegisterPlugin = defineCallableIPC<(plugin: IPCPluginDefinition) => void>("plugins", "registerPlugin")
+const rendererUnregisterPlugin = defineCallableIPC<(id: string) => void>("plugins", "unregisterPlugin")
+
+defineIPCFunc("plugins", "getPluginIds", () => {
+	const ids = PluginManager.getInstance().pluginIds
+	console.log(ids)
+	return ids
+})
+
+defineIPCFunc("plugins", "getPlugin", (id: string) => {
+	return PluginManager.getInstance().getPlugin(id)?.toIPC()
+})
 
 export const PluginManager = Service(
 	class {
@@ -7,14 +22,29 @@ export const PluginManager = Service(
 
 		constructor() {}
 
-		registerPlugin(plugin: Plugin) {
-			this.plugins.set(plugin.name, plugin)
+		get pluginIds() {
+			return [...this.plugins.keys()]
 		}
 
-		load() {
-			for (let [key, plugin] of this.plugins) {
-				plugin.load()
+		async registerPlugin(plugin: Plugin) {
+			this.plugins.set(plugin.id, plugin)
+			if (!(await plugin.load())) {
+				this.plugins.delete(plugin.id)
+				return
 			}
+			rendererRegisterPlugin(plugin.toIPC())
+		}
+
+		async unregisterPlugin(id: string) {
+			const plugin = this.plugins.get(id)
+
+			if (!plugin) {
+				throw new Error("Attempt to unregister non-existant plugin")
+			}
+
+			await plugin.unload()
+			this.plugins.delete(id)
+			rendererUnregisterPlugin(id)
 		}
 
 		getAction(plugin: string, action: string) {
@@ -23,6 +53,10 @@ export const PluginManager = Service(
 
 		getTrigger(plugin: string, trigger: string) {
 			return this.plugins.get(plugin)?.triggers?.get(trigger)
+		}
+
+		getPlugin(id: string) {
+			return this.plugins.get(id)
 		}
 	}
 )

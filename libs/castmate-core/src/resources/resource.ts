@@ -13,21 +13,27 @@ import { ConstructedType } from "../util/type-helpers"
 import { defineCallableIPC } from "../util/electron"
 
 interface ResourceIPCDescription {
-	id: string,
-	config: object,
-	state: object,
+	id: string
+	config: object
+	state: object
 }
 
 export interface ResourceBase {
 	readonly id: string
 	readonly config: object
 	state: object
-	toIPC() : ResourceIPCDescription
+	toIPC(): ResourceIPCDescription
 }
 
-const rendererAddResource = defineCallableIPC<(type: string, data: ResourceIPCDescription) => void>("resources", "addResource")
+const rendererAddResource = defineCallableIPC<(type: string, data: ResourceIPCDescription) => void>(
+	"resources",
+	"addResource"
+)
 const rendererDeleteResource = defineCallableIPC<(id: string) => void>("resources", "deleteResource")
-const rendererUpdateResourceInternal = defineCallableIPC<(data: ResourceIPCDescription) => void>("resources", "updateResource")
+const rendererUpdateResourceInternal = defineCallableIPC<(data: ResourceIPCDescription) => void>(
+	"resources",
+	"updateResource"
+)
 
 async function rendererUpdateResource(resource: ResourceBase) {
 	await rendererUpdateResourceInternal(resource.toIPC())
@@ -40,11 +46,11 @@ interface ResourceEntry<T extends ResourceBase> {
 
 export interface ResourceStorageBase {
 	readonly name: string
-	getById(id: string) : ResourceBase | undefined
-	readonly length: number 
+	getById(id: string): ResourceBase | undefined
+	readonly length: number
 	//iter?
-	inject(...resources: ResourceBase[]) : Promise<void>
-	remove(id: string) : void
+	inject(...resources: ResourceBase[]): Promise<void>
+	remove(id: string): void
 }
 
 export class ResourceStorage<T extends ResourceBase> implements ResourceStorageBase {
@@ -73,14 +79,11 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 		}
 	}
 
-
 	async inject(...resources: T[]) {
 		for (let resource of resources) {
 			await rendererAddResource(this.name, resource.toIPC())
 
-			const stateEffect = await autoRerun(() =>
-				rendererUpdateResource(resource)
-			)
+			const stateEffect = await autoRerun(() => rendererUpdateResource(resource))
 
 			this.resources.set(resource.id, {
 				resource,
@@ -104,9 +107,14 @@ export interface ResourceConstructor<T extends ResourceBase = any> {
 	storage: ResourceStorage<T>
 }
 
-export class Resource<ConfigType extends object, StateType extends object = {}> implements ResourceBase {
+export function isResourceConstructor(constructor: new (...args: any[]) => any): constructor is ResourceConstructor {
+	const storageHaver = constructor as { storage?: ResourceStorage<any> }
 
-	static storage : ResourceStorageBase
+	return storageHaver.storage != null
+}
+
+export class Resource<ConfigType extends object, StateType extends object = {}> implements ResourceBase {
+	static storage: ResourceStorageBase
 
 	protected _id: string
 	get id() {

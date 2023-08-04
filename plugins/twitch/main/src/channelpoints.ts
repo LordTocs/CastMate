@@ -17,10 +17,6 @@ interface ChannelPointRewardConfig {
 interface ChannelPointRewardState {}
 
 export class ChannelPointReward extends Resource<ChannelPointRewardConfig> {
-	async setConfig(config: Partial<ChannelPointRewardConfig>): Promise<void> {
-		await super.setConfig(config)
-	}
-
 	static storage = new ResourceStorage<ChannelPointReward>("ChannelPointReward")
 }
 
