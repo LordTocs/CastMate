@@ -1,4 +1,4 @@
-import { RegisterResource, Resource, ResourceStorage, defineTrigger, onLoad } from "castmate-core"
+import { Resource, ResourceStorage, defineTrigger, onLoad } from "castmate-core"
 
 interface TwitchChannelPointRewardInfo {
 	title: string
@@ -16,13 +16,12 @@ interface ChannelPointRewardConfig {
 
 interface ChannelPointRewardState {}
 
-@RegisterResource
 export class ChannelPointReward extends Resource<ChannelPointRewardConfig> {
 	async setConfig(config: Partial<ChannelPointRewardConfig>): Promise<void> {
 		await super.setConfig(config)
 	}
 
-	static storage: ResourceStorage<ChannelPointReward> = new ResourceStorage<ChannelPointReward>()
+	static storage = new ResourceStorage<ChannelPointReward>("ChannelPointReward")
 }
 
 export function setupChannelPointRewards() {

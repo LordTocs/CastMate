@@ -1,5 +1,5 @@
 import { TwitchAccountConfig, TwitchAccountSecrets } from "castmate-plugin-twitch-shared"
-import { Account, RegisterResource, ResourceStorage } from "castmate-core"
+import { Account, ResourceStorage } from "castmate-core"
 import { getTokenInfo } from "@twurple/auth"
 import { BrowserWindow } from "electron"
 import * as qs from "querystring"
@@ -42,9 +42,8 @@ const defaultScopes = [
 const CLIENT_ID = "ajajaj"
 const REDIRECT_URL = `http://localhost/auth/channel/redirect` //Note we don't actually load this redirect URL, the BrowserWindow hooks a redirect to it and pulls the creds before it's loaded.
 
-@RegisterResource
 export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountConfig> {
-	static storage: ResourceStorage<TwitchAccount> = new ResourceStorage<TwitchAccount>()
+	static storage = new ResourceStorage<TwitchAccount>("TwitchAccount")
 
 	async checkCachedCreds(): Promise<boolean> {
 		const info = await getTokenInfo(this.secrets.accessToken, CLIENT_ID)

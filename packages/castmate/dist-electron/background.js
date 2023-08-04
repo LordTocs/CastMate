@@ -20955,6 +20955,18 @@ function defineIPCFunc(category, name, func) {
   });
   return func;
 }
+function defineCallableIPC(category, name) {
+  const singleFunc = (sender, ...args) => {
+    return sender.send(`${category}_${name}`, ...args);
+  };
+  const broadcast = (...args) => {
+    for (let window2 of require$$0$1.BrowserWindow.getAllWindows()) {
+      window2.webContents.send(`${category}_${name}`, ...args);
+    }
+  };
+  broadcast.sendSingle = singleFunc;
+  return broadcast;
+}
 class EventList {
   constructor() {
     this.list = [];
@@ -21277,6 +21289,31 @@ async function createResource(constructor, config) {
   constructor.storage.inject(result);
   return result;
 }
+defineIPCFunc("resources", "setConfig", (type, id, config) => {
+  const resourceType = ResourceRegistry.getInstance().getResourceType(type);
+  if (!resourceType) {
+    throw new Error("Resource Type doesn't exist");
+  }
+  const resource = resourceType.storage.getById(id);
+  if (!resource) {
+    throw new Error("Resource doesn't exist");
+  }
+});
+defineIPCFunc("resources", "updateConfig", (type, id, config) => {
+  const resourceType = ResourceRegistry.getInstance().getResourceType(type);
+  if (!resourceType) {
+    throw new Error("Resource Type doesn't exist");
+  }
+  const resource = resourceType.storage.getById(id);
+  if (!resource) {
+    throw new Error("Resource doesn't exist");
+  }
+});
+const rendererAddResourceType = defineCallableIPC("resources", "addResourceType");
+const rendererDeleteResourceType = defineCallableIPC("resources", "deleteResourceType");
+defineCallableIPC("resources", "addResource");
+defineCallableIPC("resources", "deleteResource");
+defineCallableIPC("resources", "updateResource");
 const ResourceRegistry = Service(
   class {
     constructor() {
@@ -21290,6 +21327,7 @@ const ResourceRegistry = Service(
         constructor,
         storage: constructor.storage
       });
+      rendererAddResourceType(name);
     }
     unregister(constructor) {
       console.log("Unregistering Resource");
@@ -21298,6 +21336,7 @@ const ResourceRegistry = Service(
         return;
       }
       this.resourceTypes.splice(idx, 1);
+      rendererDeleteResourceType(constructor.name);
     }
     getResourceType(typeName) {
       return this.resourceTypes.find((rt) => rt.typeName == typeName);

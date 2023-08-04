@@ -1,4 +1,4 @@
-import { Resource, RegisterResource, ResourceStorage } from "../resources/resource"
+import { Resource, ResourceStorage } from "../resources/resource"
 
 export interface ProfileConfig {}
 
@@ -7,5 +7,5 @@ export interface ProfileState {
 }
 
 export class Profile extends Resource<ProfileConfig, ProfileState> {
-	static storage = new ResourceStorage<Profile>()
+	static storage = new ResourceStorage<Profile>("Profile")
 }

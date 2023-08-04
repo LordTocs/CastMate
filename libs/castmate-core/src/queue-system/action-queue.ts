@@ -1,4 +1,4 @@
-import { RegisterResource, ResourceStorage, Resource } from "../resources/resource"
+import { ResourceStorage, Resource } from "../resources/resource"
 import { Sequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 
@@ -17,9 +17,8 @@ interface ActionQueueState {
 	queue: any[]
 }
 
-@RegisterResource
 export class ActionQueue extends Resource<ActionQueueConfig, ActionQueueState> {
-	static storage = new ResourceStorage<ActionQueue>()
+	static storage = new ResourceStorage<ActionQueue>("ActionQueue")
 
 	enqueue(context: Record<string, any>, sequence: Sequence) {
 		this.state.queue.push({

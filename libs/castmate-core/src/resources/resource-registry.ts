@@ -1,3 +1,4 @@
+import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Service } from "../util/service"
 import { Resource, ResourceBase, ResourceStorage, ResourceConstructor } from "./resource"
 
@@ -20,19 +21,61 @@ export async function createResource<T extends ResourceBase>(constructor: Resour
 	return result
 }
 
+defineIPCFunc("resources", "setConfig", (type: string, id: string, config: object) => {
+	const resourceType = ResourceRegistry.getInstance().getResourceType(type)
+
+	if (!resourceType) {
+		throw new Error("Resource Type doesn't exist")
+	}
+
+	const resource = resourceType.storage.getById(id)
+
+	if (!resource) {
+		throw new Error("Resource doesn't exist")
+	}
+
+	//resource.config = config
+})
+
+defineIPCFunc("resources", "updateConfig", (type: string, id: string, config: object) => {
+	const resourceType = ResourceRegistry.getInstance().getResourceType(type)
+
+	if (!resourceType) {
+		throw new Error("Resource Type doesn't exist")
+	}
+
+	const resource = resourceType.storage.getById(id)
+
+	if (!resource) {
+		throw new Error("Resource doesn't exist")
+	}
+
+	//resource.config = config
+})
+
+defineIPCFunc("resources", "createResource", async (type: string, ...args: any[]) => {
+	const resource = await ResourceRegistry.getInstance().create(type, ...args)
+	return resource?.id
+})
+
+const rendererAddResourceType = defineCallableIPC<(name: string) => void>("resources", "addResourceType")
+const rendererDeleteResourceType = defineCallableIPC<(name: string) => void>("resources", "deleteResourceType")
+
 export const ResourceRegistry = Service(
 	class {
 		private resourceTypes: ResourceEntry[] = []
 
 		//Don't extends Resource here because the metadata function can't recursively satisfy it.
-		register<T extends ResourceBase>(name: string, constructor: ResourceConstructor<T>) {
-			console.log("Registering Resource", name, constructor.storage)
+		register<T extends ResourceBase>(constructor: ResourceConstructor<T>) {
+			console.log("Registering Resource", constructor.storage.name, constructor.storage)
 
 			this.resourceTypes.push({
-				typeName: name,
+				typeName: constructor.storage.name,
 				constructor,
 				storage: constructor.storage,
 			})
+
+			rendererAddResourceType(constructor.storage.name)
 		}
 
 		unregister<T extends ResourceBase>(constructor: ResourceConstructor<T>) {
@@ -46,6 +89,8 @@ export const ResourceRegistry = Service(
 			}
 
 			this.resourceTypes.splice(idx, 1)
+
+			rendererDeleteResourceType(constructor.storage.name)
 		}
 
 		getResourceType<T extends ResourceBase>(typeName: string) {

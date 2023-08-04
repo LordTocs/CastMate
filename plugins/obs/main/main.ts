@@ -4,7 +4,6 @@ import {
 	onLoad,
 	onUnload,
 	definePlugin,
-	RegisterResource,
 	ResourceStorage,
 	Resource,
 	defineState,
@@ -23,9 +22,8 @@ interface OBSConnectionState {
 	scene: string
 }
 
-@RegisterResource
 class OBSConnection extends Resource<OBSConnectionConfig, OBSConnectionState> {
-	static storage = new ResourceStorage<OBSConnection>()
+	static storage = new ResourceStorage<OBSConnection>("OBSConnection")
 
 	connection: OBSWebSocket
 }

@@ -76,7 +76,7 @@ export namespace DependencyStorage {
 	}
 }
 
-class ReactiveEffect<T = any> {
+export class ReactiveEffect<T = any> {
 	constructor(public func: () => T) {}
 
 	async run() {

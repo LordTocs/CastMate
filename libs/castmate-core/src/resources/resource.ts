@@ -7,9 +7,10 @@ import {
 	squashSchemas,
 	SquashedSchemas,
 } from "castmate-schema"
-import { Reactive } from "../reactivity/reactivity"
+import { Reactive, ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 import { ResourceRegistry } from "./resource-registry"
 import { ConstructedType } from "../util/type-helpers"
+import { defineCallableIPC } from "../util/electron"
 
 export interface ResourceBase {
 	readonly id: string
@@ -17,26 +18,65 @@ export interface ResourceBase {
 	state: any
 }
 
+const rendererAddResource = defineCallableIPC<(type: string, data: ResourceBase) => void>("resources", "addResource")
+const rendererDeleteResource = defineCallableIPC<(id: string) => void>("resources", "deleteResource")
+const rendererUpdateResource = defineCallableIPC<(data: ResourceBase) => void>("resources", "updateResource")
+
+interface ResourceEntry<T extends ResourceBase> {
+	resource: T
+	stateEffect: ReactiveEffect
+}
+
 export class ResourceStorage<T extends ResourceBase> {
-	private resources: Array<T> = []
+	private resources: Map<string, ResourceEntry<T>> = new Map()
+	private _name: string
+
+	constructor(name: string) {
+		this._name = name
+	}
+
+	get name() {
+		return this._name
+	}
 
 	getById(id: string) {
-		return this.resources.find((r) => r.id == id)
+		return this.resources.get(id)?.resource
 	}
 
 	get length() {
-		return this.resources.length
+		return this.resources.size
 	}
 
 	*[Symbol.iterator]() {
-		for (let r of this.resources) {
-			yield r as T
+		for (let [id, r] of this.resources.entries()) {
+			yield r.resource
 		}
 	}
 
-	inject(...resources: T[]) {
-		this.resources.push(...resources)
-		//TODO: Notify UI
+	async inject(...resources: T[]) {
+		for (let resource of resources) {
+			await rendererAddResource(this.name, { id: resource.id, config: resource.config, state: resource.state })
+
+			const stateEffect = await autoRerun(() =>
+				rendererUpdateResource({
+					id: resource.id,
+					config: resource.config,
+					state: resource.state,
+				})
+			)
+
+			this.resources.set(resource.id, {
+				resource,
+				stateEffect,
+			})
+		}
+	}
+
+	remove(id: string) {
+		const entry = this.resources.get(id)
+		if (entry) {
+			rendererDeleteResource(id)
+		}
 	}
 }
 
@@ -45,20 +85,6 @@ export interface ResourceConstructor<T extends ResourceBase = any> {
 	create?(config: object): Promise<T>
 	load?(): Promise<void>
 	storage: ResourceStorage<T>
-}
-
-export function RegisterResource<TConstructor extends ResourceConstructor>(
-	target: TConstructor,
-	context: ClassDecoratorContext<TConstructor>
-) {
-	// context.addInitializer(function () {
-	// 	if (context.name != null) {
-	// 		//ResourceRegistry.getInstance().register(context.name, target)
-	// 		//Register here
-	// 	} else {
-	// 		throw new Error("Resources cannot be anonymous classes.")
-	// 	}
-	// })
 }
 
 export class Resource<ConfigType extends object, StateType extends object = {}> implements ResourceBase {
