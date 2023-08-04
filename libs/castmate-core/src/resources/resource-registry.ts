@@ -21,6 +21,22 @@ export async function createResource<T extends ResourceBase>(constructor: Resour
 	return result
 }
 
+defineIPCFunc("resources", "getResourceTypeNames", () => {
+	return ResourceRegistry.getInstance().resourceTypeNames
+})
+
+defineIPCFunc("resources", "getResources", (typeName: string) => {
+	const type = ResourceRegistry.getInstance().getResourceType(typeName)
+
+	const result = []
+
+	for (let r of type.storage) {
+		result.push(r.toIPC())
+	}
+
+	return result;
+})
+
 defineIPCFunc("resources", "setConfig", (type: string, id: string, config: object) => {
 	const resourceType = ResourceRegistry.getInstance().getResourceType(type)
 
@@ -65,8 +81,15 @@ export const ResourceRegistry = Service(
 	class {
 		private resourceTypes: ResourceEntry[] = []
 
+		get resourceTypeNames() {
+			return this.resourceTypes.map(rt => rt.typeName)
+		}
+
 		//Don't extends Resource here because the metadata function can't recursively satisfy it.
 		register<T extends ResourceBase>(constructor: ResourceConstructor<T>) {
+			if (!constructor.storage) {
+				console.log("ERROR REGISTERING RESOURCE NO STORAGE", constructor)
+			}
 			console.log("Registering Resource", constructor.storage.name, constructor.storage)
 
 			this.resourceTypes.push({

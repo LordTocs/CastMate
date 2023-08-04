@@ -18,6 +18,7 @@ export * from "./util/automation"
 export * from "./util/dragging"
 
 export * from "./plugins/plugin-store"
+export * from "./resources/resource-store"
 
 export * from "./util/panning"
 

@@ -1,39 +1,89 @@
-// import { SchemaObj, SchemaType } from "castmate-schema"
-// import {
-// 	ResourceSpec,
-// 	defineResource,
-// 	ExtractStorageAny,
-// 	ResourceConstructor,
-// 	RegisterResource,
-// 	ResourceStorage,
-// 	Resource,
-// 	ResourceConfig,
-// } from "./resource"
-// import * as fs from "fs/promises"
-// import * as path from "path"
-// import { nanoid } from "nanoid/non-secure"
-// import * as YAML from "yaml"
+import { Resource, ResourceBase } from "./resource";
+import * as fs from "fs/promises"
+import * as path from "path"
+import * as YAML from "yaml"
 
-// export async function saveResource<T extends Resource>(r: T, folder: string) {
-// 	await fs.writeFile(path.join(folder, `${r.id}.yaml`), YAML.stringify(r.config), "utf-8")
-// 	return r
-// }
+interface FileResourceConstructor {
+    new (...args: any[]) : ResourceBase
+    resourceDirectory : string
+}
 
-// export async function loadResource<TConstructor extends ResourceConstructor>(
-// 	constructor: TConstructor,
-// 	file: string
-// ): Promise<InstanceType<TConstructor>> {
-// 	const strData = await fs.readFile(file, "utf-8")
-// 	const data = YAML.parse(strData)
-// 	const id = path.basename(file, ".yaml")
-// 	return new constructor(id, data)
-// }
+export class FileResource<ConfigType extends object, StateType extends object = {}> extends Resource<ConfigType, StateType> {
 
-// export async function loadResources<TConstructor extends ResourceConstructor>(
-// 	constructor: TConstructor,
-// 	folder: string
-// ) {
-// 	const dir = await fs.readdir(folder)
+    static resourceDirectory : string = ""
 
-// 	return await Promise.all(dir.map((v) => loadResource(constructor, path.join(folder, v))))
-// }
+    /**
+     * Used to limit what part of the config is saved to file
+     */
+    get savedConfig() : object {
+        return this.config
+    }
+
+    async load(savedConfig: object) : Promise<boolean> {
+        await super.applyConfig(savedConfig) //Intentially call super here to avoid triggering a save
+        return true
+    }
+
+    get directory() {
+        return (this.constructor as FileResourceConstructor).resourceDirectory
+    }
+
+    get filename() {
+        return path.join(this.directory, `${this.id}.yaml`)
+    }
+
+    async save() {
+        await fs.writeFile(this.filename, YAML.stringify(this.savedConfig), 'utf-8')
+    }
+
+    async applyConfig(config: Partial<ConfigType>): Promise<void> {
+        await super.applyConfig(config)
+        await this.save()
+    }
+
+    async setConfig(config: ConfigType): Promise<void> {
+        await super.setConfig(config)
+        await this.save();
+    }
+
+    static async initialize() {
+        await super.initialize()
+
+        if (this.resourceDirectory == "") {
+            throw new Error("Cannot load resources, no directory set!")
+        }
+
+        //TODO: Resolve directory out of the correct project folder
+        const resolvedDir = this.resourceDirectory
+        const files = await fs.readdir(resolvedDir)
+
+        const fileLoadPromises = files.map(async (file) => {
+            const id = path.basename(file, ".yaml")
+
+            const fullFile = path.join(resolvedDir, file)
+
+            try {
+                const dataStr = await fs.readFile(fullFile, "utf-8")
+                const data = YAML.parse(dataStr)
+
+                const resource = new this()
+                resource._id = id
+
+                if (await resource.load(data) === false) {
+                    return undefined
+                }
+
+                return resource
+
+            } catch(err) {
+                return undefined
+            }
+        })
+        
+
+        //Heh typescript bug can't detect we've eliminated all undefines
+        const resources = (await Promise.all(fileLoadPromises)).filter(r => r != null) as ResourceBase[]
+
+        this.storage.inject(...resources)
+    }
+}

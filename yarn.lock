@@ -2810,7 +2810,6 @@ __metadata:
   resolution: "castmate-core@workspace:libs/castmate-core"
   dependencies:
     "@types/lodash": ^4.14.192
-    castmate-plugin-twitch-main: "workspace:^"
     castmate-schema: "workspace:^"
     electron: ^20.0.1
     lodash: ^4.17.21

@@ -1,6 +1,6 @@
 import { ref } from "vue"
 import { defineStore } from "pinia"
-import { ipcRenderer, type IpcRendererEvent } from "electron"
+import { handleIpcMessage, useIpcCaller } from "../util/electron"
 
 interface ResourceData {
 	id: string
@@ -12,11 +12,26 @@ interface ResourceStorage {
 	resources: Map<string, ResourceData>
 }
 
+function convertResourcesToStorage(resources: ResourceData[]) {
+	const result : ResourceStorage = {
+		resources: new Map()
+	}
+
+	for (let r of resources) {
+		result.resources.set(r.id, r)
+	}
+
+	return result
+}
+
 export const useResourceStore = defineStore("resources", () => {
 	const resourceMap = ref(new Map<string, ResourceStorage>())
 
+	const getResourceTypeNames = useIpcCaller<() => string[]>("resources", "getResourceTypeNames")
+	const getResources = useIpcCaller<(typeName: string) => ResourceData[]>("resources", "getResources")
+
 	async function initialize() {
-		ipcRenderer.on("resources_addResourceType", (event, name: string) => {
+		handleIpcMessage("resources", "addResourceType", (event, name: string) => {
 			if (resourceMap.value.has(name)) {
 				throw new Error("Resource Type Already Exists")
 			}
@@ -26,7 +41,7 @@ export const useResourceStore = defineStore("resources", () => {
 			})
 		})
 
-		ipcRenderer.on("resources_deleteResourceType", (event, name: string) => {
+		handleIpcMessage("resources", "deleteResourceType", (event, name: string) => {
 			if (!resourceMap.value.has(name)) {
 				throw new Error("Resource type doesn't exist")
 			}
@@ -34,7 +49,7 @@ export const useResourceStore = defineStore("resources", () => {
 			resourceMap.value.delete(name)
 		})
 
-		ipcRenderer.on("resources_addResource", (event, type: string, data: ResourceData) => {
+		handleIpcMessage("resources", "addResource", (event, type: string, data: ResourceData) => {
 			const storage = resourceMap.value.get(type)
 
 			if (!storage) {
@@ -48,7 +63,7 @@ export const useResourceStore = defineStore("resources", () => {
 			storage.resources.set(data.id, data)
 		})
 
-		ipcRenderer.on("resources_deleteResource", (event, type: string, id: string) => {
+		handleIpcMessage("resources", "deleteResource", (event, type: string, id: string) => {
 			const storage = resourceMap.value.get(type)
 
 			if (!storage) {
@@ -62,7 +77,7 @@ export const useResourceStore = defineStore("resources", () => {
 			storage.resources.delete(id)
 		})
 
-		ipcRenderer.on("resources_updateResource", (event, type: string, data: ResourceData) => {
+		handleIpcMessage("resources", "updateResource", (event, type: string, data: ResourceData) => {
 			const storage = resourceMap.value.get(type)
 
 			if (!storage) {
@@ -75,6 +90,13 @@ export const useResourceStore = defineStore("resources", () => {
 
 			storage.resources.set(data.id, data)
 		})
+
+		const typeNames = await getResourceTypeNames()
+		const resourceArrays = await Promise.all(typeNames.map(tn => getResources(tn)))
+
+		for (let i = 0; i < typeNames.length; ++i) {
+			resourceMap.value.set(typeNames[i], convertResourcesToStorage(resourceArrays[i]))
+		}
 	}
 
 	return { resourceMap, initialize }

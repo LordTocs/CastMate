@@ -1,4 +1,4 @@
-import { useDocumentStore } from "castmate-ui-core"
+import { useDocumentStore, useResourceStore } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
 
@@ -31,6 +31,7 @@ app.use(PrimeVue)
 //app.use(router)
 app.use(pinia)
 
+useResourceStore().initialize()
 useDocumentStore().registerDocumentComponent("test", TestEditorVue)
 useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
 

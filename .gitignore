@@ -3,6 +3,7 @@ user_old/
 user_test/
 /dist
 /release
+dist-electron/
 
 .DS_Store
 
