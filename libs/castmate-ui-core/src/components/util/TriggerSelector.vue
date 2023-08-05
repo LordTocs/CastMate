@@ -1,29 +1,51 @@
 <template>
-	<span class="p-float-label">
-		<p-auto-complete
+	<span class="p-float-label trigger-selector">
+		<p-drop-down
 			id="ac"
 			v-model="modelObj"
-			option-label="trigger"
+			:options="options"
+			option-value="value"
+			option-label="label"
+			option-group-label="label"
+			option-group-children="triggers"
 			class="w-full"
-			:suggestions="suggestions"
-			@complete="search"
 			dropdown
 		>
-			<template #option="slotProps">
-				<div class="flex align-options-center">
-					{{ (slotProps.option as TriggerValue).plugin + "." + (slotProps.option as TriggerValue).trigger }}
+			<template #value="slotProps">
+				<div v-if="slotProps.value">
+					<i :class="selectedTrigger?.icon" :style="{ color: selectedTrigger?.color }" />
+					{{ selectedTrigger?.name }}
+				</div>
+				<div v-else>
+					<i />
 				</div>
 			</template>
-		</p-auto-complete>
+			<template #optiongroup="slotProps">
+				<div
+					class="flex justify-content-center"
+					:style="{ borderBottom: `2px solid ${slotProps.option.color}` }"
+				>
+					<i :class="slotProps.option.icon" :style="{ color: slotProps.option.color }" />
+					{{ slotProps.option.label }}
+				</div>
+			</template>
+			<template #option="slotProps">
+				<div>
+					<i :class="slotProps.option.icon" :style="{ color: slotProps.option.color }" />
+					{{ slotProps.option.label }}
+				</div>
+			</template>
+		</p-drop-down>
 		<label for="ac" v-if="label"> {{ label }} </label>
 	</span>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import PAutoComplete, { type AutoCompleteCompleteEvent } from "primevue/autocomplete"
-import { usePluginStore } from "../../plugins/plugin-store"
+import PDropDown from "primevue/dropdown"
+import { usePlugin, usePluginStore } from "../../plugins/plugin-store"
 import { useVModel } from "@vueuse/core"
+import { useTrigger } from "../../main"
 
 const pluginStore = usePluginStore()
 
@@ -42,34 +64,35 @@ const props = withDefaults(
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useVModel(props, "modelValue", emit)
 
-const triggers = computed(() => {
-	const result = []
+const selectedTrigger = useTrigger(() => props.modelValue)
+
+const options = computed(() => {
+	const result: any[] = []
 	for (let plugin of pluginStore.pluginMap.values()) {
+		const pluginOption = {
+			label: plugin.name,
+			color: plugin.color,
+			icon: plugin.icon,
+			id: plugin.id,
+			triggers: [] as any[],
+		}
 		for (let triggerKey in plugin.triggers) {
-			result.push({
-				plugin: plugin.id,
-				trigger: triggerKey,
+			const trigger = plugin.triggers[triggerKey]
+			pluginOption.triggers.push({
+				label: trigger.name,
+				color: trigger.color,
+				id: trigger.id,
+				icon: trigger.icon,
+				value: { plugin: plugin.id, trigger: trigger.id },
 			})
+		}
+		if (pluginOption.triggers.length > 0) {
+			result.push(pluginOption)
 		}
 	}
 
 	return result
 })
-
-const suggestions = ref<TriggerValue[]>([])
-
-function search(event: AutoCompleteCompleteEvent) {
-	if (!event.query.trim().length) {
-		suggestions.value = [...triggers.value]
-		return
-	}
-
-	const lowerQuery = event.query.toLowerCase()
-
-	const searched = triggers.value.filter((t) => {
-		return t.trigger.toLowerCase().includes(lowerQuery)
-	})
-
-	suggestions.value = searched
-}
 </script>
+
+<style scoped></style>

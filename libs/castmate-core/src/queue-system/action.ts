@@ -22,8 +22,8 @@ interface ActionDefinitionSpec<ConfigSchema extends Schema, ResultSchema extends
 	result?: ResultSchema
 	invoke(
 		config: Readonly<SchemaType<ConfigSchema>>,
-		contextData?: ActionInvokeContextData,
-		abortSignal?: AbortSignal
+		contextData: ActionInvokeContextData,
+		abortSignal: AbortSignal
 	): Promise<ResultSchema extends Schema ? SchemaType<ResultSchema> : void>
 }
 

@@ -24,6 +24,8 @@ function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
 		id: def.id,
 		name: def.name,
 		description: def.description,
+		color: def.color,
+		icon: def.icon,
 		config: ipcParseSchema(def.config),
 		...(def.result ? { result: ipcParseSchema(def.result) } : {}),
 	}
@@ -111,9 +113,14 @@ export const usePluginStore = defineStore("plugins", () => {
 	return { pluginMap: computed(() => pluginMap.value), initialize }
 })
 
-export function usePlugin(id: MaybeRefOrGetter<string>) {
+export function usePlugin(id: MaybeRefOrGetter<string | undefined>) {
 	const pluginStore = usePluginStore()
-	return computed(() => pluginStore.pluginMap.get(toValue(id)))
+
+	return computed(() => {
+		const pluginId = toValue(id)
+		if (!pluginId) return undefined
+		return pluginStore.pluginMap.get(pluginId)
+	})
 }
 
 export interface TriggerSelection {

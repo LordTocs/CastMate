@@ -5,7 +5,7 @@ import App from "./App.vue"
 import PrimeVue from "primevue/config"
 
 //theme
-import "primevue/resources/themes/lara-dark-blue/theme.css"
+// import "primevue/resources/themes/lara-dark-blue/theme.css"
 import "./css/theme.css"
 import "./css/spellcast.css"
 //core

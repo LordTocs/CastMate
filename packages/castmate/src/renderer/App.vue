@@ -42,8 +42,8 @@ onMounted(() => {
 								},
 								{
 									id: "cad",
-									plugin: "castmate",
-									action: "blah",
+									plugin: "twitch",
+									action: "chat",
 									config: {},
 								},
 								{
@@ -73,14 +73,14 @@ onMounted(() => {
 									stack: [
 										{
 											id: "def",
-											plugin: "castmate",
-											action: "blah",
+											plugin: "twitch",
+											action: "chat",
 											config: {},
 										},
 										{
 											id: "efg",
-											plugin: "castmate",
-											action: "blah",
+											plugin: "twitch",
+											action: "chat",
 											config: {},
 										},
 									],
@@ -96,62 +96,7 @@ onMounted(() => {
 						queue: "main",
 						config: {},
 						sequence: {
-							actions: [
-								{
-									id: "acb",
-									plugin: "castmate",
-									action: "delay",
-									config: {
-										duration: 1.5,
-									},
-									offsets: [],
-								},
-								{
-									id: "cad",
-									plugin: "castmate",
-									action: "blah",
-									config: {},
-								},
-								{
-									id: "qrs",
-									plugin: "castmate",
-									action: "tts",
-									config: {
-										duration: 3,
-									},
-									offsets: [
-										{
-											id: "fff",
-											offset: 1.0,
-											actions: [
-												{
-													id: "ytg",
-													plugin: "castmate",
-													action: "blah",
-													config: {},
-												},
-											],
-										},
-									],
-								},
-								{
-									id: "cde",
-									stack: [
-										{
-											id: "def",
-											plugin: "castmate",
-											action: "blah",
-											config: {},
-										},
-										{
-											id: "efg",
-											plugin: "castmate",
-											action: "blah",
-											config: {},
-										},
-									],
-								},
-							],
+							actions: [],
 						},
 						floatingSequences: [],
 					},
