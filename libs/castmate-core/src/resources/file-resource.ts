@@ -1,7 +1,7 @@
 import { Resource, ResourceBase } from "./resource";
 import * as fs from "fs/promises"
 import * as path from "path"
-import * as YAML from "yaml"
+import { loadYAML, resolveProjectPath, writeYAML } from "../io/file-system";
 
 interface FileResourceConstructor {
     new (...args: any[]) : ResourceBase
@@ -29,11 +29,15 @@ export class FileResource<ConfigType extends object, StateType extends object = 
     }
 
     get filename() {
-        return path.join(this.directory, `${this.id}.yaml`)
+        return `${this.id}.yaml`
+    }
+
+    get filepath() {
+        return resolveProjectPath(this.directory, this.filename)
     }
 
     async save() {
-        await fs.writeFile(this.filename, YAML.stringify(this.savedConfig), 'utf-8')
+        await writeYAML(this.savedConfig, this.filepath)
     }
 
     async applyConfig(config: Partial<ConfigType>): Promise<void> {
@@ -53,8 +57,7 @@ export class FileResource<ConfigType extends object, StateType extends object = 
             throw new Error("Cannot load resources, no directory set!")
         }
 
-        //TODO: Resolve directory out of the correct project folder
-        const resolvedDir = this.resourceDirectory
+        const resolvedDir = resolveProjectPath(this.resourceDirectory)
         const files = await fs.readdir(resolvedDir)
 
         const fileLoadPromises = files.map(async (file) => {
@@ -63,8 +66,7 @@ export class FileResource<ConfigType extends object, StateType extends object = 
             const fullFile = path.join(resolvedDir, file)
 
             try {
-                const dataStr = await fs.readFile(fullFile, "utf-8")
-                const data = YAML.parse(dataStr)
+                const data = await loadYAML(fullFile)
 
                 const resource = new this()
                 resource._id = id

@@ -3,6 +3,7 @@ import { ActionQueue } from "./queue-system/action-queue"
 import { ResourceRegistry } from "./resources/resource-registry"
 import { Plugin } from "./plugins/plugin"
 import { PluginManager } from "./plugins/plugin-manager"
+import { setProjectDirectory } from "./io/file-system"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -21,6 +22,7 @@ export async function loadPlugin(name: string) {
 
 export async function initializeCastMate() {
 	console.log("Initing CastMate")
+	await setProjectDirectory("../../user")
 	PluginManager.initialize()
 	ResourceRegistry.initialize()
 

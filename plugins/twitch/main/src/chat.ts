@@ -17,8 +17,7 @@ export function setupChat() {
 
 
 		chatClient.onMessage((channel, user, text, msg) => {
-			msg.userInfo.displayName
-			msg.userInfo.
+			//msg.userInfo.displayName
 		})
 	}
 	

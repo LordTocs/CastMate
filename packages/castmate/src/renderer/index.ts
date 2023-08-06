@@ -17,7 +17,6 @@ import "primeflex/primeflex.css"
 import "@mdi/font/css/materialdesignicons.css"
 
 import { createPinia } from "pinia"
-import TestEditorVue from "./components/test/TestEditor.vue"
 import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import { initData } from "castmate-ui-core"
 
@@ -33,7 +32,6 @@ app.use(pinia)
 
 usePluginStore().initialize()
 useResourceStore().initialize()
-useDocumentStore().registerDocumentComponent("test", TestEditorVue)
 useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
 
 initData()
