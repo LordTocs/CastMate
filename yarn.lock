@@ -1556,6 +1556,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^20.4.8":
+  version: 20.4.8
+  resolution: "@types/node@npm:20.4.8"
+  checksum: 86a3963c0c7af3410553d1dfa4b018a20b3cb3ab4d8e8ffe27408b6338c5de0374b0bf379bc705da2205b466daa751ccfe062f453ba9bde34fdb0e5163ca6a68
+  languageName: node
+  linkType: hard
+
 "@types/plist@npm:^3.0.1":
   version: 3.0.2
   resolution: "@types/plist@npm:3.0.2"
@@ -2810,11 +2817,11 @@ __metadata:
   resolution: "castmate-core@workspace:libs/castmate-core"
   dependencies:
     "@types/lodash": ^4.14.192
+    "@types/node": "*"
     castmate-schema: "workspace:^"
     electron: ^20.0.1
     lodash: ^4.17.21
     nanoid: ^4.0.2
-    reflect-metadata: ^0.1.13
     typescript: "*"
     yaml: ^2.2.1
   languageName: unknown
@@ -2824,6 +2831,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-monorepo@workspace:."
   dependencies:
+    "@types/node": ^20.4.8
     "@vitejs/plugin-vue": ^4.2.3
     "@vue/tsconfig": ^0.4.0
     "@vueuse/core": ^9.13.0
@@ -2941,6 +2949,24 @@ __metadata:
     castmate-schema: "workspace:^"
     obs-websocket-js: "*"
     typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-obs-renderer@workspace:plugins/obs/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-obs-renderer@workspace:plugins/obs/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
   languageName: unknown
   linkType: soft
 
@@ -7637,13 +7663,6 @@ __metadata:
     debug: ^3.1.0
     node-gyp: latest
   checksum: 92c9196ca75a97dd0fcfb5aa2ee42031e46f3cf4bdff425ef142aba544b94469bddf0c1092a715f8d10cb0bff591f2b5a4f506a7b1e19568a519fef371bcc773
-  languageName: node
-  linkType: hard
-
-"reflect-metadata@npm:^0.1.13":
-  version: 0.1.13
-  resolution: "reflect-metadata@npm:0.1.13"
-  checksum: 798d379a7b6f6455501145419505c97dd11cbc23857a386add2b9ef15963ccf15a48d9d15507afe01d4cd74116df8a213247200bac00320bd7c11ddeaa5e8fb4
   languageName: node
   linkType: hard
 

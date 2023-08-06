@@ -11,6 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/lodash": "^4.14.192",
+    "@types/node": "*",
     "typescript": "*"
   },
   "dependencies": {
@@ -18,7 +19,6 @@
     "electron": "^20.0.1",
     "lodash": "^4.17.21",
     "nanoid": "^4.0.2",
-    "reflect-metadata": "^0.1.13",
     "yaml": "^2.2.1"
   }
 }
