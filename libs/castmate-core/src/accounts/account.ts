@@ -1,4 +1,5 @@
 import { Resource } from "../resources/resource"
+import { EventList } from "../util/events"
 export interface AccountConfig {
 	name: string
 	icon?: string
@@ -28,6 +29,7 @@ export class Account<
 
 	async setSecrets(secrets: Secrets) {
 		//Serialize here
+		this.onSecretsChanged.run()
 	}
 
 	async checkCachedCreds(): Promise<boolean> {
@@ -53,7 +55,7 @@ export class Account<
 		}
 	}
 
-	async init() {
+	async load() {
 		if (!(await this.checkCachedCreds())) {
 			if (!(await this.refreshCreds())) {
 				this.state.authenticated = false
@@ -61,4 +63,6 @@ export class Account<
 		}
 		this.state.authenticated = true
 	}
+
+	readonly onSecretsChanged = new EventList()
 }
