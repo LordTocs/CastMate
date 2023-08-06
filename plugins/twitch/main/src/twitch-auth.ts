@@ -2,6 +2,7 @@ import { TwitchAccountConfig, TwitchAccountSecrets } from "castmate-plugin-twitc
 import { Account, ResourceStorage } from "castmate-core"
 import { getTokenInfo } from "@twurple/auth"
 import { BrowserWindow } from "electron"
+import { ApiClient } from "@twurple/api"
 import * as qs from "querystring"
 
 const defaultScopes = [
@@ -86,7 +87,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 				modal: true,
 				webPreferences: {
 					nodeIntegration: false,
-					partition: `persist:twitch${this.config.accountName}`,
+					partition: `persist:twitch-${this.id}`,
 				},
 			})
 
@@ -142,6 +143,11 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 		})
 	}
 
+	private _apiClient: ApiClient
+	get apiClient(): ApiClient {
+		return this._apiClient
+	}
+
 	private getAuthURL(scopes: string[], forceAuth: boolean = false) {
 		const authorizeParams = {
 			response_type: "token",
@@ -165,7 +171,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 				modal: true,
 				webPreferences: {
 					nodeIntegration: false,
-					partition: `persist:twitch-${this.config.accountName}`,
+					partition: `persist:twitch-${this.id}`,
 				},
 			})
 
@@ -237,5 +243,18 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 
 			window.loadURL(authUrl)
 		})
+	}
+
+	static async initialize(): Promise<void> {
+		await super.initialize()
+
+		const channel = new TwitchAccount()
+		channel._id = "channel"
+		channel.load()
+		this.storage.inject(channel)
+	}
+
+	static async uninitialize(): Promise<void> {
+		await super.uninitialize()
 	}
 }
