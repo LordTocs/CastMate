@@ -28,19 +28,19 @@ const profiles = ref([
 		id: "abc",
 		name: "Prof 1",
 		active: false,
-		state: "toggle",
+		state: "toggle" as Toggle,
 	},
 	{
 		id: "bcd",
 		name: "Prof 2",
 		active: false,
-		state: "toggle",
+		state: "toggle" as Toggle,
 	},
 	{
 		id: "cde",
 		name: "Prof 3",
 		active: true,
-		state: "toggle",
+		state: "toggle" as Toggle,
 	},
 ])
 
