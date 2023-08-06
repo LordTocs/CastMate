@@ -1,18 +1,19 @@
-import { registerType } from "../schema"
+import { SchemaBase, registerType } from "../schema"
 
 type RGB = `rgb(${number}, ${number}, ${number})`
 type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`
 type HEX = `#${string}`
 
 export type Color = RGB | RGBA | HEX
-type ColorConstructor = { new (...args: any[]): any }
+
+type ColorConstructor = { new (): RGB | RGBA | HEX }
 const Color: ColorConstructor = class {
 	constructor() {
-		return "#000000"
+		return "#000000" as RGB | RGBA | HEX
 	}
 }
 
-export interface SchemaColor {
+export interface SchemaColor extends SchemaBase {
 	type: ColorConstructor
 	template?: boolean
 	enum: Color[]

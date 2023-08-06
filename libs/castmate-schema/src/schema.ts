@@ -53,14 +53,15 @@ export type SchemaArray = {
 	items: Schema
 } & SchemaBase
 
-interface SchemaTypeMap {
+//Must be exported for interface merging to work
+export interface SchemaTypeMap {
 	string: [SchemaString, string]
 	number: [SchemaNumber, number]
 	boolean: [SchemaBoolean, boolean]
 }
 
 type SchemaTypeUnion = MapToUnion<SchemaTypeMap>
-export type SchemaTypes = SchemaTypeUnion[0] & SchemaBase
+type SchemaTypes = SchemaTypeUnion[0] & SchemaBase
 
 type SchemaPropTypeInner<T extends Schema> = Extract<
 	SchemaTypeUnion,

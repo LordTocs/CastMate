@@ -1,4 +1,4 @@
-import { SchemaTypeMap, SchemaTypes, registerType } from "../schema"
+import { registerType } from "../schema"
 
 export type Toggle = boolean | "toggle"
 type ToggleConstructor = { new (...args: any[]): any }

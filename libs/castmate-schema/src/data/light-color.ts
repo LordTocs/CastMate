@@ -6,7 +6,7 @@ export interface LightColor {
 	bri?: number
 }
 
-type LightColorConstructor = { new (...args: any[]): LightColor }
+type LightColorConstructor = { new (): LightColor }
 export const LightColor: LightColorConstructor = class {
 	constructor() {
 		return {
@@ -19,7 +19,7 @@ export const LightColor: LightColorConstructor = class {
 
 interface SchemaLightColor {
 	type: LightColorConstructor
-	template: Boolean
+	template: boolean
 }
 
 declare module "../schema" {
