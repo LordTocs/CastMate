@@ -153,6 +153,9 @@ export function constructDefault<T extends Schema>(schema: T): SchemaType<T> {
 			if (schema.type == Array) {
 				return [] as SchemaType<T>
 			}
+			if ("factoryCreate" in schema.type) {
+				return schema.type.factoryCreate() as SchemaType<T>
+			}
 			return new schema.type() as SchemaType<T>
 		}
 	}
@@ -220,9 +223,12 @@ export function squashSchemas<A extends Schema, B extends Schema>(a?: A, b?: B):
 
 ///
 
-type DataConstructor = { new (...args: any): any }
+type DataFactory<T = any> = { factoryCreate(...args: any[]) : T }
+type DataConstructor<T = any> = { new (...args: any): T }
+
+type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor<T>
 export interface DataTypeMetaData<T = any> {
-	constructor: new (...args: any) => T
+	constructor: DataConstructorOrFactory
 	template?: (value: T, context: any, schema: any) => T
 }
 
@@ -231,7 +237,7 @@ interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
 }
 
 const dataNameLookup: Map<string, FullDataTypeMetaData> = new Map()
-const dataConstructorLookup: Map<DataConstructor, FullDataTypeMetaData> = new Map()
+const dataConstructorLookup: Map<DataConstructorOrFactory, FullDataTypeMetaData> = new Map()
 
 export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
 	const fullMetaData = { ...metaData, name }
@@ -253,7 +259,7 @@ export function getTypeByName<T = any>(name: string) {
 	return dataNameLookup.get(name) as FullDataTypeMetaData<T> | undefined
 }
 
-export function getTypeByConstructor<T = any>(constructor: new (...args: any) => T) {
+export function getTypeByConstructor<T = any>(constructor: DataConstructorOrFactory<T>) {
 	return dataConstructorLookup.get(constructor) as FullDataTypeMetaData<T> | undefined
 }
 

@@ -1,15 +1,16 @@
 import { registerType } from "../schema"
 
 export type Toggle = boolean | "toggle"
-type ToggleConstructor = { new (...args: any[]): any }
-export const Toggle: ToggleConstructor = class {
-	constructor() {
-		return false as Toggle
-	}
+
+type ToggleFactory = { factoryCreate() : Toggle }
+export const Toggle: ToggleFactory = {
+	factoryCreate() {
+		return false
+	},
 }
 
 export interface SchemaToggle {
-	type: ToggleConstructor
+	type: ToggleFactory
 	template?: boolean
 	trueIcon?: string
 	falseIcon?: string

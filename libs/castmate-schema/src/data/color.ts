@@ -6,15 +6,15 @@ type HEX = `#${string}`
 
 export type Color = RGB | RGBA | HEX
 
-type ColorConstructor = { new (): RGB | RGBA | HEX }
-const Color: ColorConstructor = class {
-	constructor() {
-		return "#000000" as RGB | RGBA | HEX
+type ColorFactory = { factoryCreate() : Color }
+const Color : ColorFactory = {
+	factoryCreate() {
+		return "#000000" as Color
 	}
 }
 
 export interface SchemaColor extends SchemaBase {
-	type: ColorConstructor
+	type: ColorFactory
 	template?: boolean
 	enum: Color[]
 }
