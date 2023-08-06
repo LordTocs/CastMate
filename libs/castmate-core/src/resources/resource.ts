@@ -126,7 +126,7 @@ export class Resource<ConfigType extends object, StateType extends object = {}> 
 		return this.id
 	}
 
-	private _config: ConfigType
+	protected _config: ConfigType
 	get config() {
 		return this._config
 	}
