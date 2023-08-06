@@ -11,5 +11,6 @@ export interface TriggerData {
 }
 
 export interface ProfileData {
+	name: string,
 	triggers: TriggerData[]
 }
