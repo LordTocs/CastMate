@@ -1,11 +1,27 @@
 import { ChatClient } from "@twurple/chat"
 import { defineTrigger, defineAction } from "castmate-core"
-import { TwitchAccount } from "./auth"
+import { TwitchAccount } from "./twitch-auth"
 
 export function setupChat() {
-	const chatClient = new ChatClient({
-		//authProvider: //botAuth ?? channelAuth,
-	})
+
+	let chatClient : ChatClient | undefined;
+
+	function shutdownTriggers() {
+		if (!chatClient) return
+
+		chatClient.quit()
+	}
+
+	function setupTriggers() {
+		chatClient = new ChatClient()
+
+
+		chatClient.onMessage((channel, user, text, msg) => {
+			msg.userInfo.displayName
+			msg.userInfo.
+		})
+	}
+	
 
 	defineAction({
 		id: "chat",
@@ -19,8 +35,15 @@ export function setupChat() {
 			},
 		},
 		async invoke(config, context, abortSignal) {
-			//TODO: Channel
-			await chatClient.say("lordtocs", config.message)
+			const channel = TwitchAccount.storage.getById("channel")
+
+			const channelName = channel?.config?.name
+
+			if (!channelName) {
+				return
+			}
+
+			//await chatClient.say(channelName, config.message)
 		},
 	})
 

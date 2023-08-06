@@ -1,6 +1,7 @@
 import { defineAction, definePlugin, onLoad, onUnload } from "castmate-core"
-import { TwitchAccount } from "./auth"
+import { TwitchAccount } from "./twitch-auth"
 import { setupChat } from "./chat"
+import { setupEventSub } from "./eventsub"
 import { setupChannelPointRewards } from "./channelpoints"
 
 export default definePlugin(
@@ -20,5 +21,6 @@ export default definePlugin(
 
 		setupChat()
 		setupChannelPointRewards()
+		setupEventSub()
 	}
 )
