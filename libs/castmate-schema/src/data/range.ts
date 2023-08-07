@@ -1,5 +1,10 @@
 import { registerType, Schema, SchemaBase } from "../schema"
-import { Color } from "./color"
+
+// interface Range {
+// 	min?: number
+// 	max?: number
+// 	inRange(num: number): boolean
+// }
 
 export class Range {
 	min?: number
@@ -34,11 +39,9 @@ export class Range {
 	}
 }
 
-type RangeConstructor = { new (min?: number, max?: number): Range }
-
-interface SchemaRange extends SchemaBase {
-	type: RangeConstructor
-	template: boolean
+interface SchemaRange {
+	type: typeof Range
+	template?: boolean
 }
 
 declare module "../schema" {

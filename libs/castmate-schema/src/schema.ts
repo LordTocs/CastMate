@@ -63,14 +63,12 @@ export interface SchemaTypeMap {
 type SchemaTypeUnion = MapToUnion<SchemaTypeMap>
 type SchemaTypes = SchemaTypeUnion[0] & SchemaBase
 
-type SchemaPropTypeInner<T extends Schema> = Extract<
-	SchemaTypeUnion,
-	T extends { type: infer Constructor } ? [{ type: Constructor }, any] : [never, any]
->[1]
-
 type SchemaApplyRequired<SchemaT extends Schema, T> = SchemaT["required"] extends true ? T : T | undefined
 
-type SchemaPropType<T extends Schema> = SchemaPropTypeInner<T>
+type SchemaPropType<T extends Schema> = Extract<
+	SchemaTypeUnion,
+	T extends { type: infer ConstructorOrFactory } ? [{ type: ConstructorOrFactory }, any] : [never, any]
+>[1]
 
 type SchemaObjType<T extends SchemaObj> = {
 	[Property in keyof T["properties"]]: SchemaType<T["properties"][Property]>
@@ -223,7 +221,7 @@ export function squashSchemas<A extends Schema, B extends Schema>(a?: A, b?: B):
 
 ///
 
-type DataFactory<T = any> = { factoryCreate(...args: any[]) : T }
+type DataFactory<T = any> = { factoryCreate(...args: any[]): T }
 type DataConstructor<T = any> = { new (...args: any): T }
 
 type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor<T>
