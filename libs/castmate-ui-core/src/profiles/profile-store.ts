@@ -1,6 +1,6 @@
 import { useDialog } from "primevue/usedialog"
 import { computed, toRaw } from "vue"
-import { ProjectItem, useProjectStore, useResource, useResourceStore } from "../main"
+import { ProjectItem, useDockingStore, useProjectStore, useResource, useResourceStore } from "../main"
 import { ProfileData } from "castmate-schema"
 import NameDialog from "../components/dialogs/NameDialog.vue"
 import { App } from "vue"
@@ -9,6 +9,7 @@ export async function initializeProfiles(app: App<Element>) {
 	const projectStore = useProjectStore()
 	const profiles = useResource("Profile")
 	const resourceStore = useResourceStore()
+	const dockingStore = useDockingStore()
 
 	projectStore.registerProjectGroupItem(
 		computed(() => {
@@ -17,6 +18,18 @@ export async function initializeProfiles(app: App<Element>) {
 						id: p.id,
 						title: (p.config as ProfileData).name,
 						icon: "mdi mdi-card-account-details-outline",
+						open() {
+							dockingStore.openDocument(
+								p.id,
+								p.config,
+								{
+									scrollX: 0,
+									scrollY: 0,
+									triggers: [],
+								},
+								"profile"
+							)
+						},
 				  }))
 				: []
 

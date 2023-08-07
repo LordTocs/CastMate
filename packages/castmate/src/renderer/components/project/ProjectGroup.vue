@@ -9,7 +9,7 @@
 			<p-context-menu ref="contextMenu" :model="menuItems" />
 		</div>
 		<div class="project-category-content" v-show="expanded">
-			<project-group-or-item v-for="gi of group.items" :group-or-item="gi" />
+			<project-group-or-item :indent="indent + 1" v-for="gi of group.items" :group-or-item="gi" />
 		</div>
 	</div>
 </template>
@@ -21,9 +21,15 @@ import PContextMenu from "primevue/contextmenu"
 import { computed, ref, toRaw } from "vue"
 import { MenuItem } from "primevue/menuitem"
 
-const props = defineProps<{
-	group: ProjectGroup
-}>()
+const props = withDefaults(
+	defineProps<{
+		group: ProjectGroup
+		indent?: number
+	}>(),
+	{
+		indent: 0,
+	}
+)
 
 const contextMenu = ref<PContextMenu | undefined>()
 const menuItems = computed<MenuItem[] | undefined>(() => {

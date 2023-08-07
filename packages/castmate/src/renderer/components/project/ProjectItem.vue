@@ -1,5 +1,10 @@
 <template>
-	<div class="project-item" :style="{ '--indent': indent }" @click.stop="emit('click', $event)">
+	<div
+		class="project-item"
+		:class="{ openable: props.item?.open != null }"
+		:style="{ '--indent': indent }"
+		@click="onClick"
+	>
 		<slot name="icon">
 			<i :class="item.icon" class="px-1" v-if="item.icon"></i>
 		</slot>
@@ -18,7 +23,14 @@ const props = withDefaults(
 	}>(),
 	{ indent: 0 }
 )
-const emit = defineEmits(["click"])
+
+function onClick(ev: MouseEvent) {
+	if (ev.button == 0) {
+		props.item?.open?.()
+		ev.preventDefault()
+		ev.stopPropagation()
+	}
+}
 </script>
 
 <style scoped>
@@ -30,6 +42,10 @@ const emit = defineEmits(["click"])
 	align-items: center;
 	padding-left: calc(var(--indent) * 2rem + 0.5rem);
 	padding-right: 0.5rem;
+}
+
+.openable {
+	cursor: pointer;
 }
 
 .project-item-title {

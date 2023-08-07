@@ -2,7 +2,7 @@ import { nanoid } from "nanoid/non-secure"
 import { defineStore } from "pinia"
 import { type MaybeRefOrGetter, computed, ref, unref, type Component, shallowReactive, toValue, markRaw } from "vue"
 
-type DataWithName = {
+export type NamedData = {
 	name?: string
 } & Record<string | symbol, any>
 
@@ -10,7 +10,7 @@ export interface Document {
 	id: string
 	type: string
 	dirty: boolean
-	data: DataWithName
+	data: NamedData
 	viewData: any
 }
 
@@ -26,8 +26,10 @@ export const useDocumentStore = defineStore("documents", () => {
 	const documents = ref<Map<string, Document>>(new Map())
 	const documentComponents = ref<Map<string, Component>>(new Map())
 
-	function addDocument(data: DataWithName, view: any, type: string) {
-		const id = nanoid()
+	function addDocument(id: string, data: NamedData, view: any, type: string) {
+		if (documents.value.has(id)) {
+			throw new Error("Document ID already in use")
+		}
 
 		documents.value.set(id, {
 			id,

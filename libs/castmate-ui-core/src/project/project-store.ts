@@ -5,6 +5,7 @@ export interface ProjectItem {
 	id: string
 	title: string
 	icon?: string
+	open?(): any
 }
 
 export type ProjectGroupItem = ProjectItem | ProjectGroup
