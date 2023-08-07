@@ -3,8 +3,7 @@ import { defineTrigger, defineAction } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 
 export function setupChat() {
-
-	let chatClient : ChatClient | undefined;
+	let chatClient: ChatClient | undefined
 
 	function shutdownTriggers() {
 		if (!chatClient) return
@@ -15,12 +14,10 @@ export function setupChat() {
 	function setupTriggers() {
 		chatClient = new ChatClient()
 
-
 		chatClient.onMessage((channel, user, text, msg) => {
 			//msg.userInfo.displayName
 		})
 	}
-	
 
 	defineAction({
 		id: "chat",
@@ -54,7 +51,7 @@ export function setupChat() {
 		config: {
 			type: Object,
 			properties: {
-				command: { type: String },
+				command: { type: String, name: "Command" },
 			},
 		},
 		context: {

@@ -59,8 +59,7 @@ export function setupEventSub() {
 		config: {
 			type: Object,
 			properties: {
-				hello: { type: String },
-				months: { type: Range, name: "Months" },
+				months: { type: Range, name: "Months", required: true },
 			},
 		},
 		context: {
@@ -69,11 +68,11 @@ export function setupEventSub() {
 				user: { type: String, required: true },
 				userId: { type: String, required: true },
 				userColor: { type: String, required: true },
-				isGifted: { type: Boolean, required: true },
+				months: { type: Number, required: true },
 			},
 		},
 		async handle(config, context) {
-			config.months
+			if (!config.months.inRange(context.months)) return false
 
 			return true
 		},
