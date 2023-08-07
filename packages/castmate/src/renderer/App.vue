@@ -5,6 +5,7 @@
 			<project-view />
 			<docking-area style="flex: 1" v-model="dockedInfo" />
 		</div>
+		<p-dynamic-dialog />
 	</div>
 </template>
 
@@ -14,6 +15,7 @@ import { useDocumentStore, DockingArea, type DockedArea } from "castmate-ui-core
 import ProjectView from "./components/layout/ProjectView.vue"
 import { onMounted, ref } from "vue"
 import { nanoid } from "nanoid/non-secure"
+import PDynamicDialog from "primevue/dynamicdialog"
 
 const documentStore = useDocumentStore()
 

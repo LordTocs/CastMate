@@ -3031,6 +3031,7 @@ __metadata:
     electron: "*"
     nanoid: "*"
     pinia: "*"
+    primevue: "*"
     typescript: "*"
     vite: "*"
     vue: "*"

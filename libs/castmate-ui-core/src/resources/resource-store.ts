@@ -1,6 +1,7 @@
-import { ref } from "vue"
+import { ref, computed } from "vue"
 import { defineStore } from "pinia"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
+import { MaybeRefOrGetter, toValue } from "@vueuse/core"
 
 interface ResourceData {
 	id: string
@@ -13,8 +14,8 @@ interface ResourceStorage {
 }
 
 function convertResourcesToStorage(resources: ResourceData[]) {
-	const result : ResourceStorage = {
-		resources: new Map()
+	const result: ResourceStorage = {
+		resources: new Map(),
 	}
 
 	for (let r of resources) {
@@ -29,6 +30,7 @@ export const useResourceStore = defineStore("resources", () => {
 
 	const getResourceTypeNames = useIpcCaller<() => string[]>("resources", "getResourceTypeNames")
 	const getResources = useIpcCaller<(typeName: string) => ResourceData[]>("resources", "getResources")
+	const createResource = useIpcCaller<(typeName: string, ...args: any[]) => string>("resources", "createResource")
 
 	async function initialize() {
 		handleIpcMessage("resources", "addResourceType", (event, name: string) => {
@@ -92,12 +94,18 @@ export const useResourceStore = defineStore("resources", () => {
 		})
 
 		const typeNames = await getResourceTypeNames()
-		const resourceArrays = await Promise.all(typeNames.map(tn => getResources(tn)))
+		const resourceArrays = await Promise.all(typeNames.map((tn) => getResources(tn)))
 
 		for (let i = 0; i < typeNames.length; ++i) {
 			resourceMap.value.set(typeNames[i], convertResourcesToStorage(resourceArrays[i]))
 		}
 	}
 
-	return { resourceMap, initialize }
+	return { resourceMap, initialize, createResource }
 })
+
+export function useResource(typeName: MaybeRefOrGetter<string>) {
+	const resourceStore = useResourceStore()
+
+	return computed(() => resourceStore.resourceMap.get(toValue(typeName)))
+}

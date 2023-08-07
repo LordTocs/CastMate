@@ -17,6 +17,7 @@
     "electron": "*",
     "nanoid": "*",
     "pinia": "*",
+    "primevue": "*",
     "vue": "*"
   },
   "devDependencies": {

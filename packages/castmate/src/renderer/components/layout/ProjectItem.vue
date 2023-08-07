@@ -1,19 +1,20 @@
 <template>
 	<div class="project-item" :style="{ '--indent': indent }" @click.stop="emit('click', $event)">
 		<slot name="icon">
-			<i :class="icon" class="px-1" v-if="icon"></i>
+			<i :class="item.icon" class="px-1" v-if="item.icon"></i>
 		</slot>
-		<div class="project-item-title">{{ title }}</div>
+		<div class="project-item-title">{{ item.title }}</div>
 		<slot name="end"></slot>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { ProjectItem } from "castmate-ui-core"
+
 const props = withDefaults(
 	defineProps<{
-		title: string
+		item: ProjectItem
 		indent?: number
-		icon?: string
 	}>(),
 	{ indent: 0 }
 )

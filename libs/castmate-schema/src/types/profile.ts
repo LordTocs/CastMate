@@ -1,3 +1,4 @@
+import { Toggle } from "../data/toggle"
 import { FloatingSequence, Sequence } from "./sequence"
 
 export interface TriggerData {
@@ -11,6 +12,7 @@ export interface TriggerData {
 }
 
 export interface ProfileData {
-	name: string,
+	name: string
+	activationMode: Toggle
 	triggers: TriggerData[]
 }

@@ -1,6 +1,7 @@
 <template>
 	<div class="project-view">
-		<project-category title="Profiles" icon="mdi mdi-card-account-details-outline">
+		<project-group-or-item v-for="pi in projectStore.projectItems" :group-or-item="pi" />
+		<!-- <project-category title="Profiles" icon="mdi mdi-card-account-details-outline">
 			<project-item v-for="(profile, i) in profiles" :title="profile.name" :key="profile.id" :indent="1">
 				<template #end>
 					<toggle-input v-model="profiles[i].state" />
@@ -13,16 +14,18 @@
 		</project-category>
 		<project-item title="SpellCast" icon="cmi cmi-spellcast" />
 		<project-item title="Media" icon="mdi mdi-multimedia" />
-		<project-item title="Channel Point Rewards" icon="mdi mdi-star-circle-outline" />
+		<project-item title="Channel Point Rewards" icon="mdi mdi-star-circle-outline" /> -->
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue"
-import ProjectItem from "./ProjectItem.vue"
-import ProjectCategory from "./ProjectCategory.vue"
-import { ToggleInput } from "castmate-ui-core"
+import ProjectGroupOrItem from "./ProjectGroupOrItem.vue"
+import { ToggleInput, useProjectStore } from "castmate-ui-core"
 import { type Toggle } from "castmate-schema"
+
+const projectStore = useProjectStore()
+
 const profiles = ref([
 	{
 		id: "abc",

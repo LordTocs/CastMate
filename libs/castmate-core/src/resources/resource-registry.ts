@@ -8,13 +8,16 @@ interface ResourceEntry<T extends ResourceBase = any> {
 	storage: ResourceStorage<T>
 }
 
-export async function createResource<T extends ResourceBase>(constructor: ResourceConstructor<T>, config: object) {
+export async function createResource<T extends ResourceBase>(constructor: ResourceConstructor<T>, ...args: any[]) {
 	let result: T
+
 	if (constructor.create) {
-		result = await constructor.create(config)
+		result = await constructor.create(...args)
 	} else {
-		result = new constructor(config)
+		result = new constructor(...args)
 	}
+
+	constructor.onCreate?.(result)
 
 	constructor.storage.inject(result)
 
@@ -34,7 +37,7 @@ defineIPCFunc("resources", "getResources", (typeName: string) => {
 		result.push(r.toIPC())
 	}
 
-	return result;
+	return result
 })
 
 defineIPCFunc("resources", "setConfig", (type: string, id: string, config: object) => {
@@ -82,7 +85,7 @@ export const ResourceRegistry = Service(
 		private resourceTypes: ResourceEntry[] = []
 
 		get resourceTypeNames() {
-			return this.resourceTypes.map(rt => rt.typeName)
+			return this.resourceTypes.map((rt) => rt.typeName)
 		}
 
 		//Don't extends Resource here because the metadata function can't recursively satisfy it.
@@ -126,7 +129,7 @@ export const ResourceRegistry = Service(
 				return undefined
 			}
 
-			const result = await createResource(entry.constructor, {})
+			const result = await createResource(entry.constructor, ...args)
 
 			entry.storage.inject(result)
 

@@ -102,7 +102,8 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 
 export interface ResourceConstructor<T extends ResourceBase = any> {
 	new (...args: any[]): T
-	create?(config: object): Promise<T>
+	create?(...args: any[]): Promise<T>
+	onCreate?(resource: T): any
 	load?(): Promise<void>
 	storage: ResourceStorage<T>
 }
@@ -132,6 +133,10 @@ export class Resource<ConfigType extends object, StateType extends object = {}> 
 	}
 
 	private async updateUI() {
+		if (!(this.constructor as ResourceConstructor).storage.getById(this.id)) {
+			//We haven't been injected yet, do not update the UI
+			return
+		}
 		rendererUpdateResource(this)
 	}
 
@@ -153,7 +158,7 @@ export class Resource<ConfigType extends object, StateType extends object = {}> 
 		}
 	}
 
-	@Reactive
+	//@Reactive
 	accessor state: StateType
 
 	static async initialize() {
