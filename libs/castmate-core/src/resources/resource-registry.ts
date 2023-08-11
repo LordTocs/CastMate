@@ -40,7 +40,7 @@ defineIPCFunc("resources", "getResources", (typeName: string) => {
 	return result
 })
 
-defineIPCFunc("resources", "setConfig", (type: string, id: string, config: object) => {
+defineIPCFunc("resources", "setConfig", async (type: string, id: string, config: object) => {
 	const resourceType = ResourceRegistry.getInstance().getResourceType(type)
 
 	if (!resourceType) {
@@ -54,9 +54,10 @@ defineIPCFunc("resources", "setConfig", (type: string, id: string, config: objec
 	}
 
 	//resource.config = config
+	return await resource.setConfig(config)
 })
 
-defineIPCFunc("resources", "updateConfig", (type: string, id: string, config: object) => {
+defineIPCFunc("resources", "applyConfig", async (type: string, id: string, config: object) => {
 	const resourceType = ResourceRegistry.getInstance().getResourceType(type)
 
 	if (!resourceType) {
@@ -70,11 +71,19 @@ defineIPCFunc("resources", "updateConfig", (type: string, id: string, config: ob
 	}
 
 	//resource.config = config
+	return await resource.applyConfig(config)
 })
 
 defineIPCFunc("resources", "createResource", async (type: string, ...args: any[]) => {
 	const resource = await ResourceRegistry.getInstance().create(type, ...args)
 	return resource?.id
+})
+
+defineIPCFunc("resources", "deleteResource", async (type: string, id: string) => {
+	const resourceType = await ResourceRegistry.getInstance().getResourceType(type)
+	if (!resourceType) return
+
+	await resourceType.storage.remove(id)
 })
 
 const rendererAddResourceType = defineCallableIPC<(name: string) => void>("resources", "addResourceType")

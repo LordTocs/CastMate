@@ -10,6 +10,7 @@ import App from "./App.vue"
 
 import PrimeVue from "primevue/config"
 import DialogService from "primevue/dialogservice"
+import ConfirmationService from 'primevue/confirmationservice';
 
 //theme
 // import "primevue/resources/themes/lara-dark-blue/theme.css"
@@ -32,6 +33,7 @@ const app = createApp(App)
 
 app.use(PrimeVue)
 app.use(DialogService)
+app.use(ConfirmationService)
 //app.use(Maska)
 
 //app.use(router)

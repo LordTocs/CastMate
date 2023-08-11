@@ -42,18 +42,25 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 		await resource.save()
 	}
 
+	static async onDelete(resource: FileResource<any, any>) {
+		console.log("Deleting!", resource.id)
+		await fs.unlink(resource.filepath)
+	}
+
 	async save() {
 		await writeYAML(this.savedConfig, this.filepath)
 	}
 
-	async applyConfig(config: Partial<ConfigType>): Promise<void> {
+	async applyConfig(config: Partial<ConfigType>): Promise<boolean> {
 		await super.applyConfig(config)
 		await this.save()
+		return true
 	}
 
-	async setConfig(config: ConfigType): Promise<void> {
+	async setConfig(config: ConfigType): Promise<boolean> {
 		await super.setConfig(config)
 		await this.save()
+		return true
 	}
 
 	static async initialize() {

@@ -6,6 +6,7 @@
 			<docking-area style="flex: 1" v-model="dockingStore.rootDockArea" />
 		</div>
 		<p-dynamic-dialog />
+		<p-confirm-dialog />
 	</div>
 </template>
 
@@ -16,6 +17,7 @@ import ProjectView from "./components/project/ProjectView.vue"
 import { onMounted, ref } from "vue"
 import { nanoid } from "nanoid/non-secure"
 import PDynamicDialog from "primevue/dynamicdialog"
+import PConfirmDialog from "primevue/confirmdialog"
 
 const documentStore = useDocumentStore()
 const dockingStore = useDockingStore()

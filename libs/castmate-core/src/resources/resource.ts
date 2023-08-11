@@ -11,6 +11,7 @@ import { Reactive, ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 import { ResourceRegistry } from "./resource-registry"
 import { ConstructedType } from "../util/type-helpers"
 import { defineCallableIPC } from "../util/electron"
+import { ResourceData } from "castmate-schema"
 
 interface ResourceIPCDescription {
 	id: string
@@ -18,25 +19,24 @@ interface ResourceIPCDescription {
 	state: object
 }
 
-export interface ResourceBase {
-	readonly id: string
-	readonly config: object
-	state: object
+export interface ResourceBase extends ResourceData {
 	toIPC(): ResourceIPCDescription
+	setConfig(config: any) : Promise<boolean>
+	applyConfig(config: any) : Promise<boolean> 
 }
 
 const rendererAddResource = defineCallableIPC<(type: string, data: ResourceIPCDescription) => void>(
 	"resources",
 	"addResource"
 )
-const rendererDeleteResource = defineCallableIPC<(id: string) => void>("resources", "deleteResource")
-const rendererUpdateResourceInternal = defineCallableIPC<(data: ResourceIPCDescription) => void>(
+const rendererDeleteResource = defineCallableIPC<(typeName: string, id: string) => void>("resources", "deleteResource")
+const rendererUpdateResourceInternal = defineCallableIPC<(typeName: string, data: ResourceIPCDescription) => void>(
 	"resources",
 	"updateResource"
 )
 
-async function rendererUpdateResource(resource: ResourceBase) {
-	await rendererUpdateResourceInternal(resource.toIPC())
+async function rendererUpdateResource(typeName: string, resource: ResourceBase) {
+	await rendererUpdateResourceInternal(typeName, resource.toIPC())
 }
 
 interface ResourceEntry<T extends ResourceBase> {
@@ -83,7 +83,7 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 		for (let resource of resources) {
 			await rendererAddResource(this.name, resource.toIPC())
 
-			const stateEffect = await autoRerun(() => rendererUpdateResource(resource))
+			const stateEffect = await autoRerun(() => rendererUpdateResource(this.name, resource))
 
 			this.resources.set(resource.id, {
 				resource,
@@ -92,10 +92,17 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 		}
 	}
 
-	remove(id: string) {
+	async remove(id: string) {
+		console.log("Deleting", id)
 		const entry = this.resources.get(id)
 		if (entry) {
-			rendererDeleteResource(id)
+			console.log("Entry Found")
+			this.resources.delete(id)
+			const constructor = entry.resource.constructor as ResourceConstructor<T>
+			await constructor.onDelete?.(entry.resource)
+			console.log("Delete Successful")
+			//TODO: Release entry.stateEffect?
+			rendererDeleteResource(this.name, id)
 		}
 	}
 }
@@ -104,6 +111,7 @@ export interface ResourceConstructor<T extends ResourceBase = any> {
 	new (...args: any[]): T
 	create?(...args: any[]): Promise<T>
 	onCreate?(resource: T): any
+	onDelete?(resource: T): any
 	load?(): Promise<void>
 	storage: ResourceStorage<T>
 }
@@ -133,21 +141,24 @@ export class Resource<ConfigType extends object, StateType extends object = {}> 
 	}
 
 	private async updateUI() {
-		if (!(this.constructor as ResourceConstructor).storage.getById(this.id)) {
+		const storage = (this.constructor as ResourceConstructor).storage
+		if (!storage.getById(this.id)) {
 			//We haven't been injected yet, do not update the UI
 			return
 		}
-		rendererUpdateResource(this)
+		rendererUpdateResource(storage.name, this)
 	}
 
 	async setConfig(config: ConfigType) {
 		this._config = config
 		await this.updateUI()
+		return true
 	}
 
 	async applyConfig(config: Partial<ConfigType>) {
 		Object.assign(this._config, config)
 		await this.updateUI()
+		return true
 	}
 
 	toIPC() {

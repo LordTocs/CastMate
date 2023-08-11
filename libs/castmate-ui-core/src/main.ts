@@ -9,6 +9,8 @@ export { default as TriggerSelector } from "./components/util/TriggerSelector.vu
 
 export { default as PanArea } from "./components/panning/PanArea.vue"
 
+export { default as NameDialog } from "./components/dialogs/NameDialog.vue"
+
 export * from "./util/diff"
 export * from "./util/docking"
 export * from "./util/document"
