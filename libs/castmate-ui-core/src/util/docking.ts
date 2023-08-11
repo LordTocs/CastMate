@@ -27,6 +27,7 @@ export interface DockedSplit {
 
 export interface DockedArea extends DockedSplit {
 	dragging: boolean
+	focusedFrame: string | undefined
 }
 
 export function useTabFrame() {

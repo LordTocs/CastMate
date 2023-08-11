@@ -7,9 +7,7 @@ import { nanoid } from "nanoid/non-secure"
 
 function focusDocumentId(division: DockedFrame | DockedSplit, documentId: string) {
 	if (division.type == "frame") {
-		console.log("  Focusing Frame", documentId)
 		for (let tab of division.tabs) {
-			console.log("   ", documentId, tab.documentId)
 			if (tab.documentId == documentId) {
 				//Focus the tab
 				//TODO: Actually focus the HTML element??
@@ -19,7 +17,6 @@ function focusDocumentId(division: DockedFrame | DockedSplit, documentId: string
 		}
 		return false
 	} else {
-		console.log("Focusing", documentId)
 		for (let div of division.divisions) {
 			if (focusDocumentId(div, documentId)) {
 				return true
