@@ -10,7 +10,7 @@ import App from "./App.vue"
 
 import PrimeVue from "primevue/config"
 import DialogService from "primevue/dialogservice"
-import ConfirmationService from 'primevue/confirmationservice';
+import ConfirmationService from "primevue/confirmationservice"
 
 //theme
 // import "primevue/resources/themes/lara-dark-blue/theme.css"
@@ -27,6 +27,12 @@ import "@mdi/font/css/materialdesignicons.css"
 import { createPinia } from "pinia"
 import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import { initData } from "castmate-ui-core"
+import { createRouter, createWebHistory } from "vue-router"
+
+const router = createRouter({
+	history: createWebHistory(),
+	routes: [],
+})
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -36,7 +42,7 @@ app.use(DialogService)
 app.use(ConfirmationService)
 //app.use(Maska)
 
-//app.use(router)
+app.use(router)
 app.use(pinia)
 
 usePluginStore().initialize()
