@@ -1,23 +1,27 @@
 <template>
 	<div class="drag-area" ref="dragArea">
+		<slot name="header"></slot>
 		<slot name="no-items" v-if="props.modelValue.length == 0"></slot>
-		<div
-			class="draggable-item"
-			v-for="(data, i) in props.modelValue"
-			:key="data.id"
-			ref="dataComponents"
-			@mousedown="itemMouseDown(i, $event)"
-			@dragstart="itemDragStart(i, $event)"
-			@dragend="itemDragEnd(i, $event)"
-			draggable="true"
-		>
-			<component
-				:is="dataComponent"
-				v-model="modelObj[i]"
-				v-model:view="view[i]"
-				:selected="selection"
-			></component>
+		<div>
+			<div
+				class="draggable-item"
+				v-for="(data, i) in props.modelValue"
+				:key="data.id"
+				ref="dataComponents"
+				@mousedown="itemMouseDown(i, $event)"
+				@dragstart="itemDragStart(i, $event)"
+				@dragend="itemDragEnd(i, $event)"
+				draggable="true"
+			>
+				<component
+					:is="dataComponent"
+					v-model="modelObj[i]"
+					v-model:view="view[i]"
+					:selected="selection"
+				></component>
+			</div>
 		</div>
+		<slot name="footer"></slot>
 	</div>
 </template>
 
