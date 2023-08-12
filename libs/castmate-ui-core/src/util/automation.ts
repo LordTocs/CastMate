@@ -10,3 +10,9 @@ export interface SequenceView {
 	panState: PanState
 	selection: string[]
 }
+
+export interface ProfileView {
+	scrollX: number
+	scrollY: number
+	triggers: TriggerView[]
+}

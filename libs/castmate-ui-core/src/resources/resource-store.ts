@@ -4,7 +4,6 @@ import { handleIpcMessage, useIpcCaller } from "../util/electron"
 import { MaybeRefOrGetter, toValue } from "@vueuse/core"
 import NameDialog from "../components/dialogs/NameDialog.vue"
 
-
 interface ResourceData {
 	id: string
 	config: object
@@ -13,13 +12,11 @@ interface ResourceData {
 
 interface ResourceStorage {
 	resources: Map<string, ResourceData>
-	creationDialog: any
 }
 
 function convertResourcesToStorage(resources: ResourceData[]) {
 	const result: ResourceStorage = {
 		resources: new Map(),
-		creationDialog: NameDialog
 	}
 
 	for (let r of resources) {
@@ -35,8 +32,14 @@ export const useResourceStore = defineStore("resources", () => {
 	const getResourceTypeNames = useIpcCaller<() => string[]>("resources", "getResourceTypeNames")
 	const getResources = useIpcCaller<(typeName: string) => ResourceData[]>("resources", "getResources")
 	const createResource = useIpcCaller<(typeName: string, ...args: any[]) => string>("resources", "createResource")
-	const applyResourceConfig = useIpcCaller<(typeName: string, id: string, config: object) => boolean>("resources", "applyConfig")
-	const setResourceConfig = useIpcCaller<(typeName: string, id: string, config: object) => boolean>("resources", "setConfig")
+	const applyResourceConfig = useIpcCaller<(typeName: string, id: string, config: object) => boolean>(
+		"resources",
+		"applyConfig"
+	)
+	const setResourceConfig = useIpcCaller<(typeName: string, id: string, config: object) => boolean>(
+		"resources",
+		"setConfig"
+	)
 	const deleteResource = useIpcCaller<(typeName: string, id: string) => boolean>("resources", "deleteResource")
 
 	async function initialize() {
@@ -47,7 +50,6 @@ export const useResourceStore = defineStore("resources", () => {
 
 			resourceMap.value.set(name, {
 				resources: new Map(),
-				creationDialog: NameDialog
 			})
 		})
 

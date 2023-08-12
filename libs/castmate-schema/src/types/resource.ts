@@ -1,5 +1,5 @@
-export interface ResourceData {
+export interface ResourceData<ConfigType extends any = any, StateType extends any = any> {
 	readonly id: string
-	readonly config: object
-	state: object
+	readonly config: ConfigType
+	state: StateType
 }
