@@ -28,7 +28,7 @@ export interface DropZone {
 	get key(): string
 	inZone(ev: MouseEvent): boolean
 	computeDistance(ev: MouseEvent): number
-	doDrop(): void
+	doDrop(sequence: Sequence, ev: MouseEvent): void
 }
 
 export function pickUpAutomation(id: string, seq: Sequence) {}
@@ -41,7 +41,7 @@ export interface AutomationEditState {
 	unregisterDropZone(key: string): void
 }
 
-export function useRootAutomationEditState(automationElem: MaybeRefOrGetter<HTMLElement | null>): AutomationEditState {
+export function provideAutomationEditState(automationElem: MaybeRefOrGetter<HTMLElement | null>): AutomationEditState {
 	const defaultDistance = 100000
 	const dragging = ref<boolean>(false)
 	const dropCandidate = shallowRef<string | null>(null)
@@ -89,6 +89,7 @@ export function useRootAutomationEditState(automationElem: MaybeRefOrGetter<HTML
 		},
 	}
 
+	//We put drag handlers on the root editor since HTML5 doesn't track multiple overlaps.
 	useDragOver(automationElem, "automation-sequence", (ev: DragEventWithDataTransfer) => {
 		let minZone = automationEditState.getZone(ev)
 
@@ -114,11 +115,7 @@ export function useRootAutomationEditState(automationElem: MaybeRefOrGetter<HTML
 		const dropZone = automationEditState.getZone(ev)
 
 		if (dropZone) {
-			nextTick(() => {
-				console.log("Dropping in", dropZone.key)
-			})
-
-			dropZone.doDrop()
+			dropZone.doDrop(data, ev)
 		} else {
 			//Create new floating sequence
 		}

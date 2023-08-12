@@ -1,22 +1,35 @@
 <template>
 	<div class="sequence-edit" :class="{ 'action-dragging': dragging }" ref="sequenceEdit" draggable="true">
-		<time-action-edit v-if="isTimeAction(action)" v-model="(action as TimeAction)" />
-		<action-stack-edit v-else-if="isActionStack(action)" v-model="(action as ActionStack)" />
-		<instant-action-edit v-else v-model="(action as InstantAction)" />
-		<automation-drop-zone
-			:force-on="dragging && modelValue.actions.length > 1"
-			drop-axis="vertical"
-			drop-location="middle"
-			:drop-key="`${action.id}-left`"
-			style="left: calc(var(--instant-width) / -2); width: var(--instant-width); height: var(--timeline-height)"
-		/>
-		<automation-drop-zone
-			v-if="offset == modelValue.actions.length - 1"
-			drop-axis="vertical"
-			drop-location="middle"
-			:drop-key="`${action.id}-right`"
-			style="right: calc(var(--instant-width) / -2); width: var(--instant-width); height: var(--timeline-height)"
-		/>
+		<template v-if="modelValue.actions.length > 0">
+			<time-action-edit v-if="isTimeAction(action)" v-model="(action as TimeAction)" />
+			<action-stack-edit v-else-if="isActionStack(action)" v-model="(action as ActionStack)" />
+			<instant-action-edit v-else v-model="(action as InstantAction)" />
+
+			<automation-drop-zone
+				:force-on="dragging && modelValue.actions.length > 1"
+				drop-axis="vertical"
+				drop-location="middle"
+				:drop-key="`${action.id}-left`"
+				style="
+					left: calc(var(--instant-width) / -2);
+					width: var(--instant-width);
+					height: var(--timeline-height);
+				"
+				@automation-drop="onLeftDrop"
+			/>
+			<automation-drop-zone
+				v-if="offset == modelValue.actions.length - 1"
+				drop-axis="vertical"
+				drop-location="middle"
+				:drop-key="`${action.id}-right`"
+				style="
+					right: calc(var(--instant-width) / -2);
+					width: var(--instant-width);
+					height: var(--timeline-height);
+				"
+				@automation-drop="onRightDrop"
+			/>
+		</template>
 		<sequence-actions-edit
 			v-model="modelObj"
 			:offset="offset + 1"
@@ -36,6 +49,7 @@ import { type TimeAction, type ActionStack, type InstantAction } from "castmate-
 import { useSequenceDrag } from "../../util/automation-dragdrop"
 import _cloneDeep from "lodash/cloneDeep"
 import AutomationDropZone from "./AutomationDropZone.vue"
+import { Sequence } from "castmate-schema"
 
 const props = withDefaults(
 	defineProps<{
@@ -53,7 +67,10 @@ const { dragging } = useSequenceDrag(
 	() => {
 		return { actions: _cloneDeep(modelObj.value.actions.slice(props.offset)) }
 	},
-	() => {}
+	() => {
+		const newActions = [...modelObj.value.actions]
+		newActions.splice(props.offset, newActions.length - props.offset)
+	}
 )
 
 const action = computed({
@@ -64,6 +81,20 @@ const action = computed({
 		modelObj.value.actions[props.offset] = v
 	},
 })
+
+function onLeftDrop(sequence: Sequence) {
+	const newActions = [...props.modelValue.actions]
+
+	newActions.splice(props.offset, 0, ...sequence.actions)
+
+	modelObj.value.actions = newActions
+}
+
+function onRightDrop(sequence: Sequence) {
+	const newActions = [...props.modelValue.actions, ...sequence.actions]
+
+	modelObj.value.actions = newActions
+}
 </script>
 
 <style scoped>

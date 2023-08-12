@@ -10,6 +10,7 @@
 <script setup lang="ts">
 import { Ref, inject, onMounted, onUnmounted, ref } from "vue"
 import { useAutomationEditState } from "../../util/automation-dragdrop"
+import { Sequence } from "castmate-schema"
 
 const props = withDefaults(
 	defineProps<{
@@ -20,6 +21,8 @@ const props = withDefaults(
 	}>(),
 	{ forceOn: false }
 )
+
+const emit = defineEmits(["automationDrop"])
 
 const automationEditState = useAutomationEditState()
 
@@ -62,7 +65,9 @@ onMounted(() => {
 		computeDistance(ev) {
 			return computeDropDistance(computeOffset(ev))
 		},
-		doDrop() {},
+		doDrop(sequence: Sequence, ev: MouseEvent) {
+			emit("automationDrop", sequence, computeOffset(ev))
+		},
 		inZone(ev) {
 			if (!dropZone.value) return false
 			const rect = dropZone.value.getBoundingClientRect()

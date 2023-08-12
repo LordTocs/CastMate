@@ -18,6 +18,7 @@
 			drop-axis="horizontal"
 			drop-location="start"
 			style="left: 0; top: var(--timeline-height); right: 0; height: calc(var(--timeline-height) / 2)"
+			@automation-drop="onAutomationDrop"
 		/>
 		<div class="timeline-sequences">
 			<offset-sequence-edit v-for="(o, i) in model.offsets" :key="o.id" v-model="model.offsets[i]" />
@@ -26,12 +27,14 @@
 </template>
 
 <script setup lang="ts">
-import { TimeAction } from "castmate-schema"
 import { computed, useModel, ref, provide } from "vue"
 import DurationHandle from "./DurationHandle.vue"
 import { useAction, useActionColors } from "castmate-ui-core"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
+import { Sequence, OffsetActions, TimeAction } from "castmate-schema"
+import { nanoid } from "nanoid/non-secure"
+import _sortedIndexBy from "lodash/sortedIndexBy"
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -54,6 +57,20 @@ provide(
 		maxLength: undefined,
 	}))
 )
+
+function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; width: number; height: number }) {
+	const timeOffset = (offset.x / offset.width) * model.value.config.duration
+
+	const offsetSequence: OffsetActions = {
+		id: nanoid(),
+		offset: timeOffset,
+		actions: sequence.actions,
+	}
+
+	const insertionIndex = _sortedIndexBy(props.modelValue.offsets, offsetSequence, (oa) => oa.offset)
+
+	model.value.offsets.splice(insertionIndex, 0, offsetSequence)
+}
 </script>
 
 <style scoped>

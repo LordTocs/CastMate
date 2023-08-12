@@ -9,6 +9,7 @@
 			drop-axis="horizontal"
 			drop-location="middle"
 			style="left: 0; top: calc(var(--timeline-height) / 2); right: 0; height: var(--timeline-height)"
+			@automation-drop="onAutomationDrop"
 		/>
 	</div>
 </template>
@@ -18,6 +19,9 @@ import { InstantAction } from "castmate-schema"
 import { useAction, useActionColors } from "castmate-ui-core"
 import { useModel } from "vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
+import { Sequence } from "castmate-schema"
+import { ActionStack } from "castmate-schema"
+import { nanoid } from "nanoid/non-secure"
 const props = withDefaults(
 	defineProps<{
 		modelValue: InstantAction
@@ -28,7 +32,34 @@ const props = withDefaults(
 	}
 )
 
+const emit = defineEmits(["update:modelValue", "automationDrop"])
+
 const modelObj = useModel(props, "modelValue")
+
+function onAutomationDrop(sequence: Sequence) {
+	if (props.inStack) {
+		//forward this to the stack for handling
+		emit("automationDrop", sequence)
+	} else {
+		//Replace ourselves with an action stack
+		//Todo: Check that
+
+		const replaceStack: ActionStack = {
+			id: nanoid(),
+			stack: [props.modelValue],
+		}
+
+		const action = sequence.actions[0]
+		if ("stack" in action) {
+			replaceStack.stack.push(...action.stack)
+		} else {
+			//TODO: Validate it's an instant action
+			replaceStack.stack.push(action as InstantAction)
+		}
+
+		emit("update:modelValue", replaceStack)
+	}
+}
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)

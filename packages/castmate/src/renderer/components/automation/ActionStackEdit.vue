@@ -1,6 +1,6 @@
 <template>
 	<div class="stack" ref="actionStack" :class="{ 'action-dragging': dragging }" draggable="true">
-		<instant-action-edit v-model="action" :in-stack="true" />
+		<instant-action-edit v-model="action" :in-stack="true" @automation-drop="onAutomationDrop" />
 		<action-stack-edit :offset="offset + 1" v-if="offset + 1 < modelObj.stack.length" v-model="modelObj" />
 	</div>
 </template>
@@ -13,6 +13,7 @@ import InstantActionEdit from "./InstantActionEdit.vue"
 import { useSequenceDrag } from "../../util/automation-dragdrop"
 import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
+import { Sequence } from "castmate-schema"
 
 const props = withDefaults(defineProps<{ modelValue: ActionStack; offset?: number }>(), { offset: 0 })
 const emit = defineEmits(["update:modelValue"])
@@ -40,8 +41,27 @@ const { dragging } = useSequenceDrag(
 			return { actions: [{ id: nanoid(), stack }] }
 		}
 	},
-	() => {}
+	() => {
+		const newStack = [...modelObj.value.stack]
+		newStack.splice(props.offset, newStack.length - props.offset)
+		modelObj.value.stack = newStack
+	}
 )
+
+function onAutomationDrop(sequence: Sequence) {
+	const newStack = [...modelObj.value.stack]
+
+	const rootAction = sequence.actions[0]
+
+	if ("stack" in rootAction) {
+		newStack.splice(props.offset, 0, ...rootAction.stack)
+	} else {
+		//TODO: Validate it's an instant action
+		newStack.splice(props.offset, 0, rootAction)
+	}
+
+	modelObj.value.stack = newStack
+}
 </script>
 
 <style scoped>

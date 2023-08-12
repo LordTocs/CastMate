@@ -11,7 +11,7 @@ import { ref, useModel } from "vue"
 import { type Sequence } from "castmate-schema"
 import { PanArea, SequenceView } from "castmate-ui-core"
 import SequenceEdit from "./SequenceEdit.vue"
-import { useRootAutomationEditState } from "../../util/automation-dragdrop"
+import { provideAutomationEditState } from "../../util/automation-dragdrop"
 
 const props = defineProps<{
 	modelValue: Sequence
@@ -23,7 +23,7 @@ const editArea = ref<HTMLElement | null>(null)
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
-useRootAutomationEditState(editArea)
+provideAutomationEditState(editArea)
 </script>
 
 <style scoped>
