@@ -24,6 +24,7 @@ export function getInternalMousePos(elem: HTMLElement, ev: MouseEvent) {
 export function getElementRelativeRect(elem: HTMLElement, container: HTMLElement) {
 	//TODO: Account for multiple scrolls
 	//TODO: Scale?
+	//TODO: PanState?
 	const scroll = getElementScroll(container)
 
 	const containerRect = container.getBoundingClientRect()

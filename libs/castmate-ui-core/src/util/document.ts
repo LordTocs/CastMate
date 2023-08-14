@@ -132,7 +132,7 @@ export function useDocumentSelection(path: MaybeRefOrGetter<string | undefined> 
 			const selectionPath = toValue(path)
 
 			if (!selectionPath) return []
-			if (!selection) return []
+			if (!selection || !selection.value) return []
 
 			if (selection.value.container != selectionPath) {
 				return []
