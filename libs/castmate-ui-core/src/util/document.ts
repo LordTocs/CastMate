@@ -155,21 +155,29 @@ export function useDocumentSelection(path: MaybeRefOrGetter<string | undefined> 
 }
 
 export function useDocumentPath() {
-	const parentPath = inject<ComputedRef<string>>("documentObjectPath")
+	const parentPath = inject<ComputedRef<string>>(
+		"documentObjectPath",
+		computed(() => "")
+	)
 
 	return computed<string>(() => parentPath?.value ?? "")
 }
 
 export function provideDocumentPath(localPath: MaybeRefOrGetter<string | undefined>) {
-	const parentPath = inject<ComputedRef<string>>("documentObjectPath")
+	const parentPath = inject<ComputedRef<string>>(
+		"documentObjectPath",
+		computed(() => "")
+	)
 
 	const ourPath = computed(() => {
 		const actualLocalPath = toValue(localPath)
+		console.log("Computing Local Path", actualLocalPath)
 		const separator = actualLocalPath?.startsWith("[") ? "" : "."
-		return (parentPath?.value ? parentPath.value + separator : "") + actualLocalPath
+		return (parentPath.value ? parentPath.value + separator : "") + actualLocalPath
 	})
 
 	provide("documentObjectPath", ourPath)
+	console.log("Provide Document Path")
 
 	return ourPath
 }

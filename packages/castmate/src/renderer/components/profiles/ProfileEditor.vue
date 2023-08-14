@@ -86,7 +86,6 @@ function createTriggerEnd() {
 				zoomY: 1,
 				panning: false,
 			},
-			selection: [],
 		},
 	})
 }
@@ -113,7 +112,6 @@ function createTriggerBeginning() {
 				zoomY: 1,
 				panning: false,
 			},
-			selection: [],
 		},
 	})
 }

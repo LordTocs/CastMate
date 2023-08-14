@@ -8,7 +8,6 @@ export interface TriggerView {
 
 export interface SequenceView {
 	panState: PanState
-	selection: string[]
 }
 
 export interface ProfileView {

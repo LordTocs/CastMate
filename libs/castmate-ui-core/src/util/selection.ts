@@ -99,7 +99,10 @@ export function useSelectionRect(
 		selecting.value = true
 		selectionStart.value = getInternalMousePos(element, ev)
 
+		console.log("Select Start", toValue(path))
+
 		ev.preventDefault()
+		ev.stopPropagation()
 	})
 
 	useEventListener("mousemove", (ev: MouseEvent) => {
@@ -132,6 +135,8 @@ export function useSelectionRect(
 		if (!isSelecting()) {
 			return
 		}
+
+		console.log("Select End", toValue(path))
 
 		updateEnd(ev)
 		doSelectionCollect()

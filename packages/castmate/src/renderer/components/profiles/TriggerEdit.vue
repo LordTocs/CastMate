@@ -23,11 +23,11 @@
 		<div class="body" v-if="open">
 			<div class="config">
 				<template v-if="trigger">
-					<data-input :schema="trigger.config" v-model="modelObj.config" />
+					<data-input :schema="trigger.config" v-model="modelObj.config" local-path="config" />
 				</template>
 			</div>
 			<div class="automation">
-				<automation-edit v-model="modelObj.sequence" v-model:view="view.sequenceView" />
+				<automation-edit v-model="modelObj.sequence" v-model:view="view.sequenceView" local-path="sequence" />
 			</div>
 		</div>
 	</div>
@@ -40,7 +40,6 @@ import { type TriggerData } from "castmate-schema"
 import { useTrigger, DataInput, TriggerSelector, TriggerView, useTriggerColors } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
 import AutomationEdit from "../automation/AutomationEdit.vue"
-import * as chromatism from "chromatism2"
 
 const props = withDefaults(
 	defineProps<{
