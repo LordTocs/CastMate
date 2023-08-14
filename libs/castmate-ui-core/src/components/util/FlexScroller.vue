@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue"
+import { onMounted, ref, watch } from "vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -51,6 +51,13 @@ watch(
 	},
 	{ immediate: true }
 )
+
+onMounted(() => {
+	if (!scroller.value || props.scrollY == null || props.scrollX == null) return
+
+	scroller.value.scrollTop = props.scrollY
+	scroller.value.scrollLeft = props.scrollX
+})
 </script>
 
 <style scoped>
