@@ -143,6 +143,26 @@ export function useTrigger(selection: MaybeRefOrGetter<TriggerSelection | undefi
 	})
 }
 
+export function useTriggerColors(selection: MaybeRefOrGetter<TriggerSelection | undefined>) {
+	const trigger = useTrigger(selection)
+
+	const {
+		color: triggerColor,
+		darkerColor: darkerTriggerColor,
+		darkestColor: darkestTriggerColor,
+		lighterColor: lighterTriggerColor,
+	} = useColors(trigger)
+
+	const style = computed(() => ({
+		"--trigger-color": triggerColor.value,
+		"--darker-trigger-color": darkerTriggerColor.value,
+		"--darkest-trigger-color": darkestTriggerColor.value,
+		"--lighter-trigger-color": lighterTriggerColor.value,
+	}))
+
+	return { darkestTriggerColor, darkerTriggerColor, triggerColor, lighterTriggerColor, triggerColorStyle: style }
+}
+
 export interface ActionSelection {
 	plugin?: string
 	action?: string
@@ -166,9 +186,7 @@ export function useAction(selection: MaybeRefOrGetter<ActionSelection | undefine
 export function useColors(colorProvider: MaybeRefOrGetter<{ color?: string } | undefined>) {
 	const defaultColor = "#3e3e3e"
 
-	const colorProvValue = toValue(colorProvider)
-
-	const color = computed(() => colorProvValue?.color ?? defaultColor)
+	const color = computed(() => toValue(colorProvider)?.color ?? defaultColor)
 	const darkerColor = computed(() => chromatism.shade(-20, color.value).hex)
 	const darkestColor = computed(() => chromatism.shade(-30, color.value).hex)
 	const lighterColor = computed(() => chromatism.shade(20, color.value).hex)

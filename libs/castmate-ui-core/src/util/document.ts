@@ -6,6 +6,15 @@ export type NamedData = {
 	name?: string
 } & Record<string | symbol, any>
 
+interface DocumentSelection {
+	ids: string[]
+	container: string
+}
+
+export type ViewData = {
+	selection: DocumentSelection
+}
+
 export interface Document {
 	id: string
 	type: string

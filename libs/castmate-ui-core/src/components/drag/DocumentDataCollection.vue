@@ -17,7 +17,7 @@
 					:is="dataComponent"
 					v-model="modelObj[i]"
 					v-model:view="view[i]"
-					:selected="selection"
+					:selectedIds="selection.selectedIds"
 				></component>
 			</div>
 		</div>
@@ -27,11 +27,12 @@
 
 <script setup lang="ts">
 import { type Component, ref, type VNode, computed, useModel } from "vue"
-import { useVModel } from "@vueuse/core"
 import { type DocumentData, type DocumentDataSelection } from "../../util/document"
 import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
 import { DragEventWithDataTransfer, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../util/dragging"
+import { useSelectionRect } from "../../util/selection"
+import { getElementRelativeRect } from "../../util/dom"
 
 const props = withDefaults(
 	defineProps<{
@@ -67,6 +68,39 @@ const dragHovering = ref(false)
 const dataComponents = ref<VueHTMLElement[]>([])
 const insertionIndex = ref<number>(0)
 
+const orderedDataComponents = computed(() => {
+	return modelObj.value.map((i) => dataComponents.value.find((c) => c.__vnode.key == i.id))
+})
+
+function overlaps(from: { x: number; y: number }, to: { x: number; y: number }, elem: DOMRect) {
+	if (to.y < elem.top) return false
+	if (from.y > elem.bottom) return false
+	return true
+}
+
+const selectState = useSelectionRect(dragArea, (from, to) => {
+	const dragAreaElem = dragArea.value
+	if (!dragAreaElem) {
+		return
+	}
+
+	const newSelection = []
+
+	for (let i = 0; i < orderedDataComponents.value.length; ++i) {
+		const comp = orderedDataComponents.value[i]
+		if (!comp) continue
+
+		const localRect = getElementRelativeRect(comp, dragAreaElem)
+		if (overlaps(from, to, localRect)) {
+			newSelection.push(modelObj.value[i].id)
+		}
+	}
+
+	console.log("Select", newSelection)
+
+	selection.value.selectedIds = newSelection
+})
+
 useDragOver(
 	dragArea,
 	() => props.dataType,
@@ -99,7 +133,6 @@ useDrop(
 	() => props.dataType,
 	(ev: DragEventWithDataTransfer) => {
 		dragHovering.value = false
-
 		let insertionIdx = getInsertionIndex(ev.clientY)
 		console.log("Inserting at", insertionIdx)
 
@@ -117,12 +150,14 @@ useDrop(
 			return
 		}
 
+		const newModel = [...modelObj.value]
+		const newView = [...view.value]
 		//console.log("DropEffect", evt.dataTransfer.dropEffect, evt.dataTransfer.effectAllowed)
 		if (ev.dataTransfer.effectAllowed == "move" && draggingItems.value) {
 			//We're moving internal items
 			//Adjust the insertion index and remove the items from the model
 
-			console.log("internal move")
+			console.log("Internal move")
 
 			for (const id of selection.value.selectedIds) {
 				const idx = modelObj.value.findIndex((i) => i.id == id)
@@ -135,21 +170,25 @@ useDrop(
 					--insertionIdx
 				}
 
-				modelObj.value.splice(idx, 1)
+				console.log("Removing", idx)
+				newModel.splice(idx, 1)
+				newView.splice(idx, 1)
 			}
 		}
 
 		if (ev.dataTransfer.effectAllowed == "move" || ev.dataTransfer.effectAllowed == "copy") {
 			console.log("Final inserting at", insertionIdx)
-			modelObj.value.splice(insertionIdx, 0, ...data)
-			view.value.splice(insertionIdx, 0, ...viewData)
+			newModel.splice(insertionIdx, 0, ...data)
+			newView.splice(insertionIdx, 0, ...viewData)
 		}
+
+		modelObj.value = newModel
+		view.value = newView
+
+		console.log("NewModel", newModel)
+		console.log("NewView", newView)
 	}
 )
-
-const orderedDataComponents = computed(() => {
-	return modelObj.value.map((i) => dataComponents.value.find((c) => c.__vnode.key == i.id))
-})
 
 function getInsertionIndex(clientY: number) {
 	let result = 0
@@ -228,16 +267,22 @@ function getSelectedViewData(copy: boolean) {
 //In order to check if the handle class is respected we need to save off the mousedown event's target, since dragevent originates from the draggable div
 let dragTarget: HTMLElement | null = null
 function itemMouseDown(i: number, evt: MouseEvent) {
+	console.log("Drag Handling Mouse Down")
 	dragTarget = evt.target as HTMLElement
+	if (isChildOfClass(dragTarget, props.handleClass)) {
+		evt.stopPropagation()
+	}
 }
 
 function itemDragStart(i: number, evt: DragEvent) {
-	//console.log("Drag Start", evt.target, evt)
+	console.log("Drag Start", evt.target, evt)
 
 	if (!evt.target) return
 	if (!evt.dataTransfer) return
 
 	if (dragTarget && isChildOfClass(dragTarget, props.handleClass)) {
+		selectState.cancelSelection()
+
 		draggingItems.value = true
 
 		if (!selection.value.selectedIds.includes(modelObj.value[i].id)) {
@@ -262,7 +307,8 @@ function itemDragEnd(i: number, evt: DragEvent) {
 		//No drop
 	} else if (evt.dataTransfer.dropEffect == "move") {
 		//Dropped somewhere
-		if (!dragHovering.value) {
+		if (!draggingItems.value) {
+			console.log("Remote Drop")
 			//These items are dropped into another frame, remove them from our model
 			modelObj.value = modelObj.value.filter((i) => !selection.value.selectedIds.includes(i.id))
 			view.value = view.value.filter((i) => !selection.value.selectedIds.includes(i.id))

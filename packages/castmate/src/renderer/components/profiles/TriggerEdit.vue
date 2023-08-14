@@ -1,8 +1,5 @@
 <template>
-	<div
-		class="trigger-card"
-		:style="{ '--trigger-color': trigger?.color, '--darker-trigger-color': darkerTriggerColor }"
-	>
+	<div class="trigger-card" :class="{ selected: isSelected }" :style="{ '--hello': 'blah', ...triggerColorStyle }">
 		<div class="header">
 			<div class="drag-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
@@ -16,7 +13,12 @@
 			<div class="flex flex-row flex-grow-1 align-items-center" v-else>
 				<trigger-selector v-model="triggerModel" />
 			</div>
-			<p-button text :icon="open ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'" @click="open = !open" />
+			<p-button
+				text
+				:icon="open ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'"
+				@click.stop="open = !open"
+				@mousedown.stop
+			/>
 		</div>
 		<div class="body" v-if="open">
 			<div class="config">
@@ -35,7 +37,7 @@
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import { type TriggerData } from "castmate-schema"
-import { useTrigger, DataInput, TriggerSelector, TriggerView } from "castmate-ui-core"
+import { useTrigger, DataInput, TriggerSelector, TriggerView, useTriggerColors } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
 import AutomationEdit from "../automation/AutomationEdit.vue"
 import * as chromatism from "chromatism2"
@@ -44,6 +46,7 @@ const props = withDefaults(
 	defineProps<{
 		modelValue: TriggerData
 		view: TriggerView
+		selectedIds: string[]
 	}>(),
 	{
 		view: () => ({
@@ -60,10 +63,15 @@ const props = withDefaults(
 				selection: [],
 			},
 		}),
+		selectedIds: () => [],
 	}
 )
 
 const view = useModel(props, "view")
+
+const isSelected = computed(() => {
+	return props.selectedIds.includes(modelObj.value.id)
+})
 
 const open = computed<boolean>({
 	get() {
@@ -91,14 +99,10 @@ const triggerModel = computed({
 
 const trigger = useTrigger(() => props.modelValue)
 
-const darkerTriggerColor = computed(() =>
-	trigger.value?.color ? chromatism.shade(-20, trigger.value.color).hex : "#3f3f3f"
-)
+const { triggerColorStyle } = useTriggerColors(() => props.modelValue)
 
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useVModel(props, "modelValue", emit)
-
-//const plugin = usePlugin(props.modelValue.plugin)
 </script>
 
 <style scoped>
@@ -109,6 +113,10 @@ const modelObj = useVModel(props, "modelValue", emit)
 
 	display: flex;
 	flex-direction: column;
+}
+
+.trigger-card.selected {
+	border: 2px solid white;
 }
 
 .header {

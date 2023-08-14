@@ -18,6 +18,7 @@ export * from "./util/data"
 export * from "./util/dom"
 export * from "./util/automation"
 export * from "./util/dragging"
+export * from "./util/selection"
 
 export * from "./plugins/plugin-store"
 export * from "./project/project-store"

@@ -37,7 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import { useVModel } from "@vueuse/core"
 import { DocumentDataCollection, FlexScroller, ProfileView } from "castmate-ui-core"
 import { ProfileData } from "castmate-schema"
 import TriggerEdit from "./TriggerEdit.vue"
@@ -61,9 +60,7 @@ const props = withDefaults(
 
 const hasTriggers = computed(() => props.modelValue.triggers.length > 0)
 
-const emit = defineEmits(["update:modelValue", "update:view"])
-
-const model = useVModel(props, "modelValue", emit)
+const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
 function createTriggerEnd() {

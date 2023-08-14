@@ -9,3 +9,30 @@ export function isChildOfClass(element: HTMLElement, clazz: string) {
 
 	return false
 }
+
+export function getElementScroll(elem: HTMLElement) {
+	return { x: elem.scrollLeft ?? 0, y: elem.scrollTop ?? 0 }
+}
+
+export function getInternalMousePos(elem: HTMLElement, ev: MouseEvent) {
+	const rect = elem.getBoundingClientRect()
+	const scroll = getElementScroll(elem)
+
+	return { x: ev.clientX - rect.x + scroll.x, y: ev.clientY - rect.y + scroll.y }
+}
+
+export function getElementRelativeRect(elem: HTMLElement, container: HTMLElement) {
+	//TODO: Account for multiple scrolls
+	//TODO: Scale?
+	const scroll = getElementScroll(container)
+
+	const containerRect = container.getBoundingClientRect()
+	const elemRect = elem.getBoundingClientRect()
+
+	return DOMRect.fromRect({
+		x: elemRect.x - containerRect.x + scroll.x,
+		y: elemRect.y - containerRect.y + scroll.y,
+		width: elemRect.width,
+		height: elemRect.height,
+	})
+}
