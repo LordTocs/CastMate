@@ -1,18 +1,22 @@
 <template>
-	<div class="toggler" :class="{ [`toggle-${modelValue ?? false}`]: true }">
-		<div class="section-false" @click="modelObj = false"></div>
-		<div class="section-toggle" @click="modelObj = 'toggle'"></div>
-		<div class="section-true" @click="modelObj = true"></div>
-		<div class="toggle-ball" @click="cycleInput"></div>
-	</div>
+	<document-path :local-path="localPath">
+		<div class="toggler" :class="{ [`toggle-${modelValue ?? false}`]: true }">
+			<div class="section-false" @click="modelObj = false"></div>
+			<div class="section-toggle" @click="modelObj = 'toggle'"></div>
+			<div class="section-true" @click="modelObj = true"></div>
+			<div class="toggle-ball" @click="cycleInput"></div>
+		</div>
+	</document-path>
 </template>
 
 <script setup lang="ts">
 import { Toggle } from "castmate-schema"
 import { useModel } from "vue"
+import DocumentPath from "../../document/DocumentPath.vue"
 
 const props = defineProps<{
 	modelValue: Toggle
+	localPath?: string
 }>()
 
 const modelObj = useModel(props, "modelValue")

@@ -13,12 +13,14 @@
 				@dragend="itemDragEnd(i, $event)"
 				draggable="true"
 			>
-				<component
-					:is="dataComponent"
-					v-model="modelObj[i]"
-					v-model:view="view[i]"
-					:selectedIds="selection.selectedIds"
-				></component>
+				<document-path :localPath="`[${data.id}]`">
+					<component
+						:is="dataComponent"
+						v-model="modelObj[i]"
+						v-model:view="view[i]"
+						:selectedIds="selection"
+					></component>
+				</document-path>
 			</div>
 		</div>
 		<slot name="footer"></slot>
@@ -27,12 +29,14 @@
 
 <script setup lang="ts">
 import { type Component, ref, type VNode, computed, useModel } from "vue"
-import { type DocumentData, type DocumentDataSelection } from "../../util/document"
+import { type DocumentData, useDocumentSelection } from "../../util/document"
 import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
 import { DragEventWithDataTransfer, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../util/dragging"
 import { useSelectionRect } from "../../util/selection"
 import { getElementRelativeRect } from "../../util/dom"
+import { provideDocumentPath } from "../../main"
+import DocumentPath from "../document/DocumentPath.vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -41,6 +45,7 @@ const props = withDefaults(
 		dataComponent: Component
 		dataType?: string
 		handleClass?: string
+		localPath?: string
 	}>(),
 	{
 		dataType: "document-data",
@@ -49,12 +54,12 @@ const props = withDefaults(
 	}
 )
 
-const selection = ref<DocumentDataSelection>({
-	selectedIds: [],
-})
-
 const modelObj = useModel(props, "modelValue")
 const view = useModel(props, "view")
+
+const path = provideDocumentPath(() => props.localPath)
+
+const selection = useDocumentSelection(path)
 
 ///DRAG HANDLERS
 
@@ -78,28 +83,32 @@ function overlaps(from: { x: number; y: number }, to: { x: number; y: number }, 
 	return true
 }
 
-const selectState = useSelectionRect(dragArea, (from, to) => {
-	const dragAreaElem = dragArea.value
-	if (!dragAreaElem) {
-		return
-	}
-
-	const newSelection = []
-
-	for (let i = 0; i < orderedDataComponents.value.length; ++i) {
-		const comp = orderedDataComponents.value[i]
-		if (!comp) continue
-
-		const localRect = getElementRelativeRect(comp, dragAreaElem)
-		if (overlaps(from, to, localRect)) {
-			newSelection.push(modelObj.value[i].id)
+const selectState = useSelectionRect(
+	dragArea,
+	(from, to) => {
+		const dragAreaElem = dragArea.value
+		if (!dragAreaElem) {
+			return []
 		}
-	}
 
-	console.log("Select", newSelection)
+		const newSelection = []
 
-	selection.value.selectedIds = newSelection
-})
+		for (let i = 0; i < orderedDataComponents.value.length; ++i) {
+			const comp = orderedDataComponents.value[i]
+			if (!comp) continue
+
+			const localRect = getElementRelativeRect(comp, dragAreaElem)
+			if (overlaps(from, to, localRect)) {
+				newSelection.push(modelObj.value[i].id)
+			}
+		}
+
+		console.log("Select", newSelection)
+
+		return newSelection
+	},
+	path
+)
 
 useDragOver(
 	dragArea,
@@ -159,7 +168,7 @@ useDrop(
 
 			console.log("Internal move")
 
-			for (const id of selection.value.selectedIds) {
+			for (const id of selection.value) {
 				const idx = modelObj.value.findIndex((i) => i.id == id)
 
 				if (idx < 0) {
@@ -229,7 +238,7 @@ function isChildOfClass(element: HTMLElement, clazz: string) {
 function getSelectedData(copy: boolean) {
 	const result = []
 
-	for (const id of selection.value.selectedIds) {
+	for (const id of selection.value) {
 		const item = modelObj.value.find((v) => v.id == id)
 
 		if (item) {
@@ -247,7 +256,7 @@ function getSelectedData(copy: boolean) {
 function getSelectedViewData(copy: boolean) {
 	const result = []
 
-	for (const id of selection.value.selectedIds) {
+	for (const id of selection.value) {
 		const item = view.value.find((v) => v.id == id)
 
 		if (item) {
@@ -285,8 +294,8 @@ function itemDragStart(i: number, evt: DragEvent) {
 
 		draggingItems.value = true
 
-		if (!selection.value.selectedIds.includes(modelObj.value[i].id)) {
-			selection.value.selectedIds = [modelObj.value[i].id]
+		if (!selection.value.includes(modelObj.value[i].id)) {
+			selection.value = [modelObj.value[i].id]
 		}
 
 		evt.dataTransfer.effectAllowed = evt.altKey ? "copy" : "move"
@@ -310,8 +319,8 @@ function itemDragEnd(i: number, evt: DragEvent) {
 		if (!draggingItems.value) {
 			console.log("Remote Drop")
 			//These items are dropped into another frame, remove them from our model
-			modelObj.value = modelObj.value.filter((i) => !selection.value.selectedIds.includes(i.id))
-			view.value = view.value.filter((i) => !selection.value.selectedIds.includes(i.id))
+			modelObj.value = modelObj.value.filter((i) => !selection.value.includes(i.id))
+			view.value = view.value.filter((i) => !selection.value.includes(i.id))
 		}
 	} else if (evt.dataTransfer.dropEffect == "copy") {
 		//Copied somewhere

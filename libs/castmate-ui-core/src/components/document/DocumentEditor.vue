@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { useDocument, useDocumentComponent } from "../../main"
+import { provideDocument, useDocument, useDocumentComponent } from "../../main"
 
 const props = defineProps<{
 	documentId: string
@@ -17,6 +17,7 @@ const props = defineProps<{
 
 const document = useDocument(() => props.documentId)
 const documentComponent = useDocumentComponent(document.value?.type)
+provideDocument(() => props.documentId)
 
 const documentData = computed({
 	get() {

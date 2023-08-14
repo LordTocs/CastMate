@@ -8,6 +8,7 @@
 				v-model="model.triggers"
 				v-model:view="view.triggers"
 				:data-component="TriggerEdit"
+				local-path="triggers"
 			>
 				<template #header>
 					<div v-if="hasTriggers" class="flex flex-column p-1">

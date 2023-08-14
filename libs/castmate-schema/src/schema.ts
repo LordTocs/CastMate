@@ -224,7 +224,7 @@ export function squashSchemas<A extends Schema, B extends Schema>(a?: A, b?: B):
 type DataFactory<T = any> = { factoryCreate(...args: any[]): T }
 type DataConstructor<T = any> = { new (...args: any): T }
 
-type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor<T>
+export type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor<T>
 export interface DataTypeMetaData<T = any> {
 	constructor: DataConstructorOrFactory
 	template?: (value: T, context: any, schema: any) => T

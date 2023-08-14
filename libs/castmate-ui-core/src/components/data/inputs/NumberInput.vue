@@ -2,17 +2,21 @@
 	<div class="p-inputgroup w-full">
 		<span class="p-float-label">
 			<template v-if="templateMode">
-				<p-input-text id="l" v-model="(model as string | undefined)" />
+				<document-path :local-path="localPath">
+					<p-input-text id="l" v-model="(model as string | undefined)" />
+				</document-path>
 			</template>
 			<template v-else>
-				<p-input-number
-					id="l"
-					v-model="(model as number | undefined)"
-					:min="min"
-					:max="max"
-					:step="step"
-					:suffix="unit"
-				/>
+				<document-path :local-path="localPath">
+					<p-input-number
+						id="l"
+						v-model="(model as number | undefined)"
+						:min="min"
+						:max="max"
+						:step="step"
+						:suffix="unit"
+					/>
+				</document-path>
 			</template>
 			<label for="l"> {{ props.schema.name }}</label>
 		</span>
@@ -33,10 +37,12 @@ import PButton from "primevue/button"
 import { type SchemaBase, type SchemaNumber } from "castmate-schema"
 import { useVModel } from "@vueuse/core"
 import { computed, ref, onMounted } from "vue"
+import DocumentPath from "../../document/DocumentPath.vue"
 
 const props = defineProps<{
 	schema: SchemaNumber & SchemaBase
 	modelValue: number | string | undefined
+	localPath?: string
 }>()
 
 const lazyNumberData = ref(null)

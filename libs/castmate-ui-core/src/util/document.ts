@@ -1,34 +1,45 @@
 import { nanoid } from "nanoid/non-secure"
 import { defineStore } from "pinia"
-import { type MaybeRefOrGetter, computed, ref, unref, type Component, shallowReactive, toValue, markRaw } from "vue"
+import {
+	type MaybeRefOrGetter,
+	computed,
+	ref,
+	unref,
+	type Component,
+	shallowReactive,
+	toValue,
+	markRaw,
+	provide,
+	inject,
+	WritableComputedRef,
+	ComputedRef,
+} from "vue"
 
 export type NamedData = {
 	name?: string
 } & Record<string | symbol, any>
 
-interface DocumentSelection {
-	ids: string[]
+export type Selection = string[]
+
+export interface DocumentSelection {
+	items: Selection
 	container: string
 }
 
 export type ViewData = {
 	selection: DocumentSelection
-}
+} & Record<string | symbol, any>
 
 export interface Document {
 	id: string
 	type: string
 	dirty: boolean
 	data: NamedData
-	viewData: any
+	viewData: ViewData
 }
 
 export interface DocumentData {
 	id: string
-}
-
-export interface DocumentDataSelection {
-	selectedIds: string[]
 }
 
 export const useDocumentStore = defineStore("documents", () => {
@@ -83,4 +94,82 @@ export function useDocument(id: MaybeRefOrGetter<string>) {
 	return computed(() => {
 		return documentStore.documents?.get(toValue(id))
 	})
+}
+
+export function provideDocument(id: MaybeRefOrGetter<string>) {
+	const documentStore = useDocumentStore()
+
+	provide(
+		"documentSelection",
+		computed({
+			get() {
+				return documentStore.documents.get(toValue(id))?.viewData.selection
+			},
+			set(v) {
+				const doc = documentStore.documents.get(toValue(id))
+				if (doc && v) {
+					doc.viewData.selection = v
+				}
+			},
+		})
+	)
+}
+
+export function useSetDocumentSelection() {
+	const selection = inject<WritableComputedRef<DocumentSelection>>("documentSelection")
+
+	return function (newSelection: DocumentSelection) {
+		if (!selection) return
+		selection.value = newSelection
+	}
+}
+
+export function useDocumentSelection(path: MaybeRefOrGetter<string | undefined> = useDocumentPath()) {
+	const selection = inject<WritableComputedRef<DocumentSelection>>("documentSelection")
+
+	return computed({
+		get() {
+			const selectionPath = toValue(path)
+
+			if (!selectionPath) return []
+			if (!selection) return []
+
+			if (selection.value.container != selectionPath) {
+				return []
+			}
+
+			return selection.value.items
+		},
+		set(v) {
+			const selectionPath = toValue(path)
+
+			if (!selectionPath) return
+			if (!selection) return
+
+			selection.value = {
+				container: selectionPath,
+				items: v,
+			}
+		},
+	})
+}
+
+export function useDocumentPath() {
+	const parentPath = inject<ComputedRef<string>>("documentObjectPath")
+
+	return computed<string>(() => parentPath?.value ?? "")
+}
+
+export function provideDocumentPath(localPath: MaybeRefOrGetter<string | undefined>) {
+	const parentPath = inject<ComputedRef<string>>("documentObjectPath")
+
+	const ourPath = computed(() => {
+		const actualLocalPath = toValue(localPath)
+		const separator = actualLocalPath?.startsWith("[") ? "" : "."
+		return (parentPath?.value ? parentPath.value + separator : "") + actualLocalPath
+	})
+
+	provide("documentObjectPath", ourPath)
+
+	return ourPath
 }

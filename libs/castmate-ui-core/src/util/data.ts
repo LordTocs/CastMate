@@ -1,4 +1,4 @@
-import { type Schema, type IPCSchema, getTypeByName } from "castmate-schema"
+import { type Schema, type IPCSchema, getTypeByName, DataConstructorOrFactory } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
 	type Component,
@@ -75,20 +75,20 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 }
 
 export const useDataInputStore = defineStore("data-components", () => {
-	const componentMap = ref<Map<string, Component>>(new Map())
+	const componentMap = ref<Map<DataConstructorOrFactory, Component>>(new Map())
 
-	function registerInputComponent(type: new (...args: any[]) => any, component: Component) {
-		componentMap.value.set(type.name, markRaw(component))
+	function registerInputComponent(type: DataConstructorOrFactory, component: Component) {
+		componentMap.value.set(markRaw(type), markRaw(component))
 	}
 
-	function getInputComponent(type: new (...args: any[]) => any) {
-		return componentMap.value.get(type.name)
+	function getInputComponent(type: DataConstructorOrFactory) {
+		return componentMap.value.get(type)
 	}
 
 	return { registerInputComponent, getInputComponent }
 })
 
-export function useDataComponent(type: MaybeRefOrGetter<new (...args: any[]) => any>) {
+export function useDataComponent(type: MaybeRefOrGetter<DataConstructorOrFactory>) {
 	const inputStore = useDataInputStore()
 
 	return computed(() => inputStore.getInputComponent(toValue(type)))

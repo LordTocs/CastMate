@@ -1,5 +1,5 @@
 <template>
-	<component v-if="inputComponent" :is="inputComponent" v-model="modelObj" :schema="schema" />
+	<component v-if="inputComponent" :is="inputComponent" v-model="modelObj" :schema="schema" :local-path="localPath" />
 </template>
 
 <script setup lang="ts">
@@ -11,8 +11,7 @@ const props = defineProps<{
 	modelValue: any
 	schema: Schema
 	context?: any
-	secret?: boolean
-	//density: "default" | "comfortable" | "compact" //From vuetify
+	localPath?: string
 }>()
 
 const emit = defineEmits(["update:modelValue"])

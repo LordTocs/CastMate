@@ -1,20 +1,24 @@
 <template>
-	<div class="data-input" tabindex="-1">
-		<data-input
-			class="data-prop"
-			v-for="(prop, i) in Object.keys(schema.properties)"
-			:key="prop"
-			:model-value="getModelProp(prop)"
-			@update:model-value="setModelProp(prop, $event)"
-			:schema="schema.properties[prop]"
-		/>
-	</div>
+	<document-path :local-path="localPath">
+		<div class="data-input" tabindex="-1" v-bind="$attrs">
+			<data-input
+				class="data-prop"
+				v-for="(prop, i) in Object.keys(schema.properties)"
+				:key="prop"
+				:model-value="getModelProp(prop)"
+				@update:model-value="setModelProp(prop, $event)"
+				:schema="schema.properties[prop]"
+				:local-path="prop"
+			/>
+		</div>
+	</document-path>
 </template>
 
 <script setup lang="ts">
 import { useVModel } from "@vueuse/core"
 import { type SchemaObj } from "castmate-schema"
 import DataInput from "../DataInput.vue"
+import DocumentPath from "../../document/DocumentPath.vue"
 import { computed } from "vue"
 
 interface ObjType {
@@ -24,6 +28,7 @@ interface ObjType {
 const props = defineProps<{
 	schema: SchemaObj
 	modelValue: ObjType | undefined
+	localPath?: string
 }>()
 
 const emit = defineEmits(["update:modelValue"])
