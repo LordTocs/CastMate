@@ -1,5 +1,8 @@
 <template>
-	<div ref="editArea" class="automation-edit">
+	<div ref="editArea" class="automation-edit" tabindex="-1" @contextmenu="onContextMenu">
+		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
+			<sequence-edit v-model="model" :floating="false" />
+		</pan-area>
 		<div
 			ref="selectionRect"
 			class="selection-rect"
@@ -11,19 +14,18 @@
 				height: `${(selectTo?.y ?? 0) - (selectFrom?.y ?? 0)}px`,
 			}"
 		></div>
-		<pan-area class="automation-edit grid-paper" v-model:panState="view.panState" :zoom-y="false">
-			<sequence-edit v-model="model" :floating="false" />
-		</pan-area>
+		<action-palette @select-action="onSelectAction" ref="palette" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, useModel } from "vue"
 import { type Sequence } from "castmate-schema"
-import { PanArea, SequenceView, provideDocumentPath } from "castmate-ui-core"
+import { ActionSelection, PanArea, SequenceView, provideDocumentPath } from "castmate-ui-core"
 import SequenceEdit from "./SequenceEdit.vue"
 import { provideAutomationEditState } from "../../util/automation-dragdrop"
 import { useSelectionRect } from "castmate-ui-core"
+import ActionPalette from "./ActionPalette.vue"
 
 const props = defineProps<{
 	modelValue: Sequence
@@ -51,6 +53,14 @@ const {
 	},
 	path
 )
+
+const palette = ref<ActionPalette | null>(null)
+
+function onSelectAction(actionSelection: ActionSelection) {}
+
+function onContextMenu(ev: MouseEvent) {
+	palette.value.open(ev)
+}
 </script>
 
 <style scoped>
@@ -65,6 +75,14 @@ const {
 	width: 100%;
 	height: 100%;
 	position: relative;
+}
+
+.panner {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
 }
 
 .grid-paper {

@@ -39,7 +39,7 @@ import _sortedIndexBy from "lodash/sortedIndexBy"
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
 
-const indefinite = computed(() => action.value?.type == "time-indefinite")
+const indefinite = computed(() => false)
 
 const props = defineProps<{
 	modelValue: TimeAction

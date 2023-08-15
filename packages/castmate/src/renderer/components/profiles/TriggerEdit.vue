@@ -21,13 +21,16 @@
 			/>
 		</div>
 		<div class="body" v-if="open">
+			<automation-edit
+				v-model="modelObj.sequence"
+				v-model:view="view.sequenceView"
+				local-path="sequence"
+				style="flex: 1"
+			/>
 			<div class="config">
 				<template v-if="trigger">
 					<data-input :schema="trigger.config" v-model="modelObj.config" local-path="config" />
 				</template>
-			</div>
-			<div class="automation">
-				<automation-edit v-model="modelObj.sequence" v-model:view="view.sequenceView" local-path="sequence" />
 			</div>
 		</div>
 	</div>
@@ -129,19 +132,15 @@ const modelObj = useVModel(props, "modelValue", emit)
 
 .body {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 
 	min-height: 600px;
 }
 
 .config {
 	background-color: var(--surface-b);
-	min-height: 300px;
 	user-select: none;
-}
-
-.automation {
-	flex: 1;
+	min-height: 200px;
 }
 
 .trigger-name {

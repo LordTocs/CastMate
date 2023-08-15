@@ -101,8 +101,8 @@ export function useSelectionRect(
 
 		console.log("Select Start", toValue(path))
 
-		ev.preventDefault()
-		ev.stopPropagation()
+		//ev.preventDefault()
+		//ev.stopPropagation()
 	})
 
 	useEventListener("mousemove", (ev: MouseEvent) => {
