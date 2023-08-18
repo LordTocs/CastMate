@@ -1,12 +1,15 @@
 import { useEventListener } from "@vueuse/core"
 import { MaybeRefOrGetter, ref, toValue, computed } from "vue"
 import { getInternalMousePos } from "./dom"
-import { Selection, useDocumentPath, useSetDocumentSelection } from "./document"
+import { Selection, useDocumentPath, useDocumentSelection, useSetDocumentSelection } from "./document"
+import _uniq from "lodash/uniq"
 
 export interface SelectionPos {
 	x: number
 	y: number
 }
+
+type SelectionMode = "overwrite" | "add" | "remove"
 
 export function useSelectionRect(
 	elem: MaybeRefOrGetter<HTMLElement | null | undefined>,
@@ -16,14 +19,17 @@ export function useSelectionRect(
 	const selecting = ref(false)
 	const selectionStart = ref<{ x: number; y: number } | null>(null)
 	const selectionEnd = ref<{ x: number; y: number } | null>(null)
+	const selectionMode = ref<SelectionMode>("overwrite")
 
 	function cancelSelection() {
 		selecting.value = false
 		selectionStart.value = null
 		selectionEnd.value = null
+		selectionMode.value = "overwrite"
 	}
 
-	const setSelection = useSetDocumentSelection()
+	const selection = useDocumentSelection(path)
+	const oldSelection = ref<Selection>([])
 
 	const from = computed<SelectionPos | null>(() => {
 		if (!selecting.value) {
@@ -77,12 +83,19 @@ export function useSelectionRect(
 	function doSelectionCollect() {
 		if (!from.value || !to.value) return
 
-		const newSelection = collectSelection(from.value, to.value)
+		const draggedIds = collectSelection(from.value, to.value)
 
-		setSelection({
-			container: toValue(path),
-			items: newSelection,
-		})
+		let newSelection: Selection
+
+		if (selectionMode.value == "add") {
+			newSelection = _uniq([...oldSelection.value, ...draggedIds])
+		} else if (selectionMode.value == "remove") {
+			newSelection = oldSelection.value.filter((id) => !draggedIds.includes(id))
+		} else {
+			newSelection = draggedIds
+		}
+
+		selection.value = newSelection
 	}
 
 	useEventListener(elem, "mousedown", (ev: MouseEvent) => {
@@ -98,6 +111,14 @@ export function useSelectionRect(
 
 		selecting.value = true
 		selectionStart.value = getInternalMousePos(element, ev)
+		if (ev.shiftKey) {
+			selectionMode.value = "add"
+		} else if (ev.ctrlKey) {
+			selectionMode.value = "remove"
+		} else {
+			selectionMode.value = "overwrite"
+		}
+		oldSelection.value = [...selection.value]
 
 		console.log("Select Start", toValue(path))
 
