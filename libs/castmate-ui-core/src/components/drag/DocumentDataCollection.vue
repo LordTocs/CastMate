@@ -137,6 +137,8 @@ useDragLeave(
 	}
 )
 
+const droppedLocal = ref<boolean>(false)
+
 useDrop(
 	dragArea,
 	() => props.dataType,
@@ -167,9 +169,10 @@ useDrop(
 			//Adjust the insertion index and remove the items from the model
 
 			console.log("Internal move")
+			droppedLocal.value = true
 
 			for (const id of selection.value) {
-				const idx = modelObj.value.findIndex((i) => i.id == id)
+				const idx = newModel.findIndex((i) => i.id == id)
 
 				if (idx < 0) {
 					continue
@@ -179,7 +182,7 @@ useDrop(
 					--insertionIdx
 				}
 
-				console.log("Removing", idx)
+				console.log("Removing", id, idx)
 				newModel.splice(idx, 1)
 				newView.splice(idx, 1)
 			}
@@ -316,7 +319,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 		//No drop
 	} else if (evt.dataTransfer.dropEffect == "move") {
 		//Dropped somewhere
-		if (!draggingItems.value) {
+		if (!droppedLocal.value) {
 			console.log("Remote Drop")
 			//These items are dropped into another frame, remove them from our model
 			modelObj.value = modelObj.value.filter((i) => !selection.value.includes(i.id))
@@ -327,6 +330,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 	}
 
 	draggingItems.value = false
+	droppedLocal.value = false
 }
 </script>
 
