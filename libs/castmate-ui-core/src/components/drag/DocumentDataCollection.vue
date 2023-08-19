@@ -103,7 +103,7 @@ const selectState = useSelectionRect(
 			}
 		}
 
-		console.log("Select", newSelection)
+		//console.log("Select", newSelection)
 
 		return newSelection
 	},
