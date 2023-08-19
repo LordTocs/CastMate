@@ -1,5 +1,5 @@
 import { useEventListener } from "@vueuse/core"
-import { MaybeRefOrGetter, ref, toValue, computed } from "vue"
+import { MaybeRefOrGetter, ref, toValue, computed, ComputedRef, Ref, provide, inject } from "vue"
 import { getInternalMousePos } from "./dom"
 import { Selection, useDocumentPath, useDocumentSelection, useSetDocumentSelection } from "./document"
 import _uniq from "lodash/uniq"
@@ -11,18 +11,36 @@ export interface SelectionPos {
 
 type SelectionMode = "overwrite" | "add" | "remove"
 
+export interface SelectionState {
+	selecting: Ref<boolean>
+	from: ComputedRef<SelectionPos | null>
+	to: ComputedRef<SelectionPos | null>
+	cancelSelection: () => void
+}
+
+export function injectSelectionState(): SelectionState {
+	return inject<SelectionState>("selectionState", {
+		selecting: computed(() => false),
+		from: computed(() => null),
+		to: computed(() => null),
+		cancelSelection() {},
+	})
+}
+
 export function useSelectionRect(
 	elem: MaybeRefOrGetter<HTMLElement | null | undefined>,
 	collectSelection: (from: SelectionPos, to: SelectionPos) => Selection,
 	path: MaybeRefOrGetter<string> = useDocumentPath()
-) {
+): SelectionState {
 	const selecting = ref(false)
 	const selectionStart = ref<{ x: number; y: number } | null>(null)
 	const selectionEnd = ref<{ x: number; y: number } | null>(null)
 	const selectionMode = ref<SelectionMode>("overwrite")
+	const couldSelect = ref(false)
 
 	function cancelSelection() {
 		selecting.value = false
+		couldSelect.value = false
 		selectionStart.value = null
 		selectionEnd.value = null
 		selectionMode.value = "overwrite"
@@ -109,7 +127,7 @@ export function useSelectionRect(
 			return
 		}
 
-		selecting.value = true
+		couldSelect.value = true
 		selectionStart.value = getInternalMousePos(element, ev)
 		if (ev.shiftKey) {
 			selectionMode.value = "add"
@@ -133,11 +151,17 @@ export function useSelectionRect(
 			return
 		}
 
+		if (couldSelect.value && !selecting.value) {
+			//First move selecting
+			selecting.value = true
+		}
+
 		if (!isSelecting()) {
 			return
 		}
 
 		updateEnd(ev)
+
 		doSelectionCollect()
 		ev.preventDefault()
 	})
@@ -167,10 +191,14 @@ export function useSelectionRect(
 		ev.stopPropagation()
 	})
 
-	return {
+	const state: SelectionState = {
 		selecting,
 		from,
 		to,
 		cancelSelection,
 	}
+
+	provide("selectionState", state)
+
+	return state
 }

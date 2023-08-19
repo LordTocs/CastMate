@@ -22,8 +22,8 @@
 		</div>
 		<div class="body" v-if="open">
 			<automation-edit
-				v-model="modelObj.sequence"
-				v-model:view="view.sequenceView"
+				v-model="modelObj"
+				v-model:view="view.automationView"
 				local-path="sequence"
 				style="flex: 1"
 			/>
@@ -54,7 +54,7 @@ const props = withDefaults(
 		view: () => ({
 			id: "",
 			open: false,
-			sequenceView: {
+			automationView: {
 				panState: {
 					panX: 0,
 					panY: 0,

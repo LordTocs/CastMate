@@ -8,7 +8,7 @@
 			@mousedown="onMouseDown"
 		></div>
 		<div class="offset-actions">
-			<sequence-actions-edit v-model="modelObj" />
+			<sequence-actions-edit v-model="modelObj" @self-destruct="selfDestruct" />
 		</div>
 	</div>
 </template>
@@ -28,6 +28,11 @@ const props = defineProps<{
 	modelValue: OffsetActions
 }>()
 const modelObj = useModel(props, "modelValue")
+
+const emit = defineEmits(["selfDestruct"])
+function selfDestruct() {
+	emit("selfDestruct")
+}
 
 function useFirstAction(sequence: MaybeRefOrGetter<SequenceActions>) {
 	const pluginStore = usePluginStore()

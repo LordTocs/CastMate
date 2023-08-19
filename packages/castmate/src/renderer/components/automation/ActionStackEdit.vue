@@ -42,6 +42,7 @@ const { dragging } = useSequenceDrag(
 		}
 	},
 	() => {
+		console.log("Removing Stack After", props.offset)
 		const newStack = [...modelObj.value.stack]
 		newStack.splice(props.offset, newStack.length - props.offset)
 		modelObj.value.stack = newStack

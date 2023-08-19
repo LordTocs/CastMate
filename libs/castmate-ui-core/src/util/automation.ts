@@ -3,10 +3,12 @@ import { PanState } from "./panning"
 export interface TriggerView {
 	id: string
 	open: boolean
-	sequenceView: SequenceView
+	automationView: AutomationView
 }
 
-export interface SequenceView {
+export interface SequenceView {}
+
+export interface AutomationView {
 	panState: PanState
 }
 

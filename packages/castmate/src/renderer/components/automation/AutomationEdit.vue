@@ -1,7 +1,14 @@
 <template>
 	<div ref="editArea" class="automation-edit" tabindex="-1" @contextmenu="onContextMenu">
 		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
-			<sequence-edit v-model="model" :floating="false" />
+			<sequence-edit v-model="model.sequence" :floating="false" />
+			<sequence-edit
+				v-for="(s, i) in model.floatingSequences"
+				:key="s.id"
+				:model-value="model.floatingSequences[i]"
+				:floating="true"
+				@self-destruct="removeFloatingSequence(i)"
+			/>
 		</pan-area>
 		<div
 			ref="selectionRect"
@@ -20,16 +27,26 @@
 
 <script setup lang="ts">
 import { ref, useModel } from "vue"
-import { type Sequence } from "castmate-schema"
-import { ActionSelection, PanArea, SequenceView, provideDocumentPath } from "castmate-ui-core"
+import { type Sequence, type AutomationData } from "castmate-schema"
+import {
+	ActionSelection,
+	PanArea,
+	AutomationView,
+	getInternalMousePos,
+	provideDocumentPath,
+	usePluginStore,
+} from "castmate-ui-core"
 import SequenceEdit from "./SequenceEdit.vue"
 import { provideAutomationEditState } from "../../util/automation-dragdrop"
 import { useSelectionRect } from "castmate-ui-core"
 import ActionPalette from "./ActionPalette.vue"
+import { FloatingSequence } from "castmate-schema"
+import { nanoid } from "nanoid/non-secure"
+import { constructDefault } from "castmate-schema"
 
 const props = defineProps<{
-	modelValue: Sequence
-	view: SequenceView
+	modelValue: AutomationData
+	view: AutomationView
 	localPath?: string
 }>()
 
@@ -40,7 +57,27 @@ const view = useModel(props, "view")
 
 const path = provideDocumentPath(() => props.localPath)
 
-provideAutomationEditState(editArea)
+provideAutomationEditState(editArea, (seq, ev) => {
+	if (!editArea.value) return
+
+	const dropPos = getInternalMousePos(editArea.value, ev)
+
+	const x = (dropPos.x - view.value.panState.panX) / 40 / view.value.panState.zoomX
+	const y = (dropPos.y - view.value.panState.panY) / view.value.panState.zoomY
+
+	const floatingSequence: FloatingSequence = {
+		...seq,
+		x,
+		y,
+		id: nanoid(),
+	}
+
+	model.value.floatingSequences.push(floatingSequence)
+})
+
+function removeFloatingSequence(index: number) {
+	model.value.floatingSequences.splice(index, 1)
+}
 
 const {
 	selecting,
@@ -54,12 +91,42 @@ const {
 	path
 )
 
+const palettePosition = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const palette = ref<ActionPalette | null>(null)
 
-function onSelectAction(actionSelection: ActionSelection) {}
+const pluginStore = usePluginStore()
+
+function onSelectAction(actionSelection: ActionSelection) {
+	if (!actionSelection.action || !actionSelection.plugin) return
+
+	const x = (palettePosition.value.x - view.value.panState.panX) / 40 / view.value.panState.zoomX
+	const y = (palettePosition.value.y - view.value.panState.panY) / view.value.panState.zoomY
+
+	const action = pluginStore.pluginMap.get(actionSelection.plugin)?.actions[actionSelection.action]
+
+	if (!action) return
+
+	const floatingSequence: FloatingSequence = {
+		actions: [
+			{
+				id: nanoid(),
+				plugin: actionSelection.plugin,
+				action: actionSelection.action,
+				config: constructDefault(action.config),
+			},
+		],
+		x,
+		y,
+		id: nanoid(),
+	}
+
+	model.value.floatingSequences.push(floatingSequence)
+}
 
 function onContextMenu(ev: MouseEvent) {
-	palette.value.open(ev)
+	if (!editArea.value) return
+	palettePosition.value = getInternalMousePos(editArea.value, ev)
+	palette.value?.open(ev)
 }
 </script>
 

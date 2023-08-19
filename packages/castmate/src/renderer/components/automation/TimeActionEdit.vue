@@ -15,13 +15,19 @@
 		</div>
 		<automation-drop-zone
 			:drop-key="`${modelValue.id}-bottom`"
+			:key="`${modelValue.id}-bottom`"
 			drop-axis="horizontal"
 			drop-location="start"
 			style="left: 0; top: var(--timeline-height); right: 0; height: calc(var(--timeline-height) / 2)"
 			@automation-drop="onAutomationDrop"
 		/>
 		<div class="timeline-sequences">
-			<offset-sequence-edit v-for="(o, i) in model.offsets" :key="o.id" v-model="model.offsets[i]" />
+			<offset-sequence-edit
+				v-for="(o, i) in model.offsets"
+				:key="o.id"
+				v-model="model.offsets[i]"
+				@self-destruct="removeOffset(i)"
+			/>
 		</div>
 	</div>
 </template>
@@ -57,6 +63,10 @@ provide(
 		maxLength: undefined,
 	}))
 )
+
+function removeOffset(index: number) {
+	model.value.offsets.splice(index, 1)
+}
 
 function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; width: number; height: number }) {
 	const timeOffset = (offset.x / offset.width) * model.value.config.duration

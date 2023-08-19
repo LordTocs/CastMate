@@ -1,5 +1,5 @@
 import { Arrayable, useEventListener } from "@vueuse/core"
-import { type MaybeRefOrGetter, toValue } from "vue"
+import { type MaybeRefOrGetter, toValue, onMounted, watch, onUnmounted } from "vue"
 
 export type DragEventWithDataTransfer = DragEvent & { dataTransfer: DataTransfer }
 
@@ -118,4 +118,40 @@ export function useDrop(
 
 		func(ev)
 	})
+}
+
+function markDraggable(elements: MaybeRefOrGetter<Arrayable<HTMLElement>>) {
+	onMounted(() => {
+		const elementsValue = toValue(elements)
+		const elemArray = Array.isArray(elementsValue) ? elementsValue : [elementsValue]
+
+		for (const elem of elemArray) {
+			elem.draggable = true
+		}
+	})
+
+	watch(elements, (value, old) => {
+		const newValue = toValue(value)
+		const newArray = Array.isArray(newValue) ? newValue : [newValue]
+
+		const oldValue = toValue(old)
+		const oldArray = Array.isArray(oldValue) ? oldValue : [oldValue]
+
+		for (const elem of newArray) {
+			elem.draggable = true
+		}
+
+		for (const elem of oldArray) {
+			if (newArray.includes(elem)) continue
+			elem.draggable = false
+		}
+	})
+}
+
+export function useDraggable(
+	elements: MaybeRefOrGetter<Arrayable<HTMLElement>>,
+	handleClass: MaybeRefOrGetter<string>,
+	func: (index: number, ev: DragEvent) => any
+) {
+	onMounted(() => {})
 }

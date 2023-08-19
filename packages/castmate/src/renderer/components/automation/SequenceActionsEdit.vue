@@ -10,6 +10,7 @@
 				drop-axis="vertical"
 				drop-location="middle"
 				:drop-key="`${action.id}-left`"
+				:key="`${action.id}-left`"
 				style="
 					left: calc(var(--instant-width) / -2);
 					width: var(--instant-width);
@@ -22,6 +23,7 @@
 				drop-axis="vertical"
 				drop-location="middle"
 				:drop-key="`${action.id}-right`"
+				:key="`${action.id}-right`"
 				style="
 					right: calc(var(--instant-width) / -2);
 					width: var(--instant-width);
@@ -62,14 +64,22 @@ const modelObj = useModel(props, "modelValue")
 
 const sequenceEdit = ref<HTMLElement | null>(null)
 
+const emit = defineEmits(["selfDestruct"])
+
 const { dragging } = useSequenceDrag(
 	sequenceEdit,
 	() => {
 		return { actions: _cloneDeep(modelObj.value.actions.slice(props.offset)) }
 	},
 	() => {
+		console.log("Removing Sequence After", props.offset)
 		const newActions = [...modelObj.value.actions]
 		newActions.splice(props.offset, newActions.length - props.offset)
+		modelObj.value.actions = newActions
+
+		if (newActions.length == 0) {
+			emit("selfDestruct")
+		}
 	}
 )
 

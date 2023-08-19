@@ -1,3 +1,4 @@
+import { SequenceActions } from "./../../../../../libs/castmate-schema/src/types/sequence"
 import { Sequence } from "castmate-schema"
 import {
 	MaybeRefOrGetter,
@@ -17,6 +18,8 @@ import {
 import { useEventListener } from "@vueuse/core"
 import {
 	DragEventWithDataTransfer,
+	getInternalMousePos,
+	injectSelectionState,
 	isChildOfClass,
 	useDragEnter,
 	useDragLeave,
@@ -29,6 +32,7 @@ export interface DropZone {
 	inZone(ev: MouseEvent): boolean
 	computeDistance(ev: MouseEvent): number
 	doDrop(sequence: Sequence, ev: MouseEvent): void
+	instanceId: string
 }
 
 export function pickUpAutomation(id: string, seq: Sequence) {}
@@ -38,20 +42,32 @@ export interface AutomationEditState {
 	dropCandidate: Ref<string | null>
 	getZone(ev: MouseEvent): DropZone | undefined
 	registerDropZone(key: string, zone: DropZone): void
-	unregisterDropZone(key: string): void
+	unregisterDropZone(key: string, zone: DropZone): void
 }
 
-export function provideAutomationEditState(automationElem: MaybeRefOrGetter<HTMLElement | null>): AutomationEditState {
+export function provideAutomationEditState(
+	automationElem: MaybeRefOrGetter<HTMLElement | null>,
+	createFloatingSequence: (seq: SequenceActions, pos: MouseEvent) => any
+): AutomationEditState {
 	const defaultDistance = 100000
 	const dragging = ref<boolean>(false)
 	const dropCandidate = shallowRef<string | null>(null)
 	const dropCandidateDistance = ref<number>(defaultDistance)
 
-	const dropZones = ref<Map<string, DropZone>>(new Map())
+	const dropZones = ref<Record<string, DropZone[]>>({})
 
 	function collectDropZones(ev: MouseEvent) {
 		const result = []
-		for (let [key, zone] of dropZones.value.entries()) {
+		for (let [key, zones] of Object.entries(dropZones.value)) {
+			//Zones is an array to work around the ordering of drop and dragend events causing the unregistration of newly registered zones
+			const zone = zones[0] //We should only care about the first one
+
+			if (zones.length > 1) {
+				console.log("Dupe Zones", key, [...zones])
+				console.log(zones[0] == zones[1])
+				console.log(zones[0] === zones[1])
+			}
+
 			if (zone.inZone(ev)) {
 				result.push(zone)
 			}
@@ -62,11 +78,34 @@ export function provideAutomationEditState(automationElem: MaybeRefOrGetter<HTML
 	const automationEditState = {
 		dragging,
 		dropCandidate,
+		dropZones,
 		registerDropZone(key: string, zone: DropZone) {
-			dropZones.value.set(key, zone)
+			if (key in dropZones.value) {
+				dropZones.value[key].push(zone)
+			} else {
+				dropZones.value[key] = [zone]
+			}
 		},
-		unregisterDropZone(key: string) {
-			dropZones.value.delete(key)
+		unregisterDropZone(key: string, zone: DropZone) {
+			if (!dropZones.value[key]) return
+
+			const zones = dropZones.value[key]
+			if (!zones) return //wtf?
+
+			const idx = zones.findIndex((dz) => dz.instanceId === zone.instanceId)
+			if (idx == -1) {
+				console.error("Unable to unregister", key, zone.instanceId)
+				console.error(
+					"instances",
+					zones.map((z) => z.instanceId)
+				)
+			}
+			zones.splice(idx, 1)
+
+			if (zones.length == 0) {
+				delete dropZones.value[key]
+			} else {
+			}
 		},
 		getZone(ev: MouseEvent) {
 			const overlapZones = collectDropZones(ev)
@@ -78,7 +117,6 @@ export function provideAutomationEditState(automationElem: MaybeRefOrGetter<HTML
 
 			for (let zone of overlapZones) {
 				const d = zone.computeDistance(ev)
-				//console.log(zone.key, d)
 				if (d < minZoneDistance) {
 					minZone = zone
 					minZoneDistance = d
@@ -118,6 +156,7 @@ export function provideAutomationEditState(automationElem: MaybeRefOrGetter<HTML
 			dropZone.doDrop(data, ev)
 		} else {
 			//Create new floating sequence
+			createFloatingSequence(data, ev)
 		}
 	})
 
@@ -138,17 +177,23 @@ export function useSequenceDrag(
 	const dragTarget = shallowRef<HTMLElement | null>(null)
 
 	const dragging = ref<boolean>(false)
-	const parentDragging = inject<ComputedRef<boolean>>("sequenceDragging")
+	const parentDragging = inject<ComputedRef<boolean>>(
+		"sequenceDragging",
+		computed(() => false)
+	)
+
+	const selectionState = injectSelectionState()
 
 	const childDragging = computed(() => parentDragging?.value || dragging.value)
 	provide("sequenceDragging", childDragging)
 
 	const automationEditState = useAutomationEditState()
 
-	console.log("Using Sequence Drag")
-
 	useEventListener(element, "mousedown", (ev: MouseEvent) => {
 		dragTarget.value = ev.target as HTMLElement
+		if (isChildOfClass(dragTarget.value, "action-handle")) {
+			ev.stopPropagation()
+		}
 	})
 
 	useEventListener(element, "dragstart", (ev: DragEvent) => {
@@ -161,6 +206,9 @@ export function useSequenceDrag(
 			ev.stopPropagation()
 			return
 		}
+
+		//Unfortunately we can't use propagation to stop the selection rect from happening here.
+		selectionState.cancelSelection()
 
 		console.log("DragStart", toValue(element)?.className)
 

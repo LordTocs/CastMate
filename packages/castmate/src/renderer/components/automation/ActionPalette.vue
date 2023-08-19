@@ -3,9 +3,11 @@
 		<div class="palette" :style="{ '--page-x': `${pageX}px`, '--page-y': `${pageY}px` }" v-if="visible" @click.stop>
 			<p-menu :model="allItems">
 				<template #start>
-					<span class="w-full p-inputgroup">
-						<p-input-text v-model="filter" ref="filterInput" placeholder="Filter Actions" />
-					</span>
+					<form @submit.prevent="complete">
+						<span class="w-full p-inputgroup">
+							<p-input-text v-model="filter" ref="filterInput" placeholder="Filter Actions" />
+						</span>
+					</form>
 				</template>
 				<template #item="{ item }">
 					<div
@@ -100,6 +102,20 @@ function close() {
 
 function selectItem(selection: ActionSelection) {
 	emit("selectAction", selection)
+	close()
+}
+
+function complete() {
+	for (const g of allItems.value) {
+		if (!g.visible) continue
+		if (!g.items) continue
+		for (const i of g.items) {
+			if (!i.visible) continue
+			selectItem({ plugin: g.key, action: i.key })
+			return
+		}
+	}
+
 	close()
 }
 

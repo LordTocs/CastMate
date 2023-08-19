@@ -9,6 +9,7 @@ export type NonStackActionInfo = InstantAction | TimeAction | FlowAction
 export interface FloatingSequence extends Sequence {
 	x: number
 	y: number
+	id: string
 }
 
 export interface ActionInfo {

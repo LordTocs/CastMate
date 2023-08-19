@@ -8,9 +8,10 @@
 </template>
 
 <script setup lang="ts">
-import { Ref, inject, onMounted, onUnmounted, ref } from "vue"
-import { useAutomationEditState } from "../../util/automation-dragdrop"
+import { Ref, inject, onMounted, onUnmounted, ref, shallowRef, computed, onBeforeUnmount, nextTick, markRaw } from "vue"
+import { useAutomationEditState, type DropZone } from "../../util/automation-dragdrop"
 import { Sequence } from "castmate-schema"
+import { nanoid } from "nanoid/non-secure"
 
 const props = withDefaults(
 	defineProps<{
@@ -28,7 +29,10 @@ const automationEditState = useAutomationEditState()
 
 const dropZone = ref<HTMLElement | null>(null)
 
-const isBeingDragged = inject<Ref<boolean>>("sequenceDragging")
+const isBeingDragged = inject<Ref<boolean>>(
+	"sequenceDragging",
+	computed(() => false)
+)
 
 function computeOffset(ev: MouseEvent) {
 	let offset = { x: 0, y: 0, width: 0, height: 0 }
@@ -60,8 +64,13 @@ function inRect(ev: { clientX: number; clientY: number }, rect: DOMRect) {
 	return true
 }
 
+const zone = ref<DropZone>()
+
 onMounted(() => {
-	automationEditState?.registerDropZone(props.dropKey, {
+	const instanceId = nanoid()
+	console.log("Mounting", props.dropKey, instanceId)
+	zone.value = {
+		instanceId,
 		computeDistance(ev) {
 			return computeDropDistance(computeOffset(ev))
 		},
@@ -69,18 +78,24 @@ onMounted(() => {
 			emit("automationDrop", sequence, computeOffset(ev))
 		},
 		inZone(ev) {
-			if (!dropZone.value) return false
+			if (!dropZone.value) {
+				//console.log("Zone Missing", props.dropKey)
+				return false
+			}
 			const rect = dropZone.value.getBoundingClientRect()
 			return inRect(ev, rect)
 		},
 		get key() {
 			return props.dropKey
 		},
-	})
+	}
+	automationEditState?.registerDropZone(props.dropKey, zone.value)
 })
 
-onUnmounted(() => {
-	automationEditState?.unregisterDropZone(props.dropKey)
+onBeforeUnmount(() => {
+	console.log("Unmounting", props.dropKey, zone.value?.instanceId)
+	if (!zone.value) return
+	automationEditState?.unregisterDropZone(props.dropKey, zone.value)
 })
 </script>
 

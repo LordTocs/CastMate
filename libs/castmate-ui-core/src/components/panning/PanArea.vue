@@ -26,8 +26,8 @@ import { computed, ref, provide } from "vue"
 
 const props = withDefaults(
 	defineProps<{
-		zoomX: boolean
-		zoomY: boolean
+		zoomX?: boolean
+		zoomY?: boolean
 		panState: PanState
 	}>(),
 	{
