@@ -66,7 +66,7 @@ function onAutomationDrop(sequence: Sequence) {
 		newStack.splice(props.offset, 0, ...rootAction.stack)
 	} else {
 		//TODO: Validate it's an instant action
-		newStack.splice(props.offset, 0, rootAction)
+		newStack.splice(props.offset + 1, 0, rootAction)
 	}
 
 	modelObj.value.stack = newStack
