@@ -57,13 +57,13 @@ const view = useModel(props, "view")
 
 const path = provideDocumentPath(() => props.localPath)
 
-provideAutomationEditState(editArea, (seq, ev) => {
+provideAutomationEditState(editArea, (seq, offset, ev) => {
 	if (!editArea.value) return
 
 	const dropPos = getInternalMousePos(editArea.value, ev)
 
-	const x = (dropPos.x - view.value.panState.panX) / 40 / view.value.panState.zoomX
-	const y = (dropPos.y - view.value.panState.panY) / view.value.panState.zoomY
+	const x = (dropPos.x - view.value.panState.panX - offset.x) / 40 / view.value.panState.zoomX
+	const y = (dropPos.y - view.value.panState.panY - offset.y) / view.value.panState.zoomY
 
 	const floatingSequence: FloatingSequence = {
 		...seq,

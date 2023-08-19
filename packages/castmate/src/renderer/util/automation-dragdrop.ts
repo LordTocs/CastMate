@@ -54,7 +54,7 @@ interface LocalDragHandler {
 
 export function provideAutomationEditState(
 	automationElem: MaybeRefOrGetter<HTMLElement | null>,
-	createFloatingSequence: (seq: SequenceActions, pos: MouseEvent) => any
+	createFloatingSequence: (seq: SequenceActions, offset: { x: number; y: number }, pos: MouseEvent) => any
 ): AutomationEditState {
 	const defaultDistance = 100000
 	const dragging = ref<boolean>(false)
@@ -177,7 +177,8 @@ export function provideAutomationEditState(
 			dropZone.doDrop(data, ev)
 		} else {
 			//Create new floating sequence
-			createFloatingSequence(data, ev)
+			const offset: { x: number; y: number } = JSON.parse(ev.dataTransfer.getData("automation-drag-offset"))
+			createFloatingSequence(data, offset, ev)
 		}
 	})
 
@@ -248,8 +249,10 @@ export function useSequenceDrag(
 		ev.dataTransfer.effectAllowed = ev.altKey ? "copy" : "move"
 		ev.dataTransfer.setData("automation-sequence", JSON.stringify(sequence))
 
-		if (sequence.actions.length == 1 && (isActionStack(sequence.actions[0]) || isInstantAction(sequence.actions[0])))
-		{
+		if (
+			sequence.actions.length == 1 &&
+			(isActionStack(sequence.actions[0]) || isInstantAction(sequence.actions[0]))
+		) {
 			//Hover events cant inspect the contents of data. So we have to add a special piece of data to act as a flag.
 			//We only set this flag if this can be put on an action stack. (It's a stack or a single instant action)
 			ev.dataTransfer.setData("automation-sequence-stackable", "true")
