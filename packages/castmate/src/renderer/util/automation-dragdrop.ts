@@ -50,6 +50,7 @@ export interface AutomationEditState {
 interface LocalDragHandler {
 	dragging: boolean
 	removeSequence: null | (() => void)
+	dropped: boolean
 }
 
 export function provideAutomationEditState(
@@ -62,7 +63,7 @@ export function provideAutomationEditState(
 	const dropCandidateDistance = ref<number>(defaultDistance)
 
 	const dropZones = ref<Record<string, DropZone[]>>({})
-	const sequenceLocalDrag = ref<LocalDragHandler>({ dragging: false, removeSequence: null })
+	const sequenceLocalDrag = ref<LocalDragHandler>({ dragging: false, removeSequence: null, dropped: false })
 	provide("sequenceLocalDrag", sequenceLocalDrag)
 
 	function collectDropZones(ev: DragEventWithDataTransfer) {
@@ -165,12 +166,14 @@ export function provideAutomationEditState(
 
 		const dropZone = automationEditState.getZone(ev)
 
-		console.log("LocalDrag", sequenceLocalDrag.value)
-		if (sequenceLocalDrag.value.dragging) {
-			//Local drop, please work!
-			console.log("Local Drop!")
-			ev.dataTransfer.dropEffect = "none"
+		//Use effectAllowed since for whatever reason dropEffect is always "none" (Probably chrome bug)
+		if (sequenceLocalDrag.value.dragging && ev.dataTransfer.effectAllowed == "move") {
+			console.log("Dropped Locally")
+			sequenceLocalDrag.value.dropped = true
+			//Local drop, we do removal here to avoid the v-model blowing up the element holding our dragend event.
 			sequenceLocalDrag.value.removeSequence?.()
+		} else {
+			sequenceLocalDrag.value.dropped = false
 		}
 
 		if (dropZone) {
@@ -206,7 +209,7 @@ export function useSequenceDrag(
 
 	const sequenceLocalDrag = inject<Ref<LocalDragHandler>>(
 		"sequenceLocalDrag",
-		ref({ dragging: false, removeSequence: null })
+		ref({ dragging: false, removeSequence: null, dropped: false })
 	)
 
 	const selectionState = injectSelectionState()
@@ -240,7 +243,10 @@ export function useSequenceDrag(
 		selectionState.cancelSelection()
 
 		sequenceLocalDrag.value.dragging = true
-		sequenceLocalDrag.value.removeSequence = markRaw(removeSequence)
+		sequenceLocalDrag.value.removeSequence = markRaw(() => {
+			removeSequence()
+			dragging.value = false
+		})
 
 		console.log("DragStart", toValue(element)?.className)
 
@@ -266,22 +272,24 @@ export function useSequenceDrag(
 	})
 
 	useEventListener(element, "dragend", (ev: DragEvent) => {
-		console.log("DragEnd")
-
 		if (!ev.target) return
 		if (!ev.dataTransfer) return
 		if (!automationEditState) return
 
-		console.log("Drag End")
+		console.log("DragEnd", ev.dataTransfer.dropEffect)
+
 		if (ev.dataTransfer.dropEffect == "none") {
 		} else if (ev.dataTransfer.dropEffect == "copy") {
 		} else if (ev.dataTransfer.dropEffect == "move") {
-			console.log("Removing Sequence in End")
-			//Pop the data now.
-			removeSequence()
+			if (!sequenceLocalDrag.value.dropped) {
+				console.log("Removing Sequence in End")
+				//Pop the data now.
+				removeSequence()
+			}
 		}
 
 		sequenceLocalDrag.value.dragging = false
+		sequenceLocalDrag.value.dropped = false
 		sequenceLocalDrag.value.removeSequence = null
 
 		dragging.value = false
