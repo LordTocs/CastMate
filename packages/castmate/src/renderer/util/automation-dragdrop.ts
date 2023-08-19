@@ -13,6 +13,7 @@ import {
 	toValue,
 	computed,
 	ComputedRef,
+	markRaw,
 } from "vue"
 
 import { useEventListener } from "@vueuse/core"
@@ -45,6 +46,11 @@ export interface AutomationEditState {
 	unregisterDropZone(key: string, zone: DropZone): void
 }
 
+interface LocalDragHandler {
+	dragging: boolean
+	removeSequence: null | (() => void)
+}
+
 export function provideAutomationEditState(
 	automationElem: MaybeRefOrGetter<HTMLElement | null>,
 	createFloatingSequence: (seq: SequenceActions, pos: MouseEvent) => any
@@ -55,6 +61,8 @@ export function provideAutomationEditState(
 	const dropCandidateDistance = ref<number>(defaultDistance)
 
 	const dropZones = ref<Record<string, DropZone[]>>({})
+	const sequenceLocalDrag = ref<LocalDragHandler>({ dragging: false, removeSequence: null })
+	provide("sequenceLocalDrag", sequenceLocalDrag)
 
 	function collectDropZones(ev: MouseEvent) {
 		const result = []
@@ -152,6 +160,14 @@ export function provideAutomationEditState(
 
 		const dropZone = automationEditState.getZone(ev)
 
+		console.log("LocalDrag", sequenceLocalDrag.value)
+		if (sequenceLocalDrag.value.dragging) {
+			//Local drop, please work!
+			console.log("Local Drop!")
+			ev.dataTransfer.dropEffect = "none"
+			sequenceLocalDrag.value.removeSequence?.()
+		}
+
 		if (dropZone) {
 			dropZone.doDrop(data, ev)
 		} else {
@@ -182,6 +198,11 @@ export function useSequenceDrag(
 		computed(() => false)
 	)
 
+	const sequenceLocalDrag = inject<Ref<LocalDragHandler>>(
+		"sequenceLocalDrag",
+		ref({ dragging: false, removeSequence: null })
+	)
+
 	const selectionState = injectSelectionState()
 
 	const childDragging = computed(() => parentDragging?.value || dragging.value)
@@ -200,6 +221,8 @@ export function useSequenceDrag(
 		if (!ev.target) return
 		if (!ev.dataTransfer) return
 		if (!automationEditState) return
+		const elem = toValue(element)
+		if (!elem) return
 
 		if (!dragTarget.value || !isChildOfClass(dragTarget.value, "action-handle")) {
 			ev.preventDefault() //Don't start dragging if we're not in the action-handle
@@ -210,12 +233,18 @@ export function useSequenceDrag(
 		//Unfortunately we can't use propagation to stop the selection rect from happening here.
 		selectionState.cancelSelection()
 
+		sequenceLocalDrag.value.dragging = true
+		sequenceLocalDrag.value.removeSequence = markRaw(removeSequence)
+
 		console.log("DragStart", toValue(element)?.className)
 
 		//Grab data here
 		const sequence = sequenceCloner()
 		ev.dataTransfer.effectAllowed = ev.altKey ? "copy" : "move"
 		ev.dataTransfer.setData("automation-sequence", JSON.stringify(sequence))
+
+		const offset = getInternalMousePos(elem, ev)
+		ev.dataTransfer.setData("automation-drag-offset", JSON.stringify(offset))
 
 		dragging.value = true
 		ev.stopPropagation()
@@ -228,12 +257,17 @@ export function useSequenceDrag(
 		if (!ev.dataTransfer) return
 		if (!automationEditState) return
 
+		console.log("Drag End")
 		if (ev.dataTransfer.dropEffect == "none") {
 		} else if (ev.dataTransfer.dropEffect == "copy") {
 		} else if (ev.dataTransfer.dropEffect == "move") {
+			console.log("Removing Sequence in End")
 			//Pop the data now.
-			removeSequence?.()
+			removeSequence()
 		}
+
+		sequenceLocalDrag.value.dragging = false
+		sequenceLocalDrag.value.removeSequence = null
 
 		dragging.value = false
 		ev.stopPropagation()
