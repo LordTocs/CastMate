@@ -10,6 +10,7 @@
 			drop-axis="horizontal"
 			drop-location="middle"
 			style="left: 0; top: calc(var(--timeline-height) / 2); right: 0; height: var(--timeline-height)"
+			is-stack
 			@automation-drop="onAutomationDrop"
 		/>
 	</div>

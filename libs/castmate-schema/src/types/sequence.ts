@@ -64,3 +64,7 @@ export function isFlowAction(action: InstantAction | TimeAction | ActionStack | 
 export function isTimeAction(action: InstantAction | TimeAction | ActionStack | FlowAction): action is TimeAction {
 	return "offsets" in action
 }
+
+export function isInstantAction(action: InstantAction | TimeAction | ActionStack | FlowAction): action is TimeAction {
+	return !isActionStack(action) && !isFlowAction(action) && !isTimeAction(action)
+}

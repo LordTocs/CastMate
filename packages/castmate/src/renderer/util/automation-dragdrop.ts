@@ -1,4 +1,4 @@
-import { SequenceActions } from "./../../../../../libs/castmate-schema/src/types/sequence"
+import { SequenceActions, isActionStack, isInstantAction } from "castmate-schema"
 import { Sequence } from "castmate-schema"
 import {
 	MaybeRefOrGetter,
@@ -32,6 +32,7 @@ export interface DropZone {
 	get key(): string
 	inZone(ev: MouseEvent): boolean
 	computeDistance(ev: MouseEvent): number
+	canDrop?(ev: DragEventWithDataTransfer): boolean
 	doDrop(sequence: Sequence, ev: MouseEvent): void
 	instanceId: string
 }
@@ -41,7 +42,7 @@ export function pickUpAutomation(id: string, seq: Sequence) {}
 export interface AutomationEditState {
 	dragging: Ref<boolean>
 	dropCandidate: Ref<string | null>
-	getZone(ev: MouseEvent): DropZone | undefined
+	getZone(ev: DragEventWithDataTransfer): DropZone | undefined
 	registerDropZone(key: string, zone: DropZone): void
 	unregisterDropZone(key: string, zone: DropZone): void
 }
@@ -64,7 +65,7 @@ export function provideAutomationEditState(
 	const sequenceLocalDrag = ref<LocalDragHandler>({ dragging: false, removeSequence: null })
 	provide("sequenceLocalDrag", sequenceLocalDrag)
 
-	function collectDropZones(ev: MouseEvent) {
+	function collectDropZones(ev: DragEventWithDataTransfer) {
 		const result = []
 		for (let [key, zones] of Object.entries(dropZones.value)) {
 			//Zones is an array to work around the ordering of drop and dragend events causing the unregistration of newly registered zones
@@ -76,8 +77,12 @@ export function provideAutomationEditState(
 				console.log(zones[0] === zones[1])
 			}
 
+			//console.log(zone.canDrop)
+
 			if (zone.inZone(ev)) {
-				result.push(zone)
+				if (!zone.canDrop || zone.canDrop(ev)) {
+					result.push(zone)
+				}
 			}
 		}
 		return result
@@ -115,7 +120,7 @@ export function provideAutomationEditState(
 			} else {
 			}
 		},
-		getZone(ev: MouseEvent) {
+		getZone(ev: DragEventWithDataTransfer) {
 			const overlapZones = collectDropZones(ev)
 
 			//console.log("Zones", overlapZones.length, "/", dropZones.value.size)
@@ -242,6 +247,13 @@ export function useSequenceDrag(
 		const sequence = sequenceCloner()
 		ev.dataTransfer.effectAllowed = ev.altKey ? "copy" : "move"
 		ev.dataTransfer.setData("automation-sequence", JSON.stringify(sequence))
+
+		if (sequence.actions.length == 1 && (isActionStack(sequence.actions[0]) || isInstantAction(sequence.actions[0])))
+		{
+			//Hover events cant inspect the contents of data. So we have to add a special piece of data to act as a flag.
+			//We only set this flag if this can be put on an action stack. (It's a stack or a single instant action)
+			ev.dataTransfer.setData("automation-sequence-stackable", "true")
+		}
 
 		const offset = getInternalMousePos(elem, ev)
 		ev.dataTransfer.setData("automation-drag-offset", JSON.stringify(offset))
