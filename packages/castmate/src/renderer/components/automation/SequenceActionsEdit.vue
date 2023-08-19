@@ -6,7 +6,6 @@
 			<instant-action-edit v-else v-model="(action as InstantAction)" />
 
 			<automation-drop-zone
-				:force-on="dragging && modelValue.actions.length > 1"
 				drop-axis="vertical"
 				drop-location="middle"
 				:drop-key="`${action.id}-left`"
