@@ -45,7 +45,15 @@ const { dragging } = useSequenceDrag(
 		console.log("Removing Stack After", props.offset)
 		const newStack = [...modelObj.value.stack]
 		newStack.splice(props.offset, newStack.length - props.offset)
-		modelObj.value.stack = newStack
+		if (newStack.length > 1) {
+			modelObj.value.stack = newStack
+		} else if (newStack.length == 1) {
+			//@ts-ignore I'm not sure how to get it to not care, but we're destroying the stack this way
+			modelObj.value = newStack[0]
+		} else {
+			//WE shouldn't hit here
+			console.error("How did this happen??")
+		}
 	}
 )
 
