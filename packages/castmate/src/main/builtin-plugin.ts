@@ -14,10 +14,11 @@ export default definePlugin(
 			id: "delay",
 			name: "Delay",
 			icon: "mdi mdi-timer",
+			type: "time",
 			config: {
 				type: Object,
 				properties: {
-					duration: { type: Number, name: "Duration", template: true, required: true },
+					duration: { type: Number, name: "Duration", template: true, required: true, default: 1.0 },
 				},
 			},
 			async invoke(config, contextData, abortSignal) {

@@ -73,6 +73,7 @@ const { actionColorStyle } = useActionColors(() => props.modelValue)
 } */
 
 .instant-action {
+	pointer-events: auto;
 	position: relative;
 	border-radius: var(--border-radius);
 	background-color: var(--action-color);
@@ -89,16 +90,5 @@ const { actionColorStyle } = useActionColors(() => props.modelValue)
 
 	border-top-left-radius: var(--border-radius);
 	border-top-right-radius: var(--border-radius);
-}
-
-.instant-action.top-point:before {
-	content: "";
-	display: block;
-	position: absolute;
-	right: calc((var(--instant-width) - (2 * var(--point-size))) / 2);
-	top: calc(-1 * var(--point-size));
-	border-bottom: var(--point-size) solid var(--lighter-action-color);
-	border-left: var(--point-size) solid transparent;
-	border-right: var(--point-size) solid transparent;
 }
 </style>

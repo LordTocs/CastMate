@@ -1,3 +1,5 @@
+export type AnyAction = InstantAction | TimeAction | FlowAction
+
 export interface SequenceActions {
 	actions: (InstantAction | TimeAction | ActionStack | FlowAction)[]
 }

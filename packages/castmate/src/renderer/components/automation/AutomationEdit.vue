@@ -102,19 +102,12 @@ function onSelectAction(actionSelection: ActionSelection) {
 	const x = (palettePosition.value.x - view.value.panState.panX) / 40 / view.value.panState.zoomX
 	const y = (palettePosition.value.y - view.value.panState.panY) / view.value.panState.zoomY
 
-	const action = pluginStore.pluginMap.get(actionSelection.plugin)?.actions[actionSelection.action]
+	const actionInstance = pluginStore.createAction(actionSelection)
 
-	if (!action) return
+	if (!actionInstance) return
 
 	const floatingSequence: FloatingSequence = {
-		actions: [
-			{
-				id: nanoid(),
-				plugin: actionSelection.plugin,
-				action: actionSelection.action,
-				config: constructDefault(action.config),
-			},
-		],
+		actions: [actionInstance],
 		x,
 		y,
 		id: nanoid(),
@@ -137,7 +130,6 @@ function onContextMenu(ev: MouseEvent) {
 	--instant-width: 120px;
 	--time-handle-height: 15px;
 	--time-handle-width: 15px;
-	--time-width: calc(var(--zoom-x) * 40px);
 
 	width: 100%;
 	height: 100%;
@@ -150,6 +142,7 @@ function onContextMenu(ev: MouseEvent) {
 	right: 0;
 	top: 0;
 	bottom: 0;
+	--time-width: calc(var(--zoom-x) * 40px);
 }
 
 .grid-paper {

@@ -1,12 +1,26 @@
 import { defineStore } from "pinia"
 
-import { IPCActionDefinition, IPCPluginDefinition, IPCTriggerDefinition, Schema, Color, mapKeys } from "castmate-schema"
+import {
+	IPCActionDefinition,
+	IPCPluginDefinition,
+	IPCTriggerDefinition,
+	Schema,
+	Color,
+	mapKeys,
+	ActionType,
+	constructDefault,
+	InstantAction,
+	TimeAction,
+	FlowAction,
+	AnyAction,
+} from "castmate-schema"
 
 import { computed, ref, unref, type MaybeRefOrGetter, toValue } from "vue"
 
 import * as chromatism from "chromatism2"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
 import { ipcParseSchema } from "../util/data"
+import { nanoid } from "nanoid/non-secure"
 
 interface ActionDefinition {
 	readonly id: string
@@ -14,23 +28,23 @@ interface ActionDefinition {
 	readonly description?: string
 	readonly icon?: string
 	readonly color?: Color
+	readonly type: ActionType
 
 	config: Schema
 	result?: Schema
 }
 
 function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
-	const actionDef = {
+	return {
 		id: def.id,
 		name: def.name,
 		description: def.description,
 		color: def.color,
 		icon: def.icon,
 		config: ipcParseSchema(def.config),
+		type: def.type,
 		...(def.result ? { result: ipcParseSchema(def.result) } : {}),
 	}
-
-	return actionDef
 }
 
 interface TriggerDefinition {
@@ -110,7 +124,26 @@ export const usePluginStore = defineStore("plugins", () => {
 		}
 	}
 
-	return { pluginMap: computed(() => pluginMap.value), initialize }
+	function createAction(selection: ActionSelection): AnyAction | undefined {
+		if (!selection.plugin || !selection.action) return undefined
+		const action = pluginMap.value.get(selection.plugin)?.actions[selection.action]
+		if (!action) return undefined
+
+		const result: Record<string, any> = {
+			id: nanoid(),
+			plugin: selection.plugin,
+			action: selection.action,
+			config: constructDefault(action.config),
+		}
+
+		if (action.type == "time" || action.type == "time-indefinite") {
+			result.offsets = []
+		}
+
+		return result as AnyAction
+	}
+
+	return { pluginMap: computed(() => pluginMap.value), initialize, createAction }
 })
 
 export function usePlugin(id: MaybeRefOrGetter<string | undefined>) {

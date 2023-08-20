@@ -65,7 +65,7 @@ const sequenceEdit = ref<HTMLElement | null>(null)
 
 const emit = defineEmits(["selfDestruct"])
 
-const { dragging } = useSequenceDrag(
+const { dragging, draggingDelayed } = useSequenceDrag(
 	sequenceEdit,
 	() => {
 		return { actions: _cloneDeep(modelObj.value.actions.slice(props.offset)) }
@@ -111,6 +111,7 @@ function onRightDrop(sequence: Sequence) {
 	display: flex;
 	flex-direction: row;
 	position: relative;
+	pointer-events: none;
 }
 
 .sequence-edit.action-dragging {

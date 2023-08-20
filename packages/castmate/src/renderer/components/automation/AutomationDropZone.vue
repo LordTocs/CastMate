@@ -12,7 +12,7 @@ import { Ref, inject, onMounted, onUnmounted, ref, shallowRef, computed, onBefor
 import { useAutomationEditState, type DropZone } from "../../util/automation-dragdrop"
 import { Sequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
-import { isInstantAction, isActionStack } from "castmate-schema";
+import { isInstantAction, isActionStack } from "castmate-schema"
 
 const props = withDefaults(
 	defineProps<{
@@ -70,14 +70,20 @@ const zone = ref<DropZone>()
 
 onMounted(() => {
 	const instanceId = nanoid()
-	console.log("Mounting", props.dropKey, instanceId)
+	//console.log("Mounting", props.dropKey, instanceId)
 	zone.value = {
 		instanceId,
 		computeDistance(ev) {
 			return computeDropDistance(computeOffset(ev))
 		},
-		doDrop(sequence: Sequence, ev: MouseEvent) {
-			emit("automationDrop", sequence, computeOffset(ev))
+		doDrop(sequence, ev, dragOffset) {
+			const mouseOffset = computeOffset(ev)
+			emit("automationDrop", sequence, {
+				x: mouseOffset.x - dragOffset.x,
+				y: mouseOffset.y - dragOffset.y,
+				width: mouseOffset.width,
+				height: mouseOffset.height,
+			})
 		},
 		inZone(ev) {
 			if (!dropZone.value) {
@@ -101,7 +107,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-	console.log("Unmounting", props.dropKey, zone.value?.instanceId)
+	//console.log("Unmounting", props.dropKey, zone.value?.instanceId)
 	if (!zone.value) return
 	automationEditState?.unregisterDropZone(props.dropKey, zone.value)
 })

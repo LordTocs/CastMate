@@ -14,6 +14,7 @@ import {
 	computed,
 	ComputedRef,
 	markRaw,
+	watch,
 } from "vue"
 
 import { useEventListener } from "@vueuse/core"
@@ -33,7 +34,7 @@ export interface DropZone {
 	inZone(ev: MouseEvent): boolean
 	computeDistance(ev: MouseEvent): number
 	canDrop?(ev: DragEventWithDataTransfer): boolean
-	doDrop(sequence: Sequence, ev: MouseEvent): void
+	doDrop(sequence: Sequence, ev: MouseEvent, dragOffset: { x: number; y: number }): void
 	instanceId: string
 }
 
@@ -173,14 +174,15 @@ export function provideAutomationEditState(
 			//Local drop, we do removal here to avoid the v-model blowing up the element holding our dragend event.
 			sequenceLocalDrag.value.removeSequence?.()
 		} else {
+			console.log("Dropped from Remote")
 			sequenceLocalDrag.value.dropped = false
 		}
+		const offset: { x: number; y: number } = JSON.parse(ev.dataTransfer.getData("automation-drag-offset"))
 
 		if (dropZone) {
-			dropZone.doDrop(data, ev)
+			dropZone.doDrop(data, ev, offset)
 		} else {
 			//Create new floating sequence
-			const offset: { x: number; y: number } = JSON.parse(ev.dataTransfer.getData("automation-drag-offset"))
 			createFloatingSequence(data, offset, ev)
 		}
 	})
@@ -202,6 +204,14 @@ export function useSequenceDrag(
 	const dragTarget = shallowRef<HTMLElement | null>(null)
 
 	const dragging = ref<boolean>(false)
+	const draggingDelayed = ref<boolean>(false)
+
+	watch(dragging, (value) => {
+		setTimeout(() => {
+			draggingDelayed.value = value
+		}, 0)
+	})
+
 	const parentDragging = inject<ComputedRef<boolean>>(
 		"sequenceDragging",
 		computed(() => false)
@@ -243,6 +253,7 @@ export function useSequenceDrag(
 		selectionState.cancelSelection()
 
 		sequenceLocalDrag.value.dragging = true
+		sequenceLocalDrag.value.dropped = false
 		sequenceLocalDrag.value.removeSequence = markRaw(() => {
 			removeSequence()
 			dragging.value = false
@@ -281,6 +292,7 @@ export function useSequenceDrag(
 		if (ev.dataTransfer.dropEffect == "none") {
 		} else if (ev.dataTransfer.dropEffect == "copy") {
 		} else if (ev.dataTransfer.dropEffect == "move") {
+			console.log(sequenceLocalDrag.value)
 			if (!sequenceLocalDrag.value.dropped) {
 				console.log("Removing Sequence in End")
 				//Pop the data now.
@@ -296,5 +308,5 @@ export function useSequenceDrag(
 		ev.stopPropagation()
 	})
 
-	return { dragging: computed(() => dragging.value) }
+	return { dragging: computed(() => dragging.value), draggingDelayed: computed(() => draggingDelayed.value) }
 }

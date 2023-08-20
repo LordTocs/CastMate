@@ -93,6 +93,7 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 	display: flex;
 	flex-direction: row;
 	position: relative;
+	pointer-events: auto;
 
 	width: calc(var(--duration) * var(--zoom-x) * 40px);
 	height: var(--timeline-height);

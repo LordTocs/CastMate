@@ -24,6 +24,7 @@ export function setupChat() {
 		name: "Send Chat",
 		icon: "mdi mdi-chat",
 		version: "0.0.1",
+		type: "instant",
 		config: {
 			type: Object,
 			properties: {

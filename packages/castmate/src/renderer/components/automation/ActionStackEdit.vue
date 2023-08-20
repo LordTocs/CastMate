@@ -1,5 +1,5 @@
 <template>
-	<div class="stack" ref="actionStack" :class="{ 'action-dragging': dragging }" draggable="true">
+	<div class="stack" ref="actionStack" :class="{ 'action-dragging': dragging }" :draggable="props.offset != 0">
 		<instant-action-edit v-model="action" :in-stack="true" @automation-drop="onAutomationDrop" />
 		<action-stack-edit :offset="offset + 1" v-if="offset + 1 < modelObj.stack.length" v-model="modelObj" />
 	</div>
@@ -29,7 +29,7 @@ const action = computed({
 })
 
 const actionStack = ref<HTMLElement | null>(null)
-const { dragging } = useSequenceDrag(
+const { dragging, draggingDelayed } = useSequenceDrag(
 	computed(() => (props.offset != 0 ? actionStack.value : null)),
 	() => {
 		const stack = _cloneDeep(modelObj.value.stack.slice(props.offset))

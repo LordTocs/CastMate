@@ -1,4 +1,4 @@
-import { IPCActionDefinition } from "castmate-schema"
+import { IPCActionDefinition, ActionType } from "castmate-schema"
 import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
@@ -12,6 +12,7 @@ interface ActionMetaData {
 	icon?: string
 	color?: Color
 	version?: SemanticVersion
+	type: ActionType
 }
 
 type ActionInvokeContextData = Record<PropertyKey, any>
@@ -44,6 +45,10 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 	private spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>
 	constructor(spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>) {
 		this.spec = spec
+	}
+
+	get actionType() {
+		return this.spec.type
 	}
 
 	get id() {
@@ -87,6 +92,7 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 			description: this.description,
 			icon: this.icon,
 			color: this.color,
+			type: this.actionType,
 			config: ipcConvertSchema(this.spec.config),
 			result: this.spec.result ? ipcConvertSchema(this.spec.result) : undefined,
 		}

@@ -65,6 +65,8 @@ function onMouseDown(ev: MouseEvent) {
 		const offset = computeOffset(ev)
 
 		dragOffset.value = offset.x
+		ev.stopPropagation()
+		ev.preventDefault()
 	}
 }
 

@@ -86,6 +86,8 @@ function onMouseDown(ev: MouseEvent) {
 		dragOffset.value = offset.x
 
 		//console.log("Offset", offset)
+		ev.preventDefault()
+		ev.stopPropagation()
 	}
 }
 
@@ -155,6 +157,7 @@ useEventListener(window, "mouseup", (ev: MouseEvent) => {
 	height: calc(var(--time-handle-height) + 2 * var(--border-radius));
 	width: calc(3 * var(--time-handle-width));
 	cursor: ew-resize;
+	pointer-events: auto;
 
 	clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
 }

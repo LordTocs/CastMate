@@ -138,7 +138,7 @@ export function useSelectionRect(
 		}
 		oldSelection.value = [...selection.value]
 
-		console.log("Select Start", toValue(path))
+		//console.log("Select Start", toValue(path))
 
 		//ev.preventDefault()
 		//ev.stopPropagation()
@@ -177,11 +177,11 @@ export function useSelectionRect(
 			return
 		}
 
-		if (!isSelecting()) {
+		if (!couldSelect.value && !isSelecting()) {
 			return
 		}
 
-		console.log("Select End", toValue(path))
+		//console.log("Select End", toValue(path))
 
 		updateEnd(ev)
 		doSelectionCollect()
