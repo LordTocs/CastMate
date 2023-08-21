@@ -133,6 +133,7 @@ class TPLinkIoTProvider extends IoTProvider {
 				error: (...args) => console.log(...args),
 			},*/
 		})
+
 		this.client.on("plug-new", async (plug) => {
 			this._addNewPlug(new TPLinkPlug(plug, await plug.getPowerState()))
 		})
@@ -149,9 +150,20 @@ class TPLinkIoTProvider extends IoTProvider {
 	}
 
 	async initServices() {
-		console.log("Starting TP-Link Discovery...")
+		const broadcast =
+			this.pluginObj.settings.broadcastMask ?? "255.255.255.255"
+		console.log("Starting TP-Link Discovery", broadcast)
 		this.client.startDiscovery({
 			breakoutChildren: true,
+			broadcast,
+		})
+	}
+
+	async setBroadcastMask(newMask) {
+		this.client.stopDiscovery()
+		console.log("Starting TP-Link Discovery", newMask)
+		this.client.startDiscovery({
+			broadcast: newMask,
 		})
 	}
 
@@ -171,5 +183,11 @@ export default {
 	color: "#7F743F",
 	async init() {
 		this.iotProvider = new TPLinkIoTProvider(this)
+	},
+	settings: {
+		broadcastMask: { type: String, name: "Broadcast Mask" },
+	},
+	async onSettingsReload() {
+		this.iotProvider.setBroadcastMask(this.settings.broadcastMask)
 	},
 }
