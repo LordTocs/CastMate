@@ -19,7 +19,7 @@ import { ProjectGroup } from "castmate-ui-core"
 import ProjectGroupOrItem from "./ProjectGroupOrItem.vue"
 import PContextMenu from "primevue/contextmenu"
 import { computed, ref, toRaw } from "vue"
-import { MenuItem } from "primevue/menuitem"
+import { type MenuItem } from "primevue/menuitem"
 
 const props = withDefaults(
 	defineProps<{
