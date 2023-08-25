@@ -13,6 +13,7 @@ import {
 	TimeAction,
 	FlowAction,
 	AnyAction,
+	ActionInfo,
 } from "castmate-schema"
 
 import { computed, ref, unref, type MaybeRefOrGetter, toValue } from "vue"
@@ -124,9 +125,14 @@ export const usePluginStore = defineStore("plugins", () => {
 		}
 	}
 
+	function getAction(selection: ActionSelection): ActionDefinition | undefined {
+		if (!selection.plugin || !selection.action) return undefined
+		return pluginMap.value.get(selection.plugin)?.actions?.[selection.action]
+	}
+
 	function createAction(selection: ActionSelection): AnyAction | undefined {
 		if (!selection.plugin || !selection.action) return undefined
-		const action = pluginMap.value.get(selection.plugin)?.actions[selection.action]
+		const action = getAction(selection)
 		if (!action) return undefined
 
 		const result: Record<string, any> = {
@@ -143,7 +149,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		return result as AnyAction
 	}
 
-	return { pluginMap: computed(() => pluginMap.value), initialize, createAction }
+	return { pluginMap: computed(() => pluginMap.value), initialize, createAction, getAction }
 })
 
 export function usePlugin(id: MaybeRefOrGetter<string | undefined>) {
