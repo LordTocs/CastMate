@@ -3,15 +3,16 @@ import path from "path"
 import { UserConfig, PluginOption } from "vite"
 
 export function aliasPackage(name: string, dir: string): PluginOption[] {
-	const packagePath = path.join(dir, name, "package.json")
+	const packagePath = path.resolve(path.join(dir, "package.json"))
 
 	if (!fs.existsSync(packagePath)) {
+		console.error("Missing Package.json for", packagePath)
 		return []
 	}
 
 	const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"))
 
-	const entry = path.resolve(path.join(dir, name), packageJson.devMain)
+	const entry = path.resolve(dir, packageJson.devMain)
 	return [
 		{
 			name: `${name}-sub:serve`,
@@ -40,5 +41,10 @@ export function aliasPackage(name: string, dir: string): PluginOption[] {
 }
 
 export function library(name: string): PluginOption {
-	return aliasPackage(name, "../../libs")
+	return aliasPackage(name, path.join("../../libs", name))
+}
+
+//TODO: Make this not so horrible.
+export function libraryPlugin(name: string): PluginOption {
+	return aliasPackage(name, path.join("../../../libs", name))
 }
