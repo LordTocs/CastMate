@@ -16,6 +16,10 @@ defineIPCFunc("plugins", "getPlugin", (id: string) => {
 	return PluginManager.getInstance().getPlugin(id)?.toIPC()
 })
 
+defineIPCFunc("plugins", "uiLoadComplete", () => {
+	PluginManager.getInstance().signalUILoadComplete()
+})
+
 export const PluginManager = Service(
 	class {
 		private plugins: Map<string, Plugin> = new Map()
@@ -45,6 +49,12 @@ export const PluginManager = Service(
 			await plugin.unload()
 			this.plugins.delete(id)
 			rendererUnregisterPlugin(id)
+		}
+
+		async signalUILoadComplete() {
+			for (let plugin of this.plugins.values()) {
+				plugin.onUILoaded()
+			}
 		}
 
 		getAction(plugin: string, action: string) {

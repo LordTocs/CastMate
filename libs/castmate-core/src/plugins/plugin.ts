@@ -47,6 +47,13 @@ export function defineRendererInvoker<T extends (...args: any[]) => void>(name: 
 	return defineCallableIPC<T>(initingPlugin.id, name)
 }
 
+export function onUILoad(loadFunc: () => any) {
+	if (!initingPlugin) throw new Error()
+
+	const privates = initingPlugin as unknown as PluginPrivates
+	privates.uiloader.register(loadFunc)
+}
+
 export function onLoad(loadFunc: () => Promise<any> | any) {
 	if (!initingPlugin) throw new Error()
 
@@ -64,6 +71,7 @@ export function onUnload(unloadFunc: () => Promise<any> | any) {
 interface PluginPrivates {
 	loader: EventList
 	unloader: EventList
+	uiloader: EventList
 }
 
 interface StateObj<StateSchema extends Schema> {
@@ -98,6 +106,7 @@ export class Plugin {
 
 	private loader = new EventList()
 	private unloader = new EventList()
+	private uiloader = new EventList()
 
 	get id() {
 		return this.spec.id
@@ -149,6 +158,15 @@ export class Plugin {
 		return true
 	}
 
+	async onUILoaded(): Promise<boolean> {
+		try {
+			await this.uiloader.run()
+		} catch (err) {
+			return false
+		}
+		return true
+	}
+
 	toIPC(): IPCPluginDefinition {
 		return {
 			id: this.id,
@@ -162,7 +180,7 @@ export class Plugin {
 		}
 	}
 }
-
+/*
 definePlugin(
 	{
 		id: "test",
@@ -220,3 +238,4 @@ definePlugin(
 		onUnload(async () => {})
 	}
 )
+*/
