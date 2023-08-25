@@ -37,7 +37,7 @@
 import { computed, useModel, ref, provide } from "vue"
 import DurationHandle from "./DurationHandle.vue"
 import {
-	RectangleOverlaps,
+	rectangleOverlaps,
 	Selection,
 	SelectionPos,
 	getElementRelativeRect,
@@ -108,7 +108,7 @@ defineExpose({
 		const rect = getElementRelativeRect(actionElement.value, container)
 		const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
 
-		if (RectangleOverlaps(rect, selrect)) {
+		if (rectangleOverlaps(rect, selrect)) {
 			result.push(props.modelValue.id)
 		}
 

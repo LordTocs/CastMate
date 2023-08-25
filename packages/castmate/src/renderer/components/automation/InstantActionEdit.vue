@@ -27,7 +27,7 @@ import {
 	getElementRelativeRect,
 	useAction,
 	useActionColors,
-	RectangleOverlaps,
+	rectangleOverlaps,
 	useIsSelected,
 	useDocumentPath,
 } from "castmate-ui-core"
@@ -91,7 +91,7 @@ defineExpose({
 
 		const rect = getElementRelativeRect(instantAction.value, container)
 		const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
-		return RectangleOverlaps(rect, selrect) ? [props.modelValue.id] : []
+		return rectangleOverlaps(rect, selrect) ? [props.modelValue.id] : []
 	},
 })
 </script>

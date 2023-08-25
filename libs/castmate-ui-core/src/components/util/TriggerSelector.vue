@@ -1,5 +1,5 @@
 <template>
-	<span class="p-float-label trigger-selector">
+	<span class="p-float-label trigger-selector" @mousedown="onMouseDown">
 		<p-drop-down
 			id="ac"
 			v-model="modelObj"
@@ -93,6 +93,10 @@ const options = computed(() => {
 
 	return result
 })
+
+function onMouseDown(ev: MouseEvent) {
+	ev.stopPropagation()
+}
 </script>
 
 <style scoped></style>

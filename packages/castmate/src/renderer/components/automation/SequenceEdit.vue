@@ -4,7 +4,7 @@
 		:class="{ floating }"
 		:style="{ '--sequence-x': `${props.modelValue.x ?? 0}`, '--sequence-y': `${props.modelValue.y ?? 0}` }"
 	>
-		<sequence-start v-if="!floating"></sequence-start>
+		<sequence-start v-if="!floating" ref="sequenceStart"></sequence-start>
 		<automation-drop-zone
 			v-if="!floating && modelObj.actions.length == 0"
 			drop-axis="vertical"
@@ -47,11 +47,15 @@ function onFrontDrop(sequence: Sequence) {
 	modelObj.value.actions = newActions
 }
 
+const sequenceStart = ref<SelectionGetter | null>(null)
 const sequenceEdit = ref<SelectionGetter | null>(null)
 
 defineExpose({
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
-		return sequenceEdit.value?.getSelectedItems(container, from, to) ?? []
+		return [
+			...(sequenceStart.value?.getSelectedItems(container, from, to) ?? []),
+			...(sequenceEdit.value?.getSelectedItems(container, from, to) ?? []),
+		]
 	},
 })
 </script>
