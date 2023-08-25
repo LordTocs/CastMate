@@ -18,6 +18,7 @@
 	"dependencies": {
 		"castmate-core": "workspace:^",
 		"castmate-plugin-twitch-main": "workspace:^",
+		"castmate-plugin-sound-main": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"electron-updater": "^4.6.1",
 		"primeicons": "^6.0.1"
@@ -27,6 +28,7 @@
 		"@vitejs/plugin-vue": "*",
 		"@vueuse/core": "*",
 		"castmate-ui-core": "workspace:^",
+		"castmate-plugin-sound-renderer": "workspace:^",
 		"castmate-vite": "workspace:^",
 		"chromatism2": "*",
 		"electron": "*",

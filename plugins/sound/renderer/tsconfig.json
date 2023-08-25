@@ -7,7 +7,7 @@
 		"skipLibCheck": true,
 
 		/* Bundler mode */
-		"moduleResolution": "bundler",
+		"moduleResolution": "Bundler",
 		"allowImportingTsExtensions": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
@@ -16,14 +16,11 @@
 
 		/* Linting */
 		"strict": true,
-		/* "noUnusedLocals": true,*/
-		/* "noUnusedParameters": true, */
-		/* "noFallthroughCasesInSwitch": true */
+		// "noUnusedLocals": true,
+		// "noUnusedParameters": true,
+		// "noFallthroughCasesInSwitch": true
 		"paths": {
-			"castmate-ui-core": ["../../libs/castmate-ui-core/src/main.ts"],
-			//TODO: "castmate-plugin-*-renderer": ["../../plugins/*/renderer/src/main.ts"]
-			"castmate-plugin-sound-renderer": ["../../plugins/sound/renderer/src/main.ts"],
-			"castmate-plugin-twitch-renderer": ["../../plugins/twitch/renderer/src/main.ts"]
+			"castmate-ui-core": ["../../../libs/castmate-ui-core/src/main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

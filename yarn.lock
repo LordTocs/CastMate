@@ -2976,6 +2976,53 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-sound-main@workspace:plugins/sound/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-sound-main@workspace:plugins/sound/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-sound-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-sound-renderer@workspace:plugins/sound/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-sound-renderer@workspace:plugins/sound/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-sound-shared@workspace:^, castmate-plugin-sound-shared@workspace:plugins/sound/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-sound-shared@workspace:plugins/sound/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-sound@workspace:plugins/sound":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-sound@workspace:plugins/sound"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-twitch-main@workspace:^, castmate-plugin-twitch-main@workspace:plugins/twitch/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twitch-main@workspace:plugins/twitch/main"

@@ -29,6 +29,8 @@ import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import { initData } from "castmate-ui-core"
 import { createRouter, createWebHistory } from "vue-router"
 
+import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
+
 const router = createRouter({
 	history: createWebHistory(),
 	routes: [],
@@ -53,7 +55,9 @@ useProjectStore()
 		initializeProfiles(app)
 	})
 useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
-
 initData()
+
+//TODO: Better Plugin Initialization
+initSoundPlugin()
 
 app.mount("#app")
