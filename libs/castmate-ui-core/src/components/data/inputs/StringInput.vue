@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup w-full">
+	<div class="p-inputgroup w-full" @mousedown="onMousedown">
 		<span class="p-float-label">
 			<document-path :local-path="localPath">
 				<p-input-text id="l" v-model="model" />
@@ -9,7 +9,7 @@
 		<span v-if="schema.template" class="p-inputgroup-addon" style="width: 2.857rem">
 			<i class="mdi mdi-code-braces flex-none" />
 		</span>
-		<p-button class="flex-none" v-if="!schema.required" icon="pi pi-times" @click="clear" />
+		<p-button class="flex-none" v-if="!schema.required" icon="pi pi-times" @click.stop="clear" />
 	</div>
 </template>
 
@@ -33,4 +33,8 @@ function clear() {
 }
 
 const model = useVModel(props, "modelValue", emit)
+
+function onMousedown(ev: MouseEvent) {
+	ev.stopPropagation() //Stop propagating so we don't get selection
+}
 </script>

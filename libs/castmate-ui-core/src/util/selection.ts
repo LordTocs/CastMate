@@ -1,8 +1,9 @@
 import { useEventListener } from "@vueuse/core"
 import { MaybeRefOrGetter, ref, toValue, computed, ComputedRef, Ref, provide, inject } from "vue"
 import { getInternalMousePos } from "./dom"
-import { Selection, useDocumentPath, useDocumentSelection, useSetDocumentSelection } from "./document"
+import { Selection, useDocumentPath, useDocumentSelection } from "./document"
 import _uniq from "lodash/uniq"
+import _isEqual from "lodash/isEqual"
 
 export interface SelectionPos {
 	x: number
@@ -50,7 +51,7 @@ export function useSelectionRect(
 	const oldSelection = ref<Selection>([])
 
 	const from = computed<SelectionPos | null>(() => {
-		if (!selecting.value) {
+		if (!couldSelect.value) {
 			return null
 		}
 
@@ -67,7 +68,7 @@ export function useSelectionRect(
 	})
 
 	const to = computed<SelectionPos | null>(() => {
-		if (!selecting.value) {
+		if (!couldSelect.value) {
 			return null
 		}
 
@@ -141,7 +142,7 @@ export function useSelectionRect(
 		//console.log("Select Start", toValue(path))
 
 		//ev.preventDefault()
-		//ev.stopPropagation()
+		ev.stopPropagation()
 	})
 
 	useEventListener("mousemove", (ev: MouseEvent) => {
@@ -180,8 +181,6 @@ export function useSelectionRect(
 		if (!couldSelect.value && !isSelecting()) {
 			return
 		}
-
-		//console.log("Select End", toValue(path))
 
 		updateEnd(ev)
 		doSelectionCollect()

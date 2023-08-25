@@ -1,6 +1,6 @@
 <template>
 	<document-path :local-path="localPath">
-		<div class="data-input" tabindex="-1" v-bind="$attrs">
+		<div class="data-input" tabindex="-1" v-bind="$attrs" @mousedown="onMouseDown">
 			<data-input
 				class="data-prop"
 				v-for="(prop, i) in Object.keys(schema.properties)"
@@ -50,6 +50,10 @@ function setModelProp(prop: string, value: any) {
 		return emit("update:modelValue", undefined)
 	}
 	return emit("update:modelValue", result)
+}
+
+function onMouseDown(ev: MouseEvent) {
+	ev.stopPropagation()
 }
 </script>
 

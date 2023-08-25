@@ -1,11 +1,7 @@
 <template>
-	<div
-		class="timeline-container"
-		:class="{ indefinite, 'is-selected': isSelected }"
-		:style="{ '--duration': props.modelValue.config.duration }"
-	>
+	<div class="timeline-container" :class="{ indefinite }" :style="{ '--duration': props.modelValue.config.duration }">
 		<div class="time-action" ref="actionElement" :style="{ ...actionColorStyle }">
-			<div class="time-action-content">
+			<div class="time-action-content" :class="{ 'is-selected': isSelected }">
 				<div class="time-action-header action-handle">
 					<i class="mdi flex-none" :class="action?.icon" />
 					{{ action?.name }}
