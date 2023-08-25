@@ -12,176 +12,20 @@
 
 <script setup lang="ts">
 import SystemBar from "./components/system/SystemBar.vue"
-import { useDocumentStore, useDockingStore, DockingArea, type DockedArea } from "castmate-ui-core"
+import { useDocumentStore, useDockingStore, DockingArea, type DockedArea, useIpcCaller } from "castmate-ui-core"
 import ProjectView from "./components/project/ProjectView.vue"
 import { onMounted, ref } from "vue"
 import { nanoid } from "nanoid/non-secure"
 import PDynamicDialog from "primevue/dynamicdialog"
 import PConfirmDialog from "primevue/confirmdialog"
 
-const documentStore = useDocumentStore()
 const dockingStore = useDockingStore()
 
+const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
+
 onMounted(() => {
-	// const docs = [
-	// 	documentStore.addDocument(
-	// 		{
-	// 			name: "Test 1",
-	// 			triggers: [
-	// 				{
-	// 					id: "abc",
-	// 					plugin: "castmate",
-	// 					trigger: "test",
-	// 					queue: "main",
-	// 					config: {},
-	// 					sequence: {
-	// 						actions: [
-	// 							{
-	// 								id: "acb",
-	// 								plugin: "castmate",
-	// 								action: "delay",
-	// 								config: {
-	// 									duration: 1.5,
-	// 								},
-	// 								offsets: [],
-	// 							},
-	// 							{
-	// 								id: "cad",
-	// 								plugin: "twitch",
-	// 								action: "chat",
-	// 								config: {},
-	// 							},
-	// 							{
-	// 								id: "qrs",
-	// 								plugin: "castmate",
-	// 								action: "tts",
-	// 								config: {
-	// 									duration: 3,
-	// 								},
-	// 								offsets: [
-	// 									{
-	// 										id: "fff",
-	// 										offset: 1.0,
-	// 										actions: [
-	// 											{
-	// 												id: "ytg",
-	// 												plugin: "castmate",
-	// 												action: "blah",
-	// 												config: {},
-	// 											},
-	// 										],
-	// 									},
-	// 								],
-	// 							},
-	// 							{
-	// 								id: "cde",
-	// 								stack: [
-	// 									{
-	// 										id: "def",
-	// 										plugin: "twitch",
-	// 										action: "chat",
-	// 										config: {},
-	// 									},
-	// 									{
-	// 										id: "efg",
-	// 										plugin: "twitch",
-	// 										action: "chat",
-	// 										config: {},
-	// 									},
-	// 								],
-	// 							},
-	// 						],
-	// 					},
-	// 					floatingSequences: [],
-	// 				},
-	// 				{
-	// 					id: "bcd",
-	// 					plugin: "castmate",
-	// 					trigger: "test",
-	// 					queue: "main",
-	// 					config: {},
-	// 					sequence: {
-	// 						actions: [],
-	// 					},
-	// 					floatingSequences: [],
-	// 				},
-	// 			],
-	// 		},
-	// 		{
-	// 			scrollX: 0,
-	// 			scrollY: 0,
-	// 			triggers: [
-	// 				{
-	// 					id: "abc",
-	// 					open: false,
-	// 					sequenceView: {
-	// 						panState: {
-	// 							panX: 0,
-	// 							panY: 0,
-	// 							zoomX: 1,
-	// 							zoomY: 1,
-	// 							panning: false,
-	// 						},
-	// 						selection: [],
-	// 					},
-	// 				},
-	// 				{
-	// 					id: "bcd",
-	// 					open: false,
-	// 					sequenceView: {
-	// 						panState: {
-	// 							panX: 0,
-	// 							panY: 0,
-	// 							zoomX: 1,
-	// 							zoomY: 1,
-	// 							panning: false,
-	// 						},
-	// 						selection: [],
-	// 					},
-	// 				},
-	// 			],
-	// 		},
-	// 		"profile"
-	// 	),
-	// 	documentStore.addDocument(
-	// 		{
-	// 			name: "Test 2",
-	// 			triggers: [],
-	// 		},
-	// 		{
-	// 			scrollX: 0,
-	// 			scrollY: 0,
-	// 			triggers: [],
-	// 		},
-	// 		"profile"
-	// 	),
-	// ]
-	// dockedInfo.value.divisions.push({
-	// 	id: nanoid(),
-	// 	type: "frame",
-	// 	currentTab: "",
-	// 	tabs: [
-	// 		{
-	// 			id: nanoid(),
-	// 			documentId: docs[0].id,
-	// 		},
-	// 		{
-	// 			id: nanoid(),
-	// 			documentId: docs[1].id,
-	// 		},
-	// 	],
-	// })
+	uiLoadComplete()
 })
-/*
-const dockedInfo = ref<DockedArea>({
-	id: "abc",
-	type: "split",
-	direction: "horizontal",
-	dividers: [],
-	divisions: [],
-	dragging: false,
-})
-*/
 </script>
 
 <style>
