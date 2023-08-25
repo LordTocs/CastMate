@@ -21,6 +21,10 @@ export function getInternalMousePos(elem: HTMLElement, ev: MouseEvent) {
 	return { x: ev.clientX - rect.x + scroll.x, y: ev.clientY - rect.y + scroll.y }
 }
 
+export function RectangleOverlaps(r1: DOMRect, r2: DOMRect) {
+	return r1.left < r2.right && r1.right > r2.left && r1.top < r2.bottom && r1.bottom > r2.top
+}
+
 export function getElementRelativeRect(elem: HTMLElement, container: HTMLElement) {
 	//TODO: Account for multiple scrolls
 	//TODO: Scale?
