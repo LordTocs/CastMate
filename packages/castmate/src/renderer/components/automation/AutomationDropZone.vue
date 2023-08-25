@@ -116,10 +116,10 @@ onBeforeUnmount(() => {
 <style scoped>
 .drop-zone {
 	position: absolute;
-	background-color: rgba(255, 0, 0, 0.1);
+	/* background-color: rgba(255, 0, 0, 0.1); */
 }
 
 .target-zone {
-	background-color: rgba(0, 255, 0, 0.1) !important;
+	/* background-color: rgba(0, 255, 0, 0.1) !important; */
 }
 </style>
