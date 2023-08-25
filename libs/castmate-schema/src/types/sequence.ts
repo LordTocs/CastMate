@@ -70,3 +70,25 @@ export function isTimeAction(action: InstantAction | TimeAction | ActionStack | 
 export function isInstantAction(action: InstantAction | TimeAction | ActionStack | FlowAction): action is TimeAction {
 	return !isActionStack(action) && !isFlowAction(action) && !isTimeAction(action)
 }
+
+export function getActionById(id: string, sequence: Sequence): AnyAction | ActionStack | undefined {
+	for (const action of sequence.actions) {
+		if (action.id == id) {
+			return action
+		} else {
+			if (isTimeAction(action)) {
+				for (const offset of action.offsets) {
+					const subAction = getActionById(id, offset)
+					if (subAction) return subAction
+				}
+			} else if (isActionStack(action)) {
+				for (const subAction of action.stack) {
+					if (subAction.id == id) {
+						return subAction
+					}
+				}
+			}
+		}
+	}
+	return undefined
+}
