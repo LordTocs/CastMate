@@ -14,16 +14,18 @@
 			style="left: calc(var(--instant-width) / 2); width: var(--instant-width); height: var(--timeline-height)"
 			@automation-drop="onFrontDrop"
 		/>
-		<sequence-actions-edit v-model="modelObj" @self-destruct="selfDestruct" />
+		<sequence-actions-edit v-model="modelObj" @self-destruct="selfDestruct" ref="sequenceEdit" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { useModel } from "vue"
+import { useModel, ref } from "vue"
 import { Sequence, type NonStackActionInfo } from "castmate-schema"
+import { type SelectionPos, type Selection } from "castmate-ui-core"
 import SequenceActionsEdit from "./SequenceActionsEdit.vue"
 import SequenceStart from "./SequenceStart.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
+import { SelectionGetter } from "../../util/automation-dragdrop"
 
 const props = defineProps<{
 	modelValue: Sequence & { x?: number; y?: number }
@@ -44,6 +46,14 @@ function onFrontDrop(sequence: Sequence) {
 
 	modelObj.value.actions = newActions
 }
+
+const sequenceEdit = ref<SelectionGetter | null>(null)
+
+defineExpose({
+	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
+		return sequenceEdit.value?.getSelectedItems(container, from, to) ?? []
+	},
+})
 </script>
 
 <style scoped>

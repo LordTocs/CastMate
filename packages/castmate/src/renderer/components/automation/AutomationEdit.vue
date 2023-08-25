@@ -1,12 +1,13 @@
 <template>
 	<div ref="editArea" class="automation-edit" tabindex="-1" @contextmenu="onContextMenu">
 		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
-			<sequence-edit v-model="model.sequence" :floating="false" />
+			<sequence-edit v-model="model.sequence" :floating="false" ref="mainSequence" />
 			<sequence-edit
 				v-for="(s, i) in model.floatingSequences"
 				:key="s.id"
 				:model-value="model.floatingSequences[i]"
 				:floating="true"
+				ref="floatingSequences"
 				@self-destruct="removeFloatingSequence(i)"
 			/>
 		</pan-area>
@@ -21,12 +22,12 @@
 				height: `${(selectTo?.y ?? 0) - (selectFrom?.y ?? 0)}px`,
 			}"
 		></div>
-		<action-palette @select-action="onSelectAction" ref="palette" />
+		<action-palette @select-action="onCreateAction" ref="palette" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, useModel } from "vue"
+import { ref, toValue, useModel } from "vue"
 import { type Sequence, type AutomationData } from "castmate-schema"
 import {
 	ActionSelection,
@@ -79,6 +80,9 @@ function removeFloatingSequence(index: number) {
 	model.value.floatingSequences.splice(index, 1)
 }
 
+const mainSequence = ref<InstanceType<typeof SequenceEdit> | null>(null)
+const floatingSequences = ref<InstanceType<typeof SequenceEdit>[]>([])
+
 const {
 	selecting,
 	from: selectFrom,
@@ -86,17 +90,27 @@ const {
 } = useSelectionRect(
 	editArea,
 	(from, to) => {
-		return []
+		const container = toValue(editArea)
+		if (!container) return []
+
+		const main = mainSequence.value?.getSelectedItems(container, from, to) ?? []
+		const floats = floatingSequences.value.map((fs) => fs.getSelectedItems(container, from, to))
+		const result: string[] = main
+
+		for (const f of floats) {
+			result.push(...f)
+		}
+		return result
 	},
 	path
 )
 
 const palettePosition = ref<{ x: number; y: number }>({ x: 0, y: 0 })
-const palette = ref<ActionPalette | null>(null)
+const palette = ref<typeof ActionPalette | null>(null)
 
 const pluginStore = usePluginStore()
 
-function onSelectAction(actionSelection: ActionSelection) {
+function onCreateAction(actionSelection: ActionSelection) {
 	if (!actionSelection.action || !actionSelection.plugin) return
 
 	const x = (palettePosition.value.x - view.value.panState.panX) / 40 / view.value.panState.zoomX

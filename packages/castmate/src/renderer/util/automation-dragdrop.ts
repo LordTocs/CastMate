@@ -29,6 +29,12 @@ import {
 	useDrop,
 } from "castmate-ui-core"
 
+import { SelectionPos, Selection } from "castmate-ui-core"
+
+export interface SelectionGetter {
+	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection
+}
+
 export interface DropZone {
 	get key(): string
 	inZone(ev: MouseEvent): boolean

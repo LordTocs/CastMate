@@ -8,7 +8,7 @@
 			@mousedown="onMouseDown"
 		></div>
 		<div class="offset-actions">
-			<sequence-actions-edit v-model="modelObj" @self-destruct="selfDestruct" />
+			<sequence-actions-edit v-model="modelObj" @self-destruct="selfDestruct" ref="sequenceEdit" />
 		</div>
 	</div>
 </template>
@@ -23,6 +23,8 @@ import { usePluginStore, useColors, usePanState } from "castmate-ui-core"
 import { useEventListener } from "@vueuse/core"
 import _clamp from "lodash/clamp"
 import { TimeActionInfo } from "castmate-schema"
+import { Selection, SelectionPos } from "castmate-ui-core"
+import { SelectionGetter } from "../../util/automation-dragdrop"
 
 const props = defineProps<{
 	modelValue: OffsetActions
@@ -148,6 +150,13 @@ useEventListener(window, "mouseup", (ev: MouseEvent) => {
 		ev.preventDefault()
 		ev.stopPropagation()
 	}
+})
+
+const sequenceEdit = ref<SelectionGetter | null>(null)
+defineExpose({
+	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
+		return sequenceEdit.value?.getSelectedItems(container, from, to) ?? []
+	},
 })
 </script>
 

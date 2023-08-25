@@ -124,7 +124,22 @@ export function useSetDocumentSelection() {
 	}
 }
 
-export function useDocumentSelection(path: MaybeRefOrGetter<string | undefined> = useDocumentPath()) {
+export function useIsSelected(path: MaybeRefOrGetter<string | undefined>, id: MaybeRefOrGetter<string>) {
+	const selection = inject<WritableComputedRef<DocumentSelection>>("documentSelection")
+
+	return computed(() => {
+		const selectionPath = toValue(path)
+		const selectionId = toValue(id)
+
+		if (!selectionPath) return false
+		if (!selection || !selection.value) return false
+		if (selection.value.container != selectionPath) return false
+
+		return selection.value.items.includes(selectionId)
+	})
+}
+
+export function useDocumentSelection(path: MaybeRefOrGetter<string | undefined>) {
 	const selection = inject<WritableComputedRef<DocumentSelection>>("documentSelection")
 
 	return computed({
@@ -163,6 +178,22 @@ export function useDocumentPath() {
 	return computed<string>(() => parentPath?.value ?? "")
 }
 
+export function joinDocumentPath(...paths: (string | undefined)[]) {
+	let result = ""
+	for (const path of paths) {
+		if (!path) {
+			continue
+		}
+		if (result.length > 0) {
+			const separator = path.startsWith("[") ? "" : "."
+			result += separator
+		}
+		result += path
+	}
+
+	return result
+}
+
 export function provideDocumentPath(localPath: MaybeRefOrGetter<string | undefined>) {
 	const parentPath = inject<ComputedRef<string>>(
 		"documentObjectPath",
@@ -172,8 +203,7 @@ export function provideDocumentPath(localPath: MaybeRefOrGetter<string | undefin
 	const ourPath = computed(() => {
 		const actualLocalPath = toValue(localPath)
 		console.log("Computing Local Path", actualLocalPath)
-		const separator = actualLocalPath?.startsWith("[") ? "" : "."
-		return (parentPath.value ? parentPath.value + separator : "") + actualLocalPath
+		return joinDocumentPath(parentPath.value, actualLocalPath)
 	})
 
 	provide("documentObjectPath", ourPath)

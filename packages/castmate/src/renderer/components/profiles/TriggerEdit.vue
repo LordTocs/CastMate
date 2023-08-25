@@ -28,8 +28,9 @@
 				style="flex: 1"
 			/>
 			<div class="config">
-				<template v-if="trigger">
-					<data-input :schema="trigger.config" v-model="modelObj.config" local-path="config" />
+				<template v-if="selectedSchema && selectedModel">
+					<!--TODO: Fix Path-->
+					<data-input :schema="selectedSchema" v-model="selectedModel" local-path="config" />
 				</template>
 			</div>
 		</div>
@@ -39,10 +40,22 @@
 <script setup lang="ts">
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
-import { type TriggerData } from "castmate-schema"
-import { useTrigger, DataInput, TriggerSelector, TriggerView, useTriggerColors } from "castmate-ui-core"
+import { type TriggerData, getActionById } from "castmate-schema"
+import {
+	useTrigger,
+	DataInput,
+	TriggerSelector,
+	TriggerView,
+	useTriggerColors,
+	useDocumentSelection,
+	useDocumentPath,
+	joinDocumentPath,
+	usePluginStore,
+} from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
 import AutomationEdit from "../automation/AutomationEdit.vue"
+import { AnyAction } from "castmate-schema"
+import { ActionStack } from "castmate-schema"
 
 const props = withDefaults(
 	defineProps<{
@@ -62,7 +75,6 @@ const props = withDefaults(
 					zoomY: 1,
 					panning: false,
 				},
-				selection: [],
 			},
 		}),
 		selectedIds: () => [],
@@ -73,6 +85,83 @@ const view = useModel(props, "view")
 
 const isSelected = computed(() => {
 	return props.selectedIds.includes(modelObj.value.id)
+})
+
+const documentPath = useDocumentPath()
+const selection = useDocumentSelection(() => joinDocumentPath(documentPath.value, "sequence"))
+const pluginStore = usePluginStore()
+
+function findActionById(id: string) {
+	let action: AnyAction | ActionStack | undefined = undefined
+
+	action = getActionById(id, modelObj.value.sequence)
+	if (action) {
+		return action
+	}
+
+	for (const floatingSequence of modelObj.value.floatingSequences) {
+		action = getActionById(id, floatingSequence)
+		if (action) {
+			return action
+		}
+	}
+}
+
+const selectedSchema = computed(() => {
+	if (selection.value.length > 1 || selection.value.length == 0) {
+		return undefined
+	}
+	const id = selection.value[0]
+
+	if (id == "trigger") {
+		return trigger.value?.config
+	} else {
+		let action: AnyAction | ActionStack | undefined = undefined
+
+		action = findActionById(id)
+		if (action) {
+			const actionInfo = pluginStore.getAction(action as AnyAction)
+			return actionInfo?.config
+		}
+		return undefined
+	}
+})
+
+const selectedModel = computed({
+	get() {
+		if (selection.value.length > 1 || selection.value.length == 0) {
+			return undefined
+		}
+		const id = selection.value[0]
+
+		if (id == "trigger") {
+			return modelObj.value.config
+		}
+
+		const action = findActionById(id)
+		if (!action) {
+			return undefined
+		}
+		const actionNotStack = action as AnyAction
+		return actionNotStack.config
+	},
+	set(newConfig: any) {
+		if (selection.value.length > 1 || selection.value.length == 0) {
+			return
+		}
+		const id = selection.value[0]
+
+		if (id == "trigger") {
+			triggerModel.value = newConfig
+		}
+
+		const action = findActionById(id)
+		if (!action) {
+			return undefined
+		}
+		const actionNotStack = action as AnyAction
+		actionNotStack.config = newConfig
+	},
 })
 
 const open = computed<boolean>({

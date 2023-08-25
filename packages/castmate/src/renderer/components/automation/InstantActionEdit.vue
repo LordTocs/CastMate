@@ -1,5 +1,10 @@
 <template>
-	<div class="instant-action" :style="{ ...actionColorStyle }">
+	<div
+		class="instant-action"
+		:class="{ 'is-selected': isSelected }"
+		:style="{ ...actionColorStyle }"
+		ref="instantAction"
+	>
 		<div class="instant-action-header action-handle">
 			<i class="mdi flex-none" :class="action?.icon" />
 			{{ action?.name }}
@@ -18,12 +23,21 @@
 
 <script setup lang="ts">
 import { InstantAction } from "castmate-schema"
-import { useAction, useActionColors } from "castmate-ui-core"
-import { useModel } from "vue"
+import {
+	getElementRelativeRect,
+	useAction,
+	useActionColors,
+	RectangleOverlaps,
+	useIsSelected,
+	useDocumentPath,
+} from "castmate-ui-core"
+import { useModel, ref } from "vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence } from "castmate-schema"
 import { ActionStack } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
+import { SelectionPos, Selection } from "castmate-ui-core"
+
 const props = withDefaults(
 	defineProps<{
 		modelValue: InstantAction
@@ -37,6 +51,7 @@ const props = withDefaults(
 const emit = defineEmits(["update:modelValue", "automationDrop"])
 
 const modelObj = useModel(props, "modelValue")
+const instantAction = ref<HTMLElement | null>(null)
 
 function onAutomationDrop(sequence: Sequence) {
 	if (props.inStack) {
@@ -65,6 +80,20 @@ function onAutomationDrop(sequence: Sequence) {
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
+
+const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
+
+defineExpose({
+	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
+		if (!instantAction.value) {
+			return []
+		}
+
+		const rect = getElementRelativeRect(instantAction.value, container)
+		const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
+		return RectangleOverlaps(rect, selrect) ? [props.modelValue.id] : []
+	},
+})
 </script>
 
 <style scoped>
@@ -90,5 +119,9 @@ const { actionColorStyle } = useActionColors(() => props.modelValue)
 
 	border-top-left-radius: var(--border-radius);
 	border-top-right-radius: var(--border-radius);
+}
+
+.is-selected {
+	border-color: white !important;
 }
 </style>

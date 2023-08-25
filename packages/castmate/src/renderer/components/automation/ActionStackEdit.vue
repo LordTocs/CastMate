@@ -1,7 +1,17 @@
 <template>
 	<div class="stack" ref="actionStack" :class="{ 'action-dragging': dragging }" :draggable="props.offset != 0">
-		<instant-action-edit v-model="action" :in-stack="true" @automation-drop="onAutomationDrop" />
-		<action-stack-edit :offset="offset + 1" v-if="offset + 1 < modelObj.stack.length" v-model="modelObj" />
+		<instant-action-edit
+			v-model="action"
+			:in-stack="true"
+			@automation-drop="onAutomationDrop"
+			ref="instantAction"
+		/>
+		<action-stack-edit
+			:offset="offset + 1"
+			v-if="offset + 1 < modelObj.stack.length"
+			v-model="modelObj"
+			ref="childStack"
+		/>
 	</div>
 </template>
 
@@ -10,10 +20,11 @@ import { useVModel } from "@vueuse/core"
 import { computed, ref } from "vue"
 import { type ActionStack } from "castmate-schema"
 import InstantActionEdit from "./InstantActionEdit.vue"
-import { useSequenceDrag } from "../../util/automation-dragdrop"
+import { SelectionGetter, useSequenceDrag } from "../../util/automation-dragdrop"
 import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
 import { Sequence } from "castmate-schema"
+import { Selection, SelectionPos } from "castmate-ui-core"
 
 const props = withDefaults(defineProps<{ modelValue: ActionStack; offset?: number }>(), { offset: 0 })
 const emit = defineEmits(["update:modelValue"])
@@ -70,6 +81,18 @@ function onAutomationDrop(sequence: Sequence) {
 
 	modelObj.value.stack = newStack
 }
+
+const instantAction = ref<SelectionGetter | null>(null)
+const childStack = ref<SelectionGetter | null>(null)
+
+defineExpose({
+	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
+		return [
+			...(instantAction.value?.getSelectedItems(container, from, to) ?? []),
+			...(childStack.value?.getSelectedItems(container, from, to) ?? []),
+		]
+	},
+})
 </script>
 
 <style scoped>

@@ -1,5 +1,9 @@
 <template>
-	<div class="timeline-container" :class="{ indefinite }" :style="{ '--duration': props.modelValue.config.duration }">
+	<div
+		class="timeline-container"
+		:class="{ indefinite, 'is-selected': isSelected }"
+		:style="{ '--duration': props.modelValue.config.duration }"
+	>
 		<div class="time-action" ref="actionElement" :style="{ ...actionColorStyle }">
 			<div class="time-action-content">
 				<div class="time-action-header action-handle">
@@ -27,6 +31,7 @@
 				:key="o.id"
 				v-model="model.offsets[i]"
 				@self-destruct="removeOffset(i)"
+				ref="offsetEdits"
 			/>
 		</div>
 	</div>
@@ -35,12 +40,22 @@
 <script setup lang="ts">
 import { computed, useModel, ref, provide } from "vue"
 import DurationHandle from "./DurationHandle.vue"
-import { useAction, useActionColors } from "castmate-ui-core"
+import {
+	RectangleOverlaps,
+	Selection,
+	SelectionPos,
+	getElementRelativeRect,
+	useAction,
+	useActionColors,
+	useDocumentPath,
+	useIsSelected,
+} from "castmate-ui-core"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence, OffsetActions, TimeAction } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import _sortedIndexBy from "lodash/sortedIndexBy"
+import { SelectionGetter } from "../../util/automation-dragdrop"
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -81,6 +96,29 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 
 	model.value.offsets.splice(insertionIndex, 0, offsetSequence)
 }
+
+const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
+const offsetEdits = ref<SelectionGetter[]>([])
+defineExpose({
+	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
+		if (!actionElement.value) return []
+
+		const result: string[] = []
+
+		for (const oe of offsetEdits.value) {
+			result.push(...oe.getSelectedItems(container, from, to))
+		}
+
+		const rect = getElementRelativeRect(actionElement.value, container)
+		const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
+
+		if (RectangleOverlaps(rect, selrect)) {
+			result.push(props.modelValue.id)
+		}
+
+		return result
+	},
+})
 </script>
 
 <style scoped>
@@ -145,5 +183,11 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 .timeline-sequences {
 	width: 100%;
 	position: relative;
+}
+
+.is-selected {
+	border-top-color: white !important;
+	border-bottom-color: white !important;
+	border-left-color: white !important;
 }
 </style>

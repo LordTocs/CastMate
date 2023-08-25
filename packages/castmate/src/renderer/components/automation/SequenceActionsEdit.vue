@@ -1,9 +1,9 @@
 <template>
 	<div class="sequence-edit" :class="{ 'action-dragging': dragging }" ref="sequenceEdit" draggable="true">
 		<template v-if="modelValue.actions.length > 0">
-			<time-action-edit v-if="isTimeAction(action)" v-model="(action as TimeAction)" />
-			<action-stack-edit v-else-if="isActionStack(action)" v-model="(action as ActionStack)" />
-			<instant-action-edit v-else v-model="(action as InstantAction)" />
+			<time-action-edit v-if="isTimeAction(action)" v-model="(action as TimeAction)" ref="actionEdit" />
+			<action-stack-edit v-else-if="isActionStack(action)" v-model="(action as ActionStack)" ref="actionEdit" />
+			<instant-action-edit v-else v-model="(action as InstantAction)" ref="actionEdit" />
 
 			<automation-drop-zone
 				drop-axis="vertical"
@@ -35,6 +35,7 @@
 			v-model="modelObj"
 			:offset="offset + 1"
 			v-if="offset + 1 < modelObj?.actions?.length"
+			ref="childSequenceEdit"
 		></sequence-actions-edit>
 	</div>
 </template>
@@ -47,10 +48,11 @@ import { SequenceActions } from "castmate-schema"
 import { isTimeAction, isFlowAction, isActionStack } from "castmate-schema"
 import { computed, useModel, ref } from "vue"
 import { type TimeAction, type ActionStack, type InstantAction } from "castmate-schema"
-import { useSequenceDrag } from "../../util/automation-dragdrop"
+import { useSequenceDrag, type SelectionGetter } from "../../util/automation-dragdrop"
 import _cloneDeep from "lodash/cloneDeep"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence } from "castmate-schema"
+import { SelectionPos, Selection } from "castmate-ui-core"
 
 const props = withDefaults(
 	defineProps<{
@@ -62,6 +64,8 @@ const props = withDefaults(
 const modelObj = useModel(props, "modelValue")
 
 const sequenceEdit = ref<HTMLElement | null>(null)
+const actionEdit = ref<SelectionGetter | null>(null)
+const childSequenceEdit = ref<SelectionGetter | null>(null)
 
 const emit = defineEmits(["selfDestruct"])
 
@@ -104,6 +108,15 @@ function onRightDrop(sequence: Sequence) {
 
 	modelObj.value.actions = newActions
 }
+
+defineExpose({
+	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
+		return [
+			...(actionEdit.value?.getSelectedItems(container, from, to) ?? []),
+			...(childSequenceEdit.value?.getSelectedItems(container, from, to) ?? []),
+		]
+	},
+})
 </script>
 
 <style scoped>
