@@ -124,7 +124,7 @@ function constructDefaultObjOnto<T extends SchemaObj>(target: Record<string, any
 	for (let prop in schema.properties) {
 		if (canConstructDefault(schema.properties[prop])) {
 			const newValue = constructDefault(schema.properties[prop])
-			if (newValue != undefined) {
+			if (newValue !== undefined) {
 				target[prop] = newValue
 			}
 		}
