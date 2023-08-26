@@ -17,6 +17,7 @@ import {
 import StringInputVue from "../components/data/inputs/StringInput.vue"
 import NumberInputVue from "../components/data/inputs/NumberInput.vue"
 import ObjectInputVue from "../components/data/inputs/ObjectInput.vue"
+import RangeInputVue from "../components/data/inputs/RangeInput.vue"
 
 export interface DataInputCommonProps<SchemaType> {
 	schema: SchemaType
@@ -100,4 +101,5 @@ export function initData() {
 	inputStore.registerInputComponent(String, StringInputVue)
 	inputStore.registerInputComponent(Number, NumberInputVue)
 	inputStore.registerInputComponent(Object, ObjectInputVue)
+	inputStore.registerInputComponent(Range, RangeInputVue)
 }

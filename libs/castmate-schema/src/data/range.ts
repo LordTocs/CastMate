@@ -1,3 +1,4 @@
+import { isNumber } from "lodash"
 import { registerType, Schema, SchemaBase } from "../schema"
 
 // interface Range {
@@ -7,8 +8,8 @@ import { registerType, Schema, SchemaBase } from "../schema"
 // }
 
 export class Range {
-	min?: number
-	max?: number
+	min?: number | string
+	max?: number | string
 
 	constructor(min?: number, max?: number) {
 		this.min = min
@@ -16,6 +17,8 @@ export class Range {
 	}
 
 	inRange(num: number) {
+		if (!isNumber(this.min) || !isNumber(this.max)) return false
+
 		if (this.min != null) {
 			if (this.min > num) {
 				return false
@@ -39,7 +42,7 @@ export class Range {
 	}
 }
 
-interface SchemaRange {
+export interface SchemaRange {
 	type: typeof Range
 	template?: boolean
 }
