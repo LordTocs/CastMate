@@ -26,7 +26,7 @@ interface PluginSpec {
 export function definePlugin(spec: PluginSpec, initter: () => void) {
 	return new Plugin(
 		{
-			icon: "mdi-pencil",
+			icon: "mdi-puzzle",
 			color: "#fefefe",
 			version: "0.0.0",
 			...spec,
