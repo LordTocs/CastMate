@@ -82,7 +82,7 @@ provide(
 	"timeInfo",
 	computed(() => ({
 		minLength: 0,
-		duration: model.value.config.duration,
+		duration: duration.value,
 		maxLength: undefined,
 	}))
 )
@@ -92,7 +92,7 @@ function removeOffset(index: number) {
 }
 
 function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; width: number; height: number }) {
-	const timeOffset = (offset.x / offset.width) * model.value.config.duration
+	const timeOffset = (offset.x / offset.width) * duration.value
 
 	const offsetSequence: OffsetActions = {
 		id: nanoid(),
