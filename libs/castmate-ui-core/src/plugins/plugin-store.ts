@@ -30,6 +30,7 @@ interface ActionDefinition {
 	readonly icon?: string
 	readonly color?: Color
 	readonly type: ActionType
+	readonly durationhandler: string
 
 	config: Schema
 	result?: Schema
@@ -44,6 +45,7 @@ function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
 		icon: def.icon,
 		config: ipcParseSchema(def.config),
 		type: def.type,
+		durationhandler: def.durationHandler ?? "",
 		...(def.result ? { result: ipcParseSchema(def.result) } : {}),
 	}
 }

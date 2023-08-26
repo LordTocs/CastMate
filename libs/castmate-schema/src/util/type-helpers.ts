@@ -30,3 +30,7 @@ export function mapKeys<V, T>(
 
 	return result
 }
+
+export function isKey(k: any): k is string | symbol | number {
+	return typeof k === "string" || typeof k === "number" || typeof k === "symbol"
+}

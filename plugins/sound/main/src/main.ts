@@ -53,6 +53,10 @@ export default definePlugin(
 			icon: "mdi mdi-volume-high",
 			description: "Play Sound",
 			type: "time",
+			durationHandler: async (config) => {
+				console.log("Fetching Sound Length", config.sound)
+				return config.sound?.length ?? 1
+			},
 			config: {
 				type: Object,
 				properties: {

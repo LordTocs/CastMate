@@ -15,6 +15,7 @@ export default definePlugin(
 			name: "Delay",
 			icon: "mdi mdi-timer",
 			type: "time",
+			durationHandler: "duration",
 			config: {
 				type: Object,
 				properties: {

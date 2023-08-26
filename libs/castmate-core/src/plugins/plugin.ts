@@ -141,6 +141,10 @@ export class Plugin {
 	async load(): Promise<boolean> {
 		try {
 			await this.loader.run()
+
+			for (const action of this.actions.values()) {
+				await action.load()
+			}
 		} catch (err) {
 			//TODO_ERRRORS
 			return false
@@ -151,6 +155,10 @@ export class Plugin {
 	async unload(): Promise<boolean> {
 		try {
 			await this.unloader.run()
+
+			for (const action of this.actions.values()) {
+				await action.unload()
+			}
 		} catch (err) {
 			//TODO_ERRRORS
 			return false

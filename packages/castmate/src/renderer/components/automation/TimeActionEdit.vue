@@ -1,5 +1,5 @@
 <template>
-	<div class="timeline-container" :class="{ indefinite }" :style="{ '--duration': props.modelValue.config.duration }">
+	<div class="timeline-container" :class="{ indefinite }" :style="{ '--duration': duration }">
 		<div class="time-action" ref="actionElement" :style="{ ...actionColorStyle }">
 			<div class="time-action-content" :class="{ 'is-selected': isSelected }">
 				<div class="time-action-header action-handle">
@@ -8,10 +8,10 @@
 				</div>
 				<div class="time-action-custom"></div>
 				<div class="time-action-footer">
-					{{ modelValue.config.duration.toFixed(2) }}
+					{{ duration.toFixed(2) }}
 				</div>
 			</div>
-			<duration-handle v-model="model.config.duration" />
+			<duration-handle v-model="duration" />
 		</div>
 		<automation-drop-zone
 			:drop-key="`${modelValue.id}-bottom`"
@@ -52,6 +52,7 @@ import { Sequence, OffsetActions, TimeAction } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import _sortedIndexBy from "lodash/sortedIndexBy"
 import { SelectionGetter } from "../../util/automation-dragdrop"
+import { useDuration } from "../../util/actions"
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -63,6 +64,17 @@ const props = defineProps<{
 }>()
 
 const model = useModel(props, "modelValue")
+
+const config = computed({
+	get() {
+		return model.value.config
+	},
+	set(v) {
+		model.value.config = v
+	},
+})
+
+const duration = useDuration(() => props.modelValue, config)
 
 const actionElement = ref<HTMLElement | null>(null)
 provide("actionElement", actionElement)

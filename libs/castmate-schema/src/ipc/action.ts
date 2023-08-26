@@ -10,6 +10,7 @@ export interface IPCActionDefinition {
 	readonly icon?: string
 	readonly color?: Color
 	readonly type: ActionType
+	readonly durationHandler?: string
 
 	readonly config: IPCSchema
 	readonly result?: IPCSchema

@@ -1,9 +1,10 @@
-import { IPCActionDefinition, ActionType } from "castmate-schema"
+import { IPCActionDefinition, ActionType, isKey } from "castmate-schema"
 import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
-import { initingPlugin } from "../plugins/plugin"
+import { type Plugin, initingPlugin } from "../plugins/plugin"
 import { SemanticVersion } from "../util/type-helpers"
 import { ipcConvertSchema } from "../util/ipc-schema"
+import { defineIPCFunc } from "../util/electron"
 
 interface ActionMetaData {
 	id: string
@@ -17,10 +18,15 @@ interface ActionMetaData {
 
 type ActionInvokeContextData = Record<PropertyKey, any>
 
+type DurationHandler<ConfigSchema extends Schema> =
+	| keyof SchemaType<ConfigSchema>
+	| ((config: SchemaType<ConfigSchema>) => Promise<number> | number)
+
 interface ActionDefinitionSpec<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>
 	extends ActionMetaData {
 	config: ConfigSchema
 	result?: ResultSchema
+	durationHandler?: DurationHandler<ConfigSchema>
 	invoke(
 		config: Readonly<SchemaType<ConfigSchema>>,
 		contextData: ActionInvokeContextData,
@@ -35,6 +41,8 @@ export interface ActionDefinition {
 	readonly icon?: string
 	readonly color?: Color
 
+	load(): any
+	unload(): any
 	invoke(config: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
 	toIPC(): IPCActionDefinition
 }
@@ -42,10 +50,7 @@ export interface ActionDefinition {
 class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>
 	implements ActionDefinition
 {
-	private spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>
-	constructor(spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>) {
-		this.spec = spec
-	}
+	constructor(private spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>, private plugin: Plugin) {}
 
 	get actionType() {
 		return this.spec.type
@@ -75,6 +80,20 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 		return this.spec.version
 	}
 
+	get durationHandlerString() {
+		if (!this.spec.durationHandler) return ""
+		if (isKey(this.spec.durationHandler)) return this.spec.durationHandler.toString()
+		return `${this.plugin.id}_actions_${this.id}_durationHandler`
+	}
+
+	load() {
+		if (this.spec.durationHandler && !isKey(this.spec.durationHandler)) {
+			defineIPCFunc(this.plugin.id, `actions_${this.id}_durationHandler`, this.spec.durationHandler)
+		}
+	}
+
+	unload() {}
+
 	async invoke(
 		config: Readonly<SchemaType<ConfigSchema>>,
 		contextData: ActionInvokeContextData,
@@ -93,6 +112,7 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 			icon: this.icon,
 			color: this.color,
 			type: this.actionType,
+			durationHandler: this.durationHandlerString,
 			config: ipcConvertSchema(this.spec.config),
 			result: this.spec.result ? ipcConvertSchema(this.spec.result) : undefined,
 		}
@@ -106,12 +126,16 @@ export function defineAction<ConfigSchema extends Schema, ResultSchema extends S
 		throw new Error("Can only be used while initing a plugin")
 	}
 
-	const impl = new ActionImplementation<ConfigSchema, ResultSchema>({
-		icon: "mdi-pencil",
-		color: initingPlugin.color,
-		version: "0.0.0",
-		...spec,
-	})
+	console.log("Defining", spec.id)
+	const impl = new ActionImplementation<ConfigSchema, ResultSchema>(
+		{
+			icon: "mdi-pencil",
+			color: initingPlugin.color,
+			version: "0.0.0",
+			...spec,
+		},
+		initingPlugin
+	)
 
 	initingPlugin.actions.set(impl.id, impl)
 
