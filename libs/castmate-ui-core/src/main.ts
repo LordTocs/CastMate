@@ -6,7 +6,7 @@ export { default as ToggleInput } from "./components/data/inputs/ToggleInput.vue
 export { default as DocumentDataCollection } from "./components/drag/DocumentDataCollection.vue"
 
 export { default as TriggerSelector } from "./components/util/TriggerSelector.vue"
-
+export { default as TextHider } from "./components/util/TextHider.vue"
 export { default as PanArea } from "./components/panning/PanArea.vue"
 
 export { default as NameDialog } from "./components/dialogs/NameDialog.vue"

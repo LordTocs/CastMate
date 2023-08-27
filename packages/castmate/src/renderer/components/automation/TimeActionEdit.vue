@@ -1,17 +1,17 @@
 <template>
-	<div class="timeline-container" :class="{ indefinite }" :style="{ '--duration': duration }">
+	<div class="timeline-container" :class="{ indefinite, 'has-right-handle': hasRightHandle }" :style="{ '--duration': duration }">
 		<div class="time-action" ref="actionElement" :style="{ ...actionColorStyle }">
 			<div class="time-action-content" :class="{ 'is-selected': isSelected }">
 				<div class="time-action-header action-handle">
-					<i class="mdi flex-none" :class="action?.icon" />
-					{{ action?.name }}
+					<!-- <i class="mdi flex-none" :class="action?.icon" /> -->
+					<!-- {{ action?.name }} -->
 				</div>
 				<div class="time-action-custom"></div>
-				<div class="time-action-footer">
+				<text-hider class="time-action-footer">
 					{{ duration.toFixed(2) }}
-				</div>
+				</text-hider>
 			</div>
-			<duration-handle v-model="duration" />
+			<duration-handle v-model="duration" v-if="hasRightHandle" />
 		</div>
 		<automation-drop-zone
 			:drop-key="`${modelValue.id}-bottom`"
@@ -45,6 +45,7 @@ import {
 	useActionColors,
 	useDocumentPath,
 	useIsSelected,
+	TextHider
 } from "castmate-ui-core"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
@@ -53,6 +54,7 @@ import { nanoid } from "nanoid/non-secure"
 import _sortedIndexBy from "lodash/sortedIndexBy"
 import { SelectionGetter } from "../../util/automation-dragdrop"
 import { useDuration } from "../../util/actions"
+
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -105,6 +107,8 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 	model.value.offsets.splice(insertionIndex, 0, offsetSequence)
 }
 
+const hasRightHandle = computed(() => true)
+
 const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
 const offsetEdits = ref<SelectionGetter[]>([])
 defineExpose({
@@ -132,7 +136,8 @@ defineExpose({
 <style scoped>
 .timeline-container {
 	position: relative;
-	width: calc(var(--duration) * var(--zoom-x) * 40px);
+	--time-action-width: calc(var(--duration) * var(--time-width));
+	/* width: var(--time-action-width); */
 }
 
 .time-action {
@@ -141,7 +146,7 @@ defineExpose({
 	position: relative;
 	pointer-events: auto;
 
-	width: calc(var(--duration) * var(--zoom-x) * 40px);
+	width: var(--time-action-width);
 	height: var(--timeline-height);
 }
 .time-action-content {
@@ -152,9 +157,16 @@ defineExpose({
 	border-bottom: solid 2px var(--lighter-action-color);
 	border-left: solid 2px var(--lighter-action-color);
 
-	flex: 1;
+	flex-grow: 1;
+	flex-shrink: 1;
 	display: flex;
 	flex-direction: column;
+
+	/* width: var(--time-action-width); */
+}
+
+.time-action-content.has-right-handle {
+	width: calc(var(--time-action-width) - 8px)
 }
 
 .time-action-header {
@@ -165,6 +177,8 @@ defineExpose({
 	white-space: nowrap;
 	border-top-left-radius: var(--border-radius);
 }
+
+
 
 .indefinite .time-action-header {
 	background: repeating-linear-gradient(
@@ -181,11 +195,11 @@ defineExpose({
 }
 
 .time-action-footer {
-	height: 1.5rem;
+	/* height: 1.5rem; */
 	text-align: center;
 	background-color: var(--darker-action-color);
-	overflow: hidden;
-	white-space: nowrap;
+	/* overflow: hidden; */
+	/* white-space: nowrap; */
 }
 
 .timeline-sequences {
