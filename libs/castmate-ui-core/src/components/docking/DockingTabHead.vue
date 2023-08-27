@@ -12,7 +12,7 @@
 		@dragover="dragOver"
 		@drop="onDropped"
 	>
-		{{ document?.data.name }}
+		{{ document?.data?.name ?? props.title }}
 	</div>
 </template>
 
@@ -24,7 +24,8 @@ import { useDocument } from "../../util/document"
 const props = defineProps<{
 	frame: DockedFrame
 	id: string
-	documentId: string
+	title?: string
+	documentId?: string
 }>()
 
 const document = useDocument(props.documentId)

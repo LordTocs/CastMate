@@ -7,7 +7,9 @@ export type DocumentBase = {
 
 export interface DockedTab {
 	id: string
-	documentId: string
+	documentId?: string
+	page?: Component
+	title?: string
 }
 
 export interface DockedFrame {

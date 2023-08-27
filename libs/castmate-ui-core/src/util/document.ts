@@ -88,11 +88,13 @@ export function useDocumentComponent(type: MaybeRefOrGetter<string | undefined>)
 	})
 }
 
-export function useDocument(id: MaybeRefOrGetter<string>) {
+export function useDocument(id: MaybeRefOrGetter<string | undefined>) {
 	const documentStore = useDocumentStore()
 
 	return computed(() => {
-		return documentStore.documents?.get(toValue(id))
+		const idValue = toValue(id)
+		if (!idValue) return undefined
+		return documentStore.documents?.get(idValue)
 	})
 }
 

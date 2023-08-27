@@ -1,6 +1,6 @@
 import { NamedData, useDocumentStore } from "./../util/document"
 import { defineStore } from "pinia"
-import { ref, computed } from "vue"
+import { ref, computed, type Component, markRaw } from "vue"
 
 import { DockedArea, DockedFrame, DockedSplit } from "../main"
 import { nanoid } from "nanoid/non-secure"
@@ -19,6 +19,27 @@ function focusDocumentId(division: DockedFrame | DockedSplit, documentId: string
 	} else {
 		for (let div of division.divisions) {
 			if (focusDocumentId(div, documentId)) {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+function focusTabId(division: DockedFrame | DockedSplit, tabId: string) {
+	if (division.type == "frame") {
+		for (let tab of division.tabs) {
+			if (tab.id == tabId) {
+				//Focus the tab
+				//TODO: Actually focus the HTML element??
+				division.currentTab = tab.id
+				return true
+			}
+		}
+		return false
+	} else {
+		for (let div of division.divisions) {
+			if (focusTabId(div, tabId)) {
 				return true
 			}
 		}
@@ -109,5 +130,36 @@ export const useDockingStore = defineStore("docking", () => {
 		targetFrame.currentTab = newTabId
 	}
 
-	return { rootDockArea: dockedInfo, openDocument }
+	function openPage(id: string, title: string, page: Component) {
+		if (focusTabId(dockedInfo.value, id)) {
+			return
+		}
+
+		let targetFrame = findFrame(dockedInfo.value, dockedInfo.value.focusedFrame)
+
+		if (!targetFrame) {
+			targetFrame = findFirstFrame(dockedInfo.value)
+		}
+
+		if (!targetFrame) {
+			//For whatever reason we don't have a frame, so make one!
+			targetFrame = {
+				id: nanoid(),
+				type: "frame",
+				currentTab: "",
+				tabs: [],
+			}
+
+			dockedInfo.value.divisions.push(targetFrame)
+		}
+
+		targetFrame.tabs.push({
+			id,
+			title,
+			page: markRaw(page),
+		})
+		targetFrame.currentTab = id
+	}
+
+	return { rootDockArea: dockedInfo, openDocument, openPage }
 })

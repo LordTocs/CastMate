@@ -11,6 +11,7 @@
 			v-for="tab in modelObj.tabs"
 			:key="tab.id"
 			:document-id="tab.documentId"
+			:title="tab.title"
 			:frame="modelObj"
 			:id="tab.id"
 		/>
