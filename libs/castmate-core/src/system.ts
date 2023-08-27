@@ -4,6 +4,7 @@ import { ResourceRegistry } from "./resources/resource-registry"
 import { Plugin } from "./plugins/plugin"
 import { PluginManager } from "./plugins/plugin-manager"
 import { setProjectDirectory } from "./io/file-system"
+import { MediaManager } from "./media/media-manager"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -25,6 +26,7 @@ export async function initializeCastMate() {
 	await setProjectDirectory("../../user")
 	PluginManager.initialize()
 	ResourceRegistry.initialize()
+	MediaManager.initialize()
 
 	Profile.initialize()
 	ActionQueue.initialize()

@@ -15,10 +15,15 @@
     "typescript": "*"
   },
   "dependencies": {
+    "@joshyour/ffprobe-client": "^1.1.7",
+    "@types/fluent-ffmpeg": "^2.1.21",
     "castmate-schema": "workspace:^",
+    "chokidar": "^3.5.3",
     "electron": "^20.0.1",
+    "fluent-ffmpeg": "^2.1.2",
     "lodash": "^4.17.21",
     "nanoid": "^4.0.2",
+    "recursive-readdir-async": "^1.3.0",
     "yaml": "^2.2.1"
   }
 }

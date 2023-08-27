@@ -27,17 +27,17 @@ export default defineConfig({
 				build: {
 					minify: false,
 				},
+				resolve: {
+					alias: {
+						"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
+					},
+				},
 			},
 		}),
 		//subpackage("castmate-overlay-components"),
 		library("castmate-ui-core"),
 		plugins("../../plugins"),
 	],
-	/*resolve: {
-		alias: {
-			"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
-		},
-	},*/
 	build: {
 		//outDir: path.join(dist, "electron/renderer"),
 		minify: false,

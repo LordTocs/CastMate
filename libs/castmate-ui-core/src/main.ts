@@ -23,6 +23,7 @@ export * from "./util/selection"
 export * from "./plugins/plugin-store"
 export * from "./project/project-store"
 export * from "./profiles/profile-store"
+export * from "./media/media-store"
 export * from "./resources/resource-store"
 export * from "./docking/docking-store"
 

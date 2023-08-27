@@ -19,7 +19,7 @@
 import { ProjectItem, NameDialog } from "castmate-ui-core"
 import PContextMenu from "primevue/contextmenu"
 import { MenuItem } from "primevue/menuitem"
-import { computed, ref } from "vue";
+import { computed, ref } from "vue"
 import { useDialog } from "primevue/usedialog"
 import { useConfirm } from "primevue/useconfirm"
 
@@ -50,7 +50,7 @@ const menuItems = computed<MenuItem[]>(() => {
 						modal: true,
 					},
 					data: {
-						existingName: props.item.title
+						existingName: props.item.title,
 					},
 					onClose(options) {
 						if (!options) {
@@ -77,9 +77,7 @@ const menuItems = computed<MenuItem[]>(() => {
 					accept() {
 						props.item.delete?.()
 					},
-					reject() {
-						
-					},
+					reject() {},
 				})
 			},
 		})

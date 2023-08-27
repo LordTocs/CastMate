@@ -32,6 +32,7 @@ export const PluginManager = Service(
 
 		async registerPlugin(plugin: Plugin) {
 			this.plugins.set(plugin.id, plugin)
+			console.log("Loading Plugin", plugin.id)
 			if (!(await plugin.load())) {
 				this.plugins.delete(plugin.id)
 				return

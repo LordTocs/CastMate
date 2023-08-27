@@ -4,6 +4,7 @@ import {
 	usePluginStore,
 	useProjectStore,
 	useResourceStore,
+	useMediaStore,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -54,6 +55,7 @@ useProjectStore()
 	.then(() => {
 		initializeProfiles(app)
 	})
+useMediaStore().initialize()
 useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
 initData()
 
