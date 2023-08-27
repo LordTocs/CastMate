@@ -46,7 +46,20 @@ const REDIRECT_URL = `http://localhost/auth/channel/redirect` //Note we don't ac
 export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountConfig> {
 	static storage = new ResourceStorage<TwitchAccount>("TwitchAccount")
 
+	constructor() {
+		super()
+		this._secrets = {
+			accessToken: "",
+		}
+		this._config = {
+			twitchId: "",
+			name: "Channel",
+			scopes: [],
+		}
+	}
+
 	async checkCachedCreds(): Promise<boolean> {
+		if (!this.secrets.accessToken) return false
 		const info = await getTokenInfo(this.secrets.accessToken, CLIENT_ID)
 
 		if (!info.userId || !info.userName) {
