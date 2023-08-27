@@ -18,7 +18,8 @@
     "electron": "*",
     "nanoid": "*",
     "pinia": "*",
-    "vue": "*"
+    "vue": "*",
+    "wavesurfer.js": "^7.1.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "*",

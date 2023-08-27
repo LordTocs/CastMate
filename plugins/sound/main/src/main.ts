@@ -12,6 +12,8 @@ import {
 	defineRendererCallable,
 	ResourceRegistry,
 } from "castmate-core"
+import { MediaManager } from "castmate-core"
+import { MediaFile } from "castmate-schema"
 class SoundOutput<
 	ExtendedSoundConfig extends SoundOutputConfig = SoundOutputConfig
 > extends Resource<ExtendedSoundConfig> {
@@ -54,14 +56,14 @@ export default definePlugin(
 			description: "Play Sound",
 			type: "time",
 			durationHandler: async (config) => {
-				console.log("Fetching Sound Length", config.sound)
-				return config.sound?.length ?? 1
+				const media = MediaManager.getInstance().getMedia(config.sound)
+				return media?.duration ?? 1
 			},
 			config: {
 				type: Object,
 				properties: {
 					output: { type: SoundOutput, name: "Output", default: "system.default" },
-					sound: { type: String, name: "Sound", required: true, default: "" },
+					sound: { type: MediaFile, name: "Sound", required: true, default: "", sound: true },
 					volume: {
 						type: Number,
 						name: "Volume",

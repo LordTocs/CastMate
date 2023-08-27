@@ -26,8 +26,6 @@ registerType("MediaFile", {
 	constructor: MediaFile,
 })
 
-export type MediaType = "sound" | "image" | "video" | "unknown"
-
 export interface MediaMetadata {
 	image?: boolean
 	audio?: boolean

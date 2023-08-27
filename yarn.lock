@@ -3042,6 +3042,7 @@ __metadata:
     vite: "*"
     vue: "*"
     vue-tsc: "*"
+    wavesurfer.js: ^7.1.5
   languageName: unknown
   linkType: soft
 
@@ -9362,6 +9363,13 @@ __metadata:
     webpack-plugin-vuetify:
       optional: true
   checksum: 2ff93e0467204006b6466a5d43a9017810b2c69ff0bb597886d1a5445722e5339ab9d6247ee1202478ac4b92b4110428171e3aa5d737ecc50ec82053305f2421
+  languageName: node
+  linkType: hard
+
+"wavesurfer.js@npm:^7.1.5":
+  version: 7.1.5
+  resolution: "wavesurfer.js@npm:7.1.5"
+  checksum: b7fdd16c5e72beb927f0a19d08ffdd2d95658b1be8bce2fea0948f5356bae68134e3494fae7f3b2ba1d0819b16357f5bd597ad391463ad9f522c7e8819604c02
   languageName: node
   linkType: hard
 

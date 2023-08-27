@@ -3,9 +3,8 @@
 		<div class="inner-container" ref="containerDiv">
 			<p-data-table
 				v-model:filters="filters"
-				data-key="path"
-				filter-display="row"
 				:value="mediaItems"
+				data-key="path"
 				:global-filter-fields="['path']"
 				style="width: 100%"
 				scrollable
@@ -61,12 +60,10 @@ const filters = ref({
 })
 
 const mediaStore = useMediaStore()
-
+const mediaItems = computed(() => Object.values(mediaStore.media))
 const containerDiv = ref<HTMLElement | null>(null)
 
 const containerSize = useElementSize(containerDiv)
-
-const mediaItems = computed(() => Object.values(mediaStore.media))
 
 function isImagePreview(media: MediaMetadata) {
 	if (media.image) return true

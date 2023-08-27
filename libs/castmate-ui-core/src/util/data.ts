@@ -1,4 +1,4 @@
-import { type Schema, type IPCSchema, getTypeByName, DataConstructorOrFactory } from "castmate-schema"
+import { type Schema, type IPCSchema, getTypeByName, DataConstructorOrFactory, Range, MediaFile } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
 	type Component,
@@ -18,6 +18,7 @@ import StringInputVue from "../components/data/inputs/StringInput.vue"
 import NumberInputVue from "../components/data/inputs/NumberInput.vue"
 import ObjectInputVue from "../components/data/inputs/ObjectInput.vue"
 import RangeInputVue from "../components/data/inputs/RangeInput.vue"
+import MediaFileInput from "../components/data/inputs/MediaFileInput.vue"
 
 export interface DataInputCommonProps<SchemaType> {
 	schema: SchemaType
@@ -102,4 +103,5 @@ export function initData() {
 	inputStore.registerInputComponent(Number, NumberInputVue)
 	inputStore.registerInputComponent(Object, ObjectInputVue)
 	inputStore.registerInputComponent(Range, RangeInputVue)
+	inputStore.registerInputComponent(MediaFile, MediaFileInput)
 }

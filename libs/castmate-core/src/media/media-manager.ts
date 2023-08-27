@@ -1,5 +1,5 @@
 import { Service } from "../util/service"
-import { ImageFormats, MediaMetadata, MediaType, SoundFormats, VideoFormats, stillImageFormats } from "castmate-schema"
+import { ImageFormats, MediaMetadata, stillImageFormats } from "castmate-schema"
 import * as fs from "fs/promises"
 import * as pathTools from "path"
 import * as rra from "recursive-readdir-async"
@@ -46,7 +46,11 @@ export const MediaManager = Service(
 			})
 		}
 
-		async setupFolderScanner(id: string, path: string) {
+		getMedia(path: string) {
+			return this.mediaFiles.get(path)
+		}
+
+		private async setupFolderScanner(id: string, path: string) {
 			console.log("Scanning", path, "for media")
 			await ensureDirectory(path)
 			const watcher = chokidar.watch(path)
@@ -70,7 +74,7 @@ export const MediaManager = Service(
 			})
 		}
 
-		async addMedia(root: string, filepath: string) {
+		private async addMedia(root: string, filepath: string) {
 			const relPath = pathTools.relative(root, filepath)
 			const extension = pathTools.extname(filepath)
 
@@ -112,7 +116,7 @@ export const MediaManager = Service(
 			addOrUpdateMediaRenderer(metadata)
 		}
 
-		async removeMedia(root: string, filepath: string) {
+		private async removeMedia(root: string, filepath: string) {
 			const relPath = pathTools.relative(root, filepath)
 			this.mediaFiles.delete(relPath)
 			removeMediaRenderer(relPath)
