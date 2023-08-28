@@ -2,13 +2,8 @@ import { ref, computed } from "vue"
 import { defineStore } from "pinia"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
 import { MaybeRefOrGetter, toValue } from "@vueuse/core"
+import { ResourceData } from "castmate-schema"
 import NameDialog from "../components/dialogs/NameDialog.vue"
-
-interface ResourceData {
-	id: string
-	config: object
-	state: object
-}
 
 interface ResourceStorage {
 	resources: Map<string, ResourceData>

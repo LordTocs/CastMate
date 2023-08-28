@@ -1,4 +1,8 @@
-export interface ResourceData<ConfigType extends any = any, StateType extends any = any> {
+interface ResourceConfigData extends Record<string | number | symbol, any> {
+	name?: string
+}
+
+export interface ResourceData<ConfigType extends ResourceConfigData = ResourceConfigData, StateType extends any = any> {
 	readonly id: string
 	readonly config: ConfigType
 	state: StateType

@@ -62,7 +62,7 @@ export default definePlugin(
 			config: {
 				type: Object,
 				properties: {
-					output: { type: SoundOutput, name: "Output", default: "system.default" },
+					output: { type: SoundOutput, name: "Output", default: "system.default", required: true },
 					sound: { type: MediaFile, name: "Sound", required: true, default: "", sound: true },
 					volume: {
 						type: Number,

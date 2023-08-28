@@ -19,23 +19,13 @@ import NumberInputVue from "../components/data/inputs/NumberInput.vue"
 import ObjectInputVue from "../components/data/inputs/ObjectInput.vue"
 import RangeInputVue from "../components/data/inputs/RangeInput.vue"
 import MediaFileInput from "../components/data/inputs/MediaFileInput.vue"
+import ResourceInputVue from "../components/data/inputs/ResourceInput.vue"
 
-export interface DataInputCommonProps<SchemaType> {
-	schema: SchemaType
-	context: any
-	secret: boolean
-	density: "default" | "comfortable" | "compact" //From vuetify
-}
-
-class ResourceProxy {
-	id: string
-
-	constructor() {
-		this.id = "HELLO?"
-	}
-}
-interface ResourceProxy {
-	id: string
+export type ResourceProxy = string
+const ResourceProxyFactory = {
+	factoryCreate() {
+		return ""
+	},
 }
 
 declare module "castmate-schema" {
@@ -62,7 +52,7 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 	} else if (ipcSchema.type === "Resource" && "resourceType" in ipcSchema) {
 		return {
 			...ipcSchema,
-			type: toRaw(ResourceProxy),
+			type: toRaw(ResourceProxyFactory),
 			resourceType: ipcSchema.resourceType,
 		}
 	} else {
@@ -104,4 +94,5 @@ export function initData() {
 	inputStore.registerInputComponent(Object, ObjectInputVue)
 	inputStore.registerInputComponent(Range, RangeInputVue)
 	inputStore.registerInputComponent(MediaFile, MediaFileInput)
+	inputStore.registerInputComponent(ResourceProxyFactory, ResourceInputVue)
 }
