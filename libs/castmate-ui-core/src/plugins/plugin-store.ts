@@ -16,7 +16,7 @@ import {
 	ActionInfo,
 } from "castmate-schema"
 
-import { computed, ref, unref, type MaybeRefOrGetter, toValue } from "vue"
+import { computed, ref, unref, type MaybeRefOrGetter, toValue, Component, markRaw } from "vue"
 
 import * as chromatism from "chromatism2"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
@@ -24,14 +24,15 @@ import { ipcParseSchema } from "../util/data"
 import { nanoid } from "nanoid/non-secure"
 
 interface ActionDefinition {
-	readonly id: string
-	readonly name: string
-	readonly description?: string
-	readonly icon?: string
-	readonly color?: Color
-	readonly type: ActionType
-	readonly durationhandler: string
+	id: string
+	name: string
+	description?: string
+	icon?: string
+	color?: Color
+	type: ActionType
+	durationhandler: string
 
+	actionComponent?: Component
 	config: Schema
 	result?: Schema
 }
@@ -151,7 +152,21 @@ export const usePluginStore = defineStore("plugins", () => {
 		return result as AnyAction
 	}
 
-	return { pluginMap: computed(() => pluginMap.value), initialize, createAction, getAction }
+	function setActionComponent(plugin: string, action: string, component: Component) {
+		const pluginDef = pluginMap.value.get(plugin)
+		if (!pluginDef) {
+			console.error(`Unknown plugin ${plugin}`)
+			return
+		}
+		const actionDef = pluginDef.actions[action]
+		if (!actionDef) {
+			console.error(`Unknown action ${plugin}:${action}`)
+			return
+		}
+		actionDef.actionComponent = markRaw(component)
+	}
+
+	return { pluginMap: computed(() => pluginMap.value), initialize, createAction, getAction, setActionComponent }
 })
 
 export function usePlugin(id: MaybeRefOrGetter<string | undefined>) {

@@ -48,18 +48,18 @@ app.use(ConfirmationService)
 app.use(router)
 app.use(pinia)
 
-usePluginStore().initialize()
-useResourceStore().initialize()
-useProjectStore()
-	.initialize()
-	.then(() => {
-		initializeProfiles(app)
-	})
-useMediaStore().initialize()
-useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
-initData()
+async function init() {
+	await Promise.all([usePluginStore().initialize(), useResourceStore().initialize(), useProjectStore().initialize()])
+
+	initializeProfiles(app)
+	useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
+	useMediaStore().initialize()
+	initData()
+	initSoundPlugin()
+}
+
+init()
 
 //TODO: Better Plugin Initialization
-initSoundPlugin()
 
 app.mount("#app")

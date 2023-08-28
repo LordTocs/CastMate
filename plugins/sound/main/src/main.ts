@@ -74,7 +74,6 @@ export default definePlugin(
 						max: 100,
 						step: 1,
 					},
-					duration: { type: Number, name: "Duration", required: true, default: 3 },
 				},
 			},
 			async invoke(config, contextData, abortSignal) {},

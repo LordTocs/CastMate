@@ -95,6 +95,8 @@ useEventListener(window, "mouseup", (ev: MouseEvent) => {
 	height: 100%;
 	background-color: var(--lighter-action-color);
 	cursor: ew-resize;
+	flex-shrink: 0;
+	flex-grow: 0;
 }
 
 .dragging {

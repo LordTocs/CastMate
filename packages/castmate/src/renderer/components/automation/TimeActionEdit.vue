@@ -1,15 +1,26 @@
 <template>
-	<div class="timeline-container" :class="{ indefinite, 'has-right-handle': hasRightHandle }" :style="{ '--duration': duration }">
-		<div class="time-action" ref="actionElement" :style="{ ...actionColorStyle }">
-			<div class="time-action-content" :class="{ 'is-selected': isSelected }">
+	<div
+		class="timeline-container"
+		:class="{ indefinite, 'has-right-handle': hasRightHandle }"
+		:style="{ '--duration': duration }"
+	>
+		<div class="time-action" :style="{ ...actionColorStyle }">
+			<div class="time-action-content" :class="{ 'is-selected': isSelected }" ref="actionElement">
 				<div class="time-action-header action-handle">
-					<!-- <i class="mdi flex-none" :class="action?.icon" /> -->
-					<!-- {{ action?.name }} -->
+					<i class="mdi flex-none" :class="action?.icon" />
+					{{ action?.name }}
 				</div>
-				<div class="time-action-custom"></div>
-				<text-hider class="time-action-footer">
+				<div class="time-action-custom-wrapper">
+					<component
+						v-model="model.config"
+						:is="action?.actionComponent"
+						v-if="action?.actionComponent"
+						class="time-action-custom"
+					/>
+				</div>
+				<div class="time-action-footer">
 					{{ duration.toFixed(2) }}
-				</text-hider>
+				</div>
 			</div>
 			<duration-handle v-model="duration" v-if="hasRightHandle" />
 		</div>
@@ -45,7 +56,7 @@ import {
 	useActionColors,
 	useDocumentPath,
 	useIsSelected,
-	TextHider
+	TextHider,
 } from "castmate-ui-core"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
@@ -54,7 +65,6 @@ import { nanoid } from "nanoid/non-secure"
 import _sortedIndexBy from "lodash/sortedIndexBy"
 import { SelectionGetter } from "../../util/automation-dragdrop"
 import { useDuration } from "../../util/actions"
-
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -146,27 +156,23 @@ defineExpose({
 	position: relative;
 	pointer-events: auto;
 
-	width: var(--time-action-width);
 	height: var(--timeline-height);
 }
 .time-action-content {
 	/* border-radius: var(--border-radius); */
-	background-color: var(--action-color);
-	border-radius: var(--border-radius) 0 0 var(--border-radius);
-	border-top: solid 2px var(--lighter-action-color);
-	border-bottom: solid 2px var(--lighter-action-color);
-	border-left: solid 2px var(--lighter-action-color);
+	/* border-radius: var(--border-radius) 0 0 var(--border-radius); */
+	/* border-top: solid 2px var(--lighter-action-color); */
+	/* border-bottom: solid 2px var(--lighter-action-color); */
+	/* border-left: solid 2px var(--lighter-action-color); */
 
-	flex-grow: 1;
-	flex-shrink: 1;
 	display: flex;
 	flex-direction: column;
 
-	/* width: var(--time-action-width); */
+	width: var(--time-action-width);
 }
 
 .time-action-content.has-right-handle {
-	width: calc(var(--time-action-width) - 8px)
+	width: calc(var(--time-action-width) - 8px);
 }
 
 .time-action-header {
@@ -175,10 +181,9 @@ defineExpose({
 	cursor: grab;
 	overflow: hidden;
 	white-space: nowrap;
-	border-top-left-radius: var(--border-radius);
+	/* border-top-left-radius: var(--border-radius); */
+	width: var(--time-action-width);
 }
-
-
 
 .indefinite .time-action-header {
 	background: repeating-linear-gradient(
@@ -190,16 +195,29 @@ defineExpose({
 	) !important;
 }
 
-.time-action-custom {
+.time-action-custom-wrapper {
 	flex: 1;
+	background-color: var(--action-color);
+	width: var(--time-action-width);
+	position: relative;
+}
+
+.time-action-custom {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
 }
 
 .time-action-footer {
-	/* height: 1.5rem; */
+	height: 1.5rem;
 	text-align: center;
 	background-color: var(--darker-action-color);
-	/* overflow: hidden; */
-	/* white-space: nowrap; */
+	overflow: hidden;
+	text-overflow: clip;
+	white-space: nowrap;
+	width: var(--time-action-width);
 }
 
 .timeline-sequences {

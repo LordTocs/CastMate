@@ -25,7 +25,7 @@ export const useMediaStore = defineStore("media", () => {
 
 	async function initialize() {
 		handleIpcMessage("media", "addMedia", (event, metadata: MediaMetadata) => {
-			mediaMap.value[metadata.file] = metadata
+			mediaMap.value[metadata.path] = metadata
 		})
 
 		handleIpcMessage("media", "removeMedia", (event, path: string) => {
@@ -35,7 +35,7 @@ export const useMediaStore = defineStore("media", () => {
 		const existingMedia = await getMedia()
 
 		for (const media of existingMedia) {
-			mediaMap.value[media.file] = media
+			mediaMap.value[media.path] = media
 		}
 
 		projectStore.registerProjectGroupItem(projectItem)
