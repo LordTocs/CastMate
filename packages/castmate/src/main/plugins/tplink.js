@@ -6,6 +6,7 @@ import { reactify } from "../state/reactive"
 class TPLinkBulb extends Light {
 	constructor(light, lightState) {
 		super()
+		/** @type {(import "tplink-smarthome-api").Bulb} */
 		this.light = light
 		this.id = "tplink." + light.id
 		this.config = {
@@ -58,11 +59,12 @@ class TPLinkBulb extends Light {
 	async setLightState(on, color, duration) {
 		const update = {
 			on_off: on ? 1 : 0,
+			ignore_default: true,
 		}
 
 		if (on == "toggle") {
 			const powerState = await this.light.getPowerState()
-			update.on_off = !powerState
+			update.on_off = powerState ? 0 : 1
 		}
 
 		if (color != null) {
@@ -74,9 +76,10 @@ class TPLinkBulb extends Light {
 				const sat = Math.ceil(clamp(color.sat ?? 100, 0, 100))
 				update.hue = hue
 				update.saturation = sat
-			}
-
-			if ("kelvin" in color) {
+				update.color_temp = 0 //Required to disable color temp mode
+			} else if ("kelvin" in color) {
+				update.hue = 0 //Required to disable color mode
+				update.saturation = 0
 				update.color_temp = Math.ceil(color.kelvin)
 			}
 		}
