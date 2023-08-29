@@ -1,6 +1,6 @@
 {
 	"name": "castmate-monorepo",
-	"version": "0.4.12-b2",
+	"version": "0.4.12",
 	"description": "",
 	"private": true,
 	"scripts": {
