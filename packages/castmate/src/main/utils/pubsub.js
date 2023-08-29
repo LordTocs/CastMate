@@ -163,8 +163,8 @@ export class CastMatePubSub extends EventEmitter {
 		this.azsocket = new WebPubSubClient(url, {
 			autoReconnect: true,
 			reconnectRetryOptions: {
-				maxRetries: 1000,
-				retryDelayInMs: 5000,
+				maxRetries: 100000,
+				retryDelayInMs: 1000,
 				maxRetryDelayInMs: 60000,
 				mode: "Exponential",
 			},
