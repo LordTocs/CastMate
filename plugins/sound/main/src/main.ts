@@ -14,6 +14,7 @@ import {
 } from "castmate-core"
 import { MediaManager } from "castmate-core"
 import { MediaFile } from "castmate-schema"
+import { defineCallableIPC } from "castmate-core/src/util/electron"
 class SoundOutput<
 	ExtendedSoundConfig extends SoundOutputConfig = SoundOutputConfig
 > extends Resource<ExtendedSoundConfig> {
@@ -29,6 +30,11 @@ interface SystemSoundOutputConfig extends SoundOutputConfig {
 	deviceId: string
 }
 
+const playSoundInRenderer = defineCallableIPC<(file: string, volume: number, sinkId: string) => string>(
+	"sound",
+	"playSoundInRenderer"
+)
+
 class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
 	constructor(mediaDevice: WebAudioDeviceInfo) {
 		super()
@@ -37,6 +43,11 @@ class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
 			deviceId: mediaDevice.deviceId,
 			name: mediaDevice.label,
 		}
+	}
+
+	async playFile(file: string, volume: number, abortSignal: AbortSignal): Promise<boolean> {
+		await playSoundInRenderer(file, volume, this.config.deviceId)
+		return true
 	}
 }
 
@@ -76,7 +87,11 @@ export default definePlugin(
 					},
 				},
 			},
-			async invoke(config, contextData, abortSignal) {},
+			async invoke(config, contextData, abortSignal) {
+				const media = MediaManager.getInstance().getMedia(config.sound)
+				if (!media) return
+				config.output.playFile(media.file, config.volume, abortSignal)
+			},
 		})
 
 		onLoad(() => {

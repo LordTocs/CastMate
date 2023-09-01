@@ -40,6 +40,7 @@ export interface ActionDefinition {
 	readonly description?: string
 	readonly icon?: string
 	readonly color?: Color
+	readonly configSchema: Schema
 
 	load(): any
 	unload(): any
@@ -80,6 +81,10 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 		return this.spec.version
 	}
 
+	get configSchema() {
+		return this.spec.config
+	}
+
 	get durationHandlerString() {
 		if (!this.spec.durationHandler) return ""
 		if (isKey(this.spec.durationHandler)) return this.spec.durationHandler.toString()
@@ -101,6 +106,7 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 	) {
 		if (abortSignal.aborted) return
 
+		console.log("Invoking", this.plugin.id, this.id)
 		return await this.spec.invoke(config, contextData, abortSignal)
 	}
 

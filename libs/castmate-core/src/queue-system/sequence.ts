@@ -1,5 +1,6 @@
 import { PluginManager } from "../plugins/plugin-manager"
 import { setAbortableTimeout } from "../util/abort-utils"
+import { deserializeSchema } from "../util/ipc-schema"
 import { SemanticVersion } from "../util/type-helpers"
 
 import {
@@ -12,14 +13,16 @@ import {
 	OffsetActions,
 } from "castmate-schema"
 
-interface SequenceDebugger {
+export interface SequenceDebugger {
+	sequenceStarted(): void
+	sequenceEnded(): void
 	markStart(id: string): void
 	markEnd(id: string): void
 	logResult(id: string, result: any): void
 	logError(id: string, err: any): void
 }
 
-class SequenceRunner {
+export class SequenceRunner {
 	private abortController = new AbortController()
 
 	constructor(private sequence: Sequence, private context: any, private dbg?: SequenceDebugger) {}
@@ -29,21 +32,24 @@ class SequenceRunner {
 	}
 
 	async run() {
-		console.log(this.context)
+		console.log(this.sequence)
 		await this.runSequence(this.sequence)
 	}
 
 	private async runActionBase(action: ActionInfo) {
 		this.dbg?.markStart(action.id)
+		console.log("Running", action)
 		try {
 			const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
 			if (!actionDef) {
 				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
 			}
-			const result = await actionDef.invoke(action.config, this.context, this.abortController.signal)
+			const deserializedConfig = deserializeSchema(actionDef.configSchema, action.config)
+			const result = await actionDef.invoke(deserializedConfig, this.context, this.abortController.signal)
 			this.dbg?.logResult(action.id, result)
 			return result
 		} catch (err) {
+			console.error("Error ", action.plugin, action.action, err)
 			this.dbg?.logError(action.id, err)
 			return undefined
 		} finally {
@@ -117,72 +123,3 @@ class SequenceRunner {
 		})
 	}
 }
-/*
-const s = new SequenceRunner(
-	{
-		actions: [
-			{
-				id: "hello",
-				plugin: "twitch",
-				action: "chat",
-				version: "0.1.0",
-				config: {
-					message: "YO!",
-				},
-			},
-			{
-				id: "hello",
-				plugin: "castmate",
-				action: "delay",
-				version: "0.1.0",
-				config: {
-					duration: 3.5,
-				},
-				offsets: [
-					{
-						id: "hello",
-						offset: 1.75,
-						actions: [
-							{
-								id: "hello",
-								plugin: "sounds",
-								action: "sound",
-								version: "0.1.0",
-								config: {
-									sound: "Blarga.wav",
-									device: "ABC-Sound-Device",
-								},
-							},
-							{
-								id: "hello",
-								stack: [
-									{
-										id: "hello",
-										plugin: "sounds",
-										action: "sound",
-										version: "0.1.0",
-										config: {
-											sound: "Blarga.wav",
-											device: "ABC-Sound-Device",
-										},
-									},
-									{
-										id: "hello",
-										plugin: "sounds",
-										action: "sound",
-										version: "0.1.0",
-										config: {
-											sound: "Blarga.wav",
-											device: "ABC-Sound-Device",
-										},
-									},
-								],
-							},
-						],
-					},
-				],
-			},
-		],
-	},
-	{}
-)*/

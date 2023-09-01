@@ -26,6 +26,7 @@ export * from "./profiles/profile-store"
 export * from "./media/media-store"
 export * from "./resources/resource-store"
 export * from "./docking/docking-store"
+export * from "./queue-system/action-queue-store"
 
 export * from "./util/panning"
 

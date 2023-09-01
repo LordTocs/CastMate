@@ -1,5 +1,5 @@
 import { Profile } from "./profile/profile"
-import { ActionQueue } from "./queue-system/action-queue"
+import { ActionQueue, ActionQueueManager } from "./queue-system/action-queue"
 import { ResourceRegistry } from "./resources/resource-registry"
 import { Plugin } from "./plugins/plugin"
 import { PluginManager } from "./plugins/plugin-manager"
@@ -30,6 +30,7 @@ export async function initializeCastMate() {
 
 	Profile.initialize()
 	ActionQueue.initialize()
+	ActionQueueManager.initialize()
 
 	//How do we load plugins???
 	//await loadPlugin("twitch")

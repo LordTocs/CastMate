@@ -5,6 +5,7 @@ import {
 	useProjectStore,
 	useResourceStore,
 	useMediaStore,
+	useActionQueueStore,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -49,7 +50,12 @@ app.use(router)
 app.use(pinia)
 
 async function init() {
-	await Promise.all([usePluginStore().initialize(), useResourceStore().initialize(), useProjectStore().initialize()])
+	await Promise.all([
+		usePluginStore().initialize(),
+		useResourceStore().initialize(),
+		useProjectStore().initialize(),
+		useActionQueueStore().initialize(),
+	])
 
 	initializeProfiles(app)
 	useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)

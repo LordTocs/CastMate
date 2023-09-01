@@ -11,7 +11,7 @@ export async function ipcInvoke<ResultT = any>(channel: string, ...args: any[]):
 
 export function useIpcCaller<T extends IPCFunctor>(category: string, event: string) {
 	return (...args: Parameters<T>): Promise<ReturnType<T>> => {
-		return ipcRenderer.invoke(`${category}_${event}`, ...args)
+		return ipcRenderer.invoke(`${category}_${event}`, ...args.map((arg) => _cloneDeep(arg)))
 	}
 }
 

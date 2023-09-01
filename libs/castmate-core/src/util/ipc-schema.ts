@@ -1,5 +1,6 @@
-import { Enumable, IPCSchema, Schema, getTypeByConstructor } from "castmate-schema"
+import { Enumable, IPCSchema, Schema, SchemaObj, SchemaType, getTypeByConstructor } from "castmate-schema"
 import { isResourceConstructor } from "../resources/resource"
+import { isObject, isString } from "lodash"
 
 function convertIPCEnum(schema: Enumable<any>) {
 	if (schema.enum) {
@@ -40,5 +41,27 @@ export function ipcConvertSchema<T extends Schema>(schema: T): IPCSchema {
 			throw new Error("Unconvertable Schema Type")
 		}
 		return { ...schema, ...convertIPCEnum(schema as Enumable<any>), type: typeName }
+	}
+}
+
+export function deserializeSchema<TSchema extends Schema>(
+	schema: TSchema,
+	value: SchemaType<TSchema>
+): SchemaType<TSchema> {
+	if (schema.type === Object && "properties" in schema && isObject(value)) {
+		const objValue: Record<string, any> = value
+		const copyValue: Record<string, any> = {}
+		for (const key of Object.keys(objValue)) {
+			const propSchema = schema.properties[key]
+			copyValue[key] = deserializeSchema(propSchema, objValue[key])
+		}
+		return copyValue as SchemaType<TSchema>
+	} else if (schema.type === Array && "items" in schema && Array.isArray(value)) {
+		const arrValue: Array<any> = value
+		return arrValue.map((i) => deserializeSchema(schema.items, i)) as SchemaType<TSchema>
+	} else if (isResourceConstructor(schema.type) && isString(value)) {
+		return schema.type.storage.getById(value)
+	} else {
+		return value
 	}
 }

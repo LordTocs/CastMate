@@ -1,6 +1,9 @@
 <template>
 	<div class="sequence-start" :class="{ 'is-selected': isSelected }" ref="sequenceStartElem">
-		<i class="mdi mdi-play"></i>
+		<p-button @click="onButtonClick" @mousedown="onMouseDown">
+			<i class="mdi mdi-play" v-if="!activeTestSequence"></i>
+			<i class="mdi mdi-pause" v-else></i>
+		</p-button>
 	</div>
 </template>
 
@@ -12,11 +15,28 @@ import {
 	rectangleOverlaps,
 	useIsSelected,
 	useDocumentPath,
+	useParentTestSequence,
 } from "castmate-ui-core"
 import { ref } from "vue"
+import PButton from "primevue/button"
+
 const sequenceStartElem = ref<HTMLElement | null>(null)
 
 const isSelected = useIsSelected(useDocumentPath(), "trigger")
+
+const emit = defineEmits(["requestTestRun", "requestTestStop"])
+
+const activeTestSequence = useParentTestSequence()
+
+function onButtonClick(ev: MouseEvent) {
+	if (activeTestSequence.value) {
+		emit("requestTestStop")
+	} else {
+		emit("requestTestRun")
+	}
+	ev.stopPropagation()
+	ev.preventDefault()
+}
 
 defineExpose({
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
@@ -27,6 +47,10 @@ defineExpose({
 		return rectangleOverlaps(rect, selrect) ? ["trigger"] : []
 	},
 })
+
+function onMouseDown(ev: MouseEvent) {
+	ev.stopPropagation()
+}
 </script>
 
 <style scoped>

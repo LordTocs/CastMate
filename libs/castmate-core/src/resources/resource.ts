@@ -21,8 +21,8 @@ interface ResourceIPCDescription {
 
 export interface ResourceBase extends ResourceData {
 	toIPC(): ResourceIPCDescription
-	setConfig(config: any) : Promise<boolean>
-	applyConfig(config: any) : Promise<boolean> 
+	setConfig(config: any): Promise<boolean>
+	applyConfig(config: any): Promise<boolean>
 }
 
 const rendererAddResource = defineCallableIPC<(type: string, data: ResourceIPCDescription) => void>(
@@ -116,7 +116,7 @@ export interface ResourceConstructor<T extends ResourceBase = any> {
 	storage: ResourceStorage<T>
 }
 
-export function isResourceConstructor(constructor: new (...args: any[]) => any): constructor is ResourceConstructor {
+export function isResourceConstructor(constructor: any): constructor is ResourceConstructor {
 	const storageHaver = constructor as { storage?: ResourceStorage<any> }
 
 	return storageHaver.storage != null

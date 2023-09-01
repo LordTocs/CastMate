@@ -4,7 +4,12 @@
 		:class="{ floating }"
 		:style="{ '--sequence-x': `${props.modelValue.x ?? 0}`, '--sequence-y': `${props.modelValue.y ?? 0}` }"
 	>
-		<sequence-start v-if="!floating" ref="sequenceStart"></sequence-start>
+		<sequence-start
+			v-if="!floating"
+			ref="sequenceStart"
+			@request-test-run="$emit('requestTestRun')"
+			@request-test-stop="$emit('requestTestStop')"
+		></sequence-start>
 		<automation-drop-zone
 			v-if="!floating && modelObj.actions.length == 0"
 			drop-axis="vertical"
@@ -19,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { useModel, ref } from "vue"
+import { useModel, ref, provide } from "vue"
 import { Sequence, type NonStackActionInfo } from "castmate-schema"
 import { type SelectionPos, type Selection } from "castmate-ui-core"
 import SequenceActionsEdit from "./SequenceActionsEdit.vue"
@@ -34,7 +39,7 @@ const props = defineProps<{
 
 const modelObj = useModel(props, "modelValue")
 
-const emit = defineEmits(["selfDestruct"])
+const emit = defineEmits(["selfDestruct", "requestTestRun", "requestTestStop"])
 function selfDestruct() {
 	emit("selfDestruct")
 }

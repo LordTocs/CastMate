@@ -1,7 +1,12 @@
 <template>
 	<div ref="editArea" class="automation-edit" tabindex="-1" @contextmenu="onContextMenu">
 		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
-			<sequence-edit v-model="model.sequence" :floating="false" ref="mainSequence" />
+			<sequence-edit
+				v-model="model.sequence"
+				:floating="false"
+				ref="mainSequence"
+				@request-test-run="onRunSequence"
+			/>
 			<sequence-edit
 				v-for="(s, i) in model.floatingSequences"
 				:key="s.id"
@@ -27,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toValue, useModel } from "vue"
+import { ref, toValue, useModel, provide } from "vue"
 import { type Sequence, type AutomationData } from "castmate-schema"
 import {
 	ActionSelection,
@@ -39,7 +44,7 @@ import {
 } from "castmate-ui-core"
 import SequenceEdit from "./SequenceEdit.vue"
 import { provideAutomationEditState } from "../../util/automation-dragdrop"
-import { useSelectionRect } from "castmate-ui-core"
+import { useSelectionRect, useActiveTestSequence, useActionQueueStore } from "castmate-ui-core"
 import ActionPalette from "./ActionPalette.vue"
 import { FloatingSequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
@@ -82,6 +87,15 @@ function removeFloatingSequence(index: number) {
 
 const mainSequence = ref<InstanceType<typeof SequenceEdit> | null>(null)
 const floatingSequences = ref<InstanceType<typeof SequenceEdit>[]>([])
+
+const testSequenceId = ref<string>("")
+const actionQueueStore = useActionQueueStore()
+const activeTestSequence = useActiveTestSequence(testSequenceId)
+provide("activeTestSequence", activeTestSequence)
+
+async function onRunSequence() {
+	testSequenceId.value = await actionQueueStore.testSequence(props.modelValue.sequence, {})
+}
 
 const {
 	selecting,
