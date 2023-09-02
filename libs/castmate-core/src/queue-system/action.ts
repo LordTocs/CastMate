@@ -106,7 +106,6 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 	) {
 		if (abortSignal.aborted) return
 
-		console.log("Invoking", this.plugin.id, this.id)
 		return await this.spec.invoke(config, contextData, abortSignal)
 	}
 

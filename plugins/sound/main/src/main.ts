@@ -15,6 +15,7 @@ import {
 import { MediaManager } from "castmate-core"
 import { MediaFile } from "castmate-schema"
 import { defineCallableIPC } from "castmate-core/src/util/electron"
+import { RendererSoundPlayer } from "./renderer-sound-player"
 class SoundOutput<
 	ExtendedSoundConfig extends SoundOutputConfig = SoundOutputConfig
 > extends Resource<ExtendedSoundConfig> {
@@ -30,11 +31,6 @@ interface SystemSoundOutputConfig extends SoundOutputConfig {
 	deviceId: string
 }
 
-const playSoundInRenderer = defineCallableIPC<(file: string, volume: number, sinkId: string) => string>(
-	"sound",
-	"playSoundInRenderer"
-)
-
 class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
 	constructor(mediaDevice: WebAudioDeviceInfo) {
 		super()
@@ -46,7 +42,7 @@ class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
 	}
 
 	async playFile(file: string, volume: number, abortSignal: AbortSignal): Promise<boolean> {
-		await playSoundInRenderer(file, volume, this.config.deviceId)
+		await RendererSoundPlayer.getInstance().playSound(file, volume, this.config.deviceId, abortSignal)
 		return true
 	}
 }
@@ -90,12 +86,13 @@ export default definePlugin(
 			async invoke(config, contextData, abortSignal) {
 				const media = MediaManager.getInstance().getMedia(config.sound)
 				if (!media) return
-				config.output.playFile(media.file, config.volume, abortSignal)
+				await config.output.playFile(media.file, config.volume, abortSignal)
 			},
 		})
 
 		onLoad(() => {
 			ResourceRegistry.getInstance().register(SoundOutput)
+			RendererSoundPlayer.initialize()
 		})
 
 		defineRendererCallable("setAudioOutputDevices", (devices: WebAudioDeviceInfo[]) => {

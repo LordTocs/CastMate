@@ -10,6 +10,8 @@ export * from "./resources/resource-registry"
 export * from "./resources/file-resource"
 export * from "./accounts/account"
 
+export * from "./util/service"
+
 export * from "./profile/profile"
 export * from "./queue-system/action-queue"
 

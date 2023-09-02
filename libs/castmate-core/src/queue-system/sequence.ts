@@ -33,7 +33,9 @@ export class SequenceRunner {
 
 	async run() {
 		console.log(this.sequence)
+		this.dbg?.sequenceStarted()
 		await this.runSequence(this.sequence)
+		this.dbg?.sequenceEnded()
 	}
 
 	private async runActionBase(action: ActionInfo) {

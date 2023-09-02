@@ -6,6 +6,7 @@
 				:floating="false"
 				ref="mainSequence"
 				@request-test-run="onRunSequence"
+				@request-test-stop="onStopSequence"
 			/>
 			<sequence-edit
 				v-for="(s, i) in model.floatingSequences"
@@ -95,6 +96,10 @@ provide("activeTestSequence", activeTestSequence)
 
 async function onRunSequence() {
 	testSequenceId.value = await actionQueueStore.testSequence(props.modelValue.sequence, {})
+}
+
+async function onStopSequence() {
+	actionQueueStore.stopTest(testSequenceId.value)
 }
 
 const {

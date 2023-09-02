@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { useIpcCaller, useIpcMessage } from "../main"
+import { useIpcCaller, handleIpcMessage } from "../main"
 import { Sequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { MaybeRefOrGetter, computed, ref, toValue, inject, ComputedRef } from "vue"
@@ -14,25 +14,30 @@ export const useActionQueueStore = defineStore("actionQueues", () => {
 		"actionQueue",
 		"runTestSequence"
 	)
+	const stopTestSequence = useIpcCaller<(id: string) => void>("actionQueue", "stopTestSequence")
 
 	const activeTestSequences = ref<Record<string, TestSequenceData>>({})
 
 	async function initialize() {
-		useIpcMessage("actionQueue", "markTestSequenceStart", (event, sequenceId: string) => {
+		handleIpcMessage("actionQueue", "markTestSequenceStart", (event, sequenceId: string) => {
+			console.log("Sequence", sequenceId, "Started")
 			activeTestSequences.value[sequenceId] = { running: true, activeIds: {} }
 		})
 
-		useIpcMessage("actionQueue", "markTestSequenceEnd", (event, sequenceId: string) => {
+		handleIpcMessage("actionQueue", "markTestSequenceEnd", (event, sequenceId: string) => {
+			console.log("Sequence", sequenceId, "Ended")
 			delete activeTestSequences.value[sequenceId]
 		})
 
-		useIpcMessage("actionQueue", "markTestActionStart", (event, sequenceId: string, id: string) => {
+		handleIpcMessage("actionQueue", "markTestActionStart", (event, sequenceId: string, id: string) => {
+			console.log("Action", id, "Started")
 			const testRun = activeTestSequences.value[sequenceId]
 			if (!testRun) return //TODO: Handle out of order??
 			testRun.activeIds[id] = Date.now()
 		})
 
-		useIpcMessage("actionQueue", "markTestActionEnd", (event, sequenceId: string, id: string) => {
+		handleIpcMessage("actionQueue", "markTestActionEnd", (event, sequenceId: string, id: string) => {
+			console.log("Action", id, "Ended")
 			const testRun = activeTestSequences.value[sequenceId]
 			if (!testRun) return
 			delete testRun.activeIds[id]
@@ -48,7 +53,11 @@ export const useActionQueueStore = defineStore("actionQueues", () => {
 		return id
 	}
 
-	return { initialize, testSequence, activeTestSequences: computed(() => activeTestSequences.value) }
+	async function stopTest(id: string) {
+		stopTestSequence(id)
+	}
+
+	return { initialize, testSequence, stopTest, activeTestSequences: computed(() => activeTestSequences.value) }
 })
 
 export function useActiveTestSequence(sequenceId: MaybeRefOrGetter<string>) {

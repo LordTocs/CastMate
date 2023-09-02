@@ -61,10 +61,12 @@ class TestRunnerDebugger implements SequenceDebugger {
 	}
 
 	sequenceStarted() {
+		console.log("Sequence Start")
 		markTestSequenceStart(this.sequenceId)
 	}
 
 	sequenceEnded() {
+		console.log("Sequence End")
 		markTestSequenceEnd(this.sequenceId)
 	}
 }
