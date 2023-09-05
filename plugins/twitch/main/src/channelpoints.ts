@@ -116,10 +116,11 @@ export function setupChannelPointRewards() {
 		}
 	}
 
-	defineTrigger({
+	const redemption = defineTrigger({
 		id: "redemption",
 		name: "Channel Point Reward",
 		version: "0.0.1",
+		icon: "mdi mdi-pencil",
 		config: {
 			type: Object,
 			properties: {

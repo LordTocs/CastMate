@@ -1,8 +1,16 @@
 import { defineAction, definePlugin, onLoad, onUnload } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { setupChat } from "./chat"
-import { setupEventSub } from "./eventsub"
+import { setupSubscriptions } from "./subscriptions"
 import { setupChannelPointRewards } from "./channelpoints"
+import { setupPolls } from "./poll"
+import { setupPredictions } from "./prediction"
+import { setupAds } from "./ads"
+import { setupClips } from "./clips"
+import { TwitchAPIService } from "./api-harness"
+import { setupFollows } from "./follows"
+import { setupRaids } from "./raids"
+import { setupHypeTrains } from "./hype-train"
 
 export default definePlugin(
 	{
@@ -13,14 +21,28 @@ export default definePlugin(
 		color: "#9146FF", //"#5E5172",
 	},
 	() => {
-		onLoad(() => {
-			TwitchAccount.initialize()
+		onLoad(async () => {
+			console.log("Initializing")
+			await TwitchAccount.initialize()
+
+			await TwitchAPIService.initialize()
 		})
 
 		onUnload(() => {})
 
-		setupChat()
+		setupAds()
 		setupChannelPointRewards()
-		setupEventSub()
+		setupChat()
+		setupClips()
+		setupFollows()
+		setupHypeTrains()
+		setupPolls()
+		setupPredictions()
+		setupRaids()
+		setupSubscriptions()
+
+		onLoad(async () => {
+			await TwitchAPIService.getInstance().finalize()
+		})
 	}
 )

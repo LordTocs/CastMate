@@ -1,8 +1,8 @@
 import { TwitchAccountConfig, TwitchAccountSecrets } from "castmate-plugin-twitch-shared"
 import { Account, ResourceStorage } from "castmate-core"
-import { getTokenInfo } from "@twurple/auth"
+import { getTokenInfo, AuthProvider, AccessTokenWithUserId, AccessTokenMaybeWithUserId } from "@twurple/auth"
 import { BrowserWindow } from "electron"
-import { ApiClient } from "@twurple/api"
+import { ApiClient, UserIdResolvable } from "@twurple/api"
 import * as qs from "querystring"
 
 const defaultScopes = [
@@ -39,12 +39,12 @@ const defaultScopes = [
 	"chat:read", //See the chat
 ]
 
-//TODO:
-const CLIENT_ID = "ajajaj"
+const CLIENT_ID = "qnybd4aoxlom3u3wjbsstsp5yd2sdl"
 const REDIRECT_URL = `http://localhost/auth/channel/redirect` //Note we don't actually load this redirect URL, the BrowserWindow hooks a redirect to it and pulls the creds before it's loaded.
 
-export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountConfig> {
+export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountConfig> implements AuthProvider {
 	static storage = new ResourceStorage<TwitchAccount>("TwitchAccount")
+	static accountDirectory: string = "twitch"
 
 	constructor() {
 		super()
@@ -53,25 +53,33 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 		}
 		this._config = {
 			twitchId: "",
-			name: "Channel",
-			scopes: [],
+			name: "",
+			scopes: defaultScopes,
 		}
 	}
 
-	async checkCachedCreds(): Promise<boolean> {
-		if (!this.secrets.accessToken) return false
-		const info = await getTokenInfo(this.secrets.accessToken, CLIENT_ID)
+	async checkToken(token: string) {
+		const info = await getTokenInfo(token, CLIENT_ID)
 
 		if (!info.userId || !info.userName) {
 			return false
 		}
 
-		await this.setConfig({
-			...this.config,
+		await this.applyConfig({
 			scopes: info.scopes,
+			twitchId: info.userId,
 		})
 
 		return true
+	}
+
+	async checkCachedCreds(): Promise<boolean> {
+		if (!this.secrets.accessToken) return false
+		if (await this.checkToken(this.secrets.accessToken)) {
+			await this.finishAuth()
+			return true
+		}
+		return false
 	}
 
 	//Twitch doesn't issue refresh tokens for token auth requests
@@ -81,10 +89,14 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 	async refreshCreds(): Promise<boolean> {
 		const accessToken = await this.tryCookies() //TODO Timeout?
 		if (accessToken) {
-			await this.setSecrets({
-				accessToken,
-			})
-			return true
+			if (await this.checkToken(accessToken)) {
+				await this.setSecrets({
+					accessToken,
+				})
+
+				await this.finishAuth()
+				return true
+			}
 		}
 		return false
 	}
@@ -161,6 +173,77 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 		return this._apiClient
 	}
 
+	get twitchId() {
+		return this.config.twitchId
+	}
+
+	// Twurple Auth provider interface
+	get clientId() {
+		return CLIENT_ID
+	}
+
+	async getAccessTokenForUser(
+		user: UserIdResolvable,
+		...scopeSets: Array<string[] | undefined>
+	): Promise<AccessTokenWithUserId | null> {
+		//if (!this.state.authenticated) return null
+		return {
+			accessToken: this.secrets.accessToken,
+			refreshToken: null,
+			scope: this.config.scopes,
+			expiresIn: null,
+			obtainmentTimestamp: Date.now(),
+			userId: this.config.twitchId,
+		}
+	}
+
+	async getAccessTokenForIntent(
+		intent: string,
+		...scopeSets: Array<string[] | undefined>
+	): Promise<AccessTokenWithUserId> {
+		return {
+			accessToken: this.secrets.accessToken,
+			refreshToken: null,
+			scope: this.config.scopes,
+			expiresIn: null,
+			obtainmentTimestamp: Date.now(),
+			userId: this.config.twitchId,
+		}
+	}
+
+	async getAnyAccessToken(): Promise<AccessTokenMaybeWithUserId> {
+		return {
+			accessToken: this.secrets.accessToken,
+			refreshToken: null,
+			scope: this.config.scopes,
+			expiresIn: null,
+			obtainmentTimestamp: Date.now(),
+			userId: this.config.twitchId,
+		}
+	}
+
+	getCurrentScopesForUser(user: UserIdResolvable): string[] {
+		return this.config.scopes
+	}
+	///
+
+	async finishAuth() {
+		console.log("Has Token", this.secrets.accessToken.length != 0)
+
+		this._apiClient = new ApiClient({
+			authProvider: this,
+		})
+
+		const user = await this.apiClient.users.getAuthenticatedUser(this.config.twitchId)
+
+		await this.applyConfig({
+			name: user.displayName,
+			icon: user.profilePictureUrl,
+		})
+
+		this.state.authenticated = true
+	}
+
 	private getAuthURL(scopes: string[], forceAuth: boolean = false) {
 		const authorizeParams = {
 			response_type: "token",
@@ -173,8 +256,8 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 		return `https://id.twitch.tv/oauth2/authorize?${qs.stringify(authorizeParams)}`
 	}
 
-	login(scopes: string[], abort: AbortSignal): Promise<boolean> {
-		return new Promise<boolean>((resolve, reject) => {
+	private forceLogin(scopes: string[]) {
+		return new Promise<string>((resolve, reject) => {
 			const authUrl = this.getAuthURL(scopes, false)
 
 			const window = new BrowserWindow({
@@ -227,18 +310,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 						//logger.info("Access Token Success")
 
 						const accessToken = respParams.access_token
-						this.setSecrets({
-							accessToken,
-						})
-							.then(() => {
-								this.applyConfig({
-									scopes,
-								})
-							})
-							.then(() => {
-								resolve(true)
-							})
-
+						resolve(accessToken)
 						//@ts-ignore This seems to be an electron type error
 						callback({ cancel: true })
 					}
@@ -258,16 +330,40 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 		})
 	}
 
+	async login(): Promise<boolean> {
+		try {
+			const accessToken = await this.forceLogin(this.config.scopes)
+
+			if (await this.checkToken(accessToken)) {
+				await this.setSecrets({
+					accessToken,
+				})
+				await this.finishAuth()
+				return true
+			}
+		} catch (err) {
+			console.error("Error Logging In", err)
+		}
+
+		return false
+	}
+
 	static async initialize(): Promise<void> {
 		await super.initialize()
 
 		const channel = new TwitchAccount()
 		channel._id = "channel"
-		channel.load()
-		this.storage.inject(channel)
+		await channel.load()
+		await this.storage.inject(channel)
 	}
 
 	static async uninitialize(): Promise<void> {
 		await super.uninitialize()
+	}
+
+	static get channel() {
+		const channel = this.storage.getById("channel")
+		if (!channel) throw new Error(`TwitchAccount resource hasn't been initialized`)
+		return channel
 	}
 }

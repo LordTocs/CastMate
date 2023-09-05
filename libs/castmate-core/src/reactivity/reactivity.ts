@@ -189,12 +189,13 @@ export function reactiveComputed<T>(func: () => T): ReactiveComputed<T> {
 }
 
 export function Reactive<This extends object, T>(
-	target: ClassAccessorDecoratorTarget<This, T>,
+	{ get, set }: ClassAccessorDecoratorTarget<This, T>,
 	context: ClassAccessorDecoratorContext<This, T>
 ): ClassAccessorDecoratorResult<This, T> {
 	return {
-		get(this: This) {
-			let result = target.get.call(this)
+		get() {
+			console.log("Reactive Get On", get)
+			let result = get.call(this)
 
 			if (shouldTrack(this, context.name)) {
 				DependencyStorage.getPropDependency(this, context.name).track()
@@ -206,8 +207,9 @@ export function Reactive<This extends object, T>(
 
 			return result
 		},
-		set(this: This, newValue: T) {
-			const result = target.set.call(this, newValue)
+		set(newValue: T) {
+			console.log("Reactive Set On", Object.getOwnPropertyNames(this), set, context)
+			const result = set.call(this, newValue)
 
 			if (shouldTrack(this, context.name)) {
 				DependencyStorage.getPropDependency(this, context.name).notify()

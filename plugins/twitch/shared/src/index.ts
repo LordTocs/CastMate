@@ -1,5 +1,4 @@
-import { AccountConfig } from "castmate-core"
-import { Color } from "castmate-schema"
+import { Color, AccountConfig } from "castmate-schema"
 
 export interface TwitchAccountSecrets {
 	accessToken: string

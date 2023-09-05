@@ -17,7 +17,11 @@ export function defineCallableIPC<T extends (...args: any[]) => void>(category: 
 
 	const broadcast = (...args: ExtractArgs<T>) => {
 		for (let window of BrowserWindow.getAllWindows()) {
-			window.webContents.send(`${category}_${name}`, ...args)
+			try {
+				window.webContents.send(`${category}_${name}`, ...args)
+			} catch (err) {
+				console.error("Error sending", ...args)
+			}
 		}
 	}
 

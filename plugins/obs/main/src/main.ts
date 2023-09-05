@@ -33,7 +33,8 @@ export default definePlugin(
 		id: "obs",
 		name: "OBS",
 		description: "Provides OBS Control over OBS Websocket 5",
-		icon: "mdi-pencil",
+		color: "#607A7F",
+		icon: "mdi mdi-pencil",
 	},
 	() => {
 		onLoad(() => {})
@@ -45,7 +46,7 @@ export default definePlugin(
 			id: "scene",
 			name: "Change Scene",
 			description: "Changes the current scene in OBS",
-			icon: "mdi-swap-horizontal-bold",
+			icon: "mdi mdi-swap-horizontal-bold",
 			type: "instant",
 			config: {
 				type: Object,
@@ -54,7 +55,7 @@ export default definePlugin(
 						type: OBSConnection,
 						name: "OBS Connection",
 						required: true,
-						default: () => obsDefault.value,
+						//default: () => obsDefault.value,
 					},
 					scene: { type: String, name: "Scene", required: true },
 				},
@@ -68,7 +69,7 @@ export default definePlugin(
 			id: "prevScene",
 			name: "Previous Scene",
 			description: "Go back to the previous scene.",
-			icon: "mdi-skip-backward",
+			icon: "mdi mdi-skip-backward",
 			type: "instant",
 			config: {
 				type: Object,
@@ -77,7 +78,7 @@ export default definePlugin(
 						type: OBSConnection,
 						name: "OBS Connection",
 						required: true,
-						default: () => obsDefault.value,
+						//default: () => obsDefault.value,
 					},
 				},
 			},
@@ -88,9 +89,9 @@ export default definePlugin(
 
 		defineAction({
 			id: "filter",
-			name: "OBS Filter",
+			name: "Filter Visibility",
 			description: "Enable/Disable an OBS filter",
-			icon: "mdi-eye",
+			icon: "mdi mdi-eye",
 			type: "instant",
 			config: {
 				type: Object,
@@ -99,7 +100,7 @@ export default definePlugin(
 						type: OBSConnection,
 						name: "OBS Connection",
 						required: true,
-						default: () => obsDefault.value,
+						//default: () => obsDefault.value,
 					},
 					sourceName: {
 						type: String,
@@ -163,7 +164,7 @@ export default definePlugin(
 		defineAction({
 			id: "source",
 			name: "Source Visibility",
-			icon: "mdi-eye",
+			icon: "mdi mdi-eye",
 			type: "instant",
 			config: {
 				type: Object,
@@ -172,7 +173,7 @@ export default definePlugin(
 						type: OBSConnection,
 						name: "OBS Connection",
 						required: true,
-						default: () => obsDefault.value,
+						//default: () => obsDefault.value,
 					},
 					scene: {
 						type: String,

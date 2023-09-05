@@ -1,21 +1,21 @@
+import { ensureDirectory, loadSecretYAML, resolveProjectPath, writeSecretYAML } from "../io/file-system"
 import { Resource } from "../resources/resource"
+import { ResourceRegistry } from "../resources/resource-registry"
 import { EventList } from "../util/events"
-export interface AccountConfig {
-	name: string
-	icon?: string
-	scopes: string[]
-}
 
-export interface AccountState {
-	authenticated: boolean
-}
+import { AccountConfig, AccountSecrets, AccountState } from "castmate-schema"
 
-export interface AccountSecrets {}
+interface AccountContructor {
+	new (...args: any[]): any
+	accountDirectory: string
+}
 
 export class Account<
 	Secrets extends AccountSecrets = AccountSecrets,
 	CustomAccountConfig extends AccountConfig = AccountConfig
 > extends Resource<CustomAccountConfig, AccountState> {
+	static accountDirectory: string = ""
+
 	constructor() {
 		super()
 
@@ -27,8 +27,30 @@ export class Account<
 		return this._secrets
 	}
 
+	/**
+	 * Used to limit what part of the secrets is saved to file
+	 */
+	protected get savedSecrets() {
+		return this._secrets
+	}
+
+	protected async saveSecrets() {
+		const accountDir = (this.constructor as AccountContructor).accountDirectory
+		await writeSecretYAML(this.savedSecrets, "accounts", accountDir, `${this.id}.syaml`)
+	}
+
+	protected async loadSecrets() {
+		const accountDir = (this.constructor as AccountContructor).accountDirectory
+		try {
+			this._secrets = await loadSecretYAML("accounts", accountDir, `${this.id}.syaml`)
+		} catch (err) {
+			this._secrets = {} as Secrets
+		}
+	}
+
 	async setSecrets(secrets: Secrets) {
-		//Serialize here
+		this._secrets = secrets
+		this.saveSecrets()
 		this.onSecretsChanged.run()
 	}
 
@@ -40,7 +62,7 @@ export class Account<
 		return false
 	}
 
-	async login(scopes: string[], abort: AbortSignal): Promise<boolean> {
+	async login(): Promise<boolean> {
 		return false
 	}
 
@@ -55,7 +77,16 @@ export class Account<
 		}
 	}
 
+	static async initialize() {
+		super.initialize()
+		await ensureDirectory(resolveProjectPath("accounts", this.accountDirectory))
+
+		//@ts-ignore It will, that's how inheritence works...
+		ResourceRegistry.getInstance().exposeIPCFunction(this, "login")
+	}
+
 	async load() {
+		await this.loadSecrets()
 		if (!(await this.checkCachedCreds())) {
 			if (!(await this.refreshCreds())) {
 				this.state.authenticated = false

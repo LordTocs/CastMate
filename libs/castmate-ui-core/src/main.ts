@@ -11,6 +11,8 @@ export { default as PanArea } from "./components/panning/PanArea.vue"
 
 export { default as NameDialog } from "./components/dialogs/NameDialog.vue"
 
+export { default as AccountWidget } from "./components/account/AccountWidget.vue"
+
 export * from "./util/diff"
 export * from "./util/docking"
 export * from "./util/document"

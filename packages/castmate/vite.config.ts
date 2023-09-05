@@ -6,7 +6,7 @@ import electron from "vite-plugin-electron"
 import renderer from "vite-plugin-electron-renderer"
 
 import { fileURLToPath } from "node:url"
-//import { nodeResolve } from "@rollup/plugin-node-resolve"
+import { nodeResolve } from "@rollup/plugin-node-resolve"
 
 import { library, plugins } from "castmate-vite"
 //import { library, subpackage } from "../../vite-util/vite-subpackage-plugin"
@@ -23,9 +23,18 @@ export default defineConfig({
 		electron({
 			entry: "src/main/background.ts",
 			vite: {
-				plugins: [plugins("../../plugins", "main")],
+				plugins: [nodeResolve(), plugins("../../plugins", "main")],
 				build: {
 					minify: false,
+					rollupOptions: {
+						external: [
+							"@twurple/api-call",
+							"@twurple/chat",
+							"@twurple/eventsub-ws",
+							"@twurple/pubsub",
+							"ws",
+						],
+					},
 				},
 				resolve: {
 					alias: {

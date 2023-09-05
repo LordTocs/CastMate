@@ -32,11 +32,13 @@
 <script setup lang="ts">
 import PButton from "primevue/button"
 import PMenubar from "primevue/menubar"
+import { MenuItem } from "primevue/menuitem"
 //import PMenuItem, { type MenuItem } from "primevue/menuitem" //WTF man
 import { onMounted, ref } from "vue"
 import { ipcRenderer } from "electron"
 import { useEventListener } from "@vueuse/core"
-import { useIpcMessage } from "castmate-ui-core"
+import { useDockingStore, useIpcMessage } from "castmate-ui-core"
+import SettingsPage from "../settings/SettingsPage.vue"
 
 async function close() {
 	await ipcRenderer.invoke("windowFuncs_close")
@@ -72,22 +74,19 @@ const props = defineProps<{
 	title: string
 }>()
 
-const menuItems = ref([
+const dockingStore = useDockingStore()
+
+const menuItems = ref<MenuItem[]>([
 	{
 		label: "File",
 		icon: "pi pi-fw pi-file",
 		items: [
 			{
-				label: "Hello World",
-			},
-		],
-	},
-	{
-		label: "File2",
-		icon: "pi pi-fw pi-file",
-		items: [
-			{
-				label: "Hello World",
+				label: "Settings",
+				icon: "mdi mdi-cog",
+				command() {
+					dockingStore.openPage("settings", "Settings", SettingsPage)
+				},
 			},
 		],
 	},

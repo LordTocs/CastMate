@@ -15,13 +15,19 @@ export function setAbortableTimeout(callback: () => void, ms: number, signal: Ab
 	}
 }
 
-export function abortableSleep(ms: number, signal: AbortSignal) {
+export function abortableSleep(ms: number, signal: AbortSignal, aborted?: () => any) {
 	return new Promise<void>((resolve, reject) => {
 		setAbortableTimeout(
 			() => resolve(undefined),
 			ms,
 			signal,
-			() => resolve(undefined)
+			async () => {
+				try {
+					await aborted?.()
+				} finally {
+					resolve(undefined)
+				}
+			}
 		)
 	})
 }

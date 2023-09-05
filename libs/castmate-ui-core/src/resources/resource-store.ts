@@ -109,8 +109,31 @@ export const useResourceStore = defineStore("resources", () => {
 	return { resourceMap, initialize, createResource, applyResourceConfig, setResourceConfig, deleteResource }
 })
 
-export function useResource(typeName: MaybeRefOrGetter<string>) {
+export function useResources(typeName: MaybeRefOrGetter<string>) {
 	const resourceStore = useResourceStore()
 
 	return computed(() => resourceStore.resourceMap.get(toValue(typeName)))
+}
+
+export function useResource<TResourceData extends ResourceData>(
+	typeName: MaybeRefOrGetter<string>,
+	id: MaybeRefOrGetter<string>
+) {
+	const resourceStore = useResourceStore()
+
+	return computed(() => resourceStore.resourceMap.get(toValue(typeName))?.resources.get(toValue(id)) as TResourceData)
+}
+
+export function useResourceIPCCaller<TFunc extends (...args: any) => any>(
+	typeName: MaybeRefOrGetter<string>,
+	id: MaybeRefOrGetter<string>,
+	funcName: MaybeRefOrGetter<string>
+) {
+	const memberInvoker = useIpcCaller<
+		(type: string, id: string, func: string, ...args: Parameters<TFunc>) => ReturnType<TFunc>
+	>("resources", "callIPCMember")
+
+	return async (...args: Parameters<TFunc>) => {
+		return await memberInvoker(toValue(typeName), toValue(id), toValue(funcName), ...args)
+	}
 }

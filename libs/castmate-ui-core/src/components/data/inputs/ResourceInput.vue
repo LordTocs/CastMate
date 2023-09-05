@@ -77,7 +77,7 @@
 import { SchemaResource, ResourceData } from "castmate-schema"
 import { ResourceProxy } from "../../../util/data"
 import { computed, nextTick, ref, useModel, watch } from "vue"
-import { useResource } from "../../../main"
+import { useResources } from "../../../main"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
 import PChevronDownIcon from "primevue/icons/chevrondown"
@@ -93,7 +93,7 @@ const props = defineProps<{
 }>()
 
 const model = useModel(props, "modelValue")
-const resourceStore = useResource(() => props.schema.resourceType)
+const resourceStore = useResources(() => props.schema.resourceType)
 const customViewComponent = computed(() => undefined)
 const resourceItem = computed(() => {
 	if (!model.value) return undefined

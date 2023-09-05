@@ -6,6 +6,7 @@ interface ResourceEntry<T extends ResourceBase = any> {
 	typeName: string
 	constructor: ResourceConstructor<T>
 	storage: ResourceStorage<T>
+	ipcFuncs: string[]
 }
 
 export async function createResource<T extends ResourceBase>(constructor: ResourceConstructor<T>, ...args: any[]) {
@@ -86,6 +87,21 @@ defineIPCFunc("resources", "deleteResource", async (type: string, id: string) =>
 	await resourceType.storage.remove(id)
 })
 
+type CallableResource = Record<string, (...args: any[]) => any>
+defineIPCFunc("resources", "callIPCMember", async (type: string, id: string, func: string, ...args: any[]) => {
+	const resourceType = await ResourceRegistry.getInstance().getResourceType(type)
+	if (!resourceType) throw new Error(`Missing Resource Type ${type}`)
+
+	const resource = resourceType.storage.getById(id)
+	if (!resource) throw new Error(`Missing Resource ${id} from ${type}`)
+
+	if (!resourceType.ipcFuncs.includes(func))
+		throw new Error(`Resource type ${type} does not include an IPC func ${func}`)
+
+	//@ts-ignore SHUT UP THIS WORKS
+	return await (resource as CallableResource)[func](...args)
+})
+
 const rendererAddResourceType = defineCallableIPC<(name: string) => void>("resources", "addResourceType")
 const rendererDeleteResourceType = defineCallableIPC<(name: string) => void>("resources", "deleteResourceType")
 
@@ -108,6 +124,7 @@ export const ResourceRegistry = Service(
 				typeName: constructor.storage.name,
 				constructor,
 				storage: constructor.storage,
+				ipcFuncs: [],
 			})
 
 			rendererAddResourceType(constructor.storage.name)
@@ -126,6 +143,12 @@ export const ResourceRegistry = Service(
 			this.resourceTypes.splice(idx, 1)
 
 			rendererDeleteResourceType(constructor.storage.name)
+		}
+
+		exposeIPCFunction<T extends ResourceBase>(constructor: ResourceConstructor<T>, name: keyof T) {
+			const resourceType = this.getResourceType(constructor.storage.name)
+			if (!resourceType) return
+			resourceType.ipcFuncs.push(name as string)
 		}
 
 		getResourceType<T extends ResourceBase>(typeName: string) {

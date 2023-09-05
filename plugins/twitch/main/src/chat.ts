@@ -1,24 +1,10 @@
 import { ChatClient } from "@twurple/chat"
 import { defineTrigger, defineAction } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
+import { TwitchAPIService, onChannelAuth } from "./api-harness"
+import { Color, Range } from "castmate-schema"
 
 export function setupChat() {
-	let chatClient: ChatClient | undefined
-
-	function shutdownTriggers() {
-		if (!chatClient) return
-
-		chatClient.quit()
-	}
-
-	function setupTriggers() {
-		chatClient = new ChatClient()
-
-		chatClient.onMessage((channel, user, text, msg) => {
-			//msg.userInfo.displayName
-		})
-	}
-
 	defineAction({
 		id: "chat",
 		name: "Send Chat",
@@ -32,15 +18,7 @@ export function setupChat() {
 			},
 		},
 		async invoke(config, context, abortSignal) {
-			const channel = TwitchAccount.storage.getById("channel")
-
-			const channelName = channel?.config?.name
-
-			if (!channelName) {
-				return
-			}
-
-			//await chatClient.say(channelName, config.message)
+			await TwitchAPIService.getInstance().chatClient.say(TwitchAccount.channel.twitchId, config.message)
 		},
 	})
 
@@ -75,5 +53,137 @@ export function setupChat() {
 
 			return false
 		},
+	})
+
+	const firstTimeChat = defineTrigger({
+		id: "firstTimeChat",
+		name: "First Time Chatter",
+		icon: "mdi mdi-chat",
+		version: "0.0.1",
+		config: {
+			type: Object,
+			properties: {},
+		},
+		context: {
+			type: Object,
+			properties: {
+				user: { type: String, required: true },
+				userId: { type: String, required: true },
+				userColor: { type: String, required: true },
+				message: { type: String, required: true },
+			},
+		},
+		async handle(config, context) {
+			return true
+		},
+	})
+
+	defineAction({
+		id: "sendShoutout",
+		name: "Shoutout",
+		description: "Sends a shout out",
+		icon: "mdi mdi-bullhorn",
+		type: "instant",
+		config: {
+			type: Object,
+			properties: {
+				user: { type: String, name: "Twitch Name", template: true, required: true, default: "" },
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			const channel = TwitchAccount.channel
+			const user = await channel.apiClient.users.getUserByName(config.user)
+			if (!user) {
+				return
+			}
+			await channel.apiClient.chat.shoutoutUser(channel.twitchId, user?.id)
+
+			TwitchAPIService.getInstance().eventsub.on
+		},
+	})
+
+	const shoutoutSent = defineTrigger({
+		id: "shoutoutSent",
+		name: "Shout Out Sent",
+		description: "Fires when /shoutout is used",
+		icon: "mdi mdi-chat",
+		version: "0.0.1",
+		config: {
+			type: Object,
+			properties: {},
+		},
+		context: {
+			type: Object,
+			properties: {
+				user: { type: String, required: true },
+				userId: { type: String, required: true },
+				userColor: { type: String, required: true },
+			},
+		},
+		async handle(config, context) {
+			return true
+		},
+	})
+
+	const bits = defineTrigger({
+		id: "bits",
+		name: "Bits Cheered",
+		description: "Fires a user cheers with bits",
+		icon: "mdi mdi-chat",
+		version: "0.0.1",
+		config: {
+			type: Object,
+			properties: {
+				bits: { type: Range, name: "Bits Cheered", required: true, default: new Range() },
+			},
+		},
+		context: {
+			type: Object,
+			properties: {
+				bits: { type: Number, required: true },
+				user: { type: String, required: true },
+				userId: { type: String, required: true },
+				userColor: { type: String, required: true },
+				message: { type: String, required: true },
+			},
+		},
+		async handle(config, context) {
+			return true
+		},
+	})
+
+	onChannelAuth((account, service) => {
+		service.chatClient.onMessage(async (channel, user, message, msgInfo) => {
+			const context = {
+				user: msgInfo.userInfo.displayName,
+				userId: msgInfo.userInfo.userId,
+				userColor: msgInfo.userInfo.color as Color,
+				message,
+			}
+
+			if (msgInfo.isFirst) {
+				firstTimeChat(context)
+			}
+
+			chat(context)
+		})
+
+		service.eventsub.onChannelShoutoutCreate(account.twitchId, account.twitchId, (event) => {
+			shoutoutSent({
+				user: event.shoutedOutBroadcasterDisplayName,
+				userId: event.shoutedOutBroadcasterId,
+				userColor: "#000000",
+			})
+		})
+
+		service.eventsub.onChannelCheer(account.twitchId, (event) => {
+			bits({
+				bits: event.bits,
+				user: event.userDisplayName ?? "Anonymous",
+				userId: event.userId ?? "",
+				userColor: "#000000",
+				message: "",
+			})
+		})
 	})
 }
