@@ -46,11 +46,7 @@ export function setupChannelPointRewards() {
 	})
 
 	async function loadRewards() {
-		const channelAccount = TwitchAccount.storage.getById("channel")
-
-		if (!channelAccount) {
-			return
-		}
+		const channelAccount = TwitchAccount.channel
 
 		const channelId = channelAccount.config.twitchId
 

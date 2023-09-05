@@ -47,18 +47,18 @@ export const TwitchAPIService = Service(
 		}
 
 		async finalize() {
-			const channelAccount = TwitchAccount.storage.getById("channel")
-			if (!channelAccount) throw Error("What?") //Never should happen
+			const channelAccount = TwitchAccount.channel
 
 			if (channelAccount.config.name.length > 0) {
 				//TODO: use state.authenticated
 				this.onReauthChannel()
 			}
+
+			this.eventsub.start()
 		}
 
 		private async onReauthChannel() {
-			const channelAccount = TwitchAccount.storage.getById("channel")
-			if (!channelAccount) throw Error("What?") //Never should happen
+			const channelAccount = TwitchAccount.channel
 
 			this._chatClient = new ChatClient({
 				authProvider: channelAccount,
