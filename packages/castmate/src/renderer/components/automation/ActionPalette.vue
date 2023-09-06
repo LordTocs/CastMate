@@ -1,64 +1,32 @@
 <template>
-	<p-portal :append-to="appendTo">
-		<div class="palette" :style="{ '--page-x': `${pageX}px`, '--page-y': `${pageY}px` }" v-if="visible" @click.stop>
-			<p-menu :model="allItems">
-				<template #start>
-					<form @submit.prevent="complete">
-						<span class="w-full p-inputgroup">
-							<p-input-text v-model="filter" ref="filterInput" placeholder="Filter Actions" />
-						</span>
-					</form>
-				</template>
-				<template #item="{ item }">
-					<div
-						class="p-menuitem-content"
-						v-if="!item.items"
-						:style="{
-							...item.style,
-						}"
-					>
-						<a class="p-menuitem-link" tabindex="-1" aria-hidden="true">
-							<span
-								class="p-menuitem-icon"
-								style="color: var(--item-color)"
-								:class="item.icon"
-								v-if="item.icon"
-							></span>
-							<span class="p-menuitem-text">{{ item.label }}</span>
-						</a>
-					</div>
-					<div
-						class="p-menuitem-content"
-						v-else
-						:style="{
-							...item.style,
-							borderBottom: `2px solid var(--item-color)`,
-						}"
-					>
-						<span
-							class="p-menuitem-icon"
-							style="margin-right: 0.5rem; color: var(--item-color)"
-							:class="item.icon"
-							v-if="item.icon"
-						></span
-						>{{ item.label }}
-					</div>
-				</template>
-			</p-menu>
-		</div>
-	</p-portal>
+	<filter-palette :items="allItems" ref="palette" :append-to="appendTo">
+		<template #submenuheader="{ item }">
+			<span
+				class="p-menuitem-icon"
+				style="margin-right: 0.5rem; color: var(--item-color)"
+				:class="item.icon"
+				v-if="item.icon"
+			></span
+			>{{ item.label }}
+		</template>
+		<template #item="{ item }">
+			<a class="p-menuitem-link">
+				<span
+					class="p-menuitem-icon"
+					style="margin-right: 0.5rem; color: var(--item-color)"
+					:class="item.icon"
+					v-if="item.icon"
+				></span
+				>{{ item.label }}
+			</a>
+		</template>
+	</filter-palette>
 </template>
 
 <script setup lang="ts">
-import PPortal from "primevue/portal"
-import PInputText from "primevue/inputtext"
-import PMenu from "primevue/menu"
 import { MenuItem } from "primevue/menuitem"
-
-import { computed, onMounted, ref, nextTick, markRaw } from "vue"
-import { ActionSelection, usePluginStore } from "castmate-ui-core"
-
-import { useEventListener } from "@vueuse/core"
+import { computed, ref } from "vue"
+import { ActionSelection, usePluginStore, FilterPalette } from "castmate-ui-core"
 
 const props = withDefaults(
 	defineProps<{
@@ -71,52 +39,11 @@ const props = withDefaults(
 
 const pluginStore = usePluginStore()
 
-const pageX = ref<number>(0)
-const pageY = ref<number>(0)
-
-const filterInput = ref<{ $el: HTMLElement } | null>(null)
-
 const emit = defineEmits(["selectAction"])
-
-const filter = ref<string>("")
-const filterLower = computed(() => filter.value.trim().toLocaleLowerCase())
-
-const visible = ref(false)
-
-useEventListener(
-	computed(() => (visible.value ? markRaw(window) : undefined)),
-	"click",
-	(ev: MouseEvent) => {
-		visible.value = false
-	}
-)
-
-function passesFilter(name: string) {
-	if (filterLower.value == "") return true
-	return name.toLocaleLowerCase().includes(filterLower.value)
-}
-
-function close() {
-	visible.value = false
-}
+const palette = ref<typeof FilterPalette>()
 
 function selectItem(selection: ActionSelection) {
 	emit("selectAction", selection)
-	close()
-}
-
-function complete() {
-	for (const g of allItems.value) {
-		if (!g.visible) continue
-		if (!g.items) continue
-		for (const i of g.items) {
-			if (!i.visible) continue
-			selectItem({ plugin: g.key, action: i.key })
-			return
-		}
-	}
-
-	close()
 }
 
 const allItems = computed<MenuItem[]>(() => {
@@ -130,10 +57,11 @@ const allItems = computed<MenuItem[]>(() => {
 			items: [],
 			style: {
 				"--item-color": plugin.color,
+				borderBottom: `2px solid var(--item-color)`,
+				marginBottom: "2px",
+				padding: `0.25rem 1rem`,
 			},
 		}
-
-		let hasVisible = false
 
 		for (let actionKey of Object.keys(plugin.actions)) {
 			const action = plugin.actions[actionKey]
@@ -145,20 +73,14 @@ const allItems = computed<MenuItem[]>(() => {
 				command(event) {
 					selectItem({ plugin: plugin.id, action: action.id })
 				},
-				visible: passesFilter(action.name),
 				style: {
 					"--item-color": action.color,
 				},
 			}
 
-			if (item.visible) {
-				hasVisible = true
-			}
-
 			category.items?.push(item)
 		}
 
-		category.visible = hasVisible
 		result.push(category)
 	}
 
@@ -167,21 +89,7 @@ const allItems = computed<MenuItem[]>(() => {
 
 defineExpose({
 	open(event: MouseEvent) {
-		filter.value = ""
-		visible.value = true
-		pageX.value = event.pageX
-		pageY.value = event.pageY
-		nextTick(() => filterInput.value?.$el?.focus())
+		palette.value?.open(event)
 	},
 })
 </script>
-
-<style scoped>
-.palette {
-	position: absolute;
-	left: var(--page-x);
-	top: var(--page-y);
-	max-height: 300px;
-	box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
-}
-</style>
