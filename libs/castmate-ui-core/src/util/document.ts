@@ -209,7 +209,6 @@ export function provideDocumentPath(localPath: MaybeRefOrGetter<string | undefin
 	})
 
 	provide("documentObjectPath", ourPath)
-	console.log("Provide Document Path")
 
 	return ourPath
 }
