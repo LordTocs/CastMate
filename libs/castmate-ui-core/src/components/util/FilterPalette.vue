@@ -202,6 +202,7 @@ function onItemSelect(ev: MouseEvent, item: MenuItem) {
 		originalEvent: ev,
 		item,
 	})
+	hide()
 	ev.stopPropagation()
 	ev.preventDefault()
 }
