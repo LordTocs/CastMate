@@ -1,4 +1,4 @@
-import { SequenceActions, isActionStack, isInstantAction } from "castmate-schema"
+import { SequenceActions, assignNewIds, isActionStack, isInstantAction } from "castmate-schema"
 import { Sequence } from "castmate-schema"
 import {
 	MaybeRefOrGetter,
@@ -181,6 +181,8 @@ export function provideAutomationEditState(
 			sequenceLocalDrag.value.removeSequence?.()
 		} else {
 			console.log("Dropped from Remote")
+			//Because of undo being document local, remote drops must always assign new Ids
+			assignNewIds(data)
 			sequenceLocalDrag.value.dropped = false
 		}
 		const offset: { x: number; y: number } = JSON.parse(ev.dataTransfer.getData("automation-drag-offset"))
@@ -270,6 +272,10 @@ export function useSequenceDrag(
 		//Grab data here
 		const sequence = sequenceCloner()
 		ev.dataTransfer.effectAllowed = ev.altKey ? "copy" : "move"
+		if (ev.altKey) {
+			//We're copying, always assign new ids
+			assignNewIds(sequence)
+		}
 		ev.dataTransfer.setData("automation-sequence", JSON.stringify(sequence))
 
 		if (

@@ -1,3 +1,5 @@
+import { nanoid } from "nanoid/non-secure"
+
 export type AnyAction = InstantAction | TimeAction | FlowAction
 
 export interface SequenceActions {
@@ -91,4 +93,20 @@ export function getActionById(id: string, sequence: Sequence): AnyAction | Actio
 		}
 	}
 	return undefined
+}
+
+export function assignNewIds(sequence: Sequence) {
+	for (const action of sequence.actions) {
+		action.id = nanoid()
+		if (isTimeAction(action)) {
+			for (const offsetSeq of action.offsets) {
+				offsetSeq.id = nanoid()
+				assignNewIds(offsetSeq)
+			}
+		} else if (isActionStack(action)) {
+			for (const item of action.stack) {
+				item.id = nanoid()
+			}
+		}
+	}
 }
