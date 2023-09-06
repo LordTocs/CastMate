@@ -18,7 +18,10 @@ export function setupChat() {
 			},
 		},
 		async invoke(config, context, abortSignal) {
-			await TwitchAPIService.getInstance().chatClient.say(TwitchAccount.channel.twitchId, config.message)
+			await TwitchAPIService.getInstance().chatClient.say(
+				TwitchAccount.channel.config.name.toLowerCase(),
+				config.message
+			)
 		},
 	})
 
@@ -40,6 +43,7 @@ export function setupChat() {
 				userId: { type: String, required: true },
 				userColor: { type: String, required: true },
 				message: { type: String, required: true },
+				messageId: { type: String, required: true },
 			},
 		},
 		async handle(config, context) {
@@ -159,7 +163,10 @@ export function setupChat() {
 				userId: msgInfo.userInfo.userId,
 				userColor: msgInfo.userInfo.color as Color,
 				message,
+				messageId: msgInfo.id,
 			}
+
+			console.log(`${user}: ${message}`)
 
 			if (msgInfo.isFirst) {
 				firstTimeChat(context)
