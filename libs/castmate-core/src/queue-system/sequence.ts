@@ -31,8 +31,11 @@ export class SequenceRunner {
 		this.abortController.abort()
 	}
 
+	get aborted() {
+		return this.abortController.signal.aborted
+	}
+
 	async run() {
-		console.log(this.sequence)
 		this.dbg?.sequenceStarted()
 		await this.runSequence(this.sequence)
 		this.dbg?.sequenceEnded()
@@ -40,7 +43,6 @@ export class SequenceRunner {
 
 	private async runActionBase(action: ActionInfo) {
 		this.dbg?.markStart(action.id)
-		console.log("Running", action)
 		try {
 			const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
 			if (!actionDef) {
@@ -60,6 +62,7 @@ export class SequenceRunner {
 	}
 
 	private async runAction(action: ActionStack | TimeAction | InstantAction) {
+		if (this.aborted) return
 		if ("stack" in action) {
 			const actionStack = action as ActionStack
 			return await this.runActionStack(actionStack)
@@ -85,6 +88,7 @@ export class SequenceRunner {
 	 */
 	private async runSequence(sequence: SequenceActions) {
 		for (let action of sequence.actions) {
+			if (this.aborted) return
 			await this.runAction(action)
 		}
 	}
@@ -102,7 +106,7 @@ export class SequenceRunner {
 			await this.runOffset(offset)
 		})
 
-		await Promise.all([actionPromise, ...promises])
+		await Promise.allSettled([actionPromise, ...promises])
 	}
 
 	private runOffset(offset: OffsetActions) {
@@ -110,8 +114,8 @@ export class SequenceRunner {
 			setAbortableTimeout(
 				async () => {
 					try {
-						const result = await this.runSequence(offset)
-						resolve(result)
+						await this.runSequence(offset)
+						resolve(undefined)
 					} catch (err) {
 						reject(err)
 					}
@@ -119,7 +123,7 @@ export class SequenceRunner {
 				offset.offset * 1000,
 				this.abortController.signal,
 				() => {
-					reject(new Error("Aborted")) //TODO: Use a special error?
+					resolve(undefined)
 				}
 			)
 		})
