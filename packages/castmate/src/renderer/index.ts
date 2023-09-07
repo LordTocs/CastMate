@@ -32,6 +32,7 @@ import { initData } from "castmate-ui-core"
 import { createRouter, createWebHistory } from "vue-router"
 
 import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
+import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
 
 const router = createRouter({
 	history: createWebHistory(),
@@ -63,6 +64,7 @@ async function init() {
 	useMediaStore().initialize()
 	initData()
 	initSoundPlugin()
+	initTwitchPlugin()
 }
 
 init()

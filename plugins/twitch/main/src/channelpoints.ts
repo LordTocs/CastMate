@@ -116,7 +116,7 @@ export function setupChannelPointRewards() {
 		id: "redemption",
 		name: "Channel Point Reward",
 		version: "0.0.1",
-		icon: "mdi mdi-pencil",
+		icon: "twi twi-channel-points",
 		config: {
 			type: Object,
 			properties: {

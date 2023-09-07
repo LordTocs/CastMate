@@ -6,7 +6,7 @@ export function setupHypeTrains() {
 	const hypeTrainStarted = defineTrigger({
 		id: "hypeTrainStarted",
 		name: "Hype Train Started",
-		icon: "mdi mdi-heart",
+		icon: "mdi mdi-train-car-caboose",
 		version: "0.0.1",
 		config: {
 			type: Object,
@@ -29,7 +29,7 @@ export function setupHypeTrains() {
 	const hypeTrainLevelUp = defineTrigger({
 		id: "hypeTrainLevelUp",
 		name: "Hype Train Level Up",
-		icon: "mdi mdi-heart",
+		icon: "mdi mdi-train-car-caboose",
 		version: "0.0.1",
 		config: {
 			type: Object,
@@ -59,7 +59,7 @@ export function setupHypeTrains() {
 	const hypeTrainEnded = defineTrigger({
 		id: "hypeTrainEnded",
 		name: "Hype Train Ended",
-		icon: "mdi mdi-heart",
+		icon: "mdi mdi-train-car-caboose",
 		version: "0.0.1",
 		config: {
 			type: Object,

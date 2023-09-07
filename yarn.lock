@@ -2928,6 +2928,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-twitch-renderer@workspace:^, castmate-plugin-twitch-renderer@workspace:plugins/twitch/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-twitch-renderer@workspace:plugins/twitch/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-twitch-shared@workspace:^, castmate-plugin-twitch-shared@workspace:plugins/twitch/shared":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twitch-shared@workspace:plugins/twitch/shared"
@@ -2997,6 +3015,7 @@ __metadata:
     castmate-plugin-sound-main: "workspace:^"
     castmate-plugin-sound-renderer: "workspace:^"
     castmate-plugin-twitch-main: "workspace:^"
+    castmate-plugin-twitch-renderer: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
@@ -3828,6 +3847,19 @@ __metadata:
     lodash.isequal: ^4.5.0
     semver: ^7.3.5
   checksum: 06b34490fa6213f5c6a01de6f7b3d96eba4e1b7d27e8346747d8b094b9591684f55f92c703e2ee3407c562a240518c0eede699462cc333fcfe2983141941fe98
+  languageName: node
+  linkType: hard
+
+"electron@npm:*":
+  version: 26.2.0
+  resolution: "electron@npm:26.2.0"
+  dependencies:
+    "@electron/get": ^2.0.0
+    "@types/node": ^18.11.18
+    extract-zip: ^2.0.1
+  bin:
+    electron: cli.js
+  checksum: cd03a15312ef33a24154cc3026b5e54f4943e71b11c5b2bbeadfbae594df45a7119bb0733b62491b02b00534985b0b16903f414e54664cff309c72d9c461c8ba
   languageName: node
   linkType: hard
 

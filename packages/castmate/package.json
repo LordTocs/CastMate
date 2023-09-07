@@ -30,6 +30,7 @@
 		"@vueuse/core": "*",
 		"castmate-plugin-obs-renderer": "workspace:^",
 		"castmate-plugin-sound-renderer": "workspace:^",
+		"castmate-plugin-twitch-renderer": "workspace:^",
 		"castmate-ui-core": "workspace:^",
 		"castmate-vite": "workspace:^",
 		"chromatism2": "*",

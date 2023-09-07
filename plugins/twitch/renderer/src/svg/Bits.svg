@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   version="1.1"
+   viewBox="0 0 24 24"
+   x="0px"
+   y="0px"
+   aria-hidden="true"
+   focusable="false"
+   class="ScIconSVG-sc-1q25cff-1 ifhFgG"
+   id="svg4"
+   sodipodi:docname="Bits.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="10.9125"
+     inkscape:cx="-26.162657"
+     inkscape:cy="1.5120275"
+     inkscape:window-width="2081"
+     inkscape:window-height="1081"
+     inkscape:window-x="2419"
+     inkscape:window-y="512"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg4" />
+  <path
+     fill-rule="evenodd"
+     clip-rule="evenodd"
+     d="M 2.9954179,14.572738 12,1.7090489 21.004582,14.572738 12,22.290951 Z M 6.4403136,14.137945 12,6.194617 17.559686,14.135372 16.466273,15.071849 12,13.286369 7.5324407,15.074422 6.4403136,14.136659 Z"
+     id="path2"
+     style="stroke-width:1.28637" />
+</svg>

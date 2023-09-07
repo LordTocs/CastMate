@@ -6,7 +6,7 @@ export function setupRaids() {
 	const raid = defineTrigger({
 		id: "raid",
 		name: "Incoming Raid",
-		icon: "mdi mdi-chat",
+		icon: "mdi mdi-parachute",
 		version: "0.0.1",
 		config: {
 			type: Object,
@@ -36,7 +36,7 @@ export function setupRaids() {
 	const raidOut = defineTrigger({
 		id: "raidOut",
 		name: "Outgoing Raid",
-		icon: "mdi mdi-chat",
+		icon: "mdi mdi-parachute",
 		version: "0.0.1",
 		config: {
 			type: Object,

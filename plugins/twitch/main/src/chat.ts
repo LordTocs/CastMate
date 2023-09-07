@@ -62,7 +62,7 @@ export function setupChat() {
 	const firstTimeChat = defineTrigger({
 		id: "firstTimeChat",
 		name: "First Time Chatter",
-		icon: "mdi mdi-chat",
+		icon: "mdi mdi-medal",
 		version: "0.0.1",
 		config: {
 			type: Object,
@@ -133,7 +133,7 @@ export function setupChat() {
 		id: "bits",
 		name: "Bits Cheered",
 		description: "Fires a user cheers with bits",
-		icon: "mdi mdi-chat",
+		icon: "twi twi-bits",
 		version: "0.0.1",
 		config: {
 			type: Object,
