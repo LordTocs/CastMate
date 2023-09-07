@@ -39,16 +39,19 @@ export const useProjectStore = defineStore("project", () => {
 	}
 })
 
-interface ResourceGroupConfig {
+interface ResourceGroupConfig<TData extends ResourceData> {
 	resourceType: string
 	resourceName?: string
 	documentType: string
 	groupIcon?: string
 	creationDialog?: VueElementConstructor
-	createView?: (resource: ResourceData) => object
+	createView?: (resource: TData) => object
 }
 
-export function registerResourceAsProjectGroup(app: App<Element>, config: ResourceGroupConfig) {
+export function registerResourceAsProjectGroup<TData extends ResourceData>(
+	app: App<Element>,
+	config: ResourceGroupConfig<TData>
+) {
 	const projectStore = useProjectStore()
 	const resources = useResources(config.resourceType)
 	const resourceStore = useResourceStore()
