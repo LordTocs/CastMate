@@ -245,7 +245,7 @@ export function useColors(colorProvider: MaybeRefOrGetter<{ color?: string } | u
 	const color = computed(() => toValue(colorProvider)?.color ?? defaultColor)
 	const darkerColor = computed(() => chromatism.shade(-20, color.value).hex)
 	const darkestColor = computed(() => chromatism.shade(-30, color.value).hex)
-	const lighterColor = computed(() => chromatism.shade(20, color.value).hex)
+	const lighterColor = computed(() => chromatism.brightness(20, color.value).hex)
 
 	return { color, darkerColor, darkestColor, lighterColor }
 }
@@ -267,5 +267,11 @@ export function useActionColors(selection: MaybeRefOrGetter<ActionSelection | un
 		"--lighter-action-color": lighterActionColor.value,
 	}))
 
-	return { darkestActionColor, darkerActionColor, actionColor, lighterActionColor, actionColorStyle: style }
+	return {
+		darkestActionColor,
+		darkerActionColor,
+		actionColor,
+		lighterActionColor,
+		actionColorStyle: style,
+	}
 }

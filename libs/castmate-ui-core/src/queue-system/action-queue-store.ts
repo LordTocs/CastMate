@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { useIpcCaller, handleIpcMessage } from "../main"
 import { Sequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
-import { MaybeRefOrGetter, computed, ref, toValue, inject, ComputedRef } from "vue"
+import { MaybeRefOrGetter, computed, ref, toValue, inject, ComputedRef, nextTick } from "vue"
 
 export interface TestSequenceData {
 	running: boolean
@@ -40,7 +40,22 @@ export const useActionQueueStore = defineStore("actionQueues", () => {
 			console.log("Action", id, "Ended")
 			const testRun = activeTestSequences.value[sequenceId]
 			if (!testRun) return
-			delete testRun.activeIds[id]
+			const time = Date.now()
+			const startTime = testRun.activeIds[id]
+			if (startTime == null) return
+
+			const diff = time - startTime
+			const delay = 300 - diff
+
+			//Hold for at least 300ms so the border can show up
+
+			if (delay > 0) {
+				setTimeout(() => {
+					delete testRun.activeIds[id]
+				}, delay)
+			} else {
+				delete testRun.activeIds[id]
+			}
 		})
 	}
 
@@ -73,4 +88,10 @@ export function useParentTestSequence() {
 		"activeTestSequence",
 		computed(() => undefined)
 	)
+}
+
+export function useActionTestTime(actionId: MaybeRefOrGetter<string>) {
+	const testSeq = useParentTestSequence()
+
+	return computed(() => testSeq.value?.activeIds?.[toValue(actionId)])
 }

@@ -1,7 +1,7 @@
 <template>
 	<div
 		class="instant-action"
-		:class="{ 'is-selected': isSelected }"
+		:class="{ 'is-selected': isSelected, 'is-testing': testTime != null }"
 		:style="{ ...actionColorStyle }"
 		ref="instantAction"
 	>
@@ -30,6 +30,7 @@ import {
 	rectangleOverlaps,
 	useIsSelected,
 	useDocumentPath,
+	useActionTestTime,
 } from "castmate-ui-core"
 import { useModel, ref } from "vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
@@ -83,6 +84,8 @@ const { actionColorStyle } = useActionColors(() => props.modelValue)
 
 const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
 
+const testTime = useActionTestTime(() => props.modelValue.id)
+
 defineExpose({
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
 		if (!instantAction.value) {
@@ -108,6 +111,9 @@ defineExpose({
 	background-color: var(--action-color);
 	border: solid 2px var(--lighter-action-color);
 
+	transition: border-color 0.3s;
+	transition: background-color 0.3s;
+
 	height: var(--timeline-height);
 	width: var(--instant-width);
 }
@@ -119,9 +125,23 @@ defineExpose({
 
 	border-top-left-radius: var(--border-radius);
 	border-top-right-radius: var(--border-radius);
+
+	transition: background-color 0.3s;
 }
 
 .is-selected {
-	border-color: white !important;
+	border-color: white;
+}
+
+.is-testing {
+	/* border-color: var(--darkest-action-color); */
+	transition: border-color 0 !important;
+	transition: background-color 0 !important;
+	background-color: var(--lighter-action-color) !important;
+}
+
+.is-testing .instant-action-header {
+	/* background-color: var(--darkest-action-color); */
+	transition: background-color 0 !important;
 }
 </style>

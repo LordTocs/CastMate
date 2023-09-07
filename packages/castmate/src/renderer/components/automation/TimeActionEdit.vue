@@ -4,8 +4,12 @@
 		:class="{ indefinite, 'has-right-handle': hasRightHandle }"
 		:style="{ '--duration': duration }"
 	>
-		<div class="time-action" :style="{ ...actionColorStyle }">
-			<div class="time-action-content" :class="{ 'is-selected': isSelected }" ref="actionElement">
+		<div
+			class="time-action"
+			:style="{ ...actionColorStyle }"
+			:class="{ 'is-selected': isSelected, 'is-testing': testTime != null }"
+		>
+			<div class="time-action-content" ref="actionElement">
 				<div class="time-action-header action-handle">
 					<i class="mdi flex-none" :class="action?.icon" />
 					{{ action?.name }}
@@ -17,6 +21,7 @@
 						v-if="action?.actionComponent"
 						class="time-action-custom"
 					/>
+					<div class="play-indicator" v-if="testTime != null" :style="{ '--play-time': playTime }"></div>
 				</div>
 				<div class="time-action-footer">
 					{{ duration.toFixed(2) }}
@@ -45,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useModel, ref, provide } from "vue"
+import { computed, useModel, ref, provide, watch } from "vue"
 import DurationHandle from "./DurationHandle.vue"
 import {
 	rectangleOverlaps,
@@ -57,6 +62,7 @@ import {
 	useDocumentPath,
 	useIsSelected,
 	TextHider,
+	useActionTestTime,
 } from "castmate-ui-core"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
@@ -65,6 +71,7 @@ import { nanoid } from "nanoid/non-secure"
 import _sortedIndexBy from "lodash/sortedIndexBy"
 import { SelectionGetter } from "../../util/automation-dragdrop"
 import { useDuration } from "../../util/actions"
+import { time } from "console"
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -121,6 +128,34 @@ const hasRightHandle = computed(() => true)
 
 const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
 const offsetEdits = ref<SelectionGetter[]>([])
+
+const testTime = useActionTestTime(() => props.modelValue.id)
+let animationStartStamp: number | null = null
+const playTime = ref(0)
+
+function animateProgress(timestamp: number) {
+	if (animationStartStamp == null) {
+		animationStartStamp = timestamp
+	}
+
+	const delta = timestamp - animationStartStamp
+	playTime.value = delta / 1000
+	console.log(playTime.value)
+
+	if (testTime.value != null) {
+		window.requestAnimationFrame(animateProgress)
+	}
+}
+
+watch(testTime, (value, oldValue) => {
+	if (oldValue == null && value != null) {
+		//A new play has started
+		playTime.value = 0
+		animationStartStamp = null
+		window.requestAnimationFrame(animateProgress)
+	}
+})
+
 defineExpose({
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
 		if (!actionElement.value) return []
@@ -156,7 +191,13 @@ defineExpose({
 	position: relative;
 	pointer-events: auto;
 
+	border: solid 2px var(--lighter-action-color);
+	border-radius: var(--border-radius);
+
 	height: var(--timeline-height);
+	overflow: hidden;
+
+	transition: border-color 0.3s;
 }
 .time-action-content {
 	/* border-radius: var(--border-radius); */
@@ -183,6 +224,7 @@ defineExpose({
 	white-space: nowrap;
 	/* border-top-left-radius: var(--border-radius); */
 	width: var(--time-action-width);
+	transition: background-color 0.3s;
 }
 
 .indefinite .time-action-header {
@@ -200,6 +242,8 @@ defineExpose({
 	background-color: var(--action-color);
 	width: var(--time-action-width);
 	position: relative;
+
+	transition: background-color 0.3s;
 }
 
 .time-action-custom {
@@ -218,16 +262,46 @@ defineExpose({
 	text-overflow: clip;
 	white-space: nowrap;
 	width: var(--time-action-width);
+
+	transition: background-color 0.3s;
 }
 
 .timeline-sequences {
 	width: 100%;
 	position: relative;
+	left: 2px;
 }
 
 .is-selected {
-	border-top-color: white !important;
-	border-bottom-color: white !important;
-	border-left-color: white !important;
+	border-color: white;
+}
+
+.is-testing {
+	/* border-color: var(--darkest-action-color) !important; */
+	transition: border-color 0s !important;
+}
+
+.is-testing .time-action-header {
+	/* background-color: var(--darkest-action-color); */
+	transition: background-color 0s !important;
+}
+
+.is-testing .time-action-footer {
+	/* background-color: var(--darkest-action-color); */
+	transition: background-color 0s !important;
+}
+
+.is-testing .time-action-custom-wrapper {
+	background-color: var(--lighter-action-color);
+	transition: background-color 0s !important;
+}
+
+.play-indicator {
+	position: absolute;
+	left: calc(var(--play-time) * var(--time-width));
+	top: 0;
+	width: 2px;
+	height: 100%;
+	background-color: white;
 }
 </style>
