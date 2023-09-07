@@ -42,9 +42,12 @@ export interface DocumentData {
 	id: string
 }
 
+type DocumentSaveFunction = (doc: Document) => any
+
 export const useDocumentStore = defineStore("documents", () => {
 	const documents = ref<Map<string, Document>>(new Map())
 	const documentComponents = ref<Map<string, Component>>(new Map())
+	const saveFunctions = ref<Map<string, DocumentSaveFunction>>(new Map())
 
 	function addDocument(id: string, data: NamedData, view: any, type: string) {
 		if (documents.value.has(id)) {
@@ -68,11 +71,30 @@ export const useDocumentStore = defineStore("documents", () => {
 		documentComponents.value.set(type, markRaw(component))
 	}
 
+	function registerSaveFunction(type: string, save: DocumentSaveFunction) {
+		saveFunctions.value.set(type, save)
+	}
+
+	async function saveDocument(id: string) {
+		const doc = documents.value.get(id)
+		if (!doc) return
+
+		const save = saveFunctions.value.get(doc.type)
+		if (!save) return
+
+		if (!doc.dirty) return
+
+		await save(doc)
+		doc.dirty = false
+	}
+
 	return {
 		documents,
 		documentComponents,
 		addDocument,
 		registerDocumentComponent,
+		registerSaveFunction,
+		saveDocument,
 	}
 })
 

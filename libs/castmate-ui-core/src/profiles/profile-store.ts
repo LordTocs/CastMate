@@ -1,8 +1,15 @@
 import { ProfileData, ResourceData } from "castmate-schema"
-import { ProfileView, registerResourceAsProjectGroup } from "../main"
+import { ProfileView, registerResourceAsProjectGroup, useDocumentStore, useResourceStore } from "../main"
 import { App } from "vue"
 
 export async function initializeProfiles(app: App<Element>) {
+	const documentStore = useDocumentStore()
+	const resourceStore = useResourceStore()
+
+	documentStore.registerSaveFunction("profile", async (doc) => {
+		await resourceStore.setResourceConfig("Profile", doc.id, doc.data)
+	})
+
 	registerResourceAsProjectGroup(app, {
 		resourceType: "Profile",
 		documentType: "profile",

@@ -13,6 +13,20 @@
 		@drop="onDropped"
 	>
 		{{ document?.data?.name ?? props.title }}
+
+		<div class="spacer"></div>
+
+		<div class="dirty-dot" v-if="document?.dirty && isOutside"></div>
+		<p-button
+			icon="mdi mdi-close"
+			text
+			aria-label="Close"
+			@click="close"
+			size="small"
+			class="tiny-button"
+			:style="{ color: buttonColor }"
+			v-if="!isOutside || (selected && !document?.dirty)"
+		></p-button>
 	</div>
 </template>
 
@@ -20,6 +34,9 @@
 import { computed, ref } from "vue"
 import { useSelectTab, type DockedFrame, type DockedTab, useInsertToFrame, useDockingArea } from "../../util/docking"
 import { useDocument } from "../../util/document"
+
+import PButton from "primevue/button"
+import { useMouseInElement } from "@vueuse/core"
 
 const props = defineProps<{
 	frame: DockedFrame
@@ -32,10 +49,25 @@ const document = useDocument(props.documentId)
 const selected = computed(() => props.frame.currentTab == props.id)
 const dragging = ref<boolean>(false)
 
+const buttonColor = computed(() => {
+	if (!selected.value) {
+		return "#9e9e9e"
+	} else {
+		if (document.value?.dirty) {
+			return "white"
+		}
+		return undefined
+	}
+})
+
 const insertToFrame = useInsertToFrame()
 
 const dockingArea = useDockingArea()
 const tabHead = ref<HTMLElement | null>(null)
+
+const { isOutside } = useMouseInElement(tabHead)
+
+function close() {}
 
 function dragStart(evt: DragEvent) {
 	if (!evt.dataTransfer) {
@@ -129,5 +161,22 @@ function onClicked(evt: MouseEvent) {
 
 .unselected {
 	border-bottom: 2px solid var(--surface-border);
+}
+
+.spacer {
+	flex: 1;
+}
+
+.dirty-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 100px;
+	background-color: white;
+	margin-right: 0.5rem;
+}
+
+.docked-tab-head .tiny-button {
+	padding: 0.4375rem;
+	width: unset;
 }
 </style>

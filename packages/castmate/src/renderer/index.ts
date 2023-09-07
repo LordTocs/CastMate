@@ -59,6 +59,7 @@ async function init() {
 
 	initializeProfiles(app)
 	useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
+
 	useMediaStore().initialize()
 	initData()
 	initSoundPlugin()
