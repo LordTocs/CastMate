@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid/non-secure"
 import { inject, type Component } from "vue"
+import { useDocumentStore } from "./document"
 
 export type DocumentBase = {
 	name: string
@@ -55,11 +56,21 @@ export function useSelectTab() {
 	}
 }
 
-function findAndRemoveTab(division: DockedSplit | DockedFrame, tabId: string): DockedTab | undefined {
+export function findAndRemoveTab(division: DockedSplit | DockedFrame, tabId: string): DockedTab | undefined {
 	if (division.type === "frame") {
 		const idx = division.tabs.findIndex((t) => t.id == tabId)
 		if (idx >= 0) {
 			const [tab] = division.tabs.splice(idx, 1)
+			if (division.currentTab == tab.id) {
+				console.log("Finding New Tab to focus")
+				let nextTab = division.tabs[idx]
+				if (!nextTab) {
+					nextTab = division.tabs[division.tabs.length - 1]
+				}
+				console.log("Next Tab", nextTab?.id)
+				division.currentTab = nextTab?.id ?? ""
+				console.log(division)
+			}
 			return tab
 		}
 	} else if (division.type === "split") {
@@ -171,6 +182,18 @@ export function useInsertToFrame() {
 					tabFrame.tabs.splice(idx + 1, 0, tab)
 				}
 			}
+		}
+	}
+}
+
+export function useCloseTab() {
+	const dockingArea = useDockingArea()
+	const documentStore = useDocumentStore()
+
+	return function (tabId: string) {
+		const tab = findAndRemoveTab(dockingArea, tabId)
+		if (tab?.documentId) {
+			documentStore.removeDocument(tab.documentId)
 		}
 	}
 }

@@ -2,7 +2,7 @@ import { NamedData, useDocumentStore } from "./../util/document"
 import { defineStore } from "pinia"
 import { ref, computed, type Component, markRaw } from "vue"
 
-import { DockedArea, DockedFrame, DockedSplit } from "../main"
+import { DockedArea, DockedFrame, DockedSplit, findAndRemoveTab, DockedTab } from "../main"
 import { nanoid } from "nanoid/non-secure"
 
 function focusDocumentId(division: DockedFrame | DockedSplit, documentId: string) {
@@ -66,6 +66,24 @@ function findFrame(division: DockedFrame | DockedSplit, frameId: string | undefi
 	}
 }
 
+function findTabId(division: DockedSplit | DockedFrame, predicate: (tab: DockedTab) => boolean): DockedTab | undefined {
+	if (division.type == "frame") {
+		for (const tab of division.tabs) {
+			if (predicate(tab)) {
+				return tab
+			}
+		}
+	} else {
+		for (const div of division.divisions) {
+			const result = findTabId(div, predicate)
+			if (result) {
+				return result
+			}
+		}
+		return undefined
+	}
+}
+
 function findFirstFrame(division: DockedFrame | DockedSplit): DockedFrame | undefined {
 	if (division.type == "frame") {
 		return division
@@ -94,6 +112,21 @@ export const useDockingStore = defineStore("docking", () => {
 	})
 
 	//Todo: Serialize to file for loading back the editor configuration.
+
+	function closeTab(tabId: string) {
+		findAndRemoveTab(dockedInfo.value, tabId)
+	}
+
+	function closeDocument(documentId: string) {
+		const tabId = getDocumentTabId(documentId)
+		if (tabId) {
+			closeTab(tabId)
+		}
+	}
+
+	function getDocumentTabId(documentId: string) {
+		return findTabId(dockedInfo.value, (tab) => tab.documentId == documentId)?.id
+	}
 
 	function openDocument(documentId: string, data: NamedData, view: object, documentType: string) {
 		//Check to see if there's a tab already open with this document id
@@ -161,5 +194,5 @@ export const useDockingStore = defineStore("docking", () => {
 		targetFrame.currentTab = id
 	}
 
-	return { rootDockArea: dockedInfo, openDocument, openPage }
+	return { rootDockArea: dockedInfo, openDocument, openPage, closeTab, closeDocument, getDocumentTabId }
 })

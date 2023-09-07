@@ -32,7 +32,14 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import { useSelectTab, type DockedFrame, type DockedTab, useInsertToFrame, useDockingArea } from "../../util/docking"
+import {
+	useSelectTab,
+	type DockedFrame,
+	type DockedTab,
+	useInsertToFrame,
+	useDockingArea,
+	useCloseTab,
+} from "../../util/docking"
 import { useDocument } from "../../util/document"
 
 import PButton from "primevue/button"
@@ -67,7 +74,13 @@ const tabHead = ref<HTMLElement | null>(null)
 
 const { isOutside } = useMouseInElement(tabHead)
 
-function close() {}
+const closeTab = useCloseTab()
+
+function close(ev: MouseEvent) {
+	closeTab(props.id)
+	ev.stopPropagation()
+	ev.preventDefault()
+}
 
 function dragStart(evt: DragEvent) {
 	if (!evt.dataTransfer) {

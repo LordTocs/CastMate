@@ -67,6 +67,10 @@ export const useDocumentStore = defineStore("documents", () => {
 		return document
 	}
 
+	function removeDocument(id: string) {
+		documents.value.delete(id)
+	}
+
 	function registerDocumentComponent(type: string, component: Component) {
 		documentComponents.value.set(type, markRaw(component))
 	}
@@ -95,6 +99,7 @@ export const useDocumentStore = defineStore("documents", () => {
 		registerDocumentComponent,
 		registerSaveFunction,
 		saveDocument,
+		removeDocument,
 	}
 })
 
