@@ -116,6 +116,21 @@ defineExpose({
 			...(childSequenceEdit.value?.getSelectedItems(container, from, to) ?? []),
 		]
 	},
+	deleteIds(ids: string[]) {
+		childSequenceEdit.value?.deleteIds(ids)
+
+		if (actionEdit.value && !actionEdit.value?.deleteIds(ids)) {
+			console.log(
+				"Sequence Item Requesting Removal",
+				props.offset,
+				props.modelValue.actions[props.offset]?.id,
+				props.modelValue
+			)
+			modelObj.value.actions.splice(props.offset, 1)
+		}
+
+		return modelObj.value.actions.length > 0
+	},
 })
 </script>
 

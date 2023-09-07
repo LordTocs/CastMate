@@ -62,6 +62,11 @@ defineExpose({
 			...(sequenceEdit.value?.getSelectedItems(container, from, to) ?? []),
 		]
 	},
+	deleteIds(ids: string[]) {
+		if (sequenceEdit.value && !sequenceEdit.value.deleteIds(ids)) {
+			selfDestruct()
+		}
+	},
 })
 </script>
 

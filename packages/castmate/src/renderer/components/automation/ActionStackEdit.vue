@@ -92,6 +92,21 @@ defineExpose({
 			...(childStack.value?.getSelectedItems(container, from, to) ?? []),
 		]
 	},
+	deleteIds(ids: string[]) {
+		const newStack = props.modelValue.stack.filter((action) => !ids.includes(action.id))
+
+		if (newStack.length > 1) {
+			modelObj.value.stack = newStack
+		} else if (newStack.length == 1) {
+			//Convert from stack to instant
+			//@ts-ignore I'm not sure how to get it to not care, but we're destroying the stack this way
+			modelObj.value = newStack[0]
+		}
+
+		//TODO: How to tell parent I should delete myself?
+
+		return newStack.length > 0
+	},
 })
 </script>
 

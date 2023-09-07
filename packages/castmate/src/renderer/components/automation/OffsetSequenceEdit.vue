@@ -24,7 +24,7 @@ import { useEventListener } from "@vueuse/core"
 import _clamp from "lodash/clamp"
 import { TimeActionInfo } from "castmate-schema"
 import { Selection, SelectionPos } from "castmate-ui-core"
-import { SelectionGetter } from "../../util/automation-dragdrop"
+import { SelectionGetter, useAutomationEditState } from "../../util/automation-dragdrop"
 
 const props = defineProps<{
 	modelValue: OffsetActions
@@ -152,10 +152,14 @@ useEventListener(window, "mouseup", (ev: MouseEvent) => {
 	}
 })
 
+const automationEditState = useAutomationEditState()
 const sequenceEdit = ref<SelectionGetter | null>(null)
 defineExpose({
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
 		return sequenceEdit.value?.getSelectedItems(container, from, to) ?? []
+	},
+	deleteIds(ids: string[]) {
+		return sequenceEdit.value?.deleteIds(ids) ?? false
 	},
 })
 </script>

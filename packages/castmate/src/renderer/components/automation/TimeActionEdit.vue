@@ -69,7 +69,7 @@ import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence, OffsetActions, TimeAction } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import _sortedIndexBy from "lodash/sortedIndexBy"
-import { SelectionGetter } from "../../util/automation-dragdrop"
+import { SelectionGetter, useAutomationEditState } from "../../util/automation-dragdrop"
 import { useDuration } from "../../util/actions"
 import { time } from "console"
 
@@ -106,6 +106,8 @@ provide(
 	}))
 )
 
+const automationEditState = useAutomationEditState()
+
 function removeOffset(index: number) {
 	model.value.offsets.splice(index, 1)
 }
@@ -127,7 +129,7 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 const hasRightHandle = computed(() => true)
 
 const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
-const offsetEdits = ref<SelectionGetter[]>([])
+const offsetEdits = ref<(SelectionGetter & { $el: HTMLElement })[]>([])
 
 const testTime = useActionTestTime(() => props.modelValue.id)
 let animationStartStamp: number | null = null
@@ -163,6 +165,7 @@ defineExpose({
 		const result: string[] = []
 
 		for (const oe of offsetEdits.value) {
+			console.log(oe)
 			result.push(...oe.getSelectedItems(container, from, to))
 		}
 
@@ -174,6 +177,38 @@ defineExpose({
 		}
 
 		return result
+	},
+	deleteIds(ids: string[]) {
+		if (ids.includes(props.modelValue.id)) {
+			//I'm being deleted
+			//Delete children?
+			for (let i = 0; i < offsetEdits.value.length; ++i) {
+				const oe = offsetEdits.value[i]
+				if (oe.deleteIds(ids)) {
+					//Needs orphaning
+					const rect = oe.$el.getBoundingClientRect()
+					automationEditState?.createFloatingSequence(props.modelValue.offsets[i], {
+						clientX: rect.x,
+						clientY: rect.y,
+					})
+				}
+			}
+			return false
+		} else {
+			const removalIds: string[] = []
+			for (let i = 0; i < offsetEdits.value.length; ++i) {
+				const oe = offsetEdits.value[i]
+				if (!oe.deleteIds(ids)) {
+					//This offset needs to be removed.
+					removalIds.push(props.modelValue.offsets[i].id)
+				}
+			}
+
+			if (removalIds.length > 0) {
+				model.value.offsets = model.value.offsets.filter((o) => !removalIds.includes(o.id))
+			}
+			return true
+		}
 	},
 })
 </script>

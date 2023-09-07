@@ -19,6 +19,7 @@ import {
 
 import { useEventListener } from "@vueuse/core"
 import {
+	ClientPosition,
 	DragEventWithDataTransfer,
 	getInternalMousePos,
 	injectSelectionState,
@@ -33,6 +34,7 @@ import { SelectionPos, Selection } from "castmate-ui-core"
 
 export interface SelectionGetter {
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection
+	deleteIds(ids: string[]): boolean
 }
 
 export interface DropZone {
@@ -52,6 +54,7 @@ export interface AutomationEditState {
 	getZone(ev: DragEventWithDataTransfer): DropZone | undefined
 	registerDropZone(key: string, zone: DropZone): void
 	unregisterDropZone(key: string, zone: DropZone): void
+	createFloatingSequence(sequence: Sequence, position: ClientPosition): void
 }
 
 interface LocalDragHandler {
@@ -62,7 +65,7 @@ interface LocalDragHandler {
 
 export function provideAutomationEditState(
 	automationElem: MaybeRefOrGetter<HTMLElement | null>,
-	createFloatingSequence: (seq: SequenceActions, offset: { x: number; y: number }, pos: MouseEvent) => any
+	createFloatingSequence: (seq: SequenceActions, offset: { x: number; y: number }, pos: ClientPosition) => any
 ): AutomationEditState {
 	const defaultDistance = 100000
 	const dragging = ref<boolean>(false)
@@ -145,6 +148,9 @@ export function provideAutomationEditState(
 			}
 
 			return minZone
+		},
+		createFloatingSequence(sequence: Sequence, position: ClientPosition) {
+			createFloatingSequence(sequence, { x: 0, y: 0 }, position)
 		},
 	}
 

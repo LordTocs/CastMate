@@ -1,5 +1,5 @@
 <template>
-	<div ref="editArea" class="automation-edit" tabindex="-1" @contextmenu="onContextMenu">
+	<div ref="editArea" class="automation-edit" tabindex="-1" @contextmenu="onContextMenu" @keydown="onKeyDown">
 		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
 			<sequence-edit
 				v-model="model.sequence"
@@ -42,6 +42,7 @@ import {
 	getInternalMousePos,
 	provideDocumentPath,
 	usePluginStore,
+	useDocumentSelection,
 } from "castmate-ui-core"
 import SequenceEdit from "./SequenceEdit.vue"
 import { provideAutomationEditState } from "../../util/automation-dragdrop"
@@ -63,6 +64,7 @@ const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
 const path = provideDocumentPath(() => props.localPath)
+const selection = useDocumentSelection(path)
 
 provideAutomationEditState(editArea, (seq, offset, ev) => {
 	if (!editArea.value) return
@@ -153,6 +155,21 @@ function onContextMenu(ev: MouseEvent) {
 	if (!editArea.value) return
 	palettePosition.value = getInternalMousePos(editArea.value, ev)
 	palette.value?.open(ev)
+}
+
+function onKeyDown(ev: KeyboardEvent) {
+	if (ev.key == "Delete") {
+		if (selection.value.length > 0) {
+			console.log("Deleting Ids", [...selection.value])
+			mainSequence.value?.deleteIds(selection.value)
+			for (const fs of floatingSequences.value) {
+				fs.deleteIds(selection.value)
+			}
+		}
+
+		ev.preventDefault()
+		ev.stopPropagation()
+	}
 }
 </script>
 

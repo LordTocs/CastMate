@@ -14,7 +14,12 @@ export function getElementScroll(elem: HTMLElement) {
 	return { x: elem.scrollLeft ?? 0, y: elem.scrollTop ?? 0 }
 }
 
-export function getInternalMousePos(elem: HTMLElement, ev: MouseEvent) {
+export interface ClientPosition {
+	readonly clientX: number
+	readonly clientY: number
+}
+
+export function getInternalMousePos(elem: HTMLElement, ev: ClientPosition) {
 	const rect = elem.getBoundingClientRect()
 	const scroll = getElementScroll(elem)
 

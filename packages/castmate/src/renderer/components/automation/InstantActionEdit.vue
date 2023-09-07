@@ -96,6 +96,9 @@ defineExpose({
 		const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
 		return rectangleOverlaps(rect, selrect) ? [props.modelValue.id] : []
 	},
+	deleteIds(ids: string[]) {
+		return !ids.includes(props.modelValue.id)
+	},
 })
 </script>
 
