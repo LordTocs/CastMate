@@ -71,7 +71,6 @@ import { nanoid } from "nanoid/non-secure"
 import _sortedIndexBy from "lodash/sortedIndexBy"
 import { SelectionGetter, useAutomationEditState } from "../../util/automation-dragdrop"
 import { useDuration } from "../../util/actions"
-import { time } from "console"
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -142,7 +141,6 @@ function animateProgress(timestamp: number) {
 
 	const delta = timestamp - animationStartStamp
 	playTime.value = delta / 1000
-	console.log(playTime.value)
 
 	if (testTime.value != null) {
 		window.requestAnimationFrame(animateProgress)
@@ -165,7 +163,6 @@ defineExpose({
 		const result: string[] = []
 
 		for (const oe of offsetEdits.value) {
-			console.log(oe)
 			result.push(...oe.getSelectedItems(container, from, to))
 		}
 

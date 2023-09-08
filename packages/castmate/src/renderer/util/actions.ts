@@ -23,10 +23,8 @@ export function useDuration(
 		const configData = toValue(config)
 
 		if (isIPCCall(actionSelection)) {
-			console.log("Getting Duration from main", action.value.durationhandler, configData)
 			return await ipcInvoke<number>(action.value.durationhandler, configData)
 		} else {
-			console.log("Getting from config", action.value.durationhandler)
 			return configData?.[action.value.durationhandler] ?? defaultDuration
 		}
 	}

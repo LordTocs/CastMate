@@ -41,7 +41,6 @@ function useAudioData(media: MaybeRefOrGetter<MediaMetadata>) {
 
 	async function refreshData() {
 		const mediaMetadata = toValue(media)
-		console.log("Refreshing Data", mediaMetadata)
 		if (!mediaMetadata) {
 			data.value = []
 		} else {
@@ -55,7 +54,6 @@ function useAudioData(media: MaybeRefOrGetter<MediaMetadata>) {
 }
 
 const audioMetaData = computed(() => {
-	console.log("Audio Meta Data Computed")
 	return mediaStore.media[props.modelValue.sound]
 })
 const audioData = useAudioData(audioMetaData)

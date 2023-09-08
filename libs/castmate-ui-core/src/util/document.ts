@@ -231,7 +231,6 @@ export function provideDocumentPath(localPath: MaybeRefOrGetter<string | undefin
 
 	const ourPath = computed(() => {
 		const actualLocalPath = toValue(localPath)
-		console.log("Computing Local Path", actualLocalPath)
 		return joinDocumentPath(parentPath.value, actualLocalPath)
 	})
 
