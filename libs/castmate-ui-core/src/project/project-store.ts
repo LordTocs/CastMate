@@ -53,7 +53,7 @@ export function registerResourceAsProjectGroup<TData extends ResourceData>(
 	config: ResourceGroupConfig<TData>
 ) {
 	const projectStore = useProjectStore()
-	const resources = useResources(config.resourceType)
+	const resources = useResources<TData>(config.resourceType)
 	const resourceStore = useResourceStore()
 	const dockingStore = useDockingStore()
 

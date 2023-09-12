@@ -7,11 +7,12 @@ import {
 	squashSchemas,
 	SquashedSchemas,
 } from "castmate-schema"
-import { Reactive, ReactiveEffect, autoRerun } from "../reactivity/reactivity"
+import { Reactive, ReactiveEffect, ReactiveGet, ReactiveSet, autoRerun } from "../reactivity/reactivity"
 import { ResourceRegistry } from "./resource-registry"
 import { ConstructedType } from "../util/type-helpers"
 import { defineCallableIPC } from "../util/electron"
 import { ResourceData } from "castmate-schema"
+import _cloneDeep from "lodash/cloneDeep"
 
 interface ResourceIPCDescription {
 	id: string
@@ -36,7 +37,9 @@ const rendererUpdateResourceInternal = defineCallableIPC<(typeName: string, data
 )
 
 async function rendererUpdateResource(typeName: string, resource: ResourceBase) {
-	await rendererUpdateResourceInternal(typeName, resource.toIPC())
+	const ipcVersion = resource.toIPC()
+	console.log(ipcVersion)
+	await rendererUpdateResourceInternal(typeName, ipcVersion)
 }
 
 interface ResourceEntry<T extends ResourceBase> {
@@ -100,6 +103,7 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 			this.resources.delete(id)
 			const constructor = entry.resource.constructor as ResourceConstructor<T>
 			await constructor.onDelete?.(entry.resource)
+			//TODO: Add stateEffect stopping?
 			console.log("Delete Successful")
 			//TODO: Release entry.stateEffect?
 			rendererDeleteResource(this.name, id)
@@ -165,12 +169,18 @@ export class Resource<ConfigType extends object, StateType extends object = {}> 
 		return {
 			id: this.id,
 			config: this.config,
-			state: this.state,
+			state: _cloneDeep(this.state),
 		}
 	}
 
-	//@Reactive
-	accessor state: StateType
+	private _state: StateType
+	get state() {
+		return ReactiveGet(this._state, this, "state")
+	}
+	set state(newState: StateType) {
+		this._state = newState
+		ReactiveSet(this, "state")
+	}
 
 	static async initialize() {
 		//@ts-ignore

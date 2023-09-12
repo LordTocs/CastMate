@@ -1,11 +1,4 @@
-import {
-	build as viteBuild,
-	defineConfig,
-	mergeConfig,
-	loadConfigFromFile,
-	createLogger,
-	createServer,
-} from "vite"
+import { build as viteBuild, defineConfig, mergeConfig, loadConfigFromFile, createLogger, createServer } from "vite"
 import path from "path"
 import { fileURLToPath } from "node:url"
 import { spawn } from "child_process"
@@ -72,12 +65,9 @@ function buildPackageSpawn(name) {
 		const viteJs = path.resolve(`./node_modules/vite/bin/vite.js`)
 		const args = [viteJs, "build"]
 		try {
-			spawn("node", args, { cwd: dir, stdio: "inherit" }).once(
-				"exit",
-				() => {
-					resolve()
-				}
-			)
+			spawn("node", args, { cwd: dir, stdio: "inherit" }).once("exit", () => {
+				resolve()
+			})
 		} catch (err) {
 			reject(err)
 		}
@@ -90,7 +80,7 @@ function buildPackageSpawn(name) {
 async function servePackageSpawn(config, name) {
 	const dir = path.resolve(`./packages/${name}/`)
 	const viteJs = path.resolve(`./node_modules/vite/bin/vite.js`)
-	const args = [viteJs]
+	const args = [viteJs] //, "-d", "--force"]
 	if (config.port) {
 		args.push("--port")
 		args.push(config.port)
@@ -100,7 +90,7 @@ async function servePackageSpawn(config, name) {
 
 async function build() {
 	//await buildPackageSpawn("castmate-overlay-components")
-	await buildPackageSpawn("castmate-obs-overlay")
+	//await buildPackageSpawn("castmate-obs-overlay")
 	await buildPackageSpawn("castmate")
 }
 
@@ -113,17 +103,11 @@ async function serve() {
 		},
 	}
 
-	const castmateDev = await servePackageSpawn(
-		{ port: 5173, ...config },
-		"castmate"
-	)
-	const overlayDev = await servePackageSpawn(
-		{ port: 5174, ...config },
-		"castmate-obs-overlay"
-	)
+	const castmateDev = await servePackageSpawn({ port: 5173, ...config }, "castmate")
+	//const overlayDev = await servePackageSpawn({ port: 5174, ...config }, "castmate-obs-overlay")
 
 	castmateDev.on("close", () => {
-		overlayDev.kill("SIGTERM")
+		//	overlayDev.kill("SIGTERM")
 	})
 }
 

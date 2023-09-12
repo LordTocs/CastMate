@@ -26,7 +26,7 @@
 	"devDependencies": {
 		"@mdi/font": "^7.1.96",
 		"@rollup/plugin-node-resolve": "^15.2.1",
-		"@vitejs/plugin-vue": "*",
+		"@vitejs/plugin-vue": "^4.3.4",
 		"@vueuse/core": "*",
 		"castmate-plugin-obs-renderer": "workspace:^",
 		"castmate-plugin-sound-renderer": "workspace:^",
@@ -43,7 +43,7 @@
 		"primeflex": "*",
 		"primeicons": "^6.0.1",
 		"primevue": "*",
-		"vite": "*",
+		"vite": "^4.4.9",
 		"vite-plugin-electron": "^0.12.0",
 		"vite-plugin-electron-renderer": "^0.14.5",
 		"vue": "*",

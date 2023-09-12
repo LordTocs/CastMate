@@ -152,7 +152,8 @@ const selectedModel = computed({
 		const id = selection.value[0]
 
 		if (id == "trigger") {
-			triggerModel.value = newConfig
+			console.log("Setting Trigger", newConfig)
+			modelObj.value.config = newConfig
 		}
 
 		const action = findActionById(id)

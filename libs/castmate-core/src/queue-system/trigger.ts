@@ -4,6 +4,10 @@ import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
 import { ipcConvertSchema } from "../util/ipc-schema"
 import { IPCTriggerDefinition } from "castmate-schema"
+import { Service } from "../util/service"
+import { ProfileManager } from "../profile/profile-system"
+import { ActionQueue } from "./action-queue"
+import { SequenceRunner } from "./sequence"
 
 interface TriggerMetaData {
 	id: string
@@ -28,15 +32,19 @@ export interface TriggerDefinition {
 	readonly color: Color
 	readonly version: string
 
-	handle(config: any, context: any): Promise<boolean>
+	trigger(context: any): Promise<boolean>
 	toIPC(): IPCTriggerDefinition
 }
 
 class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema extends Schema> {
-	constructor(private spec: TriggerDefinitionSpec<ConfigSchema, ContextDataSchema>) {}
+	constructor(private spec: TriggerDefinitionSpec<ConfigSchema, ContextDataSchema>, private _pluginId: string) {}
 
 	get id() {
 		return this.spec.id
+	}
+
+	get pluginId() {
+		return this._pluginId
 	}
 
 	get name() {
@@ -59,8 +67,39 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 		return this.spec.version ?? "0.0.0"
 	}
 
-	async handle(config: SchemaType<ConfigSchema>, context: SchemaType<ContextDataSchema>): Promise<boolean> {
-		return await this.spec.handle(config, context)
+	async trigger(context: SchemaType<ContextDataSchema>) {
+		const activeProfiles = ProfileManager.getInstance().activeProfiles
+		let triggered = false
+		//Check all the active profiles to see if they have any triggers of this type
+		for (const profile of activeProfiles) {
+			for (const trigger of profile.config.triggers) {
+				if (trigger.plugin != this.pluginId || trigger.trigger != this.id) continue
+
+				if (await this.spec.handle(trigger.config, context)) {
+					//If spec.handle returns true then this sequence should run
+					triggered = true
+					if (trigger.queue) {
+						const queue = ActionQueue.storage.getById(trigger.queue)
+						if (!queue) {
+							//ERROR!
+							console.error("Missing Queue!", queue)
+							continue
+						}
+
+						queue.enqueue(
+							{ type: "profile", id: profile.id, subid: trigger.id },
+							context as Record<string, any>
+						)
+					} else {
+						//This
+						const runner = new SequenceRunner(trigger.sequence, context)
+						runner.run()
+					}
+				}
+			}
+		}
+
+		return triggered
 	}
 
 	toIPC(): IPCTriggerDefinition {
@@ -84,16 +123,21 @@ export function defineTrigger<Config extends Schema, ContextData extends Schema>
 		throw new Error("Can only be used in definePlugin")
 	}
 
-	const impl = new TriggerImplementation<Config, ContextData>({
-		icon: "mdi mdi-alert-circle-outline",
-		color: initingPlugin.color,
-		version: "0.0.0",
-		...spec,
-	})
-
 	const pluginId = initingPlugin.id
+
+	const impl = new TriggerImplementation<Config, ContextData>(
+		{
+			icon: "mdi mdi-alert-circle-outline",
+			color: initingPlugin.color,
+			version: "0.0.0",
+			...spec,
+		},
+		pluginId
+	)
 
 	initingPlugin.triggers.set(impl.id, impl)
 
-	return (context: SchemaType<ContextData>) => {}
+	return (context: SchemaType<ContextData>) => {
+		impl.trigger(context)
+	}
 }

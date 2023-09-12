@@ -7,7 +7,7 @@
 		"outDir": "dist",
 		"sourceMap": true,
 		"target": "ES6",
-		"lib": ["ES6", "ES2017", "DOM"],
+		"lib": ["ES6", "ES2017", "DOM", "ES2020.Promise"],
 		"strictNullChecks": true
 	},
 	"include": ["src/**/*"],

@@ -22,6 +22,7 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 	}
 
 	async load(savedConfig: object): Promise<boolean> {
+		console.log("Loading", savedConfig)
 		await super.applyConfig(savedConfig) //Intentially call super here to avoid triggering a save
 		return true
 	}
@@ -70,6 +71,8 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 			throw new Error("Cannot load resources, no directory set!")
 		}
 
+		console.log("Loading Resources from ", this.resourceDirectory)
+
 		const resolvedDir = resolveProjectPath(this.resourceDirectory)
 		ensureDirectory(resolvedDir)
 		const files = await fs.readdir(resolvedDir)
@@ -77,20 +80,25 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 		const fileLoadPromises = files.map(async (file) => {
 			const id = path.basename(file, ".yaml")
 
+			console.log("Loading ", this.storage.name, id)
+
 			const fullFile = path.join(resolvedDir, file)
 
 			try {
 				const data = await loadYAML(fullFile)
+				console.log(data)
 
 				const resource = new this()
 				resource._id = id
 
 				if ((await resource.load(data)) === false) {
+					console.error("Load Failed", id)
 					return undefined
 				}
 
 				return resource
 			} catch (err) {
+				console.error("Load Errored", id, err)
 				return undefined
 			}
 		})

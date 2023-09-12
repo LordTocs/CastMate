@@ -188,14 +188,35 @@ export function reactiveComputed<T>(func: () => T): ReactiveComputed<T> {
 	return result
 }
 
+export function ReactiveGet<T extends any>(getValue: T, self: any, prop: string | symbol | number) {
+	if (shouldTrack(self, prop)) {
+		DependencyStorage.getPropDependency(self, prop).track()
+	}
+
+	if (isObject(getValue)) {
+		getValue = reactify(getValue)
+	}
+
+	return getValue
+}
+
+export function ReactiveSet(self: any, prop: string | symbol | number) {
+	if (shouldTrack(self, prop)) {
+		DependencyStorage.getPropDependency(self, prop).notify()
+	}
+}
+
 export function Reactive<This extends object, T>(
-	{ get, set }: ClassAccessorDecoratorTarget<This, T>,
+	accessor: ClassAccessorDecoratorTarget<This, T>,
 	context: ClassAccessorDecoratorContext<This, T>
 ): ClassAccessorDecoratorResult<This, T> {
 	return {
 		get() {
-			console.log("Reactive Get On", get)
-			let result = get.call(this)
+			console.log("----------------------------------------------------------")
+			console.log("Accessor", accessor)
+			console.log("Context", context)
+			console.log("Reactive Get On", Object.getOwnPropertyNames(this))
+			let result = accessor.get.call(this)
 
 			if (shouldTrack(this, context.name)) {
 				DependencyStorage.getPropDependency(this, context.name).track()
@@ -208,8 +229,11 @@ export function Reactive<This extends object, T>(
 			return result
 		},
 		set(newValue: T) {
-			console.log("Reactive Set On", Object.getOwnPropertyNames(this), set, context)
-			const result = set.call(this, newValue)
+			console.log("----------------------------------------------------------")
+			console.log("Accessor", accessor)
+			console.log("Context", context)
+			console.log("Reactive Set On", Object.getOwnPropertyNames(this))
+			const result = accessor.set.call(this, newValue)
 
 			if (shouldTrack(this, context.name)) {
 				DependencyStorage.getPropDependency(this, context.name).notify()

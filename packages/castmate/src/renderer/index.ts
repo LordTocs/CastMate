@@ -33,6 +33,8 @@ import { createRouter, createWebHistory } from "vue-router"
 
 import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
 import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
+import { useDashboardStore } from "./util/dashboard-store"
+import { initializeQueues } from "./util/queues"
 
 const router = createRouter({
 	history: createWebHistory(),
@@ -58,8 +60,12 @@ async function init() {
 		useActionQueueStore().initialize(),
 	])
 
+	await useDashboardStore().initialize()
+
 	initializeProfiles(app)
 	useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
+
+	initializeQueues()
 
 	useMediaStore().initialize()
 	initData()

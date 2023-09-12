@@ -21,9 +21,9 @@
     "vue": "*"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "*",
+    "@vitejs/plugin-vue": "^4.3.4",
     "typescript": "*",
-    "vite": "*",
+    "vite": "^4.4.9",
     "vue-tsc": "*"
   }
 }

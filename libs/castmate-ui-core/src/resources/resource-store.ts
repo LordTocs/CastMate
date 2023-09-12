@@ -3,10 +3,9 @@ import { defineStore } from "pinia"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
 import { MaybeRefOrGetter, toValue } from "@vueuse/core"
 import { ResourceData } from "castmate-schema"
-import NameDialog from "../components/dialogs/NameDialog.vue"
 
-interface ResourceStorage {
-	resources: Map<string, ResourceData>
+interface ResourceStorage<TResourceData extends ResourceData = ResourceData> {
+	resources: Map<string, TResourceData>
 }
 
 function convertResourcesToStorage(resources: ResourceData[]) {
@@ -109,10 +108,10 @@ export const useResourceStore = defineStore("resources", () => {
 	return { resourceMap, initialize, createResource, applyResourceConfig, setResourceConfig, deleteResource }
 })
 
-export function useResources(typeName: MaybeRefOrGetter<string>) {
+export function useResources<TResourceData extends ResourceData = ResourceData>(typeName: MaybeRefOrGetter<string>) {
 	const resourceStore = useResourceStore()
 
-	return computed(() => resourceStore.resourceMap.get(toValue(typeName)))
+	return computed(() => resourceStore.resourceMap.get(toValue(typeName)) as ResourceStorage<TResourceData>)
 }
 
 export function useResource<TResourceData extends ResourceData>(

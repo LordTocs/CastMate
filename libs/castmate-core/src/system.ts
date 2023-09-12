@@ -5,6 +5,7 @@ import { Plugin } from "./plugins/plugin"
 import { PluginManager } from "./plugins/plugin-manager"
 import { setProjectDirectory } from "./io/file-system"
 import { MediaManager } from "./media/media-manager"
+import { ProfileManager } from "./profile/profile-system"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -28,9 +29,12 @@ export async function initializeCastMate() {
 	ResourceRegistry.initialize()
 	MediaManager.initialize()
 
-	Profile.initialize()
-	ActionQueue.initialize()
+	await Profile.initialize()
+	await ActionQueue.initialize()
 	ActionQueueManager.initialize()
+
+	ProfileManager.initialize()
+	ProfileManager.getInstance().recomputeActiveProfiles()
 
 	//How do we load plugins???
 	//await loadPlugin("twitch")

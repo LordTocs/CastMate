@@ -13,5 +13,6 @@ export * from "./types/profile"
 export * from "./types/sequence"
 export * from "./types/resource"
 export * from "./types/account"
+export * from "./types/queues"
 
 export * from "./util/type-helpers"

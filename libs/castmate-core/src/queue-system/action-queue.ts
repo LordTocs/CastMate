@@ -1,34 +1,115 @@
 import { ResourceStorage, Resource } from "../resources/resource"
-import { Sequence } from "castmate-schema"
+import { QueuedSequence, Sequence, SequenceSource, ActionQueueConfig, ActionQueueState } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { Service } from "../util/service"
 import { SequenceDebugger, SequenceRunner } from "./sequence"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
+import { Profile } from "../profile/profile"
+import { FileResource } from "../resources/file-resource"
 
-interface QueuedSequenceData<ContextData = any> {
-	id: string
-	context: ContextData
-	sequence: Sequence
-}
-
-interface ActionQueueConfig {
-	name: string
-	paused: boolean
-}
-
-interface ActionQueueState {
-	queue: any[]
-}
-
-export class ActionQueue extends Resource<ActionQueueConfig, ActionQueueState> {
+export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueState> {
+	static resourceDirectory: string = "./queues"
 	static storage = new ResourceStorage<ActionQueue>("ActionQueue")
 
-	enqueue(context: Record<string, any>, sequence: Sequence) {
+	private runner: SequenceRunner | null = null
+
+	constructor(config?: ActionQueueConfig) {
+		super()
+
+		if (config) {
+			this._id = nanoid()
+			this._config = config
+		} else {
+			this._config = { name: "", paused: false }
+		}
+
+		this.state = {
+			history: [],
+			running: undefined,
+			queue: [],
+		}
+	}
+
+	get isRunning() {
+		return this.runner != null
+	}
+
+	/**
+	 * If a queue is paused it will finish running the current sequence, but not start a new one.
+	 */
+	get isPaused() {
+		return this.config.paused
+	}
+
+	enqueue(source: SequenceSource, context: Record<string, any>) {
 		this.state.queue.push({
 			id: nanoid(),
-			context,
-			sequence,
+			queueContext: context,
+			source,
 		})
+
+		if (!this.isRunning && !this.config.paused) {
+			this.runNext()
+		}
+	}
+
+	private pushToHistory(qs: QueuedSequence) {
+		this.state.history.unshift(qs)
+		if (this.state.history.length > 20) {
+			//Todo: Configurable?
+			this.state.history.pop()
+		}
+	}
+
+	skip() {
+		this.runner?.abort()
+	}
+
+	private getNextSequence(): { queuedSequence: QueuedSequence; sequence: Sequence } | undefined {
+		let queuedSequence: QueuedSequence | undefined
+		while ((queuedSequence = this.state.queue.shift())) {
+			if (queuedSequence.source.type == "profile" && queuedSequence.source.subid) {
+				const sequence = Profile.storage
+					.getById(queuedSequence.source.id)
+					?.getSequence(queuedSequence.source.subid)
+				if (sequence) {
+					return { queuedSequence, sequence }
+				}
+			}
+
+			//Todo: This item didn't have a sequence source
+		}
+
+		return undefined
+	}
+
+	runNext() {
+		if (this.runner || this.state.running) {
+			return
+		}
+
+		const seqItem = this.getNextSequence()
+
+		if (!seqItem) return
+
+		//TODO: Fill out context
+
+		this.runner = new SequenceRunner(seqItem.sequence, seqItem.queuedSequence.queueContext)
+
+		this.state.running = seqItem.queuedSequence
+		const doRun = async () => {
+			try {
+				await this.runner?.run()
+			} finally {
+				this.runner = null
+				this.state.running = undefined
+				this.pushToHistory(seqItem.queuedSequence)
+				if (!this.isPaused) {
+					this.runNext()
+				}
+			}
+		}
+		doRun()
 	}
 }
 

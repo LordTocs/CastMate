@@ -22,6 +22,8 @@ export interface SequenceDebugger {
 	logError(id: string, err: any): void
 }
 
+type SequenceCompletion = "complete" | "aborted"
+
 export class SequenceRunner {
 	private abortController = new AbortController()
 
@@ -35,10 +37,11 @@ export class SequenceRunner {
 		return this.abortController.signal.aborted
 	}
 
-	async run() {
+	async run(): Promise<SequenceCompletion> {
 		this.dbg?.sequenceStarted()
-		await this.runSequence(this.sequence)
+		const completion = await this.runSequence(this.sequence)
 		this.dbg?.sequenceEnded()
+		return completion
 	}
 
 	private async runActionBase(action: ActionInfo) {
@@ -86,11 +89,12 @@ export class SequenceRunner {
 	 * Sequences run actions one after another, each waiting on the prior
 	 * @param sequence
 	 */
-	private async runSequence(sequence: SequenceActions) {
+	private async runSequence(sequence: SequenceActions): Promise<SequenceCompletion> {
 		for (let action of sequence.actions) {
-			if (this.aborted) return
+			if (this.aborted) return "aborted"
 			await this.runAction(action)
 		}
+		return this.aborted ? "aborted" : "complete"
 	}
 
 	/**

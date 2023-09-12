@@ -1,5 +1,17 @@
 import { nanoid } from "nanoid/non-secure"
 
+export interface SequenceSource {
+	type: string
+	id: string
+	subid?: string
+}
+
+export interface QueuedSequence {
+	id: string
+	source: SequenceSource
+	queueContext: Record<string, any>
+}
+
 export type AnyAction = InstantAction | TimeAction | FlowAction
 
 export interface SequenceActions {

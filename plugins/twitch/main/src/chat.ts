@@ -51,6 +51,7 @@ export function setupChat() {
 				return true
 			}
 
+			console.log("Handling", config.command, context.message)
 			if (context.message.toLowerCase().startsWith(config.command?.toLowerCase())) {
 				return true
 			}
@@ -78,6 +79,7 @@ export function setupChat() {
 			},
 		},
 		async handle(config, context) {
+			console.log("")
 			return true
 		},
 	})
