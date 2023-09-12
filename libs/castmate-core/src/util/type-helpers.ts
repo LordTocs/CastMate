@@ -2,6 +2,10 @@ export function isSymbol(value: unknown): value is symbol {
 	return typeof value === "symbol"
 }
 
+export function isString(value: unknown): value is string {
+	return typeof value === "string"
+}
+
 export const isArray = Array.isArray
 
 export function isObject(value: unknown): value is object {

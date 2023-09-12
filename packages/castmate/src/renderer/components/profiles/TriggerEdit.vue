@@ -12,6 +12,10 @@
 			</div>
 			<div class="flex flex-row flex-grow-1 align-items-center" v-else>
 				<trigger-selector v-model="triggerModel" />
+				<data-input
+					v-model="modelObj.queue"
+					:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
+				/>
 			</div>
 			<p-button
 				text
@@ -51,6 +55,7 @@ import {
 	useDocumentPath,
 	joinDocumentPath,
 	usePluginStore,
+	ResourceProxyFactory,
 } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
 import AutomationEdit from "../automation/AutomationEdit.vue"

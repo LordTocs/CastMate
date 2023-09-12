@@ -86,6 +86,8 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 							continue
 						}
 
+						console.log("Running On Queue", queue.config.name)
+
 						queue.enqueue(
 							{ type: "profile", id: profile.id, subid: trigger.id },
 							context as Record<string, any>

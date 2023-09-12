@@ -208,13 +208,19 @@ export function useTriggerColors(selection: MaybeRefOrGetter<TriggerSelection | 
 		darkestColor: darkestTriggerColor,
 		lighterColor: lighterTriggerColor,
 	} = useColors(trigger)
+	console.log("Using Trigger Colors", toValue(selection), triggerColor.value)
 
-	const style = computed(() => ({
-		"--trigger-color": triggerColor.value,
-		"--darker-trigger-color": darkerTriggerColor.value,
-		"--darkest-trigger-color": darkestTriggerColor.value,
-		"--lighter-trigger-color": lighterTriggerColor.value,
-	}))
+	const style = computed(() => {
+		console.log("Computing Style", triggerColor.value)
+		return {
+			"--trigger-color": triggerColor.value,
+			"--darker-trigger-color": darkerTriggerColor.value,
+			"--darkest-trigger-color": darkestTriggerColor.value,
+			"--lighter-trigger-color": lighterTriggerColor.value,
+		}
+	})
+
+	console.log("Using trigger style", style.value)
 
 	return { darkestTriggerColor, darkerTriggerColor, triggerColor, lighterTriggerColor, triggerColorStyle: style }
 }

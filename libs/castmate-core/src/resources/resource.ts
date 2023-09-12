@@ -1,18 +1,8 @@
-import {
-	SchemaObj,
-	Schema,
-	SchemaType,
-	defineSchema,
-	SchemaConstructor,
-	squashSchemas,
-	SquashedSchemas,
-} from "castmate-schema"
-import { Reactive, ReactiveEffect, ReactiveGet, ReactiveSet, autoRerun } from "../reactivity/reactivity"
+import _cloneDeep from "lodash/cloneDeep"
+import { ReactiveEffect, ReactiveGet, ReactiveSet, autoRerun, rawify } from "../reactivity/reactivity"
 import { ResourceRegistry } from "./resource-registry"
-import { ConstructedType } from "../util/type-helpers"
 import { defineCallableIPC } from "../util/electron"
 import { ResourceData } from "castmate-schema"
-import _cloneDeep from "lodash/cloneDeep"
 
 interface ResourceIPCDescription {
 	id: string
@@ -38,7 +28,6 @@ const rendererUpdateResourceInternal = defineCallableIPC<(typeName: string, data
 
 async function rendererUpdateResource(typeName: string, resource: ResourceBase) {
 	const ipcVersion = resource.toIPC()
-	console.log(ipcVersion)
 	await rendererUpdateResourceInternal(typeName, ipcVersion)
 }
 
@@ -103,7 +92,7 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 			this.resources.delete(id)
 			const constructor = entry.resource.constructor as ResourceConstructor<T>
 			await constructor.onDelete?.(entry.resource)
-			//TODO: Add stateEffect stopping?
+			entry.stateEffect.dispose()
 			console.log("Delete Successful")
 			//TODO: Release entry.stateEffect?
 			rendererDeleteResource(this.name, id)

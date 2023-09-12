@@ -22,7 +22,7 @@ import MediaFileInput from "../components/data/inputs/MediaFileInput.vue"
 import ResourceInputVue from "../components/data/inputs/ResourceInput.vue"
 
 export type ResourceProxy = string
-const ResourceProxyFactory = {
+export const ResourceProxyFactory = {
 	factoryCreate() {
 		return ""
 	},

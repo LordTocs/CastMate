@@ -2,7 +2,7 @@
 // In CastMate our templates are async and thus we must be able to asynchronously gather depdendencies
 
 import { AsyncLocalStorage } from "node:async_hooks"
-import { isArray, isObject, isSymbol } from "../util/type-helpers"
+import { isArray, isObject, isString, isSymbol } from "../util/type-helpers"
 
 const activeEffectStorage = new AsyncLocalStorage<ReactiveEffect>()
 
@@ -12,7 +12,6 @@ function getActiveEffect() {
 
 class ReactiveDependency {
 	effects: Set<ReactiveEffect> = new Set()
-	pendingNotify: boolean = false
 
 	addEffect(effect: ReactiveEffect) {
 		this.effects.add(effect)
@@ -23,16 +22,8 @@ class ReactiveDependency {
 	}
 
 	notify() {
-		if (!this.pendingNotify) {
-			//Data Race here, needs sync
-			this.pendingNotify = true
-			process.nextTick(async () => {
-				const promises = [...this.effects.values()].map((effect) =>
-					effect.run().catch((reason) => console.error(reason))
-				)
-				await Promise.all(promises)
-				this.pendingNotify = false
-			})
+		for (const effect of this.effects) {
+			effect.runOnce()
 		}
 	}
 
@@ -40,6 +31,7 @@ class ReactiveDependency {
 		const effect = getActiveEffect()
 		if (effect) {
 			this.addEffect(effect)
+			effect.added(this)
 		}
 	}
 }
@@ -77,18 +69,53 @@ export namespace DependencyStorage {
 }
 
 export class ReactiveEffect<T = any> {
-	constructor(public func: () => T) {}
+	private dependencies: ReactiveDependency[] = []
+	private pendingRun = false
+	constructor(private func: () => T) {}
+
+	added(dep: ReactiveDependency) {
+		if (this.dependencies.includes(dep)) return
+		this.dependencies.push(dep)
+	}
+
+	dispose() {
+		for (const dep of this.dependencies) {
+			dep.removeEffect(this)
+		}
+	}
 
 	async run() {
 		await activeEffectStorage.run(this, this.func)
 	}
+
+	runOnce() {
+		if (this.pendingRun) return
+		this.pendingRun = true
+		process.nextTick(async () => {
+			try {
+				await this.run()
+			} catch (err) {
+			} finally {
+				this.pendingRun = false
+			}
+		})
+	}
 }
 
 const ignoreSymbols = new Set(Object.getOwnPropertySymbols(Symbol))
+export enum ReactivityProps {
+	RAW = "__c_raw",
+}
+const ignoreProps = new Set<string>([ReactivityProps.RAW])
 
 function shouldTrack(target: object, propKey: PropertyKey) {
 	if (isSymbol(propKey)) {
-		if (ignoreSymbols.has(propKey as symbol)) {
+		if (ignoreSymbols.has(propKey)) {
+			return false
+		}
+	}
+	if (isString(propKey)) {
+		if (ignoreProps.has(propKey)) {
 			return false
 		}
 	}
@@ -97,6 +124,10 @@ function shouldTrack(target: object, propKey: PropertyKey) {
 
 class ReactiveProxy<T extends object> {
 	get(target: T, propKey: PropertyKey, receiver: any) {
+		if (propKey === ReactivityProps.RAW) {
+			return target
+		}
+
 		let result = Reflect.get(target, propKey, receiver) as T
 
 		if (shouldTrack(target, propKey)) {
@@ -135,12 +166,21 @@ class ReactiveProxy<T extends object> {
 
 const proxyMap = new WeakMap<object, any>()
 
+interface Target {
+	[ReactivityProps.RAW]: any
+}
+
 export function reactify<T extends object>(obj: T) {
 	const existing = proxyMap.get(obj)
 	if (existing != null) return existing as T
 
 	//TODO: async race here
 	return new Proxy(obj, new ReactiveProxy<T>())
+}
+
+export function rawify<T extends object>(obj: T) {
+	const raw = obj && (obj as Target)[ReactivityProps.RAW]
+	return raw ?? obj
 }
 
 export async function autoRerun(func: () => any) {
