@@ -41,6 +41,7 @@
 				</div>
 				<label for="input-item"> {{ props.schema.name }}</label>
 			</span>
+			<p-button class="flex-none" v-if="!schema.required" icon="pi pi-times" @click.stop="clear" />
 			<p-button @click="onDropDownClick"><p-chevron-down-icon /></p-button>
 		</div>
 		<p-portal append-to="self">
@@ -266,6 +267,10 @@ function onKeyArrowUp(ev: KeyboardEvent) {
 	focusedId.value = nextId
 	ev.stopPropagation()
 	ev.preventDefault()
+}
+
+function clear() {
+	model.value = undefined
 }
 </script>
 
