@@ -23,9 +23,7 @@ export const TwitchAPIService = Service(
 		}
 
 		constructor() {
-			const channelAccount = TwitchAccount.storage.getById("channel")
-			if (!channelAccount) throw Error("What?") //Never should happen
-
+			const channelAccount = TwitchAccount.channel
 			channelAccount.onSecretsChanged.register(() => {
 				this.onReauthChannel()
 			})

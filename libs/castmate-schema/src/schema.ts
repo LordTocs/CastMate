@@ -17,6 +17,10 @@ export type SchemaBase = {
 	default?: any
 }
 
+interface MaybeTemplated {
+	template?: boolean
+}
+
 export interface SchemaNumber extends Enumable<number> {
 	type: NumberConstructor
 	min?: number
@@ -64,6 +68,11 @@ type SchemaTypeUnion = MapToUnion<SchemaTypeMap>
 type SchemaTypes = SchemaTypeUnion[0] & SchemaBase
 
 type SchemaApplyRequired<SchemaT extends Schema, T> = SchemaT["required"] extends true ? T : T | undefined
+type SchemaApplyTemplate<SchemaT extends Schema, T> = SchemaT extends MaybeTemplated
+	? SchemaT["template"] extends true
+		? T | string
+		: T
+	: T
 
 type SchemaPropType<T extends Schema> = Extract<
 	SchemaTypeUnion,
@@ -74,7 +83,13 @@ type SchemaObjType<T extends SchemaObj> = {
 	[Property in keyof T["properties"]]: SchemaType<T["properties"][Property]>
 }
 
+type ResolvedSchemaObjType<T extends SchemaObj> = {
+	[Property in keyof T["properties"]]: ResolvedSchemaType<T["properties"][Property]>
+}
+
 type SchemaArrayType<T extends SchemaArray> = Array<SchemaType<T["items"]>>
+
+type ResolvedSchemaArrayType<T extends SchemaArray> = Array<ResolvedSchemaType<T["items"]>>
 
 interface ResourceType {
 	id: string
@@ -95,6 +110,17 @@ export type SchemaType<T extends Schema> = T extends SchemaObj
 			T,
 			T extends SchemaArray
 				? SchemaArrayType<T>
+				: T extends SchemaResource
+				? SchemaResourceType<T>
+				: SchemaApplyTemplate<T, SchemaPropType<T>>
+	  >
+
+export type ResolvedSchemaType<T extends Schema> = T extends SchemaObj
+	? ResolvedSchemaObjType<T>
+	: SchemaApplyRequired<
+			T,
+			T extends SchemaArray
+				? ResolvedSchemaArrayType<T>
 				: T extends SchemaResource
 				? SchemaResourceType<T>
 				: SchemaPropType<T>
@@ -161,21 +187,7 @@ export function constructDefault<T extends Schema>(schema: T): SchemaType<T> {
 	//@ts-ignore
 	return undefined
 }
-/*
-type SquashedObjSchemas<A extends SchemaObj, B extends SchemaObj> = Omit<A, "properties"> &
-	Omit<B, "properties"> & {
-		type: ObjectConstructor
-		properties: {
-			[Property in keyof (A["properties"] & B["properties"])]: A["properties"] extends {
-				[P in Property]: any
-			}
-				? B["properties"] extends { [P in Property]: any }
-					? SquashedSchemas<A["properties"][Property], B["properties"][Property]>
-					: A["properties"][Property]
-				: B["properties"][Property]
-		}
-	}
-*/
+
 type SquashedObjSchemas<A extends SchemaObj, B extends SchemaObj> = A & B
 
 export type SquashedSchemas<A extends Schema, B extends Schema> = A & B
@@ -221,13 +233,12 @@ export function squashSchemas<A extends Schema, B extends Schema>(a?: A, b?: B):
 
 ///
 
-type DataFactory<T = any> = { factoryCreate(...args: any[]): T }
+export type DataFactory<T = any> = { factoryCreate(...args: any[]): T }
 type DataConstructor<T = any> = { new (...args: any): T }
 
 export type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor<T>
 export interface DataTypeMetaData<T = any> {
-	constructor: DataConstructorOrFactory
-	template?: (value: T, context: any, schema: any) => T
+	constructor: DataConstructorOrFactory<T>
 }
 
 interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
@@ -302,7 +313,7 @@ export type IPCSchema = IPCSchemaTypes | IPCSchemaObj | IPCSchemaArray | IPCSche
 
 /////////////////////////////////
 
-function testSchema<T extends Schema>(spec: { config: T; handle: (config: SchemaType<T>) => any }) {}
+function testSchema<T extends Schema>(spec: { config: T; handle: (config: ResolvedSchemaType<T>) => any }) {}
 
 testSchema({
 	config: {
@@ -349,9 +360,3 @@ const TestType = defineSchema("TestType", {
 	},
 })
 type TestType = InstanceType<typeof TestType>
-
-function f2<A extends SchemaObj, B extends SchemaObj>(a: A, b: B): A {
-	const combined = squashObjSchemas(a, b)
-
-	return combined
-}
