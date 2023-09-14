@@ -22,7 +22,6 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 	}
 
 	async load(savedConfig: object): Promise<boolean> {
-		console.log("Loading", savedConfig)
 		await super.applyConfig(savedConfig) //Intentially call super here to avoid triggering a save
 		return true
 	}
@@ -86,8 +85,6 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 
 			try {
 				const data = await loadYAML(fullFile)
-				console.log(data)
-
 				const resource = new this()
 				resource._id = id
 

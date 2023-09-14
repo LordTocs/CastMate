@@ -118,7 +118,7 @@ export const ResourceRegistry = Service(
 			if (!constructor.storage) {
 				console.log("ERROR REGISTERING RESOURCE NO STORAGE", constructor)
 			}
-			console.log("Registering Resource", constructor.storage.name, constructor.storage)
+			console.log("Registering Resource", constructor.storage.name)
 
 			this.resourceTypes.push({
 				typeName: constructor.storage.name,

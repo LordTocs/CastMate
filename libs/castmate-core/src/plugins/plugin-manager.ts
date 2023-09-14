@@ -8,7 +8,6 @@ const rendererUnregisterPlugin = defineCallableIPC<(id: string) => void>("plugin
 
 defineIPCFunc("plugins", "getPluginIds", () => {
 	const ids = PluginManager.getInstance().pluginIds
-	console.log(ids)
 	return ids
 })
 

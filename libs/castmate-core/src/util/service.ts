@@ -3,7 +3,6 @@ export function Service<ConstructorType extends new (...args: any[]) => any>(con
 		private static _instance: InstanceType<ConstructorType>
 
 		static initialize(): InstanceType<ConstructorType> {
-			console.log("Initializing Service", constructor.name)
 			if (this._instance) {
 				throw new Error("Service already inited")
 			}

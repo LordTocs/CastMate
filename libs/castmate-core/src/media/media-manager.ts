@@ -110,8 +110,6 @@ export const MediaManager = Service(
 					}
 				}
 			} catch {}
-
-			console.log(metadata)
 			this.mediaFiles.set(relPath, metadata)
 			addOrUpdateMediaRenderer(metadata)
 		}
