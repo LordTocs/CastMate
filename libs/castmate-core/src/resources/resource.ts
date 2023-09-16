@@ -133,7 +133,7 @@ export class Resource<ConfigType extends object, StateType extends object = {}> 
 		return this._config
 	}
 
-	private async updateUI() {
+	protected async updateUI() {
 		const storage = (this.constructor as ResourceConstructor).storage
 		if (!storage.getById(this.id)) {
 			//We haven't been injected yet, do not update the UI

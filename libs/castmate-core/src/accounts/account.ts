@@ -51,7 +51,6 @@ export class Account<
 	async setSecrets(secrets: Secrets) {
 		this._secrets = secrets
 		this.saveSecrets()
-		this.onSecretsChanged.run()
 	}
 
 	async checkCachedCreds(): Promise<boolean> {
@@ -64,6 +63,11 @@ export class Account<
 
 	async login(): Promise<boolean> {
 		return false
+	}
+
+	protected async finishAuth() {
+		this.state.authenticated = true
+		await this.onAuthorized.run()
 	}
 
 	hasScope(scope: string | string[]) {
@@ -95,5 +99,5 @@ export class Account<
 		this.state.authenticated = true
 	}
 
-	readonly onSecretsChanged = new EventList()
+	readonly onAuthorized = new EventList()
 }

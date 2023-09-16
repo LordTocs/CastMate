@@ -1,4 +1,4 @@
-import { IPCActionDefinition, ActionType, isKey } from "castmate-schema"
+import { IPCActionDefinition, ActionType, isKey, ResolvedSchemaType } from "castmate-schema"
 import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
 import { type Plugin, initingPlugin } from "../plugins/plugin"
@@ -20,7 +20,7 @@ type ActionInvokeContextData = Record<PropertyKey, any>
 
 type DurationHandler<ConfigSchema extends Schema> =
 	| keyof SchemaType<ConfigSchema>
-	| ((config: SchemaType<ConfigSchema>) => Promise<number> | number)
+	| ((config: ResolvedSchemaType<ConfigSchema>) => Promise<number> | number)
 
 interface ActionDefinitionSpec<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>
 	extends ActionMetaData {
@@ -28,10 +28,10 @@ interface ActionDefinitionSpec<ConfigSchema extends Schema, ResultSchema extends
 	result?: ResultSchema
 	durationHandler?: DurationHandler<ConfigSchema>
 	invoke(
-		config: Readonly<SchemaType<ConfigSchema>>,
+		config: Readonly<ResolvedSchemaType<ConfigSchema>>,
 		contextData: ActionInvokeContextData,
 		abortSignal: AbortSignal
-	): Promise<ResultSchema extends Schema ? SchemaType<ResultSchema> : void>
+	): Promise<ResultSchema extends Schema ? ResolvedSchemaType<ResultSchema> : void>
 }
 
 export interface ActionDefinition {

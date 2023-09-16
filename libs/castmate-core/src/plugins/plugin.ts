@@ -147,6 +147,8 @@ export class Plugin {
 			}
 		} catch (err) {
 			//TODO_ERRRORS
+			console.error("Error Loading", this.id)
+			console.error(err)
 			return false
 		}
 		return true

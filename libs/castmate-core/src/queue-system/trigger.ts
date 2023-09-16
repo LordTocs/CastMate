@@ -105,7 +105,7 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 	}
 
 	toIPC(): IPCTriggerDefinition {
-		return {
+		const triggerDef: IPCTriggerDefinition = {
 			id: this.id,
 			name: this.name,
 			description: this.description,
@@ -115,6 +115,10 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 			config: ipcConvertSchema(this.spec.config),
 			context: ipcConvertSchema(this.spec.context),
 		}
+
+		//console.log(triggerDef.config)
+
+		return triggerDef
 	}
 }
 

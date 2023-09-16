@@ -1,5 +1,6 @@
 import { defineTrigger } from "castmate-core"
 import { onChannelAuth } from "./api-harness"
+import { ViewerCache } from "./viewer-cache"
 
 export function setupFollows() {
 	const follow = defineTrigger({
@@ -25,11 +26,11 @@ export function setupFollows() {
 	})
 
 	onChannelAuth((account, service) => {
-		service.eventsub.onChannelFollow(account.twitchId, account.twitchId, (event) => {
+		service.eventsub.onChannelFollow(account.twitchId, account.twitchId, async (event) => {
 			follow({
 				user: event.userDisplayName,
 				userId: event.userId,
-				userColor: "#000000",
+				userColor: await ViewerCache.getInstance().getChatColor(event.userId),
 			})
 		})
 	})

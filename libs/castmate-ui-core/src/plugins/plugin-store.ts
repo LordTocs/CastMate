@@ -120,6 +120,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		})
 
 		const ids = await getPluginIds()
+		console.log("Received Plugin Ids", ids)
 
 		const plugins = await Promise.all(ids.map((id) => getPlugin(id)))
 

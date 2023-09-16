@@ -7,7 +7,7 @@ import { safeStorage } from "electron"
 let activeProjectDirectory: string = ""
 
 export async function ensureDirectory(path: string, onCreate?: () => any) {
-	console.log("Ensuring", path)
+	//console.log("Ensuring", path)
 	if (!fsSync.existsSync(path)) {
 		await fs.mkdir(path, { recursive: true })
 		await onCreate?.()

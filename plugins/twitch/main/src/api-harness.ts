@@ -24,7 +24,7 @@ export const TwitchAPIService = Service(
 
 		constructor() {
 			const channelAccount = TwitchAccount.channel
-			channelAccount.onSecretsChanged.register(() => {
+			channelAccount.onAuthorized.register(() => {
 				this.onReauthChannel()
 			})
 		}
@@ -45,14 +45,10 @@ export const TwitchAPIService = Service(
 		}
 
 		async finalize() {
-			const channelAccount = TwitchAccount.channel
-
-			if (channelAccount.config.name.length > 0) {
-				//TODO: use state.authenticated
-				this.onReauthChannel()
+			if (TwitchAccount.channel.config.name.length > 0) {
+				console.log("Reauthing Channel")
+				await this.onReauthChannel()
 			}
-
-			this.eventsub.start()
 		}
 
 		private async onReauthChannel() {
@@ -76,6 +72,8 @@ export const TwitchAPIService = Service(
 
 			//@ts-ignore Damned type system
 			await this.onChannelReauthList.run(channelAccount, this)
+
+			this.eventsub.start()
 		}
 	}
 )

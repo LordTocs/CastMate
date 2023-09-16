@@ -30,6 +30,12 @@ const defaultScopes = [
 	"moderator:read:followers", //Follower eventsub
 	"moderator:manage:shoutouts", //create / react to shoutouts
 
+	"channel:read:vips", //Read and manage vips
+	"channel:manage:vips",
+
+	"moderation:read",
+	"channel:manage:moderators",
+
 	"clips:edit", //Create clips
 
 	"user:read:email",
@@ -65,8 +71,15 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 			return false
 		}
 
+		for (const requiredScope of this.config.scopes) {
+			if (!info.scopes.includes(requiredScope)) {
+				console.log("Missing Scope", requiredScope)
+				return false
+			}
+		}
+
 		await this.applyConfig({
-			scopes: info.scopes,
+			//scopes: info.scopes,
 			twitchId: info.userId,
 		})
 
@@ -227,9 +240,8 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 	}
 	///
 
-	async finishAuth() {
-		console.log("Has Token", this.secrets.accessToken.length != 0)
-
+	protected async finishAuth() {
+		console.log("Finishing Auth")
 		this._apiClient = new ApiClient({
 			authProvider: this,
 		})
@@ -242,6 +254,8 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 		})
 
 		this.state.authenticated = true
+
+		await super.finishAuth()
 	}
 
 	private getAuthURL(scopes: string[], forceAuth: boolean = false) {

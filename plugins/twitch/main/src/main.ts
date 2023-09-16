@@ -11,6 +11,9 @@ import { TwitchAPIService } from "./api-harness"
 import { setupFollows } from "./follows"
 import { setupRaids } from "./raids"
 import { setupHypeTrains } from "./hype-train"
+import { setupModeration } from "./moderation"
+import { setupViewerCache } from "./viewer-cache"
+import { setupViewerGroups } from "./group"
 
 export default definePlugin(
 	{
@@ -22,7 +25,6 @@ export default definePlugin(
 	},
 	() => {
 		onLoad(async () => {
-			console.log("Initializing")
 			await TwitchAccount.initialize()
 
 			await TwitchAPIService.initialize()
@@ -30,6 +32,8 @@ export default definePlugin(
 
 		onUnload(() => {})
 
+		setupViewerCache()
+		setupViewerGroups()
 		setupAds()
 		setupChannelPointRewards()
 		setupChat()
@@ -40,6 +44,7 @@ export default definePlugin(
 		setupPredictions()
 		setupRaids()
 		setupSubscriptions()
+		setupModeration()
 
 		onLoad(async () => {
 			await TwitchAPIService.getInstance().finalize()

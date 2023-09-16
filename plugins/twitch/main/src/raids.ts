@@ -1,6 +1,7 @@
 import { defineTrigger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { onChannelAuth } from "./api-harness"
+import { ViewerCache } from "./viewer-cache"
 
 export function setupRaids() {
 	const raid = defineTrigger({
@@ -63,11 +64,11 @@ export function setupRaids() {
 	})
 
 	onChannelAuth((channel, service) => {
-		service.eventsub.onChannelRaidTo(channel.twitchId, (event) => {
+		service.eventsub.onChannelRaidTo(channel.twitchId, async (event) => {
 			raid({
 				user: event.raidingBroadcasterDisplayName,
 				userId: event.raidingBroadcasterId,
-				userColor: "#000000",
+				userColor: await ViewerCache.getInstance().getChatColor(event.raidingBroadcasterId),
 				raiders: event.viewers,
 			})
 		})

@@ -33,6 +33,7 @@ export const PluginManager = Service(
 			this.plugins.set(plugin.id, plugin)
 			console.log("Loading Plugin", plugin.id)
 			if (!(await plugin.load())) {
+				console.error("Load failed for", plugin.id)
 				this.plugins.delete(plugin.id)
 				return
 			}

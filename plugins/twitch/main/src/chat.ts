@@ -3,6 +3,9 @@ import { defineTrigger, defineAction } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { Color, Range } from "castmate-schema"
+import { ViewerCache } from "./viewer-cache"
+import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { inTwitchViewerGroup } from "./group"
 
 export function setupChat() {
 	defineAction({
@@ -33,7 +36,8 @@ export function setupChat() {
 		config: {
 			type: Object,
 			properties: {
-				command: { type: String, name: "Command" },
+				command: { type: String, name: "Command", required: true, default: "" },
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
 		context: {
@@ -47,16 +51,16 @@ export function setupChat() {
 			},
 		},
 		async handle(config, context) {
-			if (!config.command) {
-				return true
-			}
-
 			console.log("Handling", config.command, context.message)
-			if (context.message.toLowerCase().startsWith(config.command?.toLowerCase())) {
-				return true
+			if (!context.message.toLocaleLowerCase().startsWith(config.command?.toLocaleLowerCase())) {
+				return false
 			}
 
-			return false
+			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+				return false
+			}
+
+			return true
 		},
 	})
 
@@ -103,8 +107,6 @@ export function setupChat() {
 				return
 			}
 			await channel.apiClient.chat.shoutoutUser(channel.twitchId, user?.id)
-
-			TwitchAPIService.getInstance().eventsub.on
 		},
 	})
 
@@ -154,11 +156,12 @@ export function setupChat() {
 			},
 		},
 		async handle(config, context) {
-			return true
+			return config.bits.inRange(context.bits)
 		},
 	})
 
 	onChannelAuth((account, service) => {
+		console.log("Handling Auth")
 		service.chatClient.onMessage(async (channel, user, message, msgInfo) => {
 			const context = {
 				user: msgInfo.userInfo.displayName,
@@ -168,7 +171,8 @@ export function setupChat() {
 				messageId: msgInfo.id,
 			}
 
-			console.log(`${user}: ${message}`)
+			ViewerCache.getInstance().cacheChatUser(msgInfo.userInfo)
+			console.log(message)
 
 			if (msgInfo.isFirst) {
 				firstTimeChat(context)
@@ -177,21 +181,21 @@ export function setupChat() {
 			chat(context)
 		})
 
-		service.eventsub.onChannelShoutoutCreate(account.twitchId, account.twitchId, (event) => {
+		service.eventsub.onChannelShoutoutCreate(account.twitchId, account.twitchId, async (event) => {
 			shoutoutSent({
 				user: event.shoutedOutBroadcasterDisplayName,
 				userId: event.shoutedOutBroadcasterId,
-				userColor: "#000000",
+				userColor: await ViewerCache.getInstance().getChatColor(event.shoutedOutBroadcasterId),
 			})
 		})
 
-		service.eventsub.onChannelCheer(account.twitchId, (event) => {
+		service.eventsub.onChannelCheer(account.twitchId, async (event) => {
 			bits({
 				bits: event.bits,
-				user: event.userDisplayName ?? "Anonymous",
+				user: event.userDisplayName ?? "Anonymous", //TODO: Setting for anonymous gifter name
 				userId: event.userId ?? "",
-				userColor: "#000000",
-				message: "",
+				userColor: event.userId ? await ViewerCache.getInstance().getChatColor(event.userId) : "#000000",
+				message: event.message,
 			})
 		})
 	})
