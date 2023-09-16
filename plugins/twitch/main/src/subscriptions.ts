@@ -4,6 +4,7 @@ import { TwitchAccount } from "./twitch-auth"
 import { defineTrigger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
+import { ViewerCache } from "./viewer-cache"
 
 export function setupSubscriptions() {
 	const subscription = defineTrigger({
@@ -14,7 +15,8 @@ export function setupSubscriptions() {
 		config: {
 			type: Object,
 			properties: {
-				months: { type: Range, name: "Months", required: true },
+				totalMonths: { type: Range, name: "Months", required: true, default: {} },
+				streakMonths: { type: Range, name: "Months", required: true, default: {} },
 			},
 		},
 		context: {
@@ -23,11 +25,14 @@ export function setupSubscriptions() {
 				user: { type: String, required: true },
 				userId: { type: String, required: true },
 				userColor: { type: String, required: true },
-				months: { type: Number, required: true },
+				totalMonths: { type: Number, required: true },
+				streakMonths: { type: Number, required: true },
+				durationMonths: { type: Number, required: true },
 			},
 		},
 		async handle(config, context) {
-			if (!config.months.inRange(context.months)) return false
+			if (!config.totalMonths.inRange(context.totalMonths)) return false
+			if (!config.streakMonths.inRange(context.streakMonths)) return false
 
 			return true
 		},
@@ -51,13 +56,39 @@ export function setupSubscriptions() {
 				user: { type: String, required: true },
 				userId: { type: String, required: true },
 				userColor: { type: String, required: true },
-				months: { type: Number, required: true },
+				subs: { type: Number, required: true },
 			},
 		},
 		async handle(config, context) {
-			if (!config.subs.inRange(context.months)) return false
+			if (!config.subs.inRange(context.subs)) return false
 
 			return true
 		},
+	})
+
+	onChannelAuth((channel, service) => {
+		service.eventsub.onChannelSubscription(channel.twitchId, (event) => {
+			ViewerCache.getInstance().cacheSubEvent(event)
+		})
+
+		service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
+			subscription({
+				user: event.userDisplayName,
+				userId: event.userId,
+				userColor: await ViewerCache.getInstance().getChatColor(event.userId),
+				totalMonths: event.cumulativeMonths,
+				streakMonths: event.streakMonths ?? 1,
+				durationMonths: event.durationMonths,
+			})
+		})
+
+		service.eventsub.onChannelSubscriptionGift(channel.twitchId, async (event) => {
+			giftSub({
+				user: event.gifterDisplayName,
+				userId: event.gifterId,
+				userColor: await ViewerCache.getInstance().getChatColor(event.gifterId),
+				subs: event.amount,
+			})
+		})
 	})
 }

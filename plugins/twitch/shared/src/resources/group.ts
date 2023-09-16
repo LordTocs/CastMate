@@ -1,5 +1,10 @@
 import { SchemaBase, registerType } from "castmate-schema"
 
+export interface TwitchViewerGroupConfig {
+	name: string
+	userIds: Set<string>
+}
+
 export interface TwitchViewerGroupProperty {
 	property: string
 }

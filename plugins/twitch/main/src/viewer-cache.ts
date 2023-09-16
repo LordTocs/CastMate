@@ -3,6 +3,7 @@ import { Service, onLoad } from "castmate-core"
 import { Color } from "castmate-schema"
 import { TwitchAccount } from "./twitch-auth"
 import { onChannelAuth } from "./api-harness"
+import { EventSubChannelSubscriptionEvent } from "@twurple/eventsub-base"
 
 interface CachedViewerSubInfo {
 	tier: 1 | 2 | 3
@@ -166,6 +167,16 @@ export const ViewerCache = Service(
 			if (!cached.subbed) {
 				delete cached.subinfo
 				this.unknownSubInfo.delete(id)
+			}
+		}
+
+		cacheSubEvent(event: EventSubChannelSubscriptionEvent) {
+			const cached = this.getOrCreate(event.userId)
+			cached.displayName = event.userDisplayName
+			cached.subbed = true
+			cached.subinfo = {
+				gift: false,
+				tier: (Number(event.tier) / 1000) as 1 | 2 | 3,
 			}
 		}
 
