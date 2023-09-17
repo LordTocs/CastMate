@@ -6,8 +6,10 @@
 		@click="onClick"
 		@contextmenu="contextMenu?.show($event)"
 	>
+		<i class="chevron-spacer"></i>
 		<slot name="icon">
 			<i :class="item.icon" class="px-1" v-if="item.icon"></i>
+			<i class="chevron-spacer" v-else></i>
 		</slot>
 		<div class="project-item-title">{{ item.title }}</div>
 		<slot name="end"></slot>
@@ -102,12 +104,18 @@ function onClick(ev: MouseEvent) {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	padding-left: calc(var(--indent) * 2rem + 0.5rem);
+	padding-left: calc(var(--indent) * 1em);
 	padding-right: 0.5rem;
 }
 
 .openable {
 	cursor: pointer;
+}
+
+.chevron-spacer {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
 }
 
 .project-item-title {

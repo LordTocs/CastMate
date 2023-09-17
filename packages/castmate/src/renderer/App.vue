@@ -34,6 +34,7 @@ body {
 	color: white;
 	margin: 0;
 	font-family: var(--font-family);
+	overflow: hidden;
 }
 </style>
 

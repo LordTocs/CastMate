@@ -48,11 +48,10 @@ interface ResourceGroupConfig<TData extends ResourceData> {
 	createView?: (resource: TData) => object
 }
 
-export function registerResourceAsProjectGroup<TData extends ResourceData>(
+export function getResourceAsProjectGroup<TData extends ResourceData>(
 	app: App<Element>,
 	config: ResourceGroupConfig<TData>
 ) {
-	const projectStore = useProjectStore()
 	const resources = useResources<TData>(config.resourceType)
 	const resourceStore = useResourceStore()
 	const dockingStore = useDockingStore()
@@ -114,6 +113,14 @@ export function registerResourceAsProjectGroup<TData extends ResourceData>(
 			},
 		}
 	})
+	return group
+}
 
+export function registerResourceAsProjectGroup<TData extends ResourceData>(
+	app: App<Element>,
+	config: ResourceGroupConfig<TData>
+) {
+	const projectStore = useProjectStore()
+	const group = getResourceAsProjectGroup(app, config)
 	projectStore.registerProjectGroupItem(group)
 }
