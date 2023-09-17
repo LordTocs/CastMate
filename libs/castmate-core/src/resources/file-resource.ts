@@ -79,7 +79,7 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 		const fileLoadPromises = files.map(async (file) => {
 			const id = path.basename(file, ".yaml")
 
-			console.log("Loading ", this.storage.name, id)
+			console.log("Loading", this.storage.name, id)
 
 			const fullFile = path.join(resolvedDir, file)
 

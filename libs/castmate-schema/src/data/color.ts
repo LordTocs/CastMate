@@ -6,11 +6,11 @@ type HEX = `#${string}`
 
 export type Color = RGB | RGBA | HEX
 
-type ColorFactory = { factoryCreate() : Color }
-const Color : ColorFactory = {
+type ColorFactory = { factoryCreate(): Color }
+export const Color: ColorFactory = {
 	factoryCreate() {
 		return "#000000" as Color
-	}
+	},
 }
 
 export interface SchemaColor extends SchemaBase {

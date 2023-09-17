@@ -231,6 +231,9 @@ export function squashSchemas<A extends Schema, B extends Schema>(a?: A, b?: B):
 	throw new Error("INCOMPATIBLE SCHEMAS")
 }
 
+export function declareSchema<T extends Schema>(schema: T): Readonly<T> {
+	return schema
+}
 ///
 
 export type DataFactory<T = any> = { factoryCreate(...args: any[]): T }

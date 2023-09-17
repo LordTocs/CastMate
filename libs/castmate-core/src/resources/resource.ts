@@ -89,13 +89,14 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 		const entry = this.resources.get(id)
 		if (entry) {
 			console.log("Entry Found")
-			this.resources.delete(id)
+			//Run on delete first incase it throws
 			const constructor = entry.resource.constructor as ResourceConstructor<T>
 			await constructor.onDelete?.(entry.resource)
+
+			this.resources.delete(id)
 			entry.stateEffect.dispose()
-			console.log("Delete Successful")
-			//TODO: Release entry.stateEffect?
 			rendererDeleteResource(this.name, id)
+			console.log("Delete Successful")
 		}
 	}
 }

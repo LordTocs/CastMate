@@ -11,6 +11,7 @@ export * from "./resources/file-resource"
 export * from "./accounts/account"
 
 export * from "./util/service"
+export * from "./templates/template"
 
 export * from "./profile/profile"
 export * from "./queue-system/action-queue"
