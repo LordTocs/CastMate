@@ -100,7 +100,6 @@ const resourceItem = computed(() => {
 	if (!model.value) return undefined
 	return resourceStore.value?.resources?.get(model.value)
 })
-const itemText = computed(() => resourceItem.value?.config?.name ?? model.value)
 
 function onMouseDown(ev: MouseEvent) {
 	ev.stopPropagation()
@@ -284,5 +283,7 @@ function clear() {
 
 .overlay {
 	position: absolute;
+	max-height: 25rem;
+	overflow-y: auto;
 }
 </style>

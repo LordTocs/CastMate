@@ -46,3 +46,7 @@ export function getElementRelativeRect(elem: HTMLElement, container: HTMLElement
 		height: elemRect.height,
 	})
 }
+
+export function stopPropagation(ev: { stopPropagation(): any }) {
+	ev.stopPropagation()
+}

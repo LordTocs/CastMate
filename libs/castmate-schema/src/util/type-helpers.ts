@@ -34,3 +34,16 @@ export function mapKeys<V, T>(
 export function isKey(k: any): k is string | symbol | number {
 	return typeof k === "string" || typeof k === "number" || typeof k === "symbol"
 }
+
+export type NestedKeyOf<T, K = keyof T> = K extends keyof T & (string | number)
+	? `${K}` | (T[K] extends object ? `${K}.${NestedKeyOf<T[K]>}` : never)
+	: never
+
+export function getByPath<ObjectType extends object>(object: ObjectType, path: string) {
+	const keys = path.split(".")
+	let result = object
+	for (const key of keys) {
+		result = (result as Record<string, any>)[key]
+	}
+	return result
+}

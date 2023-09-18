@@ -1,8 +1,15 @@
 import "./css/icons.css"
-import { ProjectGroup, getResourceAsProjectGroup, useDataInputStore, useProjectStore } from "castmate-ui-core"
+import {
+	ProjectGroup,
+	getResourceAsProjectGroup,
+	useDataInputStore,
+	useDockingStore,
+	useProjectStore,
+} from "castmate-ui-core"
 import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupInput from "./components/TwitchViewerGroupInput.vue"
 import { computed } from "vue"
+import ChannelPointsEditPageVue from "./components/channel-points/ChannelPointsEditPage.vue"
 
 export async function initPlugin() {
 	console.log("Registering", TwitchViewerGroup, "TwitchViewerGroup")
@@ -10,7 +17,7 @@ export async function initPlugin() {
 	dataStore.registerInputComponent(TwitchViewerGroup, TwitchViewerGroupInput)
 
 	const projectStore = useProjectStore()
-
+	const dockingStore = useDockingStore()
 	projectStore.registerProjectGroupItem(
 		computed<ProjectGroup>(() => {
 			return {
@@ -22,7 +29,13 @@ export async function initPlugin() {
 						id: "twitch.channelpoints",
 						title: "Channel Point Rewards",
 						icon: "twi twi-channel-points",
-						open() {},
+						open() {
+							dockingStore.openPage(
+								"twitch.channelpoints",
+								"Channel Point Rewards",
+								ChannelPointsEditPageVue
+							)
+						},
 					},
 					{
 						id: "twitch.groups",
