@@ -28,3 +28,7 @@ declare module "../schema" {
 registerType("Color", {
 	constructor: Color,
 })
+
+export function isHexColor(str: string): str is Color {
+	return /^#(?:(?:[A-F0-9]{2}){3,4}|[A-F0-9]{3})$/i.test(str)
+}

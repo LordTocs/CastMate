@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup w-full" @mousedown="onMouseDown">
+	<div class="p-inputgroup w-full" @mousedown="stopPropagation">
 		<div class="p-inputtext" @click="onClick">
 			{{ model && model?.length > 0 ? model : "&nbsp;" }}
 		</div>
@@ -44,7 +44,7 @@ import PDataTable from "primevue/datatable"
 import PInputText from "primevue/inputtext"
 import PColumn from "primevue/column"
 import { FilterMatchMode } from "primevue/api"
-import { useMediaStore } from "../../../main"
+import { stopPropagation, useMediaStore } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
 
 const props = defineProps<{
@@ -87,9 +87,5 @@ function onSelect() {
 
 function onClick(ev: MouseEvent) {
 	overlay.value?.toggle(ev)
-}
-
-function onMouseDown(ev: MouseEvent) {
-	ev.stopPropagation()
 }
 </script>

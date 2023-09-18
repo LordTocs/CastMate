@@ -1,4 +1,13 @@
-import { type Schema, type IPCSchema, getTypeByName, DataConstructorOrFactory, Range, MediaFile } from "castmate-schema"
+import {
+	type Schema,
+	type IPCSchema,
+	getTypeByName,
+	DataConstructorOrFactory,
+	Range,
+	MediaFile,
+	Toggle,
+	Color,
+} from "castmate-schema"
 import { defineStore } from "pinia"
 import {
 	type Component,
@@ -20,6 +29,9 @@ import ObjectInputVue from "../components/data/inputs/ObjectInput.vue"
 import RangeInputVue from "../components/data/inputs/RangeInput.vue"
 import MediaFileInput from "../components/data/inputs/MediaFileInput.vue"
 import ResourceInputVue from "../components/data/inputs/ResourceInput.vue"
+import ToggleInputVue from "../components/data/inputs/ToggleInput.vue"
+import BooleanInputVue from "../components/data/inputs/BooleanInput.vue"
+import ColorInputVue from "../components/data/inputs/ColorInput.vue"
 
 export type ResourceProxy = string
 export const ResourceProxyFactory = {
@@ -95,4 +107,7 @@ export function initData() {
 	inputStore.registerInputComponent(Range, RangeInputVue)
 	inputStore.registerInputComponent(MediaFile, MediaFileInput)
 	inputStore.registerInputComponent(ResourceProxyFactory, ResourceInputVue)
+	inputStore.registerInputComponent(Toggle, ToggleInputVue)
+	inputStore.registerInputComponent(Boolean, BooleanInputVue)
+	inputStore.registerInputComponent(Color, ColorInputVue)
 }

@@ -1,25 +1,38 @@
 <template>
 	<div class="p-inputgroup w-full">
-		<span class="p-float-label">
-			<template v-if="templateMode">
-				<document-path :local-path="localPath">
+		<template v-if="templateMode">
+			<document-path :local-path="localPath">
+				<span class="p-float-label">
 					<p-input-text id="l" v-model="(model as string | undefined)" />
-				</document-path>
-			</template>
-			<template v-else>
-				<document-path :local-path="localPath">
-					<p-input-number
-						id="l"
+					<label for="l"> {{ props.schema.name }}</label>
+				</span>
+			</document-path>
+		</template>
+		<template v-else>
+			<document-path :local-path="localPath">
+				<div class="w-full">
+					<span class="p-float-label">
+						<p-input-number
+							id="l"
+							v-model="(model as number | undefined)"
+							:min="min"
+							:max="max"
+							:step="step"
+							:suffix="unit"
+						/>
+						<label for="l"> {{ props.schema.name }}</label>
+					</span>
+					<p-slider
+						v-if="schema.slider"
 						v-model="(model as number | undefined)"
 						:min="min"
 						:max="max"
 						:step="step"
-						:suffix="unit"
 					/>
-				</document-path>
-			</template>
-			<label for="l"> {{ props.schema.name }}</label>
-		</span>
+				</div>
+			</document-path>
+		</template>
+
 		<p-button
 			v-if="canTemplate"
 			class="flex-none"
@@ -34,6 +47,7 @@
 import PInputText from "primevue/inputtext"
 import PInputNumber from "primevue/inputnumber"
 import PButton from "primevue/button"
+import PSlider from "primevue/slider"
 import { type SchemaBase, type SchemaNumber } from "castmate-schema"
 import { useVModel } from "@vueuse/core"
 import { computed, ref, onMounted } from "vue"

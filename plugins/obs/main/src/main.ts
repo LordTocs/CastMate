@@ -8,7 +8,7 @@ import {
 	Resource,
 	defineState,
 } from "castmate-core"
-import { Toggle } from "castmate-schema"
+import { Color, Toggle } from "castmate-schema"
 import OBSWebSocket from "obs-websocket-js"
 
 interface OBSConnectionConfig {
@@ -159,6 +159,27 @@ export default definePlugin(
 					filterEnabled: enabled,
 				})
 			},
+		})
+
+		defineAction({
+			id: "recording",
+			name: "Recording Start/Stop",
+			icon: "mdi mdi-record",
+			type: "instant",
+			config: {
+				type: Object,
+				properties: {
+					recording: {
+						type: Toggle,
+						name: "Recording",
+						required: true,
+						default: true,
+						trueIcon: "mdi mdi-record",
+						falseIcon: "mdi mdi-stop",
+					},
+				},
+			},
+			async invoke(config, contextData, abortSignal) {},
 		})
 
 		defineAction({

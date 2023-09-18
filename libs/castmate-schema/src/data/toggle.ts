@@ -1,15 +1,15 @@
-import { registerType } from "../schema"
+import { SchemaBase, registerType } from "../schema"
 
 export type Toggle = boolean | "toggle"
 
-type ToggleFactory = { factoryCreate() : Toggle }
+type ToggleFactory = { factoryCreate(): Toggle }
 export const Toggle: ToggleFactory = {
 	factoryCreate() {
 		return false
 	},
 }
 
-export interface SchemaToggle {
+export interface SchemaToggle extends SchemaBase {
 	type: ToggleFactory
 	template?: boolean
 	trueIcon?: string

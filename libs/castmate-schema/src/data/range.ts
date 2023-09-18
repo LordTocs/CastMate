@@ -11,7 +11,7 @@ export class Range {
 	min?: number | string
 	max?: number | string
 
-	constructor(min?: number, max?: number) {
+	constructor(min?: number | string, max?: number | string) {
 		this.min = min
 		this.max = max
 	}

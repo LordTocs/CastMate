@@ -24,7 +24,7 @@
 				@mousedown.stop
 			/>
 		</div>
-		<div class="body" v-if="open">
+		<div class="body" v-if="open" @mousedown="stopPropagation">
 			<automation-edit
 				v-model="modelObj"
 				v-model:view="view.automationView"
@@ -56,6 +56,7 @@ import {
 	joinDocumentPath,
 	usePluginStore,
 	ResourceProxyFactory,
+	stopPropagation,
 } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
 import AutomationEdit from "../automation/AutomationEdit.vue"

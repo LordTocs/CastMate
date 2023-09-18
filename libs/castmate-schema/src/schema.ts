@@ -36,7 +36,7 @@ export interface SchemaString extends Enumable<string> {
 	template?: boolean
 }
 
-export interface SchemaBoolean {
+export interface SchemaBoolean extends SchemaBase {
 	type: BooleanConstructor
 	trueIcon?: string
 	falseIcon?: string

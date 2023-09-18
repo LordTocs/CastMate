@@ -1,3 +1,11 @@
+.mdi {
+	font-family: "primeicons"; /* Without this the icons will all be off center. Fonts are weird. Don't think about this too hard */
+}
+
+.no-focus-highlight {
+	box-shadow: none !important;
+}
+
 :root {
 	--surface-a: #212121;
 	--surface-b: #121212;
@@ -47,6 +55,7 @@
 	--highlight-text-color: #9eade6;
 	color-scheme: dark;
 }
+
 @font-face {
 	font-family: "Poppins";
 	font-style: normal;

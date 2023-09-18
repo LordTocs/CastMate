@@ -174,7 +174,7 @@ useEventListener(
 	() => (overlayVisibleComplete.value ? document : undefined),
 	"click",
 	(ev) => {
-		if (!container.value?.contains(ev.target as Node) && !overlayDiv.value?.contains(event?.target as Node)) {
+		if (!container.value?.contains(ev.target as Node) && !overlayDiv.value?.contains(ev?.target as Node)) {
 			hide()
 		}
 	}

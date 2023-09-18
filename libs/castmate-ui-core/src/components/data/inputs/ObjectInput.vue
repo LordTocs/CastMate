@@ -70,7 +70,7 @@ function onMouseDown(ev: MouseEvent) {
 	box-shadow: 0 0 0 1px #e9aaff;
 }
 
-.data-prop {
+.data-input :deep(.data-prop) {
 	margin-top: 1.5rem;
 }
 </style>
