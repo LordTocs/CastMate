@@ -29,8 +29,6 @@ export function useCombinedPartialSelects(...partials: MaybeRefOrGetter<PartialS
 			return undefined
 		}
 
-		console.log(min, max)
-
 		return { start: min, end: max }
 	})
 }

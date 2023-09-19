@@ -177,7 +177,6 @@ export function useClickDragRect(
 		() => (couldDrag.value ? window : null),
 		"mouseup",
 		(ev: MouseEvent) => {
-			console.log("Drag Up")
 			endDrag()
 		}
 	)
