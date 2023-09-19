@@ -7,6 +7,7 @@ import {
 	MediaFile,
 	Toggle,
 	Color,
+	Duration,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -32,6 +33,7 @@ import ResourceInputVue from "../components/data/inputs/ResourceInput.vue"
 import ToggleInputVue from "../components/data/inputs/ToggleInput.vue"
 import BooleanInputVue from "../components/data/inputs/BooleanInput.vue"
 import ColorInputVue from "../components/data/inputs/ColorInput.vue"
+import DurationInputVue from "../components/data/inputs/DurationInput.vue"
 
 export type ResourceProxy = string
 export const ResourceProxyFactory = {
@@ -110,4 +112,5 @@ export function initData() {
 	inputStore.registerInputComponent(Toggle, ToggleInputVue)
 	inputStore.registerInputComponent(Boolean, BooleanInputVue)
 	inputStore.registerInputComponent(Color, ColorInputVue)
+	inputStore.registerInputComponent(Duration, DurationInputVue)
 }

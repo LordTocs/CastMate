@@ -1,3 +1,4 @@
+import { Duration } from "castmate-schema"
 import { defineAction, definePlugin } from "castmate-core"
 import { abortableSleep } from "castmate-core/src/util/abort-utils"
 
@@ -19,7 +20,7 @@ export default definePlugin(
 			config: {
 				type: Object,
 				properties: {
-					duration: { type: Number, name: "Duration", template: true, required: true, default: 1.0 },
+					duration: { type: Duration, name: "Duration", template: true, required: true, default: 1.0 },
 				},
 			},
 			async invoke(config, contextData, abortSignal) {

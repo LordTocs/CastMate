@@ -1,5 +1,5 @@
 <template>
-	<div class="duration-handle" :class="{ dragging }" ref="handle" @mousedown="onMouseDown"></div>
+	<div class="duration-handle" :class="{ dragging }" ref="handle" @mousedown="onMouseDown" tabindex="-1"></div>
 </template>
 
 <script setup lang="ts">
@@ -65,6 +65,8 @@ function onMouseDown(ev: MouseEvent) {
 		const offset = computeOffset(ev)
 
 		dragOffset.value = offset.x
+		//Pull focus
+		handle.value?.focus()
 		ev.stopPropagation()
 		ev.preventDefault()
 	}

@@ -4,6 +4,7 @@ export * from "./data/light-color"
 export * from "./data/toggle"
 export * from "./data/range"
 export * from "./data/media"
+export * from "./data/duration"
 
 export * from "./ipc/action"
 export * from "./ipc/trigger"
