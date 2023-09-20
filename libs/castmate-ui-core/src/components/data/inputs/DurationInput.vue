@@ -83,6 +83,7 @@ import FakeInputString from "../../fake-input/FakeInputString.vue"
 import FakeInputBackbone from "../../fake-input/FakeInputBackbone.vue"
 import { InputSelection, PartialSelectionResult, useCombinedPartialSelects } from "../../fake-input/FakeInputTypes"
 import { useClickDragRect } from "../../../util/dom"
+import PButton from "primevue/button"
 
 const props = defineProps<{
 	modelValue: Duration | undefined
