@@ -26,11 +26,22 @@
 							<h3 class="my-0">CastMate Channel Point Rewards</h3>
 						</template>
 						<template v-else>
-							<h3 class="my-0">Other Channel Point Rewards</h3>
-							<h4 class="my-0">
-								These rewards aren't can't be enabled and disabled with CastMate profiles. But you can
-								still use them in triggers.
-							</h4>
+							<div class="flex flex-row">
+								<div class="flex-1">
+									<h3 class="my-0">Other Channel Point Rewards</h3>
+									<h4 class="my-0">
+										These rewards aren't can't be enabled and disabled with CastMate profiles. But
+										you can still use them in triggers.
+									</h4>
+								</div>
+								<a
+									class="p-button p-component"
+									href="https://dashboard.twitch.tv/viewer-rewards/channel-points/rewards"
+									target="_blank"
+								>
+									Open Dashboard
+								</a>
+							</div>
 						</template>
 					</div>
 				</template>
@@ -48,6 +59,7 @@
 import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PInputText from "primevue/inputtext"
+import PButton from "primevue/button"
 import { FilterMatchMode } from "primevue/api"
 import { computed, ref } from "vue"
 import { useElementSize } from "@vueuse/core"

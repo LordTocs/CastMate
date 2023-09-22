@@ -48,6 +48,11 @@ export function createWindow(
 		win.webContents.send("windowFuncs_stateChanged", "unmaximized")
 	})
 
+	win.webContents.setWindowOpenHandler((details) => {
+		shell.openExternal(details.url)
+		return { action: "deny" }
+	})
+
 	/*
 	win.webContents.on("new-window", function (e, url) {
 		e.preventDefault()
