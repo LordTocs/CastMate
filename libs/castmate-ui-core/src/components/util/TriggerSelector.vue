@@ -3,6 +3,7 @@
 		v-model="idModel"
 		:items="triggers"
 		group-prop="plugin"
+		text-prop="name"
 		input-id="trigger"
 		:required="true"
 		no-float
