@@ -12,12 +12,14 @@ import { SchemaBoolean } from "castmate-schema"
 import DocumentPath from "../../document/DocumentPath.vue"
 import PCheckBox from "primevue/checkbox"
 import { useModel } from "vue"
+import { SharedDataInputProps } from "../DataInputTypes"
 
-const props = defineProps<{
-	modelValue: boolean
-	schema: SchemaBoolean
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		modelValue: boolean
+		schema: SchemaBoolean
+	} & SharedDataInputProps
+>()
 
 const model = useModel(props, "modelValue")
 </script>

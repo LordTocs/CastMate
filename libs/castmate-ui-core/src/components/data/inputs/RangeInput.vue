@@ -43,12 +43,14 @@ import { SchemaRange, SchemaBase, Range } from "castmate-schema"
 import { computed, useModel, ref } from "vue"
 import DocumentPath from "../../document/DocumentPath.vue"
 import PButton from "primevue/button"
+import { SharedDataInputProps } from "../DataInputTypes"
 
-const props = defineProps<{
-	schema: SchemaRange & SchemaBase
-	modelValue: Range | undefined
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		schema: SchemaRange & SchemaBase
+		modelValue: Range | undefined
+	} & SharedDataInputProps
+>()
 
 const canTemplate = computed(() => !!props.schema?.template)
 const templateMode = ref(false)

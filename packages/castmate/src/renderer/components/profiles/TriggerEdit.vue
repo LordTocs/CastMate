@@ -10,9 +10,11 @@
 					{{ trigger?.name }}
 				</span>
 			</div>
-			<div class="flex flex-row flex-grow-1 align-items-center" v-else>
-				<trigger-selector v-model="triggerModel" />
+			<div class="flex flex-row flex-grow-1 align-items-center pt-4 pb-1" v-else>
+				<trigger-selector v-model="triggerModel" class="flex-grow-1 w-full" />
 				<data-input
+					class="flex-grow-1"
+					no-float
 					v-model="modelObj.queue"
 					:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
 				/>

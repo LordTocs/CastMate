@@ -1,77 +1,13 @@
 <template>
-	<div class="container w-full" ref="container">
-		<div class="p-inputgroup w-full" @mousedown="onMouseDown">
-			<span class="p-float-label">
-				<div
-					class="p-dropdown p-inputwrapper"
-					:class="{
-						'p-filled': model != null,
-						'p-focused': focused,
-						'p-inputwrapper-filled': model != null,
-						'p-inputwrapper-focused': focused || overlayVisible,
-					}"
-				>
-					<div
-						id="input-item"
-						class="p-dropdown-label p-inputtext"
-						:class="{ 'p-filled': model != null }"
-						type="text"
-						tabindex="-1"
-						@focus="onFocus"
-						v-if="!focused"
-					>
-						<span v-if="props.modelValue && !resourceItem">
-							<!-- Missing Resource! -->
-							{{ model }}
-						</span>
-						<span v-if="resourceItem">
-							{{ resourceItem.config.name ?? model }}
-						</span>
-						<!-- TODO: Add custom item render here -->
-					</div>
-					<p-input-text
-						v-else
-						id="input-item"
-						@blur="onBlur"
-						class="p-dropdown-label"
-						ref="filterInputElement"
-						v-model="filterValue"
-						@keydown="onFilterKeyDown"
-					/>
-				</div>
-				<label for="input-item"> {{ props.schema.name }}</label>
-			</span>
-			<p-button class="flex-none" v-if="!schema.required" icon="pi pi-times" @click.stop="clear" />
-			<p-button @click="onDropDownClick"><p-chevron-down-icon /></p-button>
-		</div>
-		<p-portal append-to="self">
-			<transition name="p-connected-overlay" @enter="onOverlayEnter">
-				<div
-					v-if="overlayVisible"
-					ref="overlayDiv"
-					class="overlay p-dropdown-panel p-component p-ripple-disabled"
-					:style="{
-						zIndex: primevue.config.zIndex?.overlay,
-					}"
-				>
-					<ul class="p-dropdown-items">
-						<li
-							class="p-dropdown-item"
-							:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
-							v-for="(item, i) in filteredItems"
-							:data-p-highlight="isCurrentItem(item)"
-							:data-p-focused="isItemFocused(item)"
-							:aria-label="getItemText(item)"
-							:aria-selected="isCurrentItem(item)"
-							@click="onItemSelect($event, item)"
-						>
-							{{ getItemText(item) }}
-						</li>
-					</ul>
-				</div>
-			</transition>
-		</p-portal>
-	</div>
+	<c-autocomplete
+		v-model="model"
+		:required="!!schema.required"
+		:label="schema.name"
+		text-prop="config.name"
+		:items="[...resourceStore.resources.values()]"
+		input-id="resource"
+		:no-float="noFloat"
+	/>
 </template>
 
 <script setup lang="ts">
@@ -87,11 +23,16 @@ import { usePrimeVue } from "primevue/config"
 import { DomHandler } from "primevue/utils"
 import { useEventListener } from "@vueuse/core"
 import _clamp from "lodash/clamp"
+import { SharedDataInputProps } from "../DataInputTypes"
 
-const props = defineProps<{
-	schema: SchemaResource
-	modelValue: ResourceProxy | undefined
-}>()
+import CAutocomplete from "../base-components/CAutocomplete.vue"
+
+const props = defineProps<
+	{
+		schema: SchemaResource
+		modelValue: ResourceProxy | undefined
+	} & SharedDataInputProps
+>()
 
 const model = useModel(props, "modelValue")
 const resourceStore = useResources(() => props.schema.resourceType)

@@ -1,31 +1,32 @@
 <template>
 	<div class="container w-full" ref="container">
 		<div class="p-inputgroup w-full" @mousedown="stopPropagation">
-			<span class="p-float-label">
-				<div
-					v-if="!templateMode"
-					class="p-dropdown p-inputwrapper"
-					:class="{
-						'p-filled': model != null,
-						'p-focused': focused,
-						'p-inputwrapper-filled': model != null,
-						'p-inputwrapper-focused': focused || overlayVisible,
-						'fix-right': !schema.required || schema.template,
-					}"
-					input-id="color"
-					@click="toggle"
+			<label-floater :no-float="props.noFloat" :label="schema.name" input-id="color" v-slot="labelProps">
+				<template-toggle
+					v-model="model"
+					:template-mode="templateMode"
+					v-bind="labelProps"
+					v-slot="templateProps"
 				>
-					<div class="p-dropdown-label p-inputtext">
-						<div v-if="model" class="color-splash" :style="{ backgroundColor: model }"></div>
-						<span v-else>&nbsp;</span>
+					<div
+						class="p-dropdown p-inputwrapper"
+						:class="{
+							'p-filled': model != null,
+							'p-focused': focused,
+							'p-inputwrapper-filled': model != null,
+							'p-inputwrapper-focused': focused || overlayVisible,
+							'fix-right': !schema.required || schema.template,
+						}"
+						v-bind="templateProps"
+						@click="toggle"
+					>
+						<div class="p-dropdown-label p-inputtext">
+							<div v-if="model" class="color-splash" :style="{ backgroundColor: model }"></div>
+							<span v-else>&nbsp;</span>
+						</div>
 					</div>
-				</div>
-				<p-input-text v-model="model" input-id="color" v-else />
-				<label for="color">
-					{{ schema.name }}
-				</label>
-			</span>
-
+				</template-toggle>
+			</label-floater>
 			<p-button
 				class="flex-none no-focus-highlight"
 				v-if="schema.template"
@@ -63,12 +64,16 @@ import { DomHandler } from "primevue/utils"
 import { usePrimeVue } from "primevue/config"
 import { stopPropagation } from "../../../main"
 import { useEventListener } from "@vueuse/core"
+import { SharedDataInputProps } from "../DataInputTypes"
+import LabelFloater from "../base-components/LabelFloater.vue"
+import TemplateToggle from "../base-components/TemplateToggle.vue"
 
-const props = defineProps<{
-	modelValue: Color | string | undefined
-	schema: SchemaColor
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		modelValue: Color | string | undefined
+		schema: SchemaColor
+	} & SharedDataInputProps
+>()
 
 const model = useModel(props, "modelValue")
 

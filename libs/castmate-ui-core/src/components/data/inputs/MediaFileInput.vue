@@ -1,8 +1,10 @@
 <template>
 	<div class="p-inputgroup w-full" @mousedown="stopPropagation">
-		<div class="p-inputtext" @click="onClick">
-			{{ model && model?.length > 0 ? model : "&nbsp;" }}
-		</div>
+		<label-floater :label="schema.name" :no-float="noFloat" input-id="media" v-slot="labelProps">
+			<div class="p-inputtext" @click="onClick" v-bind="labelProps">
+				{{ model && model?.length > 0 ? model : "&nbsp;" }}
+			</div>
+		</label-floater>
 		<p-overlay-panel ref="overlay">
 			<p-data-table
 				:value="mediaItems"
@@ -46,12 +48,15 @@ import PColumn from "primevue/column"
 import { FilterMatchMode } from "primevue/api"
 import { stopPropagation, useMediaStore } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
+import { SharedDataInputProps } from "../DataInputTypes"
+import LabelFloater from "../base-components/LabelFloater.vue"
 
-const props = defineProps<{
-	schema: SchemaMediaFile & SchemaBase
-	modelValue: string | undefined
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		schema: SchemaMediaFile & SchemaBase
+		modelValue: string | undefined
+	} & SharedDataInputProps
+>()
 
 const mediaStore = useMediaStore()
 const mediaItems = computed(() =>

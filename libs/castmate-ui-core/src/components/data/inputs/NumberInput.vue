@@ -2,26 +2,24 @@
 	<div class="p-inputgroup w-full">
 		<template v-if="templateMode">
 			<document-path :local-path="localPath">
-				<span class="p-float-label">
-					<p-input-text id="l" v-model="(model as string | undefined)" />
-					<label for="l"> {{ props.schema.name }}</label>
-				</span>
+				<label-floater :label="schema.name ?? ''" :float="true" input-id="text" v-slot="labelProps">
+					<p-input-text id="l" v-model="(model as string | undefined)" v-bind="labelProps" />
+				</label-floater>
 			</document-path>
 		</template>
 		<template v-else>
 			<document-path :local-path="localPath">
 				<div class="w-full">
-					<span class="p-float-label">
+					<label-floater :label="schema.name ?? ''" :float="true" input-id="text" v-slot="labelProps">
 						<p-input-number
-							id="l"
 							v-model="(model as number | undefined)"
 							:min="min"
 							:max="max"
 							:step="step"
 							:suffix="unit"
+							v-bind="labelProps"
 						/>
-						<label for="l"> {{ props.schema.name }}</label>
-					</span>
+					</label-floater>
 					<p-slider
 						v-if="schema.slider"
 						v-model="(model as number | undefined)"
@@ -32,7 +30,6 @@
 				</div>
 			</document-path>
 		</template>
-
 		<p-button
 			v-if="canTemplate"
 			class="flex-none"
@@ -52,6 +49,7 @@ import { type SchemaBase, type SchemaNumber } from "castmate-schema"
 import { useVModel } from "@vueuse/core"
 import { computed, ref, onMounted } from "vue"
 import DocumentPath from "../../document/DocumentPath.vue"
+import LabelFloater from "../base-components/LabelFloater.vue"
 
 const props = defineProps<{
 	schema: SchemaNumber & SchemaBase

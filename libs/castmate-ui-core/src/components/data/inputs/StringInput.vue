@@ -1,11 +1,10 @@
 <template>
-	<div class="p-inputgroup w-full" @mousedown="onMousedown">
-		<span class="p-float-label">
-			<document-path :local-path="localPath">
-				<p-input-text id="l" v-model="model" />
-			</document-path>
-			<label for="l"> {{ props.schema.name }}</label>
-		</span>
+	<div class="p-inputgroup w-full" @mousedown="stopPropagation">
+		<document-path :local-path="localPath">
+			<label-floater :label="schema.name" :no-float="noFloat" input-id="text" v-slot="labelProps">
+				<p-input-text v-model="model" v-bind="labelProps" />
+			</label-floater>
+		</document-path>
 		<span v-if="schema.template" class="p-inputgroup-addon" style="width: 2.857rem">
 			<i class="mdi mdi-code-braces flex-none" />
 		</span>
@@ -19,12 +18,16 @@ import PButton from "primevue/button"
 import { type SchemaString, type SchemaBase } from "castmate-schema"
 import { useVModel } from "@vueuse/core"
 import DocumentPath from "../../document/DocumentPath.vue"
+import { SharedDataInputProps } from "../DataInputTypes"
+import LabelFloater from "../base-components/LabelFloater.vue"
+import { stopPropagation } from "../../../main"
 
-const props = defineProps<{
-	schema: SchemaString & SchemaBase
-	modelValue: string | undefined
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		schema: SchemaString & SchemaBase
+		modelValue: string | undefined
+	} & SharedDataInputProps
+>()
 
 const emit = defineEmits(["update:modelValue"])
 
@@ -33,8 +36,4 @@ function clear() {
 }
 
 const model = useVModel(props, "modelValue", emit)
-
-function onMousedown(ev: MouseEvent) {
-	ev.stopPropagation() //Stop propagating so we don't get selection
-}
 </script>

@@ -15,21 +15,21 @@
 </template>
 
 <script setup lang="ts">
-import { useVModel } from "@vueuse/core"
 import { type SchemaObj } from "castmate-schema"
 import DataInput from "../DataInput.vue"
 import DocumentPath from "../../document/DocumentPath.vue"
-import { computed } from "vue"
+import { SharedDataInputProps } from "../DataInputTypes"
 
 interface ObjType {
 	[prop: string]: any
 }
 
-const props = defineProps<{
-	schema: SchemaObj
-	modelValue: ObjType | undefined
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		schema: SchemaObj
+		modelValue: ObjType | undefined
+	} & SharedDataInputProps
+>()
 
 const emit = defineEmits(["update:modelValue"])
 

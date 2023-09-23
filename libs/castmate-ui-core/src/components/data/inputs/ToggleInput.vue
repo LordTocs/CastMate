@@ -2,7 +2,7 @@
 	<document-path :local-path="localPath">
 		<div class="p-inputgroup w-full" v-bind="$attrs">
 			<toggle-switch
-				id="switch"
+				input-id="switch"
 				v-model="model"
 				:true-icon="schema.trueIcon"
 				:false-icon="schema.falseIcon"
@@ -19,12 +19,14 @@ import { useModel } from "vue"
 import DocumentPath from "../../document/DocumentPath.vue"
 import ToggleSwitch from "../base-components/ToggleSwitch.vue"
 import { SchemaToggle } from "castmate-schema"
+import { SharedDataInputProps } from "../DataInputTypes"
 
-const props = defineProps<{
-	modelValue: Toggle
-	schema: SchemaToggle
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		modelValue: Toggle
+		schema: SchemaToggle
+	} & SharedDataInputProps
+>()
 
 const model = useModel(props, "modelValue")
 </script>

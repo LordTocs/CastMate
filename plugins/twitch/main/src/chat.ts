@@ -17,7 +17,7 @@ export function setupChat() {
 		config: {
 			type: Object,
 			properties: {
-				message: { type: String, template: true, required: true, default: "" },
+				message: { type: String, template: true, required: true, default: "", name: "Message" },
 			},
 		},
 		async invoke(config, context, abortSignal) {

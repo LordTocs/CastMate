@@ -45,5 +45,5 @@ export function getByPath<ObjectType extends object>(object: ObjectType, path: s
 	for (const key of keys) {
 		result = (result as Record<string, any>)[key]
 	}
-	return result
+	return result as any
 }
