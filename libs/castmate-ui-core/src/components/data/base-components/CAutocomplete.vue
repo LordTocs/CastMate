@@ -177,16 +177,6 @@ function onOverlayEnter() {
 
 const containerSize = useElementSize(container)
 
-useEventListener(
-	() => (overlayVisibleComplete.value ? document : undefined),
-	"click",
-	(ev) => {
-		if (!container.value?.contains(ev.target as Node) && !overlayDiv.value?.contains(ev?.target as Node)) {
-			hide()
-		}
-	}
-)
-
 //////////////////
 //Filtering
 
@@ -205,7 +195,6 @@ watch(filteredItems, () => {
 
 function onItemSelect(ev: Event, item: ItemType) {
 	model.value = item.id
-	hide()
 	onBlur()
 	ev.stopPropagation()
 	ev.preventDefault()
@@ -232,6 +221,7 @@ function onFocus(ev: FocusEvent) {
 function onBlur() {
 	focused.value = false
 	filterValue.value = ""
+	hide()
 }
 
 function isItemFocused(item: ItemType) {
@@ -249,7 +239,6 @@ function onFilterKeyDown(ev: KeyboardEvent) {
 	} else if (ev.key == "Enter") {
 		selectedFocusedItem(ev)
 	} else if (ev.key == "Escape") {
-		hide()
 		onBlur()
 		ev.stopPropagation()
 		ev.preventDefault()
@@ -259,11 +248,9 @@ function onFilterKeyDown(ev: KeyboardEvent) {
 function selectedFocusedItem(ev: Event) {
 	if (findItem(filteredItems.value, focusedId.value)) {
 		model.value = focusedId.value
-		hide()
 		onBlur()
 	} else if (filteredItems.value.length > 0) {
 		model.value = filteredItems.value[0][0]?.id
-		hide()
 		onBlur()
 	}
 	ev.stopPropagation()

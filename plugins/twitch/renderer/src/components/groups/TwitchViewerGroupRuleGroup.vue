@@ -10,6 +10,7 @@
 				option-label="name"
 				option-value="value"
 				size="small"
+				append-to="self"
 			/>
 			<div class="flex-grow-1"></div>
 			<p-button text icon="mdi mdi-close" @click="deleteMe"></p-button>
@@ -328,6 +329,7 @@ function addCategory(ev: MouseEvent) {
 	padding: 0.25rem;
 	display: flex;
 	flex-direction: row;
+	position: relative;
 }
 
 .and {
