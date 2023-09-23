@@ -56,7 +56,7 @@ interface TriggerDefinition {
 	readonly name: string
 	readonly description?: string
 	readonly icon?: string
-	readonly color?: Color
+	readonly color: Color
 	readonly version: string
 	config: Schema
 	context: Schema
@@ -212,7 +212,6 @@ export function useTriggerColors(selection: MaybeRefOrGetter<TriggerSelection | 
 	console.log("Using Trigger Colors", toValue(selection), triggerColor.value)
 
 	const style = computed(() => {
-		console.log("Computing Style", triggerColor.value)
 		return {
 			"--trigger-color": triggerColor.value,
 			"--darker-trigger-color": darkerTriggerColor.value,
@@ -220,8 +219,6 @@ export function useTriggerColors(selection: MaybeRefOrGetter<TriggerSelection | 
 			"--lighter-trigger-color": lighterTriggerColor.value,
 		}
 	})
-
-	console.log("Using trigger style", style.value)
 
 	return { darkestTriggerColor, darkerTriggerColor, triggerColor, lighterTriggerColor, triggerColorStyle: style }
 }

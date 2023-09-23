@@ -54,13 +54,22 @@
 					class="overlay p-dropdown-panel p-component p-ripple-disabled"
 					:style="{
 						zIndex: primevue.config.zIndex?.overlay,
+						width: `${containerSize.width.value}px`,
 					}"
 				>
 					<ul class="p-dropdown-items">
 						<template v-for="(group, i) in filteredItems">
 							<slot name="groupHeader" :item="group[0]"> </slot>
 
-							<slot name="item" v-for="(item, i) in group" :item="item" :index="i">
+							<slot
+								name="item"
+								v-for="(item, i) in group"
+								:item="item"
+								:index="i"
+								:focused="isItemFocused(item)"
+								:highlighted="isCurrentItem(item)"
+								:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
+							>
 								<li
 									class="p-dropdown-item"
 									:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
@@ -89,7 +98,7 @@ import PChevronDownIcon from "primevue/icons/chevrondown"
 import PPortal from "primevue/portal"
 import { usePrimeVue } from "primevue/config"
 import { DomHandler } from "primevue/utils"
-import { useEventListener } from "@vueuse/core"
+import { useElementSize, useEventListener } from "@vueuse/core"
 import { stopPropagation } from "../../../util/dom"
 import {
 	useGroupedFilteredItems,
@@ -165,6 +174,8 @@ function onOverlayEnter() {
 
 	DomHandler.relativePosition(overlayDiv.value, container.value)
 }
+
+const containerSize = useElementSize(container)
 
 useEventListener(
 	() => (overlayVisibleComplete.value ? document : undefined),
@@ -277,5 +288,15 @@ function onKeyArrowUp(ev: KeyboardEvent) {
 .fix-left {
 	border-top-left-radius: 6px !important;
 	border-bottom-left-radius: 6px !important;
+}
+
+.container {
+	position: relative;
+}
+
+.overlay {
+	position: absolute;
+	overflow-y: auto;
+	max-height: 15rem;
 }
 </style>

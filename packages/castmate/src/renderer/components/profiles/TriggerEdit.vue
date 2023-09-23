@@ -10,8 +10,8 @@
 					{{ trigger?.name }}
 				</span>
 			</div>
-			<div class="flex flex-row flex-grow-1 align-items-center pt-4 pb-1" v-else>
-				<trigger-selector v-model="triggerModel" class="flex-grow-1 w-full" />
+			<div class="flex flex-row flex-grow-1 align-items-center mt-1 mb-1" v-else>
+				<trigger-selector v-model="triggerModel" class="flex-grow-1 w-full pr-2" label="Trigger" />
 				<data-input
 					class="flex-grow-1"
 					no-float

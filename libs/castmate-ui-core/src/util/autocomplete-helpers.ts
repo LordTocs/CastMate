@@ -72,9 +72,13 @@ export function findItem(items: ItemType[][], id: string | undefined) {
 }
 
 export function getNextItem(items: ItemType[][], id: string | undefined) {
+	if (!id) {
+		return items[0]?.[0]?.id
+	}
+
 	for (let groupIndex = 0; groupIndex < items.length; ++groupIndex) {
 		const itemIndex = items[groupIndex].findIndex((i) => i.id == id)
-		if (itemIndex > 0) {
+		if (itemIndex >= 0) {
 			const nextIndex = itemIndex + 1
 			const nextItem = items[groupIndex][nextIndex]
 			if (nextItem) {
@@ -88,9 +92,13 @@ export function getNextItem(items: ItemType[][], id: string | undefined) {
 }
 
 export function getPrevItem(items: ItemType[][], id: string | undefined) {
+	if (!id) {
+		return items[0]?.[0]?.id
+	}
+
 	for (let groupIndex = 0; groupIndex < items.length; ++groupIndex) {
 		const itemIndex = items[groupIndex].findIndex((i) => i.id == id)
-		if (itemIndex > 0) {
+		if (itemIndex >= 0) {
 			const prevIndex = itemIndex - 1
 			const prevItem = items[groupIndex][prevIndex]
 			if (prevItem) {

@@ -6,7 +6,7 @@ export interface IPCTriggerDefinition {
 	readonly name: string
 	readonly description?: string
 	readonly icon?: string
-	readonly color?: Color
+	readonly color: Color
 	readonly version: string
 
 	readonly config: IPCSchema

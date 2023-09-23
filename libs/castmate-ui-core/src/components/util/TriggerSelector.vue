@@ -1,51 +1,55 @@
 <template>
-	<span class="p-float-label trigger-selector" @mousedown="onMouseDown">
-		<p-drop-down
-			id="ac"
-			v-model="modelObj"
-			:options="options"
-			option-value="value"
-			option-label="label"
-			option-group-label="label"
-			option-group-children="triggers"
-			class="w-full"
-			dropdown
-		>
-			<template #value="slotProps">
-				<div v-if="slotProps.value">
-					<i :class="selectedTrigger?.icon" :style="{ color: selectedTrigger?.color }" />
-					{{ selectedTrigger?.name }}
-				</div>
-				<div v-else>
-					<i />
-				</div>
-			</template>
-			<template #optiongroup="slotProps">
-				<div
-					class="flex justify-content-center"
-					:style="{ borderBottom: `2px solid ${slotProps.option.color}` }"
-				>
-					<i :class="slotProps.option.icon" :style="{ color: slotProps.option.color }" />
-					{{ slotProps.option.label }}
-				</div>
-			</template>
-			<template #option="slotProps">
-				<div>
-					<i :class="slotProps.option.icon" :style="{ color: slotProps.option.color }" />
-					{{ slotProps.option.label }}
-				</div>
-			</template>
-		</p-drop-down>
-		<label for="ac" v-if="label"> {{ label }} </label>
-	</span>
+	<c-autocomplete
+		v-model="idModel"
+		:items="triggers"
+		group-prop="plugin"
+		input-id="trigger"
+		:required="true"
+		no-float
+		:label="label"
+	>
+		<template #selectedItem="{ item }">
+			<i :class="item?.icon" :style="{ color: item?.color }"></i>
+			{{ item?.name }}
+		</template>
+
+		<template #groupHeader="{ item }">
+			<li
+				class="header text-center mb-1 pb-2"
+				:style="{ borderBottom: `solid 2px ${pluginStore.pluginMap.get(item.plugin)?.color}` }"
+			>
+				<i
+					v-if="pluginStore.pluginMap.get(item.plugin)?.icon"
+					:class="pluginStore.pluginMap.get(item.plugin)?.icon"
+					class="mr-1"
+					:style="{ color: pluginStore.pluginMap.get(item.plugin)?.color }"
+				></i
+				>{{ pluginStore.pluginMap.get(item.plugin)?.name }}
+			</li>
+		</template>
+
+		<template #item="{ item, focused, highlighted, onClick }">
+			<li
+				class="p-dropdown-item"
+				:class="{ 'p-focus': focused, 'p-highlight': highlighted }"
+				:data-p-highlight="highlighted"
+				:data-p-focused="focused"
+				:aria-label="item.name"
+				:aria-selected="highlighted"
+				@click="onClick"
+			>
+				<i :class="item?.icon" :style="{ color: item?.color }"></i> {{ item.name }}
+			</li>
+		</template>
+	</c-autocomplete>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import PDropDown from "primevue/dropdown"
-import { usePlugin, usePluginStore } from "../../plugins/plugin-store"
+import { usePluginStore } from "../../plugins/plugin-store"
 import { useVModel } from "@vueuse/core"
 import { useTrigger } from "../../main"
+import CAutocomplete from "../data/base-components/CAutocomplete.vue"
 
 const pluginStore = usePluginStore()
 
@@ -62,41 +66,60 @@ const props = withDefaults(
 	{}
 )
 const emit = defineEmits(["update:modelValue"])
-const modelObj = useVModel(props, "modelValue", emit)
+const model = useVModel(props, "modelValue", emit)
 
 const selectedTrigger = useTrigger(() => props.modelValue)
 
-const options = computed(() => {
-	const result: any[] = []
-	for (let plugin of pluginStore.pluginMap.values()) {
-		const pluginOption = {
-			label: plugin.name,
-			color: plugin.color,
-			icon: plugin.icon,
-			id: plugin.id,
-			triggers: [] as any[],
+const idModel = computed({
+	get() {
+		if (props.modelValue) {
+			return props.modelValue.plugin + "." + props.modelValue.trigger
 		}
-		for (let triggerKey in plugin.triggers) {
-			const trigger = plugin.triggers[triggerKey]
-			pluginOption.triggers.push({
-				label: trigger.name,
-				color: trigger.color,
-				id: trigger.id,
-				icon: trigger.icon,
-				value: { plugin: plugin.id, trigger: trigger.id },
-			})
+		return undefined
+	},
+	set(v) {
+		if (!v) {
+			model.value = undefined
+			return
 		}
-		if (pluginOption.triggers.length > 0) {
-			result.push(pluginOption)
-		}
-	}
 
-	return result
+		const [plugin, trigger] = v.split(".")
+		model.value = {
+			plugin,
+			trigger,
+		}
+	},
 })
 
-function onMouseDown(ev: MouseEvent) {
-	ev.stopPropagation()
+interface TriggerItem {
+	id: string
+	plugin: string
+	name: string
+	icon?: string
+	color: string
 }
+const triggers = computed(() => {
+	const result: TriggerItem[] = []
+	for (let plugin of pluginStore.pluginMap.values()) {
+		for (let triggerKey in plugin.triggers) {
+			const trigger = plugin.triggers[triggerKey]
+
+			result.push({
+				id: `${plugin.id}.${triggerKey}`,
+				plugin: plugin.id,
+				name: trigger.name,
+				icon: trigger.icon,
+				color: trigger.color,
+			})
+		}
+	}
+	return result
+})
 </script>
 
-<style scoped></style>
+<style scoped>
+.header {
+	font-weight: 600;
+	color: #e6e6e6;
+}
+</style>
