@@ -62,7 +62,7 @@ const props = defineProps<{
 }>()
 
 const model = useModel(props, "modelValue")
-const emit = defineEmits(["delete"])
+const emit = defineEmits(["delete", "update:modelValue"])
 
 const treeNodes = computed<TreeNode[]>(() => {
 	return [
