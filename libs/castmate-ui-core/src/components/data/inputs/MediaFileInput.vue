@@ -1,9 +1,7 @@
 <template>
 	<div class="p-inputgroup w-full" @mousedown="stopPropagation">
 		<label-floater :label="schema.name" :no-float="noFloat" input-id="media" v-slot="labelProps">
-			<div class="p-inputtext" @click="onClick" v-bind="labelProps">
-				{{ model && model?.length > 0 ? model : "&nbsp;" }}
-			</div>
+			<input-box :model="model" v-bind="labelProps" @click="onClick" :placeholder="schema.name"> </input-box>
 		</label-floater>
 		<p-overlay-panel ref="overlay">
 			<p-data-table
@@ -50,6 +48,7 @@ import { stopPropagation, useMediaStore } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
 import LabelFloater from "../base-components/LabelFloater.vue"
+import InputBox from "../base-components/InputBox.vue"
 
 const props = defineProps<
 	{

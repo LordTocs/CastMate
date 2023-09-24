@@ -11,9 +11,9 @@
 				</span>
 			</div>
 			<div class="flex flex-row flex-grow-1 align-items-center mt-1 mb-1" v-else>
-				<trigger-selector v-model="triggerModel" class="flex-grow-1 w-full pr-2" label="Trigger" />
+				<trigger-selector v-model="triggerModel" class="flex-grow-1 w-full mr-2" label="Trigger" />
 				<data-input
-					class="flex-grow-1"
+					class="flex-grow-1 mr-2"
 					no-float
 					v-model="modelObj.queue"
 					:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
@@ -21,6 +21,7 @@
 			</div>
 			<p-button
 				text
+				class="no-focus-highlight"
 				:icon="open ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'"
 				@click.stop="open = !open"
 				@mousedown.stop
