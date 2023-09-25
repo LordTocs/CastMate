@@ -7,13 +7,13 @@ import {
 	Schema,
 	Color,
 	mapKeys,
-	ActionType,
 	constructDefault,
 	InstantAction,
 	TimeAction,
 	FlowAction,
 	AnyAction,
 	ActionInfo,
+	IPCDurationConfig,
 } from "castmate-schema"
 
 import { computed, ref, unref, type MaybeRefOrGetter, toValue, Component, markRaw } from "vue"
@@ -29,8 +29,7 @@ interface ActionDefinition {
 	description?: string
 	icon?: string
 	color?: Color
-	type: ActionType
-	durationhandler: string
+	duration: IPCDurationConfig
 
 	actionComponent?: Component
 	config: Schema
@@ -45,8 +44,7 @@ function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
 		color: def.color,
 		icon: def.icon,
 		config: ipcParseSchema(def.config),
-		type: def.type,
-		durationhandler: def.durationHandler ?? "",
+		duration: def.duration,
 		...(def.result ? { result: ipcParseSchema(def.result) } : {}),
 	}
 }
@@ -146,9 +144,9 @@ export const usePluginStore = defineStore("plugins", () => {
 			config: constructDefault(action.config),
 		}
 
-		if (action.type == "time" || action.type == "time-indefinite") {
-			result.offsets = []
-		}
+		// if (action.type == "time" || action.type == "time-indefinite") {
+		// 	result.offsets = []
+		// }
 
 		return result as AnyAction
 	}

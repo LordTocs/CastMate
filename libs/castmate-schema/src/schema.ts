@@ -363,3 +363,48 @@ const TestType = defineSchema("TestType", {
 	},
 })
 type TestType = InstanceType<typeof TestType>
+
+type DeepSchemaTypes = SchemaObj | SchemaArray
+
+export type SchemaPaths<T extends Schema> = T extends SchemaObj
+	? SchemaObjPaths<T>
+	: T extends SchemaArray
+	? SchemaArrayPaths<T>
+	: ""
+type SchemaObjPaths<T extends SchemaObj> = {
+	[K in keyof T["properties"]]: T["properties"][K] extends DeepSchemaTypes
+		? `${Exclude<K, symbol>}` | `${Exclude<K, symbol>}.${SchemaPaths<T["properties"][K]>}`
+		: `${Exclude<K, symbol>}`
+}[keyof T["properties"]]
+
+type SchemaArrayPaths<T extends SchemaArray> = T["items"] extends DeepSchemaTypes
+	? `${number}` | `${number}.${SchemaPaths<T["items"]>}`
+	: `${number}`
+
+const test = declareSchema({
+	type: Object,
+	properties: {
+		hello: { type: String },
+		test: {
+			type: Object,
+			properties: {
+				a: { type: Number, required: true },
+				b: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							c: { type: String },
+						},
+						required: true,
+					},
+					required: true,
+				},
+			},
+		},
+	},
+})
+
+function tp(p: SchemaPaths<typeof test>) {}
+
+tp("test.a")

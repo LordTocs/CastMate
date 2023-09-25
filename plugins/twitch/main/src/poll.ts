@@ -2,6 +2,7 @@ import { defineAction, defineState, defineTrigger } from "castmate-core"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { TwitchAccount } from "./twitch-auth"
 import { abortableSleep, setAbortableTimeout } from "castmate-core/src/util/abort-utils"
+import { Duration } from "castmate-schema"
 
 export function setupPolls() {
 	const pollId = defineState("pollId", {
@@ -12,13 +13,18 @@ export function setupPolls() {
 		id: "createPoll",
 		name: "Create Poll",
 		description: "Create's a twitch poll",
-		type: "time",
 		icon: "mdi mdi-poll",
+		duration: {
+			dragType: "length",
+			rightSlider: {
+				sliderProp: "duration",
+			},
+		},
 		config: {
 			type: Object,
 			properties: {
 				title: { type: String, name: "Title", template: true, required: true, default: "" },
-				duration: { type: Number, name: "Duration", template: true, required: true, default: 30 },
+				duration: { type: Duration, name: "Duration", template: true, required: true, default: 30 },
 				choices: {
 					type: Array,
 					name: "Outcomes",

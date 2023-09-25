@@ -13,7 +13,6 @@ export function setupChat() {
 		name: "Send Chat",
 		icon: "mdi mdi-chat",
 		version: "0.0.1",
-		type: "instant",
 		config: {
 			type: Object,
 			properties: {
@@ -93,7 +92,6 @@ export function setupChat() {
 		name: "Shoutout",
 		description: "Sends a shout out",
 		icon: "mdi mdi-bullhorn",
-		type: "instant",
 		config: {
 			type: Object,
 			properties: {

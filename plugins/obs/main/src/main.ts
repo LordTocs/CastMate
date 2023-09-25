@@ -47,7 +47,6 @@ export default definePlugin(
 			name: "Change Scene",
 			description: "Changes the current scene in OBS",
 			icon: "mdi mdi-swap-horizontal-bold",
-			type: "instant",
 			config: {
 				type: Object,
 				properties: {
@@ -70,7 +69,6 @@ export default definePlugin(
 			name: "Previous Scene",
 			description: "Go back to the previous scene.",
 			icon: "mdi mdi-skip-backward",
-			type: "instant",
 			config: {
 				type: Object,
 				properties: {
@@ -92,7 +90,6 @@ export default definePlugin(
 			name: "Filter Visibility",
 			description: "Enable/Disable an OBS filter",
 			icon: "mdi mdi-eye",
-			type: "instant",
 			config: {
 				type: Object,
 				properties: {
@@ -165,7 +162,6 @@ export default definePlugin(
 			id: "recording",
 			name: "Recording Start/Stop",
 			icon: "mdi mdi-record",
-			type: "instant",
 			config: {
 				type: Object,
 				properties: {
@@ -186,7 +182,6 @@ export default definePlugin(
 			id: "source",
 			name: "Source Visibility",
 			icon: "mdi mdi-eye",
-			type: "instant",
 			config: {
 				type: Object,
 				properties: {

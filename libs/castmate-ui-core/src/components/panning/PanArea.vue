@@ -13,7 +13,7 @@
 		@mousedown="onMouseDown"
 		@mousemove="onMouseMove"
 	>
-		<div class="panner">
+		<div class="panner" ref="panner">
 			<slot></slot>
 		</div>
 	</div>
@@ -22,7 +22,8 @@
 <script setup lang="ts">
 import { useEventListener, useVModel } from "@vueuse/core"
 import { PanState } from "../../util/panning"
-import { computed, ref, provide } from "vue"
+import { computed, ref, provide, toRaw, markRaw } from "vue"
+import { getInternalMousePos } from "../../main"
 
 const props = withDefaults(
 	defineProps<{
@@ -46,11 +47,13 @@ const props = withDefaults(
 const emit = defineEmits(["update:panState"])
 
 const panStateObj = useVModel(props, "panState", emit)
-const panState = computed(() => props.panState)
-provide("panState", panState)
-const panArea = ref<HTMLElement | null>(null)
+const panState = computed<PanState>(() => panStateObj.value)
+provide("panState", panStateObj)
 
-function computePosition(ev: MouseEvent) {
+const panArea = ref<HTMLElement | null>(null)
+const panner = ref<HTMLElement | null>(null)
+
+function computePosition(ev: { clientX: number; clientY: number }) {
 	if (!panArea.value) {
 		return { x: 0, y: 0 }
 	}
@@ -61,6 +64,13 @@ function computePosition(ev: MouseEvent) {
 	const y = ev.clientY - bounds.top
 	return { x, y }
 }
+
+provide("panQuery", {
+	computePosition(ev: { clientX: number; clientY: number }) {
+		if (!panner.value) return { x: 0, y: 0 }
+		return getInternalMousePos(panner.value, ev)
+	},
+})
 
 const panStartPos = ref<{ x: number; y: number } | null>(null)
 const panStart = ref<{ panX: number; panY: number } | null>(null)

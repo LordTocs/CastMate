@@ -1,5 +1,6 @@
 import { defineAction, defineState, defineTrigger } from "castmate-core"
 import { onChannelAuth } from "./api-harness"
+import { Duration } from "castmate-schema"
 
 export function setupPredictions() {
 	defineAction({
@@ -7,12 +8,17 @@ export function setupPredictions() {
 		name: "Create Prediction",
 		description: "Creates a twitch prediction.",
 		icon: "mdi mdi-crystal-ball",
-		type: "time",
+		duration: {
+			dragType: "length",
+			rightSlider: {
+				sliderProp: "duration",
+			},
+		},
 		config: {
 			type: Object,
 			properties: {
 				title: { type: String, name: "Title", template: true, required: true, default: "" },
-				duration: { type: Number, name: "Duration", template: true, required: true },
+				duration: { type: Duration, name: "Duration", template: true, required: true },
 				outcomes: {
 					type: Array,
 					name: "Outcomes",

@@ -18,7 +18,7 @@ export function useCombinedPartialSelects(...partials: MaybeRefOrGetter<PartialS
 		let min = Number.MAX_SAFE_INTEGER
 		let max = Number.MIN_SAFE_INTEGER
 
-		console.log(values.map((v) => (v ? { min: v.start, max: v.end } : null)))
+		//console.log(values.map((v) => (v ? { min: v.start, max: v.end } : null)))
 		for (const v of values) {
 			if (!v) continue
 			min = Math.min(v.start, min)

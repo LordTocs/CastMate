@@ -8,7 +8,15 @@ export function setupAds() {
 		name: "Run Ad",
 		description: "Run an Ad. You should probably use the ad manager instead.",
 		icon: "mdi mdi-advertisements",
-		type: "time",
+		duration: {
+			propDependencies: "duration",
+			async callback(config) {
+				return {
+					dragType: "fixed",
+					duration: config.duration,
+				}
+			},
+		},
 		config: {
 			type: Object,
 			properties: {

@@ -1,14 +1,22 @@
 <template>
 	<div
 		class="timeline-container"
-		:class="{ indefinite, 'has-right-handle': hasRightHandle }"
-		:style="{ '--duration': duration }"
+		:class="{ indefinite, 'has-right-handle': hasRightSlider }"
+		:style="{ '--duration': length }"
 	>
 		<div
 			class="time-action"
 			:style="{ ...actionColorStyle }"
 			:class="{ 'is-selected': isSelected, 'is-testing': testTime != null }"
 		>
+			<duration-handle
+				v-model="leftDurationValue"
+				v-if="hasLeftSlider"
+				:min="leftSliderConfig?.min"
+				:max="leftSliderConfig?.max"
+				:left="true"
+				:other-value="leftReferenceDuration"
+			/>
 			<div class="time-action-content" ref="actionElement">
 				<div class="time-action-header action-handle">
 					<i class="mdi flex-none" :class="action?.icon" />
@@ -24,10 +32,17 @@
 					<div class="play-indicator" v-if="testTime != null" :style="{ '--play-time': playTime }"></div>
 				</div>
 				<div class="time-action-footer">
-					{{ duration.toFixed(2) }}
+					{{ length.toFixed(2) }}
 				</div>
 			</div>
-			<duration-handle v-model="duration" v-if="hasRightHandle" />
+			<duration-handle
+				v-model="rightDurationValue"
+				v-if="hasRightSlider"
+				:min="rightSliderConfig?.min"
+				:max="rightSliderConfig?.max"
+				:left="false"
+				:other-value="rightReferenceDuration"
+			/>
 		</div>
 		<automation-drop-zone
 			:drop-key="`${modelValue.id}-bottom`"
@@ -71,6 +86,9 @@ import { nanoid } from "nanoid/non-secure"
 import _sortedIndexBy from "lodash/sortedIndexBy"
 import { SelectionGetter, useAutomationEditState } from "../../util/automation-dragdrop"
 import { useDuration } from "../../util/actions"
+import { getByPath, setByPath } from "castmate-schema"
+import { Duration } from "castmate-schema"
+import { IPCDurationState } from "castmate-schema"
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -79,9 +97,12 @@ const indefinite = computed(() => false)
 
 const props = defineProps<{
 	modelValue: TimeAction
+	duration: IPCDurationState
 }>()
 
 const model = useModel(props, "modelValue")
+
+const automationEditState = useAutomationEditState()
 
 const config = computed({
 	get() {
@@ -92,7 +113,97 @@ const config = computed({
 	},
 })
 
-const duration = useDuration(() => props.modelValue, config)
+const rightSliderConfig = computed(() =>
+	props.duration.dragType == "length" || props.duration.dragType == "crop" ? props.duration.rightSlider : undefined
+)
+
+const leftSliderConfig = computed(() => (props.duration.dragType == "crop" ? props.duration.leftSlider : undefined))
+
+const hasLeftSlider = computed(() => {
+	return leftSliderConfig.value != null
+})
+
+const hasRightSlider = computed(() => {
+	return rightSliderConfig.value != null
+})
+
+const rightDurationValue = computed<Duration | undefined>({
+	get() {
+		if (props.duration.dragType == "crop" || props.duration.dragType == "length") {
+			if (props.duration.rightSlider) {
+				return getByPath(config.value, props.duration.rightSlider.sliderProp)
+			}
+		}
+		return undefined
+	},
+	set(v) {
+		if (props.duration.dragType == "crop" || props.duration.dragType == "length") {
+			const sliderProp = props.duration.rightSlider?.sliderProp
+			if (sliderProp) {
+				setByPath(config.value, sliderProp, v)
+			}
+		}
+	},
+})
+const leftDurationValue = computed<Duration | undefined>({
+	get() {
+		if (props.duration.dragType == "crop") {
+			if (props.duration.leftSlider) {
+				return getByPath(config.value, props.duration.leftSlider.sliderProp)
+			}
+		}
+		return undefined
+	},
+	set(v) {
+		if (props.duration.dragType == "crop") {
+			const sliderProp = props.duration.leftSlider?.sliderProp
+			if (sliderProp) {
+				setByPath(config.value, sliderProp, v)
+			}
+		}
+	},
+})
+
+const rightReferenceDuration = computed<number>(() => {
+	if (leftDurationValue.value != null) return leftDurationValue.value
+	return 0
+})
+
+const leftReferenceDuration = computed<number>(() => {
+	if (rightDurationValue.value != null) return rightDurationValue.value
+	if (props.duration.dragType == "crop") return props.duration.duration
+	return 0
+})
+
+const length = computed<number>(() => {
+	if (props.duration.dragType == "instant") {
+		return 0
+	} else if (props.duration.dragType == "fixed") {
+		return props.duration.duration
+	} else if (props.duration.dragType == "length") {
+		return getByPath(config.value, props.duration.rightSlider.sliderProp)
+	} else if (props.duration.dragType == "crop") {
+		let leftCrop: number | undefined
+		const configValue = config.value
+		if (props.duration.leftSlider) {
+			leftCrop = getByPath(configValue, props.duration.leftSlider.sliderProp)
+		}
+		let rightCrop: number | undefined
+		if (props.duration.rightSlider) {
+			rightCrop = getByPath(configValue, props.duration.rightSlider.sliderProp)
+		}
+
+		if (leftCrop != null && rightCrop != null) {
+			return rightCrop - leftCrop
+		} else if (leftCrop != null) {
+			return props.duration.duration - leftCrop
+		} else if (rightCrop != null) {
+			return rightCrop
+		} else {
+			return props.duration.duration
+		}
+	}
+})
 
 const actionElement = ref<HTMLElement | null>(null)
 provide("actionElement", actionElement)
@@ -100,19 +211,17 @@ provide(
 	"timeInfo",
 	computed(() => ({
 		minLength: 0,
-		duration: duration.value,
+		duration: length.value,
 		maxLength: undefined,
 	}))
 )
-
-const automationEditState = useAutomationEditState()
 
 function removeOffset(index: number) {
 	model.value.offsets.splice(index, 1)
 }
 
 function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; width: number; height: number }) {
-	const timeOffset = (offset.x / offset.width) * duration.value
+	const timeOffset = (offset.x / offset.width) * length.value
 
 	const offsetSequence: OffsetActions = {
 		id: nanoid(),
@@ -124,8 +233,6 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 
 	model.value.offsets.splice(insertionIndex, 0, offsetSequence)
 }
-
-const hasRightHandle = computed(() => true)
 
 const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
 const offsetEdits = ref<(SelectionGetter & { $el: HTMLElement })[]>([])

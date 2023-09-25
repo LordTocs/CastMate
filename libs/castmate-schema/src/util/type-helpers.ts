@@ -47,3 +47,18 @@ export function getByPath<ObjectType extends object>(object: ObjectType, path: s
 	}
 	return result as any
 }
+
+export function setByPath<ObjectType extends object>(object: ObjectType, path: string, value: any) {
+	const keys = path.split(".")
+	let result = object
+	for (let i = 0; i < keys.length; ++i) {
+		const key = keys[i]
+		if (i == keys.length - 1) {
+			;(result as Record<string, any>)[key] = value
+			return
+		}
+		result = (result as Record<string, any>)[key]
+	}
+}
+
+export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>

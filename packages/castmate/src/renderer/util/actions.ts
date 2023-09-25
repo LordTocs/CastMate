@@ -1,69 +1,88 @@
+import { IPCDurationState, IPCInstantDurationState, getByPath } from "castmate-schema"
 import { ActionSelection, ipcInvoke, useAction } from "castmate-ui-core"
 import { MaybeRefOrGetter, toValue, watch, ref, computed, onMounted, isRef } from "vue"
 
 export function useDuration(
-	actionSel: MaybeRefOrGetter<ActionSelection>,
-	config: MaybeRefOrGetter<Record<string, any>>,
-	defaultDuration: number = 0
+	actionSel: MaybeRefOrGetter<ActionSelection | undefined>,
+	config: MaybeRefOrGetter<Record<string, any>>
 ) {
 	const action = useAction(actionSel)
 
-	function isIPCCall(actionSelection: ActionSelection) {
-		if (!action.value) return false
-		if (!actionSelection.action || !actionSelection.plugin) return false
+	const durationConfig = computed(
+		() =>
+			action.value?.duration ??
+			({
+				dragType: "instant",
+			} as IPCInstantDurationState)
+	)
 
-		//Flawed method, but this is an ipc call
-		return action.value.durationhandler.startsWith(actionSelection.plugin)
-	}
+	const ipcStateStorage = ref<IPCDurationState>({
+		dragType: "instant",
+	} as IPCInstantDurationState)
 
-	async function getDuration() {
-		if (!action.value) return defaultDuration
-
-		const actionSelection = toValue(actionSel)
-		const configData = toValue(config)
-
-		if (isIPCCall(actionSelection)) {
-			return await ipcInvoke<number>(action.value.durationhandler, configData)
+	const durationState = computed<IPCDurationState>(() => {
+		if ("ipcCallback" in durationConfig.value) {
+			return ipcStateStorage.value as IPCDurationState
 		} else {
-			return configData?.[action.value.durationhandler] ?? defaultDuration
+			return durationConfig.value as IPCDurationState
 		}
-	}
+	})
 
-	const durationStorage = ref<number>(defaultDuration)
+	async function updateIpcStorage() {
+		console.log("Querying Storage")
+		if (!("ipcCallback" in durationConfig.value)) return
+		ipcStateStorage.value = await ipcInvoke<IPCDurationState>(durationConfig.value.ipcCallback, toValue(config))
+	}
 
 	onMounted(async () => {
-		durationStorage.value = await getDuration()
+		updateIpcStorage()
 	})
 
 	watch(
 		() => {
-			const actionSelection = toValue(actionSel)
-			if (!action.value) return undefined
+			if (!("ipcCallback" in durationConfig.value)) return
 
-			if (isIPCCall(actionSelection)) {
-				return toValue(config)
-			} else {
-				return toValue(config)?.[action.value.durationhandler]
-			}
+			const configValue = toValue(config)
+
+			return durationConfig.value.propDependencies.map((dep) => getByPath(configValue, dep))
 		},
 		async (value, oldValue) => {
-			if (!action.value) return
-			durationStorage.value = await getDuration()
+			await updateIpcStorage()
 		}
 	)
 
-	return computed({
-		get() {
-			return durationStorage.value
-		},
-		set(v) {
-			const actionSelection = toValue(actionSel)
-
-			if (isRef<Record<string, any>>(config) && action.value) {
-				if (!isIPCCall(actionSelection)) {
-					config.value[action.value.durationhandler] = v
-				}
-			}
-		},
-	})
+	return durationState
 }
+
+/*
+
+	const length = computed<number>(() => {
+		if (durationState.value.dragType == "instant") {
+			return 0
+		} else if (durationState.value.dragType == "fixed") {
+			return durationState.value.duration
+		} else if (durationState.value.dragType == "length") {
+			return getByPath(toValue(config), durationState.value.rightSlider.sliderProp)
+		} else if (durationState.value.dragType == "crop") {
+			let leftCrop: number | undefined
+			const configValue = toValue(config)
+			if (durationState.value.leftSlider) {
+				leftCrop = getByPath(configValue, durationState.value.leftSlider.sliderProp)
+			}
+			let rightCrop: number | undefined
+			if (durationState.value.rightSlider) {
+				rightCrop = getByPath(configValue, durationState.value.rightSlider.sliderProp)
+			}
+
+			if (leftCrop != null && rightCrop != null) {
+				return rightCrop - leftCrop
+			} else if (leftCrop != null) {
+				return durationState.value.duration - leftCrop
+			} else if (rightCrop != null) {
+				return durationState.value.duration - rightCrop
+			} else {
+				return durationState.value.duration
+			}
+		}
+	})
+	*/

@@ -13,7 +13,7 @@ import {
 	ResourceRegistry,
 } from "castmate-core"
 import { MediaManager } from "castmate-core"
-import { MediaFile } from "castmate-schema"
+import { Duration, MediaFile } from "castmate-schema"
 import { defineCallableIPC } from "castmate-core/src/util/electron"
 import { RendererSoundPlayer } from "./renderer-sound-player"
 class SoundOutput<
@@ -61,10 +61,27 @@ export default definePlugin(
 			name: "Sound",
 			icon: "mdi mdi-volume-high",
 			description: "Play Sound",
-			type: "time",
-			durationHandler: async (config) => {
-				const media = MediaManager.getInstance().getMedia(config.sound)
-				return media?.duration ?? 1
+			duration: {
+				propDependencies: ["sound"],
+				async callback(config) {
+					const media = MediaManager.getInstance().getMedia(config.sound)
+					const duration = media?.duration ?? 1
+					return {
+						indefinite: !media,
+						dragType: "crop",
+						leftSlider: {
+							min: 0,
+							max: duration,
+							sliderProp: "startTime",
+						},
+						rightSlider: {
+							min: 0,
+							max: duration,
+							sliderProp: "endTime",
+						},
+						duration: duration,
+					}
+				},
 			},
 			config: {
 				type: Object,
@@ -81,6 +98,8 @@ export default definePlugin(
 						max: 100,
 						step: 1,
 					},
+					startTime: { type: Duration, name: "Start Timestamp", required: true, default: 0 },
+					endTime: { type: Duration, name: "End Timestamp" },
 				},
 			},
 			async invoke(config, contextData, abortSignal) {

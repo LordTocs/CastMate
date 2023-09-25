@@ -43,6 +43,7 @@
 		"primeflex": "*",
 		"primeicons": "^6.0.1",
 		"primevue": "*",
+		"ts-toolbelt": "*",
 		"vite": "^4.4.9",
 		"vite-plugin-electron": "^0.12.0",
 		"vite-plugin-electron-renderer": "^0.14.5",

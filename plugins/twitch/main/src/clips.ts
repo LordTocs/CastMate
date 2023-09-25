@@ -8,7 +8,6 @@ export function setupClips() {
 		name: "Create Clip",
 		description: "Create's a clip",
 		icon: "mdi mdi-filmstrip",
-		type: "instant",
 		config: {
 			type: Object,
 			properties: {},

@@ -4,57 +4,104 @@
 
 <script setup lang="ts">
 import { useEventListener, useVModel, useElementSize } from "@vueuse/core"
-import { type PanState, usePanState } from "castmate-ui-core"
+import { type PanState, usePanState, usePanQuery, getInternalMousePos } from "castmate-ui-core"
 import { ref, type Ref, inject, computed } from "vue"
 
 const props = defineProps<{
-	modelValue: number
+	modelValue: number | undefined
+	min?: number
+	max?: number
+	left: boolean
+	otherValue: number
 }>()
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useVModel(props, "modelValue", emit)
 
 const handle = ref<HTMLElement | null>(null)
 
-const panning = inject<PanState>("panState")
-
 const dragging = ref(false)
-const dragOffset = ref(0)
+const distFromDragEdge = ref(0)
+const dragStartDuration = ref(0)
+const startingEdgePanPos = ref(0)
+const startingPanX = ref(0)
 
 const actionElement = inject<Ref<HTMLElement | null>>("actionElement")
 
 const panState = usePanState()
-
-function computePos(ev: MouseEvent) {
-	if (!actionElement?.value) {
-		return { x: 0, y: 0 }
-	}
-
-	const rect = actionElement.value.getBoundingClientRect()
-
-	const x = ev.clientX - rect.left
-	const y = ev.clientY - rect.top
-
-	return { x, y }
-}
+const panQuery = usePanQuery()
 
 function computeOffset(ev: MouseEvent) {
 	if (!actionElement?.value) {
-		return { x: 0, y: 0 }
+		return 0
 	}
+	const rect = actionElement.value.getBoundingClientRect()
+	if (!props.left) {
+		//Return distance from right side
+		const x = ev.clientX - rect.right
+		return x
+	} else {
+		//Return distance from the left side
+		const x = ev.clientX - rect.left
+		return x
+	}
+}
 
+function computeWidth(ev: MouseEvent) {
+	if (!actionElement?.value) {
+		return 0
+	}
 	const rect = actionElement.value.getBoundingClientRect()
 
-	const x = ev.clientX - rect.right
-	const y = ev.clientY - rect.bottom
-
-	return { x, y }
+	if (props.left) {
+		return rect.right - ev.clientX
+	} else {
+		return ev.clientX - rect.left
+	}
 }
 
 function adjustPos(ev: MouseEvent) {
-	const pos = computePos(ev)
+	if (!actionElement?.value) return
 
-	const posDiff = pos.x - dragOffset.value
-	const duration = posDiff / ((panState?.value.zoomX ?? 1) * 40)
+	//Calculate where the new edge SHOULD be
+
+	const pos = getInternalMousePos(actionElement?.value, ev)
+	//Distance from the right edge of the action element
+	const newEdgePos = pos.x - distFromDragEdge.value
+
+	let newWidth = computeWidth(ev)
+
+	let duration = 0
+	// if (props.left) {
+	// 	newWidth = newEdgePos + dragStartDuration.value * (panState.value.zoomX * 40)
+	// 	duration = newWidth / (panState.value.zoomX * 40)
+	// } else {
+	// 	newWidth = newEdgePos
+	// 	duration = newWidth / (panState.value.zoomX * 40)
+	// }
+
+	if (props.left) {
+		duration = (newWidth + distFromDragEdge.value) / (panState.value.zoomX * 40)
+		duration = props.otherValue - duration
+	} else {
+		duration = (newWidth - distFromDragEdge.value) / (panState.value.zoomX * 40)
+		console.log(duration)
+		duration = duration + props.otherValue
+	}
+
+	console.log(newWidth, distFromDragEdge.value, props.otherValue, duration)
+
+	if (props.max != null) {
+		duration = Math.min(duration, props.max)
+	}
+
+	if (props.min != null) {
+		duration = Math.max(duration, props.min)
+	}
+
+	if (props.left) {
+		const panDiff = (duration - dragStartDuration.value) * (panState.value.zoomX * 40)
+		panState.value.panX = startingPanX.value + panDiff
+	}
 
 	modelObj.value = duration
 }
@@ -62,9 +109,14 @@ function adjustPos(ev: MouseEvent) {
 function onMouseDown(ev: MouseEvent) {
 	if (ev.button == 0) {
 		dragging.value = true
-		const offset = computeOffset(ev)
 
-		dragOffset.value = offset.x
+		distFromDragEdge.value = computeOffset(ev)
+		startingPanX.value = panState.value.panX
+		startingEdgePanPos.value = panQuery.computePosition({
+			clientX: ev.clientX - distFromDragEdge.value,
+			clientY: ev.clientY,
+		}).x
+		dragStartDuration.value = modelObj.value || 0
 		//Pull focus
 		handle.value?.focus()
 		ev.stopPropagation()

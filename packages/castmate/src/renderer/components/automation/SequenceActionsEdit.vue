@@ -1,8 +1,13 @@
 <template>
 	<div class="sequence-edit" :class="{ 'action-dragging': dragging }" ref="sequenceEdit" draggable="true">
 		<template v-if="modelValue.actions.length > 0">
-			<time-action-edit v-if="isTimeAction(action)" v-model="(action as TimeAction)" ref="actionEdit" />
-			<action-stack-edit v-else-if="isActionStack(action)" v-model="(action as ActionStack)" ref="actionEdit" />
+			<action-stack-edit v-if="isActionStack(action)" v-model="(action as ActionStack)" ref="actionEdit" />
+			<time-action-edit
+				v-if="duration.dragType == 'crop' || duration.dragType == 'fixed' || duration.dragType == 'length'"
+				:duration="duration"
+				v-model="(action as TimeAction)"
+				ref="actionEdit"
+			/>
 			<instant-action-edit v-else v-model="(action as InstantAction)" ref="actionEdit" />
 
 			<automation-drop-zone
@@ -53,6 +58,7 @@ import _cloneDeep from "lodash/cloneDeep"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence } from "castmate-schema"
 import { SelectionPos, Selection } from "castmate-ui-core"
+import { useDuration } from "../../util/actions"
 
 const props = withDefaults(
 	defineProps<{
@@ -94,6 +100,16 @@ const action = computed({
 		modelObj.value.actions[props.offset] = v
 	},
 })
+const duration = useDuration(
+	() => {
+		if (!action.value || isActionStack(action.value)) return undefined
+		return action.value
+	},
+	() => {
+		if (!action.value || isActionStack(action.value)) return undefined
+		return action.value.config
+	}
+)
 
 function onLeftDrop(sequence: Sequence) {
 	const newActions = [...props.modelValue.actions]

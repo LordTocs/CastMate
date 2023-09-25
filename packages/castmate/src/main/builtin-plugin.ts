@@ -15,8 +15,12 @@ export default definePlugin(
 			id: "delay",
 			name: "Delay",
 			icon: "mdi mdi-timer",
-			type: "time",
-			durationHandler: "duration",
+			duration: {
+				dragType: "length",
+				rightSlider: {
+					sliderProp: "duration",
+				},
+			},
 			config: {
 				type: Object,
 				properties: {
