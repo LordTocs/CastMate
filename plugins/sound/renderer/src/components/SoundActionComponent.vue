@@ -1,5 +1,5 @@
 <template>
-	<svg viewBox="0 0 1 1" preserveAspectRatio="none" class="waveform" ref="waveformContainer">
+	<svg :viewBox="viewBox" preserveAspectRatio="none" class="waveform" ref="waveformContainer">
 		<path :d="waveSvg" fill="currentColor" />
 	</svg>
 </template>
@@ -11,8 +11,9 @@ import * as fs from "fs/promises"
 import { MediaFile } from "castmate-schema"
 import { useMediaStore } from "castmate-ui-core"
 import { useElementSize } from "@vueuse/core"
+import { Duration } from "castmate-schema"
 const props = defineProps<{
-	modelValue: { sound: MediaFile }
+	modelValue: { sound: MediaFile; startTime?: Duration; endTime?: Duration }
 }>()
 
 const waveformContainer = ref<HTMLElement | null>(null)
@@ -57,6 +58,20 @@ const audioMetaData = computed(() => {
 	return mediaStore.media[props.modelValue.sound]
 })
 const audioData = useAudioData(audioMetaData)
+
+const viewBox = computed(() => {
+	if (!audioMetaData.value?.duration) {
+		return "0 0 1 1"
+	}
+
+	const startTime = props.modelValue.startTime ?? 0
+	const endTime = props.modelValue.endTime ?? audioMetaData.value.duration
+
+	const startPercent = startTime / audioMetaData.value.duration
+	const endPercent = endTime / audioMetaData.value.duration
+
+	return `${startPercent} 0 ${endPercent - startPercent} 1`
+})
 
 const waveSvg = computed(() => {
 	let result = "M 0,0.5" //Start on the left halfway
