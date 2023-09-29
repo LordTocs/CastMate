@@ -223,6 +223,16 @@ export default {
 		await useOSStore().init()
 
 		this.loaded = true
+
+		const queryString = window.location.search
+		const urlParams = new URLSearchParams(queryString)
+
+		const isPortable = urlParams.get("portable")
+
+		console.log("Portable", queryString)
+		if (isPortable) {
+			document.title = "CastMate - Portable"
+		}
 	},
 }
 </script>

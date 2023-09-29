@@ -2,6 +2,7 @@ const isDevelopment = import.meta.env.DEV
 
 import { fileURLToPath } from "node:url"
 import { createRequire } from "node:module"
+import * as querystring from "node:querystring"
 const require = createRequire(import.meta.url)
 const { app, shell, ipcMain, BrowserWindow, dialog } = require("electron")
 
@@ -45,6 +46,10 @@ const url = `http://localhost:5173`
 
 let mainWindow = null
 
+const isPortable =
+	process.argv.includes("--portable") ||
+	(!app.isPackaged && import.meta.env.VITE_DEV_USE_GLOBAL != "true")
+
 function createWindowBase(htmlFile, params, width, height) {
 	const win = new BrowserWindow({
 		width,
@@ -68,9 +73,12 @@ function createWindowBase(htmlFile, params, width, height) {
 	} else {
 		const fullUrl = url + "/" + htmlFile
 		console.log("Loading From URL " + fullUrl)
-		win.loadURL(fullUrl, {
-			query: params,
-		})
+
+		if (params) {
+			win.loadURL(fullUrl + "?" + querystring.stringify(params), {})
+		} else {
+			win.loadURL(fullUrl, {})
+		}
 	}
 
 	win.webContents.on("new-window", function (e, url) {
@@ -82,7 +90,13 @@ function createWindowBase(htmlFile, params, width, height) {
 }
 
 async function createWindow() {
-	const win = createWindowBase("index.html", null, 1600, 900)
+	console.log("Creating Window", isPortable)
+	const win = createWindowBase(
+		"index.html",
+		isPortable ? { portable: true } : {},
+		1600,
+		900
+	)
 
 	win.on("close", () => {
 		//Workaround for electron bug.
