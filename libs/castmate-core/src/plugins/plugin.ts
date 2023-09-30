@@ -12,7 +12,10 @@ import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { EventList } from "../util/events"
 import { SemanticVersion } from "../util/type-helpers"
-import { reactify, reactiveRef } from "../reactivity/reactivity"
+import { ReactiveEffect, ReactiveRef, autoRerun, reactify, reactiveRef, runOnChange } from "../reactivity/reactivity"
+import { ensureYAML, loadYAML, pathExists, writeYAML } from "../io/file-system"
+import _debounce from "lodash/debounce"
+import { ipcConvertSchema } from "../util/ipc-schema"
 
 interface PluginSpec {
 	id: string
@@ -47,21 +50,22 @@ export function defineRendererInvoker<T extends (...args: any[]) => void>(name: 
 	return defineCallableIPC<T>(initingPlugin.id, name)
 }
 
-export function onUILoad(loadFunc: () => any) {
+export function onUILoad(loadFunc: PluginCallback) {
 	if (!initingPlugin) throw new Error()
 
 	const privates = initingPlugin as unknown as PluginPrivates
 	privates.uiloader.register(loadFunc)
 }
 
-export function onLoad(loadFunc: () => Promise<any> | any) {
+type PluginCallback = ((plugin: Plugin) => any) | (() => any)
+export function onLoad(loadFunc: PluginCallback) {
 	if (!initingPlugin) throw new Error()
 
 	const privates = initingPlugin as unknown as PluginPrivates
 	privates.loader.register(loadFunc)
 }
 
-export function onUnload(unloadFunc: () => Promise<any> | any) {
+export function onUnload(unloadFunc: PluginCallback) {
 	if (!initingPlugin) throw new Error()
 
 	const privates = initingPlugin as unknown as PluginPrivates
@@ -69,9 +73,9 @@ export function onUnload(unloadFunc: () => Promise<any> | any) {
 }
 
 interface PluginPrivates {
-	loader: EventList
-	unloader: EventList
-	uiloader: EventList
+	loader: EventList<PluginCallback>
+	unloader: EventList<PluginCallback>
+	uiloader: EventList<PluginCallback>
 }
 
 interface StateObj<StateSchema extends Schema> {
@@ -97,12 +101,49 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 	return result
 }
 
+interface SettingDefinition<SettingSchema extends Schema = any> {
+	schema: SettingSchema
+	ref: ReactiveRef<SchemaType<SettingSchema>>
+	saveEffect?: ReactiveEffect
+}
+
+const rendererUpdateSettings = defineCallableIPC<(pluginId: string, settingId: string, value: any) => void>(
+	"plugins",
+	"updateSettings"
+)
+
+export function defineSetting<T extends Schema>(id: string, schema: T) {
+	if (!initingPlugin) throw new Error()
+
+	const initial = constructDefault(schema)
+	const value = reactiveRef<SchemaType<T>>(initial)
+
+	initingPlugin.settings.set(id, {
+		schema,
+		ref: value,
+	})
+
+	onLoad((plugin) => {
+		//TODO: Deeeeep
+		runOnChange(
+			() => value.value,
+			async () => {
+				rendererUpdateSettings(plugin.id, id, value.value)
+				plugin.triggerSettingsUpdate()
+			}
+		)
+	})
+
+	return value
+}
+
 export let initingPlugin: Plugin | null = null
 
 export class Plugin {
 	actions: Map<string, ActionDefinition> = new Map()
 	triggers: Map<string, TriggerDefinition> = new Map()
 	state: Map<string, StateDefinition> = new Map()
+	settings: Map<string, SettingDefinition> = new Map()
 
 	private loader = new EventList()
 	private unloader = new EventList()
@@ -138,8 +179,37 @@ export class Plugin {
 		initingPlugin = null
 	}
 
+	private async writeSettings() {
+		const data: Record<string, any> = {}
+		for (const [sid, setting] of this.settings) {
+			data[sid] = setting.ref.value
+		}
+		await writeYAML(data, "settings", `${this.id}.yaml`)
+	}
+
+	private async loadSettings() {
+		if (!pathExists("settings", `${this.id}.yaml`)) {
+			await this.writeSettings()
+		}
+
+		const settingsData: Record<string, any> = loadYAML("settings", `${this.id}.yaml`)
+
+		for (const key in settingsData) {
+			const setting = this.settings.get(key)
+			if (!setting) continue
+			setting.ref.value = settingsData[key]
+		}
+	}
+
+	private writeSettingsDebounced = _debounce(() => this.writeSettings, 100)
+	triggerSettingsUpdate() {
+		this.writeSettingsDebounced()
+	}
+
 	async load(): Promise<boolean> {
 		try {
+			await this.loadSettings()
+
 			await this.loader.run()
 
 			for (const action of this.actions.values()) {
@@ -187,65 +257,10 @@ export class Plugin {
 			version: this.version,
 			actions: mapRecord(this.actions, (k, v) => v.toIPC()),
 			triggers: mapRecord(this.triggers, (k, v) => v.toIPC()),
+			settings: mapRecord(this.settings, (k, v) => ({
+				value: v.ref.value, //Serialize?
+				schema: ipcConvertSchema(v.schema),
+			})),
 		}
 	}
 }
-/*
-definePlugin(
-	{
-		id: "test",
-		name: "Test!",
-		icon: "mdi-plus",
-		color: "#ff0000",
-	},
-	() => {
-		defineAction({
-			id: "testAction",
-			name: "Test Action",
-			config: {
-				type: Object,
-				properties: {
-					hello: { type: String },
-				},
-			},
-			async invoke(config, contextData, abortSignal) {
-				console.log(config.hello)
-			},
-		})
-
-		const onTest = defineTrigger({
-			id: "onTest",
-			name: "On Test",
-			context: {
-				type: Object,
-				properties: {
-					hello: { type: Number },
-				},
-			},
-			config: {
-				type: Object,
-				properties: {
-					min: { type: Number, required: true, default: 0 },
-				},
-			},
-			async handle(config, context) {
-				return (context.hello ?? 0) > config.min
-			},
-		})
-
-		onTest({
-			hello: 10,
-		})
-
-		const renderTest = defineRendererCallable("renderTest", (yo: string) => {
-			console.log(yo)
-		})
-
-		onLoad(async () => {
-			renderTest("Ahoy")
-		})
-
-		onUnload(async () => {})
-	}
-)
-*/

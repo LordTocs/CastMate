@@ -23,7 +23,7 @@ class ReactiveDependency {
 
 	notify() {
 		for (const effect of this.effects) {
-			effect.runOnce()
+			effect.trigger()
 		}
 	}
 
@@ -71,7 +71,7 @@ export namespace DependencyStorage {
 export class ReactiveEffect<T = any> {
 	private dependencies: ReactiveDependency[] = []
 	private pendingRun = false
-	constructor(private func: () => T) {}
+	constructor(private func: () => T, private scheduler?: () => any) {}
 
 	added(dep: ReactiveDependency) {
 		if (this.dependencies.includes(dep)) return
@@ -88,12 +88,16 @@ export class ReactiveEffect<T = any> {
 		await activeEffectStorage.run(this, this.func)
 	}
 
-	runOnce() {
+	trigger() {
 		if (this.pendingRun) return
 		this.pendingRun = true
 		process.nextTick(async () => {
 			try {
-				await this.run()
+				if (this.scheduler) {
+					this.scheduler()
+				} else {
+					await this.run()
+				}
 			} catch (err) {
 			} finally {
 				this.pendingRun = false
@@ -185,6 +189,12 @@ export function rawify<T extends object>(obj: T) {
 
 export async function autoRerun(func: () => any) {
 	const effect = new ReactiveEffect(func)
+	await effect.run()
+	return effect
+}
+
+export async function runOnChange(watcher: () => any, func: () => any) {
+	const effect = new ReactiveEffect(watcher, func)
 	await effect.run()
 	return effect
 }

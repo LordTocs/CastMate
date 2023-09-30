@@ -24,6 +24,19 @@ export function resolveProjectPath(...paths: string[]) {
 	return path.resolve(activeProjectDirectory, ...paths)
 }
 
+export async function pathExists(...paths: string[]) {
+	const fullPath = resolveProjectPath(...paths)
+	return fsSync.existsSync(fullPath)
+}
+
+export async function ensureYAML<T = any>(defaultData: T, ...paths: string[]) {
+	const fullPath = resolveProjectPath(...paths)
+	if (!fsSync.existsSync(fullPath)) {
+		const strData = YAML.stringify(defaultData)
+		await fs.writeFile(fullPath, strData, "utf-8")
+	}
+}
+
 export async function loadYAML<T = any>(...paths: string[]) {
 	const fullPath = resolveProjectPath(...paths)
 	const strData = await fs.readFile(fullPath, "utf-8")

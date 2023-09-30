@@ -14,6 +14,7 @@ import {
 	AnyAction,
 	ActionInfo,
 	IPCDurationConfig,
+	IPCSettingsDefinition,
 } from "castmate-schema"
 
 import { computed, ref, unref, type MaybeRefOrGetter, toValue, Component, markRaw } from "vue"
@@ -75,6 +76,18 @@ function ipcParseTriggerDefinition(def: IPCTriggerDefinition): TriggerDefinition
 	return triggerDef
 }
 
+interface SettingDefinition {
+	schema: Schema
+	value: any
+}
+
+function ipcParseSettingsDefinition(def: IPCSettingsDefinition): SettingDefinition {
+	return {
+		schema: ipcParseSchema(def.schema),
+		value: def.value,
+	}
+}
+
 interface PluginDefinition {
 	readonly id: string
 	readonly name: string
@@ -85,6 +98,7 @@ interface PluginDefinition {
 
 	actions: Record<string, ActionDefinition>
 	triggers: Record<string, TriggerDefinition>
+	settings: Record<string, SettingDefinition>
 }
 
 function ipcParsePluginDefinition(def: IPCPluginDefinition): PluginDefinition {
@@ -97,9 +111,16 @@ function ipcParsePluginDefinition(def: IPCPluginDefinition): PluginDefinition {
 		version: def.version,
 		actions: mapKeys(def.actions, (key, value) => ipcParseActionDefinition(value)),
 		triggers: mapKeys(def.triggers, (key, value) => ipcParseTriggerDefinition(value)),
+		settings: mapKeys(def.settings, (key, value) => ipcParseSettingsDefinition(value)),
 	}
 
 	return pluginDef
+}
+
+export interface SettingsChange {
+	pluginId: string
+	settingId: string
+	value: any
 }
 
 export const usePluginStore = defineStore("plugins", () => {
@@ -107,6 +128,7 @@ export const usePluginStore = defineStore("plugins", () => {
 
 	const getPluginIds = useIpcCaller<() => string[]>("plugins", "getPluginIds")
 	const getPlugin = useIpcCaller<(id: string) => IPCPluginDefinition>("plugins", "getPlugin")
+	const doSettingsUpdate = useIpcCaller<(changes: SettingsChange[]) => boolean>("plugins", "updateSettings")
 
 	async function initialize() {
 		handleIpcMessage("plugins", "registerPlugin", (event, plugin: IPCPluginDefinition) => {
@@ -115,6 +137,13 @@ export const usePluginStore = defineStore("plugins", () => {
 
 		handleIpcMessage("plugins", "unregisterPlugin", (event, id: string) => {
 			pluginMap.value.delete(id)
+		})
+
+		handleIpcMessage("plugins", "updateSettings", (event, id: string, settingId: string, value: any) => {
+			const plugin = pluginMap.value.get(id)
+			if (plugin) {
+				plugin.settings[settingId] = value
+			}
 		})
 
 		const ids = await getPluginIds()
@@ -163,6 +192,12 @@ export const usePluginStore = defineStore("plugins", () => {
 			return
 		}
 		actionDef.actionComponent = markRaw(component)
+	}
+
+	///
+
+	async function updateSettings(changes: SettingsChange[]) {
+		await doSettingsUpdate(changes)
 	}
 
 	return { pluginMap: computed(() => pluginMap.value), initialize, createAction, getAction, setActionComponent }

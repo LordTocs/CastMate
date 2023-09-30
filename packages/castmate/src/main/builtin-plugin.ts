@@ -1,5 +1,5 @@
 import { Duration } from "castmate-schema"
-import { defineAction, definePlugin } from "castmate-core"
+import { defineAction, definePlugin, defineSetting } from "castmate-core"
 import { abortableSleep } from "castmate-core/src/util/abort-utils"
 
 export default definePlugin(
@@ -11,6 +11,15 @@ export default definePlugin(
 		description: "Builtin Actions and Triggers",
 	},
 	() => {
+		const port = defineSetting("port", {
+			type: Number,
+			required: true,
+			default: 8181,
+			min: 1,
+			max: 65535,
+			name: "Internal Webserver Port",
+		})
+
 		defineAction({
 			id: "delay",
 			name: "Delay",

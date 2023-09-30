@@ -19,6 +19,23 @@ defineIPCFunc("plugins", "uiLoadComplete", () => {
 	PluginManager.getInstance().signalUILoadComplete()
 })
 
+interface SettingsChange {
+	pluginId: string
+	settingId: string
+	value: any
+}
+
+defineIPCFunc("plugins", "updateSettings", (changes: SettingsChange[]) => {
+	const plugins = PluginManager.getInstance()
+	for (const change of changes) {
+		const plugin = plugins.getPlugin(change.pluginId)
+		if (!plugin) continue
+		const setting = plugin.settings.get(change.settingId)
+		if (!setting) continue
+		setting.ref.value = change.value
+	}
+})
+
 export const PluginManager = Service(
 	class {
 		private plugins: Map<string, Plugin> = new Map()

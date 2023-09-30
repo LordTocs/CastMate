@@ -11,6 +11,7 @@ import {
 	onUILoad,
 	defineRendererCallable,
 	ResourceRegistry,
+	defineSetting,
 } from "castmate-core"
 import { MediaManager } from "castmate-core"
 import { Duration, MediaFile } from "castmate-schema"
@@ -56,6 +57,16 @@ export default definePlugin(
 		icon: "mdi mdi-volume-high",
 	},
 	() => {
+		const globalVolume = defineSetting("globalVolume", {
+			type: Number,
+			name: "Global Volume",
+			slider: true,
+			min: 0,
+			max: 100,
+			required: true,
+			default: 100,
+		})
+
 		defineAction({
 			id: "sound",
 			name: "Sound",
@@ -105,7 +116,8 @@ export default definePlugin(
 			async invoke(config, contextData, abortSignal) {
 				const media = MediaManager.getInstance().getMedia(config.sound)
 				if (!media) return
-				await config.output.playFile(media.file, config.volume, abortSignal)
+				const globalFactor = globalVolume.value / 100
+				await config.output.playFile(media.file, config.volume * globalFactor, abortSignal)
 			},
 		})
 
