@@ -17,7 +17,6 @@ const props = defineProps<{
 }>()
 
 const waveformContainer = ref<HTMLElement | null>(null)
-const containerSize = useElementSize(waveformContainer)
 
 const mediaStore = useMediaStore()
 
