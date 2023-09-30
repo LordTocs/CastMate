@@ -3,7 +3,7 @@ import { ActionQueue, ActionQueueManager } from "./queue-system/action-queue"
 import { ResourceRegistry } from "./resources/resource-registry"
 import { Plugin } from "./plugins/plugin"
 import { PluginManager } from "./plugins/plugin-manager"
-import { ensureDirectory, setProjectDirectory } from "./io/file-system"
+import { ensureDirectory, resolveProjectPath, setProjectDirectory } from "./io/file-system"
 import { MediaManager } from "./media/media-manager"
 import { ProfileManager } from "./profile/profile-system"
 
@@ -25,7 +25,7 @@ export async function loadPlugin(name: string) {
 export async function initializeCastMate() {
 	console.log("Initing CastMate")
 	await setProjectDirectory("../../user")
-	await ensureDirectory("settings")
+	await ensureDirectory(resolveProjectPath("settings"))
 	PluginManager.initialize()
 	ResourceRegistry.initialize()
 	MediaManager.initialize()

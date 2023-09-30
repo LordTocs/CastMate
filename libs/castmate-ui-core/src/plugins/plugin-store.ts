@@ -142,7 +142,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		handleIpcMessage("plugins", "updateSettings", (event, id: string, settingId: string, value: any) => {
 			const plugin = pluginMap.value.get(id)
 			if (plugin) {
-				plugin.settings[settingId] = value
+				plugin.settings[settingId].value = value
 			}
 		})
 
@@ -200,7 +200,14 @@ export const usePluginStore = defineStore("plugins", () => {
 		await doSettingsUpdate(changes)
 	}
 
-	return { pluginMap: computed(() => pluginMap.value), initialize, createAction, getAction, setActionComponent }
+	return {
+		pluginMap: computed(() => pluginMap.value),
+		initialize,
+		createAction,
+		getAction,
+		setActionComponent,
+		updateSettings,
+	}
 })
 
 export function usePlugin(id: MaybeRefOrGetter<string | undefined>) {

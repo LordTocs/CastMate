@@ -17,6 +17,7 @@
 							:max="max"
 							:step="step"
 							:suffix="unit"
+							:format="false"
 							v-bind="labelProps"
 						/>
 					</label-floater>

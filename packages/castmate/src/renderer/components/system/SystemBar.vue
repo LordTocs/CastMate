@@ -38,7 +38,7 @@ import { onMounted, ref } from "vue"
 import { ipcRenderer } from "electron"
 import { useEventListener } from "@vueuse/core"
 import { useDockingStore, useIpcMessage } from "castmate-ui-core"
-import SettingsPage from "../settings/SettingsPage.vue"
+import { useOpenSettings } from "../settings/SettingsTypes"
 
 async function close() {
 	await ipcRenderer.invoke("windowFuncs_close")
@@ -76,17 +76,28 @@ const props = defineProps<{
 
 const dockingStore = useDockingStore()
 
+const openSettings = useOpenSettings()
+
 const menuItems = ref<MenuItem[]>([
 	{
 		label: "File",
-		icon: "pi pi-fw pi-file",
 		items: [
 			{
 				label: "Settings",
 				icon: "mdi mdi-cog",
 				command() {
-					dockingStore.openPage("settings", "Settings", SettingsPage)
+					openSettings()
 				},
+			},
+		],
+	},
+	{
+		label: "Help",
+		items: [
+			{
+				label: "Discord",
+				icon: "mdi mdi-discord",
+				command() {},
 			},
 		],
 	},
@@ -111,7 +122,11 @@ const menuItems = ref<MenuItem[]>([
 	border-radius: 0 !important;
 }
 
-.system-bar >>> .p-menubar-root-list {
+.system-bar :deep(.p-menubar-root-list) {
 	-webkit-app-region: no-drag;
+}
+
+.system-bar :deep(.p-menuitem .p-submenu-icon) {
+	display: none;
 }
 </style>

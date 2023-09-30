@@ -145,9 +145,9 @@ export class Plugin {
 	state: Map<string, StateDefinition> = new Map()
 	settings: Map<string, SettingDefinition> = new Map()
 
-	private loader = new EventList()
-	private unloader = new EventList()
-	private uiloader = new EventList()
+	private loader = new EventList<PluginCallback>()
+	private unloader = new EventList<PluginCallback>()
+	private uiloader = new EventList<PluginCallback>()
 
 	get id() {
 		return this.spec.id
@@ -188,11 +188,11 @@ export class Plugin {
 	}
 
 	private async loadSettings() {
-		if (!pathExists("settings", `${this.id}.yaml`)) {
+		if (!(await pathExists("settings", `${this.id}.yaml`))) {
 			await this.writeSettings()
 		}
 
-		const settingsData: Record<string, any> = loadYAML("settings", `${this.id}.yaml`)
+		const settingsData: Record<string, any> = await loadYAML("settings", `${this.id}.yaml`)
 
 		for (const key in settingsData) {
 			const setting = this.settings.get(key)
@@ -201,7 +201,7 @@ export class Plugin {
 		}
 	}
 
-	private writeSettingsDebounced = _debounce(() => this.writeSettings, 100)
+	private writeSettingsDebounced = _debounce(() => this.writeSettings(), 100)
 	triggerSettingsUpdate() {
 		this.writeSettingsDebounced()
 	}
@@ -210,7 +210,7 @@ export class Plugin {
 		try {
 			await this.loadSettings()
 
-			await this.loader.run()
+			await this.loader.run(this)
 
 			for (const action of this.actions.values()) {
 				await action.load()
@@ -226,7 +226,7 @@ export class Plugin {
 
 	async unload(): Promise<boolean> {
 		try {
-			await this.unloader.run()
+			await this.unloader.run(this)
 
 			for (const action of this.actions.values()) {
 				await action.unload()
@@ -240,7 +240,7 @@ export class Plugin {
 
 	async onUILoaded(): Promise<boolean> {
 		try {
-			await this.uiloader.run()
+			await this.uiloader.run(this)
 		} catch (err) {
 			return false
 		}

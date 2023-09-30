@@ -35,6 +35,7 @@ import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
 import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
+import { initSettingsDocuments } from "./components/settings/SettingsTypes"
 
 const router = createRouter({
 	history: createWebHistory(),
@@ -63,7 +64,10 @@ async function init() {
 	await useDashboardStore().initialize()
 
 	initializeProfiles(app)
-	useDocumentStore().registerDocumentComponent("profile", ProfileEditorVue)
+
+	const documentStore = useDocumentStore()
+	documentStore.registerDocumentComponent("profile", ProfileEditorVue)
+	initSettingsDocuments()
 
 	initializeQueues()
 

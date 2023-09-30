@@ -1,7 +1,7 @@
 <template>
-	<flex-scroller ref="scroller">
+	<flex-scroller ref="scroller" v-model:scroll-x="view.scrollX" v-model:scroll-y="view.scrollY">
 		<account-widget account-type="TwitchAccount" account-id="channel" />
-		<p-input-text v-model="filter" />
+		<p-input-text v-model="view.filter" />
 		<div class="px-2">
 			<template v-for="pluginSettings of filteredSettings">
 				<h1
@@ -17,7 +17,7 @@
 				<div class="px-3">
 					<data-input
 						v-for="settingId of pluginSettings.settings"
-						:model-value="getPlugin(pluginSettings.pluginId).settings[settingId].value"
+						v-model="model.settings[pluginSettings.pluginId][settingId]"
 						:schema="getPlugin(pluginSettings.pluginId).settings[settingId].schema"
 					/>
 				</div>
@@ -28,12 +28,19 @@
 
 <script setup lang="ts">
 import { FlexScroller, AccountWidget, usePluginStore, DataInput } from "castmate-ui-core"
-import { computed, ref } from "vue"
+import { computed, ref, useModel } from "vue"
+import { SettingsDocumentData, SettingsViewData } from "./SettingsTypes"
 import PInputText from "primevue/inputtext"
 
-const pluginStore = usePluginStore()
+const props = defineProps<{
+	modelValue: SettingsDocumentData
+	view: SettingsViewData
+}>()
 
-const filter = ref("")
+const model = useModel(props, "modelValue")
+const view = useModel(props, "view")
+
+const pluginStore = usePluginStore()
 
 function getPlugin(id: string) {
 	const plugin = pluginStore.pluginMap.get(id)
@@ -42,7 +49,7 @@ function getPlugin(id: string) {
 }
 
 const filteredSettings = computed(() => {
-	const filterValue = filter.value.toLocaleLowerCase()
+	const filterValue = view.value.filter.toLocaleLowerCase()
 
 	const result: { pluginId: string; settings: string[] }[] = []
 	for (const [pid, plugin] of pluginStore.pluginMap) {
