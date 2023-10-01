@@ -1,5 +1,5 @@
 {
-    "name": "castmate-plugin-{{name}}",
+    "name": "castmate-plugin-discord",
     "private": true,
     "version": "0.0.1",
     "type": "module",

@@ -1386,7 +1386,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^4.3.4":
+"@vitejs/plugin-vue@npm:*, @vitejs/plugin-vue@npm:^4.3.4":
   version: 4.3.4
   resolution: "@vitejs/plugin-vue@npm:4.3.4"
   peerDependencies:
@@ -2664,6 +2664,176 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-discord-main@workspace:^, castmate-plugin-discord-main@workspace:plugins/discord/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-discord-main@workspace:plugins/discord/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-discord-renderer@workspace:^, castmate-plugin-discord-renderer@workspace:plugins/discord/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-discord-renderer@workspace:plugins/discord/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-discord@workspace:plugins/discord":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-discord@workspace:plugins/discord"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-http-main@workspace:^, castmate-plugin-http-main@workspace:plugins/http/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-http-main@workspace:plugins/http/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-http-renderer@workspace:^, castmate-plugin-http-renderer@workspace:plugins/http/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-http-renderer@workspace:plugins/http/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-http@workspace:plugins/http":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-http@workspace:plugins/http"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-input-main@workspace:^, castmate-plugin-input-main@workspace:plugins/input/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-input-main@workspace:plugins/input/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-input-renderer@workspace:^, castmate-plugin-input-renderer@workspace:plugins/input/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-input-renderer@workspace:plugins/input/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-input@workspace:plugins/input":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-input@workspace:plugins/input"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-iot-main@workspace:^, castmate-plugin-iot-main@workspace:plugins/iot/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-iot-main@workspace:plugins/iot/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-iot-renderer@workspace:^, castmate-plugin-iot-renderer@workspace:plugins/iot/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-iot-renderer@workspace:plugins/iot/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-iot@workspace:plugins/iot":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-iot@workspace:plugins/iot"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-minecraft-main@workspace:^, castmate-plugin-minecraft-main@workspace:plugins/minecraft/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-minecraft-main@workspace:plugins/minecraft/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-minecraft-renderer@workspace:^, castmate-plugin-minecraft-renderer@workspace:plugins/minecraft/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-minecraft-renderer@workspace:plugins/minecraft/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-minecraft@workspace:plugins/minecraft":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-minecraft@workspace:plugins/minecraft"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-obs-main@workspace:^, castmate-plugin-obs-main@workspace:plugins/obs/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-obs-main@workspace:plugins/obs/main"
@@ -2696,6 +2866,40 @@ __metadata:
 "castmate-plugin-obs@workspace:plugins/obs":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-obs@workspace:plugins/obs"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-os-main@workspace:^, castmate-plugin-os-main@workspace:plugins/os/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-os-main@workspace:plugins/os/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-os-renderer@workspace:^, castmate-plugin-os-renderer@workspace:plugins/os/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-os-renderer@workspace:plugins/os/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-os@workspace:plugins/os":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-os@workspace:plugins/os"
   languageName: unknown
   linkType: soft
 
@@ -2745,6 +2949,40 @@ __metadata:
 "castmate-plugin-sound@workspace:plugins/sound":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-sound@workspace:plugins/sound"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-time-main@workspace:^, castmate-plugin-time-main@workspace:plugins/time/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-time-main@workspace:plugins/time/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-time-renderer@workspace:^, castmate-plugin-time-renderer@workspace:plugins/time/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-time-renderer@workspace:plugins/time/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-time@workspace:plugins/time":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-time@workspace:plugins/time"
   languageName: unknown
   linkType: soft
 
@@ -2802,6 +3040,40 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-voicemod-main@workspace:^, castmate-plugin-voicemod-main@workspace:plugins/voicemod/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-voicemod-main@workspace:plugins/voicemod/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-voicemod-renderer@workspace:^, castmate-plugin-voicemod-renderer@workspace:plugins/voicemod/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-voicemod-renderer@workspace:plugins/voicemod/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-voicemod@workspace:plugins/voicemod":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-voicemod@workspace:plugins/voicemod"
+  languageName: unknown
+  linkType: soft
+
 "castmate-schema@workspace:^, castmate-schema@workspace:libs/castmate-schema":
   version: 0.0.0-use.local
   resolution: "castmate-schema@workspace:libs/castmate-schema"
@@ -2851,12 +3123,28 @@ __metadata:
     "@vitejs/plugin-vue": ^4.3.4
     "@vueuse/core": "*"
     castmate-core: "workspace:^"
+    castmate-plugin-discord-main: "workspace:^"
+    castmate-plugin-discord-renderer: "workspace:^"
+    castmate-plugin-http-main: "workspace:^"
+    castmate-plugin-http-renderer: "workspace:^"
+    castmate-plugin-input-main: "workspace:^"
+    castmate-plugin-input-renderer: "workspace:^"
+    castmate-plugin-iot-main: "workspace:^"
+    castmate-plugin-iot-renderer: "workspace:^"
+    castmate-plugin-minecraft-main: "workspace:^"
+    castmate-plugin-minecraft-renderer: "workspace:^"
     castmate-plugin-obs-main: "workspace:^"
     castmate-plugin-obs-renderer: "workspace:^"
+    castmate-plugin-os-main: "workspace:^"
+    castmate-plugin-os-renderer: "workspace:^"
     castmate-plugin-sound-main: "workspace:^"
     castmate-plugin-sound-renderer: "workspace:^"
+    castmate-plugin-time-main: "workspace:^"
+    castmate-plugin-time-renderer: "workspace:^"
     castmate-plugin-twitch-main: "workspace:^"
     castmate-plugin-twitch-renderer: "workspace:^"
+    castmate-plugin-voicemod-main: "workspace:^"
+    castmate-plugin-voicemod-renderer: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
@@ -8560,7 +8848,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^4.4.9":
+"vite@npm:*, vite@npm:^4.4.9":
   version: 4.4.9
   resolution: "vite@npm:4.4.9"
   dependencies:
