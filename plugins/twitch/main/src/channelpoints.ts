@@ -1,4 +1,12 @@
-import { Resource, ResourceStorage, defineTrigger, onLoad, template, templateSchema } from "castmate-core"
+import {
+	Resource,
+	ResourceStorage,
+	defineResourceSetting,
+	defineTrigger,
+	onLoad,
+	template,
+	templateSchema,
+} from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { Color } from "castmate-schema"
 import {
@@ -224,11 +232,10 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 
 	//Called when we discover a CastMate controlled reward that doesn't have a resource
 	static async recoverLocalReward(reward: TwurpleReward) {
+		console.log("Recovering ", reward.title)
 		const rewardData = rewardDataFromTwurple(reward)
 
 		const result = new ChannelPointReward()
-
-		console.log("Recovering ", reward.title)
 
 		result._id = nanoid()
 		result._config = {
@@ -320,6 +327,9 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			//We didn't find an equivalent reward at twitch. Create One
 			if (this.config.transient) return //Transient rewards don't need to exist
 
+			console.log("Reward Found in files but not on twitch")
+			console.log(expectedHelixData.title)
+
 			const created = await TwitchAccount.channel.apiClient.channelPoints.createCustomReward(
 				TwitchAccount.channel.twitchId,
 				expectedHelixData
@@ -355,6 +365,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			)
 			await this.updateFromTwurple(update)
 		} else {
+			console.log("Update Twitch Servers Create")
 			const created = await TwitchAccount.channel.apiClient.channelPoints.createCustomReward(
 				TwitchAccount.channel.twitchId,
 				helixData

@@ -31,7 +31,7 @@ defineIPCFunc("plugins", "updateSettings", (changes: SettingsChange[]) => {
 		const plugin = plugins.getPlugin(change.pluginId)
 		if (!plugin) continue
 		const setting = plugin.settings.get(change.settingId)
-		if (!setting) continue
+		if (setting?.type != "value") continue
 		setting.ref.value = change.value
 	}
 })

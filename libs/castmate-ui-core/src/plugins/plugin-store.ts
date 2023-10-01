@@ -76,16 +76,32 @@ function ipcParseTriggerDefinition(def: IPCTriggerDefinition): TriggerDefinition
 	return triggerDef
 }
 
-interface SettingDefinition {
+export interface SettingValue {
+	type: "value"
 	schema: Schema
 	value: any
 }
 
+export interface ResourceSetting {
+	type: "resource"
+	resourceId: string
+	name: string
+	description?: string
+}
+
+export type SettingDefinition = SettingValue | ResourceSetting
+
 function ipcParseSettingsDefinition(def: IPCSettingsDefinition): SettingDefinition {
-	return {
-		schema: ipcParseSchema(def.schema),
-		value: def.value,
+	if (def.type == "resource") {
+		return def
+	} else if (def.type == "value") {
+		return {
+			type: "value",
+			schema: ipcParseSchema(def.schema),
+			value: def.value,
+		}
 	}
+	throw new Error()
 }
 
 interface PluginDefinition {
@@ -142,7 +158,10 @@ export const usePluginStore = defineStore("plugins", () => {
 		handleIpcMessage("plugins", "updateSettings", (event, id: string, settingId: string, value: any) => {
 			const plugin = pluginMap.value.get(id)
 			if (plugin) {
-				plugin.settings[settingId].value = value
+				const setting = plugin.settings[settingId]
+				if (setting?.type == "value") {
+					setting.value = value
+				}
 			}
 		})
 

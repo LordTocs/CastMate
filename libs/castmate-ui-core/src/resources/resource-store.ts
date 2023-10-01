@@ -1,4 +1,4 @@
-import { ref, computed } from "vue"
+import { ref, computed, Component, markRaw } from "vue"
 import { defineStore } from "pinia"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
 import { MaybeRefOrGetter, toValue } from "@vueuse/core"
@@ -6,6 +6,11 @@ import { ResourceData } from "castmate-schema"
 
 interface ResourceStorage<TResourceData extends ResourceData = ResourceData> {
 	resources: Map<string, TResourceData>
+	selectorItemComponent?: Component
+	viewComponent?: Component
+	settingComponent?: Component
+	createDialog?: Component
+	editDialog?: Component
 }
 
 function convertResourcesToStorage(resources: ResourceData[]) {
@@ -105,7 +110,21 @@ export const useResourceStore = defineStore("resources", () => {
 		}
 	}
 
-	return { resourceMap, initialize, createResource, applyResourceConfig, setResourceConfig, deleteResource }
+	function registerSettingComponent(resourceId: string, component: Component) {
+		const resource = resourceMap.value.get(resourceId)
+		if (!resource) return
+		resource.settingComponent = markRaw(component)
+	}
+
+	return {
+		resourceMap,
+		initialize,
+		createResource,
+		applyResourceConfig,
+		setResourceConfig,
+		deleteResource,
+		registerSettingComponent,
+	}
 })
 
 export function useResources<TResourceData extends ResourceData = ResourceData>(typeName: MaybeRefOrGetter<string>) {

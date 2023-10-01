@@ -1,4 +1,4 @@
-import { defineAction, definePlugin, onLoad, onUnload } from "castmate-core"
+import { defineAction, definePlugin, defineResourceSetting, onLoad, onUnload } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { setupChat } from "./chat"
 import { setupSubscriptions } from "./subscriptions"
@@ -29,6 +29,8 @@ export default definePlugin(
 
 			await TwitchAPIService.initialize()
 		})
+
+		defineResourceSetting(TwitchAccount, "Twitch Accounts")
 
 		onUnload(() => {})
 

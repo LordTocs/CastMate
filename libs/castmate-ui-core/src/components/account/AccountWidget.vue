@@ -1,22 +1,25 @@
 <template>
-	<div>
-		<template v-if="account && account.config.name.length > 0">
-			<p-avatar :image="account.config.icon" shape="circle" v-if="account.config.icon" />
-			<p-avatar :label="account.config.name[0]" shape="circle" v-else />
-			{{ account.config.name }}
+	<div class="flex flex-row align-items-center justify-content-center">
+		<template v-if="account && account.state.authenticated">
+			<p-avatar :image="account.config.icon" shape="circle" class="mr-2" v-if="account.config.icon" />
+			<p-avatar :label="account.config.name[0]" shape="circle" class="mr-2" v-else />
+			<span class="mr-2">{{ account.config.name }}</span>
+			<p-button @click="forceAuth" :loading="doingLogin" plain text size="small"> Sign In Again </p-button>
 		</template>
-		<p-button @click="forceAuth" :loading="doingLogin"> Sign In </p-button>
+		<template v-else>
+			<p-button @click="forceAuth" :loading="doingLogin"> Sign In </p-button>
+		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { useResource, useResourceIPCCaller } from "../../resources/resource-store"
-import { ResourceData, AccountConfig } from "castmate-schema"
+import { ResourceData, AccountConfig, AccountState } from "castmate-schema"
 import PButton from "primevue/button"
 import PAvatar from "primevue/avatar"
 import { ref } from "vue"
 
-const account = useResource<ResourceData<AccountConfig>>(
+const account = useResource<ResourceData<AccountConfig, AccountState>>(
 	() => props.accountType,
 	() => props.accountId
 )

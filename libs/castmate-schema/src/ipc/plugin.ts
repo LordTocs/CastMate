@@ -3,10 +3,20 @@ import { IPCSchema } from "../schema"
 import { IPCActionDefinition } from "./action"
 import { IPCTriggerDefinition } from "./trigger"
 
-export interface IPCSettingsDefinition {
+export interface IPCValueSetting {
+	type: "value"
 	schema: IPCSchema
 	value: any
 }
+
+export interface IPCResourceSetting {
+	type: "resource"
+	resourceId: string
+	name: string
+	description?: string
+}
+
+export type IPCSettingsDefinition = IPCValueSetting | IPCResourceSetting
 
 export interface IPCPluginDefinition {
 	readonly id: string

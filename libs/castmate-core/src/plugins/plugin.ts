@@ -6,6 +6,7 @@ import {
 	IPCActionDefinition,
 	IPCPluginDefinition,
 	mapRecord,
+	IPCSettingsDefinition,
 } from "castmate-schema"
 import { ActionDefinition, defineAction } from "../queue-system/action"
 import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
@@ -16,6 +17,7 @@ import { ReactiveEffect, ReactiveRef, autoRerun, reactify, reactiveRef, runOnCha
 import { ensureYAML, loadYAML, pathExists, writeYAML } from "../io/file-system"
 import _debounce from "lodash/debounce"
 import { ipcConvertSchema } from "../util/ipc-schema"
+import { ResourceBase, ResourceConstructor } from "../resources/resource"
 
 interface PluginSpec {
 	id: string
@@ -101,10 +103,33 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 	return result
 }
 
-interface SettingDefinition<SettingSchema extends Schema = any> {
+interface SettingValue<SettingSchema extends Schema = any> {
+	type: "value"
 	schema: SettingSchema
 	ref: ReactiveRef<SchemaType<SettingSchema>>
 	saveEffect?: ReactiveEffect
+}
+
+interface ResourceSetting {
+	type: "resource"
+	resourceId: string
+	name: string
+	description?: string
+}
+
+type SettingDefinition = SettingValue | ResourceSetting
+
+function toIPCSetting(setting: SettingDefinition): IPCSettingsDefinition {
+	if (setting.type == "resource") {
+		return setting
+	} else if (setting.type == "value") {
+		return {
+			type: "value",
+			schema: ipcConvertSchema(setting.schema),
+			value: setting.ref.value,
+		}
+	}
+	throw new Error()
 }
 
 const rendererUpdateSettings = defineCallableIPC<(pluginId: string, settingId: string, value: any) => void>(
@@ -119,6 +144,7 @@ export function defineSetting<T extends Schema>(id: string, schema: T) {
 	const value = reactiveRef<SchemaType<T>>(initial)
 
 	initingPlugin.settings.set(id, {
+		type: "value",
 		schema,
 		ref: value,
 	})
@@ -135,6 +161,24 @@ export function defineSetting<T extends Schema>(id: string, schema: T) {
 	})
 
 	return value
+}
+
+/**
+ * Shows a particular resource in the setting
+ */
+export function defineResourceSetting<T extends ResourceBase>(
+	resourceType: ResourceConstructor<T>,
+	name: string,
+	description?: string
+) {
+	if (!initingPlugin) throw new Error()
+
+	initingPlugin.settings.set(resourceType.storage.name, {
+		type: "resource",
+		resourceId: resourceType.storage.name,
+		name,
+		description,
+	})
 }
 
 export let initingPlugin: Plugin | null = null
@@ -182,6 +226,7 @@ export class Plugin {
 	private async writeSettings() {
 		const data: Record<string, any> = {}
 		for (const [sid, setting] of this.settings) {
+			if (setting.type != "value") continue
 			data[sid] = setting.ref.value
 		}
 		await writeYAML(data, "settings", `${this.id}.yaml`)
@@ -196,7 +241,7 @@ export class Plugin {
 
 		for (const key in settingsData) {
 			const setting = this.settings.get(key)
-			if (!setting) continue
+			if (setting?.type != "value") continue
 			setting.ref.value = settingsData[key]
 		}
 	}
@@ -257,10 +302,7 @@ export class Plugin {
 			version: this.version,
 			actions: mapRecord(this.actions, (k, v) => v.toIPC()),
 			triggers: mapRecord(this.triggers, (k, v) => v.toIPC()),
-			settings: mapRecord(this.settings, (k, v) => ({
-				value: v.ref.value, //Serialize?
-				schema: ipcConvertSchema(v.schema),
-			})),
+			settings: mapRecord(this.settings, (k, v) => toIPCSetting(v)),
 		}
 	}
 }
