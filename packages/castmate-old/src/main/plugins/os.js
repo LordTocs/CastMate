@@ -1,44 +1,18 @@
 import path from "path"
-import {
-	evalTemplate,
-	getNextTemplate,
-	template,
-	templateSchema,
-} from "../state/template"
+import { evalTemplate, getNextTemplate, template, templateSchema } from "../state/template"
 import { ChildProcess, exec, spawn } from "child_process"
 
 function isRunning(application) {
 	return new Promise(function (resolve, reject) {
 		const plat = process.platform
 		const cmd =
-			plat == "win32"
-				? "tasklist"
-				: plat == "darwin"
-				? "ps -ax | grep " + mac
-				: plat == "linux"
-				? "ps -A"
-				: ""
+			plat == "win32" ? "tasklist" : plat == "darwin" ? "ps -ax | grep " + mac : plat == "linux" ? "ps -A" : ""
 		if (cmd === "" || application === "") {
 			resolve(false)
 		}
 		exec(cmd, function (err, stdout, stderr) {
-			resolve(
-				stdout.toLowerCase().indexOf(application.toLowerCase()) > -1
-			)
+			resolve(stdout.toLowerCase().indexOf(application.toLowerCase()) > -1)
 		})
-	})
-}
-
-async function powershellCommand(command, workingDir) {
-	return new Promise((resolve, reject) => {
-		exec(
-			command,
-			{ shell: "powershell.exe", cwd: workingDir },
-			(err, stdout, stderr) => {
-				if (err) reject(err)
-				resolve(stdout)
-			}
-		)
 	})
 }
 
@@ -87,18 +61,7 @@ function powershellEscapeForDoubleQuote(str) {
 
 function powershellEscapeWild(str) {
 	let result = ""
-	const specialCharacters = [
-		...doubleQuotes,
-		...singleQuotes,
-		"`",
-		...dashes,
-		"%",
-		"|",
-		"$",
-		"{",
-		"}",
-		"?",
-	]
+	const specialCharacters = [...doubleQuotes, ...singleQuotes, "`", ...dashes, "%", "|", "$", "{", "}", "?"]
 
 	for (let c of str) {
 		if (specialCharacters.includes(c)) {
@@ -155,10 +118,7 @@ async function powershellTemplate(templateStr, data) {
 	}
 
 	while (true) {
-		const { filler, template, endIndex } = getNextTemplate(
-			templateStr,
-			searchStart
-		)
+		const { filler, template, endIndex } = getNextTemplate(templateStr, searchStart)
 
 		trackPowershellString(filler, parseContext)
 		resultStr += filler
@@ -225,8 +185,7 @@ export default {
 		},
 		launch: {
 			name: "Launch Application",
-			description:
-				"Easily Launch an Application. Working directory defaults to application folder",
+			description: "Easily Launch an Application. Working directory defaults to application folder",
 			color: "#CC9B78",
 			icon: "mdi-launch",
 			data: {
@@ -283,20 +242,10 @@ export default {
 					  )
 					: []
 
-				spawn(
-					"cmd",
-					[
-						"/c",
-						"start",
-						"CastMate Launch",
-						data.application,
-						...args,
-					],
-					{
-						cwd,
-						detached: true,
-					}
-				)
+				spawn("cmd", ["/c", "start", "CastMate Launch", data.application, ...args], {
+					cwd,
+					detached: true,
+				})
 			},
 		},
 	},
