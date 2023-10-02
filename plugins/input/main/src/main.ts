@@ -8,6 +8,7 @@ export default definePlugin(
 		name: "Input",
 		description: "Input!",
 		icon: "mdi mdi-keyboard",
+		color: "#826262",
 	},
 	() => {
 		setupKeyboard()
