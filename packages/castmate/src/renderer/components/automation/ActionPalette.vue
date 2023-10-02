@@ -1,13 +1,15 @@
 <template>
 	<filter-palette :items="allItems" ref="palette" :append-to="appendTo">
 		<template #submenuheader="{ item }">
-			<span
-				class="p-menuitem-icon"
-				style="margin-right: 0.5rem; color: var(--item-color)"
-				:class="item.icon"
-				v-if="item.icon"
-			></span
-			>{{ item.label }}
+			<div class="text-center">
+				<span
+					class="p-menuitem-icon"
+					style="margin-right: 0.5rem; color: var(--item-color)"
+					:class="item.icon"
+					v-if="item.icon"
+				></span
+				>{{ item.label }}
+			</div>
 		</template>
 		<template #item="{ item }">
 			<a class="p-menuitem-link">
