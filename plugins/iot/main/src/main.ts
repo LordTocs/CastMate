@@ -3,9 +3,10 @@ import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "cas
 export default definePlugin(
 	{
 		id: "iot",
-		name: "UI Name",
+		name: "Lights & IoT",
 		description: "UI Description",
-		icon: "mdi-pencil",
+		icon: "mdi mdi-lightbulb-on-outline",
+		color: "#7F743F",
 	},
 	() => {
 		//Plugin Intiialization

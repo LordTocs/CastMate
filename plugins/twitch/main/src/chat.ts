@@ -10,7 +10,7 @@ import { inTwitchViewerGroup } from "./group"
 export function setupChat() {
 	defineAction({
 		id: "chat",
-		name: "Send Chat",
+		name: "Chat Message",
 		icon: "mdi mdi-chat",
 		version: "0.0.1",
 		config: {
