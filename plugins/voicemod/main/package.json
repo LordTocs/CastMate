@@ -15,7 +15,7 @@
   "dependencies": {
     "castmate-core": "workspace:^",
     "castmate-schema": "workspace:^",
-    "ws": "*",
-    "nanoid": "*"
+    "nanoid": "*",
+    "ws": "*"
   }
 }
