@@ -49,12 +49,17 @@ export const PluginManager = Service(
 		async registerPlugin(plugin: Plugin) {
 			this.plugins.set(plugin.id, plugin)
 			console.log("Loading Plugin", plugin.id)
-			if (!(await plugin.load())) {
-				console.error("Load failed for", plugin.id)
-				this.plugins.delete(plugin.id)
-				return
+			try {
+				if (!(await plugin.load())) {
+					console.error("Load failed for", plugin.id)
+					this.plugins.delete(plugin.id)
+					return
+				}
+				rendererRegisterPlugin(plugin.toIPC())
+			} catch (err) {
+				console.error("Load REALLY failed for", plugin.id)
+				console.error(err)
 			}
-			rendererRegisterPlugin(plugin.toIPC())
 		}
 
 		async unregisterPlugin(id: string) {

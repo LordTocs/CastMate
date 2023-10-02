@@ -74,6 +74,16 @@ export function onUnload(unloadFunc: PluginCallback) {
 	privates.unloader.register(unloadFunc)
 }
 
+export function definePluginResource(resourceConstructor: ResourceConstructor) {
+	onLoad(async () => {
+		await resourceConstructor.initialize()
+	})
+
+	onUnload(async () => {
+		resourceConstructor.uninitialize()
+	})
+}
+
 interface PluginPrivates {
 	loader: EventList<PluginCallback>
 	unloader: EventList<PluginCallback>
