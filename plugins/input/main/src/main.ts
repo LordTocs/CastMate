@@ -1,5 +1,7 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
 
+import { setupKeyboard } from "./keyboard"
+
 export default definePlugin(
 	{
 		id: "input",
@@ -8,6 +10,6 @@ export default definePlugin(
 		icon: "mdi mdi-keyboard",
 	},
 	() => {
-		//Plugin Intiialization
+		setupKeyboard()
 	}
 )
