@@ -37,6 +37,7 @@
 	},
 	"packageManager": "yarn@3.2.4",
 	"dependencies": {
+		"axios": "^1.5.1",
 		"nanoid": "^4.0.2",
 		"ts-toolbelt": "^9.6.0",
 		"typescript": "^5.1.3",
