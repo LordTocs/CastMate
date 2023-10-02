@@ -130,7 +130,9 @@ export const useResourceStore = defineStore("resources", () => {
 export function useResources<TResourceData extends ResourceData = ResourceData>(typeName: MaybeRefOrGetter<string>) {
 	const resourceStore = useResourceStore()
 
-	return computed(() => resourceStore.resourceMap.get(toValue(typeName)) as ResourceStorage<TResourceData>)
+	return computed(
+		() => resourceStore.resourceMap.get(toValue(typeName)) as ResourceStorage<TResourceData> | undefined
+	)
 }
 
 export function useResource<TResourceData extends ResourceData>(

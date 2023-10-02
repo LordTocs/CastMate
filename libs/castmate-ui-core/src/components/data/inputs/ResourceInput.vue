@@ -4,7 +4,7 @@
 		:required="!!schema.required"
 		:label="schema.name"
 		text-prop="config.name"
-		:items="[...resourceStore.resources.values()]"
+		:items="resourceItems ?? []"
 		input-id="resource"
 		:no-float="noFloat"
 	/>
@@ -36,6 +36,12 @@ const props = defineProps<
 
 const model = useModel(props, "modelValue")
 const resourceStore = useResources(() => props.schema.resourceType)
+
+const resourceItems = computed(() => {
+	const resourceMap = resourceStore.value?.resources
+	if (!resourceMap) return undefined
+	return [...resourceMap.values()]
+})
 const customViewComponent = computed(() => undefined)
 const resourceItem = computed(() => {
 	if (!model.value) return undefined
