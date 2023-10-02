@@ -20,7 +20,7 @@
 				<template v-for="item of filteredItems">
 					<template v-if="item.items">
 						<!-- This is a group header -->
-						<li :class="['p-submenu-header', item.class]" :style="item.style">
+						<li :class="['p-submenu-header', item.class]" :style="item.style" v-if="item.items.length > 0">
 							<slot name="submenuheader" :item="item">
 								<i v-if="item.icon" :class="['p-menuitem-icon', item.icon]"></i>
 								<span class="p-menuitem-text">
@@ -101,11 +101,13 @@ const props = withDefaults(
 		dataKey?: string
 		filterPlaceholder?: string
 		appendTo?: string
+		showLoneItemCategory?: boolean
 	}>(),
 	{
 		optionValue: "value",
 		filterPlaceholder: "Filter",
 		appendTo: "body",
+		showLoneItemCategory: false,
 	}
 )
 const filter = ref("")
@@ -380,6 +382,10 @@ function onMouseDown(ev: MouseEvent) {
 </script>
 
 <style scoped>
+.filter-palette {
+	width: 20rem;
+}
+
 .filter-palette.p-menu {
 	position: absolute;
 	left: var(--page-x);
