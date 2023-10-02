@@ -7,6 +7,7 @@ export default definePlugin(
 		name: "Time",
 		description: "Time Utilities",
 		icon: "mdi mdi-clock-outline",
+		color: "#8DC1C0",
 	},
 	() => {
 		//Plugin Intiialization

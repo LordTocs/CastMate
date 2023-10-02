@@ -19,26 +19,5 @@ export default definePlugin(
 			max: 65535,
 			name: "Internal Webserver Port",
 		})
-
-		defineAction({
-			id: "delay",
-			name: "Delay",
-			icon: "mdi mdi-timer",
-			duration: {
-				dragType: "length",
-				rightSlider: {
-					sliderProp: "duration",
-				},
-			},
-			config: {
-				type: Object,
-				properties: {
-					duration: { type: Duration, name: "Duration", template: true, required: true, default: 1.0 },
-				},
-			},
-			async invoke(config, contextData, abortSignal) {
-				await abortableSleep(config.duration * 1000, abortSignal)
-			},
-		})
 	}
 )
