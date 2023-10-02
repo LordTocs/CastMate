@@ -1,4 +1,4 @@
-import { FileResource, Resource, ResourceRegistry, ResourceStorage, onLoad } from "castmate-core"
+import { FileResource, Resource, ResourceRegistry, ResourceStorage, definePluginResource, onLoad } from "castmate-core"
 import { TwitchViewerGroupConfig, TwitchViewerGroup, TwitchViewerGroupRule } from "castmate-plugin-twitch-shared"
 import { nanoid } from "nanoid"
 import { ViewerCache } from "./viewer-cache"
@@ -58,9 +58,7 @@ export class CustomTwitchViewerGroup extends FileResource<TwitchViewerGroupConfi
 }
 
 export function setupViewerGroups() {
-	onLoad(() => {
-		ResourceRegistry.getInstance().register(CustomTwitchViewerGroup)
-	})
+	definePluginResource(CustomTwitchViewerGroup)
 }
 
 async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promise<boolean> {
