@@ -13,6 +13,7 @@
     "typescript": "*"
   },
   "dependencies": {
+    "axios": "*",
     "castmate-core": "workspace:^",
     "castmate-schema": "workspace:^"
   }
