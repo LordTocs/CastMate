@@ -33,6 +33,7 @@ export default defineConfig({
 							"@twurple/eventsub-ws",
 							"@twurple/pubsub",
 							"ws",
+							"discord.js",
 						],
 					},
 				},
