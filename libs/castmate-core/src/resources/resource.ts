@@ -108,6 +108,8 @@ export interface ResourceConstructor<T extends ResourceBase = any> {
 	onDelete?(resource: T): any
 	load?(): Promise<void>
 	storage: ResourceStorage<T>
+	initialize(): Promise<void>
+	uninitialize(): Promise<void>
 }
 
 export function isResourceConstructor(constructor: any): constructor is ResourceConstructor {
