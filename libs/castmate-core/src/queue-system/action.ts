@@ -134,7 +134,7 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 		// }
 		if (this.spec.duration) {
 			if ("callback" in this.spec.duration) {
-				console.log("SETTING UP CALLBACK", `actions_${this.id}_duration`)
+				//console.log("SETTING UP CALLBACK", `actions_${this.id}_duration`)
 				defineIPCFunc(this.plugin.id, `actions_${this.id}_duration`, this.spec.duration.callback)
 			}
 		}
