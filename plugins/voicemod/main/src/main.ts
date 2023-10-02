@@ -21,8 +21,8 @@ export default definePlugin(
 
 		async function tryConnect() {
 			try {
-				voiceMod.connect(voiceModHost.value)
-			} catch {}
+				await voiceMod.connect(voiceModHost.value)
+			} catch (err) {}
 		}
 
 		function retryConnection() {
