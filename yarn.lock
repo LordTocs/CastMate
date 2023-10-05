@@ -2833,6 +2833,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-http-main@workspace:plugins/http/main"
   dependencies:
+    axios: "*"
     castmate-core: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "*"
@@ -2982,6 +2983,7 @@ __metadata:
   resolution: "castmate-plugin-obs-main@workspace:plugins/obs/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-obs-shared: "workspace:^"
     castmate-schema: "workspace:^"
     obs-websocket-js: "*"
     typescript: "*"
@@ -3003,6 +3005,17 @@ __metadata:
     vite: ^4.4.9
     vue: "*"
     vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-obs-shared@workspace:^, castmate-plugin-obs-shared@workspace:plugins/obs/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-obs-shared@workspace:plugins/obs/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
   languageName: unknown
   linkType: soft
 

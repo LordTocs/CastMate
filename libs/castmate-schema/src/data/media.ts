@@ -9,7 +9,7 @@ export const MediaFile: MediaFileFactory = {
 	},
 }
 
-export interface SchemaMediaFile {
+export interface SchemaMediaFile extends SchemaBase<MediaFile> {
 	type: MediaFileFactory
 	sound?: boolean
 	image?: boolean

@@ -8,6 +8,9 @@ import {
 	Toggle,
 	Color,
 	Duration,
+	EnumItem,
+	IPCEnumable,
+	IPCDefaultable,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -34,6 +37,8 @@ import ToggleInputVue from "../components/data/inputs/ToggleInput.vue"
 import BooleanInputVue from "../components/data/inputs/BooleanInput.vue"
 import ColorInputVue from "../components/data/inputs/ColorInput.vue"
 import DurationInputVue from "../components/data/inputs/DurationInput.vue"
+import { ipcRenderer } from "electron"
+import { isObject } from "@vueuse/core"
 
 export type ResourceProxy = string
 export const ResourceProxyFactory = {
@@ -47,6 +52,48 @@ declare module "castmate-schema" {
 		resourceType: string
 	}
 }
+export function ipcParseSchemaEnum<T>(ipcSchema: IPCEnumable<T>) {
+	if (!ipcSchema.enum) return {}
+	if (Array.isArray(ipcSchema.enum)) {
+		return { enum: ipcSchema.enum }
+	} else if ("ipc" in ipcSchema.enum) {
+		const ipcPath = ipcSchema.enum.ipc
+		return {
+			enum: markRaw(async (context: any) => {
+				try {
+					return await ipcRenderer.invoke(ipcPath, toRaw(context))
+				} catch (err) {
+					console.error("Error Invoking Enum", ipcPath)
+					console.error(err)
+					return []
+				}
+			}),
+		}
+	}
+}
+
+export function ipcParseSchemaDefault<T>(ipcSchema: IPCDefaultable<T>) {
+	if (ipcSchema.default == undefined) return { default: undefined }
+	if (typeof ipcSchema.default === "object" && "ipc" in ipcSchema.default) {
+		const ipcPath = ipcSchema.default.ipc
+		return {
+			default: markRaw(async (): Promise<T> => {
+				try {
+					return await ipcRenderer.invoke(ipcPath)
+				} catch (err) {
+					console.error("Error Invoking Default", ipcPath)
+					console.error(err)
+				}
+				//I'm so tired.
+				return undefined as unknown as T
+			}),
+		}
+	} else {
+		return {
+			default: ipcSchema.default as T,
+		}
+	}
+}
 
 export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 	if (ipcSchema.type === "Object" && "properties" in ipcSchema) {
@@ -56,17 +103,19 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 			properties[prop] = ipcParseSchema(ipcSchema.properties[prop])
 		}
 
-		return { ...ipcSchema, type: Object, properties }
+		return { ...ipcSchema, ...ipcParseSchemaDefault(ipcSchema), type: Object, properties }
 	} else if (ipcSchema.type === "Array" && "items" in ipcSchema) {
 		return {
 			...ipcSchema,
-			type: toRaw(Array),
+			type: markRaw(Array),
 			items: ipcParseSchema(ipcSchema.items),
+			...ipcParseSchemaDefault(ipcSchema),
 		}
 	} else if (ipcSchema.type === "Resource" && "resourceType" in ipcSchema) {
 		return {
 			...ipcSchema,
-			type: toRaw(ResourceProxyFactory),
+			type: markRaw(ResourceProxyFactory),
+			...ipcParseSchemaDefault(ipcSchema),
 			resourceType: ipcSchema.resourceType,
 		}
 	} else {
@@ -76,7 +125,7 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 		}
 
 		//@ts-ignore
-		return { ...ipcSchema, type }
+		return { ...ipcSchema, ...ipcParseSchemaDefault(ipcSchema), ...ipcParseSchemaEnum(ipcSchema), type }
 	}
 }
 

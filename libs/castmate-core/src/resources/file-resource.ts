@@ -103,6 +103,6 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 		//Heh typescript bug can't detect we've eliminated all undefines
 		const resources = (await Promise.all(fileLoadPromises)).filter((r) => r != null) as ResourceBase[]
 
-		this.storage.inject(...resources)
+		await this.storage.inject(...resources)
 	}
 }

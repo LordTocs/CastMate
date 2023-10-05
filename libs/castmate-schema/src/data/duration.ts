@@ -9,7 +9,7 @@ export const Duration: DurationFactory = {
 	},
 }
 
-export interface SchemaDuration extends SchemaBase {
+export interface SchemaDuration extends SchemaBase<Duration> {
 	type: DurationFactory
 	template?: boolean
 	//max?

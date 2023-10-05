@@ -13,7 +13,7 @@ export const Color: ColorFactory = {
 	},
 }
 
-export interface SchemaColor extends SchemaBase {
+export interface SchemaColor extends SchemaBase<Color> {
 	type: ColorFactory
 	template?: boolean
 	enum: Color[]

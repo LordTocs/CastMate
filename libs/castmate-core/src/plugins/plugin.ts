@@ -16,7 +16,7 @@ import { SemanticVersion } from "../util/type-helpers"
 import { ReactiveEffect, ReactiveRef, autoRerun, reactify, reactiveRef, runOnChange } from "../reactivity/reactivity"
 import { ensureYAML, loadYAML, pathExists, writeYAML } from "../io/file-system"
 import _debounce from "lodash/debounce"
-import { ipcConvertSchema } from "../util/ipc-schema"
+import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema, serializeSchema } from "../util/ipc-schema"
 import { ResourceBase, ResourceConstructor } from "../resources/resource"
 
 interface PluginSpec {
@@ -102,12 +102,20 @@ interface StateDefinition<StateSchema extends Schema = any> {
 export function defineState<T extends Schema>(id: string, schema: T) {
 	if (!initingPlugin) throw new Error()
 
-	const initial = constructDefault(schema)
-	const result = reactiveRef<SchemaType<T>>(initial)
+	//Cheat a little
+	const result = reactiveRef<SchemaType<T>>(undefined as unknown as SchemaType<T>)
 
 	initingPlugin.state.set(id, {
 		schema,
 		obj: result,
+	})
+
+	onLoad(async (plugin) => {
+		const initial = await constructDefault(schema)
+		const stateDef = plugin.state.get(id)
+		if (stateDef) {
+			stateDef.obj.value = initial
+		}
 	})
 
 	return result
@@ -129,17 +137,23 @@ interface ResourceSetting {
 
 type SettingDefinition = SettingValue | ResourceSetting
 
-function toIPCSetting(setting: SettingDefinition): IPCSettingsDefinition {
+function toIPCSetting(setting: SettingDefinition, path: string): IPCSettingsDefinition {
 	if (setting.type == "resource") {
 		return setting
 	} else if (setting.type == "value") {
 		return {
 			type: "value",
-			schema: ipcConvertSchema(setting.schema),
-			value: setting.ref.value,
+			schema: ipcConvertSchema(setting.schema, path),
+			value: serializeSchema(setting.schema, setting.ref.value),
 		}
 	}
 	throw new Error()
+}
+
+function registerIPCSetting(setting: SettingDefinition, path: string) {
+	if (setting.type == "value") {
+		ipcRegisterSchema(setting.schema, path)
+	}
 }
 
 const rendererUpdateSettings = defineCallableIPC<(pluginId: string, settingId: string, value: any) => void>(
@@ -150,8 +164,7 @@ const rendererUpdateSettings = defineCallableIPC<(pluginId: string, settingId: s
 export function defineSetting<T extends Schema>(id: string, schema: T) {
 	if (!initingPlugin) throw new Error()
 
-	const initial = constructDefault(schema)
-	const value = reactiveRef<SchemaType<T>>(initial)
+	const value = reactiveRef<SchemaType<T>>(undefined as unknown as SchemaType<T>)
 
 	initingPlugin.settings.set(id, {
 		type: "value",
@@ -159,12 +172,18 @@ export function defineSetting<T extends Schema>(id: string, schema: T) {
 		ref: value,
 	})
 
-	onLoad((plugin) => {
+	onLoad(async (plugin) => {
+		const initial = await constructDefault(schema)
+		const setting = plugin.settings.get(id)
+		if (setting?.type == "value") {
+			setting.ref.value = initial
+			await plugin.finishLoadingSetting(id)
+		}
 		//TODO: Deeeeep
 		runOnChange(
 			() => value.value,
 			async () => {
-				rendererUpdateSettings(plugin.id, id, value.value)
+				rendererUpdateSettings(plugin.id, id, serializeSchema(schema, value.value))
 				plugin.triggerSettingsUpdate()
 			}
 		)
@@ -237,23 +256,35 @@ export class Plugin {
 		const data: Record<string, any> = {}
 		for (const [sid, setting] of this.settings) {
 			if (setting.type != "value") continue
-			data[sid] = setting.ref.value
+			data[sid] = serializeSchema(setting.schema, setting.ref.value)
 		}
 		await writeYAML(data, "settings", `${this.id}.yaml`)
 	}
 
+	//Load but don't deserialize our settings data
+	private serializedSettingsData: Record<string, any> = {}
 	private async loadSettings() {
 		if (!(await pathExists("settings", `${this.id}.yaml`))) {
 			await this.writeSettings()
 		}
 
-		const settingsData: Record<string, any> = await loadYAML("settings", `${this.id}.yaml`)
+		this.serializedSettingsData = await loadYAML("settings", `${this.id}.yaml`)
 
+		//Don't deserialize into the refs here, it will be handled in the onLoads() of each defineSetting()
+		//This makes sure that deserialization happens in the order of use of resources and other items.
+		/*
 		for (const key in settingsData) {
 			const setting = this.settings.get(key)
 			if (setting?.type != "value") continue
-			setting.ref.value = settingsData[key]
-		}
+			setting.ref.value = deserializeSchema(setting.schema, settingsData[key])
+		}*/
+	}
+
+	async finishLoadingSetting(id: string) {
+		const setting = this.settings.get(id)
+		if (setting?.type != "value") return
+		console.log("Deserializing", id)
+		setting.ref.value = deserializeSchema(setting.schema, this.serializedSettingsData[id])
 	}
 
 	private writeSettingsDebounced = _debounce(() => this.writeSettings(), 100)
@@ -270,6 +301,10 @@ export class Plugin {
 			for (const action of this.actions.values()) {
 				await action.load()
 			}
+
+			this.serializedSettingsData = {} //Toss out our serialized data we don't need it anymore
+
+			this.registerIPC()
 		} catch (err) {
 			//TODO_ERRRORS
 			console.error("Error Loading", this.id)
@@ -302,6 +337,12 @@ export class Plugin {
 		return true
 	}
 
+	registerIPC() {
+		mapRecord(this.actions, (k, v) => v.registerIPC(`${this.id}_actions_${k}`))
+		mapRecord(this.triggers, (k, v) => v.registerIPC(`${this.id}_triggers_${k}`))
+		mapRecord(this.settings, (k, v) => registerIPCSetting(v, `${this.id}_settings_${k}`))
+	}
+
 	toIPC(): IPCPluginDefinition {
 		return {
 			id: this.id,
@@ -310,9 +351,9 @@ export class Plugin {
 			icon: this.icon,
 			color: this.color,
 			version: this.version,
-			actions: mapRecord(this.actions, (k, v) => v.toIPC()),
-			triggers: mapRecord(this.triggers, (k, v) => v.toIPC()),
-			settings: mapRecord(this.settings, (k, v) => toIPCSetting(v)),
+			actions: mapRecord(this.actions, (k, v) => v.toIPC(`${this.id}_actions_${k}`)),
+			triggers: mapRecord(this.triggers, (k, v) => v.toIPC(`${this.id}_triggers_${k}`)),
+			settings: mapRecord(this.settings, (k, v) => toIPCSetting(v, `${this.id}_settings_${k}`)),
 		}
 	}
 }

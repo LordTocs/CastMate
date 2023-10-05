@@ -9,7 +9,7 @@ export const Toggle: ToggleFactory = {
 	},
 }
 
-export interface SchemaToggle extends SchemaBase {
+export interface SchemaToggle extends SchemaBase<Toggle> {
 	type: ToggleFactory
 	template?: boolean
 	trueIcon?: string

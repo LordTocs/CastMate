@@ -1,9 +1,23 @@
 <template>
 	<div class="p-inputgroup w-full" @mousedown="stopPropagation">
 		<document-path :local-path="localPath">
-			<label-floater :label="schema.name" :no-float="noFloat" input-id="text" v-slot="labelProps">
+			<label-floater
+				:label="schema.name"
+				:no-float="noFloat"
+				input-id="text"
+				v-slot="labelProps"
+				v-if="!schema.enum"
+			>
 				<p-input-text v-model="model" v-bind="labelProps" />
 			</label-floater>
+			<enum-input
+				:schema="schema"
+				v-model="model"
+				:no-float="!!noFloat"
+				input-id="text"
+				:context="context"
+				v-else
+			/>
 		</document-path>
 		<span v-if="schema.template" class="p-inputgroup-addon" style="width: 2.857rem">
 			<i class="mdi mdi-code-braces flex-none" />
@@ -21,6 +35,7 @@ import DocumentPath from "../../document/DocumentPath.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import LabelFloater from "../base-components/LabelFloater.vue"
 import { stopPropagation } from "../../../main"
+import EnumInput from "../base-components/EnumInput.vue"
 
 const props = defineProps<
 	{

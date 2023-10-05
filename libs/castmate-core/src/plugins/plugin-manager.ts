@@ -2,6 +2,7 @@ import { IPCPluginDefinition } from "castmate-schema"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Service } from "../util/service"
 import { Plugin } from "./plugin"
+import { deserializeSchema } from "../util/ipc-schema"
 
 const rendererRegisterPlugin = defineCallableIPC<(plugin: IPCPluginDefinition) => void>("plugins", "registerPlugin")
 const rendererUnregisterPlugin = defineCallableIPC<(id: string) => void>("plugins", "unregisterPlugin")
@@ -32,7 +33,7 @@ defineIPCFunc("plugins", "updateSettings", (changes: SettingsChange[]) => {
 		if (!plugin) continue
 		const setting = plugin.settings.get(change.settingId)
 		if (setting?.type != "value") continue
-		setting.ref.value = change.value
+		setting.ref.value = deserializeSchema(setting.schema, change.value)
 	}
 })
 

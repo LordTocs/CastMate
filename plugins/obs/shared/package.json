@@ -1,5 +1,5 @@
 {
-  "name": "castmate-plugin-http-main",
+  "name": "castmate-plugin-obs-shared",
   "version": "1.0.0",
   "description": "",
   "main": "src/main.ts",

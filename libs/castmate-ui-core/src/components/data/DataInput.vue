@@ -6,6 +6,7 @@
 		:schema="schema"
 		:local-path="localPath"
 		:no-float="noFloat"
+		:context="context"
 	/>
 </template>
 

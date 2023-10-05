@@ -42,7 +42,7 @@ export class Range {
 	}
 }
 
-export interface SchemaRange {
+export interface SchemaRange extends SchemaBase<Range> {
 	type: typeof Range
 	template?: boolean
 }

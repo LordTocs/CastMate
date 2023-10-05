@@ -1,27 +1,36 @@
-import { cloneDeep } from "lodash"
+import { cloneDeep, isFunction } from "lodash"
+import { MaybePromise } from "./util/type-helpers"
 //TODO: How to type default
 //TODO: How to enforce default's existance when required: true
 
 export type MapToUnion<T> = T[keyof T]
 
-type EnumItem<T> = T | EnumPair<T>
+export interface EnumPair<T> {
+	value: T
+	name: string
+}
+
+export type EnumItem<T> = T | EnumPair<T>
 
 //TODO: Can we type context?
 export interface Enumable<T> {
 	enum?: Array<EnumItem<T>> | (() => Promise<Array<EnumItem<T>>>) | ((context: any) => Promise<Array<EnumItem<T>>>)
 }
 
-export type SchemaBase = {
+export interface Defaultable<T> {
+	default?: T | (() => MaybePromise<T>)
+}
+
+export interface SchemaBase<T = any> extends Defaultable<T> {
 	name?: string
 	required?: boolean
-	default?: any
 }
 
 interface MaybeTemplated {
 	template?: boolean
 }
 
-export interface SchemaNumber extends Enumable<number> {
+export interface SchemaNumber extends Enumable<number>, SchemaBase<number> {
 	type: NumberConstructor
 	min?: number
 	max?: number
@@ -31,31 +40,26 @@ export interface SchemaNumber extends Enumable<number> {
 	template?: boolean
 }
 
-export interface SchemaString extends Enumable<string> {
+export interface SchemaString extends Enumable<string>, SchemaBase<string> {
 	type: StringConstructor
 	template?: boolean
 }
 
-export interface SchemaBoolean extends SchemaBase {
+export interface SchemaBoolean extends SchemaBase<boolean> {
 	type: BooleanConstructor
 	trueIcon?: string
 	falseIcon?: string
 }
 
-interface EnumPair<T> {
-	value: T
-	name: string
-}
-
-export type SchemaObj = {
+export interface SchemaObj extends SchemaBase<object> {
 	type: ObjectConstructor
 	properties: Record<string, Schema>
-} & SchemaBase
+}
 
-export type SchemaArray = {
+export interface SchemaArray extends SchemaBase<Array<any>> {
 	type: ArrayConstructor
 	items: Schema
-} & SchemaBase
+}
 
 //Must be exported for interface merging to work
 export interface SchemaTypeMap {
@@ -65,7 +69,7 @@ export interface SchemaTypeMap {
 }
 
 type SchemaTypeUnion = MapToUnion<SchemaTypeMap>
-type SchemaTypes = SchemaTypeUnion[0] & SchemaBase
+type SchemaTypes = SchemaTypeUnion[0]
 
 type SchemaApplyRequired<SchemaT extends Schema, T> = SchemaT["required"] extends true ? T : T | undefined
 type SchemaApplyTemplate<SchemaT extends Schema, T> = SchemaT extends MaybeTemplated
@@ -133,7 +137,7 @@ export type SchemaConstructor<T extends Schema> = {
 	new (...args: any[]): SchemaClassType<T>
 	__schema__: T
 }
-
+/*
 export function defineSchema<T extends SchemaObj>(name: string, schema: T): SchemaConstructor<T> {
 	const constructor = class {
 		static __schema__ = schema
@@ -144,12 +148,12 @@ export function defineSchema<T extends SchemaObj>(name: string, schema: T): Sche
 	}
 
 	return constructor as SchemaConstructor<T>
-}
+}*/
 
-function constructDefaultObjOnto<T extends SchemaObj>(target: Record<string, any>, schema: T) {
+async function constructDefaultObjOnto<T extends SchemaObj>(target: Record<string, any>, schema: T) {
 	for (let prop in schema.properties) {
 		if (canConstructDefault(schema.properties[prop])) {
-			const newValue = constructDefault(schema.properties[prop])
+			const newValue = await constructDefault(schema.properties[prop])
 			if (newValue !== undefined) {
 				target[prop] = newValue
 			}
@@ -161,18 +165,22 @@ function canConstructDefault<T extends Schema>(schema: T) {
 	return schema.type == Object || schema.required
 }
 
-export function constructDefault<T extends Schema>(schema: T): SchemaType<T> {
+export async function constructDefault<T extends Schema>(schema: T): Promise<SchemaType<T>> {
 	if (schema.type == Object) {
 		const result: Record<string, any> = {}
 
 		if ("properties" in schema) {
-			constructDefaultObjOnto(result, schema)
+			await constructDefaultObjOnto(result, schema)
 		}
 
 		return result as SchemaType<T>
 	} else if (schema.required) {
 		if (schema.default) {
-			return cloneDeep(schema.default)
+			if (isFunction(schema.default)) {
+				return await schema.default()
+			} else {
+				return cloneDeep(schema.default)
+			}
 		} else {
 			if (schema.type == Array) {
 				return [] as SchemaType<T>
@@ -277,9 +285,13 @@ export function getTypeByConstructor<T = any>(constructor: DataConstructorOrFact
 
 type Modify<T, R> = Omit<T, keyof R> & R
 
-type IPCHandleEnumable<T> = T extends Enumable<infer V> ? Modify<T, { enum?: string | Array<V> }> : T
+export type IPCEnumable<T> = { enum?: Array<T> | { ipc: string } }
+export type IPCDefaultable<T> = { default?: T | { ipc: string } }
 
-export type IPCify<T extends Schema, Mods> = IPCHandleEnumable<Modify<T, Mods>>
+type IPCHandleEnumable<T> = T extends Enumable<infer V> ? Modify<T, { enum?: { ipc: string } | Array<V> }> : T
+type IPCHandleDefault<T> = T extends Defaultable<infer V> ? Modify<T, { default?: { ipc: string } | V }> : T
+
+export type IPCify<T extends Schema, Mods> = IPCHandleDefault<IPCHandleEnumable<Modify<T, Mods>>>
 
 export type IPCSchemaTypes = IPCify<
 	SchemaTypes,
@@ -353,7 +365,7 @@ const squish = squashSchemas(
 	{ type: Object, properties: { hello: { type: String } } },
 	{ type: Object, properties: { goodbye: { type: String } } }
 )
-
+/*
 const TestType = defineSchema("TestType", {
 	type: Object,
 	properties: {
@@ -363,7 +375,7 @@ const TestType = defineSchema("TestType", {
 	},
 })
 type TestType = InstanceType<typeof TestType>
-
+*/
 type DeepSchemaTypes = SchemaObj | SchemaArray
 
 export type SchemaPaths<T extends Schema> = T extends SchemaObj

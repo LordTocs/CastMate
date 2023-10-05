@@ -180,7 +180,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		return pluginMap.value.get(selection.plugin)?.actions?.[selection.action]
 	}
 
-	function createAction(selection: ActionSelection): AnyAction | undefined {
+	async function createAction(selection: ActionSelection): Promise<AnyAction | undefined> {
 		if (!selection.plugin || !selection.action) return undefined
 		const action = getAction(selection)
 		if (!action) return undefined
@@ -189,7 +189,7 @@ export const usePluginStore = defineStore("plugins", () => {
 			id: nanoid(),
 			plugin: selection.plugin,
 			action: selection.action,
-			config: constructDefault(action.config),
+			config: await constructDefault(action.config),
 		}
 
 		// if (action.type == "time" || action.type == "time-indefinite") {

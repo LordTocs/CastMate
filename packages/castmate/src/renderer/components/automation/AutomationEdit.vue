@@ -50,7 +50,6 @@ import { useSelectionRect, useActiveTestSequence, useActionQueueStore } from "ca
 import ActionPalette from "./ActionPalette.vue"
 import { FloatingSequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
-import { constructDefault } from "castmate-schema"
 
 const props = defineProps<{
 	modelValue: AutomationData
@@ -131,13 +130,13 @@ const palette = ref<typeof ActionPalette | null>(null)
 
 const pluginStore = usePluginStore()
 
-function onCreateAction(actionSelection: ActionSelection) {
+async function onCreateAction(actionSelection: ActionSelection) {
 	if (!actionSelection.action || !actionSelection.plugin) return
 
 	const x = (palettePosition.value.x - view.value.panState.panX) / 40 / view.value.panState.zoomX
 	const y = (palettePosition.value.y - view.value.panState.panY) / view.value.panState.zoomY
 
-	const actionInstance = pluginStore.createAction(actionSelection)
+	const actionInstance = await pluginStore.createAction(actionSelection)
 
 	if (!actionInstance) return
 

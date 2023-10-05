@@ -37,7 +37,12 @@
 			<div class="config">
 				<template v-if="selectedSchema && selectedModel">
 					<!--TODO: Fix Path-->
-					<data-input :schema="selectedSchema" v-model="selectedModel" local-path="config" />
+					<data-input
+						:schema="selectedSchema"
+						v-model="selectedModel"
+						local-path="config"
+						:context="selectedModel"
+					/>
 				</template>
 			</div>
 		</div>

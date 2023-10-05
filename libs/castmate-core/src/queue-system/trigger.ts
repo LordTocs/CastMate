@@ -2,7 +2,7 @@ import { Color } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
-import { ipcConvertSchema } from "../util/ipc-schema"
+import { ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
 import { IPCTriggerDefinition } from "castmate-schema"
 import { Service } from "../util/service"
 import { ProfileManager } from "../profile/profile-system"
@@ -33,7 +33,8 @@ export interface TriggerDefinition {
 	readonly version: string
 
 	trigger(context: any): Promise<boolean>
-	toIPC(): IPCTriggerDefinition
+	registerIPC(path: string): any
+	toIPC(path: string): IPCTriggerDefinition
 }
 
 class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema extends Schema> {
@@ -104,7 +105,12 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 		return triggered
 	}
 
-	toIPC(): IPCTriggerDefinition {
+	registerIPC(path: string) {
+		ipcRegisterSchema(this.spec.config, `${path}_config`)
+		ipcRegisterSchema(this.spec.context, `${path}_context`)
+	}
+
+	toIPC(path: string): IPCTriggerDefinition {
 		const triggerDef: IPCTriggerDefinition = {
 			id: this.id,
 			name: this.name,
@@ -112,8 +118,8 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 			icon: this.icon,
 			color: this.color,
 			version: this.version,
-			config: ipcConvertSchema(this.spec.config),
-			context: ipcConvertSchema(this.spec.context),
+			config: ipcConvertSchema(this.spec.config, `${path}_config`),
+			context: ipcConvertSchema(this.spec.context, `${path}_context`),
 		}
 
 		//console.log(triggerDef.config)

@@ -11,7 +11,7 @@ import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
 import { type Plugin, initingPlugin } from "../plugins/plugin"
 import { SemanticVersion, isArray } from "../util/type-helpers"
-import { ipcConvertSchema } from "../util/ipc-schema"
+import { ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
 import { defineIPCFunc } from "../util/electron"
 
 interface ActionMetaData {
@@ -92,7 +92,8 @@ export interface ActionDefinition {
 	load(): any
 	unload(): any
 	invoke(config: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
-	toIPC(): IPCActionDefinition
+	registerIPC(path: string): any
+	toIPC(path: string): IPCActionDefinition
 }
 
 class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>
@@ -152,7 +153,14 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 		return await this.spec.invoke(config, contextData, abortSignal)
 	}
 
-	toIPC(): IPCActionDefinition {
+	registerIPC(path: string) {
+		ipcRegisterSchema(this.spec.config, `${path}_config`)
+		if (this.spec.result) {
+			ipcRegisterSchema(this.spec.result, `${path}_result`)
+		}
+	}
+
+	toIPC(path: string): IPCActionDefinition {
 		let duration: IPCDurationConfig
 
 		if (this.spec.duration) {
@@ -182,8 +190,8 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 			icon: this.icon,
 			color: this.color,
 			duration,
-			config: ipcConvertSchema(this.spec.config),
-			result: this.spec.result ? ipcConvertSchema(this.spec.result) : undefined,
+			config: ipcConvertSchema(this.spec.config, `${path}_config`),
+			result: this.spec.result ? ipcConvertSchema(this.spec.result, `${path}_result`) : undefined,
 		}
 	}
 }

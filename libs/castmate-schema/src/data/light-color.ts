@@ -1,4 +1,4 @@
-import { registerType } from "../schema"
+import { SchemaBase, registerType } from "../schema"
 
 export interface LightColor {
 	hue?: number
@@ -17,7 +17,7 @@ export const LightColor: LightColorConstructor = class {
 	}
 }
 
-interface SchemaLightColor {
+interface SchemaLightColor extends SchemaBase<LightColor> {
 	type: LightColorConstructor
 	template: boolean
 }

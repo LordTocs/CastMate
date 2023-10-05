@@ -43,7 +43,7 @@ export const TwitchViewerGroup: TwitchViewerGroupFactory = {
 	},
 }
 
-export interface SchemaTwitchViewerGroup extends SchemaBase {
+export interface SchemaTwitchViewerGroup extends SchemaBase<TwitchViewerGroup> {
 	type: TwitchViewerGroupFactory
 }
 

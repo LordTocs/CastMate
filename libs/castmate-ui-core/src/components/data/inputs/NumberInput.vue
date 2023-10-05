@@ -1,35 +1,42 @@
 <template>
 	<div class="p-inputgroup w-full">
-		<template v-if="templateMode">
+		<template v-if="schema.enum">
 			<document-path :local-path="localPath">
-				<label-floater :label="schema.name ?? ''" :float="true" input-id="text" v-slot="labelProps">
-					<p-input-text id="l" v-model="(model as string | undefined)" v-bind="labelProps" />
-				</label-floater>
+				<enum-input :schema="schema" v-model="model" :no-float="!!noFloat" input-id="text" :context="context" />
 			</document-path>
 		</template>
 		<template v-else>
-			<document-path :local-path="localPath">
-				<div class="w-full">
+			<template v-if="templateMode">
+				<document-path :local-path="localPath">
 					<label-floater :label="schema.name ?? ''" :float="true" input-id="text" v-slot="labelProps">
-						<p-input-number
+						<p-input-text id="l" v-model="(model as string | undefined)" v-bind="labelProps" />
+					</label-floater>
+				</document-path>
+			</template>
+			<template v-else>
+				<document-path :local-path="localPath">
+					<div class="w-full">
+						<label-floater :label="schema.name ?? ''" :float="true" input-id="text" v-slot="labelProps">
+							<p-input-number
+								v-model="(model as number | undefined)"
+								:min="min"
+								:max="max"
+								:step="step"
+								:suffix="unit"
+								:format="false"
+								v-bind="labelProps"
+							/>
+						</label-floater>
+						<p-slider
+							v-if="schema.slider"
 							v-model="(model as number | undefined)"
 							:min="min"
 							:max="max"
 							:step="step"
-							:suffix="unit"
-							:format="false"
-							v-bind="labelProps"
 						/>
-					</label-floater>
-					<p-slider
-						v-if="schema.slider"
-						v-model="(model as number | undefined)"
-						:min="min"
-						:max="max"
-						:step="step"
-					/>
-				</div>
-			</document-path>
+					</div>
+				</document-path>
+			</template>
 		</template>
 		<p-button
 			v-if="canTemplate"
@@ -51,12 +58,16 @@ import { useVModel } from "@vueuse/core"
 import { computed, ref, onMounted } from "vue"
 import DocumentPath from "../../document/DocumentPath.vue"
 import LabelFloater from "../base-components/LabelFloater.vue"
+import EnumInput from "../base-components/EnumInput.vue"
+import { SharedDataInputProps } from "../DataInputTypes"
 
-const props = defineProps<{
-	schema: SchemaNumber & SchemaBase
-	modelValue: number | string | undefined
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		schema: SchemaNumber & SchemaBase
+		modelValue: number | string | undefined
+		localPath?: string
+	} & SharedDataInputProps
+>()
 
 const lazyNumberData = ref(null)
 

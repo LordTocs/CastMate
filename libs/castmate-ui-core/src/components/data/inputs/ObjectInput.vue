@@ -9,6 +9,7 @@
 				@update:model-value="setModelProp(prop, $event)"
 				:schema="schema.properties[prop]"
 				:local-path="prop"
+				:context="context"
 			/>
 		</div>
 	</document-path>

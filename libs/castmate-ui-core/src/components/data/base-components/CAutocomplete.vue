@@ -115,7 +115,7 @@ import _clamp from "lodash/clamp"
 const props = withDefaults(
 	defineProps<
 		{
-			modelValue: string | undefined
+			modelValue: any | undefined
 			label?: string
 			noFloat?: boolean
 			items: ItemType[]
@@ -129,6 +129,7 @@ const props = withDefaults(
 )
 
 const model = useModel(props, "modelValue")
+const emit = defineEmits(["update:modelValue", "open"])
 
 function clear() {
 	model.value = undefined
@@ -147,6 +148,7 @@ function show() {
 	if (!overlayVisible.value) {
 		overlayVisible.value = true
 		focusedId.value = model.value
+		emit("open")
 	}
 }
 function hide() {
@@ -208,7 +210,7 @@ const selectedItem = computed(() => props.items.find((item) => item.id == model.
 //////
 
 const focused = ref(false)
-const focusedId = ref<string | undefined>(undefined)
+const focusedId = ref<any | undefined>(undefined)
 
 function onFocus(ev: FocusEvent) {
 	focused.value = true
