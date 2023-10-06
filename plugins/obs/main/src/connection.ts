@@ -2,7 +2,9 @@ import { FileResource, definePluginResource, ResourceStorage } from "castmate-co
 import OBSWebSocket from "obs-websocket-js"
 import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
 import { nanoid } from "nanoid/non-secure"
-import { OBSSceneListItem } from "./websocket-models"
+import { OBSSceneListItem, OBSWSInput, OBSWSSceneItem } from "./websocket-models"
+import _flatten from "lodash/flatten"
+import { SceneSource } from "./obs-data"
 
 class SceneHistory {
 	private history: string[] = []
@@ -79,7 +81,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 			this.retryTimeout = setTimeout(() => {
 				this.retryTimeout = null
 				this.tryConnect(this.config.host, this.config.port, this.config.password)
-			})
+			}, 15000)
 		})
 
 		this.connection.on("ConnectionOpened", () => {})
@@ -167,11 +169,57 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		}
 	}
 
+	async getInputs(inputKinds?: string | string[]): Promise<string[]> {
+		try {
+			if (Array.isArray(inputKinds)) {
+				const resps = await this.connection.callBatch(
+					inputKinds.map((k) => ({ requestType: "GetInputList", requestData: { inputKind: k } }))
+				)
+				const inputsDeep = resps.map((r) => {
+					if (!r.responseData || !("inputs" in r.responseData)) return []
+					const inputs = r.responseData.inputs as unknown as OBSWSInput[]
+					return inputs.map((i) => i.inputName)
+				})
+				return _flatten(inputsDeep).sort()
+			} else {
+				const resp = await this.connection.call("GetInputList", { inputKind: inputKinds })
+				const inputs = resp.inputs as unknown as OBSWSInput[]
+				return inputs.map((i) => i.inputName)
+			}
+		} catch (err) {
+			return []
+		}
+	}
+
+	async getSceneSources(sceneName: string | undefined, inputKinds?: string | string[]): Promise<SceneSource[]> {
+		if (!sceneName) return []
+		try {
+			const resp = await this.connection.call("GetSceneItemList", { sceneName })
+			let items = resp.sceneItems as unknown as OBSWSSceneItem[]
+			if (Array.isArray(inputKinds)) {
+				items = items.filter((i) => inputKinds.includes(i.inputKind))
+			} else if (inputKinds) {
+				items = items.filter((i) => i.inputKind == inputKinds)
+			}
+			return items.map((i) => ({
+				name: i.sourceName,
+				value: i.sceneItemId,
+			}))
+		} catch (err) {
+			return []
+		}
+	}
+
+	async getSceneSource(sceneName: string, itemId: number): Promise<OBSWSSceneItem | undefined> {
+		const resp = await this.connection.call("GetSceneItemList", { sceneName })
+		const items = resp.sceneItems as unknown as OBSWSSceneItem[]
+		return items.find((i) => i.sceneItemId == itemId)
+	}
+
 	async popScene() {
 		const prevScene = this.sceneHistory.pop()
 
 		if (prevScene) {
-			console.log("Prev Scene", prevScene)
 			this.poppingScene = true
 			this.connection.call("SetCurrentProgramScene", { sceneName: prevScene })
 		}
