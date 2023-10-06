@@ -14,6 +14,8 @@ export * from "./util/service"
 export * from "./util/abort-utils"
 export * from "./templates/template"
 
+export * from "./reactivity/reactivity"
+
 export * from "./profile/profile"
 export * from "./queue-system/action-queue"
 
