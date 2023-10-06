@@ -39,7 +39,7 @@ export default definePlugin(
 		id: "discord",
 		name: "Discord",
 		description: "UI Description",
-		icon: "mdi mdi-discord",
+		icon: "di di-discord",
 		color: "#7289da",
 	},
 	() => {
