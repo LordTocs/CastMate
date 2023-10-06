@@ -154,7 +154,8 @@ class TPLinkIoTProvider extends IoTProvider {
 
 	async initServices() {
 		const broadcast =
-			this.pluginObj.settings.broadcastMask ?? "255.255.255.255"
+			this.pluginObj.settings.broadcastMask?.trim() || "255.255.255.255"
+
 		console.log("Starting TP-Link Discovery", broadcast)
 		this.client.startDiscovery({
 			breakoutChildren: true,
@@ -163,10 +164,11 @@ class TPLinkIoTProvider extends IoTProvider {
 	}
 
 	async setBroadcastMask(newMask) {
+		const broadcast = newMask?.trim() || "255.255.255.255"
 		this.client.stopDiscovery()
-		console.log("Starting TP-Link Discovery", newMask)
+		console.log("Starting TP-Link Discovery", broadcast)
 		this.client.startDiscovery({
-			broadcast: newMask,
+			broadcast: broadcast,
 		})
 	}
 
