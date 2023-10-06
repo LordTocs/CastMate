@@ -532,9 +532,10 @@ export default {
 					})
 
 					let follows =
-						await this.channelTwitchClient.users.getFollows({
-							followedUser: this.state.channelId,
-						})
+						await twitchClient.channels.getChannelFollowers(
+							this.state.channelId,
+							this.state.channelId
+						)
 					this.state.followers = follows.total
 					this.state.lastFollower =
 						follows.data.length > 0
