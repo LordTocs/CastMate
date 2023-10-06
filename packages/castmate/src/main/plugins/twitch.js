@@ -531,11 +531,10 @@ export default {
 						...{ userColor: this.colorCache[event.userId] },
 					})
 
-					let follows =
-						await twitchClient.channels.getChannelFollowers(
-							this.state.channelId,
-							this.state.channelId
-						)
+					let follows = await apiClient.channels.getChannelFollowers(
+						this.state.channelId,
+						this.state.channelId
+					)
 					this.state.followers = follows.total
 					this.state.lastFollower =
 						follows.data.length > 0
