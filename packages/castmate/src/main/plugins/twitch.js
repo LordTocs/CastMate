@@ -897,9 +897,14 @@ export default {
 
 		async queryFollows() {
 			try {
-				let follows = await this.channelTwitchClient.users.getFollows({
-					followedUser: this.state.channelId,
-				})
+				/**
+				 * @type {ApiClient}
+				 */
+				const twitchClient = this.channelTwitchClient
+				let follows = await twitchClient.channels.getChannelFollowers(
+					this.state.channelId,
+					this.state.channelId
+				)
 
 				this.state.followers = follows.total
 				this.state.lastFollower =
