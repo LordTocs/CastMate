@@ -85,11 +85,25 @@ export default {
 					await template(data.body || "", context),
 				])
 
-				const resp = await axios.request({
-					url: addr,
-					method: data.method,
-					body,
-				})
+				if (
+					data.method == "POST" ||
+					data.method == "PUT" ||
+					data.method == "PATCH"
+				) {
+					await axios.request({
+						url: addr,
+						method: data.method,
+						headers: {
+							"Content-type": "text/plain",
+						},
+						data: body,
+					})
+				} else {
+					await axios.request({
+						url: addr,
+						method: data.method,
+					})
+				}
 			},
 		},
 	},
