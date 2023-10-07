@@ -31,13 +31,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					async enum(context: { obs: OBSConnection; scene: string }) {
 						if (!context.obs) return []
 
-						const { sceneItems } = await context.obs.connection.call("GetSceneItemList", {
-							sceneName: context.scene,
-						})
-						return sceneItems.map((s) => ({
-							value: s.sceneItemId as number,
-							name: s.sourceName as string,
-						}))
+						return await context.obs.getSceneSources(context.scene)
 					},
 				},
 				enabled: {
