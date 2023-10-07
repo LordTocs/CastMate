@@ -1,8 +1,12 @@
+import _cloneDeep from "lodash/cloneDeep"
 import { ref, computed, Component, markRaw } from "vue"
 import { defineStore } from "pinia"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
 import { MaybeRefOrGetter, toValue } from "@vueuse/core"
-import { ResourceData } from "castmate-schema"
+import { ResourceData, Schema } from "castmate-schema"
+import { useDialog } from "primevue/usedialog"
+import { useConfirm } from "primevue/useconfirm"
+import ResourceEditDialogVue from "../components/resources/ResourceEditDialog.vue"
 
 interface ResourceStorage<TResourceData extends ResourceData = ResourceData> {
 	resources: Map<string, TResourceData>
@@ -11,6 +15,8 @@ interface ResourceStorage<TResourceData extends ResourceData = ResourceData> {
 	settingComponent?: Component
 	createDialog?: Component
 	editDialog?: Component
+	configSchema?: Schema
+	stateSchema?: Schema
 }
 
 function convertResourcesToStorage(resources: ResourceData[]) {
@@ -110,10 +116,34 @@ export const useResourceStore = defineStore("resources", () => {
 		}
 	}
 
-	function registerSettingComponent(resourceId: string, component: Component) {
-		const resource = resourceMap.value.get(resourceId)
+	function registerSettingComponent(resourceType: string, component: Component) {
+		const resource = resourceMap.value.get(resourceType)
 		if (!resource) return
 		resource.settingComponent = markRaw(component)
+	}
+
+	function registerEditComponent(resourceType: string, component: Component) {
+		const resource = resourceMap.value.get(resourceType)
+		if (!resource) return
+		resource.editDialog = markRaw(component)
+	}
+
+	function registerCreateComponent(resourceType: string, component: Component) {
+		const resource = resourceMap.value.get(resourceType)
+		if (!resource) return
+		resource.createDialog = markRaw(component)
+	}
+
+	function registerConfigSchema<T extends Schema>(resourceType: string, schema: T) {
+		const resource = resourceMap.value.get(resourceType)
+		if (!resource) return
+		resource.configSchema = markRaw(schema)
+	}
+
+	function registerStateSchema<T extends Schema>(resourceType: string, schema: T) {
+		const resource = resourceMap.value.get(resourceType)
+		if (!resource) return
+		resource.stateSchema = markRaw(schema)
 	}
 
 	return {
@@ -124,15 +154,36 @@ export const useResourceStore = defineStore("resources", () => {
 		setResourceConfig,
 		deleteResource,
 		registerSettingComponent,
+		registerEditComponent,
+		registerCreateComponent,
+		registerConfigSchema,
+		registerStateSchema,
 	}
 })
 
-export function useResources<TResourceData extends ResourceData = ResourceData>(typeName: MaybeRefOrGetter<string>) {
+export function useResourceData<TResourceData extends ResourceData = ResourceData>(
+	resourceType: MaybeRefOrGetter<string | undefined>
+) {
 	const resourceStore = useResourceStore()
 
-	return computed(
-		() => resourceStore.resourceMap.get(toValue(typeName)) as ResourceStorage<TResourceData> | undefined
-	)
+	return computed(() => {
+		const typeName = toValue(resourceType)
+		if (!typeName) return undefined
+		return resourceStore.resourceMap.get(typeName) as ResourceStorage<TResourceData> | undefined
+	})
+}
+
+export function useResourceArray<TResourceData extends ResourceData = ResourceData>(
+	resourceType: MaybeRefOrGetter<string | undefined>
+) {
+	const resourceStore = useResourceStore()
+	return computed(() => {
+		const typeName = toValue(resourceType)
+		if (!typeName) return []
+		const resourceData = resourceStore.resourceMap.get(typeName) as ResourceStorage<TResourceData> | undefined
+		if (!resourceData) return []
+		return [...resourceData.resources.values()]
+	})
 }
 
 export function useResource<TResourceData extends ResourceData>(
@@ -142,6 +193,95 @@ export function useResource<TResourceData extends ResourceData>(
 	const resourceStore = useResourceStore()
 
 	return computed(() => resourceStore.resourceMap.get(toValue(typeName))?.resources.get(toValue(id)) as TResourceData)
+}
+
+export function useResourceCreateDialog(resourceType: MaybeRefOrGetter<string | undefined>) {
+	const resourceStore = useResourceStore()
+	const dialog = useDialog()
+
+	function open() {
+		const resourceName = toValue(resourceType)
+		if (!resourceName) return
+		const resource = resourceStore.resourceMap.get(resourceName)
+
+		dialog.open(ResourceEditDialogVue, {
+			props: {
+				header: `Create ${resourceName}`,
+				style: {
+					width: "25vw",
+				},
+				modal: true,
+			},
+			data: {
+				resourceType: resourceName,
+			},
+			onClose(options) {
+				if (!options?.data) {
+					return
+				}
+
+				resourceStore.createResource(resourceName, options.data)
+			},
+		})
+	}
+
+	return open
+}
+
+export function useResourceEditDialog(resourceType: MaybeRefOrGetter<string | undefined>) {
+	const resourceStore = useResourceStore()
+	const dialog = useDialog()
+
+	return function open(id: string) {
+		const resourceName = toValue(resourceType)
+		if (!resourceName) return
+		const resourceData = resourceStore.resourceMap.get(resourceName)
+		const resource = resourceData?.resources?.get(id)
+		if (!resource) return
+
+		dialog.open(ResourceEditDialogVue, {
+			props: {
+				header: `Create ${resourceName}`,
+				style: {
+					width: "25vw",
+				},
+				modal: true,
+			},
+			data: {
+				resourceType: resourceName,
+				resourceId: id,
+				initialConfig: _cloneDeep(resource.config),
+			},
+			onClose(options) {
+				if (!options?.data) {
+					return
+				}
+
+				resourceStore.setResourceConfig(resourceName, id, options.data)
+			},
+		})
+	}
+}
+
+export function useResoureDeleteDialog(resourceType: MaybeRefOrGetter<string | undefined>) {
+	const resourceStore = useResourceStore()
+	const confirm = useConfirm()
+
+	return function (id: string) {
+		const resourceTypeName = toValue(resourceType)
+		if (!resourceTypeName) return
+		const resource = resourceStore.resourceMap.get(resourceTypeName)?.resources?.get(id)
+		if (!resource) return
+		confirm.require({
+			header: `Delete ${resource.config.name}`,
+			message: `Are you sure you want to delete ${resource.config.name}`,
+			icon: "mdi mdi-delete",
+			accept() {
+				resourceStore.deleteResource(resourceTypeName, id)
+			},
+			reject() {},
+		})
+	}
 }
 
 export function useResourceIPCCaller<TFunc extends (...args: any) => any>(

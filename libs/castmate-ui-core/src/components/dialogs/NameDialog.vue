@@ -3,7 +3,7 @@
 		<form @submit.prevent="create">
 			<div class="p-inputgroup w-full">
 				<span class="p-float-label">
-					<p-input-text id="l" v-model="name" ref="nameInput" autofocus/>
+					<p-input-text id="l" v-model="name" ref="nameInput" autofocus />
 					<label for="l"> {{ props.label }} </label>
 				</span>
 			</div>

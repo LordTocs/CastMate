@@ -4,7 +4,7 @@
 		:required="!!schema.required"
 		:label="schema.name"
 		text-prop="config.name"
-		:items="resourceItems ?? []"
+		:items="resourceItems"
 		input-id="resource"
 		:no-float="noFloat"
 	/>
@@ -14,7 +14,7 @@
 import { SchemaResource, ResourceData } from "castmate-schema"
 import { ResourceProxy } from "../../../util/data"
 import { computed, nextTick, ref, useModel, watch } from "vue"
-import { useResources } from "../../../main"
+import { useResourceArray, useResourceData } from "../../../main"
 
 import _clamp from "lodash/clamp"
 import { SharedDataInputProps } from "../DataInputTypes"
@@ -29,13 +29,9 @@ const props = defineProps<
 >()
 
 const model = useModel(props, "modelValue")
-const resourceStore = useResources(() => props.schema.resourceType)
+const resourceStore = useResourceData(() => props.schema.resourceType)
 
-const resourceItems = computed(() => {
-	const resourceMap = resourceStore.value?.resources
-	if (!resourceMap) return undefined
-	return [...resourceMap.values()]
-})
+const resourceItems = useResourceArray(() => props.schema.resourceType)
 </script>
 
 <style scoped>

@@ -63,7 +63,7 @@ import PButton from "primevue/button"
 import { FilterMatchMode } from "primevue/api"
 import { computed, ref } from "vue"
 import { useElementSize } from "@vueuse/core"
-import { useResources } from "castmate-ui-core"
+import { useResourceArray, useResourceData } from "castmate-ui-core"
 import { ResourceData } from "castmate-schema"
 import ChannelPointPreview from "./ChannelPointPreview.vue"
 import { ChannelPointRewardConfig, ChannelPointRewardState } from "castmate-plugin-twitch-shared"
@@ -76,8 +76,7 @@ const containerDiv = ref<HTMLElement | null>(null)
 const containerSize = useElementSize(containerDiv)
 
 type ChannelPointResource = ResourceData<ChannelPointRewardConfig, ChannelPointRewardState>
-const channelPointResources = useResources<ChannelPointResource>("ChannelPointReward")
-const channelPoints = computed(() => [...channelPointResources.value.resources.values()])
+const channelPoints = useResourceArray<ChannelPointResource>("ChannelPointReward")
 </script>
 
 <style scoped>

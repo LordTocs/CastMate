@@ -10,6 +10,7 @@ import {
 	FileResource,
 	definePluginResource,
 	defineSetting,
+	defineResourceSetting,
 } from "castmate-core"
 import { Color, Toggle } from "castmate-schema"
 import { OBSConnection, setupConnections } from "./connection"
@@ -34,6 +35,8 @@ export default definePlugin(
 			name: "Default OBS Connection",
 			required: true,
 		})
+
+		defineResourceSetting(OBSConnection, "OBS Connections")
 
 		setupScenes(obsDefault)
 		setupSources(obsDefault)

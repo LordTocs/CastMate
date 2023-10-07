@@ -8,14 +8,32 @@ import {
 	FileResource,
 	ResourceStorage,
 	definePluginResource,
+	defineResourceSetting,
 } from "castmate-core"
 import { WebhookClient } from "discord.js"
+import { nanoid } from "nanoid/non-secure"
 
 class DiscordWebHook extends FileResource<DiscordWebhookConfig> {
 	static resourceDirectory = "./discord/webhooks"
 	static storage = new ResourceStorage<DiscordWebHook>("DiscordWebhook")
 
 	client: WebhookClient
+
+	constructor(config?: DiscordWebhookConfig) {
+		super()
+
+		if (config) {
+			this._id = nanoid()
+			this._config = {
+				...config,
+			}
+
+			this.client = new WebhookClient({ url: config.webhookUrl })
+		} else {
+			//@ts-ignore
+			this._config = {}
+		}
+	}
 
 	async load(savedConfig: DiscordWebhookConfig): Promise<boolean> {
 		this.client = new WebhookClient({ url: savedConfig.webhookUrl })
@@ -44,6 +62,8 @@ export default definePlugin(
 	},
 	() => {
 		definePluginResource(DiscordWebHook)
+
+		defineResourceSetting(DiscordWebHook, "Discord WebHooks")
 
 		defineAction({
 			id: "discordMessage",

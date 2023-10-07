@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { shallowRef, ComputedRef, computed, ref, App, VueElementConstructor } from "vue"
-import { NamedData, useDockingStore, useResources, useResourceStore } from "../main"
+import { NamedData, useDockingStore, useResourceData, useResourceStore } from "../main"
 import NameDialogVue from "../components/dialogs/NameDialog.vue"
 import { ResourceData } from "castmate-schema"
 
@@ -52,7 +52,7 @@ export function getResourceAsProjectGroup<TData extends ResourceData>(
 	app: App<Element>,
 	config: ResourceGroupConfig<TData>
 ) {
-	const resources = useResources<TData>(config.resourceType)
+	const resources = useResourceData<TData>(config.resourceType)
 	const resourceStore = useResourceStore()
 	const dockingStore = useDockingStore()
 

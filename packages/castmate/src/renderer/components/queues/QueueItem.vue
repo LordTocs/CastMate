@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { QueuedSequence, ResourceData, ProfileData } from "castmate-schema"
-import { useColors, useResources, useTrigger, useTriggerColors } from "castmate-ui-core"
+import { useColors, useResourceData, useTrigger, useTriggerColors } from "castmate-ui-core"
 import PButton from "primevue/button"
 import { computed } from "vue"
 
@@ -15,12 +15,12 @@ const props = defineProps<{
 	queueItem: QueuedSequence
 }>()
 
-const profiles = useResources<ResourceData<ProfileData>>("Profile")
+const profiles = useResourceData<ResourceData<ProfileData>>("Profile")
 
 const queuedTriggerData = computed(() => {
 	if (props.queueItem.source.type != "profile") return undefined
 
-	const profile = profiles.value.resources.get(props.queueItem.source.id)
+	const profile = profiles.value?.resources?.get(props.queueItem.source.id)
 
 	if (!profile) {
 		console.error("Unable to find profile", props.queueItem.source.id)

@@ -29,7 +29,10 @@
 						</div>
 						<div v-else-if="setting.type == 'resource'">
 							{{ setting.name }}
-							<component :is="resourceStore.resourceMap.get(setting.resourceId)?.settingComponent" />
+							<component
+								:is="resourceStore.resourceMap.get(setting.resourceId)?.settingComponent"
+								:resource-type="setting.resourceId"
+							/>
 						</div>
 					</template>
 				</div>

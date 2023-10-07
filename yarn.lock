@@ -2997,6 +2997,7 @@ __metadata:
     "@vitejs/plugin-vue": ^4.3.4
     "@vueuse/core": "*"
     castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
     chromatism2: "*"
     electron: ^26.1.0
     nanoid: "*"

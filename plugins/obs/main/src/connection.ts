@@ -37,15 +37,13 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 	private poppingScene: boolean = false
 	private sceneHistory = new SceneHistory()
 
-	constructor(name?: string) {
+	constructor(config?: OBSConnectionConfig) {
 		super()
 
-		if (name) {
+		if (config) {
 			this._id = nanoid()
 			this._config = {
-				name,
-				host: "localhost",
-				port: 4455,
+				...config,
 			}
 		} else {
 			//@ts-ignore

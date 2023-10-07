@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { FlexScroller, useResourceStore, useResources } from "castmate-ui-core"
+import { FlexScroller, useResourceStore, useResourceData } from "castmate-ui-core"
 import { ActionQueueState, ActionQueueConfig, ResourceData } from "castmate-schema"
 import { computed } from "vue"
 import { useDialog } from "primevue/usedialog"
@@ -24,7 +24,7 @@ import PButton from "primevue/button"
 import QueueEditDialog from "./QueueEditDialog.vue"
 import QueueItem from "./QueueItem.vue"
 
-const queues = useResources<ResourceData<ActionQueueConfig, ActionQueueState>>("ActionQueue")
+const queues = useResourceData<ResourceData<ActionQueueConfig, ActionQueueState>>("ActionQueue")
 const dialog = useDialog()
 
 const resourceStore = useResourceStore()
