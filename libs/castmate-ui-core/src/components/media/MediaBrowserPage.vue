@@ -8,7 +8,7 @@
 				:global-filter-fields="['path']"
 				style="width: 100%"
 				scrollable
-				:scroll-height="`${containerSize.height.value}px`"
+				class="flex flex-column"
 			>
 				<template #header>
 					<div class="flex justify-content-end">

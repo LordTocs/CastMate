@@ -117,6 +117,8 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			this._id = nanoid()
 			this._config = {
 				...config,
+				controllable: true,
+				transient: false,
 			}
 		}
 
@@ -164,15 +166,15 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 		return true
 	}
 
-	static async create(rewardData: ChannelPointRewardTemplate) {
+	static async create(config: ChannelPointRewardConfig) {
 		const reward = new ChannelPointReward()
 		reward._id = nanoid()
 		reward._config = {
 			twitchId: "",
 			controllable: true,
 			transient: false,
-			name: rewardData.title,
-			rewardData: removeTitle(rewardData),
+			name: config.name,
+			rewardData: config.rewardData,
 		}
 		reward.state = {
 			enabled: false,

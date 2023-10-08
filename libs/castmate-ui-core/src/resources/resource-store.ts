@@ -208,7 +208,7 @@ export function useResourceCreateDialog(resourceType: MaybeRefOrGetter<string | 
 			props: {
 				header: `Create ${resourceName}`,
 				style: {
-					width: "25vw",
+					width: "40vw",
 				},
 				modal: true,
 			},
@@ -243,7 +243,7 @@ export function useResourceEditDialog(resourceType: MaybeRefOrGetter<string | un
 			props: {
 				header: `Create ${resourceName}`,
 				style: {
-					width: "25vw",
+					width: "40vw",
 				},
 				modal: true,
 			},
@@ -263,7 +263,7 @@ export function useResourceEditDialog(resourceType: MaybeRefOrGetter<string | un
 	}
 }
 
-export function useResoureDeleteDialog(resourceType: MaybeRefOrGetter<string | undefined>) {
+export function useResourceDeleteDialog(resourceType: MaybeRefOrGetter<string | undefined>) {
 	const resourceStore = useResourceStore()
 	const confirm = useConfirm()
 

@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { useResourceArray, useResoureDeleteDialog } from "../../main"
+import { useResourceArray, useResourceDeleteDialog } from "../../main"
 import { useResourceData, useResourceCreateDialog, useResourceEditDialog } from "../../resources/resource-store"
 import PButton from "primevue/button"
 
@@ -29,7 +29,7 @@ const resourceArray = useResourceArray(() => props.resourceType)
 
 const createResourceDlg = useResourceCreateDialog(() => props.resourceType)
 const editResourceDlg = useResourceEditDialog(() => props.resourceType)
-const deleteResourceDlg = useResoureDeleteDialog(() => props.resourceType)
+const deleteResourceDlg = useResourceDeleteDialog(() => props.resourceType)
 </script>
 
 <style scoped>

@@ -38,6 +38,7 @@ import { initPlugin as initDiscordPlugin } from "castmate-plugin-discord-rendere
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
+import Tooltip from "primevue/tooltip"
 
 const router = createRouter({
 	history: createWebHistory(),
@@ -50,6 +51,8 @@ const app = createApp(App)
 app.use(PrimeVue)
 app.use(DialogService)
 app.use(ConfirmationService)
+
+app.directive("tooltip", Tooltip)
 //app.use(Maska)
 
 app.use(router)

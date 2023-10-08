@@ -3,14 +3,16 @@
 		<div class="inner-container" ref="containerDiv">
 			<p-data-table
 				v-model:filters="filters"
+				class="flex flex-column"
 				:value="channelPoints"
 				data-key="id"
 				:global-filter-fields="['config.name']"
-				style="width: 100%"
+				style="width: 100%; max-height: 100%"
 				scrollable
-				:scroll-height="`${containerSize.height.value}px`"
 				row-group-mode="subheader"
 				group-rows-by="config.controllable"
+				sort-field="config.controllable"
+				:sort-order="-1"
 			>
 				<template #header>
 					<div class="flex justify-content-end">
@@ -23,7 +25,12 @@
 				<template #groupheader="{ data }">
 					<div>
 						<template v-if="(data as ChannelPointResource).config.controllable">
-							<h3 class="my-0">CastMate Channel Point Rewards</h3>
+							<div class="flex flex-row">
+								<div class="flex-1">
+									<h3 class="my-0">CastMate Channel Point Rewards</h3>
+								</div>
+								<p-button @click="createDialog()"> Create Reward</p-button>
+							</div>
 						</template>
 						<template v-else>
 							<div class="flex flex-row">
@@ -45,9 +52,74 @@
 						</template>
 					</div>
 				</template>
+				<!-- Required because groupby assumes there's a column that it's grouping by -->
+				<p-column field="config.controllable"> </p-column>
 				<p-column>
-					<template #body="{ data }">
+					<template #body="{ data }: { data: ChannelPointResource }">
 						<channel-point-preview :reward="data" />
+					</template>
+				</p-column>
+				<p-column>
+					<template #body="{ data }: { data: ChannelPointResource }">
+						<i
+							class="mdi mdi-debug-step-over mr-2"
+							v-if="data.config.rewardData.skipQueue"
+							v-tooltip="'Redemptions don\'t show in the creator dashboard queue.'"
+						/>
+						<i
+							class="mdi mdi-comment-text-outline mr-2"
+							v-if="data.config.rewardData.userInputRequired"
+							v-tooltip="'Viewers required to type a message with the redemption.'"
+						/>
+					</template>
+				</p-column>
+				<p-column header="Cost" field="config.rewardData.cost">
+					<template #body="{ data }: { data: ChannelPointResource }">
+						<i class="twi twi-channel-points" />{{ data.config.rewardData.cost }}
+					</template>
+				</p-column>
+				<p-column header="Title" field="config.name"> </p-column>
+				<p-column header="Prompt" field="config.rewardData.prompt"> </p-column>
+				<p-column header="Cooldown">
+					<template #body="{ data }: { data: ChannelPointResource }">
+						<span v-if="data.config.rewardData.cooldown != null">
+							<i class="mdi mdi-timer-outline" />
+							<duration-label
+								:model-value="(data.config.rewardData.cooldown as Duration)"
+							></duration-label>
+						</span>
+						<i class="mdi mdi-timer-cancel-outline" v-else> </i>
+					</template>
+				</p-column>
+				<p-column>
+					<template #body="{ data }: { data: ChannelPointResource }">
+						<span v-if="data.config.rewardData.maxRedemptionsPerStream" class="mr-2">
+							{{ data.config.rewardData.maxRedemptionsPerStream }}
+						</span>
+						<span v-else class="mr-2">∞</span>
+						<i class="mdi mdi-account-group" v-tooltip.left="'Max Redemptions Per Stream'" />
+					</template>
+				</p-column>
+				<p-column>
+					<template #body="{ data }: { data: ChannelPointResource }">
+						<span v-if="data.config.rewardData.maxRedemptionsPerUserPerStream" class="mr-2">
+							{{ data.config.rewardData.maxRedemptionsPerUserPerStream }}
+						</span>
+						<span v-else class="mr-2">∞</span>
+						<i class="mdi mdi-account" v-tooltip.left="'Max Redemptions Per User Per Stream'" />
+					</template>
+				</p-column>
+				<p-column>
+					<template #body="{ data }: { data: ChannelPointResource }">
+						<div class="flex flex-row" v-if="data.config.controllable">
+							<p-button icon="mdi mdi-pencil" text @click="editDialog(data.id)"></p-button>
+							<p-button
+								icon="mdi mdi-delete"
+								severity="error"
+								text
+								@click="deleteDialog(data.id)"
+							></p-button>
+						</div>
 					</template>
 				</p-column>
 			</p-data-table>
@@ -67,6 +139,9 @@ import { useResourceArray, useResourceData } from "castmate-ui-core"
 import { ResourceData } from "castmate-schema"
 import ChannelPointPreview from "./ChannelPointPreview.vue"
 import { ChannelPointRewardConfig, ChannelPointRewardState } from "castmate-plugin-twitch-shared"
+import { DurationLabel } from "castmate-ui-core"
+import { Duration } from "castmate-schema"
+import { useResourceEditDialog, useResourceCreateDialog, useResourceDeleteDialog } from "castmate-ui-core"
 
 const filters = ref({
 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -77,6 +152,10 @@ const containerSize = useElementSize(containerDiv)
 
 type ChannelPointResource = ResourceData<ChannelPointRewardConfig, ChannelPointRewardState>
 const channelPoints = useResourceArray<ChannelPointResource>("ChannelPointReward")
+
+const editDialog = useResourceEditDialog("ChannelPointReward")
+const createDialog = useResourceCreateDialog("ChannelPointReward")
+const deleteDialog = useResourceDeleteDialog("ChannelPointReward")
 </script>
 
 <style scoped>

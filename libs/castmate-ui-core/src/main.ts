@@ -10,6 +10,8 @@ export { default as TextHider } from "./components/util/TextHider.vue"
 export { default as FilterPalette } from "./components/util/FilterPalette.vue"
 export { default as PanArea } from "./components/panning/PanArea.vue"
 
+export { default as DurationLabel } from "./components/data/base-components/DurationLabel.vue"
+
 export { default as NameDialog } from "./components/dialogs/NameDialog.vue"
 
 export { default as AccountWidget } from "./components/account/AccountWidget.vue"
