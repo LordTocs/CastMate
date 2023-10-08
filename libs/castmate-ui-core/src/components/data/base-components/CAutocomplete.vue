@@ -43,6 +43,7 @@
 					/>
 				</div>
 			</label-floater>
+			<slot name="append"></slot>
 			<p-button class="flex-none no-focus-highlight" v-if="!required" icon="pi pi-times" @click.stop="clear" />
 			<p-button class="no-focus-highlight" @click="onDropDownClick"><p-chevron-down-icon /></p-button>
 		</div>
