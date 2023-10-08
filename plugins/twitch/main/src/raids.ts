@@ -2,6 +2,8 @@ import { defineTrigger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
+import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { inTwitchViewerGroup } from "./group"
 
 export function setupRaids() {
 	const raid = defineTrigger({
@@ -18,6 +20,7 @@ export function setupRaids() {
 					default: new Range(1),
 					required: true,
 				},
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
 		context: {
@@ -30,6 +33,10 @@ export function setupRaids() {
 			},
 		},
 		async handle(config, context) {
+			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+				return false
+			}
+
 			return config.raiders.inRange(context.raiders)
 		},
 	})
@@ -48,6 +55,7 @@ export function setupRaids() {
 					default: new Range(),
 					required: true,
 				},
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
 		context: {
@@ -59,6 +67,10 @@ export function setupRaids() {
 			},
 		},
 		async handle(config, context) {
+			if (!(await inTwitchViewerGroup(context.raidedUserId, config.group))) {
+				return false
+			}
+
 			return config.raiders.inRange(context.raiders)
 		},
 	})

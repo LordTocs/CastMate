@@ -1,6 +1,8 @@
 import { defineTrigger } from "castmate-core"
 import { onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
+import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { inTwitchViewerGroup } from "./group"
 
 export function setupFollows() {
 	const follow = defineTrigger({
@@ -10,7 +12,9 @@ export function setupFollows() {
 		version: "0.0.1",
 		config: {
 			type: Object,
-			properties: {},
+			properties: {
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
+			},
 		},
 		context: {
 			type: Object,
@@ -21,6 +25,9 @@ export function setupFollows() {
 			},
 		},
 		async handle(config, context) {
+			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+				return false
+			}
 			return true
 		},
 	})

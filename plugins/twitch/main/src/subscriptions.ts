@@ -5,6 +5,8 @@ import { defineTrigger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
+import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { inTwitchViewerGroup } from "./group"
 
 export function setupSubscriptions() {
 	const subscription = defineTrigger({
@@ -15,8 +17,9 @@ export function setupSubscriptions() {
 		config: {
 			type: Object,
 			properties: {
-				totalMonths: { type: Range, name: "Months", required: true, default: {} },
-				streakMonths: { type: Range, name: "Months", required: true, default: {} },
+				totalMonths: { type: Range, name: "Months", required: true, default: new Range(1) },
+				streakMonths: { type: Range, name: "Streak Months", required: true, default: new Range(1) },
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
 		context: {
@@ -31,6 +34,10 @@ export function setupSubscriptions() {
 			},
 		},
 		async handle(config, context) {
+			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+				return false
+			}
+
 			if (!config.totalMonths.inRange(context.totalMonths)) return false
 			if (!config.streakMonths.inRange(context.streakMonths)) return false
 
@@ -48,6 +55,7 @@ export function setupSubscriptions() {
 			type: Object,
 			properties: {
 				subs: { type: Range, name: "Subs Gifted", required: true, default: new Range(1) },
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
 		context: {
@@ -60,6 +68,10 @@ export function setupSubscriptions() {
 			},
 		},
 		async handle(config, context) {
+			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+				return false
+			}
+
 			if (!config.subs.inRange(context.subs)) return false
 
 			return true
