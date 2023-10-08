@@ -25,8 +25,10 @@ export function initSettingsDocuments() {
 
 		for (const plugin of pluginStore.pluginMap.values()) {
 			for (const settingId in plugin.settings) {
+				const setting = plugin.settings[settingId]
+				if (setting.type != "value") continue
 				const newValue = doc.data.settings[plugin.id][settingId]
-				const oldValue = plugin.settings[settingId].value
+				const oldValue = setting.value
 				if (newValue != oldValue) {
 					changes.push({
 						pluginId: plugin.id,
@@ -58,7 +60,10 @@ export function useOpenSettings() {
 
 			for (const settingId in plugin.settings) {
 				console.log(plugin.id, settingId)
-				model.settings[plugin.id][settingId] = _cloneDeep(plugin.settings[settingId].value)
+				const setting = plugin.settings[settingId]
+				if (setting.type == "value") {
+					model.settings[plugin.id][settingId] = _cloneDeep(setting.value)
+				}
 			}
 		}
 
