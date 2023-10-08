@@ -22,8 +22,17 @@
 		"paths": {
 			"castmate-ui-core": ["../../libs/castmate-ui-core/src/main.ts"],
 			//TODO: "castmate-plugin-*-renderer": ["../../plugins/*/renderer/src/main.ts"]
+			"castmate-plugin-discord-renderer": ["../../plugins/discord/renderer/src/main.ts"],
+			"castmate-plugin-http-renderer": ["../../plugins/http/renderer/src/main.ts"],
+			"castmate-plugin-input-renderer": ["../../plugins/input/renderer/src/main.ts"],
+			"castmate-plugin-iot-renderer": ["../../plugins/iot/renderer/src/main.ts"],
+			"castmate-plugin-minecraft-renderer": ["../../plugins/minecraft/renderer/src/main.ts"],
+			"castmate-plugin-obs-renderer": ["../../plugins/obs/renderer/src/main.ts"],
+			"castmate-plugin-os-renderer": ["../../plugins/os/renderer/src/main.ts"],
 			"castmate-plugin-sound-renderer": ["../../plugins/sound/renderer/src/main.ts"],
-			"castmate-plugin-twitch-renderer": ["../../plugins/twitch/renderer/src/main.ts"]
+			"castmate-plugin-time-renderer": ["../../plugins/time/renderer/src/main.ts"],
+			"castmate-plugin-twitch-renderer": ["../../plugins/twitch/renderer/src/main.ts"],
+			"castmate-plugin-voicemod-renderer": ["../../plugins/voicemod/renderer/src/main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
