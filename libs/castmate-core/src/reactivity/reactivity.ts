@@ -218,20 +218,22 @@ interface ReactiveComputedImpl<T> extends ReactiveComputed<T> {
 }
 
 export function reactiveComputed<T>(func: () => T): ReactiveComputed<T> {
+	let cached: T
+
 	const result: ReactiveComputedImpl<T> = {
 		//TODO: Does "this" work like this?
 		__effect: new ReactiveEffect<T>(() => {
-			this.cached = func()
-			return this.cached
+			cached = func()
+			return cached
 		}),
 		get value(): T {
 			DependencyStorage.getPropDependency(this, "value").track()
 
-			if (isObject(this.cached)) {
-				this.cached = reactify(this.cached)
+			if (isObject(cached)) {
+				cached = reactify(cached)
 			}
 
-			return this.cached
+			return cached
 		},
 	}
 
