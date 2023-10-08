@@ -1,4 +1,3 @@
-import { KeyboardKey } from "castmate-plugin-input-shared"
 import { DataFactory, SchemaBase, registerType } from "castmate-schema"
 
 interface KeyInfo {
