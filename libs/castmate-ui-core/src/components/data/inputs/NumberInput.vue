@@ -8,7 +8,7 @@
 		<template v-else>
 			<template v-if="templateMode">
 				<document-path :local-path="localPath">
-					<label-floater :label="schema.name ?? ''" :float="true" input-id="text" v-slot="labelProps">
+					<label-floater :label="schema.name ?? ''" :no-float="!!noFloat" input-id="text" v-slot="labelProps">
 						<p-input-text id="l" v-model="(model as string | undefined)" v-bind="labelProps" />
 					</label-floater>
 				</document-path>
@@ -16,7 +16,12 @@
 			<template v-else>
 				<document-path :local-path="localPath">
 					<div class="w-full">
-						<label-floater :label="schema.name ?? ''" :float="true" input-id="text" v-slot="labelProps">
+						<label-floater
+							:label="schema.name ?? ''"
+							:no-float="!!noFloat"
+							input-id="text"
+							v-slot="labelProps"
+						>
 							<p-input-number
 								v-model="(model as number | undefined)"
 								:min="min"
