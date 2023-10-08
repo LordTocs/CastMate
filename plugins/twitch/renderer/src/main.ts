@@ -31,7 +31,7 @@ export async function initPlugin() {
 			rewardData: {
 				type: Object,
 				properties: {
-					prompt: { type: String, name: "Description", template: true },
+					prompt: { type: String, name: "Prompt", template: true },
 					backgroundColor: { type: Color, name: "Color", template: true },
 					userInputRequired: { type: Boolean, name: "Require User Input" },
 					cost: { type: Number, name: "Cost", template: true, min: 1, default: 1, required: true },
