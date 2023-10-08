@@ -1459,6 +1459,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/yaml@npm:^1.9.7":
+  version: 1.9.7
+  resolution: "@types/yaml@npm:1.9.7"
+  dependencies:
+    yaml: "*"
+  checksum: 0cdbf1857d89ade9b7d00aa09f2e0a2a56b707870b1dc1387f5be5398cd60c3f92bb32a543471147d2eaf38919f921391e0ade34fc9e1e022c7d67fb1a0da73c
+  languageName: node
+  linkType: hard
+
 "@types/yargs-parser@npm:*":
   version: 21.0.0
   resolution: "@types/yargs-parser@npm:21.0.0"
@@ -2652,6 +2661,7 @@ __metadata:
     "@types/fluent-ffmpeg": ^2.1.21
     "@types/lodash": ^4.14.192
     "@types/node": "*"
+    "@types/yaml": ^1.9.7
     castmate-schema: "workspace:^"
     chokidar: ^3.5.3
     electron: ^26.1.0
@@ -2881,7 +2891,9 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
+    castmate-plugin-input-shared: "workspace:^"
     castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
     chromatism2: "*"
     electron: "*"
     nanoid: "*"
@@ -3167,6 +3179,7 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": ^4.3.4
     "@vueuse/core": "*"
+    castmate-plugin-twitch-shared: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "*"
@@ -9529,6 +9542,13 @@ __metadata:
   version: 4.0.0
   resolution: "yallist@npm:4.0.0"
   checksum: 343617202af32df2a15a3be36a5a8c0c8545208f3d3dfbc6bb7c3e3b7e8c6f8e7485432e4f3b88da3031a6e20afa7c711eded32ddfb122896ac5d914e75848d5
+  languageName: node
+  linkType: hard
+
+"yaml@npm:*":
+  version: 2.3.2
+  resolution: "yaml@npm:2.3.2"
+  checksum: acd80cc24df12c808c6dec8a0176d404ef9e6f08ad8786f746ecc9d8974968c53c6e8a67fdfabcc5f99f3dc59b6bb0994b95646ff03d18e9b1dcd59eccc02146
   languageName: node
   linkType: hard
 

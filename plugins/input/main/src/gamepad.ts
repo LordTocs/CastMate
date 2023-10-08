@@ -1,4 +1,4 @@
-import { Resource, ResourceRegistry, ResourceStorage, onLoad } from "castmate-core"
+import { Resource, ResourceRegistry, ResourceStorage, definePluginResource, onLoad } from "castmate-core"
 import { GamepadConfig } from "castmate-plugin-input-shared"
 
 export class GamepadResource extends Resource<GamepadConfig> {
@@ -6,7 +6,5 @@ export class GamepadResource extends Resource<GamepadConfig> {
 }
 
 export function setupGamepad() {
-	onLoad(() => {
-		ResourceRegistry.getInstance().register(GamepadResource)
-	})
+	definePluginResource(GamepadResource)
 }

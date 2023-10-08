@@ -35,6 +35,7 @@ import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
 import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
 import { initPlugin as initObsPlugin } from "castmate-plugin-obs-renderer"
 import { initPlugin as initDiscordPlugin } from "castmate-plugin-discord-renderer"
+import { initPlugin as initInputPlugin } from "castmate-plugin-input-renderer"
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
@@ -82,6 +83,7 @@ async function init() {
 	initTwitchPlugin()
 	initObsPlugin()
 	initDiscordPlugin()
+	initInputPlugin()
 }
 
 init()

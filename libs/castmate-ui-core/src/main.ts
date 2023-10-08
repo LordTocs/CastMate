@@ -19,6 +19,14 @@ export { default as AccountWidget } from "./components/account/AccountWidget.vue
 export { default as ResourceSettingList } from "./components/resources/ResourceSettingList.vue"
 export { default as ResourceSchemaEdit } from "./components/resources/ResourceSchemaEdit.vue"
 
+export { default as InputBox } from "./components/data/base-components/InputBox.vue"
+export { default as LabelFloater } from "./components/data/base-components/LabelFloater.vue"
+export { default as CAutocomplete } from "./components/data/base-components/CAutocomplete.vue"
+export { default as EnumInput } from "./components/data/base-components/EnumInput.vue"
+export { default as DocumentPath } from "./components/document/DocumentPath.vue"
+
+export * from "./components/data/DataInputTypes"
+
 export * from "./util/diff"
 export * from "./util/docking"
 export * from "./util/document"
