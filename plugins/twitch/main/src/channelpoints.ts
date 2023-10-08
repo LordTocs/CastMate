@@ -266,6 +266,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 		result._id = reward.id
 		result._config = {
 			name: reward.title,
+			twitchId: reward.id,
 			controllable: false,
 			transient: false,
 			rewardData: removeTitle(rewardData),
@@ -294,6 +295,14 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 		this.state.enabled = reward.isEnabled
 		this.state.image = reward.getImageUrl(4)
 		this.state.rewardData = rewardDataFromTwurple(reward)
+
+		if (!this.config.controllable) {
+			//Update the config if it's a non-controllable
+			await super.applyConfig({
+				name: reward.title,
+				rewardData: removeTitle(rewardDataFromTwurple(reward)),
+			})
+		}
 	}
 
 	private async getHelixRewardData(): Promise<HelixCreateCustomRewardData> {
