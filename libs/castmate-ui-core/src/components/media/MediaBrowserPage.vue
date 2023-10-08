@@ -6,7 +6,7 @@
 				:value="mediaItems"
 				data-key="path"
 				:global-filter-fields="['path']"
-				style="width: 100%"
+				style="width: 100%; max-height: 100%"
 				scrollable
 				class="flex flex-column"
 			>
