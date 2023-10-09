@@ -3,7 +3,7 @@
 		<template v-if="modelValue.actions.length > 0">
 			<action-stack-edit v-if="isActionStack(action)" v-model="(action as ActionStack)" ref="actionEdit" />
 			<time-action-edit
-				v-if="duration.dragType == 'crop' || duration.dragType == 'fixed' || duration.dragType == 'length'"
+				v-else-if="duration.dragType == 'crop' || duration.dragType == 'fixed' || duration.dragType == 'length'"
 				:duration="duration"
 				v-model="(action as TimeAction)"
 				ref="actionEdit"

@@ -231,7 +231,11 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 
 	const insertionIndex = _sortedIndexBy(props.modelValue.offsets, offsetSequence, (oa) => oa.offset)
 
-	model.value.offsets.splice(insertionIndex, 0, offsetSequence)
+	if (model.value.offsets) {
+		model.value.offsets.splice(insertionIndex, 0, offsetSequence)
+	} else {
+		model.value.offsets = [offsetSequence]
+	}
 }
 
 const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
