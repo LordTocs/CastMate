@@ -1,4 +1,7 @@
-import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
+import { RCONConnectionConfig, RCONConnectionState } from "castmate-plugin-minecraft-shared"
+import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, FileResource } from "castmate-core"
+
+export class RCONConnection extends FileResource<RCONConnectionConfig, RCONConnectionState> {}
 
 export default definePlugin(
 	{

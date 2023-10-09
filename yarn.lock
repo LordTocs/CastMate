@@ -2961,6 +2961,7 @@ __metadata:
   resolution: "castmate-plugin-minecraft-main@workspace:plugins/minecraft/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-minecraft-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "*"
   languageName: unknown
@@ -2981,6 +2982,17 @@ __metadata:
     vite: "*"
     vue: "*"
     vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-minecraft-shared@workspace:^, castmate-plugin-minecraft-shared@workspace:plugins/minecraft/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-minecraft-shared@workspace:plugins/minecraft/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
   languageName: unknown
   linkType: soft
 
