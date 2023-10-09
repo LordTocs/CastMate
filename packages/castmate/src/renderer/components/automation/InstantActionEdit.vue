@@ -16,6 +16,7 @@
 			drop-location="middle"
 			style="left: 0; top: calc(var(--timeline-height) / 2); right: 0; height: var(--timeline-height)"
 			is-stack
+			v-if="!hideDrop"
 			@automation-drop="onAutomationDrop"
 		/>
 	</div>
@@ -43,8 +44,10 @@ const props = withDefaults(
 	defineProps<{
 		modelValue: InstantAction
 		inStack?: boolean
+		hideDrop?: boolean
 	}>(),
 	{
+		hideDrop: false,
 		inStack: false,
 	}
 )

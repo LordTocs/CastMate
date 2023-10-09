@@ -5,19 +5,21 @@
 			:in-stack="true"
 			@automation-drop="onAutomationDrop"
 			ref="instantAction"
+			:hide-drop="substackDragging"
 		/>
 		<action-stack-edit
 			:offset="offset + 1"
-			v-if="offset + 1 < modelObj.stack.length"
-			v-model="modelObj"
+			v-if="offset + 1 < model.stack.length"
+			v-model="model"
 			ref="childStack"
+			v-model:dragging="substackDragging"
 		/>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { useVModel } from "@vueuse/core"
-import { computed, ref } from "vue"
+import { computed, onMounted, ref, useModel, watch } from "vue"
 import { type ActionStack } from "castmate-schema"
 import InstantActionEdit from "./InstantActionEdit.vue"
 import { SelectionGetter, useSequenceDrag } from "../../util/automation-dragdrop"
@@ -26,16 +28,21 @@ import { nanoid } from "nanoid/non-secure"
 import { Sequence } from "castmate-schema"
 import { Selection, SelectionPos } from "castmate-ui-core"
 
-const props = withDefaults(defineProps<{ modelValue: ActionStack; offset?: number }>(), { offset: 0 })
-const emit = defineEmits(["update:modelValue"])
-const modelObj = useVModel(props, "modelValue", emit)
+const props = withDefaults(defineProps<{ modelValue: ActionStack; offset?: number; dragging?: boolean }>(), {
+	offset: 0,
+})
+//const emit = defineEmits(["update:modelValue"])
+const model = useModel(props, "modelValue")
+const beingDragged = useModel(props, "dragging")
+
+const substackDragging = ref(false)
 
 const action = computed({
 	get() {
-		return modelObj.value.stack[props.offset]
+		return model.value.stack[props.offset]
 	},
 	set(v) {
-		modelObj.value.stack[props.offset] = v
+		model.value.stack[props.offset] = v
 	},
 })
 
@@ -43,7 +50,7 @@ const actionStack = ref<HTMLElement | null>(null)
 const { dragging, draggingDelayed } = useSequenceDrag(
 	computed(() => (props.offset != 0 ? actionStack.value : null)),
 	() => {
-		const stack = _cloneDeep(modelObj.value.stack.slice(props.offset))
+		const stack = _cloneDeep(model.value.stack.slice(props.offset))
 
 		if (stack.length == 1) {
 			return { actions: [stack[0]] }
@@ -53,13 +60,13 @@ const { dragging, draggingDelayed } = useSequenceDrag(
 	},
 	() => {
 		console.log("Removing Stack After", props.offset)
-		const newStack = [...modelObj.value.stack]
+		const newStack = [...model.value.stack]
 		newStack.splice(props.offset, newStack.length - props.offset)
 		if (newStack.length > 1) {
-			modelObj.value.stack = newStack
+			model.value.stack = newStack
 		} else if (newStack.length == 1) {
 			//@ts-ignore I'm not sure how to get it to not care, but we're destroying the stack this way
-			modelObj.value = newStack[0]
+			model.value = newStack[0]
 		} else {
 			//WE shouldn't hit here
 			console.error("How did this happen??")
@@ -67,8 +74,16 @@ const { dragging, draggingDelayed } = useSequenceDrag(
 	}
 )
 
+watch(dragging, () => {
+	beingDragged.value = dragging.value
+})
+
+onMounted(() => {
+	beingDragged.value = dragging.value
+})
+
 function onAutomationDrop(sequence: Sequence) {
-	const newStack = [...modelObj.value.stack]
+	const newStack = [...model.value.stack]
 
 	const rootAction = sequence.actions[0]
 
@@ -79,7 +94,7 @@ function onAutomationDrop(sequence: Sequence) {
 		newStack.splice(props.offset + 1, 0, rootAction)
 	}
 
-	modelObj.value.stack = newStack
+	model.value.stack = newStack
 }
 
 const instantAction = ref<SelectionGetter | null>(null)
@@ -96,11 +111,11 @@ defineExpose({
 		const newStack = props.modelValue.stack.filter((action) => !ids.includes(action.id))
 
 		if (newStack.length > 1) {
-			modelObj.value.stack = newStack
+			model.value.stack = newStack
 		} else if (newStack.length == 1) {
 			//Convert from stack to instant
 			//@ts-ignore I'm not sure how to get it to not care, but we're destroying the stack this way
-			modelObj.value = newStack[0]
+			model.value = newStack[0]
 		}
 
 		//TODO: How to tell parent I should delete myself?
