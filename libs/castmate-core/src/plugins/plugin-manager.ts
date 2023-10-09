@@ -3,6 +3,7 @@ import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Service } from "../util/service"
 import { Plugin } from "./plugin"
 import { deserializeSchema } from "../util/ipc-schema"
+import { Profile } from "../profile/profile"
 
 const rendererRegisterPlugin = defineCallableIPC<(plugin: IPCPluginDefinition) => void>("plugins", "registerPlugin")
 const rendererUnregisterPlugin = defineCallableIPC<(id: string) => void>("plugins", "unregisterPlugin")
@@ -73,6 +74,12 @@ export const PluginManager = Service(
 			await plugin.unload()
 			this.plugins.delete(id)
 			rendererUnregisterPlugin(id)
+		}
+
+		async onProfilesChanged(activeProfiles: Profile[], inactiveProfiles: Profile[]) {
+			for (const plugin of this.plugins.values()) {
+				await plugin.onProfilesChanged(activeProfiles, inactiveProfiles)
+			}
 		}
 
 		async signalUILoadComplete() {

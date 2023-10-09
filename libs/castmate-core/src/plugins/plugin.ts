@@ -1,3 +1,4 @@
+import { Profile } from "./../profile/profile"
 import {
 	Color,
 	Schema,
@@ -84,10 +85,19 @@ export function definePluginResource(resourceConstructor: ResourceConstructor) {
 	})
 }
 
+type ProfilesChangedCallback = (activeProfiles: Profile[], inactiveProfiles: Profile[]) => any
+export function onProfilesChanged(profilesChanged: ProfilesChangedCallback) {
+	if (!initingPlugin) throw new Error()
+
+	const privates = initingPlugin as unknown as PluginPrivates
+	privates.profilesChanged.register(profilesChanged)
+}
+
 interface PluginPrivates {
 	loader: EventList<PluginCallback>
 	unloader: EventList<PluginCallback>
 	uiloader: EventList<PluginCallback>
+	profilesChanged: EventList<ProfilesChangedCallback>
 }
 
 interface StateObj<StateSchema extends Schema> {
@@ -221,6 +231,7 @@ export class Plugin {
 	private loader = new EventList<PluginCallback>()
 	private unloader = new EventList<PluginCallback>()
 	private uiloader = new EventList<PluginCallback>()
+	private profilesChanged = new EventList<ProfilesChangedCallback>()
 
 	get id() {
 		return this.spec.id
@@ -335,6 +346,10 @@ export class Plugin {
 			return false
 		}
 		return true
+	}
+
+	async onProfilesChanged(activeProfiles: Profile[], inactiveProfiles: Profile[]) {
+		await this.profilesChanged.run(activeProfiles, inactiveProfiles)
 	}
 
 	registerIPC() {
