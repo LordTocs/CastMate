@@ -82,12 +82,39 @@ function onMouseWheel(ev: WheelEvent) {
 		return
 	}
 	if (ev.ctrlKey) {
+		if (!panArea.value) return
 		console.log(ev.deltaY)
+
+		const mpos = computePosition(ev)
+
+		const deltaZoom = -(ev.deltaY / 100) * 0.08
 		if (props.zoomX) {
-			panStateObj.value.zoomX -= (ev.deltaY / 100) * 0.08
+			const panX = panStateObj.value.panX
+			const zoomX = panStateObj.value.zoomX
+
+			const posX = (mpos.x - panX) / zoomX
+
+			const newZoomX = zoomX + deltaZoom
+
+			const newPanX = -(posX * newZoomX - mpos.x)
+
+			//console.log(`mX: ${mpos.x} posX: ${posX} panX: ${panX} npanX: ${newPanX}`)
+
+			panStateObj.value.panX = newPanX
+			panStateObj.value.zoomX = newZoomX
 		}
 		if (props.zoomY) {
-			panStateObj.value.zoomY -= (ev.deltaY / 100) * 0.08
+			const panY = panStateObj.value.panY
+			const zoomY = panStateObj.value.zoomY
+
+			const posY = (mpos.y - panY) / zoomY
+
+			const newZoomY = zoomY + deltaZoom
+
+			const newPanY = -(posY * newZoomY - mpos.y)
+
+			panStateObj.value.panY = newPanY
+			panStateObj.value.zoomY += deltaZoom
 		}
 		ev.preventDefault()
 		ev.stopPropagation()
