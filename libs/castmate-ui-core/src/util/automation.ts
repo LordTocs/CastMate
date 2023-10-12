@@ -3,6 +3,7 @@ import { PanState } from "./panning"
 export interface TriggerView {
 	id: string
 	open: boolean
+	height: number
 	automationView: AutomationView
 }
 

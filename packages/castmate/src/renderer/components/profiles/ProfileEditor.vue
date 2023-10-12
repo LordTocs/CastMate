@@ -78,6 +78,7 @@ function createTriggerEnd() {
 	view.value.triggers.push({
 		id,
 		open: true,
+		height: 600,
 		automationView: {
 			panState: {
 				panX: 0,
@@ -104,6 +105,7 @@ function createTriggerBeginning() {
 	view.value.triggers.splice(0, 0, {
 		id,
 		open: true,
+		height: 600,
 		automationView: {
 			panState: {
 				panX: 0,

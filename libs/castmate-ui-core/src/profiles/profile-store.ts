@@ -21,6 +21,7 @@ export async function initializeProfiles(app: App<Element>) {
 				triggers: resource.config.triggers.map((t) => ({
 					id: t.id,
 					open: false,
+					height: 600,
 					automationView: {
 						panState: {
 							zoomX: 1,

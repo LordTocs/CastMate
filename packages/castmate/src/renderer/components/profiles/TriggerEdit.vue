@@ -27,7 +27,13 @@
 				@mousedown.stop
 			/>
 		</div>
-		<div class="body" v-if="open" @mousedown="stopPropagation">
+		<div
+			class="body"
+			v-if="open"
+			@mousedown="stopPropagation"
+			:style="{ height: `${view.height}px` }"
+			ref="cardBody"
+		>
 			<automation-edit
 				v-model="modelObj"
 				v-model:view="view.automationView"
@@ -45,6 +51,11 @@
 					/>
 				</template>
 			</div>
+			<expander-slider
+				v-model="view.height"
+				:color="(triggerColor as Color)"
+				:container="cardBody"
+			></expander-slider>
 		</div>
 	</div>
 </template>
@@ -70,6 +81,8 @@ import { useVModel } from "@vueuse/core"
 import AutomationEdit from "../automation/AutomationEdit.vue"
 import { AnyAction } from "castmate-schema"
 import { ActionStack } from "castmate-schema"
+import { ExpanderSlider } from "castmate-ui-core"
+import { Color } from "castmate-schema"
 
 const props = withDefaults(
 	defineProps<{
@@ -81,6 +94,7 @@ const props = withDefaults(
 		view: () => ({
 			id: "",
 			open: false,
+			height: 900,
 			automationView: {
 				panState: {
 					panX: 0,
@@ -100,6 +114,8 @@ const view = useModel(props, "view")
 const isSelected = computed(() => {
 	return props.selectedIds.includes(modelObj.value.id)
 })
+
+const cardBody = ref<HTMLElement>()
 
 const documentPath = useDocumentPath()
 const selection = useDocumentSelection(() => joinDocumentPath(documentPath.value, "sequence"))
@@ -205,7 +221,7 @@ const triggerModel = computed({
 
 const trigger = useTrigger(() => props.modelValue)
 
-const { triggerColorStyle } = useTriggerColors(() => props.modelValue)
+const { triggerColorStyle, triggerColor } = useTriggerColors(() => props.modelValue)
 
 const emit = defineEmits(["update:modelValue"])
 const modelObj = useVModel(props, "modelValue", emit)
@@ -238,7 +254,7 @@ const modelObj = useVModel(props, "modelValue", emit)
 	display: flex;
 	flex-direction: column;
 
-	min-height: 600px;
+	/*min-height: 600px;*/
 }
 
 .config {
