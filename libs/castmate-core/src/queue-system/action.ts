@@ -81,25 +81,41 @@ interface ActionDefinitionSpec<ConfigSchema extends Schema, ResultSchema extends
 	): Promise<ResultSchema extends Schema ? ResolvedSchemaType<ResultSchema> : void>
 }
 
-export interface ActionDefinition {
+interface BaseActionDefinition {
 	readonly id: string
 	readonly name: string
 	readonly description?: string
 	readonly icon?: string
 	readonly color?: Color
-	readonly configSchema: Schema
-
 	load(): any
 	unload(): any
-	invoke(config: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
 	registerIPC(path: string): any
 	toIPC(path: string): IPCActionDefinition
 }
 
+interface RegularActionDefinition extends BaseActionDefinition {
+	type: "regular"
+	readonly configSchema: Schema
+	invoke(config: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
+}
+
+interface FlowActionDefinition extends BaseActionDefinition {
+	type: "flow"
+	readonly configSchema: Schema
+	readonly flowSchema?: Schema
+	invoke(config: any, flows: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
+}
+
+export type ActionDefinition = RegularActionDefinition | FlowActionDefinition
+
 class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>
-	implements ActionDefinition
+	implements RegularActionDefinition
 {
 	constructor(private spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>, private plugin: Plugin) {}
+
+	get type(): "regular" {
+		return "regular"
+	}
 
 	get id() {
 		return this.spec.id
@@ -184,6 +200,7 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 		}
 
 		return {
+			type: "regular",
 			id: this.id,
 			name: this.name,
 			description: this.description,
@@ -206,7 +223,116 @@ export function defineAction<ConfigSchema extends Schema, ResultSchema extends S
 	console.log("Defining", spec.id)
 	const impl = new ActionImplementation<ConfigSchema, ResultSchema>(
 		{
-			icon: "mdi-pencil",
+			icon: "mdi mdi-pencil",
+			color: initingPlugin.color,
+			version: "0.0.0",
+			...spec,
+		},
+		initingPlugin
+	)
+
+	initingPlugin.actions.set(impl.id, impl)
+
+	return impl
+}
+
+interface Flows<FlowSchema extends Schema | undefined> {
+	[id: string]: Readonly<FlowSchema extends Schema ? ResolvedSchemaType<FlowSchema> : any>
+}
+
+class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends Schema | undefined>
+	implements FlowActionDefinition
+{
+	constructor(private spec: FlowActionSpec<ConfigSchema, FlowSchema>, private plugin: Plugin) {}
+
+	get type(): "flow" {
+		return "flow"
+	}
+
+	get id() {
+		return this.spec.id
+	}
+
+	get name() {
+		return this.spec.name
+	}
+
+	get description() {
+		return this.spec.description
+	}
+
+	get icon() {
+		return this.spec.icon
+	}
+
+	get color() {
+		return this.spec.color
+	}
+
+	get version() {
+		return this.spec.version
+	}
+
+	get configSchema() {
+		return this.spec.config
+	}
+
+	get flowSchema() {
+		return this.spec.flowConfig
+	}
+
+	load() {}
+
+	unload() {}
+
+	registerIPC(path: string) {
+		ipcRegisterSchema(this.spec.config, `${path}_config`)
+	}
+
+	toIPC(path: string): IPCActionDefinition {
+		return {
+			type: "flow",
+			id: this.id,
+			name: this.name,
+			description: this.description,
+			icon: this.icon,
+			color: this.color,
+			config: ipcConvertSchema(this.spec.config, `${path}_config`),
+		}
+	}
+
+	async invoke(
+		config: Readonly<SchemaType<ConfigSchema>>,
+		flows: Flows<FlowSchema>,
+		contextData: ActionInvokeContextData,
+		abortSignal: AbortSignal
+	): Promise<string> {
+		return await this.spec.invoke(config, flows, contextData, abortSignal)
+	}
+}
+
+interface FlowActionSpec<ConfigSchema extends Schema, FlowSchema extends Schema | undefined> extends ActionMetaData {
+	config: ConfigSchema
+	flowConfig?: FlowSchema
+	invoke(
+		config: Readonly<ResolvedSchemaType<ConfigSchema>>,
+		flows: Flows<FlowSchema>,
+		contextData: ActionInvokeContextData,
+		abortSignal: AbortSignal
+	): Promise<string>
+}
+
+export function defineFlowAction<ConfigSchema extends Schema, FlowSchema extends Schema | undefined>(
+	spec: FlowActionSpec<ConfigSchema, FlowSchema>
+) {
+	if (!initingPlugin) {
+		throw new Error("Can only be used while initing a plugin")
+	}
+
+	console.log("Defining Flow", spec.id)
+	const impl = new FlowActionImplementation<ConfigSchema, FlowSchema>(
+		{
+			icon: "mdi mdi-pencil",
 			color: initingPlugin.color,
 			version: "0.0.0",
 			...spec,

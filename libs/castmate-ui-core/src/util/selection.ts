@@ -1,6 +1,6 @@
 import { useEventListener } from "@vueuse/core"
 import { MaybeRefOrGetter, ref, toValue, computed, ComputedRef, Ref, provide, inject } from "vue"
-import { getInternalMousePos } from "./dom"
+import { getElementRelativeRect, getInternalMousePos, rectangleOverlaps } from "./dom"
 import { Selection, useDocumentPath, useDocumentSelection } from "./document"
 import _uniq from "lodash/uniq"
 import _isEqual from "lodash/isEqual"
@@ -17,6 +17,19 @@ export interface SelectionState {
 	from: ComputedRef<SelectionPos | null>
 	to: ComputedRef<SelectionPos | null>
 	cancelSelection: () => void
+}
+
+export function selectionOverlaps(
+	elem: HTMLElement | undefined | null,
+	container: HTMLElement | undefined | null,
+	from: SelectionPos,
+	to: SelectionPos
+) {
+	if (!elem) return false
+	if (!container) return false
+	const rect = getElementRelativeRect(elem, container)
+	const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
+	return rectangleOverlaps(rect, selrect)
 }
 
 export function injectSelectionState(): SelectionState {

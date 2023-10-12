@@ -24,30 +24,56 @@ import { handleIpcMessage, useIpcCaller } from "../util/electron"
 import { ipcParseSchema } from "../util/data"
 import { nanoid } from "nanoid/non-secure"
 
-interface ActionDefinition {
+interface BaseActionDefinition {
 	id: string
 	name: string
 	description?: string
 	icon?: string
 	color?: Color
-	duration: IPCDurationConfig
+}
 
+interface RegularActionDefinition extends BaseActionDefinition {
+	type: "regular"
 	actionComponent?: Component
+	duration: IPCDurationConfig
 	config: Schema
 	result?: Schema
 }
 
+interface FlowActionDefinition extends BaseActionDefinition {
+	type: "flow"
+	config: Schema
+	flowConfig?: Schema
+}
+
+export type ActionDefinition = RegularActionDefinition | FlowActionDefinition
+
 function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
-	return {
-		id: def.id,
-		name: def.name,
-		description: def.description,
-		color: def.color,
-		icon: def.icon,
-		config: ipcParseSchema(def.config),
-		duration: def.duration,
-		...(def.result ? { result: ipcParseSchema(def.result) } : {}),
+	if (def.type == "flow") {
+		return {
+			type: "flow",
+			id: def.id,
+			name: def.name,
+			description: def.description,
+			color: def.color,
+			icon: def.icon,
+			config: ipcParseSchema(def.config),
+			//...(def.flowSchema ? { result: ipcParseSchema(def.result) } : {}),
+		}
+	} else if (def.type == "regular") {
+		return {
+			type: "regular",
+			id: def.id,
+			name: def.name,
+			description: def.description,
+			color: def.color,
+			icon: def.icon,
+			config: ipcParseSchema(def.config),
+			duration: def.duration,
+			...(def.result ? { result: ipcParseSchema(def.result) } : {}),
+		}
 	}
+	throw new Error("Parse Error?")
 }
 
 interface TriggerDefinition {
@@ -192,6 +218,21 @@ export const usePluginStore = defineStore("plugins", () => {
 			config: await constructDefault(action.config),
 		}
 
+		if (action.type == "flow") {
+			result.subFlows = [
+				{
+					id: nanoid(),
+					config: {},
+					actions: [],
+				},
+				{
+					id: nanoid(),
+					config: {},
+					actions: [],
+				},
+			]
+		}
+
 		// if (action.type == "time" || action.type == "time-indefinite") {
 		// 	result.offsets = []
 		// }
@@ -210,6 +251,7 @@ export const usePluginStore = defineStore("plugins", () => {
 			console.error(`Unknown action ${plugin}:${action}`)
 			return
 		}
+		if (actionDef.type != "regular") return
 		actionDef.actionComponent = markRaw(component)
 	}
 

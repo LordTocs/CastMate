@@ -2,6 +2,7 @@
 	<div class="sequence-edit" :class="{ 'action-dragging': dragging }" ref="sequenceEdit" draggable="true">
 		<template v-if="modelValue.actions.length > 0">
 			<action-stack-edit v-if="isActionStack(action)" v-model="(action as ActionStack)" ref="actionEdit" />
+			<flow-action-edit v-else-if="isFlowAction(action)" v-model="(action as FlowAction)" ref="actionEdit" />
 			<time-action-edit
 				v-else-if="duration.dragType == 'crop' || duration.dragType == 'fixed' || duration.dragType == 'length'"
 				:duration="duration"
@@ -49,6 +50,7 @@
 import InstantActionEdit from "./InstantActionEdit.vue"
 import ActionStackEdit from "./ActionStackEdit.vue"
 import TimeActionEdit from "./TimeActionEdit.vue"
+import FlowActionEdit from "./FlowActionEdit.vue"
 import { SequenceActions } from "castmate-schema"
 import { isTimeAction, isFlowAction, isActionStack } from "castmate-schema"
 import { computed, useModel, ref } from "vue"
@@ -59,6 +61,7 @@ import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence } from "castmate-schema"
 import { SelectionPos, Selection } from "castmate-ui-core"
 import { useDuration } from "../../util/actions"
+import { FlowAction } from "castmate-schema"
 
 const props = withDefaults(
 	defineProps<{

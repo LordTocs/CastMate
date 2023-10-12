@@ -37,6 +37,7 @@ export interface ActionInfo {
 }
 
 export interface SubFlow extends SequenceActions {
+	id: string
 	config: any
 }
 
@@ -101,6 +102,11 @@ export function getActionById(id: string, sequence: Sequence): AnyAction | Actio
 						return subAction
 					}
 				}
+			} else if (isFlowAction(action)) {
+				for (const subFlow of action.subFlows) {
+					const subAction = getActionById(id, subFlow)
+					if (subAction) return subAction
+				}
 			}
 		}
 	}
@@ -118,6 +124,11 @@ export function assignNewIds(sequence: Sequence) {
 		} else if (isActionStack(action)) {
 			for (const item of action.stack) {
 				item.id = nanoid()
+			}
+		} else if (isFlowAction(action)) {
+			for (const subFlow of action.subFlows) {
+				subFlow.id = nanoid()
+				assignNewIds(subFlow)
 			}
 		}
 	}

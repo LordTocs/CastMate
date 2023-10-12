@@ -26,7 +26,7 @@
 					<component
 						v-model="model.config"
 						:is="action?.actionComponent"
-						v-if="action?.actionComponent"
+						v-if="action?.type == 'regular' && action?.actionComponent"
 						class="time-action-custom"
 					/>
 					<div class="play-indicator" v-if="testTime != null" :style="{ '--play-time': playTime }"></div>

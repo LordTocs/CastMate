@@ -11,6 +11,10 @@ import {
 	InstantAction,
 	SequenceActions,
 	OffsetActions,
+	FlowAction,
+	isActionStack,
+	isTimeAction,
+	isFlowAction,
 } from "castmate-schema"
 
 export interface SequenceDebugger {
@@ -48,7 +52,7 @@ export class SequenceRunner {
 		this.dbg?.markStart(action.id)
 		try {
 			const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
-			if (!actionDef) {
+			if (!actionDef || actionDef.type != "regular") {
 				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
 			}
 			const deserializedConfig = deserializeSchema(actionDef.configSchema, action.config)
@@ -64,14 +68,49 @@ export class SequenceRunner {
 		}
 	}
 
+	private async runFlowAction(action: FlowAction) {
+		if (this.aborted) return
+		this.dbg?.markStart(action.id)
+		try {
+			const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
+			if (!actionDef || actionDef.type != "flow") {
+				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
+			}
+
+			const deserializedConfig = deserializeSchema(actionDef.configSchema, action.config)
+
+			const flows: Record<string, any> = {}
+
+			for (const flow of action.subFlows) {
+				flows[flow.id] = actionDef.flowSchema ? deserializeSchema(actionDef.flowSchema, flow.config) : null
+			}
+
+			const subFlowId = await actionDef.invoke(
+				deserializedConfig,
+				flows,
+				this.context,
+				this.abortController.signal
+			)
+
+			const subFlow = action.subFlows.find((f) => f.id == subFlowId)
+			if (!subFlow) throw new Error(`Chose Undefined Subflow ${subFlowId}`)
+
+			await this.runSequence(subFlow)
+		} catch (err) {
+			this.dbg?.logError(action.id, err)
+		} finally {
+			this.dbg?.markEnd(action.id)
+		}
+	}
+
 	private async runAction(action: ActionStack | TimeAction | InstantAction) {
 		if (this.aborted) return
-		if ("stack" in action) {
-			const actionStack = action as ActionStack
-			return await this.runActionStack(actionStack)
-		} else if ("offsets" in action) {
-			const timeAction = action as TimeAction
-			return await this.runTimeAction(timeAction)
+		if (isActionStack(action)) {
+			return await this.runActionStack(action)
+		} else if (isTimeAction(action)) {
+			return await this.runTimeAction(action)
+		} else if (isFlowAction(action)) {
+			return await this.runFlowAction(action)
 		} else {
 			return await this.runActionBase(action)
 		}

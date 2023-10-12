@@ -47,7 +47,8 @@ export type IPCDurationConfig =
 			ipcCallback: string
 	  }
 
-export interface IPCActionDefinition {
+export interface IPCRegularActionDefinition {
+	readonly type: "regular"
 	readonly id: string
 	readonly name: string
 	readonly description?: string
@@ -55,5 +56,19 @@ export interface IPCActionDefinition {
 	readonly color?: Color
 	readonly duration: IPCDurationConfig
 	readonly config: IPCSchema
+
 	readonly result?: IPCSchema
 }
+
+export interface IPCFlowActionDefinition {
+	readonly type: "flow"
+	readonly id: string
+	readonly name: string
+	readonly description?: string
+	readonly icon?: string
+	readonly color?: Color
+
+	readonly config: IPCSchema
+}
+
+export type IPCActionDefinition = IPCRegularActionDefinition | IPCFlowActionDefinition
