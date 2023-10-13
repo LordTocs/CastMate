@@ -121,7 +121,7 @@ defineExpose({
 	transition: background-color 0.3s;
 
 	height: var(--timeline-height);
-	width: var(--instant-width);
+	min-width: var(--instant-width);
 }
 
 .instant-action-header {
@@ -131,6 +131,10 @@ defineExpose({
 
 	border-top-left-radius: var(--border-radius);
 	border-top-right-radius: var(--border-radius);
+
+	white-space: nowrap;
+	padding-left: 0.1rem;
+	padding-right: 0.1rem;
 
 	transition: background-color 0.3s;
 }

@@ -32,7 +32,7 @@
 					<div class="play-indicator" v-if="testTime != null" :style="{ '--play-time': playTime }"></div>
 				</div>
 				<div class="time-action-footer">
-					{{ length.toFixed(2) }}
+					<duration-label :model-value="length" />
 				</div>
 			</div>
 			<duration-handle
@@ -78,6 +78,7 @@ import {
 	useIsSelected,
 	TextHider,
 	useActionTestTime,
+	DurationLabel,
 } from "castmate-ui-core"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"

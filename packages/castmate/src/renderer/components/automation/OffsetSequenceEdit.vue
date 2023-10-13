@@ -25,6 +25,7 @@ import _clamp from "lodash/clamp"
 import { TimeActionInfo } from "castmate-schema"
 import { Selection, SelectionPos } from "castmate-ui-core"
 import { SelectionGetter, useAutomationEditState } from "../../util/automation-dragdrop"
+import { automationTimeScale } from "./automation-shared"
 
 const props = defineProps<{
 	modelValue: OffsetActions
@@ -125,7 +126,7 @@ function adjustPos(ev: MouseEvent) {
 	}
 	const pos = computePos(ev)
 	const posDiff = pos.x - dragOffset.value
-	let time = posDiff / ((panState?.value.zoomX ?? 1) * 40)
+	let time = posDiff / ((panState?.value.zoomX ?? 1) * automationTimeScale)
 
 	time = _clamp(time, timeInfo.value.minLength, timeInfo.value.duration)
 

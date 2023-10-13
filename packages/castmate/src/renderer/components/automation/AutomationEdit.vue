@@ -1,5 +1,12 @@
 <template>
-	<div ref="editArea" class="automation-edit" tabindex="-1" @contextmenu="onContextMenu" @keydown="onKeyDown">
+	<div
+		ref="editArea"
+		class="automation-edit"
+		:style="{ '--time-scale': `${automationTimeScale}px` }"
+		tabindex="-1"
+		@contextmenu="onContextMenu"
+		@keydown="onKeyDown"
+	>
 		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
 			<sequence-edit
 				v-model="model.sequence"
@@ -50,6 +57,7 @@ import { useSelectionRect, useActiveTestSequence, useActionQueueStore } from "ca
 import ActionPalette from "./ActionPalette.vue"
 import { FloatingSequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
+import { automationTimeScale } from "./automation-shared"
 
 const props = defineProps<{
 	modelValue: AutomationData
@@ -70,7 +78,7 @@ provideAutomationEditState(editArea, (seq, offset, ev) => {
 
 	const dropPos = getInternalMousePos(editArea.value, ev)
 
-	const x = (dropPos.x - view.value.panState.panX - offset.x) / 40 / view.value.panState.zoomX
+	const x = (dropPos.x - view.value.panState.panX - offset.x) / automationTimeScale / view.value.panState.zoomX
 	const y = (dropPos.y - view.value.panState.panY - offset.y) / view.value.panState.zoomY
 
 	const floatingSequence: FloatingSequence = {
@@ -133,7 +141,7 @@ const pluginStore = usePluginStore()
 async function onCreateAction(actionSelection: ActionSelection) {
 	if (!actionSelection.action || !actionSelection.plugin) return
 
-	const x = (palettePosition.value.x - view.value.panState.panX) / 40 / view.value.panState.zoomX
+	const x = (palettePosition.value.x - view.value.panState.panX) / automationTimeScale / view.value.panState.zoomX
 	const y = (palettePosition.value.y - view.value.panState.panY) / view.value.panState.zoomY
 
 	const actionInstance = await pluginStore.createAction(actionSelection)
@@ -174,9 +182,10 @@ function onKeyDown(ev: KeyboardEvent) {
 
 <style scoped>
 .automation-edit {
-	--timeline-height: 120px;
+	--timeline-height: 100px;
+	/* --time-scale: 40px; */
 	--point-size: 15px;
-	--instant-width: 120px;
+	--instant-width: 100px;
 	--time-handle-height: 15px;
 	--time-handle-width: 15px;
 
@@ -191,14 +200,14 @@ function onKeyDown(ev: KeyboardEvent) {
 	right: 0;
 	top: 0;
 	bottom: 0;
-	--time-width: calc(var(--zoom-x) * 40px);
+	--time-width: calc(var(--zoom-x) * var(--time-scale));
 }
 
 .grid-paper {
 	background: linear-gradient(-90deg, var(--surface-d) 1px, transparent 1px),
 		linear-gradient(0deg, var(--surface-d) 1px, transparent 1px);
-	background-size: calc(var(--zoom-x) * 40px) var(--timeline-height),
-		calc(var(--zoom-x) * 40px) var(--timeline-height);
+	background-size: calc(var(--zoom-x) * var(--time-scale)) var(--timeline-height),
+		calc(var(--zoom-x) * var(--time-scale)) var(--timeline-height);
 	background-position-x: var(--pan-x), 0;
 	background-position-y: 0, var(--pan-y);
 }

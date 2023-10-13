@@ -78,7 +78,7 @@ defineExpose({
 
 .floating {
 	position: absolute;
-	left: calc(var(--sequence-x) * var(--zoom-x) * 40px);
+	left: calc(var(--sequence-x) * var(--time-width));
 	top: calc(var(--sequence-y) * 1px);
 }
 </style>

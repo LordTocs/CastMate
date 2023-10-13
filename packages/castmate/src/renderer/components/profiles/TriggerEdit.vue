@@ -34,22 +34,24 @@
 			:style="{ height: `${view.height}px` }"
 			ref="cardBody"
 		>
-			<automation-edit
-				v-model="modelObj"
-				v-model:view="view.automationView"
-				local-path="sequence"
-				style="flex: 1"
-			/>
-			<div class="config">
-				<template v-if="selectedSchema && selectedModel">
-					<!--TODO: Fix Path-->
-					<data-input
-						:schema="selectedSchema"
-						v-model="selectedModel"
-						local-path="config"
-						:context="selectedModel"
-					/>
-				</template>
+			<div class="flex flex-row h-full">
+				<automation-edit
+					v-model="modelObj"
+					v-model:view="view.automationView"
+					local-path="sequence"
+					style="flex: 1"
+				/>
+				<div class="config">
+					<template v-if="selectedSchema && selectedModel">
+						<!--TODO: Fix Path-->
+						<data-input
+							:schema="selectedSchema"
+							v-model="selectedModel"
+							local-path="config"
+							:context="selectedModel"
+						/>
+					</template>
+				</div>
 			</div>
 			<expander-slider
 				v-model="view.height"
@@ -260,7 +262,7 @@ const modelObj = useVModel(props, "modelValue", emit)
 .config {
 	background-color: var(--surface-b);
 	user-select: none;
-	min-height: 200px;
+	width: 300px;
 }
 
 .trigger-name {

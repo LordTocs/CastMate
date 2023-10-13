@@ -6,6 +6,7 @@
 import { useEventListener, useVModel, useElementSize } from "@vueuse/core"
 import { type PanState, usePanState, usePanQuery, getInternalMousePos } from "castmate-ui-core"
 import { ref, type Ref, inject, computed } from "vue"
+import { automationTimeScale } from "./automation-shared"
 
 const props = defineProps<{
 	modelValue: number | undefined
@@ -71,19 +72,12 @@ function adjustPos(ev: MouseEvent) {
 	let newWidth = computeWidth(ev)
 
 	let duration = 0
-	// if (props.left) {
-	// 	newWidth = newEdgePos + dragStartDuration.value * (panState.value.zoomX * 40)
-	// 	duration = newWidth / (panState.value.zoomX * 40)
-	// } else {
-	// 	newWidth = newEdgePos
-	// 	duration = newWidth / (panState.value.zoomX * 40)
-	// }
 
 	if (props.left) {
-		duration = (newWidth + distFromDragEdge.value) / (panState.value.zoomX * 40)
+		duration = (newWidth + distFromDragEdge.value) / (panState.value.zoomX * automationTimeScale)
 		duration = props.otherValue - duration
 	} else {
-		duration = (newWidth - distFromDragEdge.value) / (panState.value.zoomX * 40)
+		duration = (newWidth - distFromDragEdge.value) / (panState.value.zoomX * automationTimeScale)
 		console.log(duration)
 		duration = duration + props.otherValue
 	}
@@ -99,7 +93,7 @@ function adjustPos(ev: MouseEvent) {
 	}
 
 	if (props.left) {
-		const panDiff = (duration - dragStartDuration.value) * (panState.value.zoomX * 40)
+		const panDiff = (duration - dragStartDuration.value) * (panState.value.zoomX * automationTimeScale)
 		panState.value.panX = startingPanX.value + panDiff
 	}
 
