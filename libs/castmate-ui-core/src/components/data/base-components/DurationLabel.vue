@@ -9,9 +9,15 @@ import { computed } from "vue"
 const HOUR_DUR = 60 * 60
 const MINUTE_DUR = 60
 
-const props = defineProps<{
-	modelValue: Duration | undefined
-}>()
+const props = withDefaults(
+	defineProps<{
+		modelValue: Duration | undefined
+		decimalPlaces?: number
+	}>(),
+	{
+		decimalPlaces: 3,
+	}
+)
 
 const label = computed(() => {
 	if (props.modelValue == null) {
@@ -46,6 +52,7 @@ const label = computed(() => {
 		result +=
 			seconds.toLocaleString("en-Us", {
 				minimumIntegerDigits: 2,
+				maximumFractionDigits: props.decimalPlaces,
 				useGrouping: false,
 			}) + "s"
 	} else if (minutes > 0) {
@@ -54,10 +61,15 @@ const label = computed(() => {
 		result +=
 			seconds.toLocaleString("en-Us", {
 				minimumIntegerDigits: 2,
+				maximumFractionDigits: props.decimalPlaces,
 				useGrouping: false,
 			}) + "s"
 	} else {
-		result += seconds + "s"
+		result +=
+			seconds.toLocaleString("en-Us", {
+				maximumFractionDigits: props.decimalPlaces,
+				useGrouping: false,
+			}) + "s"
 	}
 
 	return result
