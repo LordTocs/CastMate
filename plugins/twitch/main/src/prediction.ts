@@ -18,7 +18,7 @@ export function setupPredictions() {
 			type: Object,
 			properties: {
 				title: { type: String, name: "Title", template: true, required: true, default: "" },
-				duration: { type: Duration, name: "Duration", template: true, required: true },
+				duration: { type: Duration, name: "Duration", template: true, required: true, default: 30 },
 				outcomes: {
 					type: Array,
 					name: "Outcomes",
