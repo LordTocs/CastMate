@@ -42,15 +42,8 @@
 					style="flex: 1"
 				/>
 				<div class="config">
-					<template v-if="selectedSchema && selectedModel">
-						<!--TODO: Fix Path-->
-						<data-input
-							:schema="selectedSchema"
-							v-model="selectedModel"
-							local-path="config"
-							:context="selectedModel"
-						/>
-					</template>
+					<action-config-edit v-if="selectedAction" v-model="selectedAction" />
+					<trigger-config-edit v-else-if="selectedTrigger" v-model="selectedTrigger" />
 				</div>
 			</div>
 			<expander-slider
@@ -85,6 +78,9 @@ import { AnyAction } from "castmate-schema"
 import { ActionStack } from "castmate-schema"
 import { ExpanderSlider } from "castmate-ui-core"
 import { Color } from "castmate-schema"
+import { isActionStack } from "castmate-schema"
+import ActionConfigEdit from "./ActionConfigEdit.vue"
+import TriggerConfigEdit from "./TriggerConfigEdit.vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -138,6 +134,33 @@ function findActionById(id: string) {
 		}
 	}
 }
+
+const selectedAction = computed<AnyAction | undefined>(() => {
+	if (selection.value.length > 1 || selection.value.length == 0) {
+		return undefined
+	}
+	const id = selection.value[0]
+
+	let action: AnyAction | ActionStack | undefined = undefined
+
+	action = findActionById(id)
+
+	if (!action) return undefined
+	if (isActionStack(action)) return undefined
+
+	return action
+})
+
+const selectedTrigger = computed(() => {
+	if (selection.value.length > 1 || selection.value.length == 0) {
+		return undefined
+	}
+	const id = selection.value[0]
+
+	if (id != "trigger") return undefined
+
+	return props.modelValue
+})
 
 const selectedSchema = computed(() => {
 	if (selection.value.length > 1 || selection.value.length == 0) {
@@ -263,6 +286,7 @@ const modelObj = useVModel(props, "modelValue", emit)
 	background-color: var(--surface-b);
 	user-select: none;
 	width: 300px;
+	overflow-y: auto;
 }
 
 .trigger-name {
