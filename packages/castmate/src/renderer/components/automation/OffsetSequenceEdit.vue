@@ -7,7 +7,7 @@
 			:style="{ ...firstActionStyle }"
 			@mousedown="onMouseDown"
 		></div>
-		<div class="offset-actions">
+		<div class="offset-actions" ref="offsetActionDiv">
 			<sequence-actions-edit v-model="modelObj" @self-destruct="selfDestruct" ref="sequenceEdit" />
 		</div>
 	</div>
@@ -20,7 +20,7 @@ import { type OffsetActions } from "castmate-schema"
 import { SequenceActions } from "castmate-schema"
 import { isActionStack } from "castmate-schema"
 import { usePluginStore, useColors, usePanState } from "castmate-ui-core"
-import { useEventListener } from "@vueuse/core"
+import { useElementSize, useEventListener } from "@vueuse/core"
 import _clamp from "lodash/clamp"
 import { TimeActionInfo } from "castmate-schema"
 import { Selection, SelectionPos } from "castmate-ui-core"
@@ -153,6 +153,21 @@ useEventListener(window, "mouseup", (ev: MouseEvent) => {
 	}
 })
 
+const offsetActionDiv = ref<HTMLElement>()
+
+const offsetActionSize = useElementSize(offsetActionDiv)
+
+const parentRelativeBounds = computed(() => {
+	const offsetX = panState.value.zoomX * automationTimeScale * props.modelValue.offset
+	const offsetY = 15 //--time-handle-height
+	return DOMRect.fromRect({
+		x: offsetX,
+		y: offsetY,
+		width: offsetActionSize.width.value,
+		height: offsetActionSize.height.value,
+	})
+})
+
 const automationEditState = useAutomationEditState()
 const sequenceEdit = ref<SelectionGetter | null>(null)
 defineExpose({
@@ -162,6 +177,7 @@ defineExpose({
 	deleteIds(ids: string[]) {
 		return sequenceEdit.value?.deleteIds(ids) ?? false
 	},
+	parentRelativeBounds,
 })
 </script>
 

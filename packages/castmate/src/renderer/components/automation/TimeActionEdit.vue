@@ -2,7 +2,7 @@
 	<div
 		class="timeline-container"
 		:class="{ indefinite, 'has-right-handle': hasRightSlider }"
-		:style="{ '--duration': length }"
+		:style="{ '--duration': length, '--offset-height': `${maxOffsetSize}px` }"
 	>
 		<div
 			class="time-action"
@@ -90,6 +90,7 @@ import { useDuration } from "../../util/actions"
 import { getByPath, setByPath } from "castmate-schema"
 import { Duration } from "castmate-schema"
 import { IPCDurationState } from "castmate-schema"
+import { useElementBounding } from "@vueuse/core"
 
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue)
@@ -240,7 +241,7 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 }
 
 const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
-const offsetEdits = ref<(SelectionGetter & { $el: HTMLElement })[]>([])
+const offsetEdits = ref<InstanceType<typeof OffsetSequenceEdit>[]>([])
 
 const testTime = useActionTestTime(() => props.modelValue.id)
 let animationStartStamp: number | null = null
@@ -266,6 +267,17 @@ watch(testTime, (value, oldValue) => {
 		animationStartStamp = null
 		window.requestAnimationFrame(animateProgress)
 	}
+})
+
+const maxOffsetSize = computed(() => {
+	let max = 0
+	for (const offset of offsetEdits.value) {
+		const value = offset.parentRelativeBounds.bottom
+		if (value > max) {
+			max = value
+		}
+	}
+	return max
 })
 
 defineExpose({
@@ -327,6 +339,7 @@ defineExpose({
 	position: relative;
 	--time-action-width: calc(var(--duration) * var(--time-width));
 	/* width: var(--time-action-width); */
+	height: calc(var(--timeline-height) + var(--offset-height));
 }
 
 .time-action {
