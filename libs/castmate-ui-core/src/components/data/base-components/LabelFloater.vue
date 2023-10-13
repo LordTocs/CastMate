@@ -1,5 +1,5 @@
 <template>
-	<span class="p-float-label" v-if="!noFloat">
+	<span class="p-float-label flex-grow-1" v-if="!noFloat" style="width: unset">
 		<slot :placeholder="undefined" :input-id="inputId"> </slot>
 		<label :for="inputId"> {{ label }}</label>
 	</span>
@@ -13,3 +13,5 @@ const props = defineProps<{
 	inputId: string
 }>()
 </script>
+
+<style scoped></style>

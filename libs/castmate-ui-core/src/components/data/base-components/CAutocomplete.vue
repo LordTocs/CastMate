@@ -1,8 +1,30 @@
 <template>
-	<div class="container w-full" ref="container">
-		<div class="p-inputgroup w-full" @mousedown="stopPropagation">
+	<div class="autocomplete-container flex-grow-1 flex-shrink-1" ref="container">
+		<div class="p-inputgroup" @mousedown="stopPropagation">
 			<label-floater :no-float="noFloat" :label="label" v-slot="labelProps" :input-id="inputId">
-				<div
+				<input-box
+					v-bind="labelProps"
+					:focused="focused"
+					:model="model"
+					@focus="onFocus"
+					v-if="!focused"
+					:tab-index="-1"
+					:bezel-right="false"
+				>
+					<slot name="selectedItem" v-if="props.modelValue" :item="selectedItem" :item-id="props.modelValue">
+						{{ selectedItem ? getItemText(selectedItem, props) : props.modelValue }}
+					</slot>
+				</input-box>
+				<p-input-text
+					v-else
+					@blur="onBlur"
+					class="p-dropdown-label"
+					ref="filterInputElement"
+					v-model="filterValue"
+					@keydown="onFilterKeyDown"
+					v-bind="labelProps"
+				/>
+				<!-- <div
 					class="p-component p-dropdown p-inputwrapper fix-left"
 					:class="{
 						'p-filled': model != null,
@@ -30,22 +52,19 @@
 						</slot>
 						<template v-else-if="label"> {{ label }} </template>
 						<template v-else>&nbsp;</template>
-						<!-- Todo: Placeholder -->
 					</div>
-					<p-input-text
-						v-else
-						@blur="onBlur"
-						class="p-dropdown-label"
-						ref="filterInputElement"
-						v-model="filterValue"
-						@keydown="onFilterKeyDown"
-						v-bind="labelProps"
-					/>
-				</div>
+				</div> -->
 			</label-floater>
 			<slot name="append"></slot>
-			<p-button class="flex-none no-focus-highlight" v-if="!required" icon="pi pi-times" @click.stop="clear" />
-			<p-button class="no-focus-highlight" @click="onDropDownClick"><p-chevron-down-icon /></p-button>
+			<p-button
+				class="flex-none no-focus-highlight flex-shrink-0"
+				v-if="!required"
+				icon="pi pi-times"
+				@click.stop="clear"
+			/>
+			<p-button class="no-focus-highlight flex-shrink-0" @click="onDropDownClick"
+				><p-chevron-down-icon
+			/></p-button>
 		</div>
 		<p-portal append-to="self">
 			<transition name="p-connected-overlay" @enter="onOverlayEnter">
@@ -112,6 +131,7 @@ import {
 } from "../../../util/autocomplete-helpers"
 import LabelFloater from "./LabelFloater.vue"
 import _clamp from "lodash/clamp"
+import { InputBox } from "../../../main"
 
 const props = withDefaults(
 	defineProps<
@@ -280,7 +300,7 @@ function onKeyArrowUp(ev: KeyboardEvent) {
 	border-bottom-left-radius: 6px !important;
 }
 
-.container {
+.autocomplete-container {
 	position: relative;
 }
 
