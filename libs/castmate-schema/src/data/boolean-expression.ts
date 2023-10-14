@@ -1,40 +1,40 @@
 import { SchemaBase, registerType } from "../schema"
 
-type ValueCompareOperator = "lessThan" | "lessThanEq" | "equal" | "notEqual" | "greaterThan" | "greaterThanEq"
+export type ValueCompareOperator = "lessThan" | "lessThanEq" | "equal" | "notEqual" | "greaterThan" | "greaterThanEq"
 
 interface StateExpressionValue {
 	type: "state"
-	plugin: string
-	state: string
+	plugin: string | undefined
+	state: string | undefined
 }
 
 interface ResourceExpressionValue {
 	type: "resource"
-	resourceType: string
-	resourceId: string
-	state: string
+	resourceType: string | undefined
+	resourceId: string | undefined
+	state: string | undefined
 }
 
-interface TemplateExpressionValue {
-	type: "template"
-	template: string
+interface ValueExpressionValue {
+	type: "value"
+	value: any
 }
 
-type ExpressionValue = StateExpressionValue | ResourceExpressionValue | TemplateExpressionValue
+export type ExpressionValue = StateExpressionValue | ResourceExpressionValue | ValueExpressionValue
 
-interface ValueBooleanExpression {
+export interface BooleanValueExpression {
 	operator: ValueCompareOperator
 	lhs: ExpressionValue
 	rhs: ExpressionValue
 }
 
-interface BooleanGroup {
+export interface BooleanExpressionGroup {
 	operator: "and" | "or"
 	operands: BooleanSubExpression[]
 }
-type BooleanSubExpression = BooleanGroup | ValueBooleanExpression
+type BooleanSubExpression = BooleanExpressionGroup | BooleanValueExpression
 
-export type BooleanExpression = BooleanGroup
+export type BooleanExpression = BooleanExpressionGroup
 export const BooleanExpression = {
 	factoryCreate() {
 		return { operator: "and", operands: [] } as BooleanExpression
