@@ -3,10 +3,16 @@ import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { TwitchAccount } from "./twitch-auth"
 import { abortableSleep, setAbortableTimeout } from "castmate-core/src/util/abort-utils"
 import { Duration } from "castmate-schema"
-
+import _maxBy from "lodash/maxBy"
 export function setupPolls() {
 	const pollId = defineState("pollId", {
 		type: String,
+		name: "Poll Id",
+	})
+
+	const pollTitle = defineState("pollTitle", {
+		type: String,
+		name: "Poll Title",
 	})
 
 	defineAction({
@@ -54,11 +60,27 @@ export function setupPolls() {
 		icon: "mdi mdi-poll",
 		config: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String },
+			},
 		},
 		context: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String, required: true },
+				totalVotes: { type: Number, required: true },
+				choices: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String },
+							votes: { type: Number },
+							fraction: { type: Number },
+						},
+					},
+				},
+			},
 		},
 		async handle(config, context) {
 			return false
@@ -76,7 +98,29 @@ export function setupPolls() {
 		},
 		context: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String, required: true },
+				totalVotes: { type: Number, required: true },
+				winner: {
+					type: Object,
+					properties: {
+						title: { type: String, required: true },
+						votes: { type: Number, required: true },
+						fraction: { type: Number, required: true },
+					},
+				},
+				choices: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String, required: true },
+							votes: { type: Number, required: true },
+							fraction: { type: Number, required: true },
+						},
+					},
+				},
+			},
 		},
 		async handle(config, context) {
 			return false
@@ -85,15 +129,44 @@ export function setupPolls() {
 
 	onChannelAuth((account, service) => {
 		service.eventsub.onChannelPollBegin(account.twitchId, (event) => {
+			const totalVotes = 0
+			const choices = event.choices.map((c) => ({
+				title: c.title,
+				votes: 0,
+				fraction: 0,
+			}))
+
+			pollTitle.value = event.title
 			pollId.value = event.id
+			pollStarted({
+				title: event.title,
+				totalVotes,
+				choices,
+			})
 		})
 
 		service.eventsub.onChannelPollEnd(account.twitchId, (event) => {
 			pollId.value = undefined
+
+			let totalVotes = 0
+			for (const choice of event.choices) {
+				totalVotes += choice.totalVotes
+			}
+			const choices = event.choices.map((c) => ({
+				title: c.title,
+				votes: c.totalVotes,
+				fraction: c.totalVotes / totalVotes,
+			}))
+			const winner = _maxBy(choices, (r) => r.votes)
+			if (!winner) return
+			pollEnded({
+				title: event.title,
+				totalVotes,
+				winner,
+				choices,
+			})
 		})
 
-		service.eventsub.onChannelPollProgress(account.twitchId, (event) => {
-			//
-		})
+		service.eventsub.onChannelPollProgress(account.twitchId, (event) => {})
 	})
 }

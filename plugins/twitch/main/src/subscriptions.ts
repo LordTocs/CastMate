@@ -1,7 +1,7 @@
 import { ApiClient } from "@twurple/api"
 import { EventSubWsListener } from "@twurple/eventsub-ws"
 import { TwitchAccount } from "./twitch-auth"
-import { defineTrigger } from "castmate-core"
+import { defineState, defineTrigger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
@@ -78,9 +78,34 @@ export function setupSubscriptions() {
 		},
 	})
 
+	const subscribers = defineState("subscribers", {
+		type: Number,
+		required: true,
+		default: 0,
+		name: "Subscribers",
+	})
+
+	const subscriberPoints = defineState("subscriberPoints", {
+		type: Number,
+		required: true,
+		default: 0,
+		name: "Subscriber Points",
+	})
+
+	async function updateSubscriberCount() {
+		try {
+			const subs = await TwitchAccount.channel.apiClient.subscriptions.getSubscriptions(
+				TwitchAccount.channel.twitchId
+			)
+			subscribers.value = subs.total
+			subscriberPoints.value = subs.points
+		} catch {}
+	}
+
 	onChannelAuth((channel, service) => {
 		service.eventsub.onChannelSubscription(channel.twitchId, (event) => {
 			ViewerCache.getInstance().cacheSubEvent(event)
+			updateSubscriberCount()
 		})
 
 		service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
@@ -102,5 +127,7 @@ export function setupSubscriptions() {
 				subs: event.amount,
 			})
 		})
+
+		updateSubscriberCount()
 	})
 }

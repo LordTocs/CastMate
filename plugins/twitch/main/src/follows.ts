@@ -1,8 +1,9 @@
-import { defineTrigger } from "castmate-core"
+import { defineState, defineTrigger } from "castmate-core"
 import { onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
+import { TwitchAccount } from "./twitch-auth"
 
 export function setupFollows() {
 	const follow = defineTrigger({
@@ -32,7 +33,20 @@ export function setupFollows() {
 		},
 	})
 
-	onChannelAuth((account, service) => {
+	const followers = defineState("followers", {
+		type: Number,
+		required: true,
+		default: 0,
+		name: "Followers",
+	})
+
+	async function updateFollowCount() {
+		followers.value = await TwitchAccount.channel.apiClient.channels.getChannelFollowerCount(
+			TwitchAccount.channel.twitchId
+		)
+	}
+
+	onChannelAuth(async (account, service) => {
 		service.eventsub.onChannelFollow(account.twitchId, account.twitchId, async (event) => {
 			follow({
 				user: event.userDisplayName,
@@ -40,5 +54,7 @@ export function setupFollows() {
 				userColor: await ViewerCache.getInstance().getChatColor(event.userId),
 			})
 		})
+
+		await updateFollowCount()
 	})
 }

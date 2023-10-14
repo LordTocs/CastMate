@@ -14,6 +14,7 @@ import { setupHypeTrains } from "./hype-train"
 import { setupModeration } from "./moderation"
 import { setupViewerCache } from "./viewer-cache"
 import { setupViewerGroups } from "./group"
+import { setupUndocumented } from "./undocumented"
 
 export default definePlugin(
 	{
@@ -47,6 +48,7 @@ export default definePlugin(
 		setupRaids()
 		setupSubscriptions()
 		setupModeration()
+		setupUndocumented()
 
 		onLoad(async () => {
 			await TwitchAPIService.getInstance().finalize()

@@ -41,14 +41,29 @@ export function setupPredictions() {
 		icon: "mdi mdi-crystal-ball",
 		config: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String, required: true, name: "title", default: "" },
+			},
 		},
 		context: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String, required: true },
+				outcomes: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String, required: true },
+							color: { type: String, required: true },
+							points: { type: Number, required: true },
+						},
+					},
+				},
+			},
 		},
 		async handle(config, context) {
-			return false
+			return config.title == context.title
 		},
 	})
 
@@ -59,14 +74,30 @@ export function setupPredictions() {
 		icon: "mdi mdi-crystal-ball",
 		config: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String, required: true, name: "title", default: "" },
+			},
 		},
 		context: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String, required: true },
+				total: { type: Number, required: true },
+				outcomes: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String, required: true },
+							color: { type: String, required: true },
+							points: { type: Number, required: true },
+						},
+					},
+				},
+			},
 		},
 		async handle(config, context) {
-			return false
+			return config.title == context.title
 		},
 	})
 
@@ -77,48 +108,109 @@ export function setupPredictions() {
 		icon: "mdi mdi-crystal-ball",
 		config: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String, required: true, name: "title", default: "" },
+			},
 		},
 		context: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { type: String, required: true },
+				total: { type: Number, required: true },
+				outcomes: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							title: { type: String, required: true },
+							color: { type: String, required: true },
+							points: { type: Number, required: true },
+						},
+					},
+				},
+			},
 		},
 		async handle(config, context) {
-			return false
+			return config.title == context.title
 		},
 	})
 
 	const predictionTitle = defineState("predictionTitle", {
 		type: String,
+		name: "Prediction Title",
+	})
+
+	const predictionId = defineState("predictionId", {
+		type: String,
+		name: "Prediction ID",
 	})
 
 	const predictionExists = defineState("predictionExists", {
 		type: Boolean,
 		required: true,
 		default: false,
+		name: "Prediction Exists",
+	})
+
+	const predictionTotal = defineState("predictionTotal", {
+		type: Number,
+		required: true,
+		default: 0,
+		name: "Prediction Point Total",
 	})
 
 	onChannelAuth((channel, service) => {
 		service.eventsub.onChannelPredictionBegin(channel.twitchId, (event) => {
 			predictionTitle.value = event.title
 			predictionExists.value = true
+			predictionId.value = event.id
+			predictionTotal.value = 0
 
-			predictionStarted({})
+			predictionStarted({
+				title: event.title,
+				outcomes: event.outcomes.map((o) => ({ title: o.title, color: o.color, points: 0 })),
+			})
 		})
 
 		service.eventsub.onChannelPredictionEnd(channel.twitchId, (event) => {
 			predictionTitle.value = undefined
 			predictionExists.value = false
+			predictionId.value = undefined
+			predictionTotal.value = 0
 
-			predictionSettled({})
+			let total = 0
+			for (let o of event.outcomes) {
+				total += o.channelPoints
+			}
+
+			predictionSettled({
+				title: event.title,
+				total,
+				outcomes: event.outcomes.map((o) => ({ title: o.title, color: o.color, points: o.channelPoints })),
+			})
 		})
 
 		service.eventsub.onChannelPredictionLock(channel.twitchId, (event) => {
-			predictionLocked({})
+			let total = 0
+			for (let o of event.outcomes) {
+				total += o.channelPoints
+			}
+
+			predictionTotal.value = total
+
+			predictionLocked({
+				title: event.title,
+				total,
+				outcomes: event.outcomes.map((o) => ({ title: o.title, color: o.color, points: o.channelPoints })),
+			})
 		})
 
 		service.eventsub.onChannelPredictionProgress(channel.twitchId, (event) => {
-			//
+			let total = 0
+			for (let o of event.outcomes) {
+				total += o.channelPoints
+			}
+			predictionTotal.value = total
 		})
 	})
 }
