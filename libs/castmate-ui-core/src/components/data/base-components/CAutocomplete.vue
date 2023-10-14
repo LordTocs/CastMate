@@ -24,36 +24,6 @@
 					@keydown="onFilterKeyDown"
 					v-bind="labelProps"
 				/>
-				<!-- <div
-					class="p-component p-dropdown p-inputwrapper fix-left"
-					:class="{
-						'p-filled': model != null,
-						'p-focused': focused,
-						'p-inputwrapper-filled': model != null,
-						'p-inputwrapper-focused': focused || overlayVisible,
-					}"
-				>
-					<div
-						class="p-dropdown-label p-inputtext"
-						:class="{ 'p-filled': model != null, 'p-placeholder': !props.modelValue }"
-						type="text"
-						tabindex="-1"
-						@focus="onFocus"
-						v-if="!focused"
-						:input-id="labelProps.inputId"
-					>
-						<slot
-							name="selectedItem"
-							v-if="props.modelValue"
-							:item="selectedItem"
-							:item-id="props.modelValue"
-						>
-							{{ selectedItem ? getItemText(selectedItem, props) : props.modelValue }}
-						</slot>
-						<template v-else-if="label"> {{ label }} </template>
-						<template v-else>&nbsp;</template>
-					</div>
-				</div> -->
 			</label-floater>
 			<slot name="append"></slot>
 			<p-button
