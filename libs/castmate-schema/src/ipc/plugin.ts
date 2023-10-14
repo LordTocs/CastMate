@@ -18,6 +18,11 @@ export interface IPCResourceSetting {
 
 export type IPCSettingsDefinition = IPCValueSetting | IPCResourceSetting
 
+export interface IPCStateDefinition {
+	schema: IPCSchema
+	value: any
+}
+
 export interface IPCPluginDefinition {
 	readonly id: string
 	readonly name: string
@@ -29,5 +34,5 @@ export interface IPCPluginDefinition {
 	actions: Record<string, IPCActionDefinition>
 	triggers: Record<string, IPCTriggerDefinition>
 	settings: Record<string, IPCSettingsDefinition>
-	//TODO: Map<string, IPCStateDefinition>
+	state: Record<string, IPCStateDefinition>
 }

@@ -1,3 +1,4 @@
+import { ResolvedSchemaType } from "./../../../castmate-schema/src/schema"
 import { Profile } from "./../profile/profile"
 import {
 	Color,
@@ -8,6 +9,7 @@ import {
 	IPCPluginDefinition,
 	mapRecord,
 	IPCSettingsDefinition,
+	IPCStateDefinition,
 } from "castmate-schema"
 import { ActionDefinition, defineAction } from "../queue-system/action"
 import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
@@ -100,13 +102,9 @@ interface PluginPrivates {
 	profilesChanged: EventList<ProfilesChangedCallback>
 }
 
-interface StateObj<StateSchema extends Schema> {
-	value: SchemaType<StateSchema>
-}
-
 interface StateDefinition<StateSchema extends Schema = any> {
 	schema: StateSchema
-	obj: StateObj<StateSchema>
+	ref: ReactiveRef<ResolvedSchemaType<StateSchema>>
 }
 
 export function defineState<T extends Schema>(id: string, schema: T) {
@@ -117,15 +115,22 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 
 	initingPlugin.state.set(id, {
 		schema,
-		obj: result,
+		ref: result,
 	})
 
 	onLoad(async (plugin) => {
 		const initial = await constructDefault(schema)
 		const stateDef = plugin.state.get(id)
 		if (stateDef) {
-			stateDef.obj.value = initial
+			stateDef.ref.value = initial
 		}
+
+		runOnChange(
+			() => result.value,
+			async () => {
+				rendererUpdateState(plugin.id, id, serializeSchema(schema, result.value))
+			}
+		)
 	})
 
 	return result
@@ -166,9 +171,27 @@ function registerIPCSetting(setting: SettingDefinition, path: string) {
 	}
 }
 
+function toIPCState(state: StateDefinition, path: string): IPCStateDefinition {
+	const serialized = serializeSchema(state.schema, state.ref.value)
+	//console.log("Serializing", serialized, state.ref.value, typeof false, typeof serialized)
+	return {
+		schema: ipcConvertSchema(state.schema, path),
+		value: serializeSchema(state.schema, state.ref.value),
+	}
+}
+
+function registerIPCState(state: StateDefinition, path: string) {
+	ipcRegisterSchema(state.schema, path)
+}
+
 const rendererUpdateSettings = defineCallableIPC<(pluginId: string, settingId: string, value: any) => void>(
 	"plugins",
 	"updateSettings"
+)
+
+const rendererUpdateState = defineCallableIPC<(pluginId: string, stateId: string, value: any) => any>(
+	"plugins",
+	"updateState"
 )
 
 export function defineSetting<T extends Schema>(id: string, schema: T) {
@@ -356,10 +379,11 @@ export class Plugin {
 		mapRecord(this.actions, (k, v) => v.registerIPC(`${this.id}_actions_${k}`))
 		mapRecord(this.triggers, (k, v) => v.registerIPC(`${this.id}_triggers_${k}`))
 		mapRecord(this.settings, (k, v) => registerIPCSetting(v, `${this.id}_settings_${k}`))
+		mapRecord(this.state, (k, v) => registerIPCState(v, `${this.id}_state_${k}`))
 	}
 
 	toIPC(): IPCPluginDefinition {
-		return {
+		const result: IPCPluginDefinition = {
 			id: this.id,
 			name: this.name,
 			description: this.description,
@@ -369,6 +393,8 @@ export class Plugin {
 			actions: mapRecord(this.actions, (k, v) => v.toIPC(`${this.id}_actions_${k}`)),
 			triggers: mapRecord(this.triggers, (k, v) => v.toIPC(`${this.id}_triggers_${k}`)),
 			settings: mapRecord(this.settings, (k, v) => toIPCSetting(v, `${this.id}_settings_${k}`)),
+			state: mapRecord(this.state, (k, v) => toIPCState(v, `${this.id}_state_${k}`)),
 		}
+		return result
 	}
 }

@@ -15,6 +15,7 @@ import {
 	ActionInfo,
 	IPCDurationConfig,
 	IPCSettingsDefinition,
+	IPCStateDefinition,
 } from "castmate-schema"
 
 import { computed, ref, unref, type MaybeRefOrGetter, toValue, Component, markRaw } from "vue"
@@ -130,6 +131,18 @@ function ipcParseSettingsDefinition(def: IPCSettingsDefinition): SettingDefiniti
 	throw new Error()
 }
 
+export interface StateDefinition {
+	schema: Schema
+	value: any
+}
+
+function ipcParseStateDefinition(def: IPCStateDefinition): StateDefinition {
+	return {
+		schema: ipcParseSchema(def.schema),
+		value: def.value,
+	}
+}
+
 interface PluginDefinition {
 	readonly id: string
 	readonly name: string
@@ -141,6 +154,7 @@ interface PluginDefinition {
 	actions: Record<string, ActionDefinition>
 	triggers: Record<string, TriggerDefinition>
 	settings: Record<string, SettingDefinition>
+	state: Record<string, StateDefinition>
 }
 
 function ipcParsePluginDefinition(def: IPCPluginDefinition): PluginDefinition {
@@ -154,6 +168,7 @@ function ipcParsePluginDefinition(def: IPCPluginDefinition): PluginDefinition {
 		actions: mapKeys(def.actions, (key, value) => ipcParseActionDefinition(value)),
 		triggers: mapKeys(def.triggers, (key, value) => ipcParseTriggerDefinition(value)),
 		settings: mapKeys(def.settings, (key, value) => ipcParseSettingsDefinition(value)),
+		state: mapKeys(def.state, (key, value) => ipcParseStateDefinition(value)),
 	}
 
 	return pluginDef
@@ -187,6 +202,16 @@ export const usePluginStore = defineStore("plugins", () => {
 				const setting = plugin.settings[settingId]
 				if (setting?.type == "value") {
 					setting.value = value
+				}
+			}
+		})
+
+		handleIpcMessage("plugins", "updateState", (event, id: string, stateId: string, value: any) => {
+			const plugin = pluginMap.value.get(id)
+			if (plugin) {
+				const state = plugin.state[stateId]
+				if (state) {
+					state.value = value
 				}
 			}
 		})
@@ -379,4 +404,24 @@ export function useActionColors(selection: MaybeRefOrGetter<ActionSelection | un
 		lighterActionColor,
 		actionColorStyle: style,
 	}
+}
+
+export function useState(
+	stateSel: MaybeRefOrGetter<{ plugin: string | undefined; state: string | undefined } | null | undefined>
+) {
+	const pluginStore = usePluginStore()
+
+	return computed(() => {
+		const sel = toValue(stateSel)
+		if (!sel || !sel.plugin || !sel.state) return undefined
+
+		const plugin = pluginStore.pluginMap.get(sel.plugin)
+		if (!plugin) return undefined
+
+		const state = plugin.state[sel.state]
+
+		if (!state) return undefined
+
+		return state
+	})
 }
