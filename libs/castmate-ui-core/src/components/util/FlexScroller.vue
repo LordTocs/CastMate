@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -57,6 +57,10 @@ onMounted(() => {
 
 	scroller.value.scrollTop = props.scrollY
 	scroller.value.scrollLeft = props.scrollX
+})
+
+defineExpose({
+	scroller: computed(() => scroller.value),
 })
 </script>
 
