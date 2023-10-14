@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup w-full" @mousedown="stopEvent">
+	<div class="p-inputgroup" @mousedown="stopEvent">
 		<label-floater :no-float="noFloat" :label="schema.name" input-id="duration" v-slot="labelProps">
 			<duration-field v-model="model" :required="schema.required" v-bind="labelProps" />
 		</label-floater>

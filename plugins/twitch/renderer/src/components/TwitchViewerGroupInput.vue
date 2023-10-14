@@ -1,5 +1,5 @@
 <template>
-	<div class="tvg-input p-inputgroup w-full" @mousedown="stopPropagation" ref="container">
+	<div class="tvg-input p-inputgroup" @mousedown="stopPropagation" ref="container">
 		<div class="p-inputtext" @click="onClick">
 			{{ phrase }}
 		</div>

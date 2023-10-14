@@ -1,13 +1,13 @@
 <template>
 	<div style="padding-top: 1.5rem">
 		<form @submit.prevent="create">
-			<div class="p-inputgroup w-full pb-3">
+			<div class="p-inputgroup pb-3">
 				<span class="p-float-label">
 					<p-input-text id="l" v-model="name" ref="nameInput" autofocus />
 					<label for="l"> Queue Name </label>
 				</span>
 			</div>
-			<div class="p-inputgroup w-full">
+			<div class="p-inputgroup">
 				<p-check-box input-id="paused" v-model="paused" binary></p-check-box>
 				<label for="paused" class="ml-2"> Pause Execution </label>
 			</div>

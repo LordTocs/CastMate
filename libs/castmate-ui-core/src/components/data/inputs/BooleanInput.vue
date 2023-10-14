@@ -1,6 +1,6 @@
 <template>
 	<document-path :local-path="localPath">
-		<div class="p-inputgroup w-full" v-bind="$attrs">
+		<div class="p-inputgroup" v-bind="$attrs">
 			<p-check-box binary input-id="check" v-model="model" />
 			<label for="check" class="ml-2" v-if="schema.name"> {{ schema.name }} </label>
 		</div>

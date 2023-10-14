@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup w-full">
+	<div class="p-inputgroup">
 		<label-floater :label="schema.name" v-slot="labelProps" input-id="keyboardkey" :no-float="!!noFloat">
 			<input-box
 				class="key-input"

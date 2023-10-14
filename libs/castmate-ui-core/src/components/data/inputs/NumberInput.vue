@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup w-full">
+	<div class="p-inputgroup">
 		<template v-if="schema.enum">
 			<document-path :local-path="localPath">
 				<enum-input :schema="schema" v-model="model" :no-float="!!noFloat" input-id="text" :context="context" />
@@ -15,7 +15,7 @@
 			</template>
 			<template v-else>
 				<document-path :local-path="localPath">
-					<div class="w-full">
+					<div style="flex: 1">
 						<label-floater
 							:label="schema.name ?? ''"
 							:no-float="!!noFloat"

@@ -1,5 +1,5 @@
 <template>
-	<div class="autocomplete-container flex-grow-1 flex-shrink-1" ref="container">
+	<div class="autocomplete-container flex-grow-1" ref="container">
 		<div class="p-inputgroup" @mousedown="stopPropagation">
 			<label-floater :no-float="noFloat" :label="label" v-slot="labelProps" :input-id="inputId">
 				<input-box

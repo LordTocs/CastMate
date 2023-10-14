@@ -1,6 +1,6 @@
 <template>
-	<div class="container w-full" ref="container">
-		<div class="p-inputgroup w-full" @mousedown="stopPropagation">
+	<div class="container" ref="container">
+		<div class="p-inputgroup" @mousedown="stopPropagation">
 			<label-floater :no-float="props.noFloat" :label="schema.name" input-id="color" v-slot="labelProps">
 				<template-toggle
 					v-model="model"

@@ -7,7 +7,7 @@
 			@mousedown="onMouseDown"
 		>
 			<div class="p-menu-start">
-				<span class="w-full p-inputgroup">
+				<span class="p-inputgroup">
 					<p-input-text
 						v-model="filter"
 						ref="filterInput"

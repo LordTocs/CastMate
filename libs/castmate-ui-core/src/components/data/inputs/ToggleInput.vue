@@ -1,6 +1,6 @@
 <template>
 	<document-path :local-path="localPath">
-		<div class="p-inputgroup w-full" v-bind="$attrs">
+		<div class="p-inputgroup" v-bind="$attrs">
 			<toggle-switch
 				input-id="switch"
 				v-model="model"

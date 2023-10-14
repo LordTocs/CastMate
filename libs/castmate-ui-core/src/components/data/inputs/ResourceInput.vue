@@ -1,5 +1,5 @@
 <template>
-	<div class="w-full flex flex-row">
+	<div class="flex flex-row">
 		<c-autocomplete
 			v-model="model"
 			:required="!!schema.required"

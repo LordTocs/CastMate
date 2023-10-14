@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup w-full" @mousedown="stopPropagation">
+	<div class="p-inputgroup" @mousedown="stopPropagation">
 		<document-path :local-path="localPath">
 			<label-floater
 				:label="schema.name"

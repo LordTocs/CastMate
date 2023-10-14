@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup w-full" @mousedown="stopPropagation">
+	<div class="p-inputgroup" @mousedown="stopPropagation">
 		<label-floater :label="schema.name" :no-float="noFloat" input-id="media" v-slot="labelProps">
 			<input-box :model="model" v-bind="labelProps" @click="onClick" :placeholder="schema.name"> </input-box>
 		</label-floater>

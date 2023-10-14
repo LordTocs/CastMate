@@ -9,9 +9,10 @@
 		}"
 	>
 		<div
-			class="p-inputtext p-component w-full"
+			class="p-inputtext p-component"
 			:class="{ 'focus-outline': focused, 'no-left-bezel': !bezelLeft, 'no-right-bezel': !bezelRight }"
 			:tabindex="tabIndex"
+			style="width: unset"
 			@focus="$emit('focus', $event)"
 			@blur="$emit('blur', $event)"
 		>

@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup w-full">
+	<div class="p-inputgroup">
 		<span class="force-float-label component-span">
 			<span class="component-span" input-id="range">
 				<document-path :local-path="localPath">
