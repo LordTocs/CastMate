@@ -182,9 +182,12 @@ export async function constructDefault<T extends Schema>(schema: T): Promise<Sch
 				return cloneDeep(schema.default)
 			}
 		} else {
-			if (schema.type == Array) {
-				return [] as SchemaType<T>
-			}
+			//Special cases for primitives
+			if (schema.type == Array) return [] as SchemaType<T>
+			if (schema.type == Number) return 0 as SchemaType<T>
+			if (schema.type == String) return "" as SchemaType<T>
+			if (schema.type == Boolean) return false as SchemaType<T>
+
 			if ("factoryCreate" in schema.type) {
 				return schema.type.factoryCreate() as SchemaType<T>
 			}
