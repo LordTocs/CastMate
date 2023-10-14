@@ -1,5 +1,6 @@
 import { Arrayable, useEventListener } from "@vueuse/core"
-import { type MaybeRefOrGetter, toValue, onMounted, watch, onUnmounted } from "vue"
+import { type MaybeRefOrGetter, toValue, onMounted, watch, onUnmounted, ref } from "vue"
+import { isChildOfClass } from "./dom"
 
 export type DragEventWithDataTransfer = DragEvent & { dataTransfer: DataTransfer }
 
@@ -31,7 +32,7 @@ interface FromTo {
 }
 
 export function useDragEnter(
-	element: MaybeRefOrGetter<HTMLElement | null>,
+	element: MaybeRefOrGetter<HTMLElement | null | undefined>,
 	dragDataTypes: MaybeRefOrGetter<Arrayable<string>>,
 	func: (ev: DragEventWithDataTransfer) => void
 ) {
@@ -61,7 +62,7 @@ export function useDragEnter(
 }
 
 export function useDragLeave(
-	element: MaybeRefOrGetter<HTMLElement | null>,
+	element: MaybeRefOrGetter<HTMLElement | null | undefined>,
 	dragDataTypes: MaybeRefOrGetter<Arrayable<string>>,
 	func: (ev: DragEventWithDataTransfer) => void
 ) {
@@ -90,7 +91,7 @@ export function useDragLeave(
 }
 
 export function useDragOver(
-	element: MaybeRefOrGetter<HTMLElement | null>,
+	element: MaybeRefOrGetter<HTMLElement | null | undefined>,
 	dragDataTypes: MaybeRefOrGetter<Arrayable<string>>,
 	func: (ev: DragEventWithDataTransfer) => void
 ) {
@@ -106,9 +107,9 @@ export function useDragOver(
 }
 
 export function useDrop(
-	element: MaybeRefOrGetter<HTMLElement | null>,
+	element: MaybeRefOrGetter<HTMLElement | null | undefined>,
 	dragDataTypes: MaybeRefOrGetter<Arrayable<string>>,
-	func: (ev: DragEventWithDataTransfer) => void
+	func: (ev: DragEventWithDataTransfer) => any
 ) {
 	useEventListener(element, "drop", (ev: DragEvent) => {
 		if (!isDragRelevent(ev, dragDataTypes)) return
@@ -117,6 +118,48 @@ export function useDrop(
 		ev.preventDefault()
 
 		func(ev)
+	})
+}
+
+export function useDragStart(
+	element: MaybeRefOrGetter<HTMLElement | null | undefined>,
+	handleClass: MaybeRefOrGetter<string>,
+	func: (ev: DragEventWithDataTransfer) => any
+) {
+	const dragTarget = ref<HTMLElement>()
+
+	useEventListener(element, "mousedown", (ev: MouseEvent) => {
+		dragTarget.value = ev.target as HTMLElement
+		if (isChildOfClass(dragTarget.value, toValue(handleClass))) {
+			ev.stopPropagation()
+		}
+	})
+
+	useEventListener(element, "dragstart", (ev: DragEvent) => {
+		if (!ev.target) return
+		if (!ev.dataTransfer) return
+
+		if (!dragTarget.value || !isChildOfClass(dragTarget.value, toValue(handleClass))) {
+			ev.preventDefault()
+			ev.stopPropagation()
+			return //Don't drag!
+		}
+
+		func(ev as DragEventWithDataTransfer)
+
+		ev.stopPropagation()
+	})
+}
+
+export function useDragEnd(
+	element: MaybeRefOrGetter<HTMLElement | null | undefined>,
+	func: (ev: DragEventWithDataTransfer) => any
+) {
+	useEventListener(element, "dragend", (ev: DragEvent) => {
+		if (!ev.target) return
+		if (!ev.dataTransfer) return
+
+		func(ev as DragEventWithDataTransfer)
 	})
 }
 
