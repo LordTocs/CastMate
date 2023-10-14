@@ -10,6 +10,10 @@ a.p-button {
 	text-decoration: none;
 }
 
+.p-inputgroup {
+	width: unset !important;
+}
+
 :root {
 	--surface-a: #212121;
 	--surface-b: #121212;
