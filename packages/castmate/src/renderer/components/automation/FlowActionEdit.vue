@@ -15,7 +15,12 @@
 		</div>
 		<template v-for="(flow, i) in model.subFlows" :key="flow.id">
 			<div class="flow-row">
-				<div class="flow-side" ref="sides" :class="{ 'is-testing': testTime != null }"></div>
+				<div class="flow-side" ref="sides" :class="{ 'is-testing': testTime != null }">
+					<div class="flow-data"></div>
+					<div class="flow-side-indicator">
+						{{ i + 1 }}
+					</div>
+				</div>
 				<automation-drop-zone
 					:drop-key="`${modelValue.id}-${flow.id}`"
 					:key="`${modelValue.id}-${flow.id}`"
@@ -211,6 +216,25 @@ defineExpose({
 	background-color: var(--action-color);
 	border-left: solid 2px var(--lighter-action-color);
 	border-right: solid 2px var(--lighter-action-color);
+	display: flex;
+	flex-direction: row;
+}
+
+.flow-data {
+	flex: 1;
+}
+
+.flow-side-indicator {
+	background-color: var(--darker-action-color);
+	/* color: var(--action-color); */
+	width: 1rem;
+	height: var(--timeline-height);
+	border-top-left-radius: var(--border-radius);
+	border-bottom-left-radius: var(--border-radius);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
 }
 
 .is-selected .flow-side {
@@ -219,12 +243,16 @@ defineExpose({
 
 .flow-cap {
 	min-width: calc(var(--instant-width) * 1.5);
+	height: var(--timeline-height);
+	display: flex;
+	flex-direction: column;
 }
 
 .flow-cap-bottom {
 	display: flex;
 	flex-direction: row;
-	height: calc(var(--timeline-height) / 4);
+	/* height: calc(var(--timeline-height) / 4); */
+	flex: 1;
 }
 
 .flow-cap-bottom-right {

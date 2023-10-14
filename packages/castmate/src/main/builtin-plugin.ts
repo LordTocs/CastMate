@@ -27,14 +27,31 @@ export default definePlugin(
 			icon: "mdi mdi-dice-multiple",
 			config: {
 				type: Object,
+				properties: {},
+			},
+			flowConfig: {
+				type: Object,
 				properties: {
-					hello: { type: String, name: "Hello" },
+					weight: { type: Number, name: "Weight", required: true, default: 1 },
 				},
 			},
 			async invoke(config, flows, contextData, abortSignal) {
-				const keys = Object.keys(flows)
-				const idx = Math.floor(Math.random() * keys.length)
-				return keys[idx]
+				let weightTotal = 0
+				for (const [key, flow] of Object.entries(flows)) {
+					weightTotal += flow.weight
+				}
+
+				let targetWeight = Math.floor(Math.random() * weightTotal)
+
+				for (const [key, flow] of Object.entries(flows)) {
+					targetWeight -= flow.weight
+
+					if (targetWeight <= 0) {
+						return key
+					}
+				}
+
+				return ""
 			},
 		})
 	}

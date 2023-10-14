@@ -287,6 +287,9 @@ class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends S
 
 	registerIPC(path: string) {
 		ipcRegisterSchema(this.spec.config, `${path}_config`)
+		if (this.spec.flowConfig) {
+			ipcRegisterSchema(this.spec.flowConfig, `${path}_flowConfig`)
+		}
 	}
 
 	toIPC(path: string): IPCActionDefinition {
@@ -298,6 +301,9 @@ class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends S
 			icon: this.icon,
 			color: this.color,
 			config: ipcConvertSchema(this.spec.config, `${path}_config`),
+			...(this.spec.flowConfig
+				? { flowConfig: ipcConvertSchema(this.spec.flowConfig, `${path}_flowConfig`) }
+				: {}),
 		}
 	}
 

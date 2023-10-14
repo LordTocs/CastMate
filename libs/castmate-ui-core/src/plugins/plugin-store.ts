@@ -58,7 +58,7 @@ function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
 			color: def.color,
 			icon: def.icon,
 			config: ipcParseSchema(def.config),
-			//...(def.flowSchema ? { result: ipcParseSchema(def.result) } : {}),
+			...(def.flowConfig ? { flowConfig: ipcParseSchema(def.flowConfig) } : {}),
 		}
 	} else if (def.type == "regular") {
 		return {
@@ -222,12 +222,12 @@ export const usePluginStore = defineStore("plugins", () => {
 			result.subFlows = [
 				{
 					id: nanoid(),
-					config: {},
+					config: action.flowConfig ? await constructDefault(action.flowConfig) : {},
 					actions: [],
 				},
 				{
 					id: nanoid(),
-					config: {},
+					config: action.flowConfig ? await constructDefault(action.flowConfig) : {},
 					actions: [],
 				},
 			]

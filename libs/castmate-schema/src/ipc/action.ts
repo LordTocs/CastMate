@@ -69,6 +69,7 @@ export interface IPCFlowActionDefinition {
 	readonly color?: Color
 
 	readonly config: IPCSchema
+	readonly flowConfig?: IPCSchema
 }
 
 export type IPCActionDefinition = IPCRegularActionDefinition | IPCFlowActionDefinition
