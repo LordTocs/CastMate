@@ -1,5 +1,5 @@
 import { useEventListener } from "@vueuse/core"
-import { computed, MaybeRefOrGetter, toValue, ref, toRaw, nextTick } from "vue"
+import { computed, MaybeRefOrGetter, toValue, ref, toRaw, nextTick, provide, inject, ComputedRef } from "vue"
 
 export function isChildOfClass(element: HTMLElement, clazz: string) {
 	if (element.classList.contains(clazz)) return true
@@ -208,4 +208,25 @@ export function stopPropagation(ev: { stopPropagation(): any }) {
 export function stopEvent(ev: { stopPropagation(): any; preventDefault(): any }) {
 	ev.stopPropagation()
 	ev.preventDefault()
+}
+
+export type DOMAttachable = "body" | "self" | string | undefined | HTMLElement
+
+export function provideScrollAttachable(elem: MaybeRefOrGetter<DOMAttachable>) {
+	provide(
+		"scrollAttachable",
+		computed(() => toValue(elem))
+	)
+}
+
+export function injectScrollAttachable(defaultAttach?: MaybeRefOrGetter<DOMAttachable>) {
+	return inject<ComputedRef<DOMAttachable>>(
+		"scrollAttachable",
+		computed(() => {
+			if (defaultAttach != null) {
+				return toValue(defaultAttach)
+			}
+			return "body"
+		})
+	)
 }
