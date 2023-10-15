@@ -1,5 +1,8 @@
 <template>
-	<div class="boolean-group-card" :class="{ 'boolean-and': isAnd, 'boolean-or': isOr }" :draggable="showDrag">
+	<div
+		class="boolean-group-card"
+		:class="{ 'boolean-and': isAnd, 'boolean-or': isOr, 'boolean-selected': isSelected, 'boolean-true': isTrue }"
+	>
 		<div class="boolean-group-card-header">
 			<i v-if="showDrag" class="mdi mdi-drag boolean-drag-handle" style="font-size: 2rem" />
 			<boolean-group-operator-selector v-model="operator" />
@@ -9,7 +12,7 @@
 			<p-button v-if="showDrag" text icon="mdi mdi-delete" @click="emit('delete', $event)"></p-button>
 		</div>
 		<div class="boolean-group-card-body" ref="groupBody">
-			<template v-if="model && model.operands.length > 0" v-for="(operand, i) in model.operands">
+			<!-- <template v-if="model && model.operands.length > 0" v-for="(operand, i) in model.operands">
 				<boolean-group-expression
 					v-if="'operands' in operand"
 					v-model="(model.operands[i] as BooleanExpressionGroup)"
@@ -21,23 +24,43 @@
 					@delete="deleteOperand(i)"
 				/>
 			</template>
-			<div class="empty-body" v-else></div>
+			<div class="empty-body" v-else></div> -->
+			<document-data-collection
+				v-model="model.operands"
+				:data-component="BooleanSubExpression"
+				local-path="operands"
+				v-if="model"
+				handle-class="boolean-drag-handle"
+				data-type="boolean-sub-expression"
+			>
+				<template #no-items>
+					<div class="flex flex-column align-items-center p-3">EMPTY GROUP</div>
+				</template>
+			</document-data-collection>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { BooleanExpressionGroup, BooleanValueExpression } from "castmate-schema"
+import { BooleanSubExpressionGroup, BooleanValueExpression } from "castmate-schema"
 import BooleanGroupOperatorSelector from "./BooleanGroupOperatorSelector.vue"
 import BooleanValueExpressionEditor from "./BooleanValueExpressionEditor.vue"
+
+import BooleanSubExpression from "./BooleanSubExpression.vue"
+import { DocumentDataCollection } from "../../../../main"
+
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import { useDrop } from "../../../../main"
+import { nanoid } from "nanoid/non-secure"
+import { BooleanExpressionGroup } from "castmate-schema"
+import { useBooleanExpressionEvaluator } from "./boolean-helpers"
 
 const props = withDefaults(
 	defineProps<{
 		modelValue: BooleanExpressionGroup | undefined
 		showDrag?: boolean
+		selectedIds: string[]
 	}>(),
 	{
 		showDrag: true,
@@ -58,6 +81,7 @@ const isOr = computed(() => {
 
 function addValue() {
 	const defaultValueExpression: BooleanValueExpression = {
+		id: nanoid(),
 		lhs: {
 			type: "state",
 			plugin: undefined,
@@ -82,7 +106,8 @@ function addValue() {
 }
 
 function addGroup() {
-	const defaultGroup: BooleanExpressionGroup = {
+	const defaultGroup: BooleanSubExpressionGroup = {
+		id: nanoid(),
 		operator: "or",
 		operands: [],
 	}
@@ -129,6 +154,12 @@ const groupBody = ref<HTMLElement>()
 useDrop(groupBody, "boolean-sub-expression", (ev) => {
 	console.log("Dropped")
 })
+
+const isSelected = computed(() =>
+	props.modelValue && "id" in props.modelValue ? props.selectedIds.includes(props.modelValue.id as string) : false
+)
+
+const isTrue = useBooleanExpressionEvaluator(() => props.modelValue)
 </script>
 
 <style scoped>
@@ -145,6 +176,10 @@ useDrop(groupBody, "boolean-sub-expression", (ev) => {
 	border-color: blue;
 }
 
+.boolean-group-card.boolean-selected {
+	border-color: white !important;
+}
+
 .boolean-group-card-header {
 	display: flex;
 	flex-direction: row;
@@ -156,12 +191,12 @@ useDrop(groupBody, "boolean-sub-expression", (ev) => {
 	border-top-left-radius: var(--border-radius);
 }
 
-.boolean-and .boolean-group-card-header {
-	background-color: green;
+.boolean-and > .boolean-group-card-header {
+	background-color: var(--and-color);
 }
 
-.boolean-or .boolean-group-card-header {
-	background-color: blue;
+.boolean-or > .boolean-group-card-header {
+	background-color: var(--or-color);
 }
 
 .boolean-group-card-body {
@@ -173,6 +208,10 @@ useDrop(groupBody, "boolean-sub-expression", (ev) => {
 
 	border-bottom-right-radius: var(--border-radius);
 	border-bottom-left-radius: var(--border-radius);
+}
+
+.boolean-true > .boolean-group-card-body {
+	background-color: var(--true-color);
 }
 
 .empty-body {

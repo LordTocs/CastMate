@@ -61,6 +61,9 @@ a.p-button {
 	--maskbg: rgba(0, 0, 0, 0.4);
 	--highlight-bg: rgba(158, 173, 230, 0.16);
 	--highlight-text-color: #9eade6;
+	--or-color: blue;
+	--and-color: green;
+	--true-color: #262b2c;
 	color-scheme: dark;
 }
 

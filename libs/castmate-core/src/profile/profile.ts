@@ -28,6 +28,10 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 			name: name ?? "",
 			activationMode: "toggle",
 			triggers: [],
+			activationCondition: {
+				operator: "or",
+				operands: [],
+			},
 		}
 	}
 

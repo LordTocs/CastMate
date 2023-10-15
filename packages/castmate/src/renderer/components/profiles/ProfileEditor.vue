@@ -33,12 +33,13 @@
 			</document-data-collection>
 
 			<h1>Activation Conditions</h1>
+			<boolean-expression-input v-model="model.activationCondition" />
 		</div>
 	</flex-scroller>
 </template>
 
 <script setup lang="ts">
-import { DocumentDataCollection, FlexScroller, ProfileView } from "castmate-ui-core"
+import { DocumentDataCollection, FlexScroller, ProfileView, BooleanExpressionInput } from "castmate-ui-core"
 import { ProfileData } from "castmate-schema"
 import TriggerEdit from "./TriggerEdit.vue"
 import { computed, useModel } from "vue"

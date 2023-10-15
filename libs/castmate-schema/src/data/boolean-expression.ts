@@ -23,6 +23,7 @@ interface ValueExpressionValue {
 export type ExpressionValue = StateExpressionValue | ResourceExpressionValue | ValueExpressionValue
 
 export interface BooleanValueExpression {
+	id: string
 	operator: ValueCompareOperator
 	lhs: ExpressionValue
 	rhs: ExpressionValue
@@ -32,7 +33,11 @@ export interface BooleanExpressionGroup {
 	operator: "and" | "or"
 	operands: BooleanSubExpression[]
 }
-type BooleanSubExpression = BooleanExpressionGroup | BooleanValueExpression
+
+export interface BooleanSubExpressionGroup extends BooleanExpressionGroup {
+	id: string
+}
+export type BooleanSubExpression = BooleanSubExpressionGroup | BooleanValueExpression
 
 export type BooleanExpression = BooleanExpressionGroup
 export const BooleanExpression = {

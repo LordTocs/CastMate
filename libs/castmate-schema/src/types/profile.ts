@@ -1,3 +1,4 @@
+import { BooleanExpression } from "../data/boolean-expression"
 import { Toggle } from "../data/toggle"
 import { FloatingSequence, Sequence } from "./sequence"
 
@@ -18,4 +19,5 @@ export interface ProfileData {
 	name: string
 	activationMode: Toggle
 	triggers: TriggerData[]
+	activationCondition: BooleanExpression
 }

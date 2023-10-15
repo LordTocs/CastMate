@@ -19,6 +19,7 @@
 						v-model="modelObj[i]"
 						v-model:view="view[i]"
 						:selectedIds="selection"
+						@delete="deleteItem(i)"
 					></component>
 				</document-path>
 			</div>
@@ -279,7 +280,7 @@ function getSelectedViewData(copy: boolean) {
 //In order to check if the handle class is respected we need to save off the mousedown event's target, since dragevent originates from the draggable div
 let dragTarget: HTMLElement | null = null
 function itemMouseDown(i: number, evt: MouseEvent) {
-	console.log("Drag Handling Mouse Down")
+	console.log("Drag Handling Mouse Down", i)
 	dragTarget = evt.target as HTMLElement
 	if (isChildOfClass(dragTarget, props.handleClass)) {
 		evt.stopPropagation()
@@ -287,12 +288,11 @@ function itemMouseDown(i: number, evt: MouseEvent) {
 }
 
 function itemDragStart(i: number, evt: DragEvent) {
-	console.log("Drag Start", evt.target, evt)
-
 	if (!evt.target) return
 	if (!evt.dataTransfer) return
 
 	if (dragTarget && isChildOfClass(dragTarget, props.handleClass)) {
+		console.log("Drag Start", evt.target, evt)
 		selectState.cancelSelection()
 
 		draggingItems.value = true
@@ -304,6 +304,8 @@ function itemDragStart(i: number, evt: DragEvent) {
 		evt.dataTransfer.effectAllowed = evt.altKey ? "copy" : "move"
 		evt.dataTransfer.setData(props.dataType, JSON.stringify(getSelectedData(evt.altKey)))
 		evt.dataTransfer.setData(`${props.dataType}-view`, JSON.stringify(getSelectedViewData(evt.altKey)))
+
+		evt.stopPropagation()
 	} else {
 		evt.preventDefault()
 	}
@@ -331,6 +333,10 @@ function itemDragEnd(i: number, evt: DragEvent) {
 
 	draggingItems.value = false
 	droppedLocal.value = false
+}
+
+function deleteItem(index: number) {
+	modelObj.value.splice(index, 1)
 }
 </script>
 

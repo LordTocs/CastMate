@@ -1,5 +1,5 @@
 <template>
-	<div class="state-expression-value" draggable="true" ref="expressionDiv">
+	<div class="state-expression-value" ref="expressionDiv" :class="{ selected: isSelected, 'boolean-true': isTrue }">
 		<div class="state-expression-left boolean-drag-handle">
 			<i class="mdi mdi-drag" style="font-size: 2rem"></i>
 		</div>
@@ -26,13 +26,19 @@ import StateSelector from "../state/StateSelector.vue"
 import ValueCompareOperatorSelector from "./ValueCompareOperatorSelector.vue"
 import { DataInput, useState } from "../../../../main"
 import PButton from "primevue/button"
+import { useBooleanExpressionEvaluator } from "./boolean-helpers"
 
 const props = defineProps<{
 	modelValue: BooleanValueExpression
+	selectedIds: string[]
 }>()
 
 const model = useModel(props, "modelValue")
 const emit = defineEmits(["update:modelValue", "delete"])
+
+const isSelected = computed(() => props.selectedIds.includes(model.value.id))
+
+const isTrue = useBooleanExpressionEvaluator(() => props.modelValue)
 
 const lhsState = computed({
 	get() {
@@ -82,9 +88,13 @@ const selectedState = useState(() => lhsState.value)
 	flex-direction: row;
 	align-items: center;
 
-	border: solid 1px var(--surface-border);
+	border: solid 2px var(--surface-border);
 
 	border-radius: var(--border-radius);
+}
+
+.state-expression-value.selected {
+	border-color: white;
 }
 
 .state-expression-left {
@@ -100,6 +110,10 @@ const selectedState = useState(() => lhsState.value)
 	background-color: var(--surface-300);
 }
 
+.boolean-true > .state-expression-right {
+	background-color: var(--true-color);
+}
+
 .state-expression-right {
 	flex: 1;
 	display: flex;
@@ -108,6 +122,7 @@ const selectedState = useState(() => lhsState.value)
 	gap: 0.5rem;
 	padding: 0.5rem;
 	padding-top: 1.6rem;
+	background-color: var(--surface-0);
 }
 
 .boolean-drag-handle {
