@@ -2,6 +2,10 @@
 	font-family: "primeicons"; /* Without this the icons will all be off center. Fonts are weird. Don't think about this too hard */
 }
 
+.active-profile-icon {
+	color: var(--primary-color);
+}
+
 .no-focus-highlight {
 	box-shadow: none !important;
 }

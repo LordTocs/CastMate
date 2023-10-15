@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { QueuedSequence, ResourceData, ProfileData } from "castmate-schema"
+import { QueuedSequence, ResourceData, ProfileConfig } from "castmate-schema"
 import { useColors, useResourceData, useTrigger, useTriggerColors } from "castmate-ui-core"
 import PButton from "primevue/button"
 import { computed } from "vue"
@@ -15,7 +15,7 @@ const props = defineProps<{
 	queueItem: QueuedSequence
 }>()
 
-const profiles = useResourceData<ResourceData<ProfileData>>("Profile")
+const profiles = useResourceData<ResourceData<ProfileConfig>>("Profile")
 
 const queuedTriggerData = computed(() => {
 	if (props.queueItem.source.type != "profile") return undefined

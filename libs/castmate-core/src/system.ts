@@ -35,7 +35,7 @@ export async function initializeCastMate() {
 	ActionQueueManager.initialize()
 
 	ProfileManager.initialize()
-	ProfileManager.getInstance().recomputeActiveProfiles()
+	ProfileManager.getInstance().finishSetup()
 
 	//How do we load plugins???
 	//await loadPlugin("twitch")

@@ -15,16 +15,29 @@ export const ProfileManager = Service(
 			return this._inactiveProfiles
 		}
 
+		private inited: boolean = false
+
+		finishSetup() {
+			this.inited = true
+			this.recomputeActiveProfiles()
+		}
+
 		recomputeActiveProfiles() {
+			if (!this.inited) return
+
 			const active: Profile[] = []
+			const inactive: Profile[] = []
 
 			for (const profile of Profile.storage) {
-				//TODO: State check
-				active.push(profile)
+				if (profile.state.active) {
+					active.push(profile)
+				} else {
+					inactive.push(profile)
+				}
 			}
 
 			const newActive = active.filter((p) => !this.activeProfiles.includes(p))
-			const newInactive = active.filter((p) => this.activeProfiles.includes(p)) //TODO: Fix
+			const newInactive = inactive.filter((p) => !this.inactiveProfiles.includes(p))
 
 			const needsUpdate = newActive.length > 0 || newInactive.length > 0
 			if (!needsUpdate) return
@@ -37,10 +50,19 @@ export const ProfileManager = Service(
 				//TODO: OnProfileDeactivate
 			}
 
+			console.log(
+				"Active Profiles",
+				active.map((p) => p.config.name)
+			)
+			console.log(
+				"Inactive Profiles",
+				inactive.map((p) => p.config.name)
+			)
+
 			this._activeProfiles = active
+			this._inactiveProfiles = inactive
 
 			//Notify the UI
-
 			PluginManager.getInstance().onProfilesChanged(this._activeProfiles, this._inactiveProfiles)
 		}
 	}
