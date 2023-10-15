@@ -41,12 +41,19 @@ export default definePlugin(
 					weightTotal += flow.weight
 				}
 
-				let targetWeight = Math.floor(Math.random() * weightTotal)
+				//console.log("Random Weight Total", weightTotal)
+
+				let targetWeight = Math.random() * weightTotal
+
+				//console.log("Random Target Weight", targetWeight)
 
 				for (const [key, flow] of Object.entries(flows)) {
 					targetWeight -= flow.weight
 
+					//console.log("   ", targetWeight)
+
 					if (targetWeight <= 0) {
+						//console.log("Random", key)
 						return key
 					}
 				}
