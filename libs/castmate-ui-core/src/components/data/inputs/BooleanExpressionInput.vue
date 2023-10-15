@@ -1,6 +1,6 @@
 <template>
 	<div class="boolean-expression-input" tabindex="-1">
-		<boolean-group-expression v-model="model" :show-drag="false" />
+		<boolean-group-expression v-model="model" :show-drag="false" :selected-ids="[]" />
 	</div>
 </template>
 
