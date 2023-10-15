@@ -15,9 +15,13 @@ export interface TriggerData extends AutomationData {
 	config: any
 }
 
-export interface ProfileData {
+export interface ProfileConfig {
 	name: string
 	activationMode: Toggle
 	triggers: TriggerData[]
 	activationCondition: BooleanExpression
+}
+
+export interface ProfileState {
+	active: boolean
 }

@@ -1,16 +1,10 @@
-import { ProfileData, Sequence, TriggerData } from "castmate-schema"
+import { ProfileState, ProfileConfig, Sequence, TriggerData } from "castmate-schema"
 import { Resource, ResourceStorage } from "../resources/resource"
 import { FileResource } from "../resources/file-resource"
 import { nanoid } from "nanoid/non-secure"
 
 export interface SequenceProvider {
 	getSequence(id: string): Sequence | undefined
-}
-
-export interface ProfileConfig extends ProfileData {}
-
-export interface ProfileState {
-	action: boolean
 }
 
 export class Profile extends FileResource<ProfileConfig, ProfileState> implements SequenceProvider {
@@ -32,6 +26,10 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 				operator: "or",
 				operands: [],
 			},
+		}
+
+		this.state = {
+			active: false,
 		}
 	}
 

@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { DocumentDataCollection, FlexScroller, ProfileView, BooleanExpressionInput } from "castmate-ui-core"
-import { ProfileData } from "castmate-schema"
+import { ProfileConfig } from "castmate-schema"
 import TriggerEdit from "./TriggerEdit.vue"
 import { computed, useModel } from "vue"
 import PButton from "primevue/button"
@@ -48,7 +48,7 @@ import { nanoid } from "nanoid/non-secure"
 
 const props = withDefaults(
 	defineProps<{
-		modelValue: ProfileData
+		modelValue: ProfileConfig
 		view: ProfileView
 	}>(),
 	{

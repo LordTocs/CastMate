@@ -12,7 +12,9 @@
 			<i class="chevron-spacer" v-else></i>
 		</slot>
 		<div class="project-item-title">{{ item.title }}</div>
-		<slot name="end"></slot>
+		<slot name="end">
+			<component v-if="item.endComponent" :is="item.endComponent" :item="item" />
+		</slot>
 		<p-context-menu ref="contextMenu" :model="menuItems" />
 	</div>
 </template>

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { shallowRef, ComputedRef, computed, ref, App, VueElementConstructor } from "vue"
+import { shallowRef, ComputedRef, computed, ref, App, VueElementConstructor, Component } from "vue"
 import { NamedData, useDockingStore, useResourceData, useResourceStore } from "../main"
 import NameDialogVue from "../components/dialogs/NameDialog.vue"
 import { ResourceData } from "castmate-schema"
@@ -11,6 +11,7 @@ export interface ProjectItem {
 	open?(): any
 	rename?(name: string): any
 	delete?(): any
+	endComponent?: Component
 }
 
 export type ProjectGroupItem = ProjectItem | ProjectGroup
