@@ -85,9 +85,7 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 			} else {
 				this.state.active = this.config.activationMode
 			}
-			if (currentActive != this.state.active) {
-				ProfileManager.getInstance()?.recomputeActiveProfiles()
-			}
+			ProfileManager.getInstance()?.recomputeActiveProfiles()
 		})
 	}
 

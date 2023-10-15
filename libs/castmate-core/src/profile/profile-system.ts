@@ -39,9 +39,6 @@ export const ProfileManager = Service(
 			const newActive = active.filter((p) => !this.activeProfiles.includes(p))
 			const newInactive = inactive.filter((p) => !this.inactiveProfiles.includes(p))
 
-			const needsUpdate = newActive.length > 0 || newInactive.length > 0
-			if (!needsUpdate) return
-
 			for (const newlyActive of newActive) {
 				//TODO: OnProfileActivate
 			}

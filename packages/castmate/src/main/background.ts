@@ -4,7 +4,7 @@ import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer"
 //import electronUpdater from "electron-updater"
 import { app, BrowserWindow, ipcMain } from "electron"
 import { createWindow } from "./electron/electron-helpers"
-import { initializeCastMate } from "castmate-core"
+import { initializeCastMate, finializeCastMateSetup } from "castmate-core"
 import { loadPlugins } from "./plugins"
 
 const isDevelopment = true //TODO: import.meta.env.DEV
@@ -48,6 +48,8 @@ app.whenReady().then(async () => {
 	await initializeCastMate()
 
 	await loadPlugins()
+
+	await finializeCastMateSetup()
 
 	//initCastMate(mainWindow)
 
