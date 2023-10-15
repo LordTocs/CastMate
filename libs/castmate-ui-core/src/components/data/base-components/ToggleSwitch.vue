@@ -1,8 +1,8 @@
 <template>
 	<div class="toggler" :class="{ [`toggle-${modelValue ?? false}`]: true }">
-		<div class="section-false" @click="model = false"></div>
-		<div class="section-toggle" @click="model = 'toggle'"></div>
-		<div class="section-true" @click="model = true"></div>
+		<div class="section-false" @click="setValue(false, $event)"></div>
+		<div class="section-toggle" @click="setValue('toggle', $event)"></div>
+		<div class="section-true" @click="setValue(true, $event)"></div>
 		<div class="toggle-ball" @click="cycleInput">
 			<i class="toggle-icon" :class="icon" style="color: black" />
 		</div>
@@ -29,6 +29,11 @@ const props = withDefaults(
 )
 
 const model = useModel(props, "modelValue")
+
+function setValue(value: Toggle, ev: MouseEvent) {
+	model.value = value
+	ev.stopPropagation()
+}
 
 function cycleInput(ev: MouseEvent) {
 	if (!props.modelValue) {
