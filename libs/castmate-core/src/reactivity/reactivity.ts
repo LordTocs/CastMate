@@ -3,6 +3,7 @@
 
 import { AsyncLocalStorage } from "node:async_hooks"
 import { isArray, isObject, isString, isSymbol } from "../util/type-helpers"
+import { isResource } from "../resources/resource"
 
 const activeEffectStorage = new AsyncLocalStorage<ReactiveEffect>()
 
@@ -134,22 +135,12 @@ class ReactiveProxy<T extends object> {
 
 		let result = Reflect.get(target, propKey, receiver) as T
 
-		if (shouldTrack(target, propKey)) {
-			DependencyStorage.getPropDependency(target, propKey).track()
-		}
-
-		if (isObject(result)) {
-			result = reactify(result)
-		}
-
-		return result
+		return ReactiveGet(result, target, propKey)
 	}
 	set(target: T, propKey: PropertyKey, newValue: any, receiver: any) {
 		Reflect.set(target, propKey, newValue, receiver)
 
-		if (shouldTrack(target, propKey)) {
-			DependencyStorage.getPropDependency(target, propKey).notify()
-		}
+		ReactiveSet(target, propKey)
 
 		return true
 	}
@@ -179,7 +170,13 @@ export function reactify<T extends object>(obj: T) {
 	if (existing != null) return existing as T
 
 	//TODO: async race here
-	return new Proxy(obj, new ReactiveProxy<T>())
+	try {
+		return new Proxy(obj, new ReactiveProxy<T>())
+	} catch (err) {
+		console.error(err)
+		console.error(`Invalid Proxy`, obj)
+		throw err
+	}
 }
 
 export function rawify<T extends object>(obj: T) {
@@ -215,27 +212,24 @@ export interface ReactiveComputed<T> {
 
 interface ReactiveComputedImpl<T> extends ReactiveComputed<T> {
 	__effect: ReactiveEffect<T>
+	__cached: T
 }
 
 export function reactiveComputed<T>(func: () => T): ReactiveComputed<T> {
-	let cached: T
-
 	const result: ReactiveComputedImpl<T> = {
+		__cached: undefined as unknown as T,
 		//TODO: Does "this" work like this?
 		__effect: new ReactiveEffect<T>(() => {
-			cached = func()
-			return cached
+			result.__cached = func()
+			ReactiveSet(result, "value")
+			return result.__cached
 		}),
 		get value(): T {
-			DependencyStorage.getPropDependency(this, "value").track()
-
-			if (isObject(cached)) {
-				cached = reactify(cached)
-			}
-
-			return cached
+			return ReactiveGet(result.__cached, result, "value")
 		},
 	}
+
+	result.__effect.run()
 
 	return result
 }
@@ -245,7 +239,7 @@ export function ReactiveGet<T extends any>(getValue: T, self: any, prop: string 
 		DependencyStorage.getPropDependency(self, prop).track()
 	}
 
-	if (isObject(getValue)) {
+	if (isObject(getValue) && !isResource(getValue)) {
 		getValue = reactify(getValue)
 	}
 
