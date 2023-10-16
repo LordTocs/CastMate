@@ -335,7 +335,7 @@ export function useTriggerColors(selection: MaybeRefOrGetter<TriggerSelection | 
 		darkestColor: darkestTriggerColor,
 		lighterColor: lighterTriggerColor,
 	} = useColors(trigger)
-	console.log("Using Trigger Colors", toValue(selection), triggerColor.value)
+	//console.log("Using Trigger Colors", toValue(selection), triggerColor.value)
 
 	const style = computed(() => {
 		return {

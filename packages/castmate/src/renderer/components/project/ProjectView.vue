@@ -64,5 +64,6 @@ const overlays = ref([
 	width: 300px;
 	height: 100%;
 	background-color: var(--surface-b);
+	flex-shrink: 0;
 }
 </style>

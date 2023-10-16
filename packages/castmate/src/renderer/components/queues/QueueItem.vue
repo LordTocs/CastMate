@@ -27,8 +27,6 @@ const queuedTriggerData = computed(() => {
 		return undefined
 	}
 
-	console.log("Has Profile")
-
 	const trigger = profile.config.triggers.find((t) => t.id == props.queueItem.source.subid)
 
 	return trigger
@@ -45,6 +43,7 @@ function skip() {}
 	border-radius: var(--border-radius);
 	width: 10rem;
 	height: 15rem;
+	flex-shrink: 0;
 
 	background-color: var(--trigger-color);
 	border: solid 2px var(--lighter-trigger-color);

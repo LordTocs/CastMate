@@ -6,6 +6,7 @@ import { SequenceDebugger, SequenceRunner } from "./sequence"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Profile } from "../profile/profile"
 import { FileResource } from "../resources/file-resource"
+import { ResourceRegistry } from "../resources/resource-registry"
 
 export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueState> {
 	static resourceDirectory: string = "./queues"
@@ -41,6 +42,27 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		return this.config.paused
 	}
 
+	async setConfig(config: ActionQueueConfig): Promise<boolean> {
+		const result = await super.setConfig(config)
+		this.checkQueueStart()
+		return result
+	}
+
+	async applyConfig(config: Partial<ActionQueueConfig>): Promise<boolean> {
+		const result = await super.applyConfig(config)
+		this.checkQueueStart()
+		return result
+	}
+
+	//Restarts the queue processing if it needs to
+	private checkQueueStart() {
+		if (this.config.paused) return
+
+		if (!this.isRunning) {
+			this.runNext()
+		}
+	}
+
 	enqueue(source: SequenceSource, context: Record<string, any>) {
 		this.state.queue.push({
 			id: nanoid(),
@@ -61,8 +83,26 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		}
 	}
 
-	skip() {
-		this.runner?.abort()
+	skip(id: string) {
+		if (this.state.running?.id == id) {
+			this.runner?.abort()
+		} else {
+			const idx = this.state.queue.findIndex((i) => i.id == id)
+			if (idx < 0) return
+			this.state.queue.splice(idx, 1)
+		}
+	}
+
+	spliceQueue(index: number, deleteCount: number, ...sequence: QueuedSequence[]) {
+		this.state.queue.splice(index, deleteCount, ...sequence)
+		console.log("Spliced", index, deleteCount, ...sequence)
+	}
+
+	replay(id: string) {
+		const played = this.state.history.find((i) => i.id == id)
+		if (!played) return
+
+		this.enqueue(played.source, played.queueContext)
 	}
 
 	private getNextSequence(): { queuedSequence: QueuedSequence; sequence: Sequence } | undefined {
@@ -110,6 +150,18 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 			}
 		}
 		doRun()
+	}
+
+	static async initialize() {
+		await super.initialize()
+
+		//@ts-ignore
+		ResourceRegistry.getInstance().exposeIPCFunction(ActionQueue, "skip")
+		//@ts-ignore
+		ResourceRegistry.getInstance().exposeIPCFunction(ActionQueue, "replay")
+
+		//@ts-ignore
+		ResourceRegistry.getInstance().exposeIPCFunction(ActionQueue, "spliceQueue")
 	}
 }
 
