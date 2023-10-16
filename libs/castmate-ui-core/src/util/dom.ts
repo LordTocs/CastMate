@@ -1,4 +1,5 @@
 import { useEventListener } from "@vueuse/core"
+import { DomHandler } from "primevue/utils"
 import { computed, MaybeRefOrGetter, toValue, ref, toRaw, nextTick, provide, inject, ComputedRef } from "vue"
 
 export function isChildOfClass(element: HTMLElement, clazz: string) {
@@ -229,4 +230,54 @@ export function injectScrollAttachable(defaultAttach?: MaybeRefOrGetter<DOMAttac
 			return "body"
 		})
 	)
+}
+
+export function positionPortal(
+	element: HTMLElement | undefined | null,
+	target: HTMLElement | undefined | null,
+	attachTo: HTMLElement | undefined | null | string
+) {
+	if (!element || !target || !attachTo) return
+
+	if (attachTo == "body") {
+		DomHandler.absolutePosition(element, target)
+		return
+	} else if (attachTo == "self") {
+		DomHandler.relativePosition(element, target)
+		return
+	} else if (typeof attachTo == "string") {
+		return
+	}
+
+	const targetRect = getElementRelativeRect(target, attachTo)
+	const targetBounds = target.getBoundingClientRect()
+
+	const elemRect = element.getBoundingClientRect()
+
+	let left = 0
+	let top = 0
+
+	const viewport = { width: window.innerWidth, height: window.innerHeight }
+
+	left = targetRect.left
+	top = targetRect.bottom
+
+	const viewportBottom = targetBounds.bottom + elemRect.height
+	/*if (viewportBottom >= viewport.height) {
+		//Try the top
+
+		top = targetRect.top - elemRect.height
+		element.style.top = `${top}px`
+	} else {*/
+	element.style.top = `${top}px`
+	//}
+
+	const viewportRight = targetBounds.left + elemRect.width
+	if (viewportRight >= viewport.width) {
+		const overlap = viewportRight - viewport.width
+		console.log("RIGHT", viewport.width, viewportRight, elemRect.width, left, overlap, left - overlap)
+		left = targetRect.right - elemRect.width
+	}
+
+	element.style.left = `${left}px`
 }

@@ -287,6 +287,7 @@ const modelObj = useVModel(props, "modelValue", emit)
 	user-select: none;
 	width: 300px;
 	overflow-y: auto;
+	overflow-x: visible;
 }
 
 .trigger-name {

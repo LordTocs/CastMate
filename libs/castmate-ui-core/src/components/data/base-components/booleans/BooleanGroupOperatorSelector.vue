@@ -1,5 +1,5 @@
 <template>
-	<p-dropdown v-model="model" :options="options" option-value="code" option-label="name" :append-to="appendTo">
+	<p-dropdown v-model="model" :options="options" option-value="code" option-label="name">
 		<!-- <template #option="{ option, index }: { option: MenuItem, index: number }">
 			<i :class="option.icon" />
 		</template>

@@ -20,7 +20,7 @@ const props = withDefaults(
 
 const emit = defineEmits(["update:scrollX", "update:scrollY"])
 
-const scroller = ref<HTMLElement | null>(null)
+const scroller = ref<HTMLElement>()
 function onScroll(ev: Event) {
 	if (!scroller.value) return
 

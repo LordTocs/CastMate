@@ -39,10 +39,16 @@
 </template>
 
 <script setup lang="ts">
-import { DocumentDataCollection, FlexScroller, ProfileView, BooleanExpressionInput } from "castmate-ui-core"
+import {
+	DocumentDataCollection,
+	FlexScroller,
+	ProfileView,
+	BooleanExpressionInput,
+	provideScrollAttachable,
+} from "castmate-ui-core"
 import { ProfileConfig } from "castmate-schema"
 import TriggerEdit from "./TriggerEdit.vue"
-import { computed, useModel } from "vue"
+import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import { nanoid } from "nanoid/non-secure"
 
@@ -64,6 +70,10 @@ const hasTriggers = computed(() => props.modelValue.triggers.length > 0)
 
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
+
+const scroller = ref<InstanceType<typeof FlexScroller>>()
+
+provideScrollAttachable(() => scroller.value?.scroller ?? undefined)
 
 function createTriggerEnd() {
 	const id = nanoid()

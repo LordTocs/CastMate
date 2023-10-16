@@ -3,7 +3,7 @@
 		<div class="p-inputtext" @click="onClick">
 			{{ phrase }}
 		</div>
-		<p-portal append-to="self">
+		<p-portal :append-to="attachTo">
 			<transition name="p-connected-overlay" @enter="onOverlayEnter">
 				<div
 					v-if="overlayVisible"
@@ -29,7 +29,7 @@ import PPortal from "primevue/portal"
 import vFocusTrap from "primevue/focustrap"
 import TwitchViewerGroupEdit from "./TwitchViewerGroupEdit.vue"
 import { useModel, ref, computed, watch, nextTick } from "vue"
-import { stopPropagation, useResourceStore } from "castmate-ui-core"
+import { injectScrollAttachable, positionPortal, stopPropagation, useResourceStore } from "castmate-ui-core"
 import { getGroupPhrase } from "../util/group"
 import { usePrimeVue } from "primevue/config"
 import { useElementSize, useEventListener } from "@vueuse/core"
@@ -76,13 +76,23 @@ function onClick(ev: MouseEvent) {
 	ev.preventDefault()
 }
 
+const attachTo = injectScrollAttachable()
+
+function fixPos() {
+	if (!overlayDiv.value) return
+	if (!container.value) return
+	//DomHandler.relativePosition(overlayDiv.value, container.value)
+	//DomHandler.absolutePosition(overlayDiv.value, container.value)
+	positionPortal(overlayDiv.value, container.value, attachTo.value)
+}
+
 function onOverlayEnter() {
 	if (!overlayDiv.value) return
 	if (!container.value) return
 
 	overlayVisibleComplete.value = true
 
-	DomHandler.relativePosition(overlayDiv.value, container.value)
+	fixPos()
 }
 
 const overlaySize = useElementSize(overlayDiv)
@@ -92,9 +102,7 @@ watch(
 	() => {
 		if (overlayVisibleComplete.value) {
 			nextTick(() => {
-				if (!overlayDiv.value) return
-				if (!container.value) return
-				DomHandler.relativePosition(overlayDiv.value, container.value)
+				fixPos()
 			})
 		}
 	},
