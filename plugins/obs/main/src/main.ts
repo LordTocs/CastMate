@@ -50,7 +50,7 @@ export default definePlugin(
 				},
 			},
 			() => {
-				return obsDefault.value.state.scene
+				return obsDefault.value?.state?.scene ?? ""
 			}
 		)
 
@@ -62,7 +62,7 @@ export default definePlugin(
 				required: true,
 			},
 			() => {
-				return obsDefault.value.state.streaming
+				return obsDefault.value?.state?.streaming ?? false
 			}
 		)
 
@@ -74,7 +74,7 @@ export default definePlugin(
 				required: true,
 			},
 			() => {
-				return obsDefault.value.state.recording
+				return obsDefault.value?.state?.recording ?? false
 			}
 		)
 
@@ -86,7 +86,7 @@ export default definePlugin(
 				required: true,
 			},
 			() => {
-				return obsDefault.value.state.replayBuffering
+				return obsDefault.value?.state?.replayBuffering ?? false
 			}
 		)
 
@@ -98,7 +98,7 @@ export default definePlugin(
 				required: true,
 			},
 			() => {
-				return obsDefault.value.state.virtualCamming
+				return obsDefault.value?.state?.virtualCamming ?? false
 			}
 		)
 
@@ -110,7 +110,7 @@ export default definePlugin(
 				required: true,
 			},
 			() => {
-				return obsDefault.value.state.connected
+				return obsDefault.value?.state?.connected ?? false
 			}
 		)
 
