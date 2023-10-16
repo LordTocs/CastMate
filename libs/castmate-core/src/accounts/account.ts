@@ -82,7 +82,7 @@ export class Account<
 	}
 
 	static async initialize() {
-		super.initialize()
+		await super.initialize()
 		await ensureDirectory(resolveProjectPath("accounts", this.accountDirectory))
 
 		//@ts-ignore It will, that's how inheritence works...
