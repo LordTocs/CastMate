@@ -41,5 +41,6 @@ export async function initializeCastMate() {
 }
 
 export async function finializeCastMateSetup() {
-	ProfileManager.getInstance().finishSetup()
+	console.log("Finalizing Init")
+	await ProfileManager.getInstance().finishSetup()
 }

@@ -17,12 +17,23 @@ export const ProfileManager = Service(
 
 		private inited: boolean = false
 
-		finishSetup() {
+		async finishSetup() {
+			await Promise.all(Array.from(Profile.storage).map((p) => p.forceActivationRecompute()))
+
 			this.inited = true
+
 			this.recomputeActiveProfiles()
 		}
 
-		recomputeActiveProfiles() {
+		private activeProfileChange = false
+		signalProfilesChanged() {
+			if (!this.activeProfileChange && this.inited) {
+				this.activeProfileChange = true
+				process.nextTick(() => this.recomputeActiveProfiles())
+			}
+		}
+
+		private recomputeActiveProfiles() {
 			if (!this.inited) return
 
 			const active: Profile[] = []
@@ -61,6 +72,8 @@ export const ProfileManager = Service(
 
 			//Notify the UI
 			PluginManager.getInstance().onProfilesChanged(this._activeProfiles, this._inactiveProfiles)
+
+			this.activeProfileChange = false
 		}
 	}
 )

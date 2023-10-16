@@ -15,16 +15,19 @@ import castmatePlugin from "./builtin-plugin"
 
 export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
-	pluginManager.registerPlugin(castmatePlugin)
-	pluginManager.registerPlugin(timePlugin)
-	pluginManager.registerPlugin(twitchPlugin)
-	pluginManager.registerPlugin(discordPlugin)
-	pluginManager.registerPlugin(obsPlugin)
-	pluginManager.registerPlugin(iotPlugin)
-	pluginManager.registerPlugin(soundPlugin)
-	pluginManager.registerPlugin(osPlugin)
-	pluginManager.registerPlugin(httpPlugin)
-	pluginManager.registerPlugin(inputPlugin)
-	pluginManager.registerPlugin(voicemodPlugin)
-	pluginManager.registerPlugin(minecraftPlugin)
+	const promises = [
+		pluginManager.registerPlugin(castmatePlugin),
+		pluginManager.registerPlugin(timePlugin),
+		pluginManager.registerPlugin(twitchPlugin),
+		pluginManager.registerPlugin(discordPlugin),
+		pluginManager.registerPlugin(obsPlugin),
+		pluginManager.registerPlugin(iotPlugin),
+		pluginManager.registerPlugin(soundPlugin),
+		pluginManager.registerPlugin(osPlugin),
+		pluginManager.registerPlugin(httpPlugin),
+		pluginManager.registerPlugin(inputPlugin),
+		pluginManager.registerPlugin(voicemodPlugin),
+		pluginManager.registerPlugin(minecraftPlugin),
+	]
+	await Promise.allSettled(promises)
 }

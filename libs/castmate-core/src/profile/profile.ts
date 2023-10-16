@@ -59,13 +59,17 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 	static async onCreate(profile: Profile) {
 		await super.onCreate(profile)
 		await profile.setupReactivity()
-		ProfileManager.getInstance().recomputeActiveProfiles()
+		ProfileManager.getInstance().signalProfilesChanged()
 	}
 
 	static async onDelete(profile: Profile) {
 		await super.onDelete(profile)
 		profile.stopAutoActivate()
-		ProfileManager.getInstance().recomputeActiveProfiles()
+		ProfileManager.getInstance().signalProfilesChanged()
+	}
+
+	async forceActivationRecompute() {
+		await this.setupReactivity()
 	}
 
 	private stopAutoActivate() {
@@ -85,7 +89,7 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 			} else {
 				this.state.active = this.config.activationMode
 			}
-			ProfileManager.getInstance()?.recomputeActiveProfiles()
+			ProfileManager.getInstance()?.signalProfilesChanged()
 		})
 	}
 
