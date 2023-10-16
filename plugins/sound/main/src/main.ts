@@ -12,6 +12,9 @@ import {
 	defineRendererCallable,
 	ResourceRegistry,
 	defineSetting,
+	definePluginResource,
+	DelayedResolver,
+	createDelayedResolver,
 } from "castmate-core"
 import { MediaManager } from "castmate-core"
 import { Duration, MediaFile } from "castmate-schema"
@@ -97,7 +100,7 @@ export default definePlugin(
 			config: {
 				type: Object,
 				properties: {
-					output: { type: SoundOutput, name: "Output", default: "system.default", required: true },
+					output: { type: SoundOutput, name: "Output", default: () => defaultOutput.value, required: true },
 					sound: { type: MediaFile, name: "Sound", required: true, default: "", sound: true },
 					volume: {
 						type: Number,
@@ -121,12 +124,25 @@ export default definePlugin(
 			},
 		})
 
-		onLoad(() => {
-			ResourceRegistry.getInstance().register(SoundOutput)
+		definePluginResource(SoundOutput)
+
+		let audioDeviceWaiter: DelayedResolver<any> | undefined
+
+		onLoad(async () => {
+			audioDeviceWaiter = createDelayedResolver()
 			RendererSoundPlayer.initialize()
+			console.log("Waiting for audio devices...")
+			await audioDeviceWaiter.promise
 		})
 
-		defineRendererCallable("setAudioOutputDevices", (devices: WebAudioDeviceInfo[]) => {
+		const defaultOutput = defineSetting("defaultOutput", {
+			type: SoundOutput,
+			name: "Default Sound Output",
+			required: true,
+			default: () => SoundOutput.storage.getById("system.default"),
+		})
+
+		defineRendererCallable("setAudioOutputDevices", async (devices: WebAudioDeviceInfo[]) => {
 			for (const device of devices) {
 				const existingResource = SoundOutput.storage.getById(`system.${device.deviceId}`)
 
@@ -135,8 +151,13 @@ export default definePlugin(
 					//It's a new output
 					const newOutput = new SystemSoundOutput(device)
 
-					SoundOutput.storage.inject(newOutput)
+					await SoundOutput.storage.inject(newOutput)
 				}
+			}
+			if (audioDeviceWaiter) {
+				audioDeviceWaiter.resolve(undefined)
+				console.log("Audio Devices Received")
+				audioDeviceWaiter = undefined
 			}
 		})
 	}
