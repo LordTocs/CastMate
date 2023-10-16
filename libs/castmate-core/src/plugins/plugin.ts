@@ -16,7 +16,7 @@ import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { EventList } from "../util/events"
 import { SemanticVersion } from "../util/type-helpers"
-import { ReactiveEffect, ReactiveRef, autoRerun, reactify, reactiveRef, runOnChange } from "../reactivity/reactivity"
+import { ReactiveEffect, ReactiveRef, reactiveComputed, reactiveRef, runOnChange } from "../reactivity/reactivity"
 import { ensureYAML, loadYAML, pathExists, writeYAML } from "../io/file-system"
 import _debounce from "lodash/debounce"
 import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema, serializeSchema } from "../util/ipc-schema"
@@ -134,6 +134,26 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 	})
 
 	return result
+}
+
+export function defineReactiveState<T extends Schema>(id: string, schema: T, func: () => ResolvedSchemaType<T>) {
+	if (!initingPlugin) throw new Error()
+
+	const result = reactiveComputed<ResolvedSchemaType<T>>(func)
+
+	initingPlugin.state.set(id, {
+		schema,
+		ref: result,
+	})
+
+	onLoad(async (plugin) => {
+		runOnChange(
+			() => result.value,
+			async () => {
+				rendererUpdateState(plugin.id, id, serializeSchema(schema, result.value))
+			}
+		)
+	})
 }
 
 interface SettingValue<SettingSchema extends Schema = any> {

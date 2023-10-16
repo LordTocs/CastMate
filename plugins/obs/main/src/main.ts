@@ -11,6 +11,7 @@ import {
 	definePluginResource,
 	defineSetting,
 	defineResourceSetting,
+	defineReactiveState,
 } from "castmate-core"
 import { Color, Toggle } from "castmate-schema"
 import { OBSConnection, setupConnections } from "./connection"
@@ -37,6 +38,81 @@ export default definePlugin(
 		})
 
 		defineResourceSetting(OBSConnection, "OBS Connections")
+
+		defineReactiveState(
+			"scene",
+			{
+				type: String,
+				name: "Scene",
+				required: true,
+				async enum() {
+					return await obsDefault.value.getSceneNames()
+				},
+			},
+			() => {
+				return obsDefault.value.state.scene
+			}
+		)
+
+		defineReactiveState(
+			"streaming",
+			{
+				type: Boolean,
+				name: "Streaming",
+				required: true,
+			},
+			() => {
+				return obsDefault.value.state.streaming
+			}
+		)
+
+		defineReactiveState(
+			"recording",
+			{
+				type: Boolean,
+				name: "Recording",
+				required: true,
+			},
+			() => {
+				return obsDefault.value.state.recording
+			}
+		)
+
+		defineReactiveState(
+			"replayBuffering",
+			{
+				type: Boolean,
+				name: "Replay Buffering",
+				required: true,
+			},
+			() => {
+				return obsDefault.value.state.replayBuffering
+			}
+		)
+
+		defineReactiveState(
+			"virtualCamming",
+			{
+				type: Boolean,
+				name: "Virtual Cam Active",
+				required: true,
+			},
+			() => {
+				return obsDefault.value.state.virtualCamming
+			}
+		)
+
+		defineReactiveState(
+			"connected",
+			{
+				type: Boolean,
+				name: "Connected",
+				required: true,
+			},
+			() => {
+				return obsDefault.value.state.connected
+			}
+		)
 
 		setupScenes(obsDefault)
 		setupSources(obsDefault)

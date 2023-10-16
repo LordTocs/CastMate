@@ -3,6 +3,7 @@ import { ReactiveEffect, ReactiveGet, ReactiveSet, autoRerun, rawify } from "../
 import { ResourceRegistry } from "./resource-registry"
 import { defineCallableIPC } from "../util/electron"
 import { ResourceData } from "castmate-schema"
+import { isObject } from "../util/type-helpers"
 
 interface ResourceIPCDescription {
 	id: string
@@ -116,6 +117,15 @@ export function isResourceConstructor(constructor: any): constructor is Resource
 	const storageHaver = constructor as { storage?: ResourceStorage<any> }
 
 	return storageHaver.storage != null
+}
+
+export function isResource(resource: any): resource is ResourceBase {
+	if (!isObject(resource)) return false
+
+	const constructor = resource.constructor
+	if (!constructor) return false
+
+	return isResourceConstructor(constructor)
 }
 
 export class Resource<ConfigType extends object, StateType extends object = {}> implements ResourceBase {
