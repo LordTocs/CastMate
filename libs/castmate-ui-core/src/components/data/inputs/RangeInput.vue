@@ -16,7 +16,7 @@
 							</document-path>
 						</template>
 					</span>
-					<span class="mx-3 flex align-items-center justify-content-center">⟶</span>
+					<span class="mx-1 flex align-items-center justify-content-center">⟶</span>
 					<span class="component-span">
 						<template v-if="!templateMode">
 							<document-path local-path="max">

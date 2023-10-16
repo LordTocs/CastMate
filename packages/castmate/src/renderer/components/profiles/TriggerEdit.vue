@@ -285,7 +285,7 @@ const modelObj = useVModel(props, "modelValue", emit)
 .config {
 	background-color: var(--surface-b);
 	user-select: none;
-	width: 300px;
+	width: 350px;
 	overflow-y: auto;
 	overflow-x: visible;
 }
