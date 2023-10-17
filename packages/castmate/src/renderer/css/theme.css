@@ -18,6 +18,11 @@ a.p-button {
 	width: unset !important;
 }
 
+.column-fit-width {
+	width: 1px;
+	white-space: nowrap;
+}
+
 :root {
 	--surface-a: #212121;
 	--surface-b: #121212;

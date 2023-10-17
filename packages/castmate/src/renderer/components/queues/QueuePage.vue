@@ -1,81 +1,82 @@
 <template>
-	<flex-scroller>
-		<p-button @click="newQueue">Add Queue</p-button>
-		<div v-for="queue of queueList" class="queue">
-			<span>
-				<span class="text-2xl">{{ queue.config.name }}</span>
-				<span class="text-lg">&nbsp;{{ queue.config.paused ? "Paused" : "Running" }}</span>
-			</span>
-			<div class="queue-items">
-				<queue-item v-if="queue.state.running" :queue-item="queue.state.running" />
-				<queue-item v-for="queueItem of queue.state.queue" :queue-item="queueItem" :key="queueItem.id" />
-			</div>
+	<div class="container">
+		<div class="inner-container" ref="containerDiv">
+			<p-data-table
+				class="flex flex-column"
+				scrollable
+				data-key="id"
+				:value="queues"
+				style="width: 100%; max-height: 100%"
+				sort-field="config.name"
+			>
+				<template #header>
+					<div class="flex flex-row">
+						<p-button @click="createDialog()">Create Queue</p-button>
+					</div>
+				</template>
+
+				<p-column class="column-fit-width">
+					<template #body="{ data }: { data: ActionQueueResource }">
+						<i :class="data.config.paused ? 'mdi mdi-pause' : 'mdi mdi-play'" />
+					</template>
+				</p-column>
+
+				<p-column header="Name" field="config.name"> </p-column>
+
+				<p-column header="Pending" class="column-fit-width">
+					<template #body="{ data }: { data: ActionQueueResource }">
+						{{ data.state.queue.length }}
+					</template>
+				</p-column>
+
+				<p-column class="column-fit-width">
+					<template #body="{ data }">
+						<div class="flex flex-row gap-1">
+							<p-button icon="mdi mdi-pencil" text @click="editDialog(data.id)" />
+							<p-button icon="mdi mdi-delete" text @click="deleteDialog(data.id)" />
+						</div>
+					</template>
+				</p-column>
+			</p-data-table>
 		</div>
-		<p-button @click="newQueue" v-if="queueList.length > 0">Add Queue</p-button>
-	</flex-scroller>
+	</div>
 </template>
 
 <script setup lang="ts">
-import { FlexScroller, useResourceStore, useResourceData } from "castmate-ui-core"
+import {
+	useResourceStore,
+	useResourceData,
+	useResourceArray,
+	useResourceEditDialog,
+	useResourceCreateDialog,
+	useResourceDeleteDialog,
+} from "castmate-ui-core"
 import { ActionQueueState, ActionQueueConfig, ResourceData } from "castmate-schema"
-import { computed } from "vue"
+import { ref } from "vue"
 import { useDialog } from "primevue/usedialog"
 import PButton from "primevue/button"
-import QueueEditDialog from "./QueueEditDialog.vue"
-import QueueItem from "./QueueItem.vue"
+import PDataTable from "primevue/datatable"
+import PColumn from "primevue/column"
 
-const queues = useResourceData<ResourceData<ActionQueueConfig, ActionQueueState>>("ActionQueue")
-const dialog = useDialog()
+type ActionQueueResource = ResourceData<ActionQueueConfig, ActionQueueState>
 
-const resourceStore = useResourceStore()
-
-const queueList = computed(() => [...(queues.value?.resources?.values() ?? [])])
-
-function newQueue() {
-	dialog.open(QueueEditDialog, {
-		props: {
-			header: `Create Queue?`,
-			style: {
-				width: "25vw",
-			},
-			modal: true,
-		},
-		onClose(options) {
-			if (!options) {
-				return
-			}
-
-			if (!options.data) return
-
-			resourceStore.createResource("ActionQueue", options.data)
-		},
-	})
-}
+const queues = useResourceArray<ActionQueueResource>("ActionQueue")
+const editDialog = useResourceEditDialog("ActionQueue")
+const createDialog = useResourceCreateDialog("ActionQueue")
+const deleteDialog = useResourceDeleteDialog("ActionQueue")
 </script>
 
 <style scoped>
-.queue {
-	border-radius: var(--border-radius);
-	background-color: var(--surface-100);
-	padding: 0.25rem 1rem;
+.container {
+	position: relative;
 }
 
-.queue:not(:last-child) {
-	padding-bottom: 2rem;
-}
-
-.queue h2 {
-	margin-top: 0;
-	margin-bottom: 0.5rem;
-}
-.queue h3 {
-	margin-top: 0;
-}
-
-.queue-items {
-	display: flex;
-	flex-direction: row;
-	overflow-x: auto;
-	min-height: 16rem;
+.inner-container {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: hidden;
 }
 </style>

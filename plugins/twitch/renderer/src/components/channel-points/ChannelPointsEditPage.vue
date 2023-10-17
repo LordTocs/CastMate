@@ -54,12 +54,12 @@
 				</template>
 				<!-- Required because groupby assumes there's a column that it's grouping by -->
 				<p-column field="config.controllable"> </p-column>
-				<p-column>
+				<p-column class="column-fit-width">
 					<template #body="{ data }: { data: ChannelPointResource }">
 						<channel-point-preview :reward="data" />
 					</template>
 				</p-column>
-				<p-column>
+				<p-column class="column-fit-width">
 					<template #body="{ data }: { data: ChannelPointResource }">
 						<i
 							class="mdi mdi-debug-step-over mr-2"
@@ -73,14 +73,14 @@
 						/>
 					</template>
 				</p-column>
-				<p-column header="Cost" field="config.rewardData.cost">
+				<p-column header="Cost" field="config.rewardData.cost" class="column-fit-width">
 					<template #body="{ data }: { data: ChannelPointResource }">
 						<i class="twi twi-channel-points" />{{ data.config.rewardData.cost }}
 					</template>
 				</p-column>
 				<p-column header="Title" field="config.name"> </p-column>
 				<p-column header="Prompt" field="config.rewardData.prompt"> </p-column>
-				<p-column header="Cooldown">
+				<p-column header="Cooldown" class="column-fit-width">
 					<template #body="{ data }: { data: ChannelPointResource }">
 						<span v-if="data.config.rewardData.cooldown != null">
 							<i class="mdi mdi-timer-outline" />
@@ -92,7 +92,7 @@
 					</template>
 				</p-column>
 				<p-column>
-					<template #body="{ data }: { data: ChannelPointResource }">
+					<template #body="{ data }: { data: ChannelPointResource }" class="column-fit-width">
 						<span v-if="data.config.rewardData.maxRedemptionsPerStream" class="mr-2">
 							{{ data.config.rewardData.maxRedemptionsPerStream }}
 						</span>
@@ -101,7 +101,7 @@
 					</template>
 				</p-column>
 				<p-column>
-					<template #body="{ data }: { data: ChannelPointResource }">
+					<template #body="{ data }: { data: ChannelPointResource }" class="column-fit-width">
 						<span v-if="data.config.rewardData.maxRedemptionsPerUserPerStream" class="mr-2">
 							{{ data.config.rewardData.maxRedemptionsPerUserPerStream }}
 						</span>
@@ -109,7 +109,7 @@
 						<i class="mdi mdi-account" v-tooltip.left="'Max Redemptions Per User Per Stream'" />
 					</template>
 				</p-column>
-				<p-column>
+				<p-column class="column-fit-width">
 					<template #body="{ data }: { data: ChannelPointResource }">
 						<div class="flex flex-row" v-if="data.config.controllable">
 							<p-button icon="mdi mdi-pencil" text @click="editDialog(data.id)"></p-button>
