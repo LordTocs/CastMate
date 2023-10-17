@@ -7,7 +7,8 @@
 		"outDir": "dist",
 		"sourceMap": true,
 		"target": "ES6",
-		"strictNullChecks": true
+		"strictNullChecks": true,
+		"esModuleInterop": true
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "**/*.spec.ts"]

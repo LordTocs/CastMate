@@ -23,6 +23,7 @@ export { default as ResourceSchemaEdit } from "./components/resources/ResourceSc
 
 export { default as InputBox } from "./components/data/base-components/InputBox.vue"
 export { default as LabelFloater } from "./components/data/base-components/LabelFloater.vue"
+export { default as TemplateToggle } from "./components/data/base-components/TemplateToggle.vue"
 export { default as CAutocomplete } from "./components/data/base-components/CAutocomplete.vue"
 export { default as EnumInput } from "./components/data/base-components/EnumInput.vue"
 export { default as DocumentPath } from "./components/document/DocumentPath.vue"

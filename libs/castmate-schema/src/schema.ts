@@ -263,6 +263,7 @@ const dataNameLookup: Map<string, FullDataTypeMetaData> = new Map()
 const dataConstructorLookup: Map<DataConstructorOrFactory, FullDataTypeMetaData> = new Map()
 
 export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
+	console.log("Registering Type", name)
 	const fullMetaData = { ...metaData, name }
 	dataNameLookup.set(name, fullMetaData)
 	dataConstructorLookup.set(metaData.constructor, fullMetaData)

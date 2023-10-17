@@ -2927,6 +2927,7 @@ __metadata:
   resolution: "castmate-plugin-iot-main@workspace:plugins/iot/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-iot-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "*"
   languageName: unknown
@@ -2938,7 +2939,9 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
+    castmate-plugin-iot-shared: "workspace:^"
     castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
     chromatism2: "*"
     electron: "*"
     nanoid: "*"
@@ -2947,6 +2950,17 @@ __metadata:
     vite: "*"
     vue: "*"
     vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-iot-shared@workspace:^, castmate-plugin-iot-shared@workspace:plugins/iot/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-iot-shared@workspace:plugins/iot/shared"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    typescript: "*"
   languageName: unknown
   linkType: soft
 

@@ -1,4 +1,6 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
+import { setupLights } from "./light"
+import { setupPlugs } from "./plug"
 
 export default definePlugin(
 	{
@@ -10,5 +12,7 @@ export default definePlugin(
 	},
 	() => {
 		//Plugin Intiialization
+		setupLights()
+		setupPlugs()
 	}
 )
