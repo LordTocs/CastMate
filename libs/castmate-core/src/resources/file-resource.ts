@@ -73,7 +73,7 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 		console.log("Loading Resources from ", this.resourceDirectory)
 
 		const resolvedDir = resolveProjectPath(this.resourceDirectory)
-		ensureDirectory(resolvedDir)
+		await ensureDirectory(resolvedDir)
 		const files = await fs.readdir(resolvedDir)
 
 		const fileLoadPromises = files.map(async (file) => {
