@@ -11,7 +11,9 @@
 				class="flex flex-column"
 			>
 				<template #header>
-					<div class="flex justify-content-end">
+					<div class="flex">
+						<p-button @click="openMediaFolder">Open Media Folder</p-button>
+						<div class="flex-grow-1" />
 						<span class="p-input-icon-left">
 							<i class="pi pi-search" />
 							<p-input-text v-model="filters['global'].value" placeholder="Search" />
@@ -52,6 +54,7 @@ import PColumn from "primevue/column"
 import { MediaMetadata } from "castmate-schema"
 import path from "path"
 import { useElementSize } from "@vueuse/core"
+import PButton from "primevue/button"
 
 import SoundPlayer from "./SoundPlayer.vue"
 
@@ -64,6 +67,10 @@ const mediaItems = computed(() => Object.values(mediaStore.media))
 const containerDiv = ref<HTMLElement | null>(null)
 
 const containerSize = useElementSize(containerDiv)
+
+function openMediaFolder() {
+	mediaStore.openMediaFolder()
+}
 
 function isImagePreview(media: MediaMetadata) {
 	if (media.image) return true

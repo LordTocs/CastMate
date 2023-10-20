@@ -8,6 +8,7 @@ export const useMediaStore = defineStore("media", () => {
 	const mediaMap = ref<Record<string, MediaMetadata>>({})
 
 	const getMedia = useIpcCaller<() => MediaMetadata[]>("media", "getMedia")
+	const openMediaFolder = useIpcCaller<() => any>("media", "openMediaFolder")
 
 	const projectStore = useProjectStore()
 	const dockingStore = useDockingStore()
@@ -41,5 +42,5 @@ export const useMediaStore = defineStore("media", () => {
 		projectStore.registerProjectGroupItem(projectItem)
 	}
 
-	return { initialize, media: computed(() => mediaMap.value) }
+	return { initialize, media: computed(() => mediaMap.value), openMediaFolder }
 })

@@ -7,6 +7,7 @@ import * as ffmpeg from "fluent-ffmpeg"
 import * as chokidar from "chokidar"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { ensureDirectory, resolveProjectPath } from "../io/file-system"
+import { shell } from "electron"
 //Thumbnails?
 //Durations?
 
@@ -43,6 +44,10 @@ export const MediaManager = Service(
 
 			defineIPCFunc("media", "getMedia", () => {
 				return [...this.mediaFiles.values()]
+			})
+
+			defineIPCFunc("media", "openMediaFolder", () => {
+				shell.openPath(mediaPath)
 			})
 		}
 
