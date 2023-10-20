@@ -2664,7 +2664,7 @@ __metadata:
     "@types/yaml": ^1.9.7
     castmate-schema: "workspace:^"
     chokidar: ^3.5.3
-    electron: ^26.1.0
+    electron: "*"
     fluent-ffmpeg: ^2.1.2
     lodash: ^4.17.21
     nanoid: ^4.0.2
@@ -3032,16 +3032,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-obs-renderer@workspace:plugins/obs/renderer"
   dependencies:
-    "@vitejs/plugin-vue": ^4.3.4
+    "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "*"
-    electron: ^26.1.0
+    electron: "*"
     nanoid: "*"
     pinia: "*"
     typescript: "*"
-    vite: ^4.4.9
+    vite: "*"
     vue: "*"
     vue-tsc: "*"
   languageName: unknown
@@ -3113,17 +3113,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-sound-renderer@workspace:plugins/sound/renderer"
   dependencies:
-    "@vitejs/plugin-vue": ^4.3.4
+    "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
     chromatism2: "*"
-    electron: ^26.1.0
+    electron: "*"
     nanoid: "*"
     pinia: "*"
     typescript: "*"
-    vite: ^4.4.9
+    vite: "*"
     vue: "*"
     vue-tsc: "*"
     wavesurfer.js: ^7.1.5
@@ -3194,7 +3194,7 @@ __metadata:
     castmate-core: "workspace:^"
     castmate-plugin-twitch-shared: "workspace:^"
     castmate-schema: "workspace:^"
-    electron: ^26.1.0
+    electron: "*"
     typescript: "*"
   languageName: unknown
   linkType: soft
@@ -3203,7 +3203,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twitch-renderer@workspace:plugins/twitch/renderer"
   dependencies:
-    "@vitejs/plugin-vue": ^4.3.4
+    "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
     castmate-plugin-twitch-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3213,7 +3213,7 @@ __metadata:
     nanoid: "*"
     pinia: "*"
     typescript: "*"
-    vite: ^4.4.9
+    vite: "*"
     vue: "*"
     vue-tsc: "*"
   languageName: unknown
@@ -3287,17 +3287,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-ui-core@workspace:libs/castmate-ui-core"
   dependencies:
-    "@vitejs/plugin-vue": ^4.3.4
+    "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
     castmate-schema: "workspace:^"
     chromatism2: "*"
-    electron: ^26.1.0
+    electron: "*"
     nanoid: "*"
     pinia: "*"
     primevue: "*"
     ts-toolbelt: "*"
     typescript: "*"
-    vite: ^4.4.9
+    vite: "*"
     vue: "*"
     vue-tsc: "*"
   languageName: unknown
@@ -3318,7 +3318,7 @@ __metadata:
   dependencies:
     "@mdi/font": ^7.1.96
     "@rollup/plugin-node-resolve": ^15.2.1
-    "@vitejs/plugin-vue": ^4.3.4
+    "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
     castmate-core: "workspace:^"
     castmate-plugin-discord-main: "workspace:^"
@@ -3347,7 +3347,7 @@ __metadata:
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
     chromatism2: "*"
-    electron: ^26.1.0
+    electron: "*"
     electron-builder: ^24.4.0
     electron-devtools-installer: ^3.2.0
     electron-updater: ^4.6.1
@@ -3358,7 +3358,7 @@ __metadata:
     primeicons: ^6.0.1
     primevue: "*"
     ts-toolbelt: "*"
-    vite: ^4.4.9
+    vite: "*"
     vite-plugin-electron: ^0.12.0
     vite-plugin-electron-renderer: ^0.14.5
     vue: "*"

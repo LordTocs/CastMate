@@ -22,6 +22,6 @@
     "castmate-core": "workspace:^",
     "castmate-plugin-twitch-shared": "workspace:^",
     "castmate-schema": "workspace:^",
-    "electron": "^26.1.0"
+    "electron": "*"
   }
 }

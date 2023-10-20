@@ -14,17 +14,17 @@
     "@vueuse/core": "*",
     "castmate-schema": "workspace:^",
     "chromatism2": "*",
-    "electron": "^26.1.0",
+    "electron": "*",
     "nanoid": "*",
     "pinia": "*",
     "primevue": "*",
     "vue": "*"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.3.4",
+    "@vitejs/plugin-vue": "*",
     "ts-toolbelt": "*",
     "typescript": "*",
-    "vite": "^4.4.9",
+    "vite": "*",
     "vue-tsc": "*"
   }
 }
