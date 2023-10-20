@@ -31,6 +31,10 @@ export { default as BooleanExpressionInput } from "./components/data/inputs/Bool
 
 export { default as ExpanderSlider } from "./components/util/ExpanderSlider.vue"
 
+export { default as DashboardCard } from "./components/dashboard/DashboardCard.vue"
+export { default as DashboardCardItem } from "./components/dashboard/DashboardCardItem.vue"
+export { default as DashboardStat } from "./components/dashboard/DashboardStat.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"

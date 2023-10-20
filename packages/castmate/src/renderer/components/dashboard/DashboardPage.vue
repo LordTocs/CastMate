@@ -1,23 +1,41 @@
 <template>
-	<div class="container">
-		<action-queue-dash-widget v-for="queue in queues" :key="queue.id" :queue-id="queue.id" />
-	</div>
+	<flex-scroller>
+		<div class="dashboard">
+			<div class="stat-row">
+				<dashboard-card>
+					<template #header> <i class="mdi mdi-twitch twitch-purple" /> Twitch </template>
+					<dashboard-stat plugin="twitch" state="viewers" label="Viewers" />
+					<dashboard-stat plugin="twitch" state="followers" label="Followers" />
+					<dashboard-stat plugin="twitch" state="subscribers" label="Subscribers" />
+				</dashboard-card>
+				<dashboard-obs-card v-for="obs in obsConnections" :key="obs.id" :obs-id="obs.id" />
+			</div>
+			<action-queue-dash-widget v-for="queue in queues" :key="queue.id" :queue-id="queue.id" />
+		</div>
+	</flex-scroller>
 </template>
 
 <script setup lang="ts">
-import { useResourceArray } from "castmate-ui-core"
+import { useResourceArray, FlexScroller, DashboardStat, DashboardCard } from "castmate-ui-core"
 import ActionQueueDashWidget from "./queues/ActionQueueDashWidget.vue"
+import { DashboardObsCard } from "castmate-plugin-obs-renderer"
 
 const queues = useResourceArray("ActionQueue")
+const obsConnections = useResourceArray("OBSConnection")
 </script>
 
 <style scoped>
-.container {
-	position: relative;
-	overflow-y: auto;
+.dashboard {
+	--dashboard-height: 100px;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+.stat-row {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+	justify-content: center;
 	gap: 0.5rem;
-	padding: 0.5rem;
 }
 </style>

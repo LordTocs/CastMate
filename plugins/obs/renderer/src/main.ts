@@ -1,6 +1,8 @@
 import { useResourceStore, ResourceSettingList, ResourceSchemaEdit } from "castmate-ui-core"
 import "./css/icons.css"
 
+export { default as DashboardObsCard} from "./components/DashboardObsCard.vue"
+
 export function initPlugin() {
 	const resourceStore = useResourceStore()
 

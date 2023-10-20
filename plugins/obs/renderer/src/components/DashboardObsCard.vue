@@ -1,0 +1,60 @@
+<template>
+	<dashboard-card v-if="obs">
+		<template #header> <i class="obsi obsi-obs" /> {{ obs?.config?.name }} </template>
+		<dashboard-card-item v-if="!obs.state.connected" label="Disconnected">
+			<p-button v-if="isLocal" text>Open</p-button>
+			<div
+				class="p-text-secondary"
+				style="font-size: 0.875rem"
+				v-else
+				v-tooltip="`CastMate can't start OBS on remote machines`"
+			>
+				Remote OBS
+			</div>
+		</dashboard-card-item>
+		<template v-else-if="obs.state.connected">
+			<dashboard-card-item label="Streaming">
+				<i
+					:style="{ color: obs.state.streaming ? 'blue' : 'var(--surface-300)' }"
+					:class="obs.state.streaming ? 'mdi mdi-broadcast' : 'mdi mdi-broadcast-off'"
+				/>
+			</dashboard-card-item>
+			<dashboard-card-item label="Recording">
+				<i
+					:style="{ color: obs.state.recording ? 'red' : 'var(--surface-300)' }"
+					:class="obs.state.recording ? 'mdi mdi-record' : 'mdi mdi-record'"
+				/>
+			</dashboard-card-item>
+		</template>
+	</dashboard-card>
+</template>
+
+<script setup lang="ts">
+import { useResource, DashboardCard, DashboardCardItem } from "castmate-ui-core"
+import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
+import { ResourceData } from "castmate-schema"
+import { computed } from "vue"
+import PButton from "primevue/button"
+
+const props = defineProps<{
+	obsId: string
+}>()
+
+const obs = useResource<ResourceData<OBSConnectionConfig, OBSConnectionState>>("OBSConnection", () => props.obsId)
+
+const isLocal = computed(() => {
+	if (!obs.value) return
+	return obs.value.config.host == "127.0.0.1" || obs.value.config.host == "localhost"
+})
+</script>
+
+<style scoped>
+.obs-card {
+	height: var(--dashboard-height);
+	border-radius: var(--border-radius);
+	border: solid 2px var(--surface-border);
+	padding: 0rem;
+	display: flex;
+	flex-direction: row;
+}
+</style>
