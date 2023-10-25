@@ -10,7 +10,7 @@
 				</dashboard-card>
 				<dashboard-obs-card v-for="obs in obsConnections" :key="obs.id" :obs-id="obs.id" />
 			</div>
-			<action-queue-dash-widget v-for="queue in queues" :key="queue.id" :queue-id="queue.id" />
+			<action-queue-dash-widget v-for="queue in queues" :key="queue.id" :queue-id="queue.id" class="mb-2" />
 		</div>
 	</flex-scroller>
 </template>
