@@ -12,31 +12,25 @@
 			<p-button v-if="showDrag" text icon="mdi mdi-delete" @click="emit('delete', $event)"></p-button>
 		</div>
 		<div class="boolean-group-card-body" ref="groupBody">
-			<!-- <template v-if="model && model.operands.length > 0" v-for="(operand, i) in model.operands">
-				<boolean-group-expression
-					v-if="'operands' in operand"
-					v-model="(model.operands[i] as BooleanExpressionGroup)"
-					@delete="deleteOperand(i)"
-				/>
-				<boolean-value-expression-editor
-					v-else
-					v-model="(model.operands[i] as BooleanValueExpression)"
-					@delete="deleteOperand(i)"
-				/>
-			</template>
-			<div class="empty-body" v-else></div> -->
-			<document-data-collection
-				v-model="model.operands"
-				:data-component="BooleanSubExpression"
-				local-path="operands"
+			<draggable-collection
 				v-if="model"
+				v-model="model.operands"
 				handle-class="boolean-drag-handle"
 				data-type="boolean-sub-expression"
+				key-prop="id"
+				style="gap: 0.25rem"
 			>
 				<template #no-items>
 					<div class="flex flex-column align-items-center p-3">EMPTY GROUP</div>
 				</template>
-			</document-data-collection>
+				<template #item="{ item, index }">
+					<boolean-sub-expression
+						v-model="model.operands[index]"
+						:selected-ids="[]"
+						@delete="deleteOperand(index)"
+					/>
+				</template>
+			</draggable-collection>
 		</div>
 	</div>
 </template>
@@ -47,7 +41,7 @@ import BooleanGroupOperatorSelector from "./BooleanGroupOperatorSelector.vue"
 import BooleanValueExpressionEditor from "./BooleanValueExpressionEditor.vue"
 
 import BooleanSubExpression from "./BooleanSubExpression.vue"
-import { DocumentDataCollection } from "../../../../main"
+import { DocumentDataCollection, DraggableCollection } from "../../../../main"
 
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"

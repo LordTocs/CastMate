@@ -7,7 +7,9 @@
 			'draggable-vertical': props.direction == 'vertical',
 		}"
 	>
+		<slot name="no-items" v-if="!model || model.length == 0"></slot>
 		<div
+			v-else
 			v-for="(item, i) in model"
 			:key="getKey(item)"
 			draggable="true"
@@ -27,7 +29,7 @@ import { ClientPosition, isChildOfClass, useDragEnter, useDragLeave, useDrop, us
 
 const props = withDefaults(
 	defineProps<{
-		modelValue: T[]
+		modelValue: T[] | undefined
 		keyProp: keyof T
 		direction?: "horizontal" | "vertical"
 		handleClass: string
