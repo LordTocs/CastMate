@@ -1,5 +1,5 @@
 <template>
-	<div class="drag-area" ref="dragArea">
+	<div class="drag-area" ref="dragArea" tabindex="-1" @keydown="onKeyDown">
 		<slot name="header"></slot>
 		<slot name="no-items" v-if="props.modelValue.length == 0"></slot>
 		<div>
@@ -16,7 +16,7 @@
 				<document-path :localPath="`[${data.id}]`">
 					<component
 						:is="dataComponent"
-						v-model="modelObj[i]"
+						v-model="model[i]"
 						v-model:view="view[i]"
 						:selectedIds="selection"
 						@delete="deleteItem(i)"
@@ -35,7 +35,7 @@ import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
 import { DragEventWithDataTransfer, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../util/dragging"
 import { useSelectionRect } from "../../util/selection"
-import { getElementRelativeRect } from "../../util/dom"
+import { getElementRelativeRect, isChildOfClass } from "../../util/dom"
 import { provideDocumentPath } from "../../main"
 import DocumentPath from "../document/DocumentPath.vue"
 
@@ -55,7 +55,7 @@ const props = withDefaults(
 	}
 )
 
-const modelObj = useModel(props, "modelValue")
+const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
 const path = provideDocumentPath(() => props.localPath)
@@ -75,7 +75,7 @@ const dataComponents = ref<VueHTMLElement[]>([])
 const insertionIndex = ref<number>(0)
 
 const orderedDataComponents = computed(() => {
-	return modelObj.value.map((i) => dataComponents.value.find((c) => c.__vnode.key == i.id))
+	return model.value.map((i) => dataComponents.value.find((c) => c.__vnode.key == i.id))
 })
 
 function overlaps(from: { x: number; y: number }, to: { x: number; y: number }, elem: DOMRect) {
@@ -100,7 +100,7 @@ const selectState = useSelectionRect(
 
 			const localRect = getElementRelativeRect(comp, dragAreaElem)
 			if (overlaps(from, to, localRect)) {
-				newSelection.push(modelObj.value[i].id)
+				newSelection.push(model.value[i].id)
 			}
 		}
 
@@ -162,7 +162,7 @@ useDrop(
 			return
 		}
 
-		const newModel = [...modelObj.value]
+		const newModel = [...model.value]
 		const newView = [...view.value]
 		//console.log("DropEffect", evt.dataTransfer.dropEffect, evt.dataTransfer.effectAllowed)
 		if (ev.dataTransfer.effectAllowed == "move" && draggingItems.value) {
@@ -195,7 +195,7 @@ useDrop(
 			newView.splice(insertionIdx, 0, ...viewData)
 		}
 
-		modelObj.value = newModel
+		model.value = newModel
 		view.value = newView
 
 		console.log("NewModel", newModel)
@@ -227,23 +227,11 @@ function getInsertionIndex(clientY: number) {
 	return result
 }
 
-function isChildOfClass(element: HTMLElement, clazz: string) {
-	if (element.classList.contains(clazz)) return true
-
-	let parent = element.parentElement
-	while (parent) {
-		if (parent.classList.contains(clazz)) return true
-		parent = parent.parentElement
-	}
-
-	return false
-}
-
 function getSelectedData(copy: boolean) {
 	const result = []
 
 	for (const id of selection.value) {
-		const item = modelObj.value.find((v) => v.id == id)
+		const item = model.value.find((v) => v.id == id)
 
 		if (item) {
 			const itemDupe = _cloneDeep(item)
@@ -297,8 +285,8 @@ function itemDragStart(i: number, evt: DragEvent) {
 
 		draggingItems.value = true
 
-		if (!selection.value.includes(modelObj.value[i].id)) {
-			selection.value = [modelObj.value[i].id]
+		if (!selection.value.includes(model.value[i].id)) {
+			selection.value = [model.value[i].id]
 		}
 
 		evt.dataTransfer.effectAllowed = evt.altKey ? "copy" : "move"
@@ -324,7 +312,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 		if (!droppedLocal.value) {
 			console.log("Remote Drop")
 			//These items are dropped into another frame, remove them from our model
-			modelObj.value = modelObj.value.filter((i) => !selection.value.includes(i.id))
+			model.value = model.value.filter((i) => !selection.value.includes(i.id))
 			view.value = view.value.filter((i) => !selection.value.includes(i.id))
 		}
 	} else if (evt.dataTransfer.dropEffect == "copy") {
@@ -336,7 +324,15 @@ function itemDragEnd(i: number, evt: DragEvent) {
 }
 
 function deleteItem(index: number) {
-	modelObj.value.splice(index, 1)
+	model.value.splice(index, 1)
+}
+
+function onKeyDown(ev: KeyboardEvent) {
+	if (ev.key == "Delete") {
+		ev.preventDefault()
+		ev.stopPropagation()
+		model.value = model.value.filter((i) => !selection.value.includes(i.id))
+	}
 }
 </script>
 
