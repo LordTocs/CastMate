@@ -1,5 +1,17 @@
 <template>
-	<div class="drag-area" ref="dragArea" tabindex="-1" @keydown="onKeyDown">
+	<div
+		class="drag-area"
+		ref="dragArea"
+		tabindex="-1"
+		@mousedown="onClick"
+		@keydown="onKeyDown"
+		@focus="onFocus"
+		@onBlur="onBlur"
+		@copy="onCopy"
+		@cut="onCut"
+		@paste="onPaste"
+	>
+		<select-dummy ref="selectDummy" />
 		<slot name="header"></slot>
 		<slot name="no-items" v-if="props.modelValue.length == 0"></slot>
 		<div>
@@ -38,6 +50,7 @@ import { useSelectionRect } from "../../util/selection"
 import { getElementRelativeRect, isChildOfClass } from "../../util/dom"
 import { provideDocumentPath } from "../../main"
 import DocumentPath from "../document/DocumentPath.vue"
+import SelectDummy from "../util/SelectDummy.vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -228,39 +241,26 @@ function getInsertionIndex(clientY: number) {
 }
 
 function getSelectedData(copy: boolean) {
-	const result = []
+	const resultItems = []
+	const resultView = []
 
 	for (const id of selection.value) {
 		const item = model.value.find((v) => v.id == id)
+		const viewItem = view.value.find((v) => v.id == id)
 
-		if (item) {
-			const itemDupe = _cloneDeep(item)
-			if (copy) {
-				itemDupe.id = nanoid()
-			}
-			result.push(itemDupe)
+		if (!item || !viewItem) continue
+
+		const itemDupe = _cloneDeep(item)
+		const viewDupe = _cloneDeep(viewItem)
+		if (copy) {
+			itemDupe.id = nanoid()
+			viewDupe.id = itemDupe.id
 		}
+		resultItems.push(itemDupe)
+		resultView.push(viewDupe)
 	}
 
-	return result
-}
-
-function getSelectedViewData(copy: boolean) {
-	const result = []
-
-	for (const id of selection.value) {
-		const item = view.value.find((v) => v.id == id)
-
-		if (item) {
-			const itemDupe = _cloneDeep(item)
-			if (copy) {
-				itemDupe.id = nanoid()
-			}
-			result.push(itemDupe)
-		}
-	}
-
-	return result
+	return { modelItems: resultItems, viewItems: resultView }
 }
 
 /// DRAG ITEM HANDLERS
@@ -290,8 +290,10 @@ function itemDragStart(i: number, evt: DragEvent) {
 		}
 
 		evt.dataTransfer.effectAllowed = evt.altKey ? "copy" : "move"
-		evt.dataTransfer.setData(props.dataType, JSON.stringify(getSelectedData(evt.altKey)))
-		evt.dataTransfer.setData(`${props.dataType}-view`, JSON.stringify(getSelectedViewData(evt.altKey)))
+
+		const { modelItems, viewItems } = getSelectedData(evt.altKey)
+		evt.dataTransfer.setData(props.dataType, JSON.stringify(modelItems))
+		evt.dataTransfer.setData(`${props.dataType}-view`, JSON.stringify(viewItems))
 
 		evt.stopPropagation()
 	} else {
@@ -325,14 +327,89 @@ function itemDragEnd(i: number, evt: DragEvent) {
 
 function deleteItem(index: number) {
 	model.value.splice(index, 1)
+	view.value.splice(index, 1)
+}
+
+/////////////////////////////////////////////
+//////// KEYBOARD SHORTCUTS /////////////////
+///////////////////////////////////////////////
+
+function deleteSelected() {
+	model.value = model.value.filter((i) => !selection.value.includes(i.id))
+	view.value = view.value.filter((i) => !selection.value.includes(i.id))
+	selection.value = []
 }
 
 function onKeyDown(ev: KeyboardEvent) {
 	if (ev.key == "Delete") {
 		ev.preventDefault()
 		ev.stopPropagation()
-		model.value = model.value.filter((i) => !selection.value.includes(i.id))
+		deleteSelected()
 	}
+}
+
+/////////////////////////////////////////////
+//////// FOCUS EVENTS /////////////////
+///////////////////////////////////////////////
+
+const selectDummy = ref<InstanceType<typeof SelectDummy>>()
+function onFocus() {
+	selectDummy.value?.select()
+}
+
+function onBlur() {}
+
+function onClick(ev: MouseEvent) {
+	if (ev.button == 0) {
+		selectDummy.value?.select()
+		dragArea.value?.focus()
+		ev.stopPropagation()
+		ev.preventDefault()
+	}
+}
+
+//////////////////////////////////////////////
+//////// COPY PASTE //////////////////////////
+//////////////////////////////////////////////
+
+function onCopy(ev: ClipboardEvent) {
+	console.log("Copy!")
+
+	if (selection.value.length == 0) return
+
+	const { modelItems, viewItems } = getSelectedData(true)
+
+	const modelStr = JSON.stringify(modelItems)
+	const viewStr = JSON.stringify(viewItems)
+
+	ev.clipboardData?.setData("text/plain", modelStr)
+	ev.clipboardData?.setData(props.dataType, modelStr)
+	ev.clipboardData?.setData(`${props.dataType}-view`, viewStr)
+	ev.preventDefault()
+}
+
+function onCut(ev: ClipboardEvent) {
+	console.log("Cut!")
+	onCopy(ev)
+	deleteSelected()
+}
+
+function onPaste(ev: ClipboardEvent) {
+	console.log("Paste!")
+
+	const pasteStr = ev.clipboardData?.getData(props.dataType)
+	const viewStr = ev.clipboardData?.getData(`${props.dataType}-view`)
+	if (!pasteStr || pasteStr.length == 0 || !viewStr || viewStr.length == 0) return
+
+	try {
+		const pasteData = JSON.parse(pasteStr)
+		const viewData = JSON.parse(viewStr)
+
+		if (!Array.isArray(pasteData)) return
+
+		model.value.splice(model.value.length, 0, ...pasteData)
+		view.value.splice(view.value.length, 0, ...viewData)
+	} catch {}
 }
 </script>
 
