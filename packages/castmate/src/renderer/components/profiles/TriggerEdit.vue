@@ -1,5 +1,5 @@
 <template>
-	<div class="trigger-card" :class="{ selected: isSelected }" :style="{ '--hello': 'blah', ...triggerColorStyle }">
+	<div class="trigger-card" :class="{ selected: isSelected }" :style="{ ...triggerColorStyle }">
 		<div class="header">
 			<div class="drag-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
@@ -52,6 +52,9 @@
 				:container="cardBody"
 			></expander-slider>
 		</div>
+		<div class="closed-body" v-else>
+			<data-view v-if="trigger" :model-value="modelValue.config" :schema="trigger.config" />
+		</div>
 	</div>
 </template>
 
@@ -62,6 +65,7 @@ import { type TriggerData, getActionById } from "castmate-schema"
 import {
 	useTrigger,
 	DataInput,
+	DataView,
 	TriggerSelector,
 	TriggerView,
 	useTriggerColors,
@@ -280,6 +284,16 @@ const modelObj = useVModel(props, "modelValue", emit)
 	flex-direction: column;
 
 	/*min-height: 600px;*/
+}
+
+.closed-body {
+	display: flex;
+	flex-direction: column;
+
+	background-color: var(--darkest-trigger-color);
+	padding-left: 2.5rem;
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
 }
 
 .config {

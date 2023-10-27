@@ -37,6 +37,17 @@ import ToggleInputVue from "../components/data/inputs/ToggleInput.vue"
 import BooleanInputVue from "../components/data/inputs/BooleanInput.vue"
 import ColorInputVue from "../components/data/inputs/ColorInput.vue"
 import DurationInputVue from "../components/data/inputs/DurationInput.vue"
+
+import GenericDataViewVue from "../components/data/views/GenericDataView.vue"
+import BooleanViewVue from "../components/data/views/BooleanView.vue"
+import ColorViewVue from "../components/data/views/ColorView.vue"
+import DurationViewVue from "../components/data/views/DurationView.vue"
+import MediaFileViewVue from "../components/data/views/MediaFileView.vue"
+import ObjectViewVue from "../components/data/views/ObjectView.vue"
+import RangeViewVue from "../components/data/views/RangeView.vue"
+import ResourceViewVue from "../components/data/views/ResourceView.vue"
+import ToggleViewVue from "../components/data/views/ToggleView.vue"
+
 import { ipcRenderer } from "electron"
 import { isObject } from "@vueuse/core"
 
@@ -131,22 +142,37 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 
 export const useDataInputStore = defineStore("data-components", () => {
 	const componentMap = ref<Map<DataConstructorOrFactory, Component>>(new Map())
+	const viewMap = ref<Map<DataConstructorOrFactory, Component>>(new Map())
 
 	function registerInputComponent(type: DataConstructorOrFactory, component: Component) {
 		componentMap.value.set(markRaw(type), markRaw(component))
+	}
+
+	function registerViewComponent(type: DataConstructorOrFactory, component: Component) {
+		viewMap.value.set(markRaw(type), markRaw(component))
 	}
 
 	function getInputComponent(type: DataConstructorOrFactory) {
 		return componentMap.value.get(type)
 	}
 
-	return { registerInputComponent, getInputComponent }
+	function getViewComponent(type: DataConstructorOrFactory) {
+		return viewMap.value.get(type)
+	}
+
+	return { registerInputComponent, registerViewComponent, getInputComponent, getViewComponent }
 })
 
 export function useDataComponent(type: MaybeRefOrGetter<DataConstructorOrFactory>) {
 	const inputStore = useDataInputStore()
 
 	return computed(() => inputStore.getInputComponent(toValue(type)))
+}
+
+export function useDataViewComponent(type: MaybeRefOrGetter<DataConstructorOrFactory>) {
+	const inputStore = useDataInputStore()
+
+	return computed(() => inputStore.getViewComponent(toValue(type)))
 }
 
 export function initData() {
@@ -162,4 +188,14 @@ export function initData() {
 	inputStore.registerInputComponent(Boolean, BooleanInputVue)
 	inputStore.registerInputComponent(Color, ColorInputVue)
 	inputStore.registerInputComponent(Duration, DurationInputVue)
+
+	inputStore.registerViewComponent(String, GenericDataViewVue)
+	inputStore.registerViewComponent(Number, GenericDataViewVue)
+	inputStore.registerViewComponent(Object, ObjectViewVue)
+	inputStore.registerViewComponent(Range, RangeViewVue)
+	inputStore.registerViewComponent(MediaFile, MediaFileViewVue)
+	inputStore.registerViewComponent(ResourceProxyFactory, ResourceViewVue)
+	inputStore.registerViewComponent(Toggle, ToggleViewVue)
+	inputStore.registerViewComponent(Color, ColorViewVue)
+	inputStore.registerViewComponent(Duration, DurationViewVue)
 }
