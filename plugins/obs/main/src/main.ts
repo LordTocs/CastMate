@@ -118,5 +118,35 @@ export default definePlugin(
 		setupSources(obsDefault)
 		setupMedia(obsDefault)
 		setupToggles(obsDefault)
+
+		defineAction({
+			id: "hotkey",
+			name: "Hotkey",
+			config: {
+				type: Object,
+				properties: {
+					obs: {
+						type: OBSConnection,
+						name: "OBS Connection",
+						required: true,
+						default: () => obsDefault.value,
+					},
+					hotkey: {
+						type: String,
+						name: "Hotkey",
+						required: true,
+						async enum(context: { obs: OBSConnection }) {
+							if (!context.obs) return []
+
+							const result = await context.obs.connection.call("GetHotkeyList")
+							return result.hotkeys
+						},
+					},
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				await config.obs?.connection?.call("TriggerHotkeyByName", { hotkeyName: config.hotkey })
+			},
+		})
 	}
 )
