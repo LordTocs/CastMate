@@ -29,6 +29,7 @@ export { default as CAutocomplete } from "./components/data/base-components/CAut
 export { default as EnumInput } from "./components/data/base-components/EnumInput.vue"
 export { default as DocumentPath } from "./components/document/DocumentPath.vue"
 export { default as BooleanExpressionInput } from "./components/data/inputs/BooleanExpressionInput.vue"
+export { default as DropDownPanel } from "./components/data/base-components/DropDownPanel.vue"
 
 export { default as ExpanderSlider } from "./components/util/ExpanderSlider.vue"
 

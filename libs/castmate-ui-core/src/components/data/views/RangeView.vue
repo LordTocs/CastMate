@@ -6,11 +6,14 @@
 import { Range } from "castmate-schema"
 import { SchemaRange } from "castmate-schema"
 import { computed } from "vue"
+import { SharedDataViewProps } from "../DataInputTypes"
 
-const props = defineProps<{
-	modelValue: Range | undefined
-	schema: SchemaRange
-}>()
+const props = defineProps<
+	{
+		modelValue: Range | undefined
+		schema: SchemaRange
+	} & SharedDataViewProps
+>()
 
 const minString = computed(() => {
 	if (!props.modelValue || props.modelValue.min == null) return "-∞"

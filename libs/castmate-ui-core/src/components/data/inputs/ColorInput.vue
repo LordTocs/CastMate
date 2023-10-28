@@ -35,38 +35,23 @@
 			/>
 			<p-button class="flex-none no-focus-highlight" v-if="!schema.required" icon="pi pi-times" @click="clear" />
 		</div>
-		<p-portal append-to="self">
-			<transition name="p-connected-overlay" @enter="onOverlayEnter">
-				<div
-					v-if="overlayVisible"
-					ref="overlayDiv"
-					class="overlay p-dropdown-panel p-component p-ripple-disabled"
-					:style="{
-						zIndex: primevue.config.zIndex?.overlay,
-					}"
-				>
-					<p-color-picker v-model="poundConverter" inline />
-				</div>
-			</transition>
-		</p-portal>
+		<drop-down-panel v-model="overlayVisible" :container="container">
+			<p-color-picker v-model="poundConverter" inline />
+		</drop-down-panel>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { SchemaColor } from "castmate-schema"
 import { Color, isHexColor } from "castmate-schema"
-import { computed, nextTick, onMounted, ref, useModel, watch } from "vue"
+import { computed, onMounted, ref, useModel, watch } from "vue"
 import PButton from "primevue/button"
-import PPortal from "primevue/portal"
-import PInputText from "primevue/inputtext"
 import PColorPicker from "primevue/colorpicker"
-import { DomHandler } from "primevue/utils"
-import { usePrimeVue } from "primevue/config"
 import { stopPropagation } from "../../../main"
-import { useEventListener } from "@vueuse/core"
 import { SharedDataInputProps } from "../DataInputTypes"
 import LabelFloater from "../base-components/LabelFloater.vue"
 import TemplateToggle from "../base-components/TemplateToggle.vue"
+import DropDownPanel from "../base-components/DropDownPanel.vue"
 
 const props = defineProps<
 	{
@@ -87,7 +72,6 @@ function clear() {
 const focused = ref(false)
 
 const overlayVisible = ref(false)
-const overlayVisibleComplete = ref(false)
 
 const poundConverter = computed<string | undefined>({
 	get() {
@@ -109,7 +93,6 @@ function show() {
 }
 function hide() {
 	overlayVisible.value = false
-	overlayVisibleComplete.value = false
 }
 function toggle(ev: MouseEvent) {
 	if (ev.button != 0) return
@@ -124,27 +107,6 @@ function toggle(ev: MouseEvent) {
 }
 
 const container = ref<HTMLElement | null>(null)
-const overlayDiv = ref<HTMLElement | null>(null)
-const primevue = usePrimeVue()
-
-function onOverlayEnter() {
-	if (!overlayDiv.value) return
-	if (!container.value) return
-
-	overlayVisibleComplete.value = true
-
-	DomHandler.relativePosition(overlayDiv.value, container.value)
-}
-
-useEventListener(
-	() => (overlayVisibleComplete.value ? document : undefined),
-	"click",
-	(ev) => {
-		if (!container.value?.contains(ev.target as Node) && !overlayDiv.value?.contains(ev?.target as Node)) {
-			hide()
-		}
-	}
-)
 
 const templateMode = ref(false)
 onMounted(() => {

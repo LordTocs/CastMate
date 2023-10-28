@@ -12,22 +12,9 @@
 				</template-toggle>
 			</label-floater>
 		</div>
-		<p-portal :append-to="appendTo">
-			<transition name="p-connected-overlay" @enter="onOverlayEnter">
-				<div
-					v-if="overlayVisible"
-					class="overlay p-dropdown-panel p-component p-ripple-disabled p-1"
-					ref="overlayDiv"
-					:style="{
-						zIndex: primevue.config.zIndex?.overlay,
-					}"
-					@mousedown="stopPropagation"
-					@click="stopPropagation"
-				>
-					<light-color-wheel style="width: 15rem" v-if="LightColor.isHSB(model) || !model" v-model="model" />
-				</div>
-			</transition>
-		</p-portal>
+		<drop-down-panel v-model="overlayVisible" :container="container">
+			<light-color-wheel style="width: 15rem" v-if="LightColor.isHSB(model) || !model" v-model="model" />
+		</drop-down-panel>
 	</div>
 </template>
 
@@ -41,11 +28,9 @@ import {
 	SharedDataInputProps,
 	stopPropagation,
 	injectScrollAttachable,
-	positionPortal,
+	DropDownPanel,
 } from "castmate-ui-core"
 import { ref, useModel } from "vue"
-import { usePrimeVue } from "primevue/config"
-import { useEventListener } from "@vueuse/core"
 import LightColorWheel from "./LightColorWheel.vue"
 
 const props = defineProps<
@@ -61,12 +46,10 @@ const model = useModel(props, "modelValue")
 
 const appendTo = injectScrollAttachable()
 
-const primevue = usePrimeVue()
 const container = ref<HTMLElement>()
 const overlayDiv = ref<HTMLElement>()
 
 const overlayVisible = ref(false)
-const overlayVisibleComplete = ref(false)
 
 function show() {
 	if (!overlayVisible.value) {
@@ -75,7 +58,6 @@ function show() {
 }
 function hide() {
 	overlayVisible.value = false
-	overlayVisibleComplete.value = false
 }
 
 function toggle() {
@@ -91,27 +73,6 @@ function onClick(ev: MouseEvent) {
 	ev.stopPropagation()
 	ev.preventDefault()
 }
-
-function fixPos() {
-	if (!overlayDiv.value) return
-	if (!container.value) return
-	positionPortal(overlayDiv.value, container.value, appendTo.value)
-}
-
-function onOverlayEnter() {
-	overlayVisibleComplete.value = true
-	fixPos()
-}
-
-useEventListener(
-	() => (overlayVisibleComplete.value ? document : undefined),
-	"click",
-	(ev) => {
-		if (!container.value?.contains(ev.target as Node) && !overlayDiv.value?.contains(ev.target as Node)) {
-			hide()
-		}
-	}
-)
 </script>
 
 <style scoped>

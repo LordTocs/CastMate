@@ -36,47 +36,44 @@
 				><p-chevron-down-icon
 			/></p-button>
 		</div>
-		<p-portal append-to="self">
-			<transition name="p-connected-overlay" @enter="onOverlayEnter">
-				<div
-					v-if="overlayVisible"
-					ref="overlayDiv"
-					class="overlay p-dropdown-panel p-component p-ripple-disabled"
-					:style="{
-						zIndex: primevue.config.zIndex?.overlay,
-						width: `${containerSize.width.value}px`,
-					}"
-				>
-					<ul class="p-dropdown-items">
-						<template v-for="(group, i) in filteredItems">
-							<slot name="groupHeader" :item="group[0]"> </slot>
+		<drop-down-panel
+			:container="container"
+			v-model="overlayVisible"
+			:style="{
+				width: `${containerSize.width.value}px`,
+				overflowY: 'auto',
+				maxHeight: '15rem',
+			}"
+			class="autocomplete-drop-down"
+		>
+			<ul class="p-dropdown-items">
+				<template v-for="(group, i) in filteredItems">
+					<slot name="groupHeader" :item="group[0]"> </slot>
 
-							<slot
-								name="item"
-								v-for="(item, i) in group"
-								:item="item"
-								:index="i"
-								:focused="isItemFocused(item)"
-								:highlighted="isCurrentItem(item)"
-								:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
-							>
-								<li
-									class="p-dropdown-item"
-									:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
-									:data-p-highlight="isCurrentItem(item)"
-									:data-p-focused="isItemFocused(item)"
-									:aria-label="getItemText(item, props)"
-									:aria-selected="isCurrentItem(item)"
-									@click="onItemSelect($event, item)"
-								>
-									{{ getItemText(item, props) }}
-								</li>
-							</slot>
-						</template>
-					</ul>
-				</div>
-			</transition>
-		</p-portal>
+					<slot
+						name="item"
+						v-for="(item, i) in group"
+						:item="item"
+						:index="i"
+						:focused="isItemFocused(item)"
+						:highlighted="isCurrentItem(item)"
+						:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
+					>
+						<li
+							class="p-dropdown-item"
+							:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
+							:data-p-highlight="isCurrentItem(item)"
+							:data-p-focused="isItemFocused(item)"
+							:aria-label="getItemText(item, props)"
+							:aria-selected="isCurrentItem(item)"
+							@click="onItemSelect($event, item)"
+						>
+							{{ getItemText(item, props) }}
+						</li>
+					</slot>
+				</template>
+			</ul>
+		</drop-down-panel>
 	</div>
 </template>
 
@@ -85,9 +82,6 @@ import { ref, useModel, nextTick, watch, computed } from "vue"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
 import PChevronDownIcon from "primevue/icons/chevrondown"
-import PPortal from "primevue/portal"
-import { usePrimeVue } from "primevue/config"
-import { DomHandler } from "primevue/utils"
 import { useElementSize, useEventListener } from "@vueuse/core"
 import { stopPropagation } from "../../../util/dom"
 import {
@@ -101,7 +95,7 @@ import {
 } from "../../../util/autocomplete-helpers"
 import LabelFloater from "./LabelFloater.vue"
 import _clamp from "lodash/clamp"
-import { InputBox } from "../../../main"
+import { DropDownPanel, InputBox } from "../../../main"
 
 const props = withDefaults(
 	defineProps<
@@ -128,13 +122,9 @@ function clear() {
 
 ////////////////////////////
 //Drop Down Opening
-const primevue = usePrimeVue()
 const container = ref<HTMLElement | null>(null)
-const overlayDiv = ref<HTMLElement | null>(null)
 
 const overlayVisible = ref(false)
-const overlayVisibleComplete = ref(false)
-
 function show() {
 	if (!overlayVisible.value) {
 		overlayVisible.value = true
@@ -144,7 +134,6 @@ function show() {
 }
 function hide() {
 	overlayVisible.value = false
-	overlayVisibleComplete.value = false
 }
 
 function onDropDownClick(ev: MouseEvent) {
@@ -158,33 +147,13 @@ function onDropDownClick(ev: MouseEvent) {
 		hide()
 	}
 }
-
-function onOverlayEnter() {
-	if (!overlayDiv.value) return
-	if (!container.value) return
-
-	overlayVisibleComplete.value = true
-
-	DomHandler.relativePosition(overlayDiv.value, container.value)
-}
-
 const containerSize = useElementSize(container)
-
 //////////////////
 //Filtering
 
 const filterValue = ref<string>("")
 const filterInputElement = ref<{ $el: HTMLElement } | null>(null)
 const filteredItems = useGroupedFilteredItems(filterValue, () => props.items, props)
-watch(filteredItems, () => {
-	if (overlayVisibleComplete.value) {
-		nextTick(() => {
-			if (!overlayDiv.value) return
-			if (!container.value) return
-			DomHandler.relativePosition(overlayDiv.value, container.value)
-		})
-	}
-})
 
 function onItemSelect(ev: Event, item: ItemType) {
 	model.value = item.id
@@ -272,11 +241,5 @@ function onKeyArrowUp(ev: KeyboardEvent) {
 
 .autocomplete-container {
 	position: relative;
-}
-
-.overlay {
-	position: absolute;
-	overflow-y: auto;
-	max-height: 15rem;
 }
 </style>
