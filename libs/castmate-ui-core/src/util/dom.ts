@@ -257,12 +257,14 @@ export function positionPortal(
 	let left = 0
 	let top = 0
 
-	const viewport = { width: window.innerWidth, height: window.innerHeight }
+	const attachBounds = attachTo.getBoundingClientRect()
+	//const viewport = { width: window.innerWidth, height: window.innerHeight }
 
 	left = targetRect.left
 	top = targetRect.bottom
 
-	const viewportBottom = targetBounds.bottom + elemRect.height
+	const clientBottom = targetBounds.bottom + elemRect.height
+	//Something with the transition animation ruins this.
 	/*if (viewportBottom >= viewport.height) {
 		//Try the top
 
@@ -272,10 +274,10 @@ export function positionPortal(
 	element.style.top = `${top}px`
 	//}
 
-	const viewportRight = targetBounds.left + elemRect.width
-	if (viewportRight >= viewport.width) {
-		const overlap = viewportRight - viewport.width
-		console.log("RIGHT", viewport.width, viewportRight, elemRect.width, left, overlap, left - overlap)
+	const clientRight = targetBounds.left + elemRect.width
+	if (clientRight >= attachBounds.right) {
+		//const overlap = clientRight - attachBounds.right
+		//console.log("RIGHT", viewport.width, viewportRight, elemRect.width, left, overlap, left - overlap)
 		left = targetRect.right - elemRect.width
 	}
 
