@@ -78,11 +78,11 @@ function adjustPos(ev: MouseEvent) {
 		duration = props.otherValue - duration
 	} else {
 		duration = (newWidth - distFromDragEdge.value) / (panState.value.zoomX * automationTimeScale)
-		console.log(duration)
+		//console.log(duration)
 		duration = duration + props.otherValue
 	}
 
-	console.log(newWidth, distFromDragEdge.value, props.otherValue, duration)
+	//console.log(newWidth, distFromDragEdge.value, props.otherValue, duration)
 
 	if (props.max != null) {
 		duration = Math.min(duration, props.max)

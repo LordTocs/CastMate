@@ -39,7 +39,6 @@ watch(
 	documentData,
 	() => {
 		if (document.value) {
-			console.log("DIRT")
 			document.value.dirty = true
 		}
 	},
