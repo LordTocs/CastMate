@@ -12,6 +12,7 @@ export * from "./accounts/account"
 
 export * from "./util/service"
 export * from "./util/abort-utils"
+export * from "./util/retry-timer"
 export * from "./templates/template"
 
 export * from "./reactivity/reactivity"
