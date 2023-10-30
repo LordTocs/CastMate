@@ -2977,6 +2977,7 @@ __metadata:
     castmate-core: "workspace:^"
     castmate-plugin-minecraft-shared: "workspace:^"
     castmate-schema: "workspace:^"
+    ts-rcon: ^1.2.1
     typescript: "*"
   languageName: unknown
   linkType: soft
@@ -8736,6 +8737,13 @@ __metadata:
     "@ts-morph/common": ~0.19.0
     code-block-writer: ^12.0.0
   checksum: e3d3099b9a632dfcea2ddc75f00e0d0866b4f6d27b73f9e0ff96cf64fe24ce8074098d6709873afce9edb852c2127c40ad4013f54fdf68dafe0231f1a71827c8
+  languageName: node
+  linkType: hard
+
+"ts-rcon@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "ts-rcon@npm:1.2.1"
+  checksum: 6c70c625072c3c47f79c476c74180fe8cbc3bb9604a4fc0d4ac325dbc597c6948f51afdb41d3aa32447dca87d7a8e0bed6b3d66e41fe7caf20b7b177e3eabb96
   languageName: node
   linkType: hard
 
