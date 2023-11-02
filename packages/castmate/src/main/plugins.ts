@@ -11,6 +11,10 @@ import timePlugin from "castmate-plugin-time-main"
 import twitchPlugin from "castmate-plugin-twitch-main"
 import voicemodPlugin from "castmate-plugin-voicemod-main"
 
+import kasaPlugin from "castmate-plugin-tplink-kasa-main"
+import huePlugin from "castmate-plugin-philips-hue-main"
+import elgatoPlugin from "castmate-plugin-elgato-main"
+
 import castmatePlugin from "./builtin-plugin"
 
 export async function loadPlugins() {
@@ -30,4 +34,13 @@ export async function loadPlugins() {
 		pluginManager.registerPlugin(minecraftPlugin),
 	]
 	await Promise.allSettled(promises)
+
+	//iot
+	const iotPromises = [
+		pluginManager.registerPlugin(huePlugin),
+		pluginManager.registerPlugin(kasaPlugin),
+		pluginManager.registerPlugin(elgatoPlugin),
+	]
+
+	await Promise.allSettled(iotPromises)
 }
