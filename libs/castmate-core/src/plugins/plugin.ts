@@ -21,6 +21,7 @@ import { ensureYAML, loadYAML, pathExists, writeYAML } from "../io/file-system"
 import _debounce from "lodash/debounce"
 import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema, serializeSchema } from "../util/ipc-schema"
 import { ResourceBase, ResourceConstructor } from "../resources/resource"
+import { PluginManager } from "./plugin-manager"
 
 interface PluginSpec {
 	id: string
@@ -261,6 +262,32 @@ export function defineResourceSetting<T extends ResourceBase>(
 		name,
 		description,
 	})
+}
+
+export function onSettingChanged<T>(ref: ReactiveRef<T> | ReactiveRef<T>[], func: () => any) {
+	let effect: ReactiveEffect | undefined
+
+	onLoad(async () => {
+		effect = await runOnChange(() => {
+			if (Array.isArray(ref)) {
+				return ref.map((r) => r.value)
+			} else {
+				return ref.value
+			}
+		}, func)
+	})
+
+	onUnload(() => {
+		effect?.dispose()
+		effect = undefined
+	})
+}
+
+export function getPluginSetting<T>(plugin: string, setting: string) {
+	const settingDef = PluginManager.getInstance().getPlugin(plugin)?.settings?.get(setting)
+	if (settingDef?.type != "value") return undefined
+
+	return settingDef.ref as ReactiveRef<T>
 }
 
 export let initingPlugin: Plugin | null = null
