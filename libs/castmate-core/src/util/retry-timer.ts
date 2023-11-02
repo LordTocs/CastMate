@@ -21,13 +21,13 @@ export class RetryTimer {
 		}
 	}
 
-	tryAgain() {
+	tryAgain(overrideInterval?: number) {
 		if (this.retryTimeout != null) return
 
 		this.retryTimeout = setTimeout(() => {
 			this.retryTimeout = null
 			this.tryInternal()
-		}, this.retryInterval * 1000)
+		}, (overrideInterval ?? this.retryInterval) * 1000)
 	}
 
 	async tryNow() {
