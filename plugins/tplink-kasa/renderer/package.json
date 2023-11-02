@@ -1,0 +1,29 @@
+{
+  "name": "castmate-plugin-tplink-kasa-renderer",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "devMain": "src/main.ts",
+  "types": "./dist/types/main.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vueuse/core": "*",
+    "castmate-schema": "workspace:^",
+    "castmate-ui-core": "workspace:^",
+    "chromatism2": "*",
+    "electron": "*",
+    "nanoid": "*",
+    "pinia": "*",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "*",
+    "typescript": "*",
+    "vite": "*",
+    "vue-tsc": "*"
+  }
+}
