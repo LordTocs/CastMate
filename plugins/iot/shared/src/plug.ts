@@ -1,6 +1,7 @@
 export interface PlugConfig {
 	name: string
-	plugin: string
+	provider: string
+	providerId: string
 }
 
 export interface PlugState {

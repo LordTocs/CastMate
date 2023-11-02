@@ -1,5 +1,5 @@
 import { LightColor, LightConfig, LightState } from "castmate-plugin-iot-shared"
-import { Resource, ResourceStorage, defineAction, definePluginResource } from "castmate-core"
+import { Resource, ResourceStorage, abortableSleep, defineAction, definePluginResource } from "castmate-core"
 import { Duration, Toggle } from "castmate-schema"
 
 export class LightResource<
@@ -9,6 +9,28 @@ export class LightResource<
 	static storage = new ResourceStorage<LightResource>("Light")
 
 	async setLightState(color: LightColor, on: Toggle, transition: Duration) {}
+}
+
+export class PollingLight<
+	Config extends LightConfig = LightConfig,
+	State extends LightState = LightState
+> extends LightResource<Config, State> {
+	poller: NodeJS.Timer | undefined = undefined
+
+	startPolling(interval: number) {
+		this.poller = setInterval(async () => {
+			try {
+				this.poll()
+			} catch (err) {}
+		}, interval * 1000)
+	}
+
+	stopPolling() {
+		clearInterval(this.poller)
+		this.poller = undefined
+	}
+
+	async poll() {}
 }
 
 export function setupLights() {
@@ -47,6 +69,8 @@ export function setupLights() {
 		},
 		async invoke(config, contextData, abortSignal) {
 			await config.light?.setLightState(config.lightColor, config.on, config.transition)
+
+			await abortableSleep(config.transition * 1000, abortSignal)
 		},
 	})
 }

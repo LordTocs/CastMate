@@ -2,14 +2,15 @@ import { LightColor } from "./light-color"
 
 export interface LightConfig {
 	name: string
-	plugin: string
+	provider: string
+	providerId: string
 	rgb: {
 		available: boolean
 	}
 	kelvin: {
 		available: boolean
-		min: number
-		max: number
+		min?: number
+		max?: number
 	}
 	dimming: {
 		available: boolean

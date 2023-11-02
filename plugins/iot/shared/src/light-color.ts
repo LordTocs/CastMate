@@ -1,11 +1,11 @@
 import { Color, SchemaBase, registerType } from "castmate-schema"
 import * as chromatism from "chromatism2"
 /**
- * hsb(hue(0-360),sat(0,100), bri(0,1))
+ * hsb(hue(0-360),sat(0,100), bri(0,100))
  */
 export type HSB = `hsb(${number}, ${number}, ${number})`
 /**
- * kb(kelvin, bri(0,1))
+ * kb(kelvin, bri(0,100))
  */
 export type KB = `kb(${number}, ${number})`
 
@@ -25,7 +25,7 @@ export type LightColorObj = HSBColor | KelvinColor
 export type LightColor = HSB | KB
 export const LightColor = {
 	factoryCreate() {
-		return "hsb(0, 100, 1)"
+		return "hsb(0, 100, 100)"
 	},
 	isHSB(color: LightColor | undefined): color is HSB {
 		if (!color) return false
@@ -54,7 +54,7 @@ export const LightColor = {
 		if ("kelvin" in parsed) {
 			return kelvinToCSS(parsed.kelvin, parsed.bri)
 		} else {
-			return chromatism.convert({ h: parsed.hue, s: parsed.sat, v: parsed.bri * 100 }).hex as Color
+			return chromatism.convert({ h: parsed.hue, s: parsed.sat, v: parsed.bri }).hex as Color
 		}
 	},
 }
