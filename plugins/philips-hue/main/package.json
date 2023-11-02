@@ -1,0 +1,23 @@
+{
+  "name": "castmate-plugin-philips-hue-main",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.ts",
+  "devMain": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/eventsource": "^1.1.14",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "castmate-core": "workspace:^",
+    "castmate-plugin-iot-main": "workspace:^",
+    "castmate-plugin-iot-shared": "workspace:^",
+    "castmate-schema": "workspace:^",
+    "eventsource": "^2.0.2"
+  }
+}
