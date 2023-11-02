@@ -13,6 +13,8 @@ export * from "./accounts/account"
 export * from "./util/service"
 export * from "./util/abort-utils"
 export * from "./util/retry-timer"
+export * from "./util/async-cache"
+export * from "./util/events"
 export * from "./templates/template"
 
 export * from "./reactivity/reactivity"
