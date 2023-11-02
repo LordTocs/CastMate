@@ -44,6 +44,7 @@ export interface ResourceStorageBase {
 	//iter?
 	inject(...resources: ResourceBase[]): Promise<void>
 	remove(id: string): void
+	[Symbol.iterator](): IterableIterator<ResourceBase>
 }
 
 export class ResourceStorage<T extends ResourceBase> implements ResourceStorageBase {
@@ -193,6 +194,25 @@ export class Resource<ConfigType extends object, StateType extends object = {}> 
 		//@ts-ignore
 		ResourceRegistry.getInstance().unregister(this)
 	}
+}
+
+export function* iterSubResource<T extends ResourceConstructor>(resourceConstructor: T) {
+	for (const resource of resourceConstructor.storage) {
+		//TODO: Check parentage
+		if (resource.constructor == resourceConstructor) {
+			yield resource as InstanceType<T>
+		}
+	}
+}
+
+export async function removeAllSubResource<T extends ResourceConstructor>(resourceConstructor: T) {
+	const ids: string[] = []
+
+	for (const resource of iterSubResource(resourceConstructor)) {
+		ids.push(resource.id)
+	}
+
+	await Promise.allSettled(ids.map((id) => resourceConstructor.storage.remove(id)))
 }
 
 /*
