@@ -3063,6 +3063,55 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-lifx-main@workspace:^, castmate-plugin-lifx-main@workspace:plugins/lifx/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-lifx-main@workspace:plugins/lifx/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-iot-main: "workspace:^"
+    castmate-plugin-iot-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    lifx-lan-client: ^2.1.0
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-lifx-shared@workspace:plugins/lifx/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-lifx-shared@workspace:plugins/lifx/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-lifx@workspace:plugins/lifx":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-lifx@workspace:plugins/lifx"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-minecraft-main@workspace:^, castmate-plugin-minecraft-main@workspace:plugins/minecraft/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-minecraft-main@workspace:plugins/minecraft/main"
@@ -3523,6 +3572,7 @@ __metadata:
     castmate-plugin-input-renderer: "workspace:^"
     castmate-plugin-iot-main: "workspace:^"
     castmate-plugin-iot-renderer: "workspace:^"
+    castmate-plugin-lifx-main: "workspace:^"
     castmate-plugin-minecraft-main: "workspace:^"
     castmate-plugin-minecraft-renderer: "workspace:^"
     castmate-plugin-obs-main: "workspace:^"
@@ -6547,6 +6597,16 @@ __metadata:
   dependencies:
     immediate: ~3.0.5
   checksum: 33102302cf19766f97919a6a98d481e01393288b17a6aa1f030a3542031df42736edde8dab29ffdbf90bebeffc48c761eb1d064dc77592ca3ba3556f9fe6d2a8
+  languageName: node
+  linkType: hard
+
+"lifx-lan-client@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "lifx-lan-client@npm:2.1.0"
+  dependencies:
+    eventemitter3: ^4.0.7
+    lodash: ^4.17.15
+  checksum: 5ad4fd01fc46cdbba69e7d4f1864fb2cc5bcb622a13f212beda939cb8a8e8f7441e2da6dbfb904ae168729dba68c8e2abb3708f58de845e460468dc198b244b3
   languageName: node
   linkType: hard
 
