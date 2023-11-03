@@ -110,7 +110,7 @@ export class PhilipsHUELight extends LightResource {
 				brightness: _clamp(Number(parsedColor.bri), 0, 100),
 			},
 			dynamics: {
-				duration: transition * 1000,
+				duration: Math.round(transition * 1000),
 			},
 		}
 
