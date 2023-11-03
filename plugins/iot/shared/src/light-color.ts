@@ -57,6 +57,19 @@ export const LightColor = {
 			return chromatism.convert({ h: parsed.hue, s: parsed.sat, v: parsed.bri }).hex as Color
 		}
 	},
+	toRGB(color: LightColor) {
+		const parsed = LightColor.parse(color)
+		if ("kelvin" in parsed) {
+			const rgb = kelvinToRGB(parsed.kelvin ?? 4000)
+			const hsv = chromatism.convert(rgb).hsv
+
+			hsv.v = parsed.bri ?? 100
+
+			return chromatism.convert(hsv).rgb
+		} else {
+			return chromatism.convert({ h: parsed.hue, s: parsed.sat, v: parsed.bri }).rgb
+		}
+	},
 }
 
 type LightColorFactory = typeof LightColor

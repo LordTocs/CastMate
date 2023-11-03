@@ -14,6 +14,7 @@ import voicemodPlugin from "castmate-plugin-voicemod-main"
 import kasaPlugin from "castmate-plugin-tplink-kasa-main"
 import huePlugin from "castmate-plugin-philips-hue-main"
 import elgatoPlugin from "castmate-plugin-elgato-main"
+import lifxPlugin from "castmate-plugin-lifx-main"
 
 import castmatePlugin from "./builtin-plugin"
 
@@ -40,6 +41,7 @@ export async function loadPlugins() {
 		pluginManager.registerPlugin(huePlugin),
 		pluginManager.registerPlugin(kasaPlugin),
 		pluginManager.registerPlugin(elgatoPlugin),
+		pluginManager.registerPlugin(lifxPlugin),
 	]
 
 	await Promise.allSettled(iotPromises)
