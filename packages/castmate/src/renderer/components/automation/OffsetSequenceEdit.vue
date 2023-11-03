@@ -4,7 +4,7 @@
 			class="time-slider"
 			ref="slider"
 			:class="{ dragging }"
-			:style="{ ...firstActionStyle }"
+			:style="{ ...firstActionStyle, '--action-width': `${offsetActionSize.width.value}px` }"
 			@mousedown="onMouseDown"
 		></div>
 		<div class="offset-actions" ref="offsetActionDiv">
@@ -185,11 +185,12 @@ defineExpose({
 .time-slider {
 	background-color: var(--lighter-action-color);
 	height: calc(var(--time-handle-height) + 2 * var(--border-radius));
-	width: calc(3 * var(--time-handle-width));
+	width: min(var(--time-handle-width), var(--action-width));
 	cursor: ew-resize;
 	pointer-events: auto;
 
 	clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
+	position: absolute;
 }
 
 .offset-sequence {
@@ -203,6 +204,6 @@ defineExpose({
 
 .offset-actions {
 	position: relative;
-	top: calc(-2 * var(--border-radius));
+	top: calc(var(--time-handle-height));
 }
 </style>

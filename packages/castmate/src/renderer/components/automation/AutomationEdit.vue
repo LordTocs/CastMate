@@ -187,7 +187,7 @@ function onKeyDown(ev: KeyboardEvent) {
 	--point-size: 15px;
 	--instant-width: 100px;
 	--time-handle-height: 15px;
-	--time-handle-width: 15px;
+	--time-handle-width: 45px;
 
 	width: 100%;
 	height: 100%;
