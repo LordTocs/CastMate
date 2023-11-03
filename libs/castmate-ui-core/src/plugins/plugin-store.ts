@@ -189,11 +189,12 @@ export const usePluginStore = defineStore("plugins", () => {
 
 	async function initialize() {
 		handleIpcMessage("plugins", "registerPlugin", (event, plugin: IPCPluginDefinition) => {
-			pluginMap.value.set(plugin.id, ipcParsePluginDefinition(plugin))
+			//console.log("Registering Late Plugin", plugin.id)
+			//pluginMap.value.set(plugin.id, ipcParsePluginDefinition(plugin))
 		})
 
 		handleIpcMessage("plugins", "unregisterPlugin", (event, id: string) => {
-			pluginMap.value.delete(id)
+			//pluginMap.value.delete(id)
 		})
 
 		handleIpcMessage("plugins", "updateSettings", (event, id: string, settingId: string, value: any) => {
@@ -224,6 +225,8 @@ export const usePluginStore = defineStore("plugins", () => {
 		for (let i = 0; i < ids.length; ++i) {
 			pluginMap.value.set(ids[i], ipcParsePluginDefinition(plugins[i]))
 		}
+
+		console.log("Loaded All Plugins", JSON.stringify(ids))
 	}
 
 	function getAction(selection: ActionSelection): ActionDefinition | undefined {
@@ -278,6 +281,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		}
 		if (actionDef.type != "regular") return
 		actionDef.actionComponent = markRaw(component)
+		console.log("Set Action Component", plugin, action, component)
 	}
 
 	///
