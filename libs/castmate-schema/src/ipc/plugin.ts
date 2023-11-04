@@ -9,6 +9,12 @@ export interface IPCValueSetting {
 	value: any
 }
 
+export interface IPCSecretSetting {
+	type: "secret"
+	schema: IPCSchema
+	value: any
+}
+
 export interface IPCResourceSetting {
 	type: "resource"
 	resourceId: string
@@ -16,7 +22,7 @@ export interface IPCResourceSetting {
 	description?: string
 }
 
-export type IPCSettingsDefinition = IPCValueSetting | IPCResourceSetting
+export type IPCSettingsDefinition = IPCValueSetting | IPCResourceSetting | IPCSecretSetting
 
 export interface IPCStateDefinition {
 	schema: IPCSchema

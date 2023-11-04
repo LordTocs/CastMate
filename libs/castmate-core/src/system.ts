@@ -26,6 +26,7 @@ export async function initializeCastMate() {
 	console.log("Initing CastMate")
 	await setProjectDirectory("../../user")
 	await ensureDirectory(resolveProjectPath("settings"))
+	await ensureDirectory(resolveProjectPath("secrets"))
 	PluginManager.initialize()
 	ResourceRegistry.initialize()
 	MediaManager.initialize()

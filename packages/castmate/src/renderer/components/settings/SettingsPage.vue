@@ -21,7 +21,7 @@
 				</h1>
 				<div class="px-3">
 					<template v-for="[sid, setting] in Object.entries(pluginSettings.settings)" :key="sid">
-						<div v-if="setting.type == 'value'" class="mt-5">
+						<div v-if="setting.type == 'value' || setting.type == 'secret'" class="mt-5">
 							<data-input
 								:schema="setting.schema"
 								v-model="model.settings[pluginSettings.pluginId][sid]"
@@ -83,7 +83,7 @@ const filteredSettings = computed(() => {
 
 		for (const sid in plugin.settings) {
 			const setting = plugin.settings[sid]
-			if (setting.type == "value") {
+			if (setting.type == "value" || setting.type == "secret") {
 				const settingNameStr = setting.schema.name?.toLocaleLowerCase() ?? sid.toLocaleLowerCase()
 				if (settingNameStr.includes(filterValue)) {
 					pluginSettings.settings[sid] = setting

@@ -17,7 +17,7 @@ import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { EventList } from "../util/events"
 import { SemanticVersion } from "../util/type-helpers"
 import { ReactiveEffect, ReactiveRef, reactiveComputed, reactiveRef, runOnChange } from "../reactivity/reactivity"
-import { ensureYAML, loadYAML, pathExists, writeYAML } from "../io/file-system"
+import { ensureYAML, loadSecretYAML, loadYAML, pathExists, writeSecretYAML, writeYAML } from "../io/file-system"
 import _debounce from "lodash/debounce"
 import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema, serializeSchema } from "../util/ipc-schema"
 import { ResourceBase, ResourceConstructor } from "../resources/resource"
@@ -164,6 +164,13 @@ interface SettingValue<SettingSchema extends Schema = any> {
 	saveEffect?: ReactiveEffect
 }
 
+interface SecretValue<SettingSchema extends Schema = any> {
+	type: "secret"
+	schema: SettingSchema
+	ref: ReactiveRef<SchemaType<SettingSchema>>
+	saveEffect?: ReactiveEffect
+}
+
 interface ResourceSetting {
 	type: "resource"
 	resourceId: string
@@ -171,7 +178,7 @@ interface ResourceSetting {
 	description?: string
 }
 
-type SettingDefinition = SettingValue | ResourceSetting
+type SettingDefinition = SettingValue | ResourceSetting | SecretValue
 
 function toIPCSetting(setting: SettingDefinition, path: string): IPCSettingsDefinition {
 	if (setting.type == "resource") {
@@ -182,6 +189,12 @@ function toIPCSetting(setting: SettingDefinition, path: string): IPCSettingsDefi
 			schema: ipcConvertSchema(setting.schema, path),
 			value: serializeSchema(setting.schema, setting.ref.value),
 		}
+	} else if (setting.type == "secret") {
+		return {
+			type: "secret",
+			schema: ipcConvertSchema(setting.schema, path),
+			value: serializeSchema(setting.schema, setting.ref.value),
+		}
 	}
 	throw new Error()
 }
@@ -189,11 +202,13 @@ function toIPCSetting(setting: SettingDefinition, path: string): IPCSettingsDefi
 function registerIPCSetting(setting: SettingDefinition, path: string) {
 	if (setting.type == "value") {
 		ipcRegisterSchema(setting.schema, path)
+	} else if (setting.type == "secret") {
+		ipcRegisterSchema(setting.schema, path)
 	}
 }
 
 function toIPCState(state: StateDefinition, path: string): IPCStateDefinition {
-	const serialized = serializeSchema(state.schema, state.ref.value)
+	//const serialized = serializeSchema(state.schema, state.ref.value)
 	//console.log("Serializing", serialized, state.ref.value, typeof false, typeof serialized)
 	return {
 		schema: ipcConvertSchema(state.schema, path),
@@ -264,6 +279,37 @@ export function defineResourceSetting<T extends ResourceBase>(
 	})
 }
 
+export function defineSecret<T extends Schema>(id: string, schema: T) {
+	if (!initingPlugin) throw new Error()
+
+	const value = reactiveRef<SchemaType<T>>(undefined as unknown as SchemaType<T>)
+
+	initingPlugin.settings.set(id, {
+		type: "secret",
+		schema,
+		ref: value,
+	})
+
+	onLoad(async (plugin) => {
+		const initial = await constructDefault(schema)
+		const setting = plugin.settings.get(id)
+		if (setting?.type == "secret") {
+			setting.ref.value = initial
+			await plugin.finishLoadingSecret(id)
+		}
+		//TODO: Deeeeep
+		runOnChange(
+			() => value.value,
+			async () => {
+				rendererUpdateSettings(plugin.id, id, serializeSchema(schema, value.value))
+				plugin.triggerSecretsUpdate()
+			}
+		)
+	})
+
+	return value
+}
+
 export function onSettingChanged<T>(ref: ReactiveRef<T> | ReactiveRef<T>[], func: () => any) {
 	let effect: ReactiveEffect | undefined
 
@@ -285,7 +331,7 @@ export function onSettingChanged<T>(ref: ReactiveRef<T> | ReactiveRef<T>[], func
 
 export function getPluginSetting<T>(plugin: string, setting: string) {
 	const settingDef = PluginManager.getInstance().getPlugin(plugin)?.settings?.get(setting)
-	if (settingDef?.type != "value") return undefined
+	if (settingDef?.type != "value" && settingDef?.type != "secret") return undefined
 
 	return settingDef.ref as ReactiveRef<T>
 }
@@ -353,19 +399,14 @@ export class Plugin {
 
 		//Don't deserialize into the refs here, it will be handled in the onLoads() of each defineSetting()
 		//This makes sure that deserialization happens in the order of use of resources and other items.
-		/*
-		for (const key in settingsData) {
-			const setting = this.settings.get(key)
-			if (setting?.type != "value") continue
-			setting.ref.value = deserializeSchema(setting.schema, settingsData[key])
-		}*/
 	}
 
 	async finishLoadingSetting(id: string) {
 		const setting = this.settings.get(id)
 		if (setting?.type != "value") return
-		console.log("Deserializing", id)
-		setting.ref.value = deserializeSchema(setting.schema, this.serializedSettingsData[id])
+		if (!(id in this.serializedSettingsData)) return
+		const serializedValue = this.serializedSettingsData[id]
+		setting.ref.value = deserializeSchema(setting.schema, serializedValue)
 	}
 
 	private writeSettingsDebounced = _debounce(() => this.writeSettings(), 100)
@@ -373,9 +414,41 @@ export class Plugin {
 		this.writeSettingsDebounced()
 	}
 
+	private async writeSecrets() {
+		const data: Record<string, any> = {}
+		for (const [sid, setting] of this.settings) {
+			if (setting.type != "secret") continue
+			data[sid] = serializeSchema(setting.schema, setting.ref.value)
+		}
+		await writeSecretYAML(data, "secrets", `${this.id}.yaml`)
+	}
+
+	private serializedSecretData: Record<string, any> = {}
+	private async loadSecrets() {
+		if (!(await pathExists("secrets", `${this.id}.yaml`))) {
+			await this.writeSecrets()
+		}
+
+		this.serializedSecretData = await loadSecretYAML("secrets", `${this.id}.yaml`)
+	}
+
+	async finishLoadingSecret(id: string) {
+		const setting = this.settings.get(id)
+		if (setting?.type != "secret") return
+		if (!(id in this.serializedSecretData)) return
+		console.log("Deserializing", id)
+		setting.ref.value = deserializeSchema(setting.schema, this.serializedSecretData[id])
+	}
+
+	private writeSecretsDebounced = _debounce(() => this.writeSecrets(), 100)
+	triggerSecretsUpdate() {
+		this.writeSecretsDebounced()
+	}
+
 	async load(): Promise<boolean> {
 		try {
 			await this.loadSettings()
+			await this.loadSecrets()
 
 			await this.loader.run(this)
 

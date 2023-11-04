@@ -109,6 +109,12 @@ export interface SettingValue {
 	value: any
 }
 
+export interface SettingSecret {
+	type: "secret"
+	schema: Schema
+	value: any
+}
+
 export interface ResourceSetting {
 	type: "resource"
 	resourceId: string
@@ -116,7 +122,7 @@ export interface ResourceSetting {
 	description?: string
 }
 
-export type SettingDefinition = SettingValue | ResourceSetting
+export type SettingDefinition = SettingValue | ResourceSetting | SettingSecret
 
 function ipcParseSettingsDefinition(def: IPCSettingsDefinition): SettingDefinition {
 	if (def.type == "resource") {
@@ -124,6 +130,12 @@ function ipcParseSettingsDefinition(def: IPCSettingsDefinition): SettingDefiniti
 	} else if (def.type == "value") {
 		return {
 			type: "value",
+			schema: ipcParseSchema(def.schema),
+			value: def.value,
+		}
+	} else if (def.type == "secret") {
+		return {
+			type: "secret",
 			schema: ipcParseSchema(def.schema),
 			value: def.value,
 		}

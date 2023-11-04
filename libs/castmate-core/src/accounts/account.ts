@@ -1,13 +1,15 @@
 import { ensureDirectory, loadSecretYAML, resolveProjectPath, writeSecretYAML } from "../io/file-system"
-import { Resource } from "../resources/resource"
+import { onLoad, onUnload } from "../plugins/plugin"
+import { Resource, ResourceBase, ResourceConstructor, ResourceStorage } from "../resources/resource"
 import { ResourceRegistry } from "../resources/resource-registry"
 import { EventList } from "../util/events"
 
 import { AccountConfig, AccountSecrets, AccountState } from "castmate-schema"
 
-interface AccountContructor {
+interface AccountConstructor extends ResourceConstructor {
 	new (...args: any[]): any
 	accountDirectory: string
+	storage: ResourceStorage<Account>
 }
 
 export class Account<
@@ -35,12 +37,12 @@ export class Account<
 	}
 
 	protected async saveSecrets() {
-		const accountDir = (this.constructor as AccountContructor).accountDirectory
+		const accountDir = (this.constructor as AccountConstructor).accountDirectory
 		await writeSecretYAML(this.savedSecrets, "accounts", accountDir, `${this.id}.syaml`)
 	}
 
 	protected async loadSecrets() {
-		const accountDir = (this.constructor as AccountContructor).accountDirectory
+		const accountDir = (this.constructor as AccountConstructor).accountDirectory
 		try {
 			this._secrets = await loadSecretYAML("accounts", accountDir, `${this.id}.syaml`)
 		} catch (err) {
@@ -50,6 +52,11 @@ export class Account<
 
 	async setSecrets(secrets: Secrets) {
 		this._secrets = secrets
+		this.saveSecrets()
+	}
+
+	async applySecrets(secrets: Partial<Secrets>) {
+		Object.assign(this._secrets, secrets)
 		this.saveSecrets()
 	}
 
@@ -100,4 +107,22 @@ export class Account<
 	}
 
 	readonly onAuthorized = new EventList()
+}
+
+export function onAccountAuth<AccountType extends AccountConstructor>(
+	accountType: AccountType,
+	id: string,
+	func: (account: InstanceType<AccountType>) => any
+) {
+	const funcHarness = () => func(accountType.storage.getById(id) as InstanceType<AccountType>)
+
+	onLoad(() => {
+		const account = accountType.storage.getById(id)
+		account?.onAuthorized?.register(funcHarness)
+	})
+
+	onUnload(() => {
+		const account = accountType.storage.getById(id)
+		account?.onAuthorized?.unregister(funcHarness)
+	})
 }

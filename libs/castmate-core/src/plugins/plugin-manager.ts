@@ -33,7 +33,7 @@ defineIPCFunc("plugins", "updateSettings", (changes: SettingsChange[]) => {
 		const plugin = plugins.getPlugin(change.pluginId)
 		if (!plugin) continue
 		const setting = plugin.settings.get(change.settingId)
-		if (setting?.type != "value") continue
+		if (setting?.type != "value" && setting?.type != "secret") continue
 		setting.ref.value = deserializeSchema(setting.schema, change.value)
 	}
 })
