@@ -1336,6 +1336,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/md5@npm:^2.3.4":
+  version: 2.3.4
+  resolution: "@types/md5@npm:2.3.4"
+  checksum: 9a724277b2e4b5c6fce4d34d2e2baab821ef47904eccdcbd389fb9973f2e5198f71a4aa98ddcf092fe32457be307d2f3d3f1e099a53d1642c6e569ade5450548
+  languageName: node
+  linkType: hard
+
 "@types/minimatch@npm:*":
   version: 5.1.2
   resolution: "@types/minimatch@npm:5.1.2"
@@ -3514,6 +3521,57 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-wyze-main@workspace:^, castmate-plugin-wyze-main@workspace:plugins/wyze/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-wyze-main@workspace:plugins/wyze/main"
+  dependencies:
+    "@types/md5": ^2.3.4
+    castmate-core: "workspace:^"
+    castmate-plugin-wyze-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    md5: ^2.3.0
+    moment: ^2.29.4
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-wyze-shared@workspace:^, castmate-plugin-wyze-shared@workspace:plugins/wyze/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-wyze-shared@workspace:plugins/wyze/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-wyze@workspace:plugins/wyze":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-wyze@workspace:plugins/wyze"
+  languageName: unknown
+  linkType: soft
+
 "castmate-schema@workspace:^, castmate-schema@workspace:libs/castmate-schema":
   version: 0.0.0-use.local
   resolution: "castmate-schema@workspace:libs/castmate-schema"
@@ -3589,6 +3647,7 @@ __metadata:
     castmate-plugin-twitch-renderer: "workspace:^"
     castmate-plugin-voicemod-main: "workspace:^"
     castmate-plugin-voicemod-renderer: "workspace:^"
+    castmate-plugin-wyze-main: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
@@ -3620,6 +3679,13 @@ __metadata:
     ansi-styles: ^4.1.0
     supports-color: ^7.1.0
   checksum: fe75c9d5c76a7a98d45495b91b2172fa3b7a09e0cc9370e5c8feb1c567b85c4288e2b3fded7cfdd7359ac28d6b3844feb8b82b8686842e93d23c827c417e83fc
+  languageName: node
+  linkType: hard
+
+"charenc@npm:0.0.2":
+  version: 0.0.2
+  resolution: "charenc@npm:0.0.2"
+  checksum: 81dcadbe57e861d527faf6dd3855dc857395a1c4d6781f4847288ab23cffb7b3ee80d57c15bba7252ffe3e5e8019db767757ee7975663ad2ca0939bb8fcaf2e5
   languageName: node
   linkType: hard
 
@@ -3963,6 +4029,13 @@ __metadata:
     shebang-command: ^2.0.0
     which: ^2.0.1
   checksum: 671cc7c7288c3a8406f3c69a3ae2fc85555c04169e9d611def9a675635472614f1c0ed0ef80955d5b6d4e724f6ced67f0ad1bb006c2ea643488fcfef994d7f52
+  languageName: node
+  linkType: hard
+
+"crypt@npm:0.0.2":
+  version: 0.0.2
+  resolution: "crypt@npm:0.0.2"
+  checksum: baf4c7bbe05df656ec230018af8cf7dbe8c14b36b98726939cef008d473f6fe7a4fad906cfea4062c93af516f1550a3f43ceb4d6615329612c6511378ed9fe34
   languageName: node
   linkType: hard
 
@@ -6105,6 +6178,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-buffer@npm:~1.1.6":
+  version: 1.1.6
+  resolution: "is-buffer@npm:1.1.6"
+  checksum: 4a186d995d8bbf9153b4bd9ff9fd04ae75068fe695d29025d25e592d9488911eeece84eefbd8fa41b8ddcc0711058a71d4c466dcf6f1f6e1d83830052d8ca707
+  languageName: node
+  linkType: hard
+
 "is-builtin-module@npm:^3.1.0":
   version: 3.2.0
   resolution: "is-builtin-module@npm:3.2.0"
@@ -6871,6 +6951,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"md5@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "md5@npm:2.3.0"
+  dependencies:
+    charenc: 0.0.2
+    crypt: 0.0.2
+    is-buffer: ~1.1.6
+  checksum: a63cacf4018dc9dee08c36e6f924a64ced735b37826116c905717c41cebeb41a522f7a526ba6ad578f9c80f02cb365033ccd67fe186ffbcc1a1faeb75daa9b6e
+  languageName: node
+  linkType: hard
+
 "media-typer@npm:0.3.0":
   version: 0.3.0
   resolution: "media-typer@npm:0.3.0"
@@ -7175,6 +7266,13 @@ __metadata:
   bin:
     mkdirp: dist/cjs/src/bin.js
   checksum: 8a1d09ffac585e55f41c54f445051f5bc33a7de99b952bb04c576cafdf1a67bb4bae8cb93736f7da6838771fbf75bc630430a3a59e1252047d2278690bd150ee
+  languageName: node
+  linkType: hard
+
+"moment@npm:^2.29.4":
+  version: 2.29.4
+  resolution: "moment@npm:2.29.4"
+  checksum: 0ec3f9c2bcba38dc2451b1daed5daded747f17610b92427bebe1d08d48d8b7bdd8d9197500b072d14e326dd0ccf3e326b9e3d07c5895d3d49e39b6803b76e80e
   languageName: node
   linkType: hard
 

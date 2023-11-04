@@ -1,0 +1,24 @@
+{
+  "name": "castmate-plugin-wyze-main",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.ts",
+  "devMain": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/md5": "^2.3.4",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "castmate-core": "workspace:^",
+    "castmate-plugin-wyze-shared": "workspace:^",
+    "castmate-schema": "workspace:^",
+    "chromatism2": "*",
+    "md5": "^2.3.0",
+    "moment": "^2.29.4"
+  }
+}

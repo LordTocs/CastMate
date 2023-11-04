@@ -32,6 +32,7 @@
 		"castmate-plugin-tplink-kasa-main": "workspace:^",
 		"castmate-plugin-twitch-main": "workspace:^",
 		"castmate-plugin-voicemod-main": "workspace:^",
+		"castmate-plugin-wyze-main": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"electron-updater": "^4.6.1"
 	},
