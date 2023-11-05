@@ -1,5 +1,5 @@
 import { Duration } from "castmate-schema"
-import { defineAction, definePlugin, defineSetting } from "castmate-core"
+import { ActionQueue, defineAction, definePlugin, defineSetting } from "castmate-core"
 import { abortableSleep } from "castmate-core/src/util/abort-utils"
 import { defineFlowAction } from "castmate-core/src/queue-system/action"
 
@@ -59,6 +59,24 @@ export default definePlugin(
 				}
 
 				return ""
+			},
+		})
+
+		defineAction({
+			id: "skip",
+			name: "Queue Skip",
+			icon: "mdi mdi-skip-next",
+			config: {
+				type: Object,
+				properties: {
+					queue: { type: ActionQueue, name: "Queue", required: true },
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				const runningId = config.queue?.state?.running?.id
+				if (runningId) {
+					config.queue.skip(runningId)
+				}
 			},
 		})
 	}
