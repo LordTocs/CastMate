@@ -8,7 +8,14 @@
 				v-slot="labelProps"
 				v-if="!schema.enum"
 			>
-				<p-input-text v-model="model" v-bind="labelProps" />
+				<template-toggle
+					v-model="model"
+					:template-mode="schema.template ?? false"
+					v-bind="labelProps"
+					v-slot="templateProps"
+				>
+					<p-input-text v-model="model" v-bind="templateProps" />
+				</template-toggle>
 			</label-floater>
 			<enum-input
 				:schema="schema"
@@ -34,7 +41,7 @@ import { useVModel } from "@vueuse/core"
 import DocumentPath from "../../document/DocumentPath.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import LabelFloater from "../base-components/LabelFloater.vue"
-import { stopPropagation } from "../../../main"
+import { TemplateToggle, stopPropagation } from "../../../main"
 import EnumInput from "../base-components/EnumInput.vue"
 
 const props = defineProps<
