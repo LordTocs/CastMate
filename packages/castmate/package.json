@@ -19,6 +19,7 @@
 		"castmate-core": "workspace:^",
 		"castmate-plugin-discord-main": "workspace:^",
 		"castmate-plugin-elgato-main": "workspace:^",
+		"castmate-plugin-govee-main": "workspace:^",
 		"castmate-plugin-http-main": "workspace:^",
 		"castmate-plugin-input-main": "workspace:^",
 		"castmate-plugin-iot-main": "workspace:^",

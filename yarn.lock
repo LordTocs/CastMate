@@ -715,6 +715,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@j3lte/govee-lan-controller@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@j3lte/govee-lan-controller@npm:1.0.1"
+  dependencies:
+    colord: ^2.9.3
+    debug: ^4.3.4
+  checksum: e3641499f4318813b4c4825e1baef0322d1963e5fff7c507df1f7b30eb3025ac3d905361a779a3c068f6bf90a5148aee12557e56da00b2181acc0e6e718f3e07
+  languageName: node
+  linkType: hard
+
 "@joshyour/ffprobe-client@npm:^1.1.7":
   version: 1.1.7
   resolution: "@joshyour/ffprobe-client@npm:1.1.7"
@@ -2939,6 +2949,56 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-govee-main@workspace:^, castmate-plugin-govee-main@workspace:plugins/govee/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-govee-main@workspace:plugins/govee/main"
+  dependencies:
+    "@j3lte/govee-lan-controller": ^1.0.1
+    castmate-core: "workspace:^"
+    castmate-plugin-govee-shared: "workspace:^"
+    castmate-plugin-iot-main: "workspace:^"
+    castmate-plugin-iot-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-govee-renderer@workspace:plugins/govee/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-govee-renderer@workspace:plugins/govee/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-govee-shared@workspace:^, castmate-plugin-govee-shared@workspace:plugins/govee/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-govee-shared@workspace:plugins/govee/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-govee@workspace:plugins/govee":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-govee@workspace:plugins/govee"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-http-main@workspace:^, castmate-plugin-http-main@workspace:plugins/http/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-http-main@workspace:plugins/http/main"
@@ -3430,6 +3490,52 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-twinkly-main@workspace:plugins/twinkly/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-twinkly-main@workspace:plugins/twinkly/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-twinkly-shared@workspace:plugins/twinkly/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-twinkly-shared@workspace:plugins/twinkly/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-twinkly@workspace:plugins/twinkly":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-twinkly@workspace:plugins/twinkly"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-twitch-main@workspace:^, castmate-plugin-twitch-main@workspace:plugins/twitch/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twitch-main@workspace:plugins/twitch/main"
@@ -3624,6 +3730,7 @@ __metadata:
     castmate-plugin-discord-main: "workspace:^"
     castmate-plugin-discord-renderer: "workspace:^"
     castmate-plugin-elgato-main: "workspace:^"
+    castmate-plugin-govee-main: "workspace:^"
     castmate-plugin-http-main: "workspace:^"
     castmate-plugin-http-renderer: "workspace:^"
     castmate-plugin-input-main: "workspace:^"
@@ -3871,6 +3978,13 @@ __metadata:
     color-convert: ^2.0.1
     color-string: ^1.9.0
   checksum: 0579629c02c631b426780038da929cca8e8d80a40158b09811a0112a107c62e10e4aad719843b791b1e658ab4e800558f2e87ca4522c8b32349d497ecb6adeb4
+  languageName: node
+  linkType: hard
+
+"colord@npm:^2.9.3":
+  version: 2.9.3
+  resolution: "colord@npm:2.9.3"
+  checksum: 95d909bfbcfd8d5605cbb5af56f2d1ce2b323990258fd7c0d2eb0e6d3bb177254d7fb8213758db56bb4ede708964f78c6b992b326615f81a18a6aaf11d64c650
   languageName: node
   linkType: hard
 
