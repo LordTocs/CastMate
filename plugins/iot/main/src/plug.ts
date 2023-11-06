@@ -11,6 +11,29 @@ export class PlugResource<Config extends PlugConfig = PlugConfig, State extends 
 	async setPlugState(on: Toggle) {}
 }
 
+export class PollingPlug<
+	Config extends PlugConfig = PlugConfig,
+	State extends PlugState = PlugState
+> extends PlugResource<Config, State> {
+	poller: NodeJS.Timer | undefined = undefined
+
+	startPolling(interval: number) {
+		this.stopPolling()
+		this.poller = setInterval(async () => {
+			try {
+				this.poll()
+			} catch (err) {}
+		}, interval * 1000)
+	}
+
+	stopPolling() {
+		clearInterval(this.poller)
+		this.poller = undefined
+	}
+
+	async poll() {}
+}
+
 export function setupPlugs() {
 	definePluginResource(PlugResource)
 

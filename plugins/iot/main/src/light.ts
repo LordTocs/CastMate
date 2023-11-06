@@ -18,6 +18,7 @@ export class PollingLight<
 	poller: NodeJS.Timer | undefined = undefined
 
 	startPolling(interval: number) {
+		this.stopPolling()
 		this.poller = setInterval(async () => {
 			try {
 				this.poll()
@@ -68,9 +69,10 @@ export function setupLights() {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
-			await config.light?.setLightState(config.lightColor, config.on, config.transition)
-
-			await abortableSleep(config.transition * 1000, abortSignal)
+			await Promise.allSettled([
+				config.light?.setLightState(config.lightColor, config.on, config.transition),
+				await abortableSleep(config.transition * 1000, abortSignal),
+			])
 		},
 	})
 }
