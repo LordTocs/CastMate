@@ -124,7 +124,7 @@ class LIFXLight extends PollingLight {
 		}
 	}
 
-	private async setPower(power: boolean, duration: number) {
+	private setPower(power: boolean, duration: number) {
 		if (power) {
 			this.lifxLight.on(Math.round(duration * 1000), undefined)
 		} else {
@@ -132,7 +132,7 @@ class LIFXLight extends PollingLight {
 		}
 	}
 
-	private async setColor(color: LightColor, duration: number) {
+	private setColor(color: LightColor, duration: number) {
 		const parsedColor = LightColor.parse(color)
 
 		let hue = 0
@@ -158,13 +158,13 @@ class LIFXLight extends PollingLight {
 		}
 
 		if (!on) {
-			await this.setPower(false, transition)
+			this.setPower(false, transition)
 		} else {
 			if (!this.state.on) {
-				await this.setColor(color, 0)
-				await this.setPower(true, transition)
+				this.setColor(color, 0)
+				this.setPower(true, transition)
 			} else {
-				await this.setColor(color, transition)
+				this.setColor(color, transition)
 			}
 		}
 	}
