@@ -174,8 +174,8 @@ export default definePlugin(
 	{
 		id: "lifx",
 		name: "LIFX",
-		description: "UI Description",
-		icon: "mdi-pencil",
+		icon: "iot iot-lifx",
+		color: "#7F743F",
 	},
 	() => {
 		const subnetMask = defineSetting("subnetMask", {

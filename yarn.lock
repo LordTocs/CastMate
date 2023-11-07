@@ -3143,7 +3143,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer":
+"castmate-plugin-lifx-renderer@workspace:^, castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer"
   dependencies:
@@ -3738,6 +3738,7 @@ __metadata:
     castmate-plugin-iot-main: "workspace:^"
     castmate-plugin-iot-renderer: "workspace:^"
     castmate-plugin-lifx-main: "workspace:^"
+    castmate-plugin-lifx-renderer: "workspace:^"
     castmate-plugin-minecraft-main: "workspace:^"
     castmate-plugin-minecraft-renderer: "workspace:^"
     castmate-plugin-obs-main: "workspace:^"

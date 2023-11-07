@@ -47,6 +47,7 @@
 		"castmate-plugin-http-renderer": "workspace:^",
 		"castmate-plugin-input-renderer": "workspace:^",
 		"castmate-plugin-iot-renderer": "workspace:^",
+		"castmate-plugin-lifx-renderer": "workspace:^",
 		"castmate-plugin-minecraft-renderer": "workspace:^",
 		"castmate-plugin-obs-renderer": "workspace:^",
 		"castmate-plugin-os-renderer": "workspace:^",

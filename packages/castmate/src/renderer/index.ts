@@ -41,6 +41,7 @@ import { initPlugin as initIoTPlugin } from "castmate-plugin-iot-renderer"
 import { initPlugin as initTwinklyPlugin } from "castmate-plugin-twinkly-renderer"
 import { initPlugin as initHuePlugin } from "castmate-plugin-philips-hue-renderer"
 import { initPlugin as initWyzePlugin } from "castmate-plugin-wyze-renderer"
+import { initPlugin as initLifxPlugin } from "castmate-plugin-lifx-renderer"
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
@@ -94,6 +95,7 @@ async function init() {
 	initTwinklyPlugin()
 	initHuePlugin()
 	initWyzePlugin()
+	initLifxPlugin()
 }
 
 init()
