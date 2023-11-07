@@ -16,8 +16,8 @@ export default definePlugin(
 	{
 		id: "philips-hue",
 		name: "Philips HUE",
-		description: "",
-		icon: "mdi-pencil",
+		icon: "iot iot-hue-sultan",
+		color: "#7F743F",
 	},
 	() => {
 		const hubIp = defineSetting("hubIp", {

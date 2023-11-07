@@ -39,6 +39,7 @@ import { initPlugin as initInputPlugin } from "castmate-plugin-input-renderer"
 import { initPlugin as initMinecraftPlugin } from "castmate-plugin-minecraft-renderer"
 import { initPlugin as initIoTPlugin } from "castmate-plugin-iot-renderer"
 import { initPlugin as initTwinklyPlugin } from "castmate-plugin-twinkly-renderer"
+import { initPlugin as initHuePlugin } from "castmate-plugin-philips-hue-renderer"
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
@@ -90,6 +91,7 @@ async function init() {
 	initIoTPlugin()
 	initMinecraftPlugin()
 	initTwinklyPlugin()
+	initHuePlugin()
 }
 
 init()

@@ -3322,7 +3322,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-philips-hue-renderer@workspace:plugins/philips-hue/renderer":
+"castmate-plugin-philips-hue-renderer@workspace:^, castmate-plugin-philips-hue-renderer@workspace:plugins/philips-hue/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-philips-hue-renderer@workspace:plugins/philips-hue/renderer"
   dependencies:
@@ -3745,6 +3745,7 @@ __metadata:
     castmate-plugin-os-main: "workspace:^"
     castmate-plugin-os-renderer: "workspace:^"
     castmate-plugin-philips-hue-main: "workspace:^"
+    castmate-plugin-philips-hue-renderer: "workspace:^"
     castmate-plugin-sound-main: "workspace:^"
     castmate-plugin-sound-renderer: "workspace:^"
     castmate-plugin-time-main: "workspace:^"
