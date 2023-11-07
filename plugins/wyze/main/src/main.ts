@@ -413,8 +413,8 @@ export default definePlugin(
 	{
 		id: "wyze",
 		name: "Wyze",
-		description: "UI Description",
-		icon: "mdi-pencil",
+		icon: "iot iot-wyze",
+		color: "#7F743F",
 	},
 	() => {
 		const keyId = defineSecret("keyId", {

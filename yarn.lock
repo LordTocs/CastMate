@@ -3642,7 +3642,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer":
+"castmate-plugin-wyze-renderer@workspace:^, castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer"
   dependencies:
@@ -3758,6 +3758,7 @@ __metadata:
     castmate-plugin-voicemod-main: "workspace:^"
     castmate-plugin-voicemod-renderer: "workspace:^"
     castmate-plugin-wyze-main: "workspace:^"
+    castmate-plugin-wyze-renderer: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"

@@ -56,6 +56,7 @@
 		"castmate-plugin-twinkly-renderer": "workspace:^",
 		"castmate-plugin-twitch-renderer": "workspace:^",
 		"castmate-plugin-voicemod-renderer": "workspace:^",
+		"castmate-plugin-wyze-renderer": "workspace:^",
 		"castmate-ui-core": "workspace:^",
 		"castmate-vite": "workspace:^",
 		"chromatism2": "*",

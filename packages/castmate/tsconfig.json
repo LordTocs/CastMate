@@ -34,7 +34,8 @@
 			"castmate-plugin-twitch-renderer": ["../../plugins/twitch/renderer/src/main.ts"],
 			"castmate-plugin-voicemod-renderer": ["../../plugins/voicemod/renderer/src/main.ts"],
 			"castmate-plugin-twinkly-renderer": ["../../plugins/twinkly/renderer/src/main.ts"],
-			"castmate-plugin-philips-hue-renderer": ["../../plugins/philips-hue/renderer/src/main.ts"]
+			"castmate-plugin-philips-hue-renderer": ["../../plugins/philips-hue/renderer/src/main.ts"],
+			"castmate-plugin-wyze-renderer": ["../../plugins/wyze/renderer/src/main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

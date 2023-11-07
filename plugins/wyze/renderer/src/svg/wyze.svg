@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="800px"
+   height="800px"
+   viewBox="0 0 1024 1024"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="wyze.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.5432605"
+     inkscape:cx="394.94303"
+     inkscape:cy="302.93005"
+     inkscape:window-width="3840"
+     inkscape:window-height="2097"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg6" />
+  <path
+     id="circle2"
+     style="fill:#1cf1bb;stroke-width:0.78125"
+     d="M 400 0 A 400 400 0 0 0 0 400 A 400 400 0 0 0 400 800 A 400 400 0 0 0 800 400 A 400 400 0 0 0 400 0 z M 192.79688 337.1875 L 207.96094 337.1875 L 230.34375 385.55469 L 237.5625 401.4375 L 255.60938 441.14844 L 303.97656 337.1875 L 319.14062 337.1875 L 265 457.03125 L 262.10938 462.80469 L 252 462.80469 L 249.10938 457.03125 L 231.09375 417.32031 L 213.04688 457.03125 L 210.15625 462.80469 L 200.01562 462.80469 L 197.125 457.03125 L 141.53906 337.19531 L 156.69531 337.19531 L 204.35156 441.15625 L 222.39844 401.44531 L 192.79688 337.1875 z M 324.91406 337.1875 L 340.79688 337.1875 L 377.61719 402.16406 L 414.4375 337.1875 L 430.32031 337.1875 L 384.11719 418.04688 L 384.11719 462.8125 L 370.39844 462.8125 L 370.39844 418.04688 L 324.91406 337.1875 z M 438.28125 337.1875 L 544.39062 337.1875 L 460.64844 449.09375 L 539.33594 449.09375 L 539.33594 462.8125 L 433.21094 462.8125 L 516.96094 350.90625 L 438.28125 350.90625 L 438.28125 337.1875 z M 550.89062 337.1875 L 658.46094 337.1875 L 658.46094 350.17969 L 550.90625 350.17969 L 550.89062 337.1875 z M 550.89062 392.05469 L 658.46094 392.05469 L 658.46094 405.05469 L 550.89062 405.05469 L 550.89062 392.05469 z M 550.89062 449.8125 L 658.46094 449.8125 L 658.46094 462.80469 L 550.90625 462.80469 L 550.89062 449.8125 z "
+     transform="scale(1.28)" />
+</svg>
