@@ -3490,7 +3490,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-twinkly-main@workspace:plugins/twinkly/main":
+"castmate-plugin-twinkly-main@workspace:^, castmate-plugin-twinkly-main@workspace:plugins/twinkly/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twinkly-main@workspace:plugins/twinkly/main"
   dependencies:
@@ -3500,7 +3500,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer":
+"castmate-plugin-twinkly-renderer@workspace:^, castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer"
   dependencies:
@@ -3750,6 +3750,8 @@ __metadata:
     castmate-plugin-time-main: "workspace:^"
     castmate-plugin-time-renderer: "workspace:^"
     castmate-plugin-tplink-kasa-main: "workspace:^"
+    castmate-plugin-twinkly-main: "workspace:^"
+    castmate-plugin-twinkly-renderer: "workspace:^"
     castmate-plugin-twitch-main: "workspace:^"
     castmate-plugin-twitch-renderer: "workspace:^"
     castmate-plugin-voicemod-main: "workspace:^"

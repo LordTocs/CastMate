@@ -17,6 +17,7 @@ import elgatoPlugin from "castmate-plugin-elgato-main"
 import lifxPlugin from "castmate-plugin-lifx-main"
 import wyzePlugin from "castmate-plugin-wyze-main"
 import goveePlugin from "castmate-plugin-govee-main"
+import twinklyPlugin from "castmate-plugin-twinkly-main"
 
 import castmatePlugin from "./builtin-plugin"
 
@@ -46,6 +47,7 @@ export async function loadPlugins() {
 		pluginManager.registerPlugin(lifxPlugin),
 		pluginManager.registerPlugin(wyzePlugin),
 		pluginManager.registerPlugin(goveePlugin),
+		pluginManager.registerPlugin(twinklyPlugin),
 	]
 
 	await Promise.allSettled(iotPromises)
