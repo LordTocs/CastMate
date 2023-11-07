@@ -49,6 +49,83 @@ export type HUELightArchetype =
 	| "ceiling_horizontal"
 	| "ceiling_tube"
 
+export type HUEApiResourceType =
+	| "device"
+	| "bridge_home"
+	| "room"
+	| "zone"
+	| "light"
+	| "button"
+	| "relative_rotary"
+	| "temperature"
+	| "light_level"
+	| "motion"
+	| "camera_motion"
+	| "entertainment"
+	| "contact"
+	| "tamper"
+	| "grouped_light"
+	| "device_power"
+	| "zigbee_bridge_connectivity"
+	| "zigbee_connectivity"
+	| "zgp_connectivity"
+	| "bridge"
+	| "zigbee_device_discovery"
+	| "homekit"
+	| "matter"
+	| "matter_fabric"
+	| "scene"
+	| "entertainment_configuration"
+	| "public_image"
+	| "auth_v1"
+	| "behavior_script"
+	| "behavior_instance"
+	| "geofence"
+	| "geofence_client"
+	| "geolocation"
+	| "smart_scene"
+export type HUEApiRoomArchetype =
+	| "living_room"
+	| "kitchen"
+	| "dining"
+	| "bedroom"
+	| "kids_bedroom"
+	| "bathroom"
+	| "nursery"
+	| "recreation"
+	| "office"
+	| "gym"
+	| "hallway"
+	| "toilet"
+	| "front_door"
+	| "garage"
+	| "terrace"
+	| "garden"
+	| "driveway"
+	| "carport"
+	| "home"
+	| "downstairs"
+	| "upstairs"
+	| "top_floor"
+	| "attic"
+	| "guest_room"
+	| "staircase"
+	| "lounge"
+	| "man_cave"
+	| "computer"
+	| "studio"
+	| "music"
+	| "tv"
+	| "reading"
+	| "closet"
+	| "storage"
+	| "laundry_room"
+	| "balcony"
+	| "porch"
+	| "barbecue"
+	| "pool"
+	| "other"
+
 export interface HUEApiGradientPoint {
 	xy?: {
 		x: number
@@ -84,7 +161,7 @@ export interface HUEApiLightUpdate {
 }
 
 export interface HUEApiLightState {
-	on: {
+	on?: {
 		on: boolean
 	}
 	dimming?: {
@@ -138,9 +215,45 @@ export interface HUEApiLight extends HUEApiLightState {
 		archetype: HUELightArchetype
 		fixed_mired: number
 	}
-
 	alert?: {
 		action_values: any[]
 	}
 	mode: "normal" | "streaming"
+}
+
+export interface HUEApiRoom {
+	type: "room"
+	id: string
+	children: {
+		rid: string
+		rtype: HUEApiResourceType
+	}[]
+	services: {
+		rid: string
+		rtype: HUEApiResourceType
+	}[]
+	metadata: {
+		name: string
+		archetype: HUEApiRoomArchetype
+	}
+}
+
+export interface HUEApiGroupedLight {
+	type: "grouped_light"
+	id: string
+	owner: {
+		rid: string
+		rtype: HUEApiResourceType
+	}
+	on?: {
+		on: boolean
+	}
+	dimming?: {
+		brightness: number
+	}
+}
+
+export interface HUEEventUpdateData extends HUEApiLightState {
+	id: string
+	type: string
 }

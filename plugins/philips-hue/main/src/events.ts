@@ -1,12 +1,12 @@
 import { ReactiveRef, RetryTimer, onLoad, onSettingChanged } from "castmate-core"
 import EventSource from "eventsource"
-import { HUEApiLight } from "./api"
+import { HUEApiLight, HUEEventUpdateData } from "./api"
 import { LightResource, PlugResource } from "castmate-plugin-iot-main"
-import { PhilipsHUELight, PhilipsHUEPlug, injectResourceFromApi } from "./resources"
+import { PhilipsHUEGroup, PhilipsHUELight, PhilipsHUEPlug, injectResourceFromApi } from "./resources"
 
 interface HUEUpdateEvent {
 	type: "update"
-	data: HUEApiLight
+	data: HUEEventUpdateData[]
 }
 
 interface HUEAddEvent {
@@ -43,20 +43,27 @@ export function setupHueEvents(hubIp: ReactiveRef<string | undefined>, hubKey: R
 
 		eventSource.onmessage = (message) => {
 			try {
-				const messageData = JSON.parse(message.data)
-				if (!Array.isArray(messageData)) return
-				const events = messageData as HUEEvent[]
+				const events = JSON.parse(message.data) as HUEEvent[]
 				for (const event of events) {
-					//console.log("HUE EVENT", event)
 					if (event.type == "update") {
-						const light = LightResource.storage.getById(`philips-hue.${event.data.id}`) as
-							| PhilipsHUELight
-							| undefined
-						light?.parseApiState(event.data)
-						const plug = PlugResource.storage.getById(`philips-hue.${event.data.id}`) as
-							| PhilipsHUEPlug
-							| undefined
-						plug?.parseApiState(event.data)
+						for (const update of event.data) {
+							const wholeId = `philips-hue.${update.id}`
+							const light = LightResource.storage.getById(wholeId) as
+								| PhilipsHUELight
+								| PhilipsHUEGroup
+								| undefined
+							light?.parseApiState(update)
+							const plug = PlugResource.storage.getById(wholeId) as PhilipsHUEPlug | undefined
+							plug?.parseApiState(update)
+
+							// if (!light && !plug) {
+							// 	console.log("Orphaned Update", wholeId, update)
+							// } else if (light) {
+							// 	console.log("Update Light", light.config.name)
+							// } else if (plug) {
+							// 	console.log("Update Plug", plug.config.name)
+							// }
+						}
 					} else if (event.type == "add") {
 						if (!hubIp.value || !hubKey.value) return
 						injectResourceFromApi(event.data, { hubIp: hubIp.value, hubKey: hubKey.value })

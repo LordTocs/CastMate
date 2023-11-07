@@ -4,10 +4,10 @@ import { ReactiveRef, iterSubResource, onLoad, onSettingChanged, removeAllSubRes
 import { Toggle } from "castmate-schema"
 import axios, { Method } from "axios"
 import https from "https"
-import { LightColor } from "castmate-plugin-iot-shared"
+import { LightColor, LightConfig } from "castmate-plugin-iot-shared"
 import _clamp from "lodash/clamp"
 import * as chromatism from "chromatism2"
-import { HUEApiLight, HUEApiLightState, HUEApiLightUpdate } from "./api"
+import { HUEApiGroupedLight, HUEApiLight, HUEApiLightState, HUEApiLightUpdate, HUEApiRoom } from "./api"
 
 interface HubInfo {
 	readonly hubIp: string
@@ -92,7 +92,7 @@ export class PhilipsHUELight extends LightResource {
 			this.state.color = `hsb(${hueSat.hue}, ${hueSat.sat}, ${brightness})`
 		}
 
-		this.state.on = apiState.on.on
+		this.state.on = apiState.on?.on ?? false
 	}
 
 	async setLightState(color: LightColor, on: Toggle, transition: number): Promise<void> {
@@ -135,6 +135,139 @@ export class PhilipsHUELight extends LightResource {
 	}
 }
 
+interface PhilipsHUEGroupConfig extends LightConfig {
+	roomId: string
+	lightIds: string[]
+}
+
+export class PhilipsHUEGroup extends LightResource<PhilipsHUEGroupConfig> {
+	childDeviceIds: string[] = []
+	constructor(roomInfo: HUEApiRoom, private hubInfo: HubInfo) {
+		super()
+
+		const group = roomInfo.services.find((s) => s.rtype == "grouped_light")
+		if (!group) throw new Error("Room without a group!")
+
+		this._id = `philips-hue.${group.rid}`
+
+		this.childDeviceIds = roomInfo.children.filter((c) => c.rtype == "device").map((c) => c.rid)
+
+		this._config = {
+			name: roomInfo.metadata.name,
+			provider: "philips-hue",
+			providerId: group.rid,
+			lightIds: [],
+			roomId: roomInfo.id,
+			rgb: {
+				available: true,
+			},
+			kelvin: {
+				available: true,
+			},
+			transitions: {
+				available: true,
+			},
+			dimming: {
+				available: true,
+			},
+		}
+
+		//@ts-ignore
+		this.state = {}
+	}
+
+	async initialize() {
+		const groupResp = await hubRequest(this.hubInfo, "get", `/resource/grouped_light/${this.config.providerId}`)
+		const groupInfo = groupResp.data.data as HUEApiGroupedLight[]
+		this.parseApiState(groupInfo[0])
+
+		const deviceResps = await Promise.all(
+			this.childDeviceIds.map((id) => hubRequest(this.hubInfo, "get", `resource/device/${id}`))
+		)
+
+		const lightIds = deviceResps.map((r) => r.data.data[0].services.find((s: any) => s.rtype == "light")?.rid) as (
+			| string
+			| undefined
+		)[]
+
+		await this.applyConfig({
+			lightIds: lightIds.filter((id) => id != null) as string[],
+		})
+
+		//console.log(deviceResps.map((r) => r.data.data[0].services))
+	}
+
+	parseApiState(apiState: HUEApiLightState) {
+		const brightness = apiState.dimming?.brightness ?? 100
+
+		if (apiState.color_temperature?.mirek != null) {
+			this.state.color = `kb(${kelvinToMirek(apiState.color_temperature.mirek)}, ${brightness})`
+		} else if (apiState.color?.xy != null) {
+			const hueSat = xyToHueSat(apiState.color.xy)
+			this.state.color = `hsb(${hueSat.hue}, ${hueSat.sat}, ${brightness})`
+		}
+
+		this.state.on = apiState.on?.on ?? false
+	}
+
+	private gatherChildStates() {
+		let on = false
+		for (const childId of this.config.lightIds) {
+			const childLight = LightResource.storage.getById(`philips-hue.${childId}`)
+			if (!childLight) {
+				console.log("Missing", `philips-hue.${childId}`)
+				continue
+			}
+			console.log("Child!", childLight.state)
+
+			if (childLight.state.on) {
+				on = true
+			}
+		}
+		this.state.on = on
+	}
+
+	async setLightState(color: LightColor, on: Toggle, transition: number) {
+		const parsedColor = LightColor.parse(color)
+
+		if (on == "toggle") {
+			//this.gatherChildStates()
+			on = !this.state.on
+		}
+
+		const update: HUEApiLightUpdate = {
+			on: {
+				on,
+			},
+			dimming: {
+				brightness: _clamp(Number(parsedColor.bri), 0, 100),
+			},
+			dynamics: {
+				duration: Math.round(transition * 1000),
+			},
+		}
+
+		if ("hue" in parsedColor) {
+			const hue = _clamp(parsedColor.hue ?? 0, 0, 360)
+			const sat = _clamp(parsedColor.sat ?? 100, 0, 100)
+			const bri = _clamp(parsedColor.bri ?? 100, 0, 100)
+			const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
+			update.color = {
+				xy: {
+					x: cie.x,
+					y: cie.y,
+				},
+			}
+		} else {
+			update.color_temperature = {
+				mirek: Math.round(1000000 / parsedColor.kelvin),
+			}
+		}
+
+		await hubRequest(this.hubInfo, "put", `/resource/grouped_light/${this.config.providerId}`, update)
+	}
+}
+
 export class PhilipsHUEPlug extends PlugResource {
 	constructor(lightInfo: HUEApiLight, private hubInfo: HubInfo) {
 		super()
@@ -147,12 +280,12 @@ export class PhilipsHUEPlug extends PlugResource {
 		}
 
 		this.state = {
-			on: lightInfo.on.on,
+			on: lightInfo.on?.on ?? false,
 		}
 	}
 
 	parseApiState(apiState: HUEApiLightState) {
-		this.state.on = apiState.on.on
+		this.state.on = apiState.on?.on ?? false
 	}
 
 	async setPlugState(on: Toggle): Promise<void> {
@@ -198,8 +331,17 @@ export function setupResources(hubIp: ReactiveRef<string | undefined>, hubKey: R
 		const lightsResp = await hubRequest(hubInfo, "get", `/resource/light`)
 		const lights = lightsResp.data.data as HUEApiLight[]
 
+		const roomsResp = await hubRequest(hubInfo, "get", "/resource/room")
+		const rooms = roomsResp.data.data as HUEApiRoom[]
+
 		for (const lightInfo of lights) {
 			await injectResourceFromApi(lightInfo, hubInfo)
+		}
+
+		for (const roomInfo of rooms) {
+			const group = new PhilipsHUEGroup(roomInfo, hubInfo)
+			await group.initialize()
+			await await LightResource.storage.inject(group)
 		}
 	}
 
