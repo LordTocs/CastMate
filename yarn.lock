@@ -2963,7 +2963,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-govee-renderer@workspace:plugins/govee/renderer":
+"castmate-plugin-govee-renderer@workspace:^, castmate-plugin-govee-renderer@workspace:plugins/govee/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-govee-renderer@workspace:plugins/govee/renderer"
   dependencies:
@@ -3731,6 +3731,7 @@ __metadata:
     castmate-plugin-discord-renderer: "workspace:^"
     castmate-plugin-elgato-main: "workspace:^"
     castmate-plugin-govee-main: "workspace:^"
+    castmate-plugin-govee-renderer: "workspace:^"
     castmate-plugin-http-main: "workspace:^"
     castmate-plugin-http-renderer: "workspace:^"
     castmate-plugin-input-main: "workspace:^"

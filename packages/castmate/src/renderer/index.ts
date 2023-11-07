@@ -42,6 +42,7 @@ import { initPlugin as initTwinklyPlugin } from "castmate-plugin-twinkly-rendere
 import { initPlugin as initHuePlugin } from "castmate-plugin-philips-hue-renderer"
 import { initPlugin as initWyzePlugin } from "castmate-plugin-wyze-renderer"
 import { initPlugin as initLifxPlugin } from "castmate-plugin-lifx-renderer"
+import { initPlugin as initGoveePlugin } from "castmate-plugin-govee-renderer"
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
@@ -96,6 +97,7 @@ async function init() {
 	initHuePlugin()
 	initWyzePlugin()
 	initLifxPlugin()
+	initGoveePlugin()
 }
 
 init()

@@ -283,8 +283,8 @@ export default definePlugin(
 	{
 		id: "govee",
 		name: "Govee",
-		description: "UI Description",
-		icon: "mdi-pencil",
+		icon: "iot iot-govee",
+		color: "#7F743F",
 	},
 	() => {
 		const apiKey = defineSecret("apiKey", {

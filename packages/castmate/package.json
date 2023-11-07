@@ -44,6 +44,7 @@
 		"@vitejs/plugin-vue": "*",
 		"@vueuse/core": "*",
 		"castmate-plugin-discord-renderer": "workspace:^",
+		"castmate-plugin-govee-renderer": "workspace:^",
 		"castmate-plugin-http-renderer": "workspace:^",
 		"castmate-plugin-input-renderer": "workspace:^",
 		"castmate-plugin-iot-renderer": "workspace:^",
