@@ -55,6 +55,7 @@
 		"castmate-plugin-philips-hue-renderer": "workspace:^",
 		"castmate-plugin-sound-renderer": "workspace:^",
 		"castmate-plugin-time-renderer": "workspace:^",
+		"castmate-plugin-tplink-kasa-renderer": "workspace:^",
 		"castmate-plugin-twinkly-renderer": "workspace:^",
 		"castmate-plugin-twitch-renderer": "workspace:^",
 		"castmate-plugin-voicemod-renderer": "workspace:^",

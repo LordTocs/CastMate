@@ -3454,7 +3454,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-tplink-kasa-renderer@workspace:plugins/tplink-kasa/renderer":
+"castmate-plugin-tplink-kasa-renderer@workspace:^, castmate-plugin-tplink-kasa-renderer@workspace:plugins/tplink-kasa/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-tplink-kasa-renderer@workspace:plugins/tplink-kasa/renderer"
   dependencies:
@@ -3753,6 +3753,7 @@ __metadata:
     castmate-plugin-time-main: "workspace:^"
     castmate-plugin-time-renderer: "workspace:^"
     castmate-plugin-tplink-kasa-main: "workspace:^"
+    castmate-plugin-tplink-kasa-renderer: "workspace:^"
     castmate-plugin-twinkly-main: "workspace:^"
     castmate-plugin-twinkly-renderer: "workspace:^"
     castmate-plugin-twitch-main: "workspace:^"

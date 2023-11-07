@@ -37,7 +37,8 @@
 			"castmate-plugin-philips-hue-renderer": ["../../plugins/philips-hue/renderer/src/main.ts"],
 			"castmate-plugin-wyze-renderer": ["../../plugins/wyze/renderer/src/main.ts"],
 			"castmate-plugin-lifx-renderer": ["../../plugins/lifx/renderer/src/main.ts"],
-			"castmate-plugin-govee-renderer": ["../../plugins/govee/renderer/src/main.ts"]
+			"castmate-plugin-govee-renderer": ["../../plugins/govee/renderer/src/main.ts"],
+			"castmate-plugin-tplink-kasa-renderer": ["../../plugins/tplink-kasa/renderer/src/main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

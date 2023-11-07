@@ -5,8 +5,8 @@ export default definePlugin(
 	{
 		id: "tplink-kasa",
 		name: "TP-Link Kasa",
-		description: "UI Description",
-		icon: "mdi-pencil",
+		icon: "iot iot-kasa",
+		color: "#7F743F",
 	},
 	() => {
 		const subnetMask = defineSetting("subnetMask", {

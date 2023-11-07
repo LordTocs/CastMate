@@ -43,6 +43,7 @@ import { initPlugin as initHuePlugin } from "castmate-plugin-philips-hue-rendere
 import { initPlugin as initWyzePlugin } from "castmate-plugin-wyze-renderer"
 import { initPlugin as initLifxPlugin } from "castmate-plugin-lifx-renderer"
 import { initPlugin as initGoveePlugin } from "castmate-plugin-govee-renderer"
+import { initPlugin as initKasaPlugin } from "castmate-plugin-tplink-kasa-renderer"
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
@@ -98,6 +99,7 @@ async function init() {
 	initWyzePlugin()
 	initLifxPlugin()
 	initGoveePlugin()
+	initKasaPlugin()
 }
 
 init()
