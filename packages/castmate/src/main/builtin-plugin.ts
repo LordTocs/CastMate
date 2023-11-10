@@ -1,5 +1,5 @@
-import { Duration } from "castmate-schema"
-import { ActionQueue, defineAction, definePlugin, defineSetting } from "castmate-core"
+import { Duration, Toggle } from "castmate-schema"
+import { ActionQueue, Profile, defineAction, definePlugin, defineSetting } from "castmate-core"
 import { abortableSleep } from "castmate-core/src/util/abort-utils"
 import { defineFlowAction } from "castmate-core/src/queue-system/action"
 
@@ -77,6 +77,31 @@ export default definePlugin(
 				if (runningId) {
 					config.queue.skip(runningId)
 				}
+			},
+		})
+
+		defineAction({
+			id: "profileActivation",
+			name: "Profile Activation",
+			icon: "mdi mdi-cogs",
+			description: "Sets a profile's activation mode",
+			config: {
+				type: Object,
+				properties: {
+					profile: { type: Profile, name: "Profile", required: true },
+					activation: {
+						type: Toggle,
+						name: "Activation Mode",
+						required: true,
+						default: true,
+						toggleIcon: "mdi mdi-cogs",
+					},
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				await config.profile?.applyConfig({
+					activationMode: config.activation,
+				})
 			},
 		})
 	}
