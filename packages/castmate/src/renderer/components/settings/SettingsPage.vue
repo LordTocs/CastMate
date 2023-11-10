@@ -24,6 +24,7 @@
 						<div v-if="setting.type == 'value' || setting.type == 'secret'" class="mt-5">
 							<data-input
 								:schema="setting.schema"
+								:secret="setting.type == 'secret'"
 								v-model="model.settings[pluginSettings.pluginId][sid]"
 							/>
 						</div>

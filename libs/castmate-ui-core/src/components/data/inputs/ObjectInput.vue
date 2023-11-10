@@ -10,6 +10,7 @@
 				:schema="schema.properties[prop]"
 				:local-path="prop"
 				:context="context"
+				:secret="secret"
 			/>
 		</div>
 	</document-path>

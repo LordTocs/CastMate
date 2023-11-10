@@ -7,6 +7,7 @@
 		:local-path="localPath"
 		:no-float="noFloat"
 		:context="context"
+		:secret="secret"
 	/>
 </template>
 

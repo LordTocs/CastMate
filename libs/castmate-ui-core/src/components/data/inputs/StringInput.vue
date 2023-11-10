@@ -14,7 +14,8 @@
 					v-bind="labelProps"
 					v-slot="templateProps"
 				>
-					<p-input-text v-model="model" v-bind="templateProps" />
+					<p-password v-model="model" v-bind="templateProps" v-if="secret" toggle-mask :feedback="false" />
+					<p-input-text v-model="model" v-bind="templateProps" v-else />
 				</template-toggle>
 			</label-floater>
 			<enum-input
@@ -35,6 +36,7 @@
 
 <script setup lang="ts">
 import PInputText from "primevue/inputtext"
+import PPassword from "primevue/password"
 import PButton from "primevue/button"
 import { type SchemaString, type SchemaBase } from "castmate-schema"
 import { useVModel } from "@vueuse/core"
