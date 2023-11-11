@@ -195,7 +195,7 @@ export default definePlugin(
 					},
 					(err: any, data: any) => {
 						console.log("Init Complete")
-						if (!err) {
+						if (err) {
 							return reject(err)
 						}
 						return resolve()
