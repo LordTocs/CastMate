@@ -7,6 +7,7 @@ import {
 	defineSetting,
 	autoRerun,
 	onSettingChanged,
+	defineSecret,
 } from "castmate-core"
 import { PhilipsHUELight, setupResources } from "./resources"
 import { setupDiscovery } from "./discovery"
@@ -25,7 +26,7 @@ export default definePlugin(
 			name: "Hue Hub IP",
 		})
 
-		const hubKey = defineSetting("hubKey", {
+		const hubKey = defineSecret("hubKey", {
 			type: String,
 			name: "Hue Hub Key",
 		})
