@@ -28,7 +28,7 @@ function convertIPCEnum(schema: Enumable<any>, path: string) {
 function registerIPCEnum(schema: Enumable<any>, path: string, topLevelSchema: Schema) {
 	if (!schema.enum) return
 	if (!isFunction(schema.enum)) return
-	console.log("Registering Schema IPC", `${path}_enum`)
+	//console.log("Registering Schema IPC", `${path}_enum`)
 	const enumFunc = schema.enum
 	ipcMain.handle(`${path}_enum`, async (event, context) => {
 		try {
@@ -57,7 +57,7 @@ function registerIPCDefault(schema: Schema, path: string) {
 	if (!isFunction(schema.default)) return
 
 	const defaultFunc = schema.default
-	console.log("Registering Schema IPC", `${path}_default`)
+	//console.log("Registering Schema IPC", `${path}_default`)
 
 	ipcMain.handle(`${path}_default`, async (event) => {
 		try {
