@@ -6,6 +6,7 @@ import { PluginManager } from "./plugins/plugin-manager"
 import { ensureDirectory, resolveProjectPath, setProjectDirectory } from "./io/file-system"
 import { MediaManager } from "./media/media-manager"
 import { ProfileManager } from "./profile/profile-system"
+import { defineCallableIPC, defineIPCFunc } from "./util/electron"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -21,6 +22,7 @@ export async function loadPlugin(name: string) {
 	}
 }
 */
+let setupComplete = false
 
 export async function initializeCastMate() {
 	console.log("Initing CastMate")
@@ -39,9 +41,15 @@ export async function initializeCastMate() {
 
 	//How do we load plugins???
 	//await loadPlugin("twitch")
+	defineIPCFunc("castmate", "isSetupFinished", () => setupComplete)
 }
+
+const notifyRendererSetupFinished = defineCallableIPC<() => void>("castmate", "setupFinished")
 
 export async function finializeCastMateSetup() {
 	console.log("Finalizing Init")
 	await ProfileManager.getInstance().finishSetup()
+	console.log("CastMate Init Complete")
+	setupComplete = true
+	notifyRendererSetupFinished()
 }

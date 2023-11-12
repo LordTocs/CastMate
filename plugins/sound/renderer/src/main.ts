@@ -12,11 +12,12 @@ export async function getOutputDevices(): Promise<WebAudioDeviceInfo[]> {
 	return outputDevices.map((d) => ({ groupId: d.groupId, deviceId: d.deviceId, label: d.label, kind: d.kind }))
 }
 
-export async function initPlugin() {
+export async function sendAudioDevices() {
 	const setAudioOutputDevices = useIpcCaller<(devices: WebAudioDeviceInfo[]) => any>("sound", "setAudioOutputDevices")
-
 	setAudioOutputDevices(await getOutputDevices())
+}
 
+export async function initPlugin() {
 	const playerStore = useSoundPlayerStore()
 	playerStore.initialize()
 

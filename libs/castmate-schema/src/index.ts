@@ -17,3 +17,4 @@ export * from "./types/account"
 export * from "./types/queues"
 
 export * from "./util/type-helpers"
+export * from "./util/promise-helpers"

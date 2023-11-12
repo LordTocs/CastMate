@@ -13,11 +13,9 @@ import {
 	ResourceRegistry,
 	defineSetting,
 	definePluginResource,
-	DelayedResolver,
-	createDelayedResolver,
 } from "castmate-core"
 import { MediaManager } from "castmate-core"
-import { Duration, MediaFile } from "castmate-schema"
+import { Duration, MediaFile, createDelayedResolver, DelayedResolver } from "castmate-schema"
 import { defineCallableIPC } from "castmate-core/src/util/electron"
 import { RendererSoundPlayer } from "./renderer-sound-player"
 class SoundOutput<

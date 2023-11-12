@@ -1,3 +1,4 @@
+import { useInitStore } from "./store/init-store"
 import {
 	initializeProfiles,
 	useDocumentStore,
@@ -31,7 +32,7 @@ import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import { initData } from "castmate-ui-core"
 import { createRouter, createWebHistory } from "vue-router"
 
-import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
+import { initPlugin as initSoundPlugin, sendAudioDevices } from "castmate-plugin-sound-renderer"
 import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
 import { initPlugin as initObsPlugin } from "castmate-plugin-obs-renderer"
 import { initPlugin as initDiscordPlugin } from "castmate-plugin-discord-renderer"
@@ -67,7 +68,18 @@ app.directive("tooltip", Tooltip)
 app.use(router)
 app.use(pinia)
 
+const initStore = useInitStore()
+
 async function init() {
+	//Send the audio devices immediately since we'll get stuck waiting on them in the sound plugin init.
+	//TODO: Switch to a native package to receive audio device information so we don't have an init dependency going the wrong way.
+	await sendAudioDevices()
+
+	//Wait for the main process to initialize
+	await initStore.initialize()
+	await initStore.waitForInit()
+
+	//Now init all the stores
 	await Promise.all([
 		usePluginStore().initialize(),
 		useResourceStore().initialize(),
@@ -86,6 +98,8 @@ async function init() {
 	initializeQueues()
 
 	useMediaStore().initialize()
+
+	//TODO: This init function is bonkers, we should formalize initing these plugins after their main process side gets inited.
 	initData()
 	initSoundPlugin()
 	initTwitchPlugin()
