@@ -40,6 +40,7 @@
 					v-model:view="view.automationView"
 					local-path="sequence"
 					style="flex: 1"
+					:trigger="modelObj"
 				/>
 				<div class="config">
 					<action-config-edit v-if="selectedAction" v-model="selectedAction" />

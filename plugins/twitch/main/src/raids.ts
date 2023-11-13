@@ -26,10 +26,10 @@ export function setupRaids() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
-				raiders: { type: Number, required: true },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
+				raiders: { type: Number, required: true, default: 15 },
 			},
 		},
 		async handle(config, context) {
@@ -61,9 +61,9 @@ export function setupRaids() {
 		context: {
 			type: Object,
 			properties: {
-				raiders: { type: Number, required: true },
-				raidedUser: { type: String, required: true },
-				raidedUserId: { type: String, required: true },
+				raiders: { type: Number, required: true, default: 15 },
+				raidedUser: { type: String, required: true, default: "LordTocs" },
+				raidedUserId: { type: String, required: true, default: "27082158" },
 			},
 		},
 		async handle(config, context) {

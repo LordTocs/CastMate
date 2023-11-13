@@ -20,9 +20,9 @@ export function setupFollows() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
 			},
 		},
 		async handle(config, context) {

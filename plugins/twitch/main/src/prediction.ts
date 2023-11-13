@@ -48,7 +48,7 @@ export function setupPredictions() {
 		context: {
 			type: Object,
 			properties: {
-				title: { type: String, required: true },
+				title: { type: String, required: true, default: "Test Prediction" },
 				outcomes: {
 					type: Array,
 					items: {
@@ -59,6 +59,11 @@ export function setupPredictions() {
 							points: { type: Number, required: true },
 						},
 					},
+					required: true,
+					default: [
+						{ title: "Item A", color: "BLUE", points: 0 },
+						{ title: "Item A", color: "PINK", points: 0 },
+					],
 				},
 			},
 		},
@@ -81,8 +86,8 @@ export function setupPredictions() {
 		context: {
 			type: Object,
 			properties: {
-				title: { type: String, required: true },
-				total: { type: Number, required: true },
+				title: { type: String, required: true, default: "Test Prediction" },
+				total: { type: Number, required: true, default: 100 },
 				outcomes: {
 					type: Array,
 					items: {
@@ -93,6 +98,10 @@ export function setupPredictions() {
 							points: { type: Number, required: true },
 						},
 					},
+					default: [
+						{ title: "Item A", color: "BLUE", points: 75 },
+						{ title: "Item A", color: "PINK", points: 25 },
+					],
 				},
 			},
 		},
@@ -115,8 +124,8 @@ export function setupPredictions() {
 		context: {
 			type: Object,
 			properties: {
-				title: { type: String, required: true },
-				total: { type: Number, required: true },
+				title: { type: String, required: true, default: "Test Prediction" },
+				total: { type: Number, required: true, default: 100 },
 				outcomes: {
 					type: Array,
 					items: {
@@ -127,6 +136,10 @@ export function setupPredictions() {
 							points: { type: Number, required: true },
 						},
 					},
+					default: [
+						{ title: "Item A", color: "BLUE", points: 75 },
+						{ title: "Item A", color: "PINK", points: 25 },
+					],
 				},
 			},
 		},

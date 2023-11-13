@@ -67,8 +67,8 @@ export function setupPolls() {
 		context: {
 			type: Object,
 			properties: {
-				title: { type: String, required: true },
-				totalVotes: { type: Number, required: true },
+				title: { type: String, required: true, default: "Test Poll" },
+				totalVotes: { type: Number, required: true, default: 0 },
 				choices: {
 					type: Array,
 					items: {
@@ -79,6 +79,10 @@ export function setupPolls() {
 							fraction: { type: Number },
 						},
 					},
+					default: [
+						{ title: "Item A", votes: 0, fraction: 0 },
+						{ title: "Item B", votes: 0, fraction: 0 },
+					],
 				},
 			},
 		},
@@ -99,14 +103,14 @@ export function setupPolls() {
 		context: {
 			type: Object,
 			properties: {
-				title: { type: String, required: true },
-				totalVotes: { type: Number, required: true },
+				title: { type: String, required: true, default: "Test Poll" },
+				totalVotes: { type: Number, required: true, default: 10 },
 				winner: {
 					type: Object,
 					properties: {
-						title: { type: String, required: true },
-						votes: { type: Number, required: true },
-						fraction: { type: Number, required: true },
+						title: { type: String, required: true, default: "Item A" },
+						votes: { type: Number, required: true, default: 7 },
+						fraction: { type: Number, required: true, default: 0.7 },
 					},
 				},
 				choices: {
@@ -119,6 +123,10 @@ export function setupPolls() {
 							fraction: { type: Number, required: true },
 						},
 					},
+					default: [
+						{ title: "Item A", votes: 7, fraction: 0.7 },
+						{ title: "Item B", votes: 3, fraction: 0.3 },
+					],
 				},
 			},
 		},

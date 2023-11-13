@@ -42,10 +42,10 @@ export function setupChat() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
-				message: { type: String, required: true },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
+				message: { type: String, required: true, default: "Thanks for using CastMate!" },
 				messageId: { type: String, required: true },
 			},
 		},
@@ -75,10 +75,10 @@ export function setupChat() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
-				message: { type: String, required: true },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
+				message: { type: String, required: true, default: "Thanks for using CastMate!" },
 			},
 		},
 		async handle(config, context) {
@@ -123,9 +123,9 @@ export function setupChat() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
 			},
 		},
 		async handle(config, context) {
@@ -153,11 +153,11 @@ export function setupChat() {
 		context: {
 			type: Object,
 			properties: {
-				bits: { type: Number, required: true },
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
-				message: { type: String, required: true },
+				bits: { type: Number, required: true, default: 100 },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
+				message: { type: String, required: true, default: "Thanks for using CastMate" },
 			},
 		},
 		async handle(config, context) {

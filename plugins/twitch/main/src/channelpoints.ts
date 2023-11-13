@@ -458,10 +458,10 @@ export function setupChannelPointRewards() {
 			properties: {
 				reward: { type: ChannelPointReward, required: true },
 				redemptionId: { type: String, required: true },
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
-				message: { type: String, required: true },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
+				message: { type: String, required: true, default: "Thanks for using CastMate!" },
 			},
 		},
 		async handle(config, context) {

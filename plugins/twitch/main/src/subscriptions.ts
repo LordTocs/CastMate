@@ -25,12 +25,12 @@ export function setupSubscriptions() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
-				totalMonths: { type: Number, required: true },
-				streakMonths: { type: Number, required: true },
-				durationMonths: { type: Number, required: true },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
+				totalMonths: { type: Number, required: true, default: 5 },
+				streakMonths: { type: Number, required: true, default: 3 },
+				durationMonths: { type: Number, required: true, default: 1 },
 			},
 		},
 		async handle(config, context) {
@@ -61,10 +61,10 @@ export function setupSubscriptions() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true },
-				userId: { type: String, required: true },
-				userColor: { type: String, required: true },
-				subs: { type: Number, required: true },
+				user: { type: String, required: true, default: "LordTocs" },
+				userId: { type: String, required: true, default: "27082158" },
+				userColor: { type: String, required: true, default: "#4411FF" },
+				subs: { type: Number, required: true, default: 5 },
 			},
 		},
 		async handle(config, context) {

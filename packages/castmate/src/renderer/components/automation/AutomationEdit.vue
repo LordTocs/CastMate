@@ -50,6 +50,8 @@ import {
 	provideDocumentPath,
 	usePluginStore,
 	useDocumentSelection,
+	TriggerSelection,
+	useTrigger,
 } from "castmate-ui-core"
 import SequenceEdit from "./SequenceEdit.vue"
 import { provideAutomationEditState } from "../../util/automation-dragdrop"
@@ -58,11 +60,13 @@ import ActionPalette from "./ActionPalette.vue"
 import { FloatingSequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { automationTimeScale } from "./automation-shared"
+import { constructDefault } from "castmate-schema"
 
 const props = defineProps<{
 	modelValue: AutomationData
 	view: AutomationView
 	localPath?: string
+	trigger?: TriggerSelection
 }>()
 
 const editArea = ref<HTMLElement | null>(null)
@@ -103,8 +107,14 @@ const actionQueueStore = useActionQueueStore()
 const activeTestSequence = useActiveTestSequence(testSequenceId)
 provide("activeTestSequence", activeTestSequence)
 
+const trigger = useTrigger(() => props.trigger)
+
 async function onRunSequence() {
-	testSequenceId.value = await actionQueueStore.testSequence(props.modelValue.sequence, {})
+	let context: any = {}
+	if (trigger.value) {
+		context = await constructDefault(trigger.value.context)
+	}
+	testSequenceId.value = await actionQueueStore.testSequence(props.modelValue.sequence, context)
 }
 
 async function onStopSequence() {

@@ -15,10 +15,10 @@ export function setupHypeTrains() {
 		context: {
 			type: Object,
 			properties: {
-				level: { type: Number, required: true },
-				progress: { type: Number, required: true },
-				goal: { type: Number, required: true },
-				total: { type: Number, required: true },
+				level: { type: Number, required: true, default: 1 },
+				progress: { type: Number, required: true, default: 0 },
+				goal: { type: Number, required: true, default: 100 },
+				total: { type: Number, required: true, default: 0 },
 			},
 		},
 		async handle(config, context) {
@@ -45,10 +45,10 @@ export function setupHypeTrains() {
 		context: {
 			type: Object,
 			properties: {
-				level: { type: Number, required: true },
-				progress: { type: Number, required: true },
-				goal: { type: Number, required: true },
-				total: { type: Number, required: true },
+				level: { type: Number, required: true, default: 2 },
+				progress: { type: Number, required: true, default: 50 },
+				goal: { type: Number, required: true, default: 100 },
+				total: { type: Number, required: true, default: 150 },
 			},
 		},
 		async handle(config, context) {
@@ -75,10 +75,10 @@ export function setupHypeTrains() {
 		context: {
 			type: Object,
 			properties: {
-				level: { type: Number, required: true },
-				progress: { type: Number, required: true },
-				goal: { type: Number, required: true },
-				total: { type: Number, required: true },
+				level: { type: Number, required: true, default: 3 },
+				progress: { type: Number, required: true, default: 30 },
+				goal: { type: Number, required: true, default: 300 },
+				total: { type: Number, required: true, default: 230 },
 			},
 		},
 		async handle(config, context) {

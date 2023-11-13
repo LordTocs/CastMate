@@ -34,7 +34,7 @@ export function setupKeyboard() {
 		context: {
 			type: Object,
 			properties: {
-				combo: { type: KeyCombo, name: "Combo", required: true },
+				combo: { type: KeyCombo, name: "Combo", required: true, default: ["LeftControl"] },
 			},
 		},
 		config: {
