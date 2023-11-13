@@ -159,6 +159,10 @@ export function serializeSchema<TSchema extends Schema>(schema: TSchema, value: 
 		const copyValue: Record<string, any> = {}
 		for (const key of Object.keys(objValue)) {
 			const propSchema = schema.properties[key]
+			if (!propSchema) {
+				console.error("Unable to find type for", key, value)
+				continue
+			}
 			copyValue[key] = serializeSchema(propSchema, objValue[key])
 		}
 		return copyValue as SchemaType<TSchema>
