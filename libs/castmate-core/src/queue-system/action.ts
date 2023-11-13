@@ -1,3 +1,4 @@
+import { PluginManager } from "castmate-core/src/plugins/plugin-manager"
 import {
 	IPCActionDefinition,
 	isKey,
@@ -6,6 +7,7 @@ import {
 	Duration,
 	IPCDurationConfig,
 	MaybePromise,
+	mapKeys,
 } from "castmate-schema"
 import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
@@ -13,6 +15,7 @@ import { type Plugin, initingPlugin } from "../plugins/plugin"
 import { SemanticVersion, isArray } from "../util/type-helpers"
 import { ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
 import { defineIPCFunc } from "../util/electron"
+import { templateSchema } from "../templates/template"
 
 interface ActionMetaData {
 	id: string
@@ -23,7 +26,9 @@ interface ActionMetaData {
 	version?: SemanticVersion
 }
 
-type ActionInvokeContextData = Record<PropertyKey, any>
+export type ActionInvokeContextData = {
+	contextState: Record<PropertyKey, any>
+}
 
 interface BaseDurationState {
 	indefinite?: boolean
@@ -159,14 +164,21 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 
 	unload() {}
 
-	async invoke(
-		config: Readonly<SchemaType<ConfigSchema>>,
-		contextData: ActionInvokeContextData,
-		abortSignal: AbortSignal
-	) {
+	async invoke(config: SchemaType<ConfigSchema>, contextData: ActionInvokeContextData, abortSignal: AbortSignal) {
 		if (abortSignal.aborted) return
 
-		return await this.spec.invoke(config, contextData, abortSignal)
+		const templateContext = {
+			...contextData.contextState,
+			...PluginManager.getInstance().state,
+		}
+
+		const resolvedConfig: ResolvedSchemaType<ConfigSchema> = await templateSchema(
+			config,
+			this.configSchema,
+			templateContext
+		)
+
+		return await this.spec.invoke(resolvedConfig, contextData, abortSignal)
 	}
 
 	registerIPC(path: string) {
@@ -236,13 +248,15 @@ export function defineAction<ConfigSchema extends Schema, ResultSchema extends S
 	return impl
 }
 
-interface Flows<FlowSchema extends Schema | undefined> {
-	[id: string]: Readonly<FlowSchema extends Schema ? ResolvedSchemaType<FlowSchema> : any>
+interface Flows<FlowSchema extends Schema> {
+	[id: string]: SchemaType<FlowSchema>
 }
 
-class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends Schema | undefined>
-	implements FlowActionDefinition
-{
+interface ResolvedFlows<FlowSchema extends Schema> {
+	[id: string]: ResolvedSchemaType<FlowSchema>
+}
+
+class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends Schema> implements FlowActionDefinition {
 	constructor(private spec: FlowActionSpec<ConfigSchema, FlowSchema>, private plugin: Plugin) {}
 
 	get type(): "flow" {
@@ -308,27 +322,45 @@ class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends S
 	}
 
 	async invoke(
-		config: Readonly<SchemaType<ConfigSchema>>,
+		config: SchemaType<ConfigSchema>,
 		flows: Flows<FlowSchema>,
 		contextData: ActionInvokeContextData,
 		abortSignal: AbortSignal
 	): Promise<string> {
-		return await this.spec.invoke(config, flows, contextData, abortSignal)
+		const templateContext = {
+			...contextData.contextState,
+			...PluginManager.getInstance().state,
+		}
+
+		const resolveConfig: ResolvedSchemaType<ConfigSchema> = await templateSchema(
+			config,
+			this.configSchema,
+			templateContext
+		)
+
+		const resolvedFlows: ResolvedFlows<FlowSchema> = {}
+		await Promise.allSettled(
+			Object.keys(flows).map(async (k) => {
+				resolvedFlows[k] = await templateSchema(flows[k], this.flowSchema, templateContext)
+			})
+		)
+
+		return await this.spec.invoke(resolveConfig, resolvedFlows, contextData, abortSignal)
 	}
 }
 
-interface FlowActionSpec<ConfigSchema extends Schema, FlowSchema extends Schema | undefined> extends ActionMetaData {
+interface FlowActionSpec<ConfigSchema extends Schema, FlowSchema extends Schema> extends ActionMetaData {
 	config: ConfigSchema
-	flowConfig?: FlowSchema
+	flowConfig: FlowSchema
 	invoke(
 		config: Readonly<ResolvedSchemaType<ConfigSchema>>,
-		flows: Flows<FlowSchema>,
+		flows: ResolvedFlows<FlowSchema>,
 		contextData: ActionInvokeContextData,
 		abortSignal: AbortSignal
 	): Promise<string>
 }
 
-export function defineFlowAction<ConfigSchema extends Schema, FlowSchema extends Schema | undefined>(
+export function defineFlowAction<ConfigSchema extends Schema, FlowSchema extends Schema>(
 	spec: FlowActionSpec<ConfigSchema, FlowSchema>
 ) {
 	if (!initingPlugin) {

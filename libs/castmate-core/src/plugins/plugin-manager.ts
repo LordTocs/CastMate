@@ -4,6 +4,7 @@ import { Service } from "../util/service"
 import { Plugin } from "./plugin"
 import { deserializeSchema } from "../util/ipc-schema"
 import { Profile } from "../profile/profile"
+import { aliasReactiveValue, reactify } from "../reactivity/reactivity"
 
 const rendererRegisterPlugin = defineCallableIPC<(plugin: IPCPluginDefinition) => void>("plugins", "registerPlugin")
 const rendererUnregisterPlugin = defineCallableIPC<(id: string) => void>("plugins", "unregisterPlugin")
@@ -42,10 +43,17 @@ export const PluginManager = Service(
 	class {
 		private plugins: Map<string, Plugin> = new Map()
 
-		constructor() {}
+		constructor() {
+			this.pluginState = reactify({})
+		}
 
 		get pluginIds() {
 			return [...this.plugins.keys()]
+		}
+
+		private pluginState: Record<string, object>
+		get state() {
+			return this.pluginState
 		}
 
 		async registerPlugin(plugin: Plugin) {
@@ -58,6 +66,14 @@ export const PluginManager = Service(
 					return
 				}
 				rendererRegisterPlugin(plugin.toIPC())
+
+				const stateContainer = reactify({})
+				for (const [key, state] of plugin.state.entries()) {
+					aliasReactiveValue(state.ref, "value", stateContainer, key)
+				}
+				if (Object.keys(stateContainer).length > 0) {
+					this.pluginState[plugin.id] = stateContainer
+				}
 			} catch (err) {
 				console.error("Load REALLY failed for", plugin.id)
 				console.error(err)
@@ -73,6 +89,7 @@ export const PluginManager = Service(
 
 			await plugin.unload()
 			this.plugins.delete(id)
+			delete this.pluginState[id]
 			rendererUnregisterPlugin(id)
 		}
 

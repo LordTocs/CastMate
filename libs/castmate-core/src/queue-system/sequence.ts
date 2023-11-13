@@ -1,4 +1,5 @@
 import { PluginManager } from "../plugins/plugin-manager"
+import { reactify } from "../reactivity/reactivity"
 import { setAbortableTimeout } from "../util/abort-utils"
 import { deserializeSchema } from "../util/ipc-schema"
 import { SemanticVersion } from "../util/type-helpers"
@@ -15,7 +16,9 @@ import {
 	isActionStack,
 	isTimeAction,
 	isFlowAction,
+	SequenceContext,
 } from "castmate-schema"
+import { ActionInvokeContextData } from "./action"
 
 export interface SequenceDebugger {
 	sequenceStarted(): void
@@ -31,7 +34,7 @@ type SequenceCompletion = "complete" | "aborted"
 export class SequenceRunner {
 	private abortController = new AbortController()
 
-	constructor(private sequence: Sequence, private context: any, private dbg?: SequenceDebugger) {}
+	constructor(private sequence: Sequence, private context: SequenceContext, private dbg?: SequenceDebugger) {}
 
 	abort() {
 		this.abortController.abort()
@@ -56,7 +59,9 @@ export class SequenceRunner {
 				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
 			}
 			const deserializedConfig = deserializeSchema(actionDef.configSchema, action.config)
-			const result = await actionDef.invoke(deserializedConfig, this.context, this.abortController.signal)
+			//Todo construct action context
+			const actionContext: ActionInvokeContextData = this.context
+			const result = await actionDef.invoke(deserializedConfig, actionContext, this.abortController.signal)
 			this.dbg?.logResult(action.id, result)
 			return result
 		} catch (err) {

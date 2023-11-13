@@ -17,12 +17,12 @@ const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 export async function evaluateTemplate(template: string, data: object) {
 	let contextObjs = { ...data }
 
-	let func = new AsyncFunction(...Object.keys(contextObjs), `return (${template})`)
-
 	try {
+		let func = new AsyncFunction(...Object.keys(contextObjs), `return (${template})`)
 		return await func(...Object.values(contextObjs))
 	} catch (err) {
-		return null
+		console.error("Error Evaluating Template", err)
+		return undefined
 	}
 }
 
@@ -96,13 +96,13 @@ export function getNextTemplate(templateStr: string, searchStart: number) {
 	}
 
 	//Get the string inbetween the last template and the start of this one.
-	const filler = templateStr.substring(searchStart, index - searchStart)
+	const filler = templateStr.substring(searchStart, index)
 
 	//Find the end of the template
 	const endIndex = findTemplateClosing(templateStr, index)
 
 	//Extract the template's JS code
-	const template = templateStr.substring(index + 2, endIndex - 2 - (index + 2) + 1)
+	const template = templateStr.substring(index + 2, endIndex - 1)
 
 	return { filler, template, endIndex }
 }
@@ -128,7 +128,9 @@ export async function template(templateStr: string, data: object) {
 		let templateResult = undefined
 		try {
 			templateResult = await evaluateTemplate(template, data)
-		} catch {}
+		} catch (err) {
+			console.error("Error evaluating Template", err)
+		}
 
 		//Append it to the string if it's not nullish
 		resultStr += templateResult?.toString() ?? ""

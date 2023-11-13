@@ -66,7 +66,7 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 	enqueue(source: SequenceSource, context: Record<string, any>) {
 		this.state.queue.push({
 			id: nanoid(),
-			queueContext: context,
+			queueContext: { contextState: context },
 			source,
 		})
 
@@ -220,10 +220,16 @@ export const ActionQueueManager = Service(
 			})
 		}
 
-		runTestSequence(id: string, sequence: Sequence, context: any) {
+		runTestSequence(id: string, sequence: Sequence, context: object) {
 			if (this.testSequences.has(id)) return
 
-			const runner = new SequenceRunner(sequence, context, new TestRunnerDebugger(id))
+			const runner = new SequenceRunner(
+				sequence,
+				{
+					contextState: context,
+				},
+				new TestRunnerDebugger(id)
+			)
 
 			this.testSequences.set(id, runner)
 

@@ -1,4 +1,4 @@
-import { Color } from "castmate-schema"
+import { Color, ResolvedSchemaType } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
@@ -68,7 +68,7 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 		return this.spec.version ?? "0.0.0"
 	}
 
-	async trigger(context: SchemaType<ContextDataSchema>) {
+	async trigger(context: ResolvedSchemaType<ContextDataSchema>) {
 		const activeProfiles = ProfileManager.getInstance().activeProfiles
 		let triggered = false
 		//Check all the active profiles to see if they have any triggers of this type
@@ -95,7 +95,10 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 						)
 					} else {
 						//This
-						const runner = new SequenceRunner(trigger.sequence, context)
+						const runner = new SequenceRunner(trigger.sequence, {
+							//@ts-ignore //Todo some sort of schema object restriction?
+							contextState: context,
+						})
 						runner.run()
 					}
 				}

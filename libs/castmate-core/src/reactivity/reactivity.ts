@@ -41,6 +41,32 @@ export namespace DependencyStorage {
 	type ObjectDependencyMap = Map<PropertyKey, ReactiveDependency>
 	const dependencyMap = new WeakMap<object, ObjectDependencyMap>()
 
+	interface AliasedDependency {
+		[key: string | number | symbol]: { target: object; key: string | number | symbol }
+	}
+	const aliasMap = new WeakMap<object, AliasedDependency>()
+
+	export function getAlias(target: object, key: string | number | symbol) {
+		const alias = aliasMap.get(target)
+		if (!alias) return undefined
+		return alias[key]
+	}
+
+	export function setAlias(
+		target: object,
+		targetKey: string | number | symbol,
+		source: object,
+		sourceKey: string | number | symbol
+	) {
+		let alias: AliasedDependency | undefined = aliasMap.get(target)
+		if (!alias) {
+			alias = {}
+			aliasMap.set(target, alias)
+		}
+
+		alias[targetKey] = { target: source, key: sourceKey }
+	}
+
 	export function getObjectDependencies(obj: any, create = true) {
 		let objMap = dependencyMap.get(obj)
 		if (objMap == null && create) {
@@ -133,11 +159,25 @@ class ReactiveProxy<T extends object> {
 			return target
 		}
 
+		const alias = DependencyStorage.getAlias(target, propKey)
+
+		if (alias) {
+			target = alias.target as T
+			propKey = alias.key
+		}
+
 		let result = Reflect.get(target, propKey, receiver) as T
 
 		return ReactiveGet(result, target, propKey)
 	}
 	set(target: T, propKey: PropertyKey, newValue: any, receiver: any) {
+		const alias = DependencyStorage.getAlias(target, propKey)
+
+		if (alias) {
+			target = alias.target as T
+			propKey = alias.key
+		}
+
 		Reflect.set(target, propKey, newValue, receiver)
 
 		ReactiveSet(target, propKey)
@@ -146,6 +186,13 @@ class ReactiveProxy<T extends object> {
 	}
 
 	has(target: T, propKey: PropertyKey) {
+		const alias = DependencyStorage.getAlias(target, propKey)
+
+		if (alias) {
+			target = alias.target as T
+			propKey = alias.key
+		}
+
 		if (shouldTrack(target, propKey)) {
 			DependencyStorage.getPropDependency(target, propKey).track()
 		}
@@ -153,7 +200,12 @@ class ReactiveProxy<T extends object> {
 	}
 
 	deleteProperty(target: T, propKey: PropertyKey) {
-		DependencyStorage.removePropDependency(target, propKey)
+		const alias = DependencyStorage.getAlias(target, propKey)
+
+		if (!alias) {
+			DependencyStorage.removePropDependency(target, propKey)
+		}
+
 		Reflect.deleteProperty(target, propKey)
 		return true
 	}
@@ -249,6 +301,27 @@ export function ReactiveGet<T extends any>(getValue: T, self: any, prop: string 
 export function ReactiveSet(self: any, prop: string | symbol | number) {
 	if (shouldTrack(self, prop)) {
 		DependencyStorage.getPropDependency(self, prop).notify()
+	}
+}
+
+export function aliasReactiveValue(
+	source: Record<string | number | symbol, any>,
+	sourceKey: string | number | symbol,
+	destination: Record<string | number | symbol, any>,
+	destinationKey: string | number | symbol
+) {
+	Object.defineProperty(destination, destinationKey, {
+		enumerable: true,
+		configurable: true,
+		value: undefined,
+		writable: false,
+	})
+	DependencyStorage.setAlias(destination, destinationKey, source, sourceKey)
+}
+
+export function reactiveAliasCopy(source: Record<string | number | symbol, any>, destination: object) {
+	for (const key in Object.keys(source)) {
+		aliasReactiveValue(source, key, destination, key)
 	}
 }
 

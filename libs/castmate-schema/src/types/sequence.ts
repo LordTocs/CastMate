@@ -9,7 +9,13 @@ export interface SequenceSource {
 export interface QueuedSequence {
 	id: string
 	source: SequenceSource
-	queueContext: Record<string, any>
+	queueContext: SequenceContext
+}
+
+export interface SequenceContext {
+	//TODO: Previous action context information
+	//TODO: Future action context information
+	contextState: Record<string, any>
 }
 
 export type AnyAction = InstantAction | TimeAction | FlowAction
