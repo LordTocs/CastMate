@@ -178,7 +178,11 @@ interface ResourceSetting {
 	description?: string
 }
 
-type SettingDefinition = SettingValue | ResourceSetting | SecretValue
+interface ComponentSetting {
+	type: "component"
+}
+
+type SettingDefinition = SettingValue | ResourceSetting | SecretValue | ComponentSetting
 
 function toIPCSetting(setting: SettingDefinition, path: string): IPCSettingsDefinition {
 	if (setting.type == "resource") {
@@ -195,6 +199,8 @@ function toIPCSetting(setting: SettingDefinition, path: string): IPCSettingsDefi
 			schema: ipcConvertSchema(setting.schema, path),
 			value: serializeSchema(setting.schema, setting.ref.value),
 		}
+	} else if (setting.type == "component") {
+		return setting
 	}
 	throw new Error()
 }
@@ -308,6 +314,14 @@ export function defineSecret<T extends Schema>(id: string, schema: T) {
 	})
 
 	return value
+}
+
+export function defineSettingComponent(id: string) {
+	if (!initingPlugin) throw new Error()
+
+	initingPlugin.settings.set(id, {
+		type: "component",
+	})
 }
 
 export function onSettingChanged<T>(ref: ReactiveRef<T> | ReactiveRef<T>[], func: () => any) {

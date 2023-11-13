@@ -12,6 +12,7 @@ import {
 import { PhilipsHUELight, setupResources } from "./resources"
 import { setupDiscovery } from "./discovery"
 import { setupHueEvents } from "./events"
+import { defineSettingComponent } from "castmate-core/src/plugins/plugin"
 
 export default definePlugin(
 	{
@@ -21,6 +22,8 @@ export default definePlugin(
 		color: "#7F743F",
 	},
 	() => {
+		defineSettingComponent("hubSearch")
+
 		const hubIp = defineSetting("hubIp", {
 			type: String,
 			name: "Hue Hub IP",

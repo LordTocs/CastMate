@@ -122,7 +122,12 @@ export interface ResourceSetting {
 	description?: string
 }
 
-export type SettingDefinition = SettingValue | ResourceSetting | SettingSecret
+export interface ComponentSetting {
+	type: "component"
+	component?: Component
+}
+
+export type SettingDefinition = SettingValue | ResourceSetting | SettingSecret | ComponentSetting
 
 function ipcParseSettingsDefinition(def: IPCSettingsDefinition): SettingDefinition {
 	if (def.type == "resource") {
@@ -138,6 +143,10 @@ function ipcParseSettingsDefinition(def: IPCSettingsDefinition): SettingDefiniti
 			type: "secret",
 			schema: ipcParseSchema(def.schema),
 			value: def.value,
+		}
+	} else if (def.type == "component") {
+		return {
+			type: "component",
 		}
 	}
 	throw new Error()
@@ -296,6 +305,22 @@ export const usePluginStore = defineStore("plugins", () => {
 		console.log("Set Action Component", plugin, action, component)
 	}
 
+	function setSettingComponent(plugin: string, key: string, component: Component) {
+		const pluginDef = pluginMap.value.get(plugin)
+		if (!pluginDef) {
+			console.error(`Unknown plugin ${plugin}`)
+			return
+		}
+
+		const settingDef = pluginDef.settings[key]
+		if (settingDef?.type != "component") {
+			console.error(`${key} is not a component setting`)
+			return
+		}
+
+		settingDef.component = component
+	}
+
 	///
 
 	async function updateSettings(changes: SettingsChange[]) {
@@ -308,6 +333,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		createAction,
 		getAction,
 		setActionComponent,
+		setSettingComponent,
 		updateSettings,
 	}
 })

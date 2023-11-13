@@ -22,7 +22,11 @@ export interface IPCResourceSetting {
 	description?: string
 }
 
-export type IPCSettingsDefinition = IPCValueSetting | IPCResourceSetting | IPCSecretSetting
+export interface IPCComponentSetting {
+	type: "component"
+}
+
+export type IPCSettingsDefinition = IPCValueSetting | IPCResourceSetting | IPCSecretSetting | IPCComponentSetting
 
 export interface IPCStateDefinition {
 	schema: IPCSchema
