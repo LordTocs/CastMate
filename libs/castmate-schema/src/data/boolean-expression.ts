@@ -1,4 +1,4 @@
-import { SchemaBase, registerType } from "../schema"
+import { DataFactory, SchemaBase, registerType } from "../schema"
 
 export type ValueCompareOperator = "lessThan" | "lessThanEq" | "equal" | "notEqual" | "greaterThan" | "greaterThanEq"
 
@@ -40,14 +40,15 @@ export interface BooleanSubExpressionGroup extends BooleanExpressionGroup {
 export type BooleanSubExpression = BooleanSubExpressionGroup | BooleanValueExpression
 
 export type BooleanExpression = BooleanExpressionGroup
-export const BooleanExpression = {
+export type BooleanExpressionFactory = DataFactory<BooleanExpression>
+export const BooleanExpression: BooleanExpressionFactory = {
 	factoryCreate() {
 		return { operator: "and", operands: [] } as BooleanExpression
 	},
 }
 
 export interface SchemaBooleanExpression extends SchemaBase<BooleanExpression> {
-	type: BooleanExpression
+	type: BooleanExpressionFactory
 }
 
 declare module "../schema" {
