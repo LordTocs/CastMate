@@ -1,4 +1,4 @@
-import { defineAction, getNextTemplate, evaluateTemplate } from "castmate-core"
+import { defineAction, evaluateTemplate } from "castmate-core"
 import { abortablePromise } from "castmate-core/src/util/abort-utils"
 import { ChildProcess, exec, spawn } from "child_process"
 
@@ -109,7 +109,7 @@ function trackPowershellString(filler: string, parseContext: ParseContext) {
  * @returns
  */
 async function powershellTemplate(templateStr: string, data: Record<string, any>) {
-	let resultStr = ""
+	/*let resultStr = ""
 	let searchStart = 0
 
 	const parseContext = {
@@ -145,7 +145,8 @@ async function powershellTemplate(templateStr: string, data: Record<string, any>
 		searchStart = endIndex + 1
 	}
 
-	return resultStr
+	return resultStr*/
+	return ""
 }
 
 ///

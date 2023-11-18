@@ -8,8 +8,11 @@ import {
 	SchemaNumber,
 	SchemaString,
 	SchemaType,
+	getTemplateRegionString,
 	getTypeByConstructor,
 	getTypeByName,
+	parseTemplateString,
+	trimTemplateJS,
 } from "castmate-schema"
 
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
@@ -26,120 +29,30 @@ export async function evaluateTemplate(template: string, data: object) {
 	}
 }
 
-interface ParseContext {
-	i: number
-}
+export async function template(templateStr: string, data: object) {
+	const templateData = parseTemplateString(templateStr)
+	let result = ""
 
-//Advances the parse context over top of a string in the JS
-function skipString(templateStr: string, parseContext: ParseContext) {
-	if (
-		!(
-			templateStr[parseContext.i] == "'" ||
-			templateStr[parseContext.i] == '"' ||
-			templateStr[parseContext.i] == "`"
-		)
-	) {
-		return false
-	}
+	for (const region of templateData.regions) {
+		if (region.type == "string") {
+			result += getTemplateRegionString(templateData, region)
+		} else {
+			const js = getTemplateRegionString(templateData, region)
+			const trimmed = trimTemplateJS(js)
+			if (trimmed) {
+				let templateResult = undefined
+				try {
+					templateResult = await evaluateTemplate(trimmed, data)
+				} catch (err) {
+					console.error("Error evaluating Template", err)
+				}
 
-	//Sample what type of string character it is ',", or `
-	const stringCloser = templateStr[parseContext.i]
-	let escaped = false
-	for (; parseContext.i < templateStr.length; ++parseContext.i) {
-		const char = templateStr[parseContext.i]
-		if (!escaped && char == "\\") {
-			//We've found an escape character, don't count the following character as a string closer
-			escaped = true
-			continue
-		} else if (!escaped && char == stringCloser) {
-			//This string is finally closed
-			return true
-		}
-		escaped = false
-	}
-
-	//Returns with the parse context on the string closing character
-	return true
-}
-
-//Finds the end }}
-export function findTemplateClosing(templateStr: string, searchStart: number) {
-	let openCurlyCounter = 0
-	const parseContext = { i: searchStart + 2 } //Skip the initial {{
-	for (; parseContext.i < templateStr.length; ++parseContext.i) {
-		//If skipString returns true parseContext is still on the closing string character, continue to move forward
-		if (skipString(templateStr, parseContext)) continue
-
-		const char = templateStr[parseContext.i]
-		if (char == "{") {
-			++openCurlyCounter
-		} else if (char == "}") {
-			--openCurlyCounter
-
-			//Count to -2 since we want }}
-			if (openCurlyCounter == -2) {
-				break
+				result += templateResult?.toString() ?? ""
 			}
 		}
 	}
 
-	return parseContext.i
-}
-
-export function getNextTemplate(templateStr: string, searchStart: number) {
-	//Look for the next {{
-	const index = templateStr.indexOf("{{", searchStart)
-
-	if (index == -1) {
-		//No more templates, return the rest of the string as filler
-		return { filler: templateStr.substring(searchStart) }
-	}
-
-	//Get the string inbetween the last template and the start of this one.
-	const filler = templateStr.substring(searchStart, index)
-
-	//Find the end of the template
-	const endIndex = findTemplateClosing(templateStr, index)
-
-	//Extract the template's JS code
-	const template = templateStr.substring(index + 2, endIndex - 1)
-
-	return { filler, template, endIndex }
-}
-
-export async function template(templateStr: string, data: object) {
-	//Extract stuff inbetween {{ }}
-	let resultStr = ""
-	if (!templateStr) return resultStr
-
-	let searchStart = 0
-
-	while (true) {
-		const { filler, template, endIndex } = getNextTemplate(templateStr, searchStart)
-
-		resultStr += filler
-
-		//If there's no template in getNextTemplate() then we've hit the end of the string
-		if (!template) {
-			break
-		}
-
-		//Evaluate the template string as JS
-		let templateResult = undefined
-		try {
-			templateResult = await evaluateTemplate(template, data)
-		} catch (err) {
-			console.error("Error evaluating Template", err)
-		}
-
-		//Append it to the string if it's not nullish
-		resultStr += templateResult?.toString() ?? ""
-
-		//move the search
-		searchStart = endIndex + 1
-	}
-
-	return resultStr
+	return result
 }
 
 export async function templateNumber(value: string | number, context: object) {

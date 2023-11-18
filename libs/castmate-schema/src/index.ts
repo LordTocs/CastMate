@@ -18,3 +18,5 @@ export * from "./types/queues"
 
 export * from "./util/type-helpers"
 export * from "./util/promise-helpers"
+
+export * from "./template/template-utils"
