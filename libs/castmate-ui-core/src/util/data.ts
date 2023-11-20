@@ -25,6 +25,9 @@ import {
 	toValue,
 	markRaw,
 	toRaw,
+	provide,
+	ComputedRef,
+	inject,
 } from "vue"
 
 import StringInputVue from "../components/data/inputs/StringInput.vue"
@@ -198,4 +201,16 @@ export function initData() {
 	inputStore.registerViewComponent(Toggle, ToggleViewVue)
 	inputStore.registerViewComponent(Color, ColorViewVue)
 	inputStore.registerViewComponent(Duration, DurationViewVue)
+}
+
+export function provideDataContextSchema(schema: MaybeRefOrGetter<Schema>) {
+	const schemaRef = computed(() => toValue(schema))
+
+	provide("data-context", schemaRef)
+}
+
+export function injectDataContextSchema(): ComputedRef<Schema> {
+	const dummyRef = computed<Schema>(() => markRaw({ type: Object, properties: {} }))
+
+	return inject("data-context", dummyRef)
 }

@@ -448,9 +448,7 @@ export function useActionColors(selection: MaybeRefOrGetter<ActionSelection | un
 	}
 }
 
-export function useState(
-	stateSel: MaybeRefOrGetter<{ plugin: string | undefined; state: string | undefined } | null | undefined>
-) {
+export function useState(stateSel: MaybeRefOrGetter<{ plugin?: string; state?: string } | null | undefined>) {
 	const pluginStore = usePluginStore()
 
 	return computed(() => {

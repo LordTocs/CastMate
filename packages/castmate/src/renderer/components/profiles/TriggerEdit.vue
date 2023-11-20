@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useModel } from "vue"
+import { computed, markRaw, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import { type TriggerData, getActionById } from "castmate-schema"
 import {
@@ -76,6 +76,7 @@ import {
 	usePluginStore,
 	ResourceProxyFactory,
 	stopPropagation,
+	provideDataContextSchema,
 } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
 import AutomationEdit from "../automation/AutomationEdit.vue"
@@ -167,64 +168,6 @@ const selectedTrigger = computed(() => {
 	return props.modelValue
 })
 
-const selectedSchema = computed(() => {
-	if (selection.value.length > 1 || selection.value.length == 0) {
-		return undefined
-	}
-	const id = selection.value[0]
-
-	if (id == "trigger") {
-		return trigger.value?.config
-	} else {
-		let action: AnyAction | ActionStack | undefined = undefined
-
-		action = findActionById(id)
-		if (action) {
-			const actionInfo = pluginStore.getAction(action as AnyAction)
-			return actionInfo?.config
-		}
-		return undefined
-	}
-})
-
-const selectedModel = computed({
-	get() {
-		if (selection.value.length > 1 || selection.value.length == 0) {
-			return undefined
-		}
-		const id = selection.value[0]
-
-		if (id == "trigger") {
-			return modelObj.value.config
-		}
-
-		const action = findActionById(id)
-		if (!action) {
-			return undefined
-		}
-		const actionNotStack = action as AnyAction
-		return actionNotStack.config
-	},
-	set(newConfig: any) {
-		if (selection.value.length > 1 || selection.value.length == 0) {
-			return
-		}
-		const id = selection.value[0]
-
-		if (id == "trigger") {
-			console.log("Setting Trigger", newConfig)
-			modelObj.value.config = newConfig
-		}
-
-		const action = findActionById(id)
-		if (!action) {
-			return undefined
-		}
-		const actionNotStack = action as AnyAction
-		actionNotStack.config = newConfig
-	},
-})
-
 const open = computed<boolean>({
 	get() {
 		return !!view.value.open
@@ -250,6 +193,8 @@ const triggerModel = computed({
 })
 
 const trigger = useTrigger(() => props.modelValue)
+
+provideDataContextSchema(() => trigger.value?.context || markRaw({ type: Object, properties: {} }))
 
 const { triggerColorStyle, triggerColor } = useTriggerColors(() => props.modelValue)
 
