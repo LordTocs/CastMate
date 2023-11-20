@@ -97,7 +97,7 @@ function hide() {
 function toggle(ev: MouseEvent) {
 	if (ev.button != 0) return
 
-	ev.stopPropagation()
+	ev.stopImmediatePropagation()
 
 	if (overlayVisible.value) {
 		hide()
@@ -124,7 +124,6 @@ function toggleTemplate() {
 
 <style scoped>
 .container {
-	display: inline-flex;
 	cursor: pointer;
 	position: relative;
 	user-select: none;
