@@ -202,8 +202,8 @@ export function getElementRelativeRect(elem: HTMLElement, container: HTMLElement
 	})
 }
 
-export function stopPropagation(ev: { stopPropagation(): any }) {
-	ev.stopPropagation()
+export function stopPropagation(ev: { stopImmediatePropagation(): any }) {
+	ev.stopImmediatePropagation()
 }
 
 export function stopEvent(ev: { stopPropagation(): any; preventDefault(): any }) {
