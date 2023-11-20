@@ -13,7 +13,7 @@
     "typescript": "*"
   },
   "dependencies": {
-    "@j3lte/govee-lan-controller": "^1.0.1",
+    "@j3lte/govee-lan-controller": "^1.0.2",
     "castmate-core": "workspace:^",
     "castmate-plugin-govee-shared": "workspace:^",
     "castmate-plugin-iot-main": "workspace:^",

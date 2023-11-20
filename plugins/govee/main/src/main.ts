@@ -31,25 +31,6 @@ interface GoveeBulbConfig extends LightConfig {
 	hasLan: boolean
 }
 
-//Work around bug in govee-lan-controller
-declare module "@j3lte/govee-lan-controller" {
-	enum GoveeDeviceEventTypes {
-		IpChange = "ip_change",
-		StateChange = "state_change",
-		GotUpdate = "got_update",
-	}
-
-	enum GoveeEventTypes {
-		Ready = "ready",
-		Destroy = "destroy",
-		Error = "error",
-		NewDevice = "new_device",
-		UnknownDevice = "unknown_device",
-		Scan = "scan",
-		UnknownMessage = "unknown_message",
-	}
-}
-
 import * as goveeLan from "@j3lte/govee-lan-controller"
 
 class GoveeBulb extends PollingLight<GoveeBulbConfig> {
@@ -102,7 +83,7 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 			}*/
 		})
 
-		this.lanDevice.on("state_change" as goveeLan.GoveeDeviceEventTypes.StateChange, (state) => {})
+		this.lanDevice.on(goveeLan.GoveeDeviceEventTypes.StateChange, (state) => {})
 
 		this.startPolling(30)
 	}
@@ -310,7 +291,7 @@ export default definePlugin(
 				discover: false,
 			})
 
-			lan.on("new_device" as goveeLan.GoveeEventTypes.NewDevice, async (device) => {
+			lan.on(goveeLan.GoveeEventTypes.NewDevice, async (device) => {
 				const existing = LightResource.storage.getById(`govee.${device.id}`) as GoveeBulb | undefined
 				if (existing) {
 					await existing.setLanDevice(device)

@@ -715,13 +715,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@j3lte/govee-lan-controller@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@j3lte/govee-lan-controller@npm:1.0.1"
+"@j3lte/govee-lan-controller@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@j3lte/govee-lan-controller@npm:1.0.2"
   dependencies:
     colord: ^2.9.3
     debug: ^4.3.4
-  checksum: e3641499f4318813b4c4825e1baef0322d1963e5fff7c507df1f7b30eb3025ac3d905361a779a3c068f6bf90a5148aee12557e56da00b2181acc0e6e718f3e07
+  checksum: 2727875a49368279c61c092064a13ff2bc6dd0667aa0fd5d796e6d4e95f5a008958f60fb42e060da2b1c1c52c2405ec40a280d13848e1150bdd9775c5de1cd45
   languageName: node
   linkType: hard
 
@@ -2953,7 +2953,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-govee-main@workspace:plugins/govee/main"
   dependencies:
-    "@j3lte/govee-lan-controller": ^1.0.1
+    "@j3lte/govee-lan-controller": ^1.0.2
     castmate-core: "workspace:^"
     castmate-plugin-govee-shared: "workspace:^"
     castmate-plugin-iot-main: "workspace:^"
