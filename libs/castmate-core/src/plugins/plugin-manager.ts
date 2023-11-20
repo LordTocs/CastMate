@@ -56,6 +56,11 @@ export const PluginManager = Service(
 			return this.pluginState
 		}
 
+		injectState(plugin: Plugin) {
+			if (plugin.id in this.pluginState) return
+			this.pluginState[plugin.id] = plugin.stateContainer
+		}
+
 		async registerPlugin(plugin: Plugin) {
 			this.plugins.set(plugin.id, plugin)
 			console.log("Loading Plugin", plugin.id)
@@ -66,17 +71,13 @@ export const PluginManager = Service(
 					return
 				}
 				rendererRegisterPlugin(plugin.toIPC())
-
-				const stateContainer = reactify({})
-				for (const [key, state] of plugin.state.entries()) {
-					aliasReactiveValue(state.ref, "value", stateContainer, key)
-				}
-				if (Object.keys(stateContainer).length > 0) {
-					this.pluginState[plugin.id] = stateContainer
-				}
 			} catch (err) {
 				console.error("Load REALLY failed for", plugin.id)
 				console.error(err)
+
+				//Remove broken plugins
+				this.plugins.delete(plugin.id)
+				delete this.pluginState[plugin.id]
 			}
 		}
 

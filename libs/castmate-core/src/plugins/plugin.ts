@@ -16,7 +16,15 @@ import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { EventList } from "../util/events"
 import { SemanticVersion } from "../util/type-helpers"
-import { ReactiveEffect, ReactiveRef, reactiveComputed, reactiveRef, runOnChange } from "../reactivity/reactivity"
+import {
+	ReactiveEffect,
+	ReactiveRef,
+	aliasReactiveValue,
+	reactify,
+	reactiveComputed,
+	reactiveRef,
+	runOnChange,
+} from "../reactivity/reactivity"
 import { ensureYAML, loadSecretYAML, loadYAML, pathExists, writeSecretYAML, writeYAML } from "../io/file-system"
 import _debounce from "lodash/debounce"
 import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema, serializeSchema } from "../util/ipc-schema"
@@ -122,9 +130,15 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 	onLoad(async (plugin) => {
 		const initial = await constructDefault(schema)
 		const stateDef = plugin.state.get(id)
-		if (stateDef) {
-			stateDef.ref.value = initial
+
+		if (!stateDef) {
+			console.error("Attempted loading invalid state", id)
+			return
 		}
+
+		stateDef.ref.value = initial
+		aliasReactiveValue(stateDef.ref, "value", plugin.stateContainer, id)
+		PluginManager.getInstance().injectState(plugin)
 
 		runOnChange(
 			() => result.value,
@@ -362,6 +376,7 @@ export class Plugin {
 	private unloader = new EventList<PluginCallback>()
 	private uiloader = new EventList<PluginCallback>()
 	private profilesChanged = new EventList<ProfilesChangedCallback>()
+	stateContainer = reactify<Record<string, any>>({})
 
 	get id() {
 		return this.spec.id
@@ -471,6 +486,7 @@ export class Plugin {
 			}
 
 			this.serializedSettingsData = {} //Toss out our serialized data we don't need it anymore
+			this.serializedSecretData = {}
 
 			this.registerIPC()
 		} catch (err) {
