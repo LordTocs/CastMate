@@ -20,7 +20,9 @@ export function defineCallableIPC<T extends (...args: any[]) => void>(category: 
 			try {
 				window.webContents.send(`${category}_${name}`, ...args)
 			} catch (err) {
-				console.error("Error sending", ...args)
+				console.error(`Error Sending Broadcast ${category}_${name}`)
+				console.error(`Broadcast Args`, ...args)
+				console.error(err)
 			}
 		}
 	}
