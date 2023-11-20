@@ -2,7 +2,7 @@ import { Color, ResolvedSchemaType } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
-import { ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
+import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema, serializeSchema } from "../util/ipc-schema"
 import { IPCTriggerDefinition } from "castmate-schema"
 import { Service } from "../util/service"
 import { ProfileManager } from "../profile/profile-system"
@@ -31,13 +31,17 @@ export interface TriggerDefinition {
 	readonly icon: string
 	readonly color: Color
 	readonly version: string
+	readonly config: Schema
+	readonly context: Schema
 
 	trigger(context: any): Promise<boolean>
 	registerIPC(path: string): any
 	toIPC(path: string): IPCTriggerDefinition
 }
 
-class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema extends Schema> {
+class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema extends Schema>
+	implements TriggerDefinition
+{
 	constructor(private spec: TriggerDefinitionSpec<ConfigSchema, ContextDataSchema>, private _pluginId: string) {}
 
 	get id() {
@@ -68,6 +72,14 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 		return this.spec.version ?? "0.0.0"
 	}
 
+	get config() {
+		return this.spec.config
+	}
+
+	get context() {
+		return this.spec.context
+	}
+
 	async trigger(context: ResolvedSchemaType<ContextDataSchema>) {
 		const activeProfiles = ProfileManager.getInstance().activeProfiles
 		let triggered = false
@@ -76,7 +88,7 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 			for (const trigger of profile.config.triggers) {
 				if (trigger.plugin != this.pluginId || trigger.trigger != this.id) continue
 
-				if (await this.spec.handle(trigger.config, context)) {
+				if (await this.spec.handle(deserializeSchema(this.config, trigger.config), context)) {
 					//If spec.handle returns true then this sequence should run
 					triggered = true
 					if (trigger.queue) {
@@ -91,7 +103,7 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 
 						queue.enqueue(
 							{ type: "profile", id: profile.id, subid: trigger.id },
-							context as Record<string, any>
+							serializeSchema(this.context, context) as Record<string, any>
 						)
 					} else {
 						//This
