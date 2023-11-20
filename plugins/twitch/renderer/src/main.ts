@@ -28,6 +28,7 @@ export async function initPlugin() {
 		type: Object,
 		properties: {
 			name: { type: String, required: true, template: true, name: "Title" },
+			allowEnable: { type: Boolean, required: true, default: true, name: "Enabled" },
 			rewardData: {
 				type: Object,
 				properties: {

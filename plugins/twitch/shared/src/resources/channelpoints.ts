@@ -22,6 +22,7 @@ export interface ChannelPointRewardConfig {
 	twitchId: string | null
 	controllable: boolean
 	transient: boolean
+	allowEnable: boolean
 
 	name: string
 
@@ -30,6 +31,8 @@ export interface ChannelPointRewardConfig {
 
 export interface ChannelPointRewardState {
 	enabled: boolean
+	//Indicates if CastMate wants the channel point reward active
+	shouldEnable: boolean
 
 	image?: string
 	rewardData?: ChannelPointRewardData

@@ -1,9 +1,12 @@
 import {
+	ReactiveEffect,
 	Resource,
 	ResourceStorage,
 	defineResourceSetting,
 	defineTrigger,
 	onLoad,
+	onProfilesChanged,
+	runOnChange,
 	template,
 	templateSchema,
 } from "castmate-core"
@@ -27,6 +30,8 @@ import { getRawData } from "@twurple/common"
 import * as fs from "fs/promises"
 import * as path from "path"
 import { ensureDirectory, loadYAML, resolveProjectPath, writeYAML } from "castmate-core/src/io/file-system"
+import _debounce from "lodash/debounce"
+import { PluginManager } from "castmate-core/src/plugins/plugin-manager"
 
 //Helper interface to work with both EventSubChannelRewardEvent and HelixCustomReward
 interface TwurpleReward {
@@ -124,6 +129,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 
 		this.state = {
 			enabled: false,
+			shouldEnable: false,
 			//cooldownExpiry: null,
 			inStock: true,
 		}
@@ -155,6 +161,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 	async applyConfig(config: Partial<ChannelPointRewardConfig>): Promise<boolean> {
 		await super.applyConfig(config)
 		await this.updateTwitchServers()
+		await this.initializeReactivity()
 		await this.save()
 		return true
 	}
@@ -162,6 +169,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 	async setConfig(config: ChannelPointRewardConfig): Promise<boolean> {
 		await super.setConfig(config)
 		await this.updateTwitchServers()
+		await this.initializeReactivity()
 		await this.save()
 		return true
 	}
@@ -174,14 +182,17 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			controllable: true,
 			transient: false,
 			name: config.name,
+			allowEnable: config.allowEnable,
 			rewardData: config.rewardData,
 		}
 		reward.state = {
 			enabled: false,
+			shouldEnable: false,
 			//cooldownExpiry: null,
 			inStock: true,
 		}
 		await reward.updateTwitchServers()
+		await reward.initializeReactivity()
 		return reward
 	}
 
@@ -245,6 +256,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			controllable: true,
 			transient: false,
 			name: reward.title,
+			allowEnable: true,
 			rewardData: removeTitle(rewardData),
 		}
 		result.state.image = reward.getImageUrl(4)
@@ -269,11 +281,13 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			twitchId: reward.id,
 			controllable: false,
 			transient: false,
+			allowEnable: true,
 			rewardData: removeTitle(rewardData),
 		} as ChannelPointRewardConfig
 
 		result.state = {
 			enabled: reward.isEnabled,
+			shouldEnable: reward.isEnabled,
 			image: reward.getImageUrl(4),
 			rewardData,
 			inStock: reward.isInStock,
@@ -312,7 +326,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 				...this.config.rewardData,
 			},
 			ChannelPointRewardSchema,
-			{}
+			PluginManager.getInstance().state
 		)
 
 		const rewardData: HelixCreateCustomRewardData = {
@@ -320,7 +334,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			cost: resolvedData.cost,
 			prompt: resolvedData.prompt,
 			backgroundColor: resolvedData.backgroundColor,
-			isEnabled: this.state.enabled,
+			isEnabled: this.state.shouldEnable && this.config.allowEnable,
 			userInputRequired: resolvedData.userInputRequired,
 			maxRedemptionsPerStream: resolvedData.maxRedemptionsPerStream,
 			maxRedemptionsPerUserPerStream: resolvedData.maxRedemptionsPerUserPerStream,
@@ -361,6 +375,25 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			)
 			await this.updateFromTwurple(update)
 		}
+	}
+
+	private reactiveEffect: ReactiveEffect<any> | undefined
+	clearReactivity() {
+		if (this.reactiveEffect) {
+			this.reactiveEffect.dispose()
+			this.reactiveEffect = undefined
+		}
+	}
+
+	private updateServerDebounced = _debounce(async () => {
+		//console.log("Debounced Twurple Reward Update")
+		await this.updateTwitchServers()
+	}, 300)
+
+	async initializeReactivity() {
+		//console.log("Initializing Reactivity", this.id)
+		this.clearReactivity()
+		this.reactiveEffect = await runOnChange(async () => await this.getHelixRewardData(), this.updateServerDebounced)
 	}
 
 	private async updateTwitchServers() {
@@ -438,6 +471,7 @@ export function setupChannelPointRewards() {
 			const twitchReward = castMateRewards.find((r) => r.id == reward.config.twitchId)
 
 			await reward.initializeFromTwurple(twitchReward)
+			await reward.initializeReactivity()
 		}
 	}
 
@@ -465,6 +499,7 @@ export function setupChannelPointRewards() {
 			},
 		},
 		async handle(config, context) {
+			//console.log("Redemption Check", config.reward.id, context.reward.id)
 			if (config.reward.id != context.reward.id) {
 				return false
 			}
@@ -522,5 +557,35 @@ export function setupChannelPointRewards() {
 			if (resource) return //HUH?
 			//How do we know if this is from our resource creation or
 		})
+	})
+
+	onProfilesChanged((activeProfiles, inactiveProfiles) => {
+		const activeRewards = new Set<string>()
+
+		for (const profile of activeProfiles) {
+			for (const trigger of profile.config.triggers) {
+				if (trigger.plugin == "twitch" && trigger.trigger == "redemption") {
+					console.log("Redemption Trigger", trigger.config.reward)
+					activeRewards.add(trigger.config.reward)
+				}
+			}
+		}
+
+		console.log("Active Reward Ids", [...activeRewards])
+
+		for (const reward of ChannelPointReward.storage) {
+			if (!reward.config.controllable) continue
+
+			if (activeRewards.has(reward.id)) {
+				//TODO: Make the state system handle this
+				if (!reward.state.shouldEnable) {
+					reward.state.shouldEnable = true
+				}
+			} else {
+				if (reward.state.shouldEnable) {
+					reward.state.shouldEnable = false
+				}
+			}
+		}
 	})
 }
