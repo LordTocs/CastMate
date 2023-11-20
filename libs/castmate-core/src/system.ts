@@ -30,14 +30,8 @@ export async function initializeCastMate() {
 	await ensureDirectory(resolveProjectPath("settings"))
 	await ensureDirectory(resolveProjectPath("secrets"))
 	PluginManager.initialize()
-	ResourceRegistry.initialize()
 	MediaManager.initialize()
-
-	await Profile.initialize()
-	await ActionQueue.initialize()
-	ActionQueueManager.initialize()
-
-	ProfileManager.initialize()
+	ResourceRegistry.initialize()
 
 	//How do we load plugins???
 	//await loadPlugin("twitch")
@@ -48,6 +42,10 @@ const notifyRendererSetupFinished = defineCallableIPC<() => void>("castmate", "s
 
 export async function finializeCastMateSetup() {
 	console.log("Finalizing Init")
+	await Profile.initialize()
+	await ActionQueue.initialize()
+	ActionQueueManager.initialize()
+	ProfileManager.initialize()
 	await ProfileManager.getInstance().finishSetup()
 	console.log("CastMate Init Complete")
 	setupComplete = true
