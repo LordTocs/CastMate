@@ -289,6 +289,11 @@ export default definePlugin(
 
 			lan = new goveeLan.Govee({
 				discover: false,
+				debug: true,
+			})
+
+			lan.on(goveeLan.GoveeEventTypes.Error, (err) => {
+				console.error("Govee Lan Error", err)
 			})
 
 			lan.on(goveeLan.GoveeEventTypes.NewDevice, async (device) => {

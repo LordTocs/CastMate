@@ -35,6 +35,10 @@ export class TwinklyDiscovery {
 
 			this.onDiscover.run(ip, id)
 		})
+
+		this.socket.on("error", (err) => {
+			console.error("Twinkly Discovery Error!", err)
+		})
 	}
 
 	startPolling() {

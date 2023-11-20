@@ -226,6 +226,10 @@ export default definePlugin(
 				await LightResource.storage.inject(resource)
 			})
 
+			lifxClient.on("error", (err) => {
+				console.error("LIFX Error", err)
+			})
+
 			await initClient()
 		}
 
