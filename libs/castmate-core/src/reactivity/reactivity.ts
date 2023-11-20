@@ -121,7 +121,7 @@ export class ReactiveEffect<T = any> {
 		process.nextTick(async () => {
 			try {
 				if (this.scheduler) {
-					this.scheduler()
+					await this.scheduler()
 				} else {
 					await this.run()
 				}
