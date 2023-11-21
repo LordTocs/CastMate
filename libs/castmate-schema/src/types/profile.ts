@@ -7,12 +7,12 @@ export interface AutomationData {
 	floatingSequences: FloatingSequence[]
 }
 
-export interface TriggerData extends AutomationData {
+export interface TriggerData<Config = any> extends AutomationData {
 	id: string
 	plugin?: string
 	trigger?: string
 	queue: string | null
-	config: any
+	config: Config
 }
 
 export interface ProfileConfig {
