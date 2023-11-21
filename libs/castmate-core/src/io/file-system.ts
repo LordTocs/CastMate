@@ -32,6 +32,7 @@ export async function pathExists(...paths: string[]) {
 export async function ensureYAML<T = any>(defaultData: T, ...paths: string[]) {
 	const fullPath = resolveProjectPath(...paths)
 	if (!fsSync.existsSync(fullPath)) {
+		await ensureDirectory(path.dirname(fullPath))
 		const strData = YAML.stringify(defaultData)
 		await fs.writeFile(fullPath, strData, "utf-8")
 	}
