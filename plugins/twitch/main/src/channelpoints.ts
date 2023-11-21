@@ -331,7 +331,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 
 		const rewardData: HelixCreateCustomRewardData = {
 			title: resolvedData.title,
-			cost: resolvedData.cost,
+			cost: resolvedData.cost > 0 ? resolvedData.cost : 1,
 			prompt: resolvedData.prompt,
 			backgroundColor: resolvedData.backgroundColor,
 			isEnabled: this.state.shouldEnable && this.config.allowEnable,
