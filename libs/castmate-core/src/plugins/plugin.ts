@@ -162,6 +162,16 @@ export function defineReactiveState<T extends Schema>(id: string, schema: T, fun
 	})
 
 	onLoad(async (plugin) => {
+		const stateDef = plugin.state.get(id)
+
+		if (!stateDef) {
+			console.error("Attempted loading invalid state", id)
+			return
+		}
+
+		aliasReactiveValue(stateDef.ref, "value", plugin.stateContainer, id)
+		PluginManager.getInstance().injectState(plugin)
+
 		runOnChange(
 			() => result.value,
 			async () => {
