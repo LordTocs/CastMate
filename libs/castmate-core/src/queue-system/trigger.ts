@@ -164,7 +164,10 @@ export function defineTrigger<Config extends Schema, ContextData extends Schema>
 
 	initingPlugin.triggers.set(impl.id, impl)
 
-	return (context: SchemaType<ContextData>) => {
+	const triggerFunc = (context: SchemaType<ContextData>) => {
 		impl.trigger(context)
 	}
+
+	triggerFunc.triggerDef = impl
+	return triggerFunc
 }
