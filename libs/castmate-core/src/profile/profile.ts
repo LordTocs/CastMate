@@ -1,10 +1,11 @@
-import { ProfileState, ProfileConfig, Sequence, TriggerData } from "castmate-schema"
+import { ProfileState, ProfileConfig, Sequence, TriggerData, Schema, SchemaType } from "castmate-schema"
 import { Resource, ResourceStorage } from "../resources/resource"
 import { FileResource } from "../resources/file-resource"
 import { nanoid } from "nanoid/non-secure"
 import { evalueBooleanExpression } from "../util/boolean-helpers"
 import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 import { ProfileManager } from "./profile-system"
+import { TriggerFunc } from "../queue-system/trigger"
 
 export interface SequenceProvider {
 	getSequence(id: string): Sequence | undefined
@@ -100,5 +101,15 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 		}
 
 		return undefined
+	}
+
+	*iterTriggers<Config extends Schema, ContextData extends Schema>(
+		trigger: TriggerFunc<Config, ContextData>
+	): IterableIterator<TriggerData<SchemaType<Config>>> {
+		for (const t of this.config.triggers) {
+			if (t.plugin == trigger.triggerDef.pluginId && t.trigger == trigger.triggerDef.id) {
+				yield t as TriggerData<SchemaType<Config>>
+			}
+		}
 	}
 }

@@ -563,9 +563,9 @@ export function setupChannelPointRewards() {
 		const activeRewards = new Set<string>()
 
 		for (const profile of activeProfiles) {
-			for (const trigger of profile.config.triggers) {
+			for (const trigger of profile.iterTriggers(redemption)) {
 				if (trigger.plugin == "twitch" && trigger.trigger == "redemption") {
-					console.log("Redemption Trigger", trigger.config.reward)
+					//@ts-ignore TODO: Serialized?
 					activeRewards.add(trigger.config.reward)
 				}
 			}

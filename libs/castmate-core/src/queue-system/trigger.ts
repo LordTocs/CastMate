@@ -143,6 +143,11 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 	}
 }
 
+export interface TriggerFunc<Config extends Schema, ContextData extends Schema> {
+	(context: SchemaType<ContextData>): void
+	triggerDef: TriggerImplementation<Config, ContextData>
+}
+
 export function defineTrigger<Config extends Schema, ContextData extends Schema>(
 	spec: TriggerDefinitionSpec<Config, ContextData>
 ) {

@@ -54,25 +54,23 @@ export function setupKeyboard() {
 		const accelerators = new Map<string, KeyCombo[]>()
 
 		for (const profile of activeProfiles) {
-			for (const trigger of profile.config.triggers) {
-				if (trigger.plugin == "input" && trigger.trigger == "keyboardShortcut") {
-					let accelerator = ""
-					for (const key of trigger.config.combo as KeyCombo) {
-						//Assuming they're sorted properly
-						if (accelerator.length > 0) {
-							accelerator += "+"
-						}
-						accelerator += Keys[key].electronAccelerator
-					}
-
+			for (const trigger of profile.iterTriggers(keyboardShortcut)) {
+				let accelerator = ""
+				for (const key of trigger.config.combo) {
+					//Assuming they're sorted properly
 					if (accelerator.length > 0) {
-						//accelerators.add(accelerator)
-						const existing = accelerators.get(accelerator)
-						if (existing) {
-							existing.push(trigger.config.combo as KeyCombo)
-						} else {
-							accelerators.set(accelerator, [trigger.config.combo as KeyCombo])
-						}
+						accelerator += "+"
+					}
+					accelerator += Keys[key].electronAccelerator
+				}
+
+				if (accelerator.length > 0) {
+					//accelerators.add(accelerator)
+					const existing = accelerators.get(accelerator)
+					if (existing) {
+						existing.push(trigger.config.combo as KeyCombo)
+					} else {
+						accelerators.set(accelerator, [trigger.config.combo as KeyCombo])
 					}
 				}
 			}
