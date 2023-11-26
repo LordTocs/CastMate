@@ -10,6 +10,7 @@ import { StateManager } from "../state/state-manager.js"
 import fs from "fs"
 import YAML from "yaml"
 import { callIpcFunc } from "../utils/electronBridge.js"
+import { clampRange, inRange } from "../utils/range.js"
 
 export default {
 	name: "variables",
@@ -230,6 +231,11 @@ export default {
 						template: true,
 						name: "Offset Value",
 					},
+					clampRange: {
+						type: "Range",
+						template: true,
+						name: "Clamp Range",
+					},
 				},
 			},
 			async handler(variableData, context) {
@@ -246,15 +252,27 @@ export default {
 					return
 				}
 
+				const range = variableData.clampRange
+
+				if (range) {
+					range.min = await templateNumber(range.min, context)
+					range.max = await templateNumber(range.max, context)
+				}
+
 				//Add the value
 				const offset = Number(
 					await templateNumber(variableData.offset, context)
 				)
 
 				if (!isNaN(offset)) {
-					this.state[variableData.name] = Number(
+					let newValue = Number(
 						this.state[variableData.name] + offset
 					)
+
+					newValue = clampRange(newValue, range)
+
+					this.state[variableData.name] = newValue
+
 					this.logger.info(
 						`Offseting ${variableData.name} by ${offset}`
 					)
