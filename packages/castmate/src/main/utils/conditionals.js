@@ -1,24 +1,30 @@
+import { PluginManager } from "../pluginCore/plugin-manager"
+import { templateSchema } from "../state/template"
+
 function checkOr(list, data) {
 	if (!list || list.length == 0) {
 		return true
 	}
 
+	let succeed = false
 	for (let subCondition of list) {
 		if (checkConditions(subCondition, data)) {
-			return true
+			succeed = true
 		}
 	}
-	return false
+	return succeed
 }
 
 function checkAnd(list, data) {
 	if (!list || list.length == 0) return true
+
+	let succeed = true
 	for (let subCondition of list) {
 		if (!checkConditions(subCondition, data)) {
-			return false
+			succeed = false
 		}
 	}
-	return true
+	return succeed
 }
 
 function checkValue(value, data) {
@@ -30,7 +36,9 @@ function checkValue(value, data) {
 	}
 	const rhs = value.compare
 
-	//console.log(`Checking ${value.state.plugin}.${value.state.key} (${lhs}) ${value.operator} ${rhs}`);
+	// console.log(
+	// 	`Checking ${value.state.plugin}.${value.state.key} (${lhs}) ${value.operator} ${rhs}`
+	// )
 
 	if (value.operator == "lessThan") {
 		return lhs < rhs
@@ -63,6 +71,62 @@ function checkConditions(conditional, data) {
 
 export function evalConditional(conditional, data) {
 	return checkConditions(conditional, data)
+}
+
+export async function templateConditional(conditional, context) {
+	//console.log("Template Conditional", context)
+	if ("operands" in conditional) {
+		const operands = await Promise.all(
+			conditional.operands.map(
+				async (o) => await templateConditional(o, context)
+			)
+		)
+
+		const result = {
+			operator: conditional.operator,
+			operands,
+		}
+
+		//console.log(result)
+
+		return result
+	} else if ("operator" in conditional) {
+		const rhs = conditional.compare
+
+		const pluginId = conditional.state?.plugin
+		const stateId = conditional.state?.key
+
+		const result = {
+			operator: conditional.operator,
+			state: conditional.state,
+			compare: rhs,
+		}
+
+		if (!pluginId || !stateId) return result
+
+		const plugin = PluginManager.getInstance().getPlugin(pluginId)
+		if (!plugin) {
+			console.error("Missing Plugin", pluginId)
+			return result
+		}
+
+		let stateSchema = undefined
+
+		if (pluginId != "variables") {
+			stateSchema = plugin.stateSchemas[stateId]
+		} else {
+			stateSchema = plugin.pluginObj.variableSpecs[stateId]
+		}
+
+		if (!stateSchema) return result
+
+		stateSchema = { ...stateSchema, template: true }
+
+		result.compare = await templateSchema(rhs, stateSchema, context)
+		//console.log("Template Condition", stateSchema, result)
+
+		return result
+	}
 }
 
 export function manualDependency(obj, watcher, name) {

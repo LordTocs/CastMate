@@ -4,6 +4,10 @@ import logger from "../utils/logger"
 
 const dependencyAsyncStorage = new AsyncLocalStorage()
 
+function debugReactivity(str) {
+	//console.log(str)
+}
+
 class Dependency {
 	constructor() {
 		this.subscribers = []
@@ -26,39 +30,58 @@ class Dependency {
 		}
 	}
 
-	notify() {
+	notify(debugKey) {
 		for (let subscriber of this.subscribers) {
-			subscriber.update()
+			subscriber.update(debugKey)
 		}
 	}
 
-	depend() {
+	depend(debugKey) {
 		//Pull the watcher out of the sync store.
 		const watcher = dependencyAsyncStorage.getStore()
 		if (watcher) {
+			debugReactivity(`${watcher.debugName} depend on ${debugKey}`)
 			this.addSubscriber(watcher)
 		}
 	}
 }
 
 export class Watcher {
-	constructor(func) {
+	constructor(func, debugName) {
+		this.debugName = debugName
 		this.func = func
 		this.dependencies = []
 	}
 
-	static async watchAsync(func) {
-		const watcher = new Watcher(func)
+	static async watchAsync(func, debugName) {
+		const watcher = new Watcher(func, debugName)
 
 		await dependencyAsyncStorage.run(watcher, async () => {
+			debugReactivity("Watching", watcher.debugName)
 			await func()
+			debugReactivity("Finish Watching", watcher.debugName)
 		})
 
 		return watcher
 	}
 
-	update() {
-		this.func()
+	static async watchAsyncWithScheduler(scheduler, func, debugName) {
+		const watcher = new Watcher(func, debugName)
+
+		await dependencyAsyncStorage.run(watcher, async () => {
+			debugReactivity("Watching", watcher.debugName)
+			await scheduler()
+			debugReactivity("Finish Watching", watcher.debugName)
+		})
+
+		return watcher
+	}
+
+	async update(debugInciter) {
+		debugReactivity(
+			`Updating ${this.debugName ?? "Watcher"}! (${debugInciter})`
+		)
+		await this.func()
 	}
 
 	unsubscribe() {
@@ -87,13 +110,13 @@ export function createReactiveProperty(obj, key) {
 
 	Object.defineProperty(obj, key, {
 		get() {
-			observable.dependency.depend()
+			observable.dependency.depend(key)
 			return observable.internalValue
 		},
 		set(value) {
 			if (observable.internalValue !== value) {
 				observable.internalValue = value
-				observable.dependency.notify()
+				observable.dependency.notify(key)
 			}
 		},
 		configurable: true,
@@ -142,13 +165,13 @@ export function reactiveCopyProp(target, obj, key) {
 	Object.defineProperty(target, key, {
 		enumerable: true,
 		get: () => {
-			target.__reactivity__[key].dependency.depend()
+			target.__reactivity__[key].dependency.depend(key)
 			return target.__reactivity__[key].internalValue
 		},
 		set: (value) => {
 			if (target.__reactivity__[key].internalValue !== value) {
 				target.__reactivity__[key].internalValue = value
-				target.__reactivity__[key].dependency.notify()
+				target.__reactivity__[key].dependency.notify(key)
 			}
 		},
 		configurable: true,
@@ -178,7 +201,7 @@ export function onStateChange(obj, name, func, options = { immediate: false }) {
 	obj.__reactivity__[name].dependency.addSubscriber(watcher)
 
 	if (options.immediate) {
-		watcher.update()
+		watcher.update(name)
 	}
 
 	return watcher

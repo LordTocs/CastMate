@@ -46,7 +46,7 @@ export class Overlay extends FileResource {
 				this.id,
 				config
 			)
-		})
+		}, "Overlay Updater")
 	}
 
 	async setConfig(config) {

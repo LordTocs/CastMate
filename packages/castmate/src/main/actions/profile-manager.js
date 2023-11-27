@@ -198,21 +198,24 @@ export class ProfileManager {
 	}
 
 	//Force all profiles to re-calculate their dependencies on reactive state.
-	redoDependencies() {
+	async redoDependencies() {
 		for (let profile of this.profiles) {
 			if (!profile.watcher) continue //Watcher hasn't been created so we don't have to do anything.
 
 			profile.watcher.unsubscribe()
 
 			//create a new watcher
-			profile.watcher = new Watcher(() => this.recombine())
-			this.recombine()
+			profile.watcher = await Watcher.watchAsyncWithScheduler(
+				async () => await this.recombine(),
+				() => this.markForRecombine(),
+				"Recombiner"
+			)
 
-			dependOnAllConditions(
+			/*dependOnAllConditions(
 				profile.conditions,
 				StateManager.getInstance().rootState,
 				profile.watcher
-			)
+			)*/
 		}
 	}
 
@@ -232,15 +235,15 @@ export class ProfileManager {
 			// Deactivate the old watcher if it exists.
 			profile.watcher.unsubscribe()
 		}
-		profile.watcher = new Watcher(() => this.markForRecombine())
-		dependOnAllConditions(
-			profile.conditions,
-			StateManager.getInstance().rootState,
-			profile.watcher
-		)
 
-		// Recombine active profiles
-		this.recombine()
+		// // Recombine active profiles
+		profile.watcher = await Watcher.watchAsyncWithScheduler(
+			async () => {
+				return await this.recombine()
+			},
+			() => this.markForRecombine(),
+			"Recombiner"
+		)
 	}
 
 	markForRecombine() {
@@ -253,17 +256,38 @@ export class ProfileManager {
 		}, 100)
 	}
 
-	//Recalculate which profiles are active.
-	recombine() {
-		if (this.isLoading) {
-			//Don't recombine during initial load this causes async issues!
-			return
+	async calculateActiveProfiles() {
+		const activityList = await Promise.all(
+			this.profiles.map(async (p) => await p.shouldBeActive())
+		)
+
+		const activeProfiles = []
+		const inactiveProfiles = []
+
+		for (let i = 0; i < this.profiles.length; ++i) {
+			const profile = this.profiles[i]
+			const active = activityList[i]
+
+			if (active) {
+				activeProfiles.push(profile)
+			} else {
+				inactiveProfiles.push(profile)
+			}
 		}
 
-		let [activeProfiles, inactiveProfiles] = _.partition(
-			this.profiles,
-			(profile) => profile.shouldBeActive()
-		)
+		return [activeProfiles, inactiveProfiles]
+	}
+
+	//Recalculate which profiles are active.
+	async recombine() {
+		const [activeProfiles, inactiveProfiles] =
+			await this.calculateActiveProfiles()
+
+		if (this.isLoading) {
+			//Don't recombine during initial load this causes async issues!
+			//console.log("No Recombine during load")
+			return
+		}
 
 		logger.info(
 			`Combining Profiles: ${activeProfiles

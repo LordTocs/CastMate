@@ -40,7 +40,7 @@ class RemoteTemplateEvaluator {
 				this.id,
 				this.templatedData
 			)
-		})
+		}, "RemoteTemplate")
 	}
 
 	release() {

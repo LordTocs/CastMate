@@ -4,7 +4,7 @@ import path from "path"
 import logger from "../utils/logger.js"
 import { migrateProfile } from "../migration/migrate.js"
 import { nanoid } from "nanoid/non-secure"
-import { evalConditional } from "../utils/conditionals.js"
+import { evalConditional, templateConditional } from "../utils/conditionals.js"
 import { StateManager } from "../state/state-manager.js"
 function ensureIDs(config) {
 	for (let pluginKey in config.triggers) {
@@ -43,11 +43,17 @@ export class Profile {
 		await this.saveConfig({ ...this.config, activationMode: mode })
 	}
 
-	shouldBeActive() {
+	async shouldBeActive() {
 		if (this.activationMode === false) return false
 		if (this.activationMode === true) return true
-		return evalConditional(
+
+		const templateConditions = await templateConditional(
 			this.conditions,
+			StateManager.getInstance().rootState
+		)
+
+		return evalConditional(
+			templateConditions,
 			StateManager.getInstance().rootState
 		)
 	}

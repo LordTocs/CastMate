@@ -98,7 +98,10 @@ export default {
 				)
 			if (!schema)
 				schema = _cloneDeep(this.variables[this.modelValue.state.key])
-			if (schema) schema.required = true
+			if (schema) {
+				schema.required = true
+				schema.template = true
+			}
 
 			return schema
 		},
