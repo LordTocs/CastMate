@@ -2385,6 +2385,89 @@ export default {
 				)
 			},
 		},
+		timeout: {
+			name: "Timeout Viewer",
+			description: "Times a viewer out",
+			color: "#5E5172",
+			icon: "mdi-timer-remove-outline",
+			data: {
+				type: Object,
+				properties: {
+					user: { type: String, name: "Twitch Name", template: true },
+					duration: {
+						type: Number,
+						unit: { name: "Seconds", short: "s" },
+						name: "Duration",
+						template: true,
+					},
+					reason: {
+						type: String,
+						name: "Reason",
+						template: true,
+					},
+				},
+			},
+			async handler(data, context) {
+				/**
+				 * @type {ApiClient}
+				 */
+				const apiClient = this.channelTwitchClient
+
+				const userName = await template(data.user, context)
+				const user = await apiClient.users.getUserByName(userName)
+
+				const duration = await templateNumber(data.duration, context)
+				const reason = await template(data.reason, context)
+
+				await apiClient.moderation.banUser(
+					this.state.channelId,
+					this.state.channelId,
+					{
+						user,
+						duration: duration ?? 15,
+						reason,
+					}
+				)
+			},
+		},
+		ban: {
+			name: "Ban Viewer",
+			description: "Bans a Viewer",
+			color: "#5E5172",
+			icon: "mdi-cancel",
+			data: {
+				type: Object,
+				properties: {
+					user: { type: String, name: "Twitch Name", template: true },
+					reason: {
+						type: String,
+						name: "Reason",
+						template: true,
+					},
+				},
+			},
+			async handler(data, context) {
+				/**
+				 * @type {ApiClient}
+				 */
+				const apiClient = this.channelTwitchClient
+
+				const userName = await template(data.user, context)
+				const user = await apiClient.users.getUserByName(userName)
+
+				const duration = await templateNumber(data.duration, context)
+				const reason = await template(data.reason, context)
+
+				await apiClient.moderation.banUser(
+					this.state.channelId,
+					this.state.channelId,
+					{
+						user,
+						reason,
+					}
+				)
+			},
+		},
 	},
 	templateFunctions: {
 		async followAge(userId) {

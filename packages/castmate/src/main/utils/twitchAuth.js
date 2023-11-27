@@ -31,6 +31,8 @@ const defaultScopes = [
 	"moderator:read:followers", //Follower eventsub
 	"moderator:manage:shoutouts", //create / react to shoutouts
 
+	"moderator:manage:banned_users",
+
 	"clips:edit", //Create clips
 
 	"user:read:email",
@@ -89,7 +91,7 @@ export class ElectronAuthManager {
 
 		if (await this._checkToken(token)) {
 			logger.info(`Valid Cached ${this.name} Token`)
-		 	return
+			return
 		}
 
 		logger.info(`No Cached ${this.name} Token. Trying Silent Auth`)
@@ -112,7 +114,6 @@ export class ElectronAuthManager {
 			}
 		}
 
-		
 		this._accessToken = token
 		this._userId = tokenInfo.user_id
 		//TODO: Fail the token early incase the cookies in the browser expire at the same time.
@@ -316,7 +317,7 @@ export class ElectronAuthManager {
 				}
 			)
 
-			window.on('closed', () => {
+			window.on("closed", () => {
 				if (!done) {
 					reject(new Error("Window Closed"))
 				}
