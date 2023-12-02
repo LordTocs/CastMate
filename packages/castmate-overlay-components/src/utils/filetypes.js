@@ -11,4 +11,4 @@ export const ImageFormats = [
 	".tiff",
 ]
 export const VideoFormats = [".mp4", ".webm", ".ogg"]
-export const SoundFormats = [".mp3", ".wav", ".ogg"]
+export const SoundFormats = [".mp3", ".wav", ".ogg", ".m4a", ".mp4"]
