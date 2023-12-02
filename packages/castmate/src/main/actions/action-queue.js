@@ -309,7 +309,9 @@ export class ActionQueue {
 				frontAutomation.context
 			)
 			this.syncAutomationPromise = frontPromise
-			this.syncAutomationPromise.then(() => this._runNext())
+			this.syncAutomationPromise.then(() =>
+				setTimeout(() => this._runNext(), 30)
+			)
 			release()
 		} else {
 			this.syncAutomationPromise = null
@@ -329,7 +331,9 @@ export class ActionQueue {
 			frontAutomation.context
 		)
 		this.syncAutomationPromise = frontPromise
-		this.syncAutomationPromise.then(() => this._runNext())
+		this.syncAutomationPromise.then(() =>
+			setTimeout(() => this._runNext(), 30)
+		)
 		release()
 	}
 }
