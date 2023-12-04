@@ -5,6 +5,7 @@ export * from "./data/range"
 export * from "./data/media"
 export * from "./data/duration"
 export * from "./data/boolean-expression"
+export * from "./data/dynamic-type"
 
 export * from "./ipc/action"
 export * from "./ipc/trigger"

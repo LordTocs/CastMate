@@ -21,6 +21,10 @@ export interface Defaultable<T> {
 	default?: T | (() => MaybePromise<T>)
 }
 
+export interface DynamicTypable {
+	dynamicType(context: any): Promise<Schema>
+}
+
 export interface SchemaBase<T = any> extends Defaultable<T> {
 	name?: string
 	required?: boolean
@@ -253,10 +257,12 @@ type DataConstructor<T = any> = { new (...args: any): T }
 export type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor<T>
 export interface DataTypeMetaData<T = any> {
 	constructor: DataConstructorOrFactory<T>
+	canBeVariable?: boolean
 }
 
 interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
 	name: string
+	canBeVariable: boolean
 }
 
 const dataNameLookup: Map<string, FullDataTypeMetaData> = new Map()
@@ -264,7 +270,7 @@ const dataConstructorLookup: Map<DataConstructorOrFactory, FullDataTypeMetaData>
 
 export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
 	console.log("Registering Type", name)
-	const fullMetaData = { ...metaData, name }
+	const fullMetaData = { canBeVariable: true, ...metaData, name }
 	dataNameLookup.set(name, fullMetaData)
 	dataConstructorLookup.set(metaData.constructor, fullMetaData)
 }
@@ -295,11 +301,13 @@ type Modify<T, R> = Omit<T, keyof R> & R
 
 export type IPCEnumable<T> = { enum?: Array<T> | { ipc: string } }
 export type IPCDefaultable<T> = { default?: T | { ipc: string } }
+export type IPCDynamicTypable = { dynamicType?: { ipc: string } }
 
 type IPCHandleEnumable<T> = T extends Enumable<infer V> ? Modify<T, { enum?: { ipc: string } | Array<V> }> : T
 type IPCHandleDefault<T> = T extends Defaultable<infer V> ? Modify<T, { default?: { ipc: string } | V }> : T
+type IPCHandleDynamic<T> = T extends DynamicTypable ? Modify<T, { dynamicType?: { ipc: string } }> : T
 
-export type IPCify<T extends Schema, Mods> = IPCHandleDefault<IPCHandleEnumable<Modify<T, Mods>>>
+export type IPCify<T extends Schema, Mods> = IPCHandleDynamic<IPCHandleDefault<IPCHandleEnumable<Modify<T, Mods>>>>
 
 export type IPCSchemaTypes = IPCify<
 	SchemaTypes,

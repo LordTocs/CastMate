@@ -11,6 +11,8 @@ import {
 	EnumItem,
 	IPCEnumable,
 	IPCDefaultable,
+	IPCDynamicTypable,
+	DynamicType,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -40,6 +42,7 @@ import ToggleInputVue from "../components/data/inputs/ToggleInput.vue"
 import BooleanInputVue from "../components/data/inputs/BooleanInput.vue"
 import ColorInputVue from "../components/data/inputs/ColorInput.vue"
 import DurationInputVue from "../components/data/inputs/DurationInput.vue"
+import DynamicTypeInputVue from "../components/data/inputs/DynamicTypeInput.vue"
 
 import GenericDataViewVue from "../components/data/views/GenericDataView.vue"
 import BooleanViewVue from "../components/data/views/BooleanView.vue"
@@ -78,6 +81,25 @@ export function ipcParseSchemaEnum<T>(ipcSchema: IPCEnumable<T>) {
 					return await ipcRenderer.invoke(ipcPath, toRaw(context))
 				} catch (err) {
 					console.error("Error Invoking Enum", ipcPath)
+					console.error(err)
+					return []
+				}
+			}),
+		}
+	}
+}
+
+export function ipcParseSchemaDynamic<T>(ipcSchema: IPCDynamicTypable) {
+	if (!ipcSchema.dynamicType) return {}
+	if ("ipc" in ipcSchema.dynamicType) {
+		const ipcPath = ipcSchema.dynamicType.ipc
+		return {
+			dynamicType: markRaw(async (context: any) => {
+				try {
+					const result = (await ipcRenderer.invoke(ipcPath, toRaw(context))) as IPCSchema
+					return ipcParseSchema(result)
+				} catch (err) {
+					console.error("Error Invoking Dynamic Type", ipcPath)
 					console.error(err)
 					return []
 				}
@@ -139,7 +161,13 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 		}
 
 		//@ts-ignore
-		return { ...ipcSchema, ...ipcParseSchemaDefault(ipcSchema), ...ipcParseSchemaEnum(ipcSchema), type }
+		return {
+			...ipcSchema,
+			...ipcParseSchemaDefault(ipcSchema),
+			...ipcParseSchemaEnum(ipcSchema as IPCEnumable<any>),
+			...ipcParseSchemaDynamic(ipcSchema as IPCDynamicTypable),
+			type,
+		}
 	}
 }
 
@@ -191,6 +219,7 @@ export function initData() {
 	inputStore.registerInputComponent(Boolean, BooleanInputVue)
 	inputStore.registerInputComponent(Color, ColorInputVue)
 	inputStore.registerInputComponent(Duration, DurationInputVue)
+	inputStore.registerInputComponent(DynamicType, DynamicTypeInputVue)
 
 	inputStore.registerViewComponent(String, GenericDataViewVue)
 	inputStore.registerViewComponent(Number, GenericDataViewVue)

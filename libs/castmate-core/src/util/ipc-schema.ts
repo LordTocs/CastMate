@@ -24,6 +24,15 @@ function convertIPCEnum(schema: Enumable<any>, path: string) {
 		return {}
 	}
 }
+export interface PossiblyDynamic {
+	dynamicType?(context: any): Promise<Schema>
+}
+
+function convertIPCDynamic(schema: PossiblyDynamic, path: string) {
+	if (schema.dynamicType) {
+		return { dynamicType: { ipc: `${path}_dynamicType` } }
+	}
+}
 
 function registerIPCEnum(schema: Enumable<any>, path: string, topLevelSchema: Schema) {
 	if (!schema.enum) return
@@ -36,6 +45,24 @@ function registerIPCEnum(schema: Enumable<any>, path: string, topLevelSchema: Sc
 			return (await enumFunc(parsedContext)).map((r) => serializeSchema(schema as Schema, r))
 		} catch (err) {
 			console.log("Error Invoking Enum IPC", path)
+			console.error(err)
+			return []
+		}
+	})
+}
+
+function registerIPCDynamic(schema: PossiblyDynamic, path: string, topLevelSchema: Schema) {
+	if (!schema.dynamicType) return
+	if (!isFunction(schema.dynamicType)) return
+	//console.log("Registering Schema IPC", `${path}_enum`)
+	const schemaFunc = schema.dynamicType
+	ipcMain.handle(`${path}_dynamicType`, async (event, context) => {
+		try {
+			const parsedContext = deserializeSchema(topLevelSchema, context)
+			const schema = await schemaFunc(parsedContext)
+			return ipcConvertSchema(schema, `${path}_dynamicTypeResult`)
+		} catch (err) {
+			console.log("Error Invoking DynamicType IPC", path)
 			console.error(err)
 			return []
 		}
@@ -87,6 +114,7 @@ export function ipcRegisterSchema<T extends Schema>(schema: T, path: string, top
 		}
 		registerIPCEnum(schema as Enumable<any>, path, topLevelSchema ?? schema)
 		registerIPCDefault(schema, path)
+		registerIPCDynamic(schema as PossiblyDynamic, path, topLevelSchema ?? schema)
 	}
 }
 
@@ -125,6 +153,7 @@ export function ipcConvertSchema<T extends Schema>(schema: T, path: string): IPC
 			...schema,
 			...convertIPCDefault(schema, path),
 			...convertIPCEnum(schema as Enumable<any>, path),
+			...convertIPCDynamic(schema as PossiblyDynamic, path),
 			type: typeName,
 		}
 	}
