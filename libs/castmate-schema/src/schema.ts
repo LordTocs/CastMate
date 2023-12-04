@@ -279,6 +279,10 @@ registerType("Boolean", {
 	constructor: Boolean,
 })
 
+export function getAllTypes() {
+	return [...dataNameLookup.values()]
+}
+
 export function getTypeByName<T = any>(name: string) {
 	return dataNameLookup.get(name) as FullDataTypeMetaData<T> | undefined
 }
