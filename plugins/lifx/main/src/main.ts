@@ -81,7 +81,7 @@ class LIFXLight extends PollingLight {
 			//@ts-ignore .d.ts is wrong
 			providerId: this.lifxLight.id,
 			rgb: {
-				available: hardware.productFeatures.color,
+				available: hardware.productFeatures?.color ?? true,
 			},
 			kelvin: {
 				available: true,
