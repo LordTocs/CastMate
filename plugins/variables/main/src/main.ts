@@ -24,7 +24,7 @@ import {
 	runOnChange,
 } from "castmate-core"
 
-import { Schema, constructDefault, getTypeByConstructor, getTypeByName } from "castmate-schema"
+import { DynamicType, Schema, constructDefault, getTypeByConstructor, getTypeByName } from "castmate-schema"
 
 import { IPCVariableDefinition, isValidJSName } from "castmate-plugin-variables-shared"
 import _debounce from "lodash/debounce"
@@ -62,6 +62,7 @@ const variablesPlugin = definePlugin(
 		id: "variables",
 		name: "Variables",
 		icon: "mdi mdi-variable",
+		color: "#D3934A",
 	},
 	() => {
 		const variables = new Map<string, VariableDefinition>()
@@ -265,6 +266,96 @@ const variablesPlugin = definePlugin(
 			await setVariableRenderer(toIpcVariableDefinition(def))
 
 			debouncedSerialize()
+		})
+
+		defineAction({
+			id: "set",
+			name: "Set Variable",
+			icon: "mdi mdi-variable",
+			config: {
+				type: Object,
+				properties: {
+					variable: {
+						type: String,
+						name: "Variable",
+						required: true,
+						async enum() {
+							return [...variables.keys()]
+						},
+					},
+					value: {
+						type: DynamicType,
+						async dynamicType(context: { variable: string }) {
+							const variable = variables.get(context.variable)
+
+							if (!variable) {
+								return {
+									type: String,
+									name: "Value",
+									required: true,
+								}
+							}
+
+							return {
+								...variable.schema,
+								name: "Value",
+							}
+						},
+					},
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				const variable = variables.get(config.variable)
+
+				if (!variable) return //TODO: Log
+
+				variable.ref.value = config.value
+			},
+		})
+
+		defineAction({
+			id: "inc",
+			name: "Offset Variable",
+			icon: "mdi mdi-variable",
+			config: {
+				type: Object,
+				properties: {
+					variable: {
+						type: String,
+						name: "Variable",
+						required: true,
+						async enum() {
+							return [...variables.values()].filter((v) => v.schema.type == Number).map((v) => v.id)
+						},
+					},
+					offset: {
+						type: DynamicType,
+						async dynamicType(context: { variable: string }) {
+							const variable = variables.get(context.variable)
+
+							if (!variable) {
+								return {
+									type: String,
+									name: "Value",
+									required: true,
+								}
+							}
+
+							return {
+								...variable.schema,
+								name: "Value",
+							}
+						},
+					},
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				const variable = variables.get(config.variable)
+
+				if (!variable) return //TODO: Log
+
+				variable.ref.value += config.offset
+			},
 		})
 	}
 )
