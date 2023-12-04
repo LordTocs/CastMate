@@ -114,6 +114,7 @@ interface PluginPrivates {
 interface StateDefinition<StateSchema extends Schema = any> {
 	schema: StateSchema
 	ref: ReactiveRef<ResolvedSchemaType<StateSchema>>
+	updateEffect?: ReactiveEffect
 }
 
 export function defineState<T extends Schema>(id: string, schema: T) {
@@ -140,7 +141,7 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 		aliasReactiveValue(stateDef.ref, "value", plugin.stateContainer, id)
 		PluginManager.getInstance().injectState(plugin)
 
-		runOnChange(
+		stateDef.updateEffect = await runOnChange(
 			() => result.value,
 			async () => {
 				rendererUpdateState(plugin.id, id, serializeSchema(schema, result.value))
@@ -172,7 +173,7 @@ export function defineReactiveState<T extends Schema>(id: string, schema: T, fun
 		aliasReactiveValue(stateDef.ref, "value", plugin.stateContainer, id)
 		PluginManager.getInstance().injectState(plugin)
 
-		runOnChange(
+		stateDef.updateEffect = await runOnChange(
 			() => result.value,
 			async () => {
 				rendererUpdateState(plugin.id, id, serializeSchema(schema, result.value))
@@ -258,6 +259,15 @@ const rendererUpdateSettings = defineCallableIPC<(pluginId: string, settingId: s
 const rendererUpdateState = defineCallableIPC<(pluginId: string, stateId: string, value: any) => any>(
 	"plugins",
 	"updateState"
+)
+
+const rendererSetStateDef = defineCallableIPC<(pluginId: string, stateId: string, stateDef: IPCStateDefinition) => any>(
+	"plugins",
+	"setStateDef"
+)
+const rendererDeleteStateDef = defineCallableIPC<(pluginId: string, stateId: string) => any>(
+	"plugins",
+	"deleteStateDef"
 )
 
 export function defineSetting<T extends Schema>(id: string, schema: T) {
@@ -556,5 +566,39 @@ export class Plugin {
 			state: mapRecord(this.state, (k, v) => toIPCState(v, `${this.id}_state_${k}`)),
 		}
 		return result
+	}
+
+	async dynamicAddState(id: string, schema: Schema, ref: ReactiveRef<any>) {
+		const stateDef: StateDefinition = {
+			schema,
+			ref,
+		}
+		this.state.set(id, stateDef)
+		aliasReactiveValue(ref, "value", this.stateContainer, id)
+		PluginManager.getInstance().injectState(this)
+
+		stateDef.updateEffect = await runOnChange(
+			() => stateDef.ref.value,
+			async () => {
+				rendererUpdateState(this.id, id, serializeSchema(schema, stateDef.ref.value))
+			}
+		)
+
+		//Notify UI
+		rendererSetStateDef(this.id, id, toIPCState(stateDef, `${this.id}_state_${id}`))
+	}
+
+	async dynamicRemoveState(id: string) {
+		const stateDef = this.state.get(id)
+		if (!stateDef) return
+
+		stateDef.updateEffect?.dispose()
+
+		this.state.delete(id)
+
+		delete this.stateContainer[id]
+
+		//Notify UI
+		rendererDeleteStateDef(this.id, id)
 	}
 }

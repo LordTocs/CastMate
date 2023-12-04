@@ -238,6 +238,24 @@ export const usePluginStore = defineStore("plugins", () => {
 			}
 		})
 
+		handleIpcMessage(
+			"plugins",
+			"setStateDef",
+			(event, pluginId: string, stateId: string, stateDef: IPCStateDefinition) => {
+				const plugin = pluginMap.value.get(pluginId)
+				if (plugin) {
+					plugin.state[stateId] = ipcParseStateDefinition(stateDef)
+				}
+			}
+		)
+
+		handleIpcMessage("plugins", "deleteStateDef", (event, pluginId: string, stateId: string) => {
+			const plugin = pluginMap.value.get(pluginId)
+			if (plugin) {
+				delete plugin.state[stateId]
+			}
+		})
+
 		const ids = await getPluginIds()
 		console.log("Received Plugin Ids", ids)
 
@@ -448,7 +466,7 @@ export function useActionColors(selection: MaybeRefOrGetter<ActionSelection | un
 	}
 }
 
-export function useState(stateSel: MaybeRefOrGetter<{ plugin?: string; state?: string } | null | undefined>) {
+export function useState<T = any>(stateSel: MaybeRefOrGetter<{ plugin?: string; state?: string } | null | undefined>) {
 	const pluginStore = usePluginStore()
 
 	return computed(() => {
