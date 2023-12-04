@@ -8,6 +8,8 @@ export { default as ToggleSwitch } from "./components/data/base-components/Toggl
 export { default as DocumentDataCollection } from "./components/drag/DocumentDataCollection.vue"
 export { default as DraggableCollection } from "./components/drag/DraggableCollection.vue"
 
+export { default as ScrollingTabBody } from "./components/docking/ScrollingTabBody.vue"
+
 export { default as TriggerSelector } from "./components/util/TriggerSelector.vue"
 export { default as TextHider } from "./components/util/TextHider.vue"
 export { default as FilterPalette } from "./components/util/FilterPalette.vue"
