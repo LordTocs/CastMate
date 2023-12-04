@@ -1,4 +1,5 @@
 export * from "./plugins/plugin"
+export * from "./plugins/plugin-manager"
 export * from "./profile/profile"
 export * from "./media/media-manager"
 export * from "./queue-system/action"
@@ -15,6 +16,9 @@ export * from "./util/abort-utils"
 export * from "./util/retry-timer"
 export * from "./util/async-cache"
 export * from "./util/events"
+export * from "./util/ipc-schema"
+export * from "./io/file-system"
+
 export * from "./templates/template"
 
 export * from "./reactivity/reactivity"

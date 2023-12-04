@@ -33,6 +33,7 @@ import { initData } from "castmate-ui-core"
 import { createRouter, createWebHistory } from "vue-router"
 
 import { initPlugin as initSoundPlugin, sendAudioDevices } from "castmate-plugin-sound-renderer"
+import { initPlugin as initVariablesPlugin } from "castmate-plugin-variables-renderer"
 import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
 import { initPlugin as initObsPlugin } from "castmate-plugin-obs-renderer"
 import { initPlugin as initDiscordPlugin } from "castmate-plugin-discord-renderer"
@@ -89,7 +90,7 @@ async function init() {
 
 	await useDashboardStore().initialize()
 
-	initializeProfiles(app)
+	await initializeProfiles(app)
 
 	const documentStore = useDocumentStore()
 	documentStore.registerDocumentComponent("profile", ProfileEditorVue)
@@ -97,23 +98,27 @@ async function init() {
 
 	initializeQueues()
 
-	useMediaStore().initialize()
+	await initData()
+
+	await initVariablesPlugin()
+	await initTwitchPlugin()
 
 	//TODO: This init function is bonkers, we should formalize initing these plugins after their main process side gets inited.
-	initData()
-	initSoundPlugin()
-	initTwitchPlugin()
-	initObsPlugin()
-	initDiscordPlugin()
-	initInputPlugin()
-	initIoTPlugin()
-	initMinecraftPlugin()
-	initTwinklyPlugin()
-	initHuePlugin()
-	initWyzePlugin()
-	initLifxPlugin()
-	initGoveePlugin()
-	initKasaPlugin()
+
+	await initSoundPlugin()
+	await initObsPlugin()
+	await initDiscordPlugin()
+	await initInputPlugin()
+	await initIoTPlugin()
+	await initMinecraftPlugin()
+	await initTwinklyPlugin()
+	await initHuePlugin()
+	await initWyzePlugin()
+	await initLifxPlugin()
+	await initGoveePlugin()
+	await initKasaPlugin()
+
+	await useMediaStore().initialize()
 }
 
 init()

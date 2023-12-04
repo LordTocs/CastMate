@@ -11,6 +11,8 @@ import timePlugin from "castmate-plugin-time-main"
 import twitchPlugin from "castmate-plugin-twitch-main"
 import voicemodPlugin from "castmate-plugin-voicemod-main"
 
+import variablesPlugin from "castmate-plugin-variables-main"
+
 import kasaPlugin from "castmate-plugin-tplink-kasa-main"
 import huePlugin from "castmate-plugin-philips-hue-main"
 import elgatoPlugin from "castmate-plugin-elgato-main"
@@ -25,6 +27,7 @@ export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
 	const promises = [
 		pluginManager.registerPlugin(castmatePlugin),
+		pluginManager.registerPlugin(variablesPlugin),
 		pluginManager.registerPlugin(timePlugin),
 		pluginManager.registerPlugin(twitchPlugin),
 		pluginManager.registerPlugin(discordPlugin),

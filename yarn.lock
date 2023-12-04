@@ -3591,6 +3591,53 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-variables-main@workspace:^, castmate-plugin-variables-main@workspace:plugins/variables/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-variables-main@workspace:plugins/variables/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-variables-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-variables-renderer@workspace:^, castmate-plugin-variables-renderer@workspace:plugins/variables/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-variables-renderer@workspace:plugins/variables/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-variables-shared@workspace:^, castmate-plugin-variables-shared@workspace:plugins/variables/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-variables-shared@workspace:plugins/variables/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-variables@workspace:plugins/variables":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-variables@workspace:plugins/variables"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-voicemod-main@workspace:^, castmate-plugin-voicemod-main@workspace:plugins/voicemod/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-voicemod-main@workspace:plugins/voicemod/main"
@@ -3758,6 +3805,8 @@ __metadata:
     castmate-plugin-twinkly-renderer: "workspace:^"
     castmate-plugin-twitch-main: "workspace:^"
     castmate-plugin-twitch-renderer: "workspace:^"
+    castmate-plugin-variables-main: "workspace:^"
+    castmate-plugin-variables-renderer: "workspace:^"
     castmate-plugin-voicemod-main: "workspace:^"
     castmate-plugin-voicemod-renderer: "workspace:^"
     castmate-plugin-wyze-main: "workspace:^"
