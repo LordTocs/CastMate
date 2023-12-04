@@ -8,7 +8,7 @@
 			</h3>
 			<p v-if="actionInfo.description">{{ actionInfo.description }}</p>
 		</div>
-		<data-input v-model="model.config" :schema="actionInfo.config" />
+		<data-input v-model="model.config" :schema="actionInfo.config" :context="model.config" />
 		<template v-if="isFlowAction(model) && actionInfo.type == 'flow'">
 			<div class="flow-title">
 				<span style="text-align: center; flex: 1">Flows</span>
@@ -20,7 +20,11 @@
 					<span style="padding-left: 1rem; flex: 1">Flow {{ i + 1 }}</span>
 					<p-button text icon="mdi mdi-delete" size="small" @click="deleteFlow(i)"></p-button>
 				</div>
-				<data-input v-model="model.subFlows[i].config" :schema="actionInfo.flowConfig"></data-input>
+				<data-input
+					v-model="model.subFlows[i].config"
+					:schema="actionInfo.flowConfig"
+					:context="model.subFlows[i].config"
+				></data-input>
 			</template>
 		</template>
 	</div>
