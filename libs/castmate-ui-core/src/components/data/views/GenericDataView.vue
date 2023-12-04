@@ -1,5 +1,5 @@
 <template>
-	<span class="data-label">{{ schema.name }}:</span> {{ modelValue }}
+	<span class="data-label" v-if="schema.name">{{ schema.name }}:</span> {{ modelValue }}
 </template>
 
 <script setup lang="ts">

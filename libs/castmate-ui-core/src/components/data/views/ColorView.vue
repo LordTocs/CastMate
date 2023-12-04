@@ -1,5 +1,5 @@
 <template>
-	<span class="data-label">{{ schema.name }}:</span>
+	<span class="data-label" v-if="schema.name">{{ schema.name }}:</span>
 	<div class="color-view-splotch" :style="{ backgroundColor: props.modelValue }"></div>
 </template>
 

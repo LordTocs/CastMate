@@ -1,5 +1,6 @@
 <template>
-	<span class="data-label">{{ schema.name }}:</span> <duration-label :model-value="props.modelValue" />
+	<span class="data-label" v-if="schema.name">{{ schema.name }}:</span>
+	<duration-label :model-value="props.modelValue" />
 </template>
 
 <script setup lang="ts">
