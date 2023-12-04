@@ -17,7 +17,7 @@ class LIFXBulb extends Light {
 			name: initialState.label,
 			plugin: "lifx",
 			type: "bulb",
-			rgb: { available: hardwareInfo.productFeatures.color },
+			rgb: { available: hardwareInfo.productFeatures?.color ?? true },
 			kelvin: { available: true, min: 2500, max: 9000 },
 			dimming: { available: true },
 		}
