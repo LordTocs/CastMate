@@ -46,6 +46,7 @@ import { initPlugin as initWyzePlugin } from "castmate-plugin-wyze-renderer"
 import { initPlugin as initLifxPlugin } from "castmate-plugin-lifx-renderer"
 import { initPlugin as initGoveePlugin } from "castmate-plugin-govee-renderer"
 import { initPlugin as initKasaPlugin } from "castmate-plugin-tplink-kasa-renderer"
+import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
@@ -109,6 +110,7 @@ async function init() {
 	await initObsPlugin()
 	await initDiscordPlugin()
 	await initInputPlugin()
+	await initOsPlugin()
 	await initIoTPlugin()
 	await initMinecraftPlugin()
 	await initTwinklyPlugin()

@@ -1,5 +1,7 @@
-import { defineAction, evaluateTemplate } from "castmate-core"
+import { PowerShellCommand } from "castmate-plugin-os-shared"
+import { defineAction, evaluateTemplate, registerSchemaTemplate } from "castmate-core"
 import { abortablePromise } from "castmate-core/src/util/abort-utils"
+import { getTemplateRegionString, parseTemplateString, trimTemplateJS } from "castmate-schema"
 import { ChildProcess, exec, spawn } from "child_process"
 
 //Templating
@@ -62,7 +64,7 @@ function powershellEscapeWild(str: string) {
 }
 
 interface ParseContext {
-	strType: "'" | '"' | "`" | null
+	strType: "'" | '"' | null
 }
 
 function trackPowershellString(filler: string, parseContext: ParseContext) {
@@ -70,7 +72,6 @@ function trackPowershellString(filler: string, parseContext: ParseContext) {
 		const c = filler[i]
 		if (parseContext.strType == SINGLE_QUOTE) {
 			//In a ' string the only escape character is ' since everything else is verbatum
-
 			if (isSingleQuote(c)) {
 				const next = filler[i + 1]
 				if (isSingleQuote(next)) {
@@ -101,6 +102,16 @@ function trackPowershellString(filler: string, parseContext: ParseContext) {
 	}
 }
 
+function escapePowerShellResult(templateResult: string, parseContext: ParseContext) {
+	if (parseContext.strType == SINGLE_QUOTE) {
+		return powershellEscapeForSingleQuote(templateResult)
+	} else if (parseContext.strType == DOUBLE_QUOTE) {
+		return powershellEscapeForDoubleQuote(templateResult)
+	} else {
+		return powershellEscapeWild(templateResult)
+	}
+}
+
 //TODO: Feed to template system
 /**
  * Attempts to evaulate {{ templates }} in a powershell command safely. This means that if the {{ template }} is inside of a string, the templated value should not be able to escape the string.
@@ -108,45 +119,33 @@ function trackPowershellString(filler: string, parseContext: ParseContext) {
  * @param data
  * @returns
  */
-async function powershellTemplate(templateStr: string, data: Record<string, any>) {
-	/*let resultStr = ""
-	let searchStart = 0
-
-	const parseContext = {
-		strType: null, //Indicates what type of powershell string we're in ' or "
-	}
-
-	while (true) {
-		const { filler, template, endIndex } = getNextTemplate(templateStr, searchStart)
-
-		trackPowershellString(filler, parseContext)
-		resultStr += filler
-
-		if (!template) {
-			break
-		}
-
-		let templateResult = undefined
-		try {
-			templateResult = String(await evaluateTemplate(template, data))
-		} catch {
-			templateResult = ""
-		}
-
-		if (parseContext.strType == SINGLE_QUOTE) {
-			templateResult = powershellEscapeForSingleQuote(templateResult)
-		} else if (parseContext.strType == DOUBLE_QUOTE) {
-			templateResult = powershellEscapeForDoubleQuote(templateResult)
+async function powershellTemplate(str: string, data: Record<string, any>) {
+	const templateData = parseTemplateString(str)
+	let result = ""
+	const strContext: ParseContext = { strType: null }
+	for (const region of templateData.regions) {
+		if (region.type == "string") {
+			const filler = getTemplateRegionString(templateData, region)
+			trackPowershellString(filler, strContext)
+			result += filler
 		} else {
-			templateResult = powershellEscapeWild(templateResult)
-		}
+			const js = getTemplateRegionString(templateData, region)
+			const trimmed = trimTemplateJS(js)
+			if (trimmed) {
+				let templateResult = undefined
+				try {
+					templateResult = escapePowerShellResult(await evaluateTemplate(trimmed, data), strContext)
+				} catch (err) {
+					console.error("Error evaluating Template", err)
+					continue
+				}
 
-		resultStr += templateResult
-		searchStart = endIndex + 1
+				result += templateResult?.toString() ?? ""
+			}
+		}
 	}
 
-	return resultStr*/
-	return ""
+	return result
 }
 
 ///
@@ -164,6 +163,8 @@ async function runPowershellCommand(command: string, workingDir: string | undefi
 	})
 }
 
+registerSchemaTemplate("PowerShellCommand", powershellTemplate)
+
 export function setupPowershell() {
 	//Note I chose to include powershell commands instead of CMD commands because Powershell actually has string rules that allow escaping.
 	//Trying to properly escape a CMD string to avoid malicious behaviour is an exercise in madness.
@@ -177,7 +178,7 @@ export function setupPowershell() {
 		config: {
 			type: Object,
 			properties: {
-				command: { type: String, name: "Command", template: true, required: true, default: "" },
+				command: { type: PowerShellCommand, name: "Command", template: true, required: true, default: "" },
 			},
 		},
 		result: {
@@ -187,7 +188,11 @@ export function setupPowershell() {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
+			console.log("Running PS: ", config.command)
+
 			const stdout = await runPowershellCommand(config.command, undefined, abortSignal)
+
+			console.log("Result", stdout)
 
 			return {
 				processOutput: stdout,

@@ -88,7 +88,7 @@ export async function templateSchema<TSchema extends Schema>(
 		return result as ResolvedSchemaType<TSchema>
 	} else if (schema.type === Array && "items" in schema && isArray(obj)) {
 		return (await Promise.all(
-			obj.map((item) => templateSchema(item, schema.items, context))
+			obj.map((item: any) => templateSchema(item, schema.items, context))
 		)) as ResolvedSchemaType<TSchema>
 	} else if (isResourceConstructor(schema.type)) {
 		//How to template resources??

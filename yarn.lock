@@ -3279,6 +3279,7 @@ __metadata:
   resolution: "castmate-plugin-os-main@workspace:plugins/os/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-os-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "*"
   languageName: unknown
@@ -3290,7 +3291,9 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
+    castmate-plugin-os-shared: "workspace:^"
     castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
     chromatism2: "*"
     electron: "*"
     nanoid: "*"
@@ -3299,6 +3302,17 @@ __metadata:
     vite: "*"
     vue: "*"
     vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-os-shared@workspace:^, castmate-plugin-os-shared@workspace:plugins/os/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-os-shared@workspace:plugins/os/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
   languageName: unknown
   linkType: soft
 

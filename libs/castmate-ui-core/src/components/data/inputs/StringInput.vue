@@ -27,9 +27,9 @@
 				v-else
 			/>
 		</document-path>
-		<span v-if="schema.template" class="p-inputgroup-addon" style="width: 2.857rem">
+		<!-- <span v-if="schema.template" class="p-inputgroup-addon" style="width: 2.857rem">
 			<i class="mdi mdi-code-braces flex-none" />
-		</span>
+		</span> -->
 		<p-button class="flex-none" v-if="!schema.required" icon="pi pi-times" @click.stop="clear" />
 	</div>
 </template>
