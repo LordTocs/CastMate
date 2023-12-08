@@ -1,5 +1,6 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
 import { setupPowershell } from "./powershell"
+import { setupProcesses } from "./processes"
 export default definePlugin(
 	{
 		id: "os",
@@ -11,5 +12,6 @@ export default definePlugin(
 	() => {
 		//Plugin Intiialization
 		setupPowershell()
+		setupProcesses()
 	}
 )
