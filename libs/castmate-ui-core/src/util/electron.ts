@@ -1,6 +1,7 @@
 import _cloneDeep from "lodash/cloneDeep"
 import { ipcRenderer, type IpcRendererEvent } from "electron"
-import { onMounted, onUnmounted } from "vue"
+import { onMounted, onUnmounted, toRaw } from "vue"
+import util from "util"
 
 type IPCFunctor = (...args: any[]) => any
 
@@ -21,6 +22,21 @@ export function handleIpcMessage(
 	handler: (event: IpcRendererEvent, ...args: any[]) => any
 ) {
 	ipcRenderer.on(`${category}_${event}`, handler)
+}
+
+export function handleIpcRpc(category: string, eventName: string, handler: (...args: any[]) => any) {
+	console.log("Setting up", `${category}_${eventName}_call`)
+	ipcRenderer.on(`${category}_${eventName}_call`, async (event, id: string, ...args: any[]) => {
+		try {
+			const result = await handler(...args)
+
+			event.sender.send(`${category}_${eventName}_response`, id, "success", toRaw(result))
+			console.log("Responding ", `${category}_${eventName}_response`, id, "success", toRaw(result))
+		} catch (err) {
+			event.sender.send(`${category}_${eventName}_response`, id, "error", util.inspect(err))
+			console.log("Responding", `${category}_${eventName}_response`, id, "error", util.inspect(err))
+		}
+	})
 }
 
 export function useIpcMessage(
