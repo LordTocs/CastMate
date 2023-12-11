@@ -3377,9 +3377,20 @@ __metadata:
   resolution: "castmate-plugin-sound-main@workspace:plugins/sound/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-sound-native: "workspace:^"
     castmate-plugin-sound-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-sound-native@workspace:^, castmate-plugin-sound-native@workspace:plugins/sound/native":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-sound-native@workspace:plugins/sound/native"
+  dependencies:
+    bindings: ~1.2.1
+    node-addon-api: ^5.0.0
+    node-gyp: ^9.3.1
   languageName: unknown
   linkType: soft
 

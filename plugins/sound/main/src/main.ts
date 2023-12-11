@@ -18,6 +18,8 @@ import { MediaManager } from "castmate-core"
 import { Duration, MediaFile, createDelayedResolver, DelayedResolver } from "castmate-schema"
 import { defineCallableIPC } from "castmate-core/src/util/electron"
 import { RendererSoundPlayer } from "./renderer-sound-player"
+import { AudioDeviceInterface } from "castmate-plugin-sound-native"
+
 class SoundOutput<
 	ExtendedSoundConfig extends SoundOutputConfig = SoundOutputConfig
 > extends Resource<ExtendedSoundConfig> {
@@ -126,7 +128,29 @@ export default definePlugin(
 
 		let audioDeviceWaiter: DelayedResolver<any> | undefined
 
+		let audioDeviceInterface: AudioDeviceInterface
+
 		onLoad(async () => {
+			audioDeviceInterface = new AudioDeviceInterface()
+
+			const nativeDevices = audioDeviceInterface.getDevices()
+			console.log(
+				"AUDIO Devices",
+				nativeDevices.filter((d) => d.type == "output")
+			)
+
+			audioDeviceInterface.on("device-added", (device) => {
+				console.log("NEW NATIVE DEVICE", device)
+			})
+
+			audioDeviceInterface.on("device-removed", (deviceId) => {
+				console.log("NATIVE DEVICE REMOVED", deviceId)
+			})
+
+			audioDeviceInterface.on("device-changed", (device) => {
+				console.log("NATIVE DEVICE CHANGED", device)
+			})
+
 			audioDeviceWaiter = createDelayedResolver()
 			RendererSoundPlayer.initialize()
 			console.log("Waiting for audio devices...")

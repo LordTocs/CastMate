@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "node-addon",
+            "includePath": [
+                "${workspaceFolder}\\node_modules\\node-addon-api",
+                "${env:NVM_INC}"
+            ],
+            "defines": ["NODE_VERSION=9"],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64",
+            "compilerPath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64\\cl.exe"
+        }
+    ],
+    "version": 4
+}

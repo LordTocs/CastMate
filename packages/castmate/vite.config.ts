@@ -23,7 +23,7 @@ export default defineConfig({
 		electron({
 			entry: "src/main/background.ts",
 			vite: {
-				plugins: [nodeResolve(), plugins("../../plugins", "main")],
+				plugins: [nodeResolve()],
 				build: {
 					minify: false,
 					rollupOptions: {
@@ -34,6 +34,7 @@ export default defineConfig({
 							"@twurple/pubsub",
 							"ws",
 							"discord.js",
+							"castmate-plugin-sound-native",
 						],
 					},
 				},
