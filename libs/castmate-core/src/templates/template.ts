@@ -114,12 +114,27 @@ export function registerSchemaTemplate<T>(name: string, templateFunc: SchemaTemp
 }
 
 registerSchemaTemplate("String", async (value: string, context: object, schema: SchemaString) => {
-	return await template(value, context)
+	let str = await template(value, context)
+
+	if (schema.maxLength != null) {
+		str = str.substring(0, schema.maxLength)
+	}
+
+	return str
 })
 
 registerSchemaTemplate("Number", async (value: number | string, context: object, schema: SchemaNumber) => {
 	if (isNumber(value)) return value
-	return Number(await template(value, context))
+	let num = Number(await template(value, context))
+
+	if (schema.min != null) {
+		num = Math.max(schema.min, num)
+	}
+	if (schema.max != null) {
+		num = Math.min(schema.max, num)
+	}
+
+	return num
 })
 
 registerSchemaTemplate("Boolean", async (value: boolean | string, context: object, schema: SchemaNumber) => {

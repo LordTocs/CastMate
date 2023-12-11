@@ -47,6 +47,7 @@ export interface SchemaNumber extends Enumable<number>, SchemaBase<number> {
 export interface SchemaString extends Enumable<string>, SchemaBase<string> {
 	type: StringConstructor
 	template?: boolean
+	maxLength?: number
 }
 
 export interface SchemaBoolean extends SchemaBase<boolean> {
