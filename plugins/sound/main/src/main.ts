@@ -13,19 +13,20 @@ import {
 	ResourceRegistry,
 	defineSetting,
 	definePluginResource,
+	PluginManager,
 } from "castmate-core"
 import { MediaManager } from "castmate-core"
 import { Duration, MediaFile, createDelayedResolver, DelayedResolver } from "castmate-schema"
-import { defineCallableIPC } from "castmate-core/src/util/electron"
+import { defineCallableIPC, defineIPCRPC } from "castmate-core/src/util/electron"
 import { RendererSoundPlayer } from "./renderer-sound-player"
-import { AudioDeviceInterface } from "castmate-plugin-sound-native"
+import { AudioDevice, AudioDeviceInterface } from "castmate-plugin-sound-native"
 
 class SoundOutput<
 	ExtendedSoundConfig extends SoundOutputConfig = SoundOutputConfig
 > extends Resource<ExtendedSoundConfig> {
 	static storage = new ResourceStorage<SoundOutput>("SoundOutput")
 
-	async playFile(file: string, volume: number, abortSignal: AbortSignal) {
+	async playFile(file: string, startSec: number, endSec: number, volume: number, abortSignal: AbortSignal) {
 		console.error("Don't enter here!")
 		return false
 	}
@@ -33,23 +34,81 @@ class SoundOutput<
 
 interface SystemSoundOutputConfig extends SoundOutputConfig {
 	deviceId: string
+	webId?: string
+	isDefault: boolean
 }
 
 class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
-	constructor(mediaDevice: WebAudioDeviceInfo) {
+	constructor(mediaDevice: AudioDevice | "chat" | "main", defaultDevice?: AudioDevice) {
 		super()
-		this._id = `system.${mediaDevice.deviceId}`
-		this._config = {
-			deviceId: mediaDevice.deviceId,
-			name: mediaDevice.label,
+		if (typeof mediaDevice == "string") {
+			if (!defaultDevice) throw new Error("Default Requires AudioDevice")
+
+			const id = mediaDevice == "main" ? "default" : "communications"
+			this._id = `system.${id}`
+			this._config = {
+				isDefault: true,
+				deviceId: id,
+				name:
+					mediaDevice == "main"
+						? `Default - ${defaultDevice.name}`
+						: `Communications - ${defaultDevice.name}`,
+				webId: id,
+			}
+		} else {
+			this._id = `system.${mediaDevice.id}`
+			this._config = {
+				isDefault: false,
+				deviceId: mediaDevice.id,
+				name: mediaDevice.name,
+			}
+
+			this.queryWebId()
 		}
 	}
 
-	async playFile(file: string, volume: number, abortSignal: AbortSignal): Promise<boolean> {
-		await RendererSoundPlayer.getInstance().playSound(file, volume, this.config.deviceId, abortSignal)
+	async queryWebId() {
+		if (!PluginManager.getInstance().isUILoaded) return
+		if (this.config.isDefault) return
+
+		try {
+			const webId = await getOutputWebId(this.config.name)
+			console.log("Got WebId", this.config.name, webId)
+			this.applyConfig({
+				webId: webId,
+			})
+		} catch (err) {}
+	}
+
+	async setDefault(device: AudioDevice) {
+		if (device.state != "active" || device.type != "output") throw new Error("Default Device Invalid")
+
+		await this.applyConfig({
+			name: this.id == "system.default" ? `Default - ${device.name}` : `Communications - ${device.name}`,
+		})
+	}
+
+	async playFile(
+		file: string,
+		startSec: number,
+		endSec: number,
+		volume: number,
+		abortSignal: AbortSignal
+	): Promise<boolean> {
+		if (!this.config.webId) return false
+		await RendererSoundPlayer.getInstance().playSound(
+			file,
+			startSec,
+			endSec,
+			volume,
+			this.config.webId,
+			abortSignal
+		)
 		return true
 	}
 }
+
+const getOutputWebId = defineIPCRPC<(name: string) => string | undefined>("sound", "getOutputWebId")
 
 export default definePlugin(
 	{
@@ -120,41 +179,94 @@ export default definePlugin(
 				const media = MediaManager.getInstance().getMedia(config.sound)
 				if (!media) return
 				const globalFactor = globalVolume.value / 100
-				await config.output.playFile(media.file, config.volume * globalFactor, abortSignal)
+				await config.output.playFile(
+					media.file,
+					config.startTime,
+					config.endTime ?? media.duration ?? 0,
+					config.volume * globalFactor,
+					abortSignal
+				)
 			},
 		})
 
 		definePluginResource(SoundOutput)
 
-		let audioDeviceWaiter: DelayedResolver<any> | undefined
-
 		let audioDeviceInterface: AudioDeviceInterface
+
+		onUILoad(async () => {
+			console.log("LOADED UI! QUERYING SOUND")
+			for (const output of SoundOutput.storage) {
+				if (!output.id.startsWith("system")) continue
+				const systemOutput = output as SystemSoundOutput
+				systemOutput.queryWebId()
+			}
+		})
 
 		onLoad(async () => {
 			audioDeviceInterface = new AudioDeviceInterface()
 
 			const nativeDevices = audioDeviceInterface.getDevices()
-			console.log(
-				"AUDIO Devices",
-				nativeDevices.filter((d) => d.type == "output")
-			)
 
-			audioDeviceInterface.on("device-added", (device) => {
-				console.log("NEW NATIVE DEVICE", device)
+			const mainOutput = audioDeviceInterface.getDefaultOutput("main")
+			const commOutput = audioDeviceInterface.getDefaultOutput("chat")
+
+			const defaultOutput = new SystemSoundOutput("main", mainOutput)
+			const defaultComm = new SystemSoundOutput("chat", commOutput)
+			await SoundOutput.storage.inject(defaultOutput)
+			await SoundOutput.storage.inject(defaultComm)
+
+			for (const device of nativeDevices) {
+				if (device.state != "active" || device.type != "output") continue
+
+				const output = new SystemSoundOutput(device)
+				await SoundOutput.storage.inject(output)
+			}
+
+			audioDeviceInterface.on("device-added", async (device) => {
+				if (device.state == "active" && device.type == "output") {
+					const new_device = new SystemSoundOutput(device)
+					await SoundOutput.storage.inject(new_device)
+				}
 			})
 
-			audioDeviceInterface.on("device-removed", (deviceId) => {
-				console.log("NATIVE DEVICE REMOVED", deviceId)
+			audioDeviceInterface.on("device-removed", async (deviceId) => {
+				await SoundOutput.storage.remove(`system.${deviceId}`)
 			})
 
-			audioDeviceInterface.on("device-changed", (device) => {
-				console.log("NATIVE DEVICE CHANGED", device)
+			audioDeviceInterface.on("device-changed", async (device) => {
+				const existing = SoundOutput.storage.getById(`system.${device.id}`)
+
+				if (!existing) {
+					if (device.state == "active" && device.type == "output") {
+						const new_device = new SystemSoundOutput(device)
+						await SoundOutput.storage.inject(new_device)
+					}
+				} else {
+					if (device.state != "active") {
+						await SoundOutput.storage.remove(existing.id)
+					} else {
+						await existing.applyConfig({
+							name: device.name,
+						})
+					}
+				}
 			})
 
-			audioDeviceWaiter = createDelayedResolver()
+			audioDeviceInterface.on("default-output-changed", async (type, device) => {
+				if (type == "main") {
+					const existing = SoundOutput.storage.getById("system.default")
+					if (!existing) return
+					const systemOut = existing as SystemSoundOutput
+					systemOut.setDefault(device)
+				} else if (type == "chat") {
+					const existing = SoundOutput.storage.getById("system.communications")
+					if (!existing) return
+					const systemOut = existing as SystemSoundOutput
+					systemOut.setDefault(device)
+				}
+			})
+
 			RendererSoundPlayer.initialize()
-			console.log("Waiting for audio devices...")
-			await audioDeviceWaiter.promise
 		})
 
 		const defaultOutput = defineSetting("defaultOutput", {
@@ -162,25 +274,6 @@ export default definePlugin(
 			name: "Default Sound Output",
 			required: true,
 			default: () => SoundOutput.storage.getById("system.default"),
-		})
-
-		defineRendererCallable("setAudioOutputDevices", async (devices: WebAudioDeviceInfo[]) => {
-			for (const device of devices) {
-				const existingResource = SoundOutput.storage.getById(`system.${device.deviceId}`)
-
-				if (existingResource) {
-				} else {
-					//It's a new output
-					const newOutput = new SystemSoundOutput(device)
-
-					await SoundOutput.storage.inject(newOutput)
-				}
-			}
-			if (audioDeviceWaiter) {
-				audioDeviceWaiter.resolve(undefined)
-				console.log("Audio Devices Received")
-				audioDeviceWaiter = undefined
-			}
 		})
 	}
 )

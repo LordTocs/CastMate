@@ -123,6 +123,8 @@ public:
      audio_device_interface(const Napi::CallbackInfo& info);
 
     Napi::Value get_devices(const Napi::CallbackInfo& info);
+    Napi::Value get_default_output(const Napi::CallbackInfo& info);
+    Napi::Value get_default_input(const Napi::CallbackInfo& info);
 
     void Finalize(Napi::Env env) override;
 
@@ -139,6 +141,8 @@ Napi::Object audio_device_interface::init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function constructor = DefineClass(env, "NativeAudioDeviceInterface", {
         InstanceMethod("getDevices", &audio_device_interface::get_devices),
+        InstanceMethod("getDefaultOutput", &audio_device_interface::get_default_output),
+        InstanceMethod("getDefaultInput", &audio_device_interface::get_default_input),
     });
 
     exports.Set("NativeAudioDeviceInterface", constructor);
@@ -178,6 +182,8 @@ static HRESULT get_data_flow(IMMDevice* device, EDataFlow *data_flow)
 
 static Napi::Value get_js_device(IMMDevice* device, Napi::Env env)
 {
+    if (device == nullptr) return env.Undefined();
+
     HRESULT hr;
     ComPtr<IPropertyStore> device_properties;
     hr = device->OpenPropertyStore(STGM_READ, device_properties.ReleaseAndGetAddressOf());
@@ -287,6 +293,72 @@ Napi::Value audio_device_interface::get_devices(const Napi::CallbackInfo& info)
     return result;
 }
 
+Napi::Value audio_device_interface::get_default_output(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    HRESULT hr;
+
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(env, "getDefaultDevice requires a string argument.").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    Napi::String type_str = info[0].As<Napi::String>();
+
+    ComPtr<IMMDevice> device;
+    std::string type = type_str.Utf8Value();
+    if (type == "main")
+    {
+        hr = device_enum->GetDefaultAudioEndpoint(eRender, eMultimedia, device.ReleaseAndGetAddressOf());
+    }
+    else if (type == "chat")
+    {
+        hr = device_enum->GetDefaultAudioEndpoint(eRender, eCommunications, device.ReleaseAndGetAddressOf());
+    }
+
+    if (error_handler(hr, "Failed to get default output", env))
+    {
+        return env.Undefined();
+    }
+
+    Napi::Value device_obj = get_js_device(device.Get(), env);
+    return device_obj;
+}
+
+Napi::Value audio_device_interface::get_default_input(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    HRESULT hr;
+
+    if (info.Length() < 1)
+    {
+        Napi::Error::New(env, "getDefaultDevice requires a string argument.").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    Napi::String type_str = info[0].As<Napi::String>();
+
+    ComPtr<IMMDevice> device;
+    std::string type = type_str.Utf8Value();
+    if (type == "main")
+    {
+        hr = device_enum->GetDefaultAudioEndpoint(eCapture, eMultimedia, device.ReleaseAndGetAddressOf());
+    }
+    else if (type == "chat")
+    {
+        hr = device_enum->GetDefaultAudioEndpoint(eCapture, eCommunications, device.ReleaseAndGetAddressOf());
+    }
+
+    if (error_handler(hr, "Failed to get default input", env))
+    {
+        return env.Undefined();
+    }
+
+    Napi::Value device_obj = get_js_device(device.Get(), env);
+    return device_obj;
+}
+
 HRESULT audio_device_interface::get_device_by_id(LPCWSTR id, IMMDevice** pDevice)
 {
     HRESULT hr;
@@ -349,16 +421,52 @@ audio_device_notifier::audio_device_notifier(Napi::Env env, audio_device_interfa
 
 HRESULT audio_device_notifier::OnDefaultDeviceChanged(EDataFlow flow, ERole role, LPCWSTR pwstrDefaultDeviceId)
 {
-    auto js_thread_callback = [](Napi::Env env, Napi::Function js_callback, void* data)
+    ComPtr<IMMDevice> device;
+    device_interface->get_device_by_id(pwstrDefaultDeviceId, device.ReleaseAndGetAddressOf());
+
+    if (!device) {
+        return NOERROR;
+    }
+
+    auto js_thread_callback = [=](Napi::Env env, Napi::Function js_callback, IMMDevice* device_ptr)
     {
-        //env might be null if the tsfn is aborted
-        if (env != nullptr && js_callback != nullptr) {
-            //js_callback.Call({Napi::String::New(env, data->text), Napi::Number::New(env, data->confidence)});
+
+        HRESULT hr;
+        //Use a smart pointer so we get auto-release
+        ComPtr<IMMDevice> device;
+        (*device.ReleaseAndGetAddressOf()) = device_ptr;
+
+        if (env == nullptr || js_callback == nullptr) return;
+
+        Napi::Value js_device = get_js_device(device.Get(), env);
+
+        Napi::String type_str;
+
+        if (role == eCommunications)
+        {
+            type_str = Napi::String::New(env, "chat");
         }
-        delete data;
+        else if (role == eMultimedia)
+        {
+            type_str = Napi::String::New(env, "main");
+        }
+        else
+        {
+            return;
+        }
+
+        if (flow == eRender)
+        {
+            js_callback.Call({Napi::String::New(env, "default-output-changed"), type_str, js_device});
+        }
+        else if (flow == eCapture)
+        {
+            js_callback.Call({Napi::String::New(env, "default-input-changed"), type_str, js_device});
+        }
     };
 
-    //tsfn.NonBlockingCall(js_thread_callback)
+    device->AddRef();
+    tsfn.NonBlockingCall(device.Get(), js_thread_callback);
 
     return NOERROR;
 }

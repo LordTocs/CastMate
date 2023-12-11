@@ -20,12 +20,6 @@ import PDynamicDialog from "primevue/dynamicdialog"
 import PConfirmDialog from "primevue/confirmdialog"
 
 const dockingStore = useDockingStore()
-
-const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
-
-onMounted(() => {
-	uiLoadComplete()
-})
 </script>
 
 <style>

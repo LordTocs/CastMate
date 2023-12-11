@@ -19,6 +19,14 @@ class AudioDeviceInterface extends EventEmitter {
 	getDevices() {
 		return this._native.getDevices()
 	}
+
+	getDefaultOutput(type) {
+		return this._native.getDefaultOutput(type)
+	}
+
+	getDefaultInput(type) {
+		return this._native.getDefaultInput(type)
+	}
 }
 
 module.exports = { AudioDeviceInterface }

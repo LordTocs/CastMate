@@ -2,10 +2,9 @@ import { Service } from "castmate-core"
 import { defineCallableIPC, defineIPCFunc } from "castmate-core/src/util/electron"
 import { nanoid } from "nanoid/non-secure"
 
-const playSoundInRenderer = defineCallableIPC<(id: string, file: string, volume: number, sinkId: string) => void>(
-	"sound",
-	"playSoundInRenderer"
-)
+const playSoundInRenderer = defineCallableIPC<
+	(id: string, file: string, startSec: number, endSec: number, volume: number, sinkId: string) => void
+>("sound", "playSoundInRenderer")
 
 const abortSoundInRenderer = defineCallableIPC<(id: string) => string>("sound", "abortSoundInRenderer")
 
@@ -32,7 +31,7 @@ export const RendererSoundPlayer = Service(
 
 		//TODO: Will this get stuck if you manage to close the window during a sound playing?
 
-		playSound(file: string, volume: number, sinkId: string, abort: AbortSignal) {
+		playSound(file: string, startSec: number, endSec: number, volume: number, sinkId: string, abort: AbortSignal) {
 			return new Promise((resolve, reject) => {
 				const id = nanoid()
 
@@ -40,7 +39,7 @@ export const RendererSoundPlayer = Service(
 					resolve: () => resolve(undefined),
 				})
 
-				playSoundInRenderer(id, file, volume, sinkId)
+				playSoundInRenderer(id, file, startSec, endSec, volume, sinkId)
 
 				abort.addEventListener(
 					"abort",

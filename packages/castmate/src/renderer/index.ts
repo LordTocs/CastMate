@@ -7,6 +7,7 @@ import {
 	useResourceStore,
 	useMediaStore,
 	useActionQueueStore,
+	useIpcCaller,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -32,7 +33,7 @@ import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import { initData } from "castmate-ui-core"
 import { createRouter, createWebHistory } from "vue-router"
 
-import { initPlugin as initSoundPlugin, sendAudioDevices } from "castmate-plugin-sound-renderer"
+import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
 import { initPlugin as initVariablesPlugin } from "castmate-plugin-variables-renderer"
 import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
 import { initPlugin as initObsPlugin } from "castmate-plugin-obs-renderer"
@@ -72,11 +73,9 @@ app.use(pinia)
 
 const initStore = useInitStore()
 
-async function init() {
-	//Send the audio devices immediately since we'll get stuck waiting on them in the sound plugin init.
-	//TODO: Switch to a native package to receive audio device information so we don't have an init dependency going the wrong way.
-	await sendAudioDevices()
+const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
+async function init() {
 	//Wait for the main process to initialize
 	await initStore.initialize()
 	await initStore.waitForInit()
@@ -121,6 +120,8 @@ async function init() {
 	await initKasaPlugin()
 
 	await useMediaStore().initialize()
+
+	await uiLoadComplete()
 }
 
 init()

@@ -42,6 +42,7 @@ defineIPCFunc("plugins", "updateSettings", (changes: SettingsChange[]) => {
 export const PluginManager = Service(
 	class {
 		private plugins: Map<string, Plugin> = new Map()
+		private uiLoaded: boolean = false
 
 		constructor() {
 			this.pluginState = reactify({})
@@ -101,9 +102,15 @@ export const PluginManager = Service(
 		}
 
 		async signalUILoadComplete() {
+			if (this.uiLoaded) return
+			this.uiLoaded = true
 			for (let plugin of this.plugins.values()) {
 				plugin.onUILoaded()
 			}
+		}
+
+		get isUILoaded() {
+			return this.uiLoaded
 		}
 
 		getAction(plugin: string, action: string) {
