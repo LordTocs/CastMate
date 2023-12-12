@@ -1,55 +1,56 @@
 <template>
-	<c-autocomplete
-		v-model="idModel"
-		:items="triggers"
-		group-prop="plugin"
-		text-prop="name"
-		input-id="trigger"
-		:required="true"
-		no-float
-		:label="label"
-	>
-		<template #selectedItem="{ item }">
-			<i :class="item?.icon" :style="{ color: item?.color }"></i>
-			{{ item?.name }}
-		</template>
+	<label-floater :no-float="true" :label="label" input-id="trigger" v-slot="labelProps">
+		<c-autocomplete
+			v-model="idModel"
+			:items="triggers"
+			group-prop="plugin"
+			text-prop="name"
+			:required="true"
+			no-float
+			v-bind="labelProps"
+		>
+			<template #selectedItem="{ item }">
+				<i :class="item?.icon" :style="{ color: item?.color }"></i>
+				{{ item?.name }}
+			</template>
 
-		<template #groupHeader="{ item }">
-			<li
-				class="header text-center mb-1 pb-2"
-				:style="{ borderBottom: `solid 2px ${pluginStore.pluginMap.get(item.plugin)?.color}` }"
-			>
-				<i
-					v-if="pluginStore.pluginMap.get(item.plugin)?.icon"
-					:class="pluginStore.pluginMap.get(item.plugin)?.icon"
-					class="mr-1"
-					:style="{ color: pluginStore.pluginMap.get(item.plugin)?.color }"
-				></i
-				>{{ pluginStore.pluginMap.get(item.plugin)?.name }}
-			</li>
-		</template>
+			<template #groupHeader="{ item }">
+				<li
+					class="header text-center mb-1 pb-2"
+					:style="{ borderBottom: `solid 2px ${pluginStore.pluginMap.get(item.plugin)?.color}` }"
+				>
+					<i
+						v-if="pluginStore.pluginMap.get(item.plugin)?.icon"
+						:class="pluginStore.pluginMap.get(item.plugin)?.icon"
+						class="mr-1"
+						:style="{ color: pluginStore.pluginMap.get(item.plugin)?.color }"
+					></i
+					>{{ pluginStore.pluginMap.get(item.plugin)?.name }}
+				</li>
+			</template>
 
-		<template #item="{ item, focused, highlighted, onClick }">
-			<li
-				class="p-dropdown-item"
-				:class="{ 'p-focus': focused, 'p-highlight': highlighted }"
-				:data-p-highlight="highlighted"
-				:data-p-focused="focused"
-				:aria-label="item.name"
-				:aria-selected="highlighted"
-				@click="onClick"
-			>
-				<i :class="item?.icon" :style="{ color: item?.color }"></i> {{ item.name }}
-			</li>
-		</template>
-	</c-autocomplete>
+			<template #item="{ item, focused, highlighted, onClick }">
+				<li
+					class="p-dropdown-item"
+					:class="{ 'p-focus': focused, 'p-highlight': highlighted }"
+					:data-p-highlight="highlighted"
+					:data-p-focused="focused"
+					:aria-label="item.name"
+					:aria-selected="highlighted"
+					@click="onClick"
+				>
+					<i :class="item?.icon" :style="{ color: item?.color }"></i> {{ item.name }}
+				</li>
+			</template>
+		</c-autocomplete>
+	</label-floater>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { usePluginStore } from "../../plugins/plugin-store"
 import { useVModel } from "@vueuse/core"
-import { useTrigger } from "../../main"
+import { LabelFloater, useTrigger } from "../../main"
 import CAutocomplete from "../data/base-components/CAutocomplete.vue"
 
 const pluginStore = usePluginStore()

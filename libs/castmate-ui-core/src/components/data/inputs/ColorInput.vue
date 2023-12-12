@@ -15,7 +15,7 @@
 							'p-focused': focused,
 							'p-inputwrapper-filled': model != null,
 							'p-inputwrapper-focused': focused || overlayVisible,
-							'fix-right': !schema.required || schema.template,
+							'no-right-bezel': !schema.required || schema.template,
 						}"
 						v-bind="templateProps"
 						@click="toggle"
@@ -141,10 +141,5 @@ function toggleTemplate() {
 	width: 100%;
 	border-radius: var(--border-radius);
 	vertical-align: bottom;
-}
-
-.fix-right {
-	border-top-right-radius: 0 !important;
-	border-bottom-right-radius: 0 !important;
 }
 </style>

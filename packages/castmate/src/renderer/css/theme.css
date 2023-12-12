@@ -23,6 +23,16 @@ a.p-button {
 	white-space: nowrap;
 }
 
+.no-right-bezel {
+	border-top-right-radius: 0px !important;
+	border-bottom-right-radius: 0px !important;
+}
+
+.no-left-bezel {
+	border-top-left-radius: 0px !important;
+	border-bottom-left-radius: 0px !important;
+}
+
 :root {
 	--surface-a: #212121;
 	--surface-b: #121212;

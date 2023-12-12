@@ -12,13 +12,13 @@
 			:input-id="inputId"
 			ref="container"
 		>
-			<p-input-text class="flex-grow-1 no-right-bezel" v-model="(model as any)" />
+			<p-input-text class="flex-grow-1" :class="{ 'no-right-bezel': noRightBezel }" v-model="(model as any)" />
 			<i class="mdi mdi-code-json input-icon" @click="suggestionClick" @mousedown="stopPropagation" />
 			<state-suggestion-panel :container="container" v-model:open="suggestionVisible" @suggest="onSuggest" />
 		</div>
 		<!-- <p-button class="flex-none no-focus-highlight" icon="mdi mdi-code-json" size="small" text /> -->
 	</template>
-	<slot v-else v-bind="$attrs"> </slot>
+	<slot v-else v-bind="$attrs" :input-id="inputId"> </slot>
 </template>
 
 <script setup lang="ts" generic="T">
@@ -32,6 +32,7 @@ const props = defineProps<{
 	modelValue: T | string | undefined
 	templateMode: boolean
 	inputId: string
+	noRightBezel?: boolean
 }>()
 
 const container = ref<HTMLElement>()
@@ -75,10 +76,5 @@ function onSuggest(suggestion: string) {
 	right: 0.75rem;
 	color: #b3b3b3;
 	cursor: pointer;
-}
-
-.no-right-bezel {
-	border-top-right-radius: 0px !important;
-	border-bottom-right-radius: 0px !important;
 }
 </style>

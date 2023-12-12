@@ -2,12 +2,11 @@
 	<c-autocomplete
 		v-model="model"
 		:required="!!schema.required"
-		:label="schema.name"
 		:items="items"
 		text-prop="name"
-		:no-float="noFloat"
 		:input-id="inputId"
 		@open="onOpen"
+		:placeholder="placeholder"
 	/>
 </template>
 
@@ -22,16 +21,12 @@ import CAutocomplete from "./CAutocomplete.vue"
 const props = defineProps<{
 	modelValue: any
 	schema: Schema
-	noFloat: boolean
+	placeholder?: string
 	inputId: string
 	context?: any
 }>()
 
 const model = useModel(props, "modelValue")
-
-const isDynamicEnum = computed(() => {
-	return _isFunction((props.schema as Enumable<any>).enum)
-})
 
 const dynamicItems = ref<EnumItem<any>[]>([])
 const fetching = ref(false)

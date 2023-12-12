@@ -47,14 +47,4 @@ const props = withDefaults(
 	/* box-shadow: 0 0 0 1px #e9aaff; */
 	border-color: #c9b1cb;
 }
-
-.no-left-bezel {
-	border-top-left-radius: 0px !important;
-	border-bottom-left-radius: 0px !important;
-}
-
-.no-right-bezel {
-	border-top-right-radius: 0px !important;
-	border-bottom-right-radius: 0px !important;
-}
 </style>

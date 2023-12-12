@@ -15,17 +15,16 @@
 					v-slot="templateProps"
 				>
 					<p-password v-model="model" v-bind="templateProps" v-if="secret" toggle-mask :feedback="false" />
+					<enum-input
+						:schema="schema"
+						v-model="model"
+						:context="context"
+						v-bind="templateProps"
+						v-else-if="schema.enum"
+					/>
 					<p-input-text v-model="model" v-bind="templateProps" v-else />
 				</template-toggle>
 			</label-floater>
-			<enum-input
-				:schema="schema"
-				v-model="model"
-				:no-float="!!noFloat"
-				input-id="text"
-				:context="context"
-				v-else
-			/>
 		</document-path>
 		<!-- <span v-if="schema.template" class="p-inputgroup-addon" style="width: 2.857rem">
 			<i class="mdi mdi-code-braces flex-none" />

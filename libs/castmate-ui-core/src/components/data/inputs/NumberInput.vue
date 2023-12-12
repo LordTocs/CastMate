@@ -1,26 +1,17 @@
 <template>
 	<div class="p-inputgroup">
 		<template v-if="schema.enum">
-			<document-path :local-path="localPath">
-				<enum-input :schema="schema" v-model="model" :no-float="!!noFloat" input-id="text" :context="context" />
-			</document-path>
+			<document-path :local-path="localPath"> </document-path>
 		</template>
 		<template v-else>
-			<template v-if="templateMode">
-				<document-path :local-path="localPath">
+			<document-path :local-path="localPath">
+				<div style="flex: 1">
 					<label-floater :label="schema.name ?? ''" :no-float="!!noFloat" input-id="text" v-slot="labelProps">
-						<p-input-text id="l" v-model="(model as string | undefined)" v-bind="labelProps" />
-					</label-floater>
-				</document-path>
-			</template>
-			<template v-else>
-				<document-path :local-path="localPath">
-					<div style="flex: 1">
-						<label-floater
-							:label="schema.name ?? ''"
-							:no-float="!!noFloat"
-							input-id="text"
-							v-slot="labelProps"
+						<template-toggle
+							v-model="model"
+							:template-mode="templateMode"
+							v-bind="labelProps"
+							v-slot="templateProps"
 						>
 							<p-input-number
 								v-model="(model as number | undefined)"
@@ -29,19 +20,28 @@
 								:step="step"
 								:suffix="unit"
 								:format="false"
-								v-bind="labelProps"
+								v-bind="templateProps"
+								v-if="!schema.enum"
 							/>
-						</label-floater>
-						<p-slider
-							v-if="schema.slider"
-							v-model="(model as number | undefined)"
-							:min="min"
-							:max="max"
-							:step="step"
-						/>
-					</div>
-				</document-path>
-			</template>
+							<enum-input
+								v-else
+								:schema="schema"
+								v-model="model"
+								:no-float="!!noFloat"
+								:context="context"
+								v-bind="templateProps"
+							/>
+						</template-toggle>
+					</label-floater>
+					<p-slider
+						v-if="schema.slider && !templateMode"
+						v-model="(model as number | undefined)"
+						:min="min"
+						:max="max"
+						:step="step"
+					/>
+				</div>
+			</document-path>
 		</template>
 		<p-button
 			v-if="canTemplate"
@@ -65,6 +65,7 @@ import DocumentPath from "../../document/DocumentPath.vue"
 import LabelFloater from "../base-components/LabelFloater.vue"
 import EnumInput from "../base-components/EnumInput.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
+import TemplateToggle from "../base-components/TemplateToggle.vue"
 
 const props = defineProps<
 	{

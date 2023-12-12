@@ -1,80 +1,80 @@
 <template>
-	<div class="autocomplete-container flex-grow-1" ref="container">
-		<div class="p-inputgroup" @mousedown="stopPropagation">
-			<label-floater :no-float="noFloat" :label="label" v-slot="labelProps" :input-id="inputId">
-				<input-box
-					v-bind="labelProps"
-					:focused="focused"
-					:model="model"
-					@focus="onFocus"
-					v-if="!focused"
-					:tab-index="-1"
-					:bezel-right="false"
-				>
-					<slot name="selectedItem" v-if="props.modelValue" :item="selectedItem" :item-id="props.modelValue">
-						{{ selectedItem ? getItemText(selectedItem, props) : props.modelValue }}
-					</slot>
-				</input-box>
-				<p-input-text
-					v-else
-					@blur="onBlur"
-					class="p-dropdown-label"
-					ref="filterInputElement"
-					v-model="filterValue"
-					@keydown="onFilterKeyDown"
-					v-bind="labelProps"
-				/>
-			</label-floater>
-			<slot name="append"></slot>
-			<p-button
-				class="flex-none no-focus-highlight flex-shrink-0"
-				v-if="!required"
-				icon="pi pi-times"
-				@click.stop="clear"
-			/>
-			<p-button class="no-focus-highlight flex-shrink-0" @click="onDropDownClick"
-				><p-chevron-down-icon
-			/></p-button>
-		</div>
-		<drop-down-panel
-			:container="container"
-			v-model="overlayVisible"
-			:style="{
-				width: `${containerSize.width.value}px`,
-				overflowY: 'auto',
-				maxHeight: '15rem',
-			}"
-			class="autocomplete-drop-down"
+	<div
+		class="autocomplete-container flex-grow-1 flex-shrink-0 p-inputgroup"
+		:class="{ 'p-inputwrapper-filled': props.modelValue != null }"
+		ref="container"
+		v-bind="$attrs"
+		@mousedown="stopPropagation"
+	>
+		<input-box
+			:focused="focused"
+			:model="model"
+			@focus="onFocus"
+			v-if="!focused"
+			:tab-index="-1"
+			:bezel-right="false"
+			:placeholder="placeholder"
 		>
-			<ul class="p-dropdown-items">
-				<template v-for="(group, i) in filteredItems">
-					<slot name="groupHeader" :item="group[0]"> </slot>
-
-					<slot
-						name="item"
-						v-for="(item, i) in group"
-						:item="item"
-						:index="i"
-						:focused="isItemFocused(item)"
-						:highlighted="isCurrentItem(item)"
-						:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
-					>
-						<li
-							class="p-dropdown-item"
-							:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
-							:data-p-highlight="isCurrentItem(item)"
-							:data-p-focused="isItemFocused(item)"
-							:aria-label="getItemText(item, props)"
-							:aria-selected="isCurrentItem(item)"
-							@click="onItemSelect($event, item)"
-						>
-							{{ getItemText(item, props) }}
-						</li>
-					</slot>
-				</template>
-			</ul>
-		</drop-down-panel>
+			<slot name="selectedItem" v-if="props.modelValue" :item="selectedItem" :item-id="props.modelValue">
+				{{ selectedItem ? getItemText(selectedItem, props) : props.modelValue }}
+			</slot>
+		</input-box>
+		<p-input-text
+			v-else
+			@blur="onBlur"
+			class="p-dropdown-label"
+			ref="filterInputElement"
+			v-model="filterValue"
+			@keydown="onFilterKeyDown"
+			:placeholder="placeholder"
+		/>
+		<slot name="append"></slot>
+		<p-button
+			class="flex-none no-focus-highlight flex-shrink-0"
+			v-if="!required"
+			icon="pi pi-times"
+			@click.stop="clear"
+		/>
+		<p-button class="no-focus-highlight flex-shrink-0" @click="onDropDownClick"><p-chevron-down-icon /></p-button>
 	</div>
+	<drop-down-panel
+		:container="container"
+		v-model="overlayVisible"
+		:style="{
+			width: `${containerSize.width.value}px`,
+			overflowY: 'auto',
+			maxHeight: '15rem',
+		}"
+		class="autocomplete-drop-down"
+	>
+		<ul class="p-dropdown-items">
+			<template v-for="(group, i) in filteredItems">
+				<slot name="groupHeader" :item="group[0]"> </slot>
+
+				<slot
+					name="item"
+					v-for="(item, i) in group"
+					:item="item"
+					:index="i"
+					:focused="isItemFocused(item)"
+					:highlighted="isCurrentItem(item)"
+					:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
+				>
+					<li
+						class="p-dropdown-item"
+						:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
+						:data-p-highlight="isCurrentItem(item)"
+						:data-p-focused="isItemFocused(item)"
+						:aria-label="getItemText(item, props)"
+						:aria-selected="isCurrentItem(item)"
+						@click="onItemSelect($event, item)"
+					>
+						{{ getItemText(item, props) }}
+					</li>
+				</slot>
+			</template>
+		</ul>
+	</drop-down-panel>
 </template>
 
 <script setup lang="ts">
@@ -101,8 +101,7 @@ const props = withDefaults(
 	defineProps<
 		{
 			modelValue: any | undefined
-			label?: string
-			noFloat?: boolean
+			placeholder?: string
 			items: ItemType[]
 			required: boolean
 			inputId: string
@@ -241,5 +240,7 @@ function onKeyArrowUp(ev: KeyboardEvent) {
 
 .autocomplete-container {
 	position: relative;
+	display: flex;
+	flex-direction: row;
 }
 </style>

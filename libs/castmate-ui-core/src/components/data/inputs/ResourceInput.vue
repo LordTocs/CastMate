@@ -1,14 +1,16 @@
 <template>
 	<div class="flex flex-row">
-		<c-autocomplete
-			v-model="model"
-			:required="!!schema.required"
-			:label="schema.name"
-			text-prop="config.name"
-			:items="resourceItems"
-			input-id="resource"
-			:no-float="noFloat"
-		/>
+		<label-floater :no-float="noFloat" :label="schema.name" input-id="resource" v-slot="labelProps">
+			<c-autocomplete
+				v-model="model"
+				:required="!!schema.required"
+				:label="schema.name"
+				text-prop="config.name"
+				:items="resourceItems"
+				:no-float="noFloat"
+				v-bind="labelProps"
+			/>
+		</label-floater>
 		<p-button
 			class="ml-1"
 			text
@@ -25,7 +27,13 @@
 import { SchemaResource, ResourceData } from "castmate-schema"
 import { ResourceProxy } from "../../../util/data"
 import { computed, nextTick, ref, useModel, watch } from "vue"
-import { useResourceArray, useResourceCreateDialog, useResourceData, useResourceEditDialog } from "../../../main"
+import {
+	LabelFloater,
+	useResourceArray,
+	useResourceCreateDialog,
+	useResourceData,
+	useResourceEditDialog,
+} from "../../../main"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
 import { MenuItem } from "primevue/menuitem"
