@@ -7,6 +7,8 @@
 				'p-focused': focused,
 				'p-inputwrapper-filled': model != false,
 				'p-inputwrapper-focused': focused,
+				'p-invalid': errorMessage,
+				'p-inputwrapper-invalid': errorMessage,
 			}"
 			v-bind="$attrs"
 			:input-id="inputId"
@@ -33,6 +35,7 @@ const props = defineProps<{
 	templateMode: boolean
 	inputId: string
 	noRightBezel?: boolean
+	errorMessage?: string
 }>()
 
 const container = ref<HTMLElement>()

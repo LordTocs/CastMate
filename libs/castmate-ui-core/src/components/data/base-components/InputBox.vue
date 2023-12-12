@@ -6,6 +6,8 @@
 			'p-focused': focused,
 			'p-inputwrapper-filled': model != null,
 			'p-inputwrapper-focused': focused,
+			'p-invalid': errorMessage,
+			'p-inputwrapper-invalid': errorMessage,
 		}"
 	>
 		<div
@@ -32,6 +34,7 @@ const props = withDefaults(
 		tabIndex?: number
 		bezelLeft?: boolean
 		bezelRight?: boolean
+		errorMessage?: string
 	}>(),
 	{
 		bezelLeft: true,

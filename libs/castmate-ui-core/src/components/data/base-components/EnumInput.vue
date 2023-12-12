@@ -7,6 +7,7 @@
 		:input-id="inputId"
 		@open="onOpen"
 		:placeholder="placeholder"
+		:errorMessage="errorMessage"
 	/>
 </template>
 
@@ -17,6 +18,7 @@ import _isFunction from "lodash/isFunction"
 import {} from "castmate-schema"
 import { isObject } from "@vueuse/core"
 import CAutocomplete from "./CAutocomplete.vue"
+import { error } from "console"
 
 const props = defineProps<{
 	modelValue: any
@@ -24,6 +26,7 @@ const props = defineProps<{
 	placeholder?: string
 	inputId: string
 	context?: any
+	errorMessage?: string
 }>()
 
 const model = useModel(props, "modelValue")

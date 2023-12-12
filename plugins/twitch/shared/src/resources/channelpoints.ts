@@ -3,8 +3,8 @@ import { Color, ResolvedSchemaType, Schema, SchemaType, declareSchema } from "ca
 export const ChannelPointRewardSchema = declareSchema({
 	type: Object,
 	properties: {
-		title: { type: String, name: "Title", required: true, template: true, default: "" },
-		prompt: { type: String, name: "Description", template: true },
+		title: { type: String, name: "Title", required: true, template: true, default: "", maxLength: 45 },
+		prompt: { type: String, name: "Description", template: true, maxLength: 200 },
 		backgroundColor: { type: Color, name: "Color", template: true },
 		userInputRequired: { type: Boolean, name: "Require User Input" },
 		cost: { type: Number, name: "Cost", template: true, min: 1, default: 1, required: true },

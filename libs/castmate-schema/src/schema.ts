@@ -259,6 +259,7 @@ export type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor
 export interface DataTypeMetaData<T = any> {
 	constructor: DataConstructorOrFactory<T>
 	canBeVariable?: boolean
+	validate?: (value: any, schema: Schema) => string | undefined
 }
 
 interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
@@ -278,9 +279,44 @@ export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
 
 registerType("String", {
 	constructor: String,
+	validate(value: string | undefined, schema: SchemaString) {
+		if (value == null) {
+			if (schema.required) return `${schema.name} is required`
+			return undefined
+		}
+
+		if (schema.maxLength != null && !schema.template) {
+			if (value.length > schema.maxLength) {
+				return `${schema.name} can only be ${schema.maxLength} characters long`
+			}
+		}
+
+		return undefined
+	},
 })
 registerType("Number", {
 	constructor: Number,
+	validate(value: number | string | undefined, schema: SchemaNumber) {
+		if (typeof value == "string") {
+			if (!schema.template) return `${schema.name} cannot be a template value`
+			return undefined
+		}
+
+		if (value == null) {
+			if (schema.required) return `${schema.name} is required`
+			return undefined
+		}
+
+		if (schema.min != null && value < schema.min) {
+			return `${schema.name} must be at least ${schema.min}`
+		}
+
+		if (schema.max != null && value > schema.max) {
+			return `${schema.name} must be less than ${schema.min}`
+		}
+
+		return undefined
+	},
 })
 registerType("Boolean", {
 	constructor: Boolean,
