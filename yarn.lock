@@ -3039,9 +3039,20 @@ __metadata:
   resolution: "castmate-plugin-input-main@workspace:plugins/input/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-input-native: "workspace:^"
     castmate-plugin-input-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-input-native@workspace:^, castmate-plugin-input-native@workspace:plugins/input/native":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-input-native@workspace:plugins/input/native"
+  dependencies:
+    bindings: ~1.2.1
+    node-addon-api: ^5.0.0
+    node-gyp: ^9.3.1
   languageName: unknown
   linkType: soft
 

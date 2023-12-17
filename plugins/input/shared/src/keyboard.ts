@@ -1,4 +1,4 @@
-import { DataFactory, SchemaBase, registerType } from "castmate-schema"
+import { DataFactory, SchemaBase, mapKeys, registerType } from "castmate-schema"
 
 interface KeyInfo {
 	windowsVKCode: number
@@ -10,12 +10,12 @@ export const Keys = {
 	Space: { windowsVKCode: 0x20, electronAccelerator: "Space", sortPriority: 1 },
 	Escape: { windowsVKCode: 0x1b, electronAccelerator: "Escape", sortPriority: 1 },
 	Tab: { windowsVKCode: 0x09, electronAccelerator: "Tab", sortPriority: 1 },
-	LeftAlt: { windowsVKCode: 0xa4, electronAccelerator: "Alt", sortPriority: 3 },
-	LeftControl: { windowsVKCode: 0xa2, electronAccelerator: "Control", sortPriority: 4 },
-	RightAlt: { windowsVKCode: 0xa5, electronAccelerator: "Alt", sortPriority: 3 },
-	RightControl: { windowsVKCode: 0xa3, electronAccelerator: "Control", sortPriority: 4 },
-	LeftShift: { windowsVKCode: 0xa0, electronAccelerator: "Shift", sortPriority: 2 },
-	RightShift: { windowsVKCode: 0xa1, electronAccelerator: "Shift", sortPriority: 2 },
+	LeftAlt: { windowsVKCode: 0x12, electronAccelerator: "Alt", sortPriority: 3 },
+	LeftControl: { windowsVKCode: 0x11, electronAccelerator: "Control", sortPriority: 4 },
+	RightAlt: { windowsVKCode: 0x12, electronAccelerator: "Alt", sortPriority: 3 },
+	RightControl: { windowsVKCode: 0x11, electronAccelerator: "Control", sortPriority: 4 },
+	LeftShift: { windowsVKCode: 0x10, electronAccelerator: "Shift", sortPriority: 2 },
+	RightShift: { windowsVKCode: 0x10, electronAccelerator: "Shift", sortPriority: 2 },
 	F1: { windowsVKCode: 0x70, electronAccelerator: "F1", sortPriority: 1 },
 	F2: { windowsVKCode: 0x71, electronAccelerator: "F2", sortPriority: 1 },
 	F3: { windowsVKCode: 0x72, electronAccelerator: "F3", sortPriority: 1 },
@@ -126,6 +126,14 @@ export const Keys = {
 	MediaPause: { windowsVKCode: 0xb3, electronAccelerator: "MediaPlayPause", sortPriority: 1 },
 	MediaPrev: { windowsVKCode: 0xb1, electronAccelerator: "MediaPreviousTrack", sortPriority: 1 },
 	MediaNext: { windowsVKCode: 0xb0, electronAccelerator: "MediaNextTrack", sortPriority: 1 },
+}
+
+export const VKToKey: Record<number, KeyboardKey> = {}
+
+for (const keyName in Keys) {
+	const key = Keys[keyName as KeyboardKey]
+	if (key.windowsVKCode in VKToKey) continue
+	VKToKey[key.windowsVKCode] = keyName as KeyboardKey
 }
 
 //https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
@@ -298,20 +306,22 @@ export function getKeyboardKey(ev: KeyboardEvent) {
 }
 
 export type KeyboardKey = keyof typeof Keys
-type KeyboardKeyFactory = DataFactory<KeyboardKey>
+type KeyboardKeyFactory = {
+	factoryCreate(): KeyboardKey
+	barbaz(): void
+}
 export const KeyboardKey: KeyboardKeyFactory = {
 	factoryCreate() {
 		return undefined as unknown as KeyboardKey
 	},
+	barbaz() {},
 }
 
 export interface SchemaKeyboardKey extends SchemaBase<KeyboardKey> {
 	type: KeyboardKeyFactory
 }
 
-export type KeyCombo = Array<KeyboardKey>
-
-function deSideKey(key: KeyboardKey) {
+export function UnmirrorKey(key: KeyboardKey) {
 	//converts right sided keys to left
 	if (key.startsWith("Right")) {
 		return `Left${key.substring(5)}` as KeyboardKey
@@ -319,13 +329,26 @@ function deSideKey(key: KeyboardKey) {
 	return key
 }
 
-type KeyComboFactory = DataFactory<KeyCombo>
-export const KeyCombo = {
+export function MirrorKey(key: KeyboardKey) {
+	//converts right sided keys to left
+	if (key.startsWith("Left")) {
+		return `Right${key.substring(4)}` as KeyboardKey
+	}
+	return undefined
+}
+
+export type KeyCombo = Array<KeyboardKey>
+type KeyComboFactory = {
+	factoryCreate(): KeyCombo
+	append(combo: KeyCombo, key: KeyboardKey): void
+	equals(a: KeyCombo, b: KeyCombo): boolean
+}
+export const KeyCombo: KeyComboFactory = {
 	factoryCreate(): KeyCombo {
 		return []
 	},
 	append(combo: KeyCombo, key: KeyboardKey) {
-		key = deSideKey(key)
+		key = UnmirrorKey(key)
 		if (combo.includes(key)) return
 		combo.push(key)
 		//sort

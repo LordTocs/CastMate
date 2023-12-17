@@ -1,10 +1,32 @@
-import { KeyCombo, KeyboardKey, Keys } from "castmate-plugin-input-shared"
-import { defineAction, defineTrigger, onLoad, onProfilesChanged } from "castmate-core"
+import { KeyCombo, KeyboardKey, Keys, MirrorKey, UnmirrorKey, VKToKey } from "castmate-plugin-input-shared"
+import { abortableSleep, defineAction, defineTrigger, onLoad, onProfilesChanged } from "castmate-core"
 import { Duration } from "castmate-schema"
+import { InputInterface } from "castmate-plugin-input-native"
 
-import { globalShortcut } from "electron"
+function isComboPressed(inputInterface: InputInterface, combo: KeyCombo) {
+	for (const keyName of combo) {
+		const key = Keys[keyName]
 
-export function setupKeyboard() {
+		const mirroredName = MirrorKey(keyName)
+
+		//console.log("Checking", keyName, mirroredName)
+
+		if (!inputInterface.isKeyDown(key.windowsVKCode)) {
+			if (!mirroredName) return false
+
+			const mirrorKey = Keys[mirroredName]
+			if (!mirrorKey) return false
+
+			if (!inputInterface.isKeyDown(mirrorKey.windowsVKCode)) {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+export function setupKeyboard(inputInterface: InputInterface) {
 	onLoad(() => {})
 
 	defineAction({
@@ -24,7 +46,14 @@ export function setupKeyboard() {
 				duration: { type: Duration, name: "Press Time", required: true, default: 0.1, template: true },
 			},
 		},
-		async invoke(config, contextData, abortSignal) {},
+		async invoke(config, contextData, abortSignal) {
+			const key = Keys[config.key]
+			inputInterface.simulateKeyDown(key.windowsVKCode)
+
+			await abortableSleep(config.duration * 1000, abortSignal)
+
+			inputInterface.simulateKeyUp(key.windowsVKCode)
+		},
 	})
 
 	const keyboardShortcut = defineTrigger({
@@ -48,64 +77,36 @@ export function setupKeyboard() {
 		},
 	})
 
-	let activeAccelerators = new Map<string, KeyCombo[]>()
+	let activeCombos = new Set<KeyCombo>()
+
+	inputInterface.on("key-pressed", (vkCode) => {
+		try {
+			let keyName = VKToKey[vkCode]
+			//console.log("Pressed", keyName, vkCode.toString(16))
+			if (keyName == null) return
+
+			keyName = UnmirrorKey(keyName)
+
+			for (const combo of activeCombos) {
+				if (combo.includes(keyName)) {
+					//Check the rest of the keys
+					if (isComboPressed(inputInterface, combo)) {
+						keyboardShortcut({ combo })
+					}
+				}
+			}
+		} catch (err) {
+			console.error(err)
+		}
+	})
 
 	onProfilesChanged((activeProfiles, inactiveProfiles) => {
-		const accelerators = new Map<string, KeyCombo[]>()
+		activeCombos = new Set<KeyCombo>()
 
 		for (const profile of activeProfiles) {
 			for (const trigger of profile.iterTriggers(keyboardShortcut)) {
-				let accelerator = ""
-				for (const key of trigger.config.combo) {
-					//Assuming they're sorted properly
-					if (accelerator.length > 0) {
-						accelerator += "+"
-					}
-					accelerator += Keys[key].electronAccelerator
-				}
-
-				if (accelerator.length > 0) {
-					//accelerators.add(accelerator)
-					const existing = accelerators.get(accelerator)
-					if (existing) {
-						existing.push(trigger.config.combo as KeyCombo)
-					} else {
-						accelerators.set(accelerator, [trigger.config.combo as KeyCombo])
-					}
-				}
+				activeCombos.add(trigger.config.combo)
 			}
-		}
-
-		const newAccelerators = new Set(accelerators.keys())
-		for (const oldAccelerator of activeAccelerators.keys()) {
-			newAccelerators.delete(oldAccelerator)
-		}
-
-		const disableAccelerators = new Set(activeAccelerators.keys())
-		for (const newAccelerator of accelerators.keys()) {
-			disableAccelerators.delete(newAccelerator)
-		}
-
-		activeAccelerators = accelerators
-
-		for (const newAccelerator of newAccelerators) {
-			console.log("Registering Shortcut", newAccelerator)
-			const registered = globalShortcut.register(newAccelerator, () => {
-				const combos = activeAccelerators.get(newAccelerator)
-				if (!combos) return
-				for (const combo of combos) {
-					keyboardShortcut({
-						combo,
-					})
-				}
-			})
-			if (!registered) {
-				console.error("Failed to register shortcut", newAccelerator)
-			}
-		}
-
-		for (const disable of disableAccelerators) {
-			globalShortcut.unregister(disable)
 		}
 	})
 }

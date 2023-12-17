@@ -73,8 +73,8 @@ class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
 
 		try {
 			const webId = await getOutputWebId(this.config.name)
-			console.log("Got WebId", this.config.name, webId)
-			this.applyConfig({
+			//console.log("Got WebId", this.config.name, webId)
+			await this.applyConfig({
 				webId: webId,
 			})
 		} catch (err) {}
@@ -194,7 +194,6 @@ export default definePlugin(
 		let audioDeviceInterface: AudioDeviceInterface
 
 		onUILoad(async () => {
-			console.log("LOADED UI! QUERYING SOUND")
 			for (const output of SoundOutput.storage) {
 				if (!output.id.startsWith("system")) continue
 				const systemOutput = output as SystemSoundOutput

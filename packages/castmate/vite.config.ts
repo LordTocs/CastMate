@@ -35,6 +35,7 @@ export default defineConfig({
 							"ws",
 							"discord.js",
 							"castmate-plugin-sound-native",
+							"castmate-plugin-input-native",
 						],
 					},
 				},

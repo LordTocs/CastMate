@@ -1,6 +1,9 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
 
 import { setupKeyboard } from "./keyboard"
+import { InputInterface } from "castmate-plugin-input-native"
+
+import { setupMouse } from "./mouse"
 
 export default definePlugin(
 	{
@@ -11,6 +14,17 @@ export default definePlugin(
 		color: "#826262",
 	},
 	() => {
-		setupKeyboard()
+		const inputInterface = new InputInterface()
+
+		onLoad(() => {
+			inputInterface.startEvents()
+		})
+
+		onUnload(() => {
+			inputInterface.stopEvents()
+		})
+
+		setupKeyboard(inputInterface)
+		setupMouse(inputInterface)
 	}
 )
