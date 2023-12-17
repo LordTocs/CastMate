@@ -25,16 +25,16 @@ export function handleIpcMessage(
 }
 
 export function handleIpcRpc(category: string, eventName: string, handler: (...args: any[]) => any) {
-	console.log("Setting up", `${category}_${eventName}_call`)
+	//console.log("Setting up", `${category}_${eventName}_call`)
 	ipcRenderer.on(`${category}_${eventName}_call`, async (event, id: string, ...args: any[]) => {
 		try {
 			const result = await handler(...args)
 
 			event.sender.send(`${category}_${eventName}_response`, id, "success", toRaw(result))
-			console.log("Responding ", `${category}_${eventName}_response`, id, "success", toRaw(result))
+			//console.log("Responding ", `${category}_${eventName}_response`, id, "success", toRaw(result))
 		} catch (err) {
 			event.sender.send(`${category}_${eventName}_response`, id, "error", util.inspect(err))
-			console.log("Responding", `${category}_${eventName}_response`, id, "error", util.inspect(err))
+			//console.log("Responding", `${category}_${eventName}_response`, id, "error", util.inspect(err))
 		}
 	})
 }
