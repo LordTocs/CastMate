@@ -2,11 +2,12 @@ import { SchemaBase, registerType } from "../schema"
 
 export type Duration = number
 
-export type DurationFactory = { factoryCreate(): Duration }
+export type DurationFactory = { factoryCreate(): Duration; foobar(): void }
 export const Duration: DurationFactory = {
 	factoryCreate() {
-		return 0
+		return 0 as Duration
 	},
+	foobar() {},
 }
 
 export interface SchemaDuration extends SchemaBase<Duration> {
