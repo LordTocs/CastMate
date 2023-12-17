@@ -37,7 +37,7 @@ export function defineIPCRPC<T extends (...args: any[]) => any>(category: string
 	const responder = ipcMain.on(
 		`${category}_${eventName}_response`,
 		(event, id: string, state: "success" | "error", returnValue: ReturnType<T>) => {
-			console.log("Response", `${category}_${eventName}_response`, id, state, returnValue)
+			//console.log("Response", `${category}_${eventName}_response`, id, state, returnValue)
 			const resolver = rpcMap.get(id)
 			if (!resolver) return
 
@@ -59,7 +59,7 @@ export function defineIPCRPC<T extends (...args: any[]) => any>(category: string
 		const promise = createDelayedResolver<ReturnType<T>>()
 
 		rpcMap.set(id, promise)
-		console.log("Call", `${category}_${eventName}_call`, id, ...args)
+		//console.log("Call", `${category}_${eventName}_call`, id, ...args)
 		mainWindow.webContents.send(`${category}_${eventName}_call`, id, ...args)
 
 		return promise.promise
