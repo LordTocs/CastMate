@@ -1,52 +1,28 @@
 <template>
-	<div class="container">
-		<div class="inner-container" ref="containerDiv">
-			<p-data-table
-				v-model:filters="filters"
-				:value="mediaItems"
-				data-key="path"
-				:global-filter-fields="['path']"
-				style="width: 100%; max-height: 100%"
-				scrollable
-				class="flex flex-column"
-			>
-				<template #header>
-					<div class="flex">
-						<p-button @click="openMediaFolder">Open Media Folder</p-button>
-						<div class="flex-grow-1" />
-						<span class="p-input-icon-left">
-							<i class="pi pi-search" />
-							<p-input-text v-model="filters['global'].value" placeholder="Search" />
-						</span>
-					</div>
-				</template>
-				<p-column header="Type">
-					<template #body="{ data }">
-						<i class="mdi mdi-image" v-if="data.image"></i>
-						<i class="mdi mdi-volume-high" v-if="data.audio"></i>
-						<i class="mdi mdi-filmstrip" v-if="data.video"></i>
-					</template>
-				</p-column>
-				<p-column field="path" header="Path" sortable> </p-column>
-				<p-column field="duration" header="Length" sortable>
-					<template #body="{ data }">
-						<span v-if="data.duration">{{ data.duration?.toFixed(2) }}s</span>
-					</template>
-				</p-column>
-				<p-column header="Preview">
-					<template #body="{ data }">
-						<img v-if="isImagePreview(data)" :src="data.file" class="thumbnail" />
-						<sound-player v-else-if="data.audio && !data.video" :file="data.file" />
-					</template>
-				</p-column>
-			</p-data-table>
+	<scrolling-tab-body class="media-browser">
+		<div class="flex align-items-center">
+			<p-button @click="openMediaFolder">Open Media Folder</p-button>
+			<div class="flex-grow-1" />
+			<span class="p-input-icon-left">
+				<i class="pi pi-search" />
+				<p-input-text v-model="filters['global'].value" placeholder="Search" />
+			</span>
 		</div>
-	</div>
+		<table style="width: 100%">
+			<tr>
+				<th>Media</th>
+				<th>Type</th>
+				<th>Duration</th>
+			</tr>
+			<media-tree root="default" :files="mediaItems.map((i) => i.path)" />
+		</table>
+	</scrolling-tab-body>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { useMediaStore } from "../../media/media-store.ts"
+import MediaTree from "./MediaTree.vue"
 import PDataTable from "primevue/datatable"
 import PInputText from "primevue/inputtext"
 import { FilterMatchMode } from "primevue/api"
@@ -57,6 +33,7 @@ import { useElementSize } from "@vueuse/core"
 import PButton from "primevue/button"
 
 import SoundPlayer from "./SoundPlayer.vue"
+import { ScrollingTabBody } from "../../main"
 
 const filters = ref({
 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -65,8 +42,6 @@ const filters = ref({
 const mediaStore = useMediaStore()
 const mediaItems = computed(() => Object.values(mediaStore.media))
 const containerDiv = ref<HTMLElement | null>(null)
-
-const containerSize = useElementSize(containerDiv)
 
 function openMediaFolder() {
 	mediaStore.openMediaFolder()
@@ -96,5 +71,9 @@ function isImagePreview(media: MediaMetadata) {
 .thumbnail {
 	max-width: 100px;
 	max-height: 100px;
+}
+
+.media-browser {
+	--media-preview-size: 50px;
 }
 </style>

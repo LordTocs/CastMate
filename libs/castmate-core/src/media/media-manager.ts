@@ -11,7 +11,7 @@ import { shell } from "electron"
 //Thumbnails?
 //Durations?
 
-function getDuration(file: string) {
+function probeMedia(file: string) {
 	return new Promise<ffmpeg.FfprobeData>((resolve, reject) => {
 		ffmpeg.ffprobe(file, (err, data) => {
 			if (err) {
@@ -61,15 +61,15 @@ export const MediaManager = Service(
 			const watcher = chokidar.watch(path)
 
 			watcher.on("add", (filepath, stats) => {
-				this.addMedia(path, filepath)
+				this.addMedia(id, path, filepath)
 			})
 
 			watcher.on("unlink", (filepath) => {
-				this.removeMedia(path, filepath)
+				this.removeMedia(id, path, filepath)
 			})
 
 			watcher.on("change", (filepath) => {
-				this.addMedia(path, filepath)
+				this.addMedia(id, path, filepath)
 			})
 
 			this.mediaFolders.push({
@@ -79,11 +79,13 @@ export const MediaManager = Service(
 			})
 		}
 
-		private async addMedia(root: string, filepath: string) {
-			const relPath = pathTools.relative(root, filepath)
+		private async addMedia(folderId: string, root: string, filepath: string) {
+			const rootRelPath = pathTools.relative(root, filepath)
+			const relPath = pathTools.join(folderId, rootRelPath)
 			const extension = pathTools.extname(filepath)
 
 			const metadata: MediaMetadata = {
+				folderId,
 				file: filepath,
 				path: relPath,
 				url: "",
@@ -91,7 +93,7 @@ export const MediaManager = Service(
 
 			//Duration
 			try {
-				const probeInfo = await getDuration(filepath)
+				const probeInfo = await probeMedia(filepath)
 				const duration = probeInfo.format.duration as number | string | undefined
 
 				if (duration && duration != "N/A") {
@@ -119,8 +121,9 @@ export const MediaManager = Service(
 			addOrUpdateMediaRenderer(metadata)
 		}
 
-		private async removeMedia(root: string, filepath: string) {
-			const relPath = pathTools.relative(root, filepath)
+		private async removeMedia(folderId: string, root: string, filepath: string) {
+			const rootRelPath = pathTools.relative(root, filepath)
+			const relPath = pathTools.join(folderId, rootRelPath)
 			this.mediaFiles.delete(relPath)
 			removeMediaRenderer(relPath)
 		}
