@@ -3,9 +3,32 @@ import { OBSConnection } from "./connection"
 import { Toggle } from "castmate-schema"
 import { OBSFFmpegSourceSettings } from "./input-settings"
 
-export async function getMediaDuration(obs: OBSConnection, sourceName: string) {
+export async function getMediaDuration(obs: OBSConnection, sourceName: string): Promise<number | undefined> {
 	const resp = await obs.connection.call("GetMediaInputStatus", { inputName: sourceName })
-	return resp.mediaDuration
+	if (resp.mediaDuration != null) {
+		return resp.mediaDuration / 1000
+	}
+	return undefined
+}
+
+//HACK HACK HACK HACK
+export async function forceGetMediaDuration(obs: OBSConnection, sourceName: string): Promise<number | undefined> {
+	//Check to see if we can get the duration
+	let duration = await getMediaDuration(obs, sourceName)
+
+	if (duration != null) return duration
+
+	//Do the hack if we couldn't
+	//Why does this work???
+	//Best Guess: Asking for media restart even while not active will cause OBS to load the media
+	await obs.connection.call("TriggerMediaInputAction", {
+		inputName: sourceName,
+		mediaAction: "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART",
+	})
+
+	duration = await getMediaDuration(obs, sourceName)
+
+	return duration
 }
 
 export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
@@ -63,15 +86,39 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 			await config.obs?.connection?.call("TriggerMediaInputAction", { inputName: config.source, mediaAction })
 		},
 	})
-	/*
-	Typescript HATES this for some reason. The type deduction begins to fail with the inclusion of a duration config.
-	Additionally, OBS can fail to return media duration. It will succeed if the media is playing (or possibly loaded?)
 
 	defineAction({
 		id: "playMedia",
 		name: "Play Media",
-		description: "Plays a media source from the beginning",
+		icon: "mdi mdi-play",
+		description: "Plays a media source from the beginning. Make sure close file when inactive is off.",
+		duration: {
+			propDependencies: ["obs", "scene", "source"],
+			async callback(config) {
+				try {
+					const sceneItem = await config.obs.getSceneSource(config.scene, config.source)
 
+					const duration = await forceGetMediaDuration(config.obs, sceneItem.sourceName)
+
+					console.log("Duration Detected: ", duration)
+
+					return {
+						indefinite: duration == null,
+						dragType: "fixed",
+						duration: duration ?? 1,
+					}
+				} catch (err) {
+					//TODO: Cache Media Lengths??
+					console.error(err)
+
+					return {
+						indefinite: true,
+						dragType: "fixed",
+						duration: 1,
+					}
+				}
+			},
+		},
 		config: {
 			type: Object,
 			properties: {
@@ -84,7 +131,6 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 				scene: {
 					name: "Scene",
 					type: String,
-					template: true,
 					required: true,
 					async enum(context: { obs: OBSConnection }) {
 						return (await context?.obs?.getSceneNames()) ?? []
@@ -93,7 +139,6 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 				source: {
 					type: Number,
 					name: "Source",
-					template: true,.
 					required: true,
 					async enum(context: { scene: string; obs: OBSConnection }) {
 						return await context.obs.getSceneSources(context.scene, "ffmpeg_source")
@@ -119,17 +164,15 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 				mediaAction: "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART",
 			})
 
-			const duration = await getMediaDuration(config.obs, sceneItem.sourceName)
+			const duration = (await getMediaDuration(config.obs, sceneItem.sourceName)) ?? 1
 
-			await abortableSleep(duration || 1000, abortSignal, async () => {})
+			await abortableSleep(duration * 1000, abortSignal, async () => {})
 
-			if (!sceneItem.sceneItemEnabled) {
-				await config.obs.connection.call("SetSceneItemEnabled", {
-					sceneName: config.scene,
-					sceneItemId: config.source,
-					sceneItemEnabled: false,
-				})
-			}
+			await config.obs.connection.call("SetSceneItemEnabled", {
+				sceneName: config.scene,
+				sceneItemId: config.source,
+				sceneItemEnabled: false,
+			})
 		},
-	})*/
+	})
 }
