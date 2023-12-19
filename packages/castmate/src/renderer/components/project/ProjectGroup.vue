@@ -6,7 +6,7 @@
 				<i :class="group.icon" class="px-1" v-if="group.icon"></i>
 			</slot>
 			<span style="flex: 1">{{ group.title }}</span>
-			<p-context-menu ref="contextMenu" :model="menuItems" />
+			<c-context-menu ref="contextMenu" :items="menuItems" />
 		</div>
 		<div class="project-category-content" v-show="expanded">
 			<project-group-or-item :indent="indent + 1" v-for="gi of group.items" :group-or-item="gi" />
@@ -15,9 +15,8 @@
 </template>
 
 <script setup lang="ts">
-import { ProjectGroup } from "castmate-ui-core"
+import { ProjectGroup, CContextMenu } from "castmate-ui-core"
 import ProjectGroupOrItem from "./ProjectGroupOrItem.vue"
-import PContextMenu from "primevue/contextmenu"
 import { computed, ref, toRaw } from "vue"
 import { type MenuItem } from "primevue/menuitem"
 
@@ -31,7 +30,7 @@ const props = withDefaults(
 	}
 )
 
-const contextMenu = ref<PContextMenu | undefined>()
+const contextMenu = ref<InstanceType<typeof CContextMenu>>()
 const menuItems = computed<MenuItem[] | undefined>(() => {
 	const items: MenuItem[] = []
 

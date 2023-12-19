@@ -12,6 +12,8 @@ export { default as ScrollingTabBody } from "./components/docking/ScrollingTabBo
 
 export { default as TriggerSelector } from "./components/util/TriggerSelector.vue"
 export { default as TextHider } from "./components/util/TextHider.vue"
+export { default as CContextMenu } from "./components/util/CContextMenu.vue"
+
 export { default as FilterPalette } from "./components/util/FilterPalette.vue"
 export { default as PanArea } from "./components/panning/PanArea.vue"
 

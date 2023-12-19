@@ -15,13 +15,12 @@
 		<slot name="end">
 			<component v-if="item.endComponent" :is="item.endComponent" :item="item" />
 		</slot>
-		<p-context-menu ref="contextMenu" :model="menuItems" />
+		<c-context-menu ref="contextMenu" :items="menuItems" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ProjectItem, NameDialog } from "castmate-ui-core"
-import PContextMenu from "primevue/contextmenu"
+import { ProjectItem, NameDialog, CContextMenu } from "castmate-ui-core"
 import { MenuItem } from "primevue/menuitem"
 import { computed, ref } from "vue"
 import { useDialog } from "primevue/usedialog"
@@ -36,7 +35,7 @@ const props = withDefaults(
 )
 const dialog = useDialog()
 const confirm = useConfirm()
-const contextMenu = ref<PContextMenu | undefined>()
+const contextMenu = ref<InstanceType<typeof CContextMenu>>()
 const menuItems = computed<MenuItem[]>(() => {
 	const items: MenuItem[] = []
 
