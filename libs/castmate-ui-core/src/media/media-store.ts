@@ -9,6 +9,7 @@ export const useMediaStore = defineStore("media", () => {
 
 	const getMedia = useIpcCaller<() => MediaMetadata[]>("media", "getMedia")
 	const openMediaFolder = useIpcCaller<() => any>("media", "openMediaFolder")
+	const exploreMediaItem = useIpcCaller<(path: string) => any>("media", "exploreMediaItem")
 
 	const projectStore = useProjectStore()
 	const dockingStore = useDockingStore()
@@ -26,10 +27,12 @@ export const useMediaStore = defineStore("media", () => {
 
 	async function initialize() {
 		handleIpcMessage("media", "addMedia", (event, metadata: MediaMetadata) => {
+			console.log("Adding", metadata.path)
 			mediaMap.value[metadata.path] = metadata
 		})
 
 		handleIpcMessage("media", "removeMedia", (event, path: string) => {
+			console.log("Removing", path)
 			delete mediaMap.value[path]
 		})
 
@@ -42,5 +45,5 @@ export const useMediaStore = defineStore("media", () => {
 		projectStore.registerProjectGroupItem(projectItem)
 	}
 
-	return { initialize, media: computed(() => mediaMap.value), openMediaFolder }
+	return { initialize, media: computed(() => mediaMap.value), openMediaFolder, exploreMediaItem }
 })

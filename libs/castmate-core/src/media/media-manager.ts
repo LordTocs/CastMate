@@ -24,7 +24,7 @@ function probeMedia(file: string) {
 }
 
 const addOrUpdateMediaRenderer = defineCallableIPC<(metadata: MediaMetadata) => void>("media", "addMedia")
-const removeMediaRenderer = defineCallableIPC<(relpath: string) => void>("media", "addMedia")
+const removeMediaRenderer = defineCallableIPC<(relpath: string) => void>("media", "removeMedia")
 
 export interface MediaFolder {
 	id: string
@@ -48,6 +48,12 @@ export const MediaManager = Service(
 
 			defineIPCFunc("media", "openMediaFolder", () => {
 				shell.openPath(mediaPath)
+			})
+
+			defineIPCFunc("media", "exploreMediaItem", (path: string) => {
+				const mediaItem = this.mediaFiles.get(path)
+				if (!mediaItem) return
+				shell.showItemInFolder(mediaItem.file)
 			})
 		}
 

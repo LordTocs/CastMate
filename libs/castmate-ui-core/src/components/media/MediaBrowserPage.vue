@@ -1,6 +1,6 @@
 <template>
 	<scrolling-tab-body class="media-browser">
-		<div class="flex align-items-center">
+		<div class="flex align-items-center p-3">
 			<p-button @click="openMediaFolder">Open Media Folder</p-button>
 			<div class="flex-grow-1" />
 			<span class="p-input-icon-left">
@@ -40,7 +40,11 @@ const filters = ref({
 })
 
 const mediaStore = useMediaStore()
-const mediaItems = computed(() => Object.values(mediaStore.media))
+const mediaItems = computed(() => {
+	const itemPaths = Object.values(mediaStore.media)
+	itemPaths.sort((a, b) => a.path.localeCompare(b.path))
+	return itemPaths
+})
 const containerDiv = ref<HTMLElement | null>(null)
 
 function openMediaFolder() {

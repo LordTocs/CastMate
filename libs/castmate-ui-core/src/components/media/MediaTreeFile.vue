@@ -1,5 +1,5 @@
 <template>
-	<tr class="media-tree-item" :style="{ '--media-indent': indent ?? 0 }">
+	<tr class="media-tree-item" :style="{ '--media-indent': indent ?? 0 }" @contextmenu="menu?.show($event)">
 		<td class="media-tree-file">
 			<div class="media-preview">
 				<img v-if="isImagePreview" :src="media.file" class="thumbnail" />
@@ -22,14 +22,17 @@
 			/>
 		</td>
 	</tr>
+	<c-context-menu :items="contextOptions" ref="menu" />
 </template>
 
 <script setup lang="ts">
 import path from "path"
 import { MediaMetadata } from "castmate-schema"
-import { DurationLabel } from "../../main"
-import { computed } from "vue"
+import { DurationLabel, useMediaStore } from "../../main"
+import { computed, ref } from "vue"
 import SoundPlayer from "./SoundPlayer.vue"
+import CContextMenu from "../util/CContextMenu.vue"
+import { MenuItem } from "primevue/menuitem"
 
 const props = defineProps<{
 	name: string
@@ -37,10 +40,26 @@ const props = defineProps<{
 	indent?: number
 }>()
 
+const menu = ref<InstanceType<typeof CContextMenu>>()
+
 const isImagePreview = computed(() => {
 	if (props.media.image) return true
 	const ext = path.extname(props.media.path)
 	return [".gif", ".webp", ".apng"].includes(ext)
+})
+
+const mediaStore = useMediaStore()
+
+const contextOptions = computed<MenuItem[]>(() => {
+	return [
+		{
+			label: "Show In Explorer",
+			icon: "mdi mdi-folder",
+			command(event) {
+				mediaStore.exploreMediaItem(props.media.path)
+			},
+		},
+	]
 })
 </script>
 

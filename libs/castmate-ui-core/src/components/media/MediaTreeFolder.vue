@@ -35,10 +35,6 @@ function toggleOpen(ev: MouseEvent) {
 </script>
 
 <style scoped>
-.media-tree-folder-content {
-	/* padding-left: 0.8rem; */
-}
-
 .media-tree-folder-header {
 	display: flex;
 	flex-direction: row;
