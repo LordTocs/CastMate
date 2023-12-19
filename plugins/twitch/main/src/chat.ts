@@ -146,7 +146,7 @@ export function setupChat() {
 		config: {
 			type: Object,
 			properties: {
-				bits: { type: Range, name: "Bits Cheered", required: true, default: new Range() },
+				bits: { type: Range, name: "Bits Cheered", required: true, default: {} },
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
@@ -164,7 +164,7 @@ export function setupChat() {
 			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
 				return false
 			}
-			return config.bits.inRange(context.bits)
+			return Range.inRange(config.bits, context.bits)
 		},
 	})
 

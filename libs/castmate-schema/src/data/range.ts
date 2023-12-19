@@ -1,49 +1,41 @@
 import { isNumber } from "lodash"
 import { registerType, Schema, SchemaBase } from "../schema"
 
-// interface Range {
-// 	min?: number
-// 	max?: number
-// 	inRange(num: number): boolean
-// }
-
-export class Range {
+export interface Range {
 	min?: number | string
 	max?: number | string
+}
 
-	constructor(min?: number | string, max?: number | string) {
-		this.min = min
-		this.max = max
-	}
+export interface RangeFactory {
+	factoryCreate(): Range
+	inRange(range: Range, num: number): boolean
+}
+export const Range: RangeFactory = {
+	factoryCreate(): Range {
+		return {}
+	},
 
-	inRange(num: number) {
-		if (!isNumber(this.min) || !isNumber(this.max)) return false
+	inRange(range: Range | undefined, num: number) {
+		if (!range) return true //Empty range is considered all numbers
+		if (!isNumber(range.min) || !isNumber(range.max)) return false
 
-		if (this.min != null) {
-			if (this.min > num) {
+		if (range.min != null) {
+			if (range.min > num) {
 				return false
 			}
 		}
 
-		if (this.max != null) {
-			if (this.max < num) {
+		if (range.max != null) {
+			if (range.max < num) {
 				return false
 			}
 		}
-
 		return true
-	}
-
-	toJSON() {
-		return {
-			min: this.min,
-			max: this.max,
-		}
-	}
+	},
 }
 
 export interface SchemaRange extends SchemaBase<Range> {
-	type: typeof Range
+	type: RangeFactory
 	template?: boolean
 }
 
@@ -52,15 +44,6 @@ declare module "../schema" {
 		Range: [SchemaRange, Range]
 	}
 }
-
-function test<T extends Schema>(s: T) {}
-
-test({
-	type: Object,
-	properties: {
-		hello: { type: Range },
-	},
-})
 
 registerType("Range", {
 	constructor: Range,

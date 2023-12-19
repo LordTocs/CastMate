@@ -37,7 +37,7 @@ export function setupHypeTrains() {
 				level: {
 					type: Range,
 					name: "Level",
-					default: new Range(1),
+					default: { min: 1 },
 					required: true,
 				},
 			},
@@ -52,7 +52,7 @@ export function setupHypeTrains() {
 			},
 		},
 		async handle(config, context) {
-			return config.level.inRange(context.level)
+			return Range.inRange(config.level, context.level)
 		},
 	})
 
@@ -67,7 +67,7 @@ export function setupHypeTrains() {
 				level: {
 					type: Range,
 					name: "Level",
-					default: new Range(1),
+					default: { min: 1 },
 					required: true,
 				},
 			},
@@ -82,7 +82,7 @@ export function setupHypeTrains() {
 			},
 		},
 		async handle(config, context) {
-			return config.level.inRange(context.level)
+			return Range.inRange(config.level, context.level)
 		},
 	})
 

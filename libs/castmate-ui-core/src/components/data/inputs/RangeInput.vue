@@ -61,7 +61,7 @@ const min = computed({
 	},
 	set(v) {
 		if (!model.value) {
-			model.value = new Range(v)
+			model.value = { min: v }
 			return
 		}
 		model.value.min = v
@@ -74,7 +74,7 @@ const max = computed({
 	},
 	set(v) {
 		if (!model.value) {
-			model.value = new Range(undefined, v)
+			model.value = { max: v }
 			return
 		}
 		model.value.max = v

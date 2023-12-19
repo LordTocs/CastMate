@@ -17,8 +17,8 @@ export function setupSubscriptions() {
 		config: {
 			type: Object,
 			properties: {
-				totalMonths: { type: Range, name: "Months", required: true, default: new Range(1) },
-				streakMonths: { type: Range, name: "Streak Months", required: true, default: new Range(1) },
+				totalMonths: { type: Range, name: "Months", required: true, default: { min: 1 } },
+				streakMonths: { type: Range, name: "Streak Months", required: true, default: { min: 1 } },
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
@@ -38,8 +38,8 @@ export function setupSubscriptions() {
 				return false
 			}
 
-			if (!config.totalMonths.inRange(context.totalMonths)) return false
-			if (!config.streakMonths.inRange(context.streakMonths)) return false
+			if (!Range.inRange(config.totalMonths, context.totalMonths)) return false
+			if (!Range.inRange(config.streakMonths, context.streakMonths)) return false
 
 			return true
 		},
@@ -54,7 +54,7 @@ export function setupSubscriptions() {
 		config: {
 			type: Object,
 			properties: {
-				subs: { type: Range, name: "Subs Gifted", required: true, default: new Range(1) },
+				subs: { type: Range, name: "Subs Gifted", required: true, default: { min: 1 } },
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
@@ -72,7 +72,7 @@ export function setupSubscriptions() {
 				return false
 			}
 
-			if (!config.subs.inRange(context.subs)) return false
+			if (!Range.inRange(config.subs, context.subs)) return false
 
 			return true
 		},

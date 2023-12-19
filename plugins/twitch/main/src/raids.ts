@@ -17,7 +17,7 @@ export function setupRaids() {
 				raiders: {
 					type: Range,
 					name: "Raider Count",
-					default: new Range(1),
+					default: { min: 1 },
 					required: true,
 				},
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
@@ -37,7 +37,7 @@ export function setupRaids() {
 				return false
 			}
 
-			return config.raiders.inRange(context.raiders)
+			return Range.inRange(config.raiders, context.raiders)
 		},
 	})
 
@@ -52,7 +52,7 @@ export function setupRaids() {
 				raiders: {
 					type: Range,
 					name: "Raider Count",
-					default: new Range(),
+					default: { min: 1 },
 					required: true,
 				},
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
@@ -71,7 +71,7 @@ export function setupRaids() {
 				return false
 			}
 
-			return config.raiders.inRange(context.raiders)
+			return Range.inRange(config.raiders, context.raiders)
 		},
 	})
 
