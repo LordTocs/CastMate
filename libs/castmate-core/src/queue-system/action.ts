@@ -13,7 +13,7 @@ import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
 import { type Plugin, initingPlugin } from "../plugins/plugin"
 import { SemanticVersion, isArray } from "../util/type-helpers"
-import { ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
+import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
 import { defineIPCFunc } from "../util/electron"
 import { templateSchema } from "../templates/template"
 
@@ -157,7 +157,12 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 		if (this.spec.duration) {
 			if ("callback" in this.spec.duration) {
 				//console.log("SETTING UP CALLBACK", `actions_${this.id}_duration`)
-				defineIPCFunc(this.plugin.id, `actions_${this.id}_duration`, this.spec.duration.callback)
+				defineIPCFunc(this.plugin.id, `actions_${this.id}_duration`, async (config) => {
+					const configReal = await deserializeSchema(this.configSchema, config)
+					if (this.spec.duration && "callback" in this.spec.duration) {
+						return this.spec.duration.callback(configReal)
+					}
+				})
 			}
 		}
 	}
