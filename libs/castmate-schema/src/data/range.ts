@@ -2,13 +2,14 @@ import { isNumber } from "lodash"
 import { registerType, Schema, SchemaBase } from "../schema"
 
 export interface Range {
-	min?: number | string
-	max?: number | string
+	min?: number
+	max?: number
 }
 
 export interface RangeFactory {
 	factoryCreate(): Range
 	inRange(range: Range, num: number): boolean
+	clamp(range: Range | undefined, num: number): number
 }
 export const Range: RangeFactory = {
 	factoryCreate(): Range {
@@ -31,6 +32,24 @@ export const Range: RangeFactory = {
 			}
 		}
 		return true
+	},
+
+	clamp(range: Range | undefined, value: number) {
+		if (!range) return value
+
+		if (range.min != null) {
+			if (value < range.min) {
+				return range.min
+			}
+		}
+
+		if (range.max != null) {
+			if (value > range.max) {
+				return range.max
+			}
+		}
+
+		return value
 	},
 }
 
