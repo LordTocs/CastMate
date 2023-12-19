@@ -2,7 +2,10 @@ import * as fs from "fs/promises"
 import * as fsSync from "fs"
 import * as path from "path"
 import * as YAML from "yaml"
-import { safeStorage } from "electron"
+import { BrowserWindow, IpcMainInvokeEvent, ipcMain, safeStorage } from "electron"
+import { defineIPCFunc } from "../util/electron"
+
+import { dialog } from "electron"
 
 let activeProjectDirectory: string = ""
 
@@ -61,4 +64,19 @@ export async function writeSecretYAML<T = any>(data: T, ...paths: string[]) {
 	const strData = YAML.stringify(data)
 	const buffer = safeStorage.encryptString(strData)
 	await fs.writeFile(resolveProjectPath(...paths), buffer)
+}
+
+export async function initializeFileSystem() {
+	ipcMain.handle(`filesystem_getFolderInput`, async (event: IpcMainInvokeEvent, existing: string | undefined) => {
+		const window = BrowserWindow.fromWebContents(event.sender)
+
+		if (!window) return undefined
+
+		const result = await dialog.showOpenDialog(window, {
+			properties: ["openDirectory"],
+			defaultPath: existing,
+		})
+
+		return result?.filePaths?.[0]
+	})
 }

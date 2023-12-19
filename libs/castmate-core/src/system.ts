@@ -3,7 +3,7 @@ import { ActionQueue, ActionQueueManager } from "./queue-system/action-queue"
 import { ResourceRegistry } from "./resources/resource-registry"
 import { Plugin } from "./plugins/plugin"
 import { PluginManager } from "./plugins/plugin-manager"
-import { ensureDirectory, resolveProjectPath, setProjectDirectory } from "./io/file-system"
+import { ensureDirectory, resolveProjectPath, setProjectDirectory, initializeFileSystem } from "./io/file-system"
 import { MediaManager } from "./media/media-manager"
 import { ProfileManager } from "./profile/profile-system"
 import { defineCallableIPC, defineIPCFunc } from "./util/electron"
@@ -29,6 +29,7 @@ export async function initializeCastMate() {
 	await setProjectDirectory("../../user")
 	await ensureDirectory(resolveProjectPath("settings"))
 	await ensureDirectory(resolveProjectPath("secrets"))
+	await initializeFileSystem()
 	PluginManager.initialize()
 	MediaManager.initialize()
 	ResourceRegistry.initialize()

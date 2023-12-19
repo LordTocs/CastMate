@@ -1,7 +1,7 @@
 import { PowerShellCommand } from "castmate-plugin-os-shared"
 import { defineAction, evaluateTemplate, registerSchemaTemplate } from "castmate-core"
 import { abortablePromise } from "castmate-core/src/util/abort-utils"
-import { getTemplateRegionString, parseTemplateString, trimTemplateJS } from "castmate-schema"
+import { getTemplateRegionString, parseTemplateString, trimTemplateJS, Directory } from "castmate-schema"
 import { ChildProcess, exec, spawn } from "child_process"
 
 //Templating
@@ -179,6 +179,7 @@ export function setupPowershell() {
 			type: Object,
 			properties: {
 				command: { type: PowerShellCommand, name: "Command", template: true, required: true, default: "" },
+				cwd: { type: Directory, name: "Working Directory", template: true },
 			},
 		},
 		result: {
@@ -190,7 +191,7 @@ export function setupPowershell() {
 		async invoke(config, contextData, abortSignal) {
 			console.log("Running PS: ", config.command)
 
-			const stdout = await runPowershellCommand(config.command, undefined, abortSignal)
+			const stdout = await runPowershellCommand(config.command, config.cwd, abortSignal)
 
 			console.log("Result", stdout)
 

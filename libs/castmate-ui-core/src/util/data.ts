@@ -13,6 +13,7 @@ import {
 	IPCDefaultable,
 	IPCDynamicTypable,
 	DynamicType,
+	Directory,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -43,6 +44,7 @@ import BooleanInputVue from "../components/data/inputs/BooleanInput.vue"
 import ColorInputVue from "../components/data/inputs/ColorInput.vue"
 import DurationInputVue from "../components/data/inputs/DurationInput.vue"
 import DynamicTypeInputVue from "../components/data/inputs/DynamicTypeInput.vue"
+import DirectoryInputVue from "../components/data/inputs/DirectoryInput.vue"
 
 import GenericDataViewVue from "../components/data/views/GenericDataView.vue"
 import BooleanViewVue from "../components/data/views/BooleanView.vue"
@@ -222,6 +224,7 @@ export function initData() {
 	inputStore.registerInputComponent(Color, ColorInputVue)
 	inputStore.registerInputComponent(Duration, DurationInputVue)
 	inputStore.registerInputComponent(DynamicType, DynamicTypeInputVue)
+	inputStore.registerInputComponent(Directory, DirectoryInputVue)
 
 	inputStore.registerViewComponent(String, GenericDataViewVue)
 	inputStore.registerViewComponent(Number, GenericDataViewVue)

@@ -31,6 +31,12 @@ export function defineCallableIPC<T extends (...args: any[]) => void>(category: 
 	return broadcast
 }
 
+export function getMainWindow() {
+	const windows = BrowserWindow.getAllWindows()
+	if (windows.length == 0) throw new Error("Main Window is missing")
+	return windows[0]
+}
+
 export function defineIPCRPC<T extends (...args: any[]) => any>(category: string, eventName: string) {
 	const rpcMap = new Map<string, DelayedResolver<ReturnType<T>>>()
 
@@ -51,9 +57,7 @@ export function defineIPCRPC<T extends (...args: any[]) => any>(category: string
 	)
 
 	const result = (...args: Parameters<T>) => {
-		const windows = BrowserWindow.getAllWindows()
-		if (windows.length == 0) throw new Error("Main Window is missing")
-		const mainWindow = windows[0]
+		const mainWindow = getMainWindow()
 
 		const id = nanoid()
 		const promise = createDelayedResolver<ReturnType<T>>()

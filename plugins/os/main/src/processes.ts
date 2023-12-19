@@ -1,4 +1,5 @@
 import { defineAction } from "castmate-core"
+import { Directory } from "castmate-schema"
 import { ChildProcess, exec, spawn } from "child_process"
 import * as path from "path"
 
@@ -27,7 +28,7 @@ export function setupProcesses() {
 			type: Object,
 			properties: {
 				application: { type: String, name: "Application", required: true },
-				dir: { type: String, name: "Working Directory" },
+				dir: { type: Directory, name: "Working Directory" },
 				ignoreIfRunning: {
 					type: Boolean,
 					name: "Ignore If Already Running",
