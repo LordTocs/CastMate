@@ -35,6 +35,7 @@ export interface MediaMetadata {
 	url: string
 	duration?: number
 	folderId: string
+	name: string
 }
 
 export const stillImageFormats = [".png", ".jpg", ".jpeg", ".svg", ".bmp", ".tiff"]

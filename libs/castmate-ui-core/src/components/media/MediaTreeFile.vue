@@ -1,5 +1,11 @@
 <template>
-	<tr class="media-tree-item" :style="{ '--media-indent': indent ?? 0 }" @contextmenu="menu?.show($event)">
+	<tr
+		class="media-tree-item"
+		:class="{ 'clickable-media-tree-item': hasClick }"
+		:style="{ '--media-indent': indent ?? 0 }"
+		@contextmenu="menu?.show($event)"
+		@click="handleClick"
+	>
 		<td class="media-tree-file">
 			<div class="media-preview">
 				<img v-if="isImagePreview" :src="media.file" class="thumbnail" />
@@ -33,12 +39,16 @@ import { computed, ref } from "vue"
 import SoundPlayer from "./SoundPlayer.vue"
 import CContextMenu from "../util/CContextMenu.vue"
 import { MenuItem } from "primevue/menuitem"
+import { MediaFile } from "castmate-schema"
 
 const props = defineProps<{
 	name: string
 	media: MediaMetadata
 	indent?: number
+	onClick?: (file: MediaFile) => any
 }>()
+
+const emit = defineEmits(["click"])
 
 const menu = ref<InstanceType<typeof CContextMenu>>()
 
@@ -61,6 +71,19 @@ const contextOptions = computed<MenuItem[]>(() => {
 		},
 	]
 })
+
+const hasClick = computed(() => props.onClick != null)
+
+function handleClick(ev: MouseEvent) {
+	if (ev.button != 0) return
+
+	ev.stopPropagation()
+	ev.preventDefault()
+
+	if (props.onClick) {
+		emit("click", props.media.path)
+	}
+}
 </script>
 
 <style scoped>
@@ -93,5 +116,13 @@ const contextOptions = computed<MenuItem[]>(() => {
 
 .media-tree-item:nth-child(odd) {
 	background-color: #2a2a2a;
+}
+
+.clickable-media-tree-item {
+	cursor: pointer;
+}
+
+.clickable-media-tree-item:hover {
+	background-color: var(--surface-c);
 }
 </style>

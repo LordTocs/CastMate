@@ -1,7 +1,20 @@
 <template>
 	<template v-for="(item, i) in items">
-		<media-tree-file v-if="item.type == 'file'" :name="item.name" :media="item.metadata" :indent="indent" />
-		<media-tree-folder v-else :files="item.files" :root="item.root" :name="item.name" :indent="indent" />
+		<media-tree-file
+			v-if="item.type == 'file'"
+			:name="item.name"
+			:media="item.metadata"
+			:indent="indent"
+			@click="onClick"
+		/>
+		<media-tree-folder
+			v-else
+			:files="item.files"
+			:root="item.root"
+			:name="item.name"
+			:indent="indent"
+			@click="onClick"
+		/>
 	</template>
 </template>
 
@@ -19,6 +32,7 @@ const props = defineProps<{
 	root: string
 	index?: number
 	indent?: number
+	onClick?: (file: MediaFile) => any
 }>()
 
 const mediaStore = useMediaStore()

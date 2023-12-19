@@ -30,7 +30,11 @@ function onPause() {
 	playing.value = false
 }
 
-function onClick() {
+function onClick(ev: MouseEvent) {
+	if (ev.button != 0) return
+	ev.stopPropagation()
+	ev.preventDefault()
+
 	if (!audioPlayer?.value) return
 	if (!playing.value) {
 		audioPlayer.value.currentTime = 0

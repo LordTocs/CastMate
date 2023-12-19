@@ -1,54 +1,46 @@
 <template>
-	<div class="p-inputgroup" @mousedown="stopPropagation">
+	<div class="p-inputgroup" @mousedown="stopPropagation" ref="container">
 		<label-floater :label="schema.name" :no-float="noFloat" input-id="media" v-slot="labelProps">
-			<input-box :model="model" v-bind="labelProps" @click="onClick" :placeholder="schema.name"> </input-box>
+			<input-box :model="model" v-bind="labelProps" @click="onClick" :placeholder="schema.name">
+				{{ selectedMedia?.name ?? model }}
+			</input-box>
 		</label-floater>
-		<p-overlay-panel ref="overlay">
-			<p-data-table
-				:value="mediaItems"
-				v-model:selection="selectedMedia"
-				selectionMode="single"
-				:paginator="true"
-				:rows="5"
-				data-key="path"
-				v-model:filters="filters"
-				:global-filter-fields="['path']"
-				@row-select="onSelect"
-			>
-				<template #header>
-					<div class="flex">
-						<span class="p-input-icon-left">
-							<i class="pi pi-search" />
-							<p-input-text autofocus v-model="filters['global'].value" placeholder="Search" />
-						</span>
-					</div>
-				</template>
-				<p-column header="Type">
-					<template #body="{ data }">
-						<i class="mdi mdi-image" v-if="data.image"></i>
-						<i class="mdi mdi-volume-high" v-if="data.audio"></i>
-						<i class="mdi mdi-filmstrip" v-if="data.video"></i>
-					</template>
-				</p-column>
-				<p-column field="path" header="Path" sortable> </p-column>
-			</p-data-table>
-		</p-overlay-panel>
+		<drop-down-panel
+			:container="container"
+			v-model="dropDown"
+			:style="{
+				'--media-preview-size': '50px',
+				minWidth: `${containerSize.width.value}px`,
+				overflowY: 'auto',
+				maxHeight: '15rem',
+			}"
+			@wheel="stopPropagation"
+		>
+			<table style="width: 100%">
+				<tr>
+					<th>Media</th>
+					<th>Type</th>
+					<th>Duration</th>
+				</tr>
+				<media-tree root="default" :files="mediaItems.map((i) => i.path)" @click="mediaClicked" />
+			</table>
+		</drop-down-panel>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { SchemaMediaFile, SchemaBase } from "castmate-schema"
 import { computed, ref, useModel } from "vue"
-import POverlayPanel from "primevue/overlaypanel"
-import PDataTable from "primevue/datatable"
-import PInputText from "primevue/inputtext"
-import PColumn from "primevue/column"
 import { FilterMatchMode } from "primevue/api"
-import { stopPropagation, useMediaStore } from "../../../main"
+import { DropDownPanel, stopPropagation, useMediaStore } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
+
+import MediaTree from "../../media/MediaTree.vue"
 import LabelFloater from "../base-components/LabelFloater.vue"
 import InputBox from "../base-components/InputBox.vue"
+import { useElementSize } from "@vueuse/core"
+import { MediaFile } from "castmate-schema"
 
 const props = defineProps<
 	{
@@ -59,21 +51,21 @@ const props = defineProps<
 
 const mediaStore = useMediaStore()
 const mediaItems = computed(() =>
-	Object.values(mediaStore.media).filter((m) => {
-		if (props.schema.image && !m.image) return false
-		if (props.schema.sound && !m.audio) return false
-		if (props.schema.video && !m.video) return false
-		return true
-	})
+	Object.values(mediaStore.media)
+		.filter((m) => {
+			if (props.schema.image && !m.image) return false
+			if (props.schema.sound && !m.audio) return false
+			if (props.schema.video && !m.video) return false
+			return true
+		})
+		.sort((a, b) => a.path.localeCompare(b.path))
 )
 
-const filters = ref({
-	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-})
+const container = ref<HTMLElement>()
+const containerSize = useElementSize(container)
+const dropDown = ref(false)
 
 const model = useModel(props, "modelValue")
-
-const overlay = ref<POverlayPanel | null>(null)
 
 const selectedMedia = computed({
 	get() {
@@ -86,10 +78,19 @@ const selectedMedia = computed({
 })
 
 function onSelect() {
-	overlay.value?.hide()
+	dropDown.value = false
 }
 
 function onClick(ev: MouseEvent) {
-	overlay.value?.toggle(ev)
+	if (ev.button != 0) return
+
+	ev.stopPropagation()
+	ev.preventDefault()
+	dropDown.value = true
+}
+
+function mediaClicked(media: MediaFile) {
+	model.value = media
+	dropDown.value = false
 }
 </script>

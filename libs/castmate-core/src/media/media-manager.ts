@@ -95,6 +95,7 @@ export const MediaManager = Service(
 				file: filepath,
 				path: relPath,
 				url: "",
+				name: pathTools.basename(filepath),
 			}
 
 			//Duration

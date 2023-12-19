@@ -8,7 +8,7 @@
 			{{ name }}
 		</td>
 	</tr>
-	<media-tree :root="root" :files="files" v-if="open" :indent="(indent ?? 0) + 1"></media-tree>
+	<media-tree :root="root" :files="files" v-if="open" :indent="(indent ?? 0) + 1" @click="onClick"></media-tree>
 </template>
 
 <script setup lang="ts">
@@ -21,6 +21,7 @@ const props = defineProps<{
 	root: string
 	files: MediaFile[]
 	indent?: number
+	onClick?: (file: MediaFile) => any
 }>()
 
 const open = ref(false)
