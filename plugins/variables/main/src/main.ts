@@ -24,7 +24,7 @@ import {
 	runOnChange,
 } from "castmate-core"
 
-import { DynamicType, Schema, constructDefault, getTypeByConstructor, getTypeByName } from "castmate-schema"
+import { DynamicType, Range, Schema, constructDefault, getTypeByConstructor, getTypeByName } from "castmate-schema"
 
 import { IPCVariableDefinition, isValidJSName } from "castmate-plugin-variables-shared"
 import _debounce from "lodash/debounce"
@@ -299,6 +299,7 @@ const variablesPlugin = definePlugin(
 							return {
 								...variable.schema,
 								name: "Value",
+								template: true,
 							}
 						},
 					},
@@ -338,14 +339,25 @@ const variablesPlugin = definePlugin(
 									type: String,
 									name: "Value",
 									required: true,
+									template: true,
 								}
 							}
 
-							return {
+							const result = {
 								...variable.schema,
 								name: "Value",
+								template: true,
 							}
+
+							//console.log("DYNAMIC TYPE", result)
+
+							return result
 						},
+					},
+					clamp: {
+						type: Range,
+						name: "Clamp Range",
+						template: true,
 					},
 				},
 			},
@@ -354,7 +366,7 @@ const variablesPlugin = definePlugin(
 
 				if (!variable) return //TODO: Log
 
-				variable.ref.value += config.offset
+				variable.ref.value = Range.clamp(config.clamp, variable.ref.value + config.offset)
 			},
 		})
 	}

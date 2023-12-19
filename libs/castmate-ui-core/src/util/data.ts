@@ -56,6 +56,7 @@ import ToggleViewVue from "../components/data/views/ToggleView.vue"
 
 import { ipcRenderer } from "electron"
 import { isObject } from "@vueuse/core"
+import _cloneDeep from "lodash/cloneDeep"
 
 export type ResourceProxy = string
 export const ResourceProxyFactory = {
@@ -95,11 +96,12 @@ export function ipcParseSchemaDynamic<T>(ipcSchema: IPCDynamicTypable) {
 		const ipcPath = ipcSchema.dynamicType.ipc
 		return {
 			dynamicType: markRaw(async (context: any) => {
+				const rawContext = _cloneDeep(context)
 				try {
-					const result = (await ipcRenderer.invoke(ipcPath, toRaw(context))) as IPCSchema
+					const result = (await ipcRenderer.invoke(ipcPath, rawContext)) as IPCSchema
 					return ipcParseSchema(result)
 				} catch (err) {
-					console.error("Error Invoking Dynamic Type", ipcPath)
+					console.error("Error Invoking Dynamic Type", ipcPath, rawContext)
 					console.error(err)
 					return []
 				}
