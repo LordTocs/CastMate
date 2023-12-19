@@ -1,13 +1,7 @@
 <template>
 	<div class="p-inputgroup" @mousedown="stopPropagation">
 		<document-path :local-path="localPath">
-			<label-floater
-				:label="schema.name"
-				:no-float="noFloat"
-				input-id="text"
-				v-slot="labelProps"
-				v-if="!schema.enum"
-			>
+			<label-floater :label="schema.name" :no-float="noFloat" input-id="text" v-slot="labelProps">
 				<template-toggle
 					v-model="model"
 					:template-mode="schema.template ?? false"
