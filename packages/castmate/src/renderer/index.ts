@@ -1,6 +1,7 @@
 import { useInitStore } from "./store/init-store"
 import {
 	initializeProfiles,
+	initializeAutomations,
 	useDocumentStore,
 	usePluginStore,
 	useProjectStore,
@@ -30,6 +31,7 @@ import "@mdi/font/css/materialdesignicons.css"
 
 import { createPinia } from "pinia"
 import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
+import AutomationEditPageVue from "./components/automation/AutomationEditPage.vue"
 import { initData } from "castmate-ui-core"
 import { createRouter, createWebHistory } from "vue-router"
 
@@ -91,9 +93,11 @@ async function init() {
 	await useDashboardStore().initialize()
 
 	await initializeProfiles(app)
+	await initializeAutomations(app)
 
 	const documentStore = useDocumentStore()
 	documentStore.registerDocumentComponent("profile", ProfileEditorVue)
+	documentStore.registerDocumentComponent("automation", AutomationEditPageVue)
 	initSettingsDocuments()
 
 	initializeQueues()

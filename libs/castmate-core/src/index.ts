@@ -1,6 +1,7 @@
 export * from "./plugins/plugin"
 export * from "./plugins/plugin-manager"
 export * from "./profile/profile"
+export * from "./automation/automation"
 export * from "./media/media-manager"
 export * from "./queue-system/action"
 export * from "./queue-system/action-queue"

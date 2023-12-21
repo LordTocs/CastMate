@@ -7,6 +7,7 @@ import { ensureDirectory, resolveProjectPath, setProjectDirectory, initializeFil
 import { MediaManager } from "./media/media-manager"
 import { ProfileManager } from "./profile/profile-system"
 import { defineCallableIPC, defineIPCFunc } from "./util/electron"
+import { Automation } from "./automation/automation"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -44,6 +45,7 @@ const notifyRendererSetupFinished = defineCallableIPC<() => void>("castmate", "s
 export async function finializeCastMateSetup() {
 	console.log("Finalizing Init")
 	await Profile.initialize()
+	await Automation.initialize()
 	await ActionQueue.initialize()
 	ActionQueueManager.initialize()
 	ProfileManager.initialize()

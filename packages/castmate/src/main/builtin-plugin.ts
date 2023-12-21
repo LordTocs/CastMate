@@ -1,5 +1,13 @@
 import { Duration, Toggle } from "castmate-schema"
-import { ActionQueue, Profile, defineAction, definePlugin, defineSetting } from "castmate-core"
+import {
+	ActionQueue,
+	Automation,
+	Profile,
+	SequenceRunner,
+	defineAction,
+	definePlugin,
+	defineSetting,
+} from "castmate-core"
 import { abortableSleep } from "castmate-core/src/util/abort-utils"
 import { defineFlowAction } from "castmate-core/src/queue-system/action"
 
@@ -102,6 +110,32 @@ export default definePlugin(
 				await config.profile?.applyConfig({
 					activationMode: config.activation,
 				})
+			},
+		})
+
+		//TODO: Detect length of automation
+		defineAction({
+			id: "runAutomation",
+			name: "Run Automation",
+			icon: "mdi mdi-cogs",
+			description: "Runs an automation",
+			config: {
+				type: Object,
+				properties: {
+					automation: { type: Automation, name: "Automation", required: true },
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				const runner = new SequenceRunner(config.automation.config.sequence, contextData)
+
+				const onabort = () => runner.abort()
+
+				//Link up the sequence runners abort
+				abortSignal.addEventListener("abort", onabort, { once: true })
+
+				await runner.run()
+
+				abortSignal.removeEventListener("abort", onabort)
 			},
 		})
 	}
