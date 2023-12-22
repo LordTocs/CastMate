@@ -11,6 +11,7 @@ interface CachedViewerSubInfo {
 }
 
 interface CachedViewerInfo {
+	id: string
 	displayName?: string
 	color?: Color | "default"
 	following?: boolean
@@ -78,6 +79,7 @@ export const ViewerCache = Service(
 		private mods = new Set<string>()
 
 		private _viewerLookup = new Map<string, CachedViewerInfo>()
+		private _nameLookup = new Map<string, CachedViewerInfo>()
 
 		//Colors and SubInfo could be too numerous to prime so we'll lazily collect ids to query
 		private unknownColors = new Set<string>()
@@ -89,6 +91,7 @@ export const ViewerCache = Service(
 		constructor() {}
 
 		async resetCache() {
+			this._nameLookup = new Map()
 			this._viewerLookup = new Map()
 			this.unknownColors = new Set()
 			this.unknownSubInfo = new Set()
@@ -118,7 +121,7 @@ export const ViewerCache = Service(
 		private getOrCreate(userId: string) {
 			let cached = this._viewerLookup.get(userId)
 			if (!cached) {
-				cached = {}
+				cached = { id: userId }
 				this._viewerLookup.set(userId, cached)
 				this.unknownColors.add(userId)
 				this.unknownSubInfo.add(userId)
@@ -151,11 +154,24 @@ export const ViewerCache = Service(
 			return cached.color ?? "default"
 		}
 
+		updateNameCache(viewer: CachedViewerInfo, name: string) {
+			if (viewer.displayName != name) {
+				const nameLower = name.toLowerCase()
+				if (viewer.displayName != null) {
+					this._nameLookup.delete(nameLower)
+				}
+
+				viewer.displayName = name
+
+				this._nameLookup.set(nameLower, viewer)
+			}
+		}
+
 		cacheChatUser(chatUser: ChatUser) {
 			const id = chatUser.userId
 			const cached = this.getOrCreate(id)
 
-			cached.displayName = chatUser.displayName
+			this.updateNameCache(cached, chatUser.displayName)
 
 			cached.color = (chatUser.color as Color) ?? "default"
 			this.unknownColors.delete(id)
@@ -172,7 +188,7 @@ export const ViewerCache = Service(
 
 		cacheSubEvent(event: EventSubChannelSubscriptionEvent) {
 			const cached = this.getOrCreate(event.userId)
-			cached.displayName = event.userDisplayName
+			this.updateNameCache(cached, event.userDisplayName)
 			cached.subbed = true
 			cached.subinfo = {
 				gift: false,
@@ -198,7 +214,7 @@ export const ViewerCache = Service(
 					return
 				}
 
-				cached.displayName = following.data[0].userDisplayName
+				this.updateNameCache(cached, following.data[0].userDisplayName)
 				cached.following = true
 				cached.followDate = following.data[0].followDate
 			} catch (err) {}
@@ -249,7 +265,8 @@ export const ViewerCache = Service(
 					leftOvers.delete(sub.userId)
 
 					const cached = this.get(userId)
-					cached.displayName = sub.userDisplayName
+					this.updateNameCache(cached, sub.userDisplayName)
+
 					cached.subbed = true
 					cached.subinfo = {
 						tier: sub.tier === "3000" ? 3 : sub.tier === "2000" ? 2 : 1,
@@ -287,6 +304,20 @@ export const ViewerCache = Service(
 
 			await this.querySubInfo(userId)
 			return cached.subinfo
+		}
+
+		async getUserId(name: string) {
+			const nameLower = name.toLowerCase()
+			let existing = this._nameLookup.get(nameLower)
+			if (existing) return existing.id
+
+			const user = await TwitchAccount.channel.apiClient.users.getUserByName(name)
+
+			if (user == null) return undefined
+			existing = this.getOrCreate(user.id)
+
+			this.updateNameCache(existing, user.displayName)
+			return existing.id
 		}
 	}
 )
