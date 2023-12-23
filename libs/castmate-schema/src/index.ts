@@ -21,5 +21,6 @@ export * from "./types/automations"
 
 export * from "./util/type-helpers"
 export * from "./util/promise-helpers"
+export * from "./util/substring-helper"
 
 export * from "./template/template-utils"

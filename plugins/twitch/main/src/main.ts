@@ -15,6 +15,9 @@ import { setupModeration } from "./moderation"
 import { setupViewerCache } from "./viewer-cache"
 import { setupViewerGroups } from "./group"
 import { setupUndocumented } from "./undocumented"
+import { EmoteSet, createEmoteTrie, parseEmotesRegex, parseEmotesTrie } from "castmate-plugin-twitch-shared"
+import { setupEmotes } from "./emote-cache"
+import { setup7tv } from "./seventv"
 
 export default definePlugin(
 	{
@@ -49,6 +52,8 @@ export default definePlugin(
 		setupSubscriptions()
 		setupModeration()
 		setupUndocumented()
+		setupEmotes()
+		setup7tv()
 
 		onLoad(async () => {
 			await TwitchAPIService.getInstance().finalize()

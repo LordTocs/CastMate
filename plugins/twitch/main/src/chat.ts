@@ -1,11 +1,55 @@
-import { ChatClient } from "@twurple/chat"
+import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
 import { defineTrigger, defineAction } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { Color, Range } from "castmate-schema"
 import { ViewerCache } from "./viewer-cache"
-import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { EmoteParsedString, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
+import { EmoteCache } from "./emote-cache"
+
+function parseEmotesFromMsg(chatMessage: ChatMessage): EmoteParsedString {
+	const result: EmoteParsedString = []
+
+	const parsedEmotes = parseEmotePositions(chatMessage.text, chatMessage.emoteOffsets)
+
+	let index = 0
+	for (const emote of parsedEmotes) {
+		const emoteIndex = emote.position
+		if (emoteIndex > index) {
+			result.push({
+				type: "message",
+				message: chatMessage.text.substring(index, emote.position),
+			})
+		}
+
+		result.push({
+			type: "emote",
+			emote: {
+				id: emote.id,
+				provider: "twitch",
+				name: emote.name,
+				urls: {
+					url1x: `https://static-cdn.jtvnw.net/emoticons/v2/${emote.id}/default/light/1.0`,
+					url2x: `https://static-cdn.jtvnw.net/emoticons/v2/${emote.id}/default/light/2.0`,
+					url3x: `https://static-cdn.jtvnw.net/emoticons/v2/${emote.id}/default/light/3.0`,
+				},
+				aspectRatio: 1,
+			},
+		})
+
+		index = emote.position + emote.length
+	}
+
+	if (index < chatMessage.text.length) {
+		result.push({
+			type: "message",
+			message: chatMessage.text.substring(index),
+		})
+	}
+
+	return result
+}
 
 export function setupChat() {
 	defineAction({
@@ -178,6 +222,10 @@ export function setupChat() {
 				message,
 				messageId: msgInfo.id,
 			}
+
+			const twitchOnlyEmotes = parseEmotesFromMsg(msgInfo)
+			const allEmotes = EmoteCache.getInstance().parseThirdParty(twitchOnlyEmotes)
+			console.log(allEmotes)
 
 			ViewerCache.getInstance().cacheChatUser(msgInfo.userInfo)
 			console.log(message)
