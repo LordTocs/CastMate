@@ -307,6 +307,9 @@ export const ViewerCache = Service(
 		}
 
 		async getUserId(name: string) {
+			if (name.startsWith("@")) {
+				name = name.substring(1)
+			}
 			const nameLower = name.toLowerCase()
 			let existing = this._nameLookup.get(nameLower)
 			if (existing) return existing.id
