@@ -197,9 +197,5 @@ export function setupEmotes() {
 		await EmoteCache.getInstance().reset()
 
 		await EmoteCache.getInstance().initialize()
-
-		console.log(
-			EmoteCache.getInstance().parseMessage("Hello is this Kappa ? Yes it is lordto14CookieSpin . Clap Clap Clap")
-		)
 	})
 }

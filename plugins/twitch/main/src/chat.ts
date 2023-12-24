@@ -213,7 +213,6 @@ export function setupChat() {
 	})
 
 	onChannelAuth((account, service) => {
-		console.log("Handling Auth")
 		service.chatClient.onMessage(async (channel, user, message, msgInfo) => {
 			const context = {
 				user: msgInfo.userInfo.displayName,
@@ -225,6 +224,7 @@ export function setupChat() {
 
 			const twitchOnlyEmotes = parseEmotesFromMsg(msgInfo)
 			const allEmotes = EmoteCache.getInstance().parseThirdParty(twitchOnlyEmotes)
+
 			console.log(allEmotes)
 
 			ViewerCache.getInstance().cacheChatUser(msgInfo.userInfo)
