@@ -103,6 +103,8 @@ async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promi
 		const group = CustomTwitchViewerGroup.storage.getById(rule.group)
 		if (!group) return false
 		return group.contains(userId)
+	} else if ("userIds" in rule) {
+		return rule.userIds.includes(userId)
 	}
 	return false
 }

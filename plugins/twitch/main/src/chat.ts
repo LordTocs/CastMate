@@ -228,7 +228,6 @@ export function setupChat() {
 			console.log(allEmotes)
 
 			ViewerCache.getInstance().cacheChatUser(msgInfo.userInfo)
-			console.log(message)
 
 			if (msgInfo.isFirst) {
 				firstTimeChat(context)

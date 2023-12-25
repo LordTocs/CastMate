@@ -152,6 +152,15 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 	return result
 }
 
+export function useState<T>(id: string) {
+	if (!initingPlugin) throw new Error()
+
+	const state = initingPlugin.state.get(id)
+	if (!state) throw new Error()
+
+	return state.ref as ReactiveRef<T>
+}
+
 export function defineReactiveState<T extends Schema>(id: string, schema: T, func: () => ResolvedSchemaType<T>) {
 	if (!initingPlugin) throw new Error()
 

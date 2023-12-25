@@ -521,6 +521,9 @@ export function setupChannelPointRewards() {
 				console.error("Redemption for reward that doesn't have a resource!")
 				return
 			}
+
+			ViewerCache.getInstance().userAction(event.userId)
+
 			redemption({
 				reward,
 				redemptionId: event.id,

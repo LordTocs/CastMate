@@ -13,6 +13,10 @@ export interface CustomTwitchViewerGroupRef {
 	group: string | null
 }
 
+export interface TwitchViewerGroupList {
+	userIds: string[]
+}
+
 export interface TwitchViewerGroupExclusion {
 	exclude: Exclude<TwitchViewerGroupRule, TwitchViewerGroupExclusion>
 }
@@ -24,6 +28,7 @@ export type TwitchViewerGroupRule =
 	| TwitchViewerGroupOr
 	| TwitchViewerGroupExclusion
 	| TwitchViewerGroupBaseRule
+	| TwitchViewerGroupList
 
 export interface TwitchViewerGroupAnd {
 	and: TwitchViewerGroupRule[]

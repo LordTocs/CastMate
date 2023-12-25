@@ -48,11 +48,15 @@ export function setupFollows() {
 
 	onChannelAuth(async (account, service) => {
 		service.eventsub.onChannelFollow(account.twitchId, account.twitchId, async (event) => {
+			ViewerCache.getInstance().cacheFollowEvent(event)
+
 			follow({
 				user: event.userDisplayName,
 				userId: event.userId,
 				userColor: await ViewerCache.getInstance().getChatColor(event.userId),
 			})
+
+			followers.value += 1
 		})
 
 		await updateFollowCount()

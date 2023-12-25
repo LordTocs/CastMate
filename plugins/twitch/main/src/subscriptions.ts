@@ -120,6 +120,8 @@ export function setupSubscriptions() {
 		})
 
 		service.eventsub.onChannelSubscriptionGift(channel.twitchId, async (event) => {
+			ViewerCache.getInstance().cacheGiftSubEvent(event)
+
 			giftSub({
 				user: event.gifterDisplayName,
 				userId: event.gifterId,
