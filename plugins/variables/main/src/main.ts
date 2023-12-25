@@ -122,10 +122,10 @@ const variablesPlugin = definePlugin(
 					required: true,
 				}
 
-				const defaultValue = deserializeSchema(schema, serializedDef.defaultValue)
+				const defaultValue = await deserializeSchema(schema, serializedDef.defaultValue)
 
 				const value = serializedDef.savedValue
-					? deserializeSchema(schema, serializedDef.savedValue)
+					? await deserializeSchema(schema, serializedDef.savedValue)
 					: await templateSchema(defaultValue, schema, PluginManager.getInstance().state)
 
 				const ref = reactiveRef(value)
@@ -165,7 +165,7 @@ const variablesPlugin = definePlugin(
 				required: true,
 			}
 
-			const defaultValue = deserializeSchema(schema, ipcDef.defaultValue)
+			const defaultValue = await deserializeSchema(schema, ipcDef.defaultValue)
 
 			const ref = reactiveRef(await templateSchema(defaultValue, schema, PluginManager.getInstance().state))
 
@@ -196,7 +196,7 @@ const variablesPlugin = definePlugin(
 				required: true,
 			}
 
-			const defaultValue = deserializeSchema(schema, ipcDef.defaultValue)
+			const defaultValue = await deserializeSchema(schema, ipcDef.defaultValue)
 
 			const ref = existing.ref
 
@@ -229,7 +229,7 @@ const variablesPlugin = definePlugin(
 			const def = variables.get(id)
 			if (!def) return
 
-			const value = deserializeSchema(def.schema, serializedValue)
+			const value = await deserializeSchema(def.schema, serializedValue)
 			def.ref.value = value
 		})
 

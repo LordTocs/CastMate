@@ -41,7 +41,7 @@ function registerIPCEnum(schema: Enumable<any>, path: string, topLevelSchema: Sc
 	const enumFunc = schema.enum
 	ipcMain.handle(`${path}_enum`, async (event, context) => {
 		try {
-			const parsedContext = deserializeSchema(topLevelSchema, context)
+			const parsedContext = await deserializeSchema(topLevelSchema, context)
 			return (await enumFunc(parsedContext)).map((r) => serializeSchema(schema as Schema, r))
 		} catch (err) {
 			console.log("Error Invoking Enum IPC", path)
@@ -58,7 +58,7 @@ function registerIPCDynamic(schema: PossiblyDynamic, path: string, topLevelSchem
 	const schemaFunc = schema.dynamicType
 	ipcMain.handle(`${path}_dynamicType`, async (event, context) => {
 		try {
-			const parsedContext = deserializeSchema(topLevelSchema, context)
+			const parsedContext = await deserializeSchema(topLevelSchema, context)
 			const schema = await schemaFunc(parsedContext)
 			return ipcConvertSchema(schema, `${path}_dynamicTypeResult`)
 		} catch (err) {
@@ -159,30 +159,34 @@ export function ipcConvertSchema<T extends Schema>(schema: T, path: string): IPC
 	}
 }
 
-export function deserializeSchema<TSchema extends Schema>(
+export async function deserializeSchema<TSchema extends Schema>(
 	schema: TSchema,
 	value: SchemaType<TSchema>
-): SchemaType<TSchema> {
+): Promise<SchemaType<TSchema>> {
 	if (schema.type === Object && "properties" in schema && isObject(value)) {
 		const objValue: Record<string, any> = value
 		const copyValue: Record<string, any> = {}
-		for (const key of Object.keys(objValue)) {
-			const propSchema = schema.properties[key]
-			if (!propSchema) {
-				console.error("Unable to find type for", key, value)
-				continue
-			}
-			copyValue[key] = deserializeSchema(propSchema, objValue[key])
-		}
+
+		await Promise.all(
+			Object.keys(objValue).map(async (key) => {
+				const propSchema = schema.properties[key]
+				if (!propSchema) {
+					console.error("Unable to find type for", key, value)
+					return
+				}
+				copyValue[key] = await deserializeSchema(propSchema, objValue[key])
+			})
+		)
 		return copyValue as SchemaType<TSchema>
 	} else if (schema.type === Array && "items" in schema && Array.isArray(value)) {
 		const arrValue: Array<any> = value
-		return arrValue.map((i) => deserializeSchema(schema.items, i)) as SchemaType<TSchema>
+		return (await Promise.all(arrValue.map((i) => deserializeSchema(schema.items, i)))) as SchemaType<TSchema>
 	} else if (isResourceConstructor(schema.type) && isString(value)) {
 		console.log("Deserializing Resource", value, schema.type.storage.getById(value)?.config?.name)
 		return schema.type.storage.getById(value)
 	} else {
-		return value
+		const valueType = getTypeByConstructor(schema.type)
+		return valueType?.deserialize ? ((await valueType.deserialize(value, schema)) as SchemaType<TSchema>) : value
 	}
 }
 
@@ -205,6 +209,7 @@ export function serializeSchema<TSchema extends Schema>(schema: TSchema, value: 
 	} else if (isResourceConstructor(schema.type)) {
 		return (value as ResourceBase)?.id
 	} else {
-		return value
+		const valueType = getTypeByConstructor(schema.type)
+		return valueType?.serialize ? valueType.serialize(value, schema) : value
 	}
 }

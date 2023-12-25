@@ -58,7 +58,7 @@ export class SequenceRunner {
 			if (!actionDef || actionDef.type != "regular") {
 				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
 			}
-			const deserializedConfig = deserializeSchema(actionDef.configSchema, action.config)
+			const deserializedConfig = await deserializeSchema(actionDef.configSchema, action.config)
 			//Todo construct action context
 			const actionContext: ActionInvokeContextData = this.context
 			const result = await actionDef.invoke(deserializedConfig, actionContext, this.abortController.signal)
@@ -82,12 +82,14 @@ export class SequenceRunner {
 				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
 			}
 
-			const deserializedConfig = deserializeSchema(actionDef.configSchema, action.config)
+			const deserializedConfig = await deserializeSchema(actionDef.configSchema, action.config)
 
 			const flows: Record<string, any> = {}
 
 			for (const flow of action.subFlows) {
-				flows[flow.id] = actionDef.flowSchema ? deserializeSchema(actionDef.flowSchema, flow.config) : null
+				flows[flow.id] = actionDef.flowSchema
+					? await deserializeSchema(actionDef.flowSchema, flow.config)
+					: null
 			}
 
 			const subFlowId = await actionDef.invoke(

@@ -128,12 +128,15 @@ class TriggerImplementation<
 
 				let finalContext: ResolvedSchemaType<ContextDataSchema> | undefined
 				if (isTransformSpec(this.spec)) {
-					const invokeResult = await this.spec.handle(deserializeSchema(this.config, trigger.config), context)
+					const invokeResult = await this.spec.handle(
+						await deserializeSchema(this.config, trigger.config),
+						context
+					)
 					if (invokeResult != undefined) {
 						finalContext = invokeResult
 					}
 				} else {
-					if (await this.spec.handle(deserializeSchema(this.config, trigger.config), context)) {
+					if (await this.spec.handle(await deserializeSchema(this.config, trigger.config), context)) {
 						finalContext = context as ResolvedSchemaType<ContextDataSchema> //Type system too stupid
 					}
 				}

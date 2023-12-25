@@ -464,7 +464,7 @@ export class Plugin {
 		if (setting?.type != "value") return
 		if (!(id in this.serializedSettingsData)) return
 		const serializedValue = this.serializedSettingsData[id]
-		setting.ref.value = deserializeSchema(setting.schema, serializedValue)
+		setting.ref.value = await deserializeSchema(setting.schema, serializedValue)
 	}
 
 	private writeSettingsDebounced = _debounce(() => this.writeSettings(), 100)
@@ -495,7 +495,7 @@ export class Plugin {
 		if (setting?.type != "secret") return
 		if (!(id in this.serializedSecretData)) return
 		console.log("Deserializing", id)
-		setting.ref.value = deserializeSchema(setting.schema, this.serializedSecretData[id])
+		setting.ref.value = await deserializeSchema(setting.schema, this.serializedSecretData[id])
 	}
 
 	private writeSecretsDebounced = _debounce(() => this.writeSecrets(), 100)

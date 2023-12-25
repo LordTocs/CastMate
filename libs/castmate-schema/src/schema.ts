@@ -260,6 +260,8 @@ export interface DataTypeMetaData<T = any> {
 	constructor: DataConstructorOrFactory<T>
 	canBeVariable?: boolean
 	validate?: (value: any, schema: Schema) => string | undefined
+	deserialize?: (value: any, schema: Schema) => Promise<T>
+	serialize?: (value: T, schema: Schema) => any
 }
 
 interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
