@@ -24,6 +24,20 @@ interface TriggerDefinitionSpec<ConfigSchema extends Schema, ContextDataSchema e
 	handle(config: SchemaType<ConfigSchema>, context: SchemaType<ContextDataSchema>): Promise<boolean>
 }
 
+interface TransformTriggerDefinitionSpec<
+	ConfigSchema extends Schema,
+	ContextDataSchema extends Schema,
+	InvokeContextDataSchema extends Schema
+> extends TriggerMetaData {
+	config: ConfigSchema
+	context: ContextDataSchema
+	invokeContext: InvokeContextDataSchema
+	handle(
+		config: SchemaType<ConfigSchema>,
+		context: SchemaType<InvokeContextDataSchema>
+	): Promise<ResolvedSchemaType<ContextDataSchema> | undefined>
+}
+
 export interface TriggerDefinition {
 	readonly id: string
 	readonly name: string
@@ -39,10 +53,30 @@ export interface TriggerDefinition {
 	toIPC(path: string): IPCTriggerDefinition
 }
 
-class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema extends Schema>
-	implements TriggerDefinition
+function isTransformSpec<
+	ConfigSchema extends Schema,
+	ContextDataSchema extends Schema,
+	InvokeContextDataSchema extends Schema
+>(
+	spec:
+		| TriggerDefinitionSpec<ConfigSchema, InvokeContextDataSchema>
+		| TransformTriggerDefinitionSpec<ConfigSchema, ContextDataSchema, InvokeContextDataSchema>
+): spec is TransformTriggerDefinitionSpec<ConfigSchema, ContextDataSchema, InvokeContextDataSchema> {
+	return "invokeContext" in spec
+}
+
+class TriggerImplementation<
+	ConfigSchema extends Schema,
+	ContextDataSchema extends Schema,
+	InvokeContextDataSchema extends Schema
+> implements TriggerDefinition
 {
-	constructor(private spec: TriggerDefinitionSpec<ConfigSchema, ContextDataSchema>, private _pluginId: string) {}
+	constructor(
+		private spec:
+			| TriggerDefinitionSpec<ConfigSchema, InvokeContextDataSchema>
+			| TransformTriggerDefinitionSpec<ConfigSchema, ContextDataSchema, InvokeContextDataSchema>,
+		private _pluginId: string
+	) {}
 
 	get id() {
 		return this.spec.id
@@ -80,7 +114,11 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 		return this.spec.context
 	}
 
-	async trigger(context: ResolvedSchemaType<ContextDataSchema>) {
+	get isTransform() {
+		return "invokeContext" in this.spec
+	}
+
+	async trigger(context: ResolvedSchemaType<InvokeContextDataSchema>) {
 		const activeProfiles = ProfileManager.getInstance().activeProfiles
 		let triggered = false
 		//Check all the active profiles to see if they have any triggers of this type
@@ -88,7 +126,19 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 			for (const trigger of profile.config.triggers) {
 				if (trigger.plugin != this.pluginId || trigger.trigger != this.id) continue
 
-				if (await this.spec.handle(deserializeSchema(this.config, trigger.config), context)) {
+				let finalContext: ResolvedSchemaType<ContextDataSchema> | undefined
+				if (isTransformSpec(this.spec)) {
+					const invokeResult = await this.spec.handle(deserializeSchema(this.config, trigger.config), context)
+					if (invokeResult != undefined) {
+						finalContext = invokeResult
+					}
+				} else {
+					if (await this.spec.handle(deserializeSchema(this.config, trigger.config), context)) {
+						finalContext = context as ResolvedSchemaType<ContextDataSchema> //Type system too stupid
+					}
+				}
+
+				if (finalContext != null) {
 					//If spec.handle returns true then this sequence should run
 					triggered = true
 					if (trigger.queue) {
@@ -103,13 +153,13 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 
 						queue.enqueue(
 							{ type: "profile", id: profile.id, subid: trigger.id },
-							serializeSchema(this.context, context) as Record<string, any>
+							serializeSchema(this.context, finalContext) as Record<string, any>
 						)
 					} else {
 						//This
 						const runner = new SequenceRunner(trigger.sequence, {
 							//@ts-ignore //Todo some sort of schema object restriction?
-							contextState: context,
+							contextState: finalContext,
 						})
 						runner.run()
 					}
@@ -143,9 +193,9 @@ class TriggerImplementation<ConfigSchema extends Schema, ContextDataSchema exten
 	}
 }
 
-export interface TriggerFunc<Config extends Schema, ContextData extends Schema> {
+export interface TriggerFunc<Config extends Schema, ContextData extends Schema, InvokeContextData extends Schema> {
 	(context: SchemaType<ContextData>): void
-	triggerDef: TriggerImplementation<Config, ContextData>
+	triggerDef: TriggerImplementation<Config, ContextData, InvokeContextData>
 }
 
 export function defineTrigger<Config extends Schema, ContextData extends Schema>(
@@ -157,7 +207,7 @@ export function defineTrigger<Config extends Schema, ContextData extends Schema>
 
 	const pluginId = initingPlugin.id
 
-	const impl = new TriggerImplementation<Config, ContextData>(
+	const impl = new TriggerImplementation<Config, ContextData, ContextData>(
 		{
 			icon: "mdi mdi-alert-circle-outline",
 			color: initingPlugin.color,
@@ -170,6 +220,37 @@ export function defineTrigger<Config extends Schema, ContextData extends Schema>
 	initingPlugin.triggers.set(impl.id, impl)
 
 	const triggerFunc = (context: SchemaType<ContextData>) => {
+		impl.trigger(context)
+	}
+
+	triggerFunc.triggerDef = impl
+	return triggerFunc
+}
+
+export function defineTransformTrigger<
+	Config extends Schema,
+	ContextData extends Schema,
+	InvokeContextData extends Schema
+>(spec: TransformTriggerDefinitionSpec<Config, ContextData, InvokeContextData>) {
+	if (!initingPlugin) {
+		throw new Error("Can only be used in definePlugin")
+	}
+
+	const pluginId = initingPlugin.id
+
+	const impl = new TriggerImplementation<Config, ContextData, InvokeContextData>(
+		{
+			icon: "mdi mdi-alert-circle-outline",
+			color: initingPlugin.color,
+			version: "0.0.0",
+			...spec,
+		},
+		pluginId
+	)
+
+	initingPlugin.triggers.set(impl.id, impl)
+
+	const triggerFunc = (context: SchemaType<InvokeContextData>) => {
 		impl.trigger(context)
 	}
 

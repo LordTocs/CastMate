@@ -85,6 +85,7 @@ export function setupViewerCache() {
 
 		defineRendererCallable("fuzzyGetUsers", async (query: string) => {
 			const result = await ViewerCache.getInstance().fuzzyUserCacheQuery(query)
+			return result.map((c) => c.displayName as string)
 		})
 	})
 
@@ -415,6 +416,10 @@ export const ViewerCache = Service(
 			} catch (err) {}
 		}
 
+		async getResolvedViewer(userId: string) {
+			return (await this.getResolvedViewers([userId]))[0]
+		}
+
 		async getResolvedViewers(userIds: string[]) {
 			const neededSubIds: string[] = []
 			const neededColorIds: string[] = []
@@ -464,7 +469,7 @@ export const ViewerCache = Service(
 			return cachedUsers.map((cached) => {
 				return {
 					id: cached.id,
-					name: cached.displayName,
+					displayName: cached.displayName,
 					description: cached.description,
 					profilePicture: cached.profilePicture,
 					color: cached.color,

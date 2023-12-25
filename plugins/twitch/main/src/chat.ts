@@ -1,10 +1,10 @@
 import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
-import { defineTrigger, defineAction } from "castmate-core"
+import { defineTrigger, defineAction, defineTransformTrigger } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { Color, Range } from "castmate-schema"
 import { ViewerCache } from "./viewer-cache"
-import { EmoteParsedString, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { EmoteParsedString, TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 import { EmoteCache } from "./emote-cache"
 
@@ -71,7 +71,7 @@ export function setupChat() {
 		},
 	})
 
-	const chat = defineTrigger({
+	const chat = defineTransformTrigger({
 		id: "chat",
 		name: "Chat Command",
 		icon: "mdi mdi-chat",
@@ -83,31 +83,41 @@ export function setupChat() {
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
+		invokeContext: {
+			type: Object,
+			properties: {
+				userId: { type: String, required: true },
+				message: { type: String, required: true },
+				messageId: { type: String, required: true },
+			},
+		},
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				viewer: { type: TwitchViewer, required: true, default: testViewer, name: "Viewer" },
 				message: { type: String, required: true, default: "Thanks for using CastMate!" },
-				messageId: { type: String, required: true },
+				messageId: { type: String, required: true, default: "1234" },
 			},
 		},
 		async handle(config, context) {
 			console.log("Handling", config.command, context.message)
 			if (!context.message.toLocaleLowerCase().startsWith(config.command?.toLocaleLowerCase())) {
-				return false
+				return undefined
 			}
 
 			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
-				return false
+				return undefined
 			}
 
-			return true
+			return {
+				viewer: await ViewerCache.getInstance().getResolvedViewer(context.userId),
+				message: context.message,
+				messageId: context.messageId,
+			}
 		},
 	})
 
-	const firstTimeChat = defineTrigger({
+	const firstTimeChat = defineTransformTrigger({
 		id: "firstTimeChat",
 		name: "First Time Chatter",
 		icon: "mdi mdi-medal",
@@ -116,18 +126,28 @@ export function setupChat() {
 			type: Object,
 			properties: {},
 		},
+		invokeContext: {
+			type: Object,
+			properties: {
+				userId: { type: String, required: true },
+				message: { type: String, required: true },
+				messageId: { type: String, required: true },
+			},
+		},
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				viewer: { type: TwitchViewer, required: true, default: testViewer, name: "Viewer" },
 				message: { type: String, required: true, default: "Thanks for using CastMate!" },
+				messageId: { type: String, required: true, default: "1234" },
 			},
 		},
 		async handle(config, context) {
-			console.log("")
-			return true
+			return {
+				viewer: await ViewerCache.getInstance().getResolvedViewer(context.userId),
+				message: context.message,
+				messageId: context.messageId,
+			}
 		},
 	})
 
