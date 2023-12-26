@@ -248,7 +248,6 @@ export async function exposeSchema<TSchema extends Schema>(
 	schema: TSchema,
 	value: ResolvedSchemaType<TSchema>
 ): Promise<ExposedSchemaType<TSchema>> {
-	console.log("Expose", schema, value)
 	if (schema.type === Object && "properties" in schema && isObject(value)) {
 		const objValue: Record<string, any> = value
 		const copyValue: Record<string, any> = {}
