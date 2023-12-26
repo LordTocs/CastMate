@@ -24,6 +24,7 @@ function convertIPCEnum(schema: Enumable<any>, path: string) {
 		return {}
 	}
 }
+
 export interface PossiblyDynamic {
 	dynamicType?(context: any): Promise<Schema>
 }
@@ -118,6 +119,12 @@ export function ipcRegisterSchema<T extends Schema>(schema: T, path: string, top
 	}
 }
 
+/**
+ * Converts a Schema to it's IPC compatible IPCSchema
+ * @param schema
+ * @param path
+ * @returns
+ */
 export function ipcConvertSchema<T extends Schema>(schema: T, path: string): IPCSchema {
 	//TODO: Connect reactive defaults
 
@@ -159,6 +166,17 @@ export function ipcConvertSchema<T extends Schema>(schema: T, path: string): IPC
 	}
 }
 
+////////////////////////////////////Serialization//////////////////////////////////////////////
+
+//Serialization of schema objects converts schema typed objects into YAML serializable and IPC serializable types.
+// Serialization will convert Resource objects into their IDs and allows custom serialization / deserialization logic
+
+/**
+ * Converts the YAML/IPC value into it's full Schema type
+ * @param schema
+ * @param value
+ * @returns
+ */
 export async function deserializeSchema<TSchema extends Schema>(
 	schema: TSchema,
 	value: SchemaType<TSchema>

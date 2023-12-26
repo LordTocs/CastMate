@@ -62,3 +62,7 @@ export function setByPath<ObjectType extends object>(object: ObjectType, path: s
 }
 
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>
+
+export type MapToUnion<T> = T[keyof T]
+
+export type Modify<T, R> = Omit<T, keyof R> & R
