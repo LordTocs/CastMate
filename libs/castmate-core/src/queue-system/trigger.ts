@@ -1,10 +1,15 @@
-import { Color, ResolvedSchemaType } from "castmate-schema"
+import { Color, ExposedSchemaType, ResolvedSchemaType } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
-import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema, serializeSchema } from "../util/ipc-schema"
+import {
+	deserializeSchema,
+	exposeSchema,
+	ipcConvertSchema,
+	ipcRegisterSchema,
+	serializeSchema,
+} from "../util/ipc-schema"
 import { IPCTriggerDefinition } from "castmate-schema"
-import { Service } from "../util/service"
 import { ProfileManager } from "../profile/profile-system"
 import { ActionQueue } from "./action-queue"
 import { SequenceRunner } from "./sequence"
@@ -126,22 +131,21 @@ class TriggerImplementation<
 			for (const trigger of profile.config.triggers) {
 				if (trigger.plugin != this.pluginId || trigger.trigger != this.id) continue
 
-				let finalContext: ResolvedSchemaType<ContextDataSchema> | undefined
+				let resolvedContext: ResolvedSchemaType<ContextDataSchema> | undefined
+
+				const configValue = await deserializeSchema(this.config, trigger.config)
 				if (isTransformSpec(this.spec)) {
-					const invokeResult = await this.spec.handle(
-						await deserializeSchema(this.config, trigger.config),
-						context
-					)
+					const invokeResult = await this.spec.handle(configValue, context)
 					if (invokeResult != undefined) {
-						finalContext = invokeResult
+						resolvedContext = invokeResult
 					}
 				} else {
-					if (await this.spec.handle(await deserializeSchema(this.config, trigger.config), context)) {
-						finalContext = context as ResolvedSchemaType<ContextDataSchema> //Type system too stupid
+					if (await this.spec.handle(configValue, context)) {
+						resolvedContext = context as ResolvedSchemaType<ContextDataSchema> //Type system too stupid
 					}
 				}
 
-				if (finalContext != null) {
+				if (resolvedContext != null) {
 					//If spec.handle returns true then this sequence should run
 					triggered = true
 					if (trigger.queue) {
@@ -156,9 +160,11 @@ class TriggerImplementation<
 
 						queue.enqueue(
 							{ type: "profile", id: profile.id, subid: trigger.id },
-							serializeSchema(this.context, finalContext) as Record<string, any>
+							serializeSchema(this.context, resolvedContext) as Record<string, any>
 						)
 					} else {
+						let finalContext = await exposeSchema(this.context, resolvedContext)
+
 						//This
 						const runner = new SequenceRunner(trigger.sequence, {
 							//@ts-ignore //Todo some sort of schema object restriction?

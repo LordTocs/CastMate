@@ -30,6 +30,8 @@ const defaultScopes = [
 	"moderator:read:followers", //Follower eventsub
 	"moderator:manage:shoutouts", //create / react to shoutouts
 
+	"moderator:read:chatters", //Active chatter list
+
 	"channel:read:vips", //Read and manage vips
 	"channel:manage:vips",
 

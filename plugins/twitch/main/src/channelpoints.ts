@@ -18,6 +18,7 @@ import {
 	ChannelPointRewardSchema,
 	ChannelPointRewardState,
 	ChannelPointRewardTemplate,
+	TwitchViewer,
 	TwitchViewerGroup,
 } from "castmate-plugin-twitch-shared"
 import { EventSubChannelRewardEvent } from "@twurple/eventsub-base"
@@ -492,9 +493,7 @@ export function setupChannelPointRewards() {
 			properties: {
 				reward: { type: ChannelPointReward, required: true },
 				redemptionId: { type: String, required: true },
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 				message: { type: String, required: true, default: "Thanks for using CastMate!" },
 			},
 		},
@@ -504,7 +503,7 @@ export function setupChannelPointRewards() {
 				return false
 			}
 
-			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return false
 			}
 
@@ -527,9 +526,7 @@ export function setupChannelPointRewards() {
 			redemption({
 				reward,
 				redemptionId: event.id,
-				user: event.userDisplayName,
-				userId: event.userId,
-				userColor: await ViewerCache.getInstance().getChatColor(event.userId),
+				viewer: event.userId,
 				message: event.input,
 			})
 		})

@@ -1,4 +1,4 @@
-import { ResolvedSchemaType } from "./../../../castmate-schema/src/schema"
+import { ExposedSchemaType, ResolvedSchemaType } from "./../../../castmate-schema/src/schema"
 import { Profile } from "./../profile/profile"
 import {
 	Color,
@@ -27,7 +27,13 @@ import {
 } from "../reactivity/reactivity"
 import { ensureYAML, loadSecretYAML, loadYAML, pathExists, writeSecretYAML, writeYAML } from "../io/file-system"
 import _debounce from "lodash/debounce"
-import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema, serializeSchema } from "../util/ipc-schema"
+import {
+	deserializeSchema,
+	ipcConvertSchema,
+	ipcRegisterSchema,
+	serializeSchema,
+	unexposeSchema,
+} from "../util/ipc-schema"
 import { ResourceBase, ResourceConstructor } from "../resources/resource"
 import { PluginManager } from "./plugin-manager"
 
@@ -113,7 +119,7 @@ interface PluginPrivates {
 
 interface StateDefinition<StateSchema extends Schema = any> {
 	schema: StateSchema
-	ref: ReactiveRef<ResolvedSchemaType<StateSchema>>
+	ref: ReactiveRef<ExposedSchemaType<StateSchema>>
 	updateEffect?: ReactiveEffect
 }
 
@@ -121,7 +127,7 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 	if (!initingPlugin) throw new Error()
 
 	//Cheat a little
-	const result = reactiveRef<SchemaType<T>>(undefined as unknown as SchemaType<T>)
+	const result = reactiveRef<ExposedSchemaType<T>>(undefined as unknown as ExposedSchemaType<T>)
 
 	initingPlugin.state.set(id, {
 		schema,
@@ -144,7 +150,9 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 		stateDef.updateEffect = await runOnChange(
 			() => result.value,
 			async () => {
-				rendererUpdateState(plugin.id, id, serializeSchema(schema, result.value))
+				const unexposed = await unexposeSchema(schema, result.value)
+				const serialized = await serializeSchema(schema, unexposed)
+				rendererUpdateState(plugin.id, id, serialized)
 			}
 		)
 	})
@@ -164,7 +172,7 @@ export function useState<T>(id: string) {
 export function defineReactiveState<T extends Schema>(id: string, schema: T, func: () => ResolvedSchemaType<T>) {
 	if (!initingPlugin) throw new Error()
 
-	const result = reactiveComputed<ResolvedSchemaType<T>>(func)
+	const result = reactiveComputed<ExposedSchemaType<T>>(func)
 
 	initingPlugin.state.set(id, {
 		schema,
@@ -185,7 +193,9 @@ export function defineReactiveState<T extends Schema>(id: string, schema: T, fun
 		stateDef.updateEffect = await runOnChange(
 			() => result.value,
 			async () => {
-				rendererUpdateState(plugin.id, id, serializeSchema(schema, result.value))
+				const unexposed = await unexposeSchema(schema, result.value)
+				const serialized = await serializeSchema(schema, unexposed)
+				rendererUpdateState(plugin.id, id, serialized)
 			}
 		)
 	})

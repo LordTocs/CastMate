@@ -1,6 +1,8 @@
 import {
+	DataConstructorOrFactory,
 	Defaultable,
 	Enumable,
+	ExposedSchemaType,
 	IPCSchema,
 	ResolvedSchemaType,
 	Schema,
@@ -230,4 +232,95 @@ export function serializeSchema<TSchema extends Schema>(schema: TSchema, value: 
 		const valueType = getTypeByConstructor(schema.type)
 		return valueType?.serialize ? valueType.serialize(value, schema) : value
 	}
+}
+
+//////////////////////////////////////////////Expose Schema////////////////////////////////////////////////////////////
+
+// Exposed schema is a way to transform a type before it gets to the action queue context
+// This is primarly for the twitch viewer type. By allowing for expose / unexpose
+// We can store and operate on user IDs until it's time to pass the user to the user automations
+// At which point we have to resolve all the info about it.
+
+// This lets us cut down on queries, since we don't need to fully resolve a viewer until it's actually stored in state
+// or an automation runs on it.
+
+export async function exposeSchema<TSchema extends Schema>(
+	schema: TSchema,
+	value: ResolvedSchemaType<TSchema>
+): Promise<ExposedSchemaType<TSchema>> {
+	console.log("Expose", schema, value)
+	if (schema.type === Object && "properties" in schema && isObject(value)) {
+		const objValue: Record<string, any> = value
+		const copyValue: Record<string, any> = {}
+
+		await Promise.all(
+			Object.keys(objValue).map(async (key) => {
+				const propSchema = schema.properties[key]
+				if (!propSchema) {
+					console.error("Unable to find type for", key, value)
+					return
+				}
+				copyValue[key] = await exposeSchema(propSchema, objValue[key])
+			})
+		)
+		return copyValue as ExposedSchemaType<TSchema>
+	} else if (schema.type === Array && "items" in schema && Array.isArray(value)) {
+		const arrValue: Array<any> = value
+		return (await Promise.all(arrValue.map((i) => exposeSchema(schema.items, i)))) as ExposedSchemaType<TSchema>
+	} else if (isResourceConstructor(schema.type)) {
+		return value
+	} else {
+		const valueType = getTypeByConstructor(schema.type)
+		return valueType?.expose ? ((await valueType.expose(value, schema)) as ExposedSchemaType<TSchema>) : value
+	}
+}
+
+export async function unexposeSchema<TSchema extends Schema>(
+	schema: TSchema,
+	value: ExposedSchemaType<TSchema>
+): Promise<ResolvedSchemaType<TSchema>> {
+	if (schema.type === Object && "properties" in schema && isObject(value)) {
+		const objValue: Record<string, any> = value
+		const copyValue: Record<string, any> = {}
+
+		await Promise.all(
+			Object.keys(objValue).map(async (key) => {
+				const propSchema = schema.properties[key]
+				if (!propSchema) {
+					console.error("Unable to find type for", key, value)
+					return
+				}
+				copyValue[key] = await unexposeSchema(propSchema, objValue[key])
+			})
+		)
+		return copyValue as ResolvedSchemaType<TSchema>
+	} else if (schema.type === Array && "items" in schema && Array.isArray(value)) {
+		const arrValue: Array<any> = value
+		return (await Promise.all(arrValue.map((i) => exposeSchema(schema.items, i)))) as ResolvedSchemaType<TSchema>
+	} else if (isResourceConstructor(schema.type)) {
+		return value
+	} else {
+		const valueType = getTypeByConstructor(schema.type)
+		return valueType?.unexpose ? ((await valueType.unexpose(value, schema)) as ResolvedSchemaType<TSchema>) : value
+	}
+}
+
+export function registerSchemaExpose<T extends DataConstructorOrFactory>(
+	schemaConstructor: T,
+	func: (value: any, schema: Schema) => any
+) {
+	const schemaType = getTypeByConstructor(schemaConstructor)
+	if (!schemaType) throw new Error(`Missing Schema Type ${name}`)
+
+	schemaType.expose = func
+}
+
+export function registerSchemaUnexpose<T extends DataConstructorOrFactory>(
+	schemaConstructor: T,
+	func: (value: any, schema: Schema) => any
+) {
+	const schemaType = getTypeByConstructor(schemaConstructor)
+	if (!schemaType) throw new Error(`Missing Schema Type ${name}`)
+
+	schemaType.unexpose = func
 }

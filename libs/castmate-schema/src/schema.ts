@@ -26,6 +26,10 @@ export interface SchemaBase<T = any> extends Defaultable<T> {
 	required?: boolean
 }
 
+//Declare our type registry up here so we can use it
+const dataNameLookup: Map<string, FullDataTypeMetaData> = new Map()
+const dataConstructorLookup: Map<DataConstructorOrFactory, FullDataTypeMetaData> = new Map()
+
 ///////////////////////////////////Built in Schemas/////////////////////////////////////
 
 export interface SchemaNumber extends Enumable<number>, SchemaBase<number> {
@@ -196,7 +200,7 @@ export type ResolvedSchemaType<T extends Schema> = T extends SchemaObj
 
 ///////////////////////////////Exposed Schema Types////////////////////////////////////////////
 
-//Exposed schema is a way to transform a type before it gets to the action queue context
+// Exposed schema is a way to transform a type before it gets to the action queue context
 // This is primarly for the twitch viewer type. By allowing for expose / unexpose
 // We can store and operate on user IDs until it's time to pass the user to the user automations
 // At which point we have to resolve all the info about it.
@@ -238,9 +242,7 @@ export type ExposedSchemaType<T extends Schema> = T extends SchemaObj
 				: ExposedSchemaPropType<T>
 	  >
 
-const t1 = declareSchema({
-	type: String,
-})
+////////////////////////////////////////////////////////////////
 
 //Allows the special case for DynamicType to run. Useful for variable modifying actions and hopefully OBS property changing
 export interface DynamicTypable {
@@ -404,9 +406,6 @@ interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
 	name: string
 	canBeVariable: boolean
 }
-
-const dataNameLookup: Map<string, FullDataTypeMetaData> = new Map()
-const dataConstructorLookup: Map<DataConstructorOrFactory, FullDataTypeMetaData> = new Map()
 
 export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
 	console.log("Registering Type", name)

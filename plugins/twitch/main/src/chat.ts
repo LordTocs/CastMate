@@ -71,7 +71,7 @@ export function setupChat() {
 		},
 	})
 
-	const chat = defineTransformTrigger({
+	const chat = defineTrigger({
 		id: "chat",
 		name: "Chat Command",
 		icon: "mdi mdi-chat",
@@ -83,18 +83,10 @@ export function setupChat() {
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
-		invokeContext: {
-			type: Object,
-			properties: {
-				userId: { type: String, required: true },
-				message: { type: String, required: true },
-				messageId: { type: String, required: true },
-			},
-		},
 		context: {
 			type: Object,
 			properties: {
-				viewer: { type: TwitchViewer, required: true, default: testViewer, name: "Viewer" },
+				viewer: { type: TwitchViewer, required: true, default: "27082158", name: "Viewer" },
 				message: { type: String, required: true, default: "Thanks for using CastMate!" },
 				messageId: { type: String, required: true, default: "1234" },
 			},
@@ -102,22 +94,18 @@ export function setupChat() {
 		async handle(config, context) {
 			console.log("Handling", config.command, context.message)
 			if (!context.message.toLocaleLowerCase().startsWith(config.command?.toLocaleLowerCase())) {
-				return undefined
+				return false
 			}
 
-			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
-				return undefined
+			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+				return false
 			}
 
-			return {
-				viewer: await ViewerCache.getInstance().getResolvedViewer(context.userId),
-				message: context.message,
-				messageId: context.messageId,
-			}
+			return true
 		},
 	})
 
-	const firstTimeChat = defineTransformTrigger({
+	const firstTimeChat = defineTrigger({
 		id: "firstTimeChat",
 		name: "First Time Chatter",
 		icon: "mdi mdi-medal",
@@ -126,28 +114,16 @@ export function setupChat() {
 			type: Object,
 			properties: {},
 		},
-		invokeContext: {
-			type: Object,
-			properties: {
-				userId: { type: String, required: true },
-				message: { type: String, required: true },
-				messageId: { type: String, required: true },
-			},
-		},
 		context: {
 			type: Object,
 			properties: {
-				viewer: { type: TwitchViewer, required: true, default: testViewer, name: "Viewer" },
+				viewer: { type: TwitchViewer, required: true, default: "27082158", name: "Viewer" },
 				message: { type: String, required: true, default: "Thanks for using CastMate!" },
 				messageId: { type: String, required: true, default: "1234" },
 			},
 		},
 		async handle(config, context) {
-			return {
-				viewer: await ViewerCache.getInstance().getResolvedViewer(context.userId),
-				message: context.message,
-				messageId: context.messageId,
-			}
+			return true
 		},
 	})
 
@@ -187,13 +163,11 @@ export function setupChat() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return false
 			}
 
@@ -218,14 +192,12 @@ export function setupChat() {
 			type: Object,
 			properties: {
 				bits: { type: Number, required: true, default: 100 },
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 				message: { type: String, required: true, default: "Thanks for using CastMate" },
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return false
 			}
 			return Range.inRange(config.bits, context.bits)
@@ -235,9 +207,7 @@ export function setupChat() {
 	onChannelAuth((account, service) => {
 		service.chatClient.onMessage(async (channel, user, message, msgInfo) => {
 			const context = {
-				user: msgInfo.userInfo.displayName,
-				userId: msgInfo.userInfo.userId,
-				userColor: msgInfo.userInfo.color as Color,
+				viewer: msgInfo.userInfo.userId,
 				message,
 				messageId: msgInfo.id,
 			}
@@ -258,18 +228,16 @@ export function setupChat() {
 
 		service.eventsub.onChannelShoutoutCreate(account.twitchId, account.twitchId, async (event) => {
 			shoutoutSent({
-				user: event.shoutedOutBroadcasterDisplayName,
-				userId: event.shoutedOutBroadcasterId,
-				userColor: await ViewerCache.getInstance().getChatColor(event.shoutedOutBroadcasterId),
+				viewer: event.shoutedOutBroadcasterId,
 			})
 		})
 
 		service.eventsub.onChannelCheer(account.twitchId, async (event) => {
+			ViewerCache.getInstance().cacheCheerEvent(event)
+
 			bits({
 				bits: event.bits,
-				user: event.userDisplayName ?? "Anonymous", //TODO: Setting for anonymous gifter name
-				userId: event.userId ?? "",
-				userColor: event.userId ? await ViewerCache.getInstance().getChatColor(event.userId) : "#000000",
+				viewer: event.userId ?? "anonymouse",
 				message: event.message,
 			})
 		})

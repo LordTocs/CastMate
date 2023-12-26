@@ -2,7 +2,7 @@ import { defineTrigger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
-import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 
 export function setupRaids() {
@@ -26,14 +26,12 @@ export function setupRaids() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 				raiders: { type: Number, required: true, default: 15 },
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return false
 			}
 
@@ -62,12 +60,11 @@ export function setupRaids() {
 			type: Object,
 			properties: {
 				raiders: { type: Number, required: true, default: 15 },
-				raidedUser: { type: String, required: true, default: "LordTocs" },
-				raidedUserId: { type: String, required: true, default: "27082158" },
+				raidedStreamer: { type: TwitchViewer, required: true, default: "27082158" },
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.raidedUserId, config.group))) {
+			if (!(await inTwitchViewerGroup(context.raidedStreamer, config.group))) {
 				return false
 			}
 
@@ -78,9 +75,7 @@ export function setupRaids() {
 	onChannelAuth((channel, service) => {
 		service.eventsub.onChannelRaidTo(channel.twitchId, async (event) => {
 			raid({
-				user: event.raidingBroadcasterDisplayName,
-				userId: event.raidingBroadcasterId,
-				userColor: await ViewerCache.getInstance().getChatColor(event.raidingBroadcasterId),
+				viewer: event.raidingBroadcasterId,
 				raiders: event.viewers,
 			})
 		})
@@ -88,8 +83,7 @@ export function setupRaids() {
 		service.eventsub.onChannelRaidFrom(channel.twitchId, (event) => {
 			raidOut({
 				raiders: event.viewers,
-				raidedUser: event.raidedBroadcasterName,
-				raidedUserId: event.raidedBroadcasterId,
+				raidedStreamer: event.raidedBroadcasterId,
 			})
 		})
 	})

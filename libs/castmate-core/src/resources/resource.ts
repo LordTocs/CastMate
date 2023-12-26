@@ -115,6 +115,7 @@ export interface ResourceConstructor<T extends ResourceBase = any> {
 }
 
 export function isResourceConstructor(constructor: any): constructor is ResourceConstructor {
+	if (!constructor) return false
 	const storageHaver = constructor as { storage?: ResourceStorage<any> }
 
 	return storageHaver.storage != null

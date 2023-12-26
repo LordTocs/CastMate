@@ -10,10 +10,9 @@ export interface TestSequenceData {
 }
 
 export const useActionQueueStore = defineStore("actionQueues", () => {
-	const runTestSequence = useIpcCaller<(id: string, sequence: Sequence, context: any) => void>(
-		"actionQueue",
-		"runTestSequence"
-	)
+	const runTestSequence = useIpcCaller<
+		(id: string, sequence: Sequence, trigger?: { plugin?: string; trigger?: string }) => void
+	>("actionQueue", "runTestSequence")
 	const stopTestSequence = useIpcCaller<(id: string) => void>("actionQueue", "stopTestSequence")
 
 	const activeTestSequences = ref<Record<string, TestSequenceData>>({})
@@ -59,11 +58,11 @@ export const useActionQueueStore = defineStore("actionQueues", () => {
 		})
 	}
 
-	async function testSequence(sequence: Sequence, context: any) {
+	async function testSequence(sequence: Sequence, trigger?: { plugin?: string; trigger?: string }) {
 		const id = nanoid()
 
 		//TODO: Transform sequence for ipc??
-		await runTestSequence(id, sequence, context)
+		await runTestSequence(id, sequence, trigger)
 
 		return id
 	}

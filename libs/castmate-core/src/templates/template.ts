@@ -43,11 +43,10 @@ export async function template(templateStr: string, data: object) {
 				let templateResult = undefined
 				try {
 					templateResult = await evaluateTemplate(trimmed, data)
+					result += String(templateResult)
 				} catch (err) {
 					console.error("Error evaluating Template", err)
 				}
-
-				result += templateResult?.toString() ?? ""
 			}
 		}
 	}

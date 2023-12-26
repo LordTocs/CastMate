@@ -1,7 +1,7 @@
 import { defineState, defineTrigger } from "castmate-core"
 import { onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
-import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 import { TwitchAccount } from "./twitch-auth"
 
@@ -20,13 +20,11 @@ export function setupFollows() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return false
 			}
 			return true
@@ -51,9 +49,7 @@ export function setupFollows() {
 			ViewerCache.getInstance().cacheFollowEvent(event)
 
 			follow({
-				user: event.userDisplayName,
-				userId: event.userId,
-				userColor: await ViewerCache.getInstance().getChatColor(event.userId),
+				viewer: event.userId,
 			})
 
 			followers.value += 1

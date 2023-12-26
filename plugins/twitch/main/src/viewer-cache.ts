@@ -1,35 +1,31 @@
 import { ChatUser } from "@twurple/chat"
-import { Service, defineRendererCallable, onLoad } from "castmate-core"
-import { Color } from "castmate-schema"
+import {
+	ReactiveRef,
+	Service,
+	defineRendererCallable,
+	onLoad,
+	reactiveRef,
+	registerSchemaExpose,
+	registerSchemaUnexpose,
+} from "castmate-core"
+import { Color, getTypeByConstructor } from "castmate-schema"
 import { TwitchAccount } from "./twitch-auth"
 import { onChannelAuth } from "./api-harness"
 import {
 	EventSubChannelSubscriptionEvent,
 	EventSubChannelSubscriptionGiftEvent,
 	EventSubChannelFollowEvent,
+	EventSubChannelCheerEvent,
 } from "@twurple/eventsub-base"
 import { rawDataSymbol } from "@twurple/common"
 import fuzzysort from "fuzzysort"
 import { defineCallableIPC } from "castmate-core/src/util/electron"
-import { TwitchViewer } from "castmate-plugin-twitch-shared"
+import { TwitchViewer, TwitchViewerData, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
 
-interface CachedViewerSubInfo {
-	tier: 1 | 2 | 3
-	gift: boolean
-	prime?: boolean
-}
-
-interface CachedViewerInfo {
+interface CachedTwitchViewer extends Partial<TwitchViewerData> {
 	id: string
-	displayName?: string
-	color?: Color | "default"
-	following?: boolean
-	followDate?: Date
-	subbed?: boolean
-	subinfo?: CachedViewerSubInfo
+	[Symbol.toPrimitive](hint: "default" | "string" | "number"): any
 	lastSeen?: number
-	profilePicture?: string
-	description?: string
 }
 
 function getNValues<T>(set: Set<T>, requiredValues: T[], n: number): T[] {
@@ -82,11 +78,16 @@ TODO: DataRaces. If two triggers run for batched users it will query twitch twic
 export function setupViewerCache() {
 	onLoad(() => {
 		ViewerCache.initialize()
+	})
 
-		defineRendererCallable("fuzzyGetUsers", async (query: string) => {
-			const result = await ViewerCache.getInstance().fuzzyUserCacheQuery(query)
-			return result.map((c) => c.displayName as string)
-		})
+	defineRendererCallable("fuzzyGetUsers", async (query: string) => {
+		const result = await ViewerCache.getInstance().fuzzyUserCacheQuery(query)
+		return result.map((c) => c.displayName as string)
+	})
+
+	defineRendererCallable("getDisplayName", async (userId: string) => {
+		const result = await ViewerCache.getInstance().getDisplayName(userId)
+		return result
 	})
 
 	onChannelAuth(async () => {
@@ -94,21 +95,29 @@ export function setupViewerCache() {
 	})
 }
 
+registerSchemaExpose(TwitchViewer, async (value: TwitchViewerUnresolved) => {
+	return await ViewerCache.getInstance().getResolvedViewer(value)
+})
+
+registerSchemaUnexpose(TwitchViewer, async (value: TwitchViewer) => {
+	return value.id
+})
+
 export const ViewerCache = Service(
 	class {
 		//VIPS and MODS are limited thus it makes sense to store a set and prime it
 		private vips = new Set<string>()
 		private mods = new Set<string>()
 
-		private _viewerLookup = new Map<string, CachedViewerInfo>()
-		private _nameLookup = new Map<string, CachedViewerInfo>()
+		private _viewerLookup = new Map<string, ReactiveRef<CachedTwitchViewer>>()
+		private _nameLookup = new Map<string, CachedTwitchViewer>()
 
 		//Colors and SubInfo could be too numerous to prime so we'll lazily collect ids to query
 		private unknownColors = new Set<string>()
 		private unknownSubInfo = new Set<string>()
 		private unknownUserInfo = new Set<string>()
 
-		private chatters = new Map<string, CachedViewerInfo>()
+		private chatters = new Map<string, CachedTwitchViewer>()
 		private chatterQueryTimer: NodeJS.Timer | undefined = undefined
 
 		//Twitch doesn't allow bulk follow checking?
@@ -149,7 +158,7 @@ export const ViewerCache = Service(
 		}
 
 		private async updateChatterList() {
-			const newChatters = new Map<string, CachedViewerInfo>()
+			const newChatters = new Map<string, CachedTwitchViewer>()
 
 			//TODO: Check if the bot account is active and has moderator privledges, that would give us a guilt free 800 queries
 
@@ -169,10 +178,10 @@ export const ViewerCache = Service(
 		private get(userId: string) {
 			const cached = this._viewerLookup.get(userId)
 			if (!cached) throw new Error("Tried to get user out of cache that hasn't been cached")
-			return cached
+			return cached.value
 		}
 
-		private markSeen(viewer: CachedViewerInfo) {
+		private markSeen(viewer: CachedTwitchViewer) {
 			viewer.lastSeen = Date.now()
 			if (!this.chatters.has(viewer.id)) {
 				this.chatters.set(viewer.id, viewer)
@@ -182,13 +191,21 @@ export const ViewerCache = Service(
 		private getOrCreate(userId: string) {
 			let cached = this._viewerLookup.get(userId)
 			if (!cached) {
-				cached = { id: userId }
+				//Store our users as reactive so if they get used in a condition or overlay template they will update it
+				//when the cache is updated
+				cached = reactiveRef<CachedTwitchViewer>({
+					id: userId,
+					[Symbol.toPrimitive](hint: "default" | "string" | "number") {
+						if (hint == "string") return this.displayName ?? this.id
+						return 0
+					},
+				})
 				this._viewerLookup.set(userId, cached)
 				this.unknownColors.add(userId)
 				this.unknownSubInfo.add(userId)
 				this.unknownUserInfo.add(userId)
 			}
-			return cached
+			return cached.value
 		}
 
 		private async queryColor(...userIds: string[]) {
@@ -216,7 +233,7 @@ export const ViewerCache = Service(
 			return cached.color ?? "default"
 		}
 
-		updateNameCache(viewer: CachedViewerInfo, name: string) {
+		updateNameCache(viewer: CachedTwitchViewer, name: string) {
 			if (viewer.displayName != name) {
 				const nameLower = name.toLowerCase()
 				if (viewer.displayName != null) {
@@ -245,7 +262,7 @@ export const ViewerCache = Service(
 
 			cached.subbed = chatUser.isSubscriber
 			if (!cached.subbed) {
-				delete cached.subinfo
+				delete cached.sub
 				this.unknownSubInfo.delete(id)
 			}
 		}
@@ -256,16 +273,18 @@ export const ViewerCache = Service(
 			this.markSeen(cached)
 			cached.subbed = true
 			const tier = (Number(event.tier) / 1000) as 1 | 2 | 3
-			if (tier != 1) {
-				//We can only cache a tier 2 or 3 sub here because we know they're not prime.
-				//Eventsub for some reason doesn't include if it's a prime sub, so we leave it in the unknownSub list
-				cached.subinfo = {
-					gift: event.isGift,
-					tier: (Number(event.tier) / 1000) as 1 | 2 | 3,
-					prime: false,
-				}
-				this.unknownSubInfo.delete(cached.id)
+			cached.sub = {
+				gift: event.isGift,
+				tier,
 			}
+			this.unknownSubInfo.delete(cached.id)
+		}
+
+		cacheCheerEvent(event: EventSubChannelCheerEvent) {
+			if (!event.userId || !event.userDisplayName) return
+			const cached = this.getOrCreate(event.userId)
+			this.markSeen(cached)
+			this.updateNameCache(cached, event.userDisplayName)
 		}
 
 		cacheGiftSubEvent(event: EventSubChannelSubscriptionGiftEvent) {
@@ -301,13 +320,13 @@ export const ViewerCache = Service(
 
 					if (following.data.length == 0) {
 						cached.following = false
-						delete cached.followDate
+						//delete cached.followDate
 						continue
 					}
 
 					this.updateNameCache(cached, following.data[0].userDisplayName)
 					cached.following = true
-					cached.followDate = following.data[0].followDate
+					//cached.followDate = following.data[0].followDate
 				}
 			} catch (err) {}
 		}
@@ -321,14 +340,14 @@ export const ViewerCache = Service(
 			return cached.following ?? false
 		}
 
-		async getFollowDate(userId: string): Promise<Date | undefined> {
+		/*async getFollowDate(userId: string): Promise<Date | undefined> {
 			const cached = this.getOrCreate(userId)
 			if (cached.following != null) {
 				return cached.followDate
 			}
 			await this.queryFollowing(userId)
 			return cached.followDate
-		}
+		}*/
 
 		async getIsVIP(userId: string): Promise<boolean> {
 			return this.vips.has(userId)
@@ -360,7 +379,7 @@ export const ViewerCache = Service(
 					this.updateNameCache(cached, sub.userDisplayName)
 
 					cached.subbed = true
-					cached.subinfo = {
+					cached.sub = {
 						tier: sub.tier === "3000" ? 3 : sub.tier === "2000" ? 2 : 1,
 						gift: sub.isGift,
 					}
@@ -369,7 +388,7 @@ export const ViewerCache = Service(
 				for (const id of leftOvers) {
 					const cached = this.get(id)
 					cached.subbed = false
-					delete cached.subinfo
+					delete cached.sub
 				}
 
 				removeValues(this.unknownSubInfo, ids)
@@ -387,15 +406,15 @@ export const ViewerCache = Service(
 
 		async getSubInfo(userId: string) {
 			const cached = this.get(userId)
-			if (cached.subinfo != null) {
-				return cached.subinfo
+			if (cached.sub != null) {
+				return cached.sub
 			}
 			if (cached.subbed == false) {
 				return undefined
 			}
 
 			await this.querySubInfo(userId)
-			return cached.subinfo
+			return cached.sub
 		}
 
 		private async queryUserInfo(...userIds: string[]) {
@@ -420,7 +439,7 @@ export const ViewerCache = Service(
 			return (await this.getResolvedViewers([userId]))[0]
 		}
 
-		async getResolvedViewers(userIds: string[]) {
+		async getResolvedViewers(userIds: string[]): Promise<TwitchViewer[]> {
 			const neededSubIds: string[] = []
 			const neededColorIds: string[] = []
 			const neededUserInfoIds: string[] = []
@@ -429,7 +448,7 @@ export const ViewerCache = Service(
 			const cachedUsers = userIds.map((id) => this.getOrCreate(id))
 
 			for (const cached of cachedUsers) {
-				if (cached.subbed == null || (cached.subbed === true && cached.subinfo == null)) {
+				if (cached.subbed == null || (cached.subbed === true && cached.sub == null)) {
 					neededSubIds.push(cached.id)
 				}
 
@@ -466,21 +485,20 @@ export const ViewerCache = Service(
 
 			await Promise.all(queryPromises)
 
-			return cachedUsers.map((cached) => {
-				return {
-					id: cached.id,
-					displayName: cached.displayName,
-					description: cached.description,
-					profilePicture: cached.profilePicture,
-					color: cached.color,
-					following: cached.following,
-					subbed: cached.subbed,
-					sub: cached.subinfo ? { ...cached.subinfo } : undefined,
-					[Symbol.toPrimitive]() {
-						return this.name
-					},
-				} as TwitchViewer
-			})
+			//Safe to cast here since we've resolved everything
+			return cachedUsers as TwitchViewer[]
+		}
+
+		async getDisplayName(userId: string) {
+			const cached = this.getOrCreate(userId)
+
+			if (cached.displayName != null) return cached.displayName
+
+			await this.queryUserInfo(userId)
+
+			if (cached.displayName == null) throw new Error("Huh?")
+
+			return cached.displayName
 		}
 
 		async getUserId(name: string) {
@@ -501,7 +519,7 @@ export const ViewerCache = Service(
 		}
 
 		async fuzzyUserCacheQuery(query: string, max: number = 10) {
-			const viewers = [...this._viewerLookup.values()].filter((v) => v.displayName != null)
+			const viewers = [...this._nameLookup.values()].filter((v) => v.displayName != null)
 			const fuzzySearch = fuzzysort.go(query, viewers, { key: "displayName", limit: max })
 
 			const result = fuzzySearch.map((r) => r.obj)

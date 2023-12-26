@@ -6,6 +6,7 @@ import { evalueBooleanExpression } from "../util/boolean-helpers"
 import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 import { ProfileManager } from "./profile-system"
 import { TriggerFunc } from "../queue-system/trigger"
+import { PluginManager } from "../plugins/plugin-manager"
 
 export interface SequenceProvider {
 	getSequence(id: string): Sequence | undefined
@@ -103,8 +104,14 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 		return undefined
 	}
 
-	*iterTriggers<Config extends Schema, ContextData extends Schema>(
-		trigger: TriggerFunc<Config, ContextData>
+	getTrigger(id: string) {
+		const triggerData = this.config.triggers.find(t => t.id == id)
+		if (!triggerData?.plugin || !triggerData?.trigger) return undefined
+		return PluginManager.getInstance().getPlugin(triggerData.plugin)?.triggers?.get(triggerData.trigger)
+	}
+
+	*iterTriggers<Config extends Schema, ContextData extends Schema, InvokeContextData extends Schema>(
+		trigger: TriggerFunc<Config, ContextData, InvokeContextData>
 	): IterableIterator<TriggerData<SchemaType<Config>>> {
 		for (const t of this.config.triggers) {
 			if (t.plugin == trigger.triggerDef.pluginId && t.trigger == trigger.triggerDef.id) {

@@ -5,7 +5,7 @@ import { defineState, defineTrigger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
-import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 
 export function setupSubscriptions() {
@@ -25,16 +25,14 @@ export function setupSubscriptions() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 				totalMonths: { type: Number, required: true, default: 5 },
 				streakMonths: { type: Number, required: true, default: 3 },
 				durationMonths: { type: Number, required: true, default: 1 },
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return false
 			}
 
@@ -61,14 +59,12 @@ export function setupSubscriptions() {
 		context: {
 			type: Object,
 			properties: {
-				user: { type: String, required: true, default: "LordTocs" },
-				userId: { type: String, required: true, default: "27082158" },
-				userColor: { type: String, required: true, default: "#4411FF" },
+				gifter: { type: TwitchViewer, required: true, default: "27082158" },
 				subs: { type: Number, required: true, default: 5 },
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.userId, config.group))) {
+			if (!(await inTwitchViewerGroup(context.gifter, config.group))) {
 				return false
 			}
 
@@ -110,9 +106,7 @@ export function setupSubscriptions() {
 
 		service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
 			subscription({
-				user: event.userDisplayName,
-				userId: event.userId,
-				userColor: await ViewerCache.getInstance().getChatColor(event.userId),
+				viewer: event.userId,
 				totalMonths: event.cumulativeMonths,
 				streakMonths: event.streakMonths ?? 1,
 				durationMonths: event.durationMonths,
@@ -123,9 +117,7 @@ export function setupSubscriptions() {
 			ViewerCache.getInstance().cacheGiftSubEvent(event)
 
 			giftSub({
-				user: event.gifterDisplayName,
-				userId: event.gifterId,
-				userColor: await ViewerCache.getInstance().getChatColor(event.gifterId),
+				gifter: event.gifterId,
 				subs: event.amount,
 			})
 		})

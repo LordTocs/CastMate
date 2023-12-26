@@ -110,11 +110,7 @@ provide("activeTestSequence", activeTestSequence)
 const trigger = useTrigger(() => props.trigger)
 
 async function onRunSequence() {
-	let context: any = {}
-	if (trigger.value) {
-		context = await constructDefault(trigger.value.context)
-	}
-	testSequenceId.value = await actionQueueStore.testSequence(props.modelValue.sequence, context)
+	testSequenceId.value = await actionQueueStore.testSequence(props.modelValue.sequence, props.trigger)
 }
 
 async function onStopSequence() {

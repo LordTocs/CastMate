@@ -4,27 +4,6 @@ export type TwitchViewerName = `@${string}` | `${string}`
 
 export const TwitchViewerResolvedSymbol = Symbol()
 
-export interface TwitchViewerDataUnresolved {
-	id: string
-	displayName: string
-	[TwitchViewerResolvedSymbol]: false
-}
-
-export interface TwitchViewerDataResolved {
-	id: string
-	displayName: string
-	description: string
-	profilePicture: string
-	color: Color
-	following: boolean
-	subbed: boolean
-	sub?: {
-		tier: 1 | 2 | 3
-		gift: boolean
-	}
-	[TwitchViewerResolvedSymbol]: true
-}
-
 export interface TwitchViewerData {
 	id: string
 	displayName: string
@@ -40,17 +19,19 @@ export interface TwitchViewerData {
 }
 
 export interface TwitchViewer extends TwitchViewerData {
-	[Symbol.toPrimitive](): any
+	[Symbol.toPrimitive](hint: "default" | "string" | "number"): any
 }
+
+export type TwitchViewerUnresolved = string
 
 export const TwitchViewer = {
 	factoryCreate() {
-		return undefined as unknown as TwitchViewer
+		return undefined as unknown as TwitchViewerUnresolved
 	},
 	fromData(data: TwitchViewerData): TwitchViewer {
 		return {
 			...data,
-			[Symbol.toPrimitive]() {
+			[Symbol.toPrimitive](hint: "default" | "string" | "number") {
 				return this.displayName
 			},
 		}
@@ -58,12 +39,16 @@ export const TwitchViewer = {
 }
 type TwitchViewerFactory = typeof TwitchViewer
 
-interface SchemaTwitchViewer extends SchemaBase<TwitchViewer> {
+interface SchemaTwitchViewer extends SchemaBase<TwitchViewerUnresolved> {
 	type: TwitchViewerFactory
 }
 
 declare module "castmate-schema" {
 	interface SchemaTypeMap {
+		TwitchViewer: [SchemaTwitchViewer, TwitchViewerUnresolved]
+	}
+
+	interface ExposedSchemaTypeMap {
 		TwitchViewer: [SchemaTwitchViewer, TwitchViewer]
 	}
 }

@@ -1,5 +1,13 @@
 import { ResourceStorage, Resource } from "../resources/resource"
-import { QueuedSequence, Sequence, SequenceSource, ActionQueueConfig, ActionQueueState } from "castmate-schema"
+import {
+	QueuedSequence,
+	Sequence,
+	SequenceSource,
+	ActionQueueConfig,
+	ActionQueueState,
+	Schema,
+	constructDefault,
+} from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { Service } from "../util/service"
 import { SequenceDebugger, SequenceRunner } from "./sequence"
@@ -7,6 +15,8 @@ import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Profile } from "../profile/profile"
 import { FileResource } from "../resources/file-resource"
 import { ResourceRegistry } from "../resources/resource-registry"
+import { deserializeSchema, exposeSchema } from "../util/ipc-schema"
+import { PluginManager } from "../plugins/plugin-manager"
 
 export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueState> {
 	static resourceDirectory: string = "./queues"
@@ -105,15 +115,25 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		this.enqueue(played.source, played.queueContext)
 	}
 
-	private getNextSequence(): { queuedSequence: QueuedSequence; sequence: Sequence } | undefined {
+	private getNextSequence():
+		| { queuedSequence: QueuedSequence; sequence: Sequence; contextSchema: Schema }
+		| undefined {
 		let queuedSequence: QueuedSequence | undefined
 		while ((queuedSequence = this.state.queue.shift())) {
 			if (queuedSequence.source.type == "profile" && queuedSequence.source.subid) {
-				const sequence = Profile.storage
-					.getById(queuedSequence.source.id)
-					?.getSequence(queuedSequence.source.subid)
-				if (sequence) {
-					return { queuedSequence, sequence }
+				const profile = Profile.storage.getById(queuedSequence.source.id)
+				if (!profile) continue
+
+				const sequence = profile.getSequence(queuedSequence.source.id)
+				if (!sequence) continue
+
+				const trigger = profile.getTrigger(queuedSequence.source.id)
+				if (!trigger) continue
+
+				return {
+					queuedSequence,
+					sequence,
+					contextSchema: trigger.context,
 				}
 			}
 
@@ -123,7 +143,7 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		return undefined
 	}
 
-	runNext() {
+	async runNext() {
 		if (this.runner || this.state.running) {
 			return
 		}
@@ -132,9 +152,10 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 
 		if (!seqItem) return
 
-		//TODO: Fill out context
+		const resolvedContext = await deserializeSchema(seqItem.contextSchema, seqItem.queuedSequence.queueContext)
+		const finalContext = await exposeSchema(seqItem.contextSchema, resolvedContext)
 
-		this.runner = new SequenceRunner(seqItem.sequence, seqItem.queuedSequence.queueContext)
+		this.runner = new SequenceRunner(seqItem.sequence, finalContext)
 
 		this.state.running = seqItem.queuedSequence
 		const doRun = async () => {
@@ -209,19 +230,36 @@ export const ActionQueueManager = Service(
 		private testSequences = new Map<string, SequenceRunner>()
 
 		constructor() {
-			defineIPCFunc("actionQueue", "runTestSequence", (id: string, sequence: Sequence, context: any) => {
-				//sequence is encoded for IPC, change configs to proper types
-				this.runTestSequence(id, sequence, context)
-				return id
-			})
+			defineIPCFunc(
+				"actionQueue",
+				"runTestSequence",
+				(id: string, sequence: Sequence, trigger?: { plugin: string; trigger: string }) => {
+					//sequence is encoded for IPC, change configs to proper types
+					this.runTestSequence(id, sequence, trigger)
+					return id
+				}
+			)
 
 			defineIPCFunc("actionQueue", "stopTestSequence", (id: string) => {
 				return this.stopTestSequence(id)
 			})
 		}
 
-		runTestSequence(id: string, sequence: Sequence, context: object) {
+		async runTestSequence(id: string, sequence: Sequence, trigger?: { plugin?: string; trigger?: string }) {
 			if (this.testSequences.has(id)) return
+
+			let context: any = {}
+
+			if (trigger && trigger.trigger && trigger.plugin) {
+				const triggerDef = PluginManager.getInstance().getTrigger(trigger.plugin, trigger.trigger)
+				if (triggerDef) {
+					const defaultRunValues = await constructDefault(triggerDef.context)
+					//console.log("Default for test", defaultRunValues)
+					const exposedDefault = await exposeSchema(triggerDef.context, defaultRunValues)
+					//console.log("Exposed for test", exposedDefault)
+					context = exposedDefault
+				}
+			}
 
 			const runner = new SequenceRunner(
 				sequence,
