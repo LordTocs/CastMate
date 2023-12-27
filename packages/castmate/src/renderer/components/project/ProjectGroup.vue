@@ -1,6 +1,11 @@
 <template>
 	<div class="project-category">
-		<div class="project-category-header" @click="expanded = !expanded" @contextmenu="contextMenu?.show($event)">
+		<div
+			class="project-category-header"
+			:style="{ '--indent': indent }"
+			@click="expanded = !expanded"
+			@contextmenu="contextMenu?.show($event)"
+		>
 			<i :class="`mdi ${expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'}`"></i>
 			<slot name="icon">
 				<i :class="group.icon" class="px-1" v-if="group.icon"></i>
@@ -61,7 +66,7 @@ const expanded = ref(false)
 	align-items: center;
 	justify-content: center;
 	height: 2rem;
-
+	padding-left: calc(var(--indent) * 1em);
 	user-select: none;
 }
 
