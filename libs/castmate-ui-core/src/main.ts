@@ -30,6 +30,7 @@ export { default as InputBox } from "./components/data/base-components/InputBox.
 export { default as LabelFloater } from "./components/data/base-components/LabelFloater.vue"
 export { default as TemplateToggle } from "./components/data/base-components/TemplateToggle.vue"
 export { default as CAutocomplete } from "./components/data/base-components/CAutocomplete.vue"
+export { default as AutocompleteDropList } from "./components/data/base-components/AutocompleteDropList.vue"
 export { default as EnumInput } from "./components/data/base-components/EnumInput.vue"
 export { default as DocumentPath } from "./components/document/DocumentPath.vue"
 export { default as BooleanExpressionInput } from "./components/data/inputs/BooleanExpressionInput.vue"

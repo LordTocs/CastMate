@@ -135,16 +135,12 @@ export function setupChat() {
 		config: {
 			type: Object,
 			properties: {
-				user: { type: String, name: "Twitch Name", template: true, required: true, default: "" },
+				streamer: { type: TwitchViewer, name: "Streamer", required: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
 			const channel = TwitchAccount.channel
-			const user = await channel.apiClient.users.getUserByName(config.user)
-			if (!user) {
-				return
-			}
-			await channel.apiClient.chat.shoutoutUser(channel.twitchId, user?.id)
+			await channel.apiClient.chat.shoutoutUser(channel.twitchId, config.streamer)
 		},
 	})
 

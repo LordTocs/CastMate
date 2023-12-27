@@ -37,6 +37,10 @@ export class CustomTwitchViewerGroup extends FileResource<TwitchViewerGroupConfi
 			name: savedConfig.name,
 			userIds: new Set<string>(savedConfig.userIds),
 		})
+		for (const userId of savedConfig.userIds) {
+			//Mark users as relevant so their data will be cached by batch operations
+			ViewerCache.getInstance().markRelevant(userId)
+		}
 		return true
 	}
 

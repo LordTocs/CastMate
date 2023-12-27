@@ -20,7 +20,12 @@ import {
 import { rawDataSymbol } from "@twurple/common"
 import fuzzysort from "fuzzysort"
 import { defineCallableIPC } from "castmate-core/src/util/electron"
-import { TwitchViewer, TwitchViewerData, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
+import {
+	TwitchViewer,
+	TwitchViewerData,
+	TwitchViewerDisplayData,
+	TwitchViewerUnresolved,
+} from "castmate-plugin-twitch-shared"
 
 interface CachedTwitchViewer extends Partial<TwitchViewerData> {
 	id: string
@@ -81,13 +86,17 @@ export function setupViewerCache() {
 	})
 
 	defineRendererCallable("fuzzyGetUsers", async (query: string) => {
-		const result = await ViewerCache.getInstance().fuzzyUserCacheQuery(query)
-		return result.map((c) => c.displayName as string)
+		return await ViewerCache.getInstance().fuzzyGetDisplayDataByName(query, 10)
 	})
 
-	defineRendererCallable("getDisplayName", async (userId: string) => {
-		const result = await ViewerCache.getInstance().getDisplayName(userId)
-		return result
+	defineRendererCallable("getUserById", async (userId: string) => {
+		return await ViewerCache.getInstance().getDisplayDataById(userId)
+	})
+
+	defineRendererCallable("getUserByName", async (name: string) => {
+		if (!name) return undefined
+
+		return await ViewerCache.getInstance().getDisplayDataByName(name)
 	})
 
 	onChannelAuth(async () => {
@@ -304,6 +313,10 @@ export const ViewerCache = Service(
 			this.markSeen(cached)
 		}
 
+		public markRelevant(userId: string) {
+			this.getOrCreate(userId)
+		}
+
 		private async queryFollowing(...userIds: string[]) {
 			try {
 				//Annoyingly check each follow independently
@@ -487,6 +500,73 @@ export const ViewerCache = Service(
 
 			//Safe to cast here since we've resolved everything
 			return cachedUsers as TwitchViewer[]
+		}
+
+		async getDisplayDataByName(name: string) {
+			const id = await this.getUserId(name)
+
+			if (!id) return undefined
+
+			return await this.getDisplayDataById(id)
+		}
+
+		async getDisplayDataById(userId: string): Promise<TwitchViewerDisplayData> {
+			const cached = this.getOrCreate(userId)
+
+			const queries: Promise<any>[] = []
+
+			if (cached.color == null) {
+				queries.push(this.queryColor(userId))
+			}
+
+			if (cached.displayName == null || cached.profilePicture == null) {
+				queries.push(this.queryUserInfo(userId))
+			}
+
+			if (queries.length > 0) await Promise.all(queries)
+
+			return {
+				id: cached.id,
+				displayName: cached.displayName as string,
+				color: cached.color as Color,
+				profilePicture: cached.profilePicture as string,
+			}
+		}
+
+		async fuzzyGetDisplayDataByName(query: string, max: number): Promise<TwitchViewerDisplayData[]> {
+			const users = await this.fuzzyUserCacheQuery(query, max)
+
+			const needsColors: string[] = []
+			const needsUserInfo: string[] = []
+
+			for (const user of users) {
+				if (user.color == null) {
+					needsColors.push(user.id)
+				}
+
+				if (user.displayName == null || user.profilePicture == null) {
+					needsUserInfo.push(user.id)
+				}
+			}
+
+			const queries: Promise<any>[] = []
+
+			if (needsColors.length > 0) {
+				queries.push(this.queryColor(...needsColors))
+			}
+
+			if (needsUserInfo.length > 0) {
+				queries.push(this.queryUserInfo(...needsUserInfo))
+			}
+
+			await Promise.all(queries)
+
+			return users.map((u) => ({
+				id: u.id,
+				displayName: u.displayName as string,
+				color: u.color as Color,
+				profilePicture: u.profilePicture as string,
+			}))
 		}
 
 		async getDisplayName(userId: string) {

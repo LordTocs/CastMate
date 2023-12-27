@@ -37,44 +37,26 @@
 		/>
 		<p-button class="no-focus-highlight flex-shrink-0" @click="onDropDownClick"><p-chevron-down-icon /></p-button>
 	</div>
-	<drop-down-panel
+	<autocomplete-drop-list
+		ref="dropDown"
 		:container="container"
+		v-model:focused-id="focusedId"
 		v-model="overlayVisible"
-		:style="{
-			width: `${containerSize.width.value}px`,
-			overflowY: 'auto',
-			maxHeight: '15rem',
-		}"
-		class="autocomplete-drop-down"
+		:grouped-items="filteredItems"
+		:text-prop="textProp"
+		:group-prop="groupProp"
+		:current-id="selectedItem?.id"
+		@select="(item) => (model = item.id)"
+		@closed="onBlur"
 	>
-		<ul class="p-dropdown-items">
-			<template v-for="(group, i) in filteredItems">
-				<slot name="groupHeader" :item="group[0]"> </slot>
+		<template #groupHeader="scope" v-if="$slots.groupHeader">
+			<slot name="groupHeader" v-bind="scope" />
+		</template>
 
-				<slot
-					name="item"
-					v-for="(item, i) in group"
-					:item="item"
-					:index="i"
-					:focused="isItemFocused(item)"
-					:highlighted="isCurrentItem(item)"
-					:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
-				>
-					<li
-						class="p-dropdown-item"
-						:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
-						:data-p-highlight="isCurrentItem(item)"
-						:data-p-focused="isItemFocused(item)"
-						:aria-label="getItemText(item, props)"
-						:aria-selected="isCurrentItem(item)"
-						@click="onItemSelect($event, item)"
-					>
-						{{ getItemText(item, props) }}
-					</li>
-				</slot>
-			</template>
-		</ul>
-	</drop-down-panel>
+		<template #item="scope" v-if="$slots.item">
+			<slot name="item" v-bind="scope" />
+		</template>
+	</autocomplete-drop-list>
 </template>
 
 <script setup lang="ts">
@@ -96,6 +78,7 @@ import {
 import LabelFloater from "./LabelFloater.vue"
 import _clamp from "lodash/clamp"
 import { DropDownPanel, InputBox } from "../../../main"
+import AutocompleteDropList from "./AutocompleteDropList.vue"
 
 const props = withDefaults(
 	defineProps<
@@ -114,6 +97,8 @@ const props = withDefaults(
 
 const model = useModel(props, "modelValue")
 const emit = defineEmits(["update:modelValue", "open"])
+
+const dropDown = ref<InstanceType<typeof AutocompleteDropList>>()
 
 function clear() {
 	model.value = undefined
@@ -146,7 +131,6 @@ function onDropDownClick(ev: MouseEvent) {
 		hide()
 	}
 }
-const containerSize = useElementSize(container)
 //////////////////
 //Filtering
 
@@ -154,16 +138,6 @@ const filterValue = ref<string>("")
 const filterInputElement = ref<{ $el: HTMLElement } | null>(null)
 const filteredItems = useGroupedFilteredItems(filterValue, () => props.items, props)
 
-function onItemSelect(ev: Event, item: ItemType) {
-	model.value = item.id
-	onBlur()
-	ev.stopPropagation()
-	ev.preventDefault()
-}
-
-function isCurrentItem(item: ItemType) {
-	return model.value == item.id
-}
 const selectedItem = computed(() => props.items.find((item) => item.id == model.value))
 
 //////
@@ -185,49 +159,11 @@ function onBlur() {
 	hide()
 }
 
-function isItemFocused(item: ItemType) {
-	return item.id == focusedId.value
-}
-
 ////
 //Key navigation
 
 function onFilterKeyDown(ev: KeyboardEvent) {
-	if (ev.key == "ArrowDown") {
-		onKeyArrowDown(ev)
-	} else if (ev.key == "ArrowUp") {
-		onKeyArrowUp(ev)
-	} else if (ev.key == "Enter") {
-		selectedFocusedItem(ev)
-	} else if (ev.key == "Escape") {
-		onBlur()
-		ev.stopPropagation()
-		ev.preventDefault()
-	}
-}
-
-function selectedFocusedItem(ev: Event) {
-	if (findItem(filteredItems.value, focusedId.value)) {
-		model.value = focusedId.value
-		onBlur()
-	} else if (filteredItems.value.length > 0) {
-		model.value = filteredItems.value[0][0]?.id
-		onBlur()
-	}
-	ev.stopPropagation()
-	ev.preventDefault()
-}
-
-function onKeyArrowDown(ev: KeyboardEvent) {
-	focusedId.value = getNextItem(filteredItems.value, focusedId.value)
-	ev.stopPropagation()
-	ev.preventDefault()
-}
-
-function onKeyArrowUp(ev: KeyboardEvent) {
-	focusedId.value = getPrevItem(filteredItems.value, focusedId.value)
-	ev.stopPropagation()
-	ev.preventDefault()
+	dropDown.value?.handleKeyEvent(ev)
 }
 </script>
 

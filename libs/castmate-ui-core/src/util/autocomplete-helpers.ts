@@ -88,7 +88,7 @@ export function getNextItem(items: ItemType[][], id: string | undefined) {
 			}
 		}
 	}
-	return id
+	return items[0]?.[0]?.id
 }
 
 export function getPrevItem(items: ItemType[][], id: string | undefined) {
@@ -110,5 +110,5 @@ export function getPrevItem(items: ItemType[][], id: string | undefined) {
 			}
 		}
 	}
-	return id
+	return items[0]?.[0]?.id
 }

@@ -4,6 +4,13 @@ export type TwitchViewerName = `@${string}` | `${string}`
 
 export const TwitchViewerResolvedSymbol = Symbol()
 
+export interface TwitchViewerDisplayData {
+	id: string
+	displayName: string
+	profilePicture: string
+	color: Color
+}
+
 export interface TwitchViewerData {
 	id: string
 	displayName: string
@@ -39,7 +46,7 @@ export const TwitchViewer = {
 }
 type TwitchViewerFactory = typeof TwitchViewer
 
-interface SchemaTwitchViewer extends SchemaBase<TwitchViewerUnresolved> {
+export interface SchemaTwitchViewer extends SchemaBase<TwitchViewerUnresolved> {
 	type: TwitchViewerFactory
 }
 

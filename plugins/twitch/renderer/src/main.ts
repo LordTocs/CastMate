@@ -9,17 +9,20 @@ import {
 	useProjectStore,
 	useResourceStore,
 } from "castmate-ui-core"
-import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupInput from "./components/TwitchViewerGroupInput.vue"
 import { computed } from "vue"
 import ChannelPointsEditPageVue from "./components/channel-points/ChannelPointsEditPage.vue"
 import TwitchAccountSettingsVue from "./components/account/TwitchAccountSettings.vue"
 import { Color, Duration } from "castmate-schema"
+import TwitchViewerInputVue from "./components/viewer/TwitchViewerInput.vue"
 
 export async function initPlugin() {
 	console.log("Registering", TwitchViewerGroup, "TwitchViewerGroup")
 	const dataStore = useDataInputStore()
 	dataStore.registerInputComponent(TwitchViewerGroup, TwitchViewerGroupInput)
+
+	dataStore.registerInputComponent(TwitchViewer, TwitchViewerInputVue)
 
 	const resourceStore = useResourceStore()
 	resourceStore.registerSettingComponent("TwitchAccount", TwitchAccountSettingsVue)
