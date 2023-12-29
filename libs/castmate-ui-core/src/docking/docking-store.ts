@@ -163,7 +163,7 @@ export const useDockingStore = defineStore("docking", () => {
 		targetFrame.currentTab = newTabId
 	}
 
-	function openPage(id: string, title: string, page: Component) {
+	function openPage(id: string, title: string, page: Component, pageData?: any) {
 		if (focusTabId(dockedInfo.value, id)) {
 			return
 		}
@@ -190,6 +190,7 @@ export const useDockingStore = defineStore("docking", () => {
 			id,
 			title,
 			page: markRaw(page),
+			pageData,
 		})
 		targetFrame.currentTab = id
 	}

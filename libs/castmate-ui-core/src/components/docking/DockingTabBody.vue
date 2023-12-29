@@ -1,6 +1,11 @@
 <template>
 	<document-editor v-if="props.modelValue.documentId" :document-id="props.modelValue.documentId" class="tab" />
-	<component v-else-if="props.modelValue.page" :is="modelValue.page" class="tab" />
+	<component
+		v-else-if="props.modelValue.page"
+		:is="modelValue.page"
+		class="tab"
+		:page-data="props.modelValue.pageData"
+	/>
 </template>
 
 <script setup lang="ts">

@@ -11,6 +11,7 @@ export interface DockedTab {
 	documentId?: string
 	page?: Component
 	title?: string
+	pageData?: any
 }
 
 export interface DockedFrame {

@@ -49,6 +49,87 @@ interface ResourceGroupConfig<TData extends ResourceData> {
 	createView?: (resource: TData) => object
 }
 
+export function getResourceAsDirectProjectGroup<TData extends ResourceData>(
+	app: App<Element>,
+	config: {
+		resourceType: string
+		resourceName?: string
+		groupIcon?: string
+		creationDialog?: VueElementConstructor
+		page: VueElementConstructor
+	}
+) {
+	const resources = useResourceData<TData>(config.resourceType)
+	const resourceStore = useResourceStore()
+	const dockingStore = useDockingStore()
+
+	const group = computed<ProjectGroup>(() => {
+		let items: ProjectItem[] = []
+
+		if (resources.value) {
+			const resourceItems = [...resources.value.resources.values()]
+
+			items = resourceItems.map(
+				(r) =>
+					({
+						id: r.id,
+						title: (r.config as NamedData).name ?? r.id,
+						open() {
+							//TODO how do we get the view data?
+							dockingStore.openPage(
+								`${config.resourceType}.${r.id}`,
+								(r.config as NamedData).name ?? r.id,
+								config.page,
+								{ resourceId: r.id }
+							)
+						},
+						rename(name: string) {
+							resourceStore.applyResourceConfig(config.resourceType, r.id, { name })
+						},
+						delete() {
+							resourceStore.deleteResource(config.resourceType, r.id)
+
+							//TODO: dockingStore.closeDocument(r.id)
+							//TODO: unsaved data?
+						},
+					} as ProjectItem)
+			)
+		}
+
+		const title = config.resourceName ?? config.resourceType
+
+		return {
+			id: config.resourceType,
+			title,
+			icon: config.groupIcon,
+			items,
+			create() {
+				const dialog = app.config.globalProperties.$dialog
+				if (!resources.value) return
+				dialog.open(config.creationDialog ?? NameDialogVue, {
+					props: {
+						header: `New ${title}`,
+						style: {
+							width: "25vw",
+						},
+						modal: true,
+					},
+					onClose(options) {
+						if (!options) {
+							return
+						}
+
+						console.log("Creating", config.resourceType, options.data)
+						resourceStore.createResource(config.resourceType, options.data)
+					},
+				})
+			},
+		}
+	})
+
+	return group
+}
+
 export function getResourceAsProjectGroup<TData extends ResourceData>(
 	app: App<Element>,
 	config: ResourceGroupConfig<TData>
