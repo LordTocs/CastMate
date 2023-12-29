@@ -2,7 +2,7 @@ import "./css/icons.css"
 import {
 	ProjectGroup,
 	ResourceSchemaEdit,
-	getResourceAsProjectGroup,
+	getResourceAsDirectProjectGroup,
 	useDataInputStore,
 	useDockingStore,
 	usePluginStore,
@@ -11,13 +11,14 @@ import {
 } from "castmate-ui-core"
 import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupInput from "./components/TwitchViewerGroupInput.vue"
-import { computed } from "vue"
+import { computed, App } from "vue"
 import ChannelPointsEditPageVue from "./components/channel-points/ChannelPointsEditPage.vue"
 import TwitchAccountSettingsVue from "./components/account/TwitchAccountSettings.vue"
 import { Color, Duration } from "castmate-schema"
 import TwitchViewerInputVue from "./components/viewer/TwitchViewerInput.vue"
+import GroupPageVue from "./components/groups/GroupPage.vue"
 
-export async function initPlugin() {
+export async function initPlugin(app: App<Element>) {
 	console.log("Registering", TwitchViewerGroup, "TwitchViewerGroup")
 	const dataStore = useDataInputStore()
 	dataStore.registerInputComponent(TwitchViewerGroup, TwitchViewerGroupInput)
@@ -52,6 +53,21 @@ export async function initPlugin() {
 
 	const projectStore = useProjectStore()
 	const dockingStore = useDockingStore()
+
+	// const g = getResourceAsDirectProjectGroup(app, {
+	// 	resourceType: "CustomTwitchViewerGroup",
+	// 	resourceName: "Viewer Groups",
+	// 	groupIcon: "mdi mdi-account-group",
+	// 	page: GroupPageVue,
+	// }),
+
+	const g = getResourceAsDirectProjectGroup(app, {
+		resourceType: "CustomTwitchViewerGroup",
+		resourceName: "Viewer Groups",
+		groupIcon: "mdi mdi-account-group",
+		page: GroupPageVue,
+	})
+
 	projectStore.registerProjectGroupItem(
 		computed<ProjectGroup>(() => {
 			return {
@@ -71,12 +87,7 @@ export async function initPlugin() {
 							)
 						},
 					},
-					{
-						id: "twitch.groups",
-						title: "Viewer Groups",
-						icon: "mdi mdi-account-group",
-						open() {},
-					},
+					g.value,
 				],
 			}
 		})

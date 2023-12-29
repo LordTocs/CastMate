@@ -1,6 +1,6 @@
 import { FileResource, Resource, ResourceRegistry, ResourceStorage, definePluginResource, onLoad } from "castmate-core"
 import { TwitchViewerGroupConfig, TwitchViewerGroup, TwitchViewerGroupRule } from "castmate-plugin-twitch-shared"
-import { nanoid } from "nanoid"
+import { nanoid } from "nanoid/non-secure"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchAccount } from "./twitch-auth"
 
@@ -58,6 +58,15 @@ export class CustomTwitchViewerGroup extends FileResource<TwitchViewerGroupConfi
 		this.config.userIds.delete(userId)
 		await this.save()
 		await this.updateUI()
+	}
+
+	static async initialize() {
+		await super.initialize()
+
+		//@ts-ignore
+		ResourceRegistry.getInstance().exposeIPCFunction(CustomTwitchViewerGroup, "add")
+		//@ts-ignore
+		ResourceRegistry.getInstance().exposeIPCFunction(CustomTwitchViewerGroup, "remove")
 	}
 }
 

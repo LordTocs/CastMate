@@ -105,7 +105,7 @@ async function init() {
 	await initData()
 
 	await initVariablesPlugin()
-	await initTwitchPlugin()
+	await initTwitchPlugin(app)
 
 	//TODO: This init function is bonkers, we should formalize initing these plugins after their main process side gets inited.
 

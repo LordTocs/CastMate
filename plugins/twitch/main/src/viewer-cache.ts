@@ -93,6 +93,10 @@ export function setupViewerCache() {
 		return await ViewerCache.getInstance().getDisplayDataById(userId)
 	})
 
+	defineRendererCallable("getUsersByIds", async (userIds: string[]) => {
+		return await ViewerCache.getInstance().getDisplayDatasByIds(userIds)
+	})
+
 	defineRendererCallable("getUserByName", async (name: string) => {
 		if (!name) return undefined
 
@@ -508,6 +512,42 @@ export const ViewerCache = Service(
 			if (!id) return undefined
 
 			return await this.getDisplayDataById(id)
+		}
+
+		async getDisplayDatasByIds(userIds: string[]): Promise<TwitchViewerDisplayData[]> {
+			const users = userIds.map((id) => this.getOrCreate(id))
+
+			const needsColors: string[] = []
+			const needsUserInfo: string[] = []
+
+			for (const user of users) {
+				if (user.color == null) {
+					needsColors.push(user.id)
+				}
+
+				if (user.displayName == null || user.profilePicture == null) {
+					needsUserInfo.push(user.id)
+				}
+			}
+
+			const queries: Promise<any>[] = []
+
+			if (needsColors.length > 0) {
+				queries.push(this.queryColor(...needsColors))
+			}
+
+			if (needsUserInfo.length > 0) {
+				queries.push(this.queryUserInfo(...needsUserInfo))
+			}
+
+			await Promise.all(queries)
+
+			return users.map((u) => ({
+				id: u.id,
+				displayName: u.displayName as string,
+				color: u.color as Color,
+				profilePicture: u.profilePicture as string,
+			}))
 		}
 
 		async getDisplayDataById(userId: string): Promise<TwitchViewerDisplayData> {
