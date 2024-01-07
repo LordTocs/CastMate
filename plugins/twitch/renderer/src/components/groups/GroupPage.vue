@@ -10,6 +10,7 @@
 		>
 			<template #header>
 				<div class="flex">
+					<twitch-viewer-input v-model="memberAdder" :schema="{ type: TwitchViewer, name: 'Add Member' }" />
 					<div class="flex-grow-1"></div>
 					<span class="p-input-icon-left">
 						<i class="pi pi-search" />
@@ -40,13 +41,20 @@
 import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PButton from "primevue/button"
+import PInputText from "primevue/inputtext"
 import { FilterMatchMode } from "primevue/api"
 import { computed, onMounted, ref, watch, watchEffect } from "vue"
 import { useResource, useResourceIPCCaller } from "castmate-ui-core"
 import { ResourceData } from "castmate-schema"
-import { TwitchViewerDisplayData, TwitchViewerGroupConfig } from "castmate-plugin-twitch-shared"
+import {
+	TwitchViewer,
+	TwitchViewerDisplayData,
+	TwitchViewerGroupConfig,
+	TwitchViewerUnresolved,
+} from "castmate-plugin-twitch-shared"
 import { useViewerStore } from "../../util/viewer"
 import { useConfirm } from "primevue/useconfirm"
+import TwitchViewerInput from "../viewer/TwitchViewerInput.vue"
 
 const props = defineProps<{
 	pageData: { resourceId: string }
@@ -93,6 +101,17 @@ function tryDelete(user: TwitchViewerDisplayData) {
 		},
 	})
 }
+
+const memberAdder = computed<TwitchViewerUnresolved | undefined>({
+	get() {
+		return undefined
+	},
+	set(v) {
+		if (v != null) {
+			addId(v)
+		}
+	},
+})
 
 onMounted(() => {
 	queryMembers()
