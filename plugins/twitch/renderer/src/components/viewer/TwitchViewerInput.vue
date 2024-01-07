@@ -99,7 +99,6 @@ async function queryDisplay() {
 }
 
 const fuzzySuggestions = ref<TwitchViewerDisplayData[]>([])
-const matchSuggestion = ref<TwitchViewerDisplayData>()
 const filterInputElement = ref<{ $el: HTMLElement } | null>(null)
 
 function onFocus(ev: FocusEvent) {
@@ -126,16 +125,13 @@ function onBlur() {
 const groupedSuggestions = computed<TwitchViewerDisplayData[][]>(() => {
 	const result: TwitchViewerDisplayData[][] = []
 
-	if (matchSuggestion.value) {
-		result.push([matchSuggestion.value])
-	}
-	const suggestions = fuzzySuggestions.value.filter((s) => s.id != matchSuggestion.value?.id)
+	const suggestions = fuzzySuggestions.value
 	result.push(suggestions)
 
 	return result
 })
 
-function onFilterKeyDown(ev: KeyboardEvent) {
+async function onFilterKeyDown(ev: KeyboardEvent) {
 	if (focused.value && !dropDownOpen.value) {
 		dropDownOpen.value = true
 		if (selectedDisplayData.value) {
@@ -143,24 +139,27 @@ function onFilterKeyDown(ev: KeyboardEvent) {
 		}
 	}
 
+	if (dropDownOpen.value && focused.value) {
+		if (ev.key == "Enter") {
+			const focusedSuggestion = fuzzySuggestions.value.find((s) => s.id == focusedId.value)
+			if (!focusedSuggestion) {
+				const exactMatch = await viewerStore.getUserByName(nameValue.value)
+				if (exactMatch) {
+					model.value = exactMatch.id
+					onBlur()
+					ev.preventDefault()
+					ev.stopPropagation()
+					return
+				}
+			}
+		}
+	}
+
 	dropDown.value?.handleKeyEvent(ev)
 }
 
-async function queryExact() {
-	const exactMatch = await viewerStore.getUserByName(nameValue.value)
-
-	if (!exactMatch) {
-		matchSuggestion.value = undefined
-		return
-	}
-
-	matchSuggestion.value = exactMatch
-}
-const queryExactDebounced = _debounce(queryExact, 500)
-
 async function querySuggestions() {
-	matchSuggestion.value = undefined
-	queryExactDebounced()
+	//queryExactDebounced()
 	fuzzySuggestions.value = await viewerStore.fuzzyGetUser(nameValue.value)
 }
 
