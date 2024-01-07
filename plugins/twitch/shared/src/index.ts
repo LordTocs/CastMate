@@ -4,3 +4,5 @@ export * from "./resources/channelpoints"
 export * from "./emotes"
 
 export * from "./viewers/viewer"
+
+export * from "./data/category"
