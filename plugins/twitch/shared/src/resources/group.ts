@@ -54,7 +54,7 @@ export interface SchemaTwitchViewerGroup extends SchemaBase<TwitchViewerGroup> {
 
 declare module "castmate-schema" {
 	interface SchemaTypeMap {
-		SourceTransform: [SchemaTwitchViewerGroup, TwitchViewerGroup]
+		TwitchViewerGroup: [SchemaTwitchViewerGroup, TwitchViewerGroup]
 	}
 }
 
