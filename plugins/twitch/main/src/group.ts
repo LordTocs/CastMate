@@ -1,5 +1,18 @@
-import { FileResource, Resource, ResourceRegistry, ResourceStorage, definePluginResource, onLoad } from "castmate-core"
-import { TwitchViewerGroupConfig, TwitchViewerGroup, TwitchViewerGroupRule } from "castmate-plugin-twitch-shared"
+import {
+	FileResource,
+	Resource,
+	ResourceRegistry,
+	ResourceStorage,
+	defineAction,
+	definePluginResource,
+	onLoad,
+} from "castmate-core"
+import {
+	TwitchViewerGroupConfig,
+	TwitchViewerGroup,
+	TwitchViewerGroupRule,
+	TwitchViewer,
+} from "castmate-plugin-twitch-shared"
 import { nanoid } from "nanoid/non-secure"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchAccount } from "./twitch-auth"
@@ -60,6 +73,12 @@ export class CustomTwitchViewerGroup extends FileResource<TwitchViewerGroupConfi
 		await this.updateUI()
 	}
 
+	async clear() {
+		this.config.userIds = new Set()
+		await this.save()
+		await this.updateUI()
+	}
+
 	static async initialize() {
 		await super.initialize()
 
@@ -72,6 +91,54 @@ export class CustomTwitchViewerGroup extends FileResource<TwitchViewerGroupConfi
 
 export function setupViewerGroups() {
 	definePluginResource(CustomTwitchViewerGroup)
+
+	defineAction({
+		id: "addViewerToGroup",
+		name: "Add Viewer to Group",
+		icon: "mdi mdi-account-group",
+		config: {
+			type: Object,
+			properties: {
+				group: { type: CustomTwitchViewerGroup, name: "Group", required: true },
+				viewer: { type: TwitchViewer, name: "Viewer", required: true },
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await config.group.add(config.viewer)
+		},
+	})
+
+	defineAction({
+		id: "removeViewerFromGroup",
+		name: "Remove Viewer from Group",
+		icon: "mdi mdi-account-group",
+		config: {
+			type: Object,
+			properties: {
+				group: { type: CustomTwitchViewerGroup, name: "Group", required: true },
+				viewer: { type: TwitchViewer, name: "Viewer", required: true },
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await config.group.remove(config.viewer)
+		},
+	})
+
+	defineAction({
+		id: "clearViewerGroup",
+		name: "Clear Viewer Group",
+		description: "Becareful you can't undo this!!",
+		icon: "mdi mdi-account-group",
+		config: {
+			type: Object,
+			properties: {
+				group: { type: CustomTwitchViewerGroup, name: "Group", required: true },
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await config.group.clear()
+		},
+	})
 }
 
 async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promise<boolean> {
