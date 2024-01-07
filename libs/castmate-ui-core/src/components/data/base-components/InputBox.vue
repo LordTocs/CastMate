@@ -1,6 +1,6 @@
 <template>
 	<div
-		class="p-inputwrapper"
+		class="p-inputwrapper input-box"
 		:class="{
 			'p-filled': model != null,
 			'p-focused': focused,
@@ -49,5 +49,9 @@ const props = withDefaults(
 	outline-offset: 0;
 	/* box-shadow: 0 0 0 1px #e9aaff; */
 	border-color: #c9b1cb;
+}
+
+.input-box {
+	min-width: 200px;
 }
 </style>
