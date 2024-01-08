@@ -1,13 +1,13 @@
 <template>
 	<boolean-group-expression
 		v-if="'operands' in model"
-		v-model="(model as BooleanExpressionGroup)"
+		v-model="model"
 		:selected-ids="selectedIds"
 		@delete="emit('delete', $event)"
 	/>
 	<boolean-value-expression-editor
 		v-else
-		v-model="(model as BooleanValueExpression)"
+		v-model="model"
 		:selected-ids="selectedIds"
 		@delete="emit('delete', $event)"
 	/>

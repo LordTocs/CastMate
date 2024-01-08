@@ -4,13 +4,13 @@
 			<div style="flex: 1">
 				<label-floater :label="schema.name ?? ''" :no-float="!!noFloat" input-id="text" v-slot="labelProps">
 					<template-toggle
-						v-model="model"
+						v-model="numModel"
 						:template-mode="templateMode"
 						v-bind="labelProps"
 						v-slot="templateProps"
 					>
 						<p-input-number
-							v-model="(model as number | undefined)"
+							v-model="numModel"
 							:min="min"
 							:max="max"
 							:step="step"
@@ -23,7 +23,7 @@
 						<enum-input
 							v-else
 							:schema="schema"
-							v-model="model"
+							v-model="strModel"
 							:no-float="!!noFloat"
 							:context="context"
 							v-bind="templateProps"
@@ -31,13 +31,7 @@
 						/>
 					</template-toggle>
 				</label-floater>
-				<p-slider
-					v-if="schema.slider && !templateMode"
-					v-model="(model as number | undefined)"
-					:min="min"
-					:max="max"
-					:step="step"
-				/>
+				<p-slider v-if="schema.slider && !templateMode" v-model="numModel" :min="min" :max="max" :step="step" />
 			</div>
 		</document-path>
 		<p-button
@@ -98,10 +92,28 @@ onMounted(() => {
 })
 
 function clear() {
-	model.value = undefined
+	strModel.value = undefined
 }
 
-const model = useModel(props, "modelValue")
+const emit = defineEmits(["update:modelValue"])
 
-const errorMessage = useValidator(model, () => props.schema)
+const strModel = computed<string | undefined>({
+	get() {
+		return props.modelValue as string | undefined
+	},
+	set(v) {
+		emit("update:modelValue", v)
+	},
+})
+
+const numModel = computed<number | undefined>({
+	get() {
+		return props.modelValue as number | undefined
+	},
+	set(v) {
+		emit("update:modelValue", v)
+	},
+})
+
+const errorMessage = useValidator(numModel, () => props.schema)
 </script>

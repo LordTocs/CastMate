@@ -14,7 +14,7 @@
 			:input-id="inputId"
 			ref="container"
 		>
-			<p-input-text class="flex-grow-1" :class="{ 'no-right-bezel': noRightBezel }" v-model="(model as any)" />
+			<p-input-text class="flex-grow-1" :class="{ 'no-right-bezel': noRightBezel }" v-model="model" />
 			<i class="mdi mdi-code-json input-icon" @click="suggestionClick" @mousedown="stopPropagation" />
 			<state-suggestion-panel :container="container" v-model:open="suggestionVisible" @suggest="onSuggest" />
 		</div>
@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts" generic="T">
-import { ref, useModel } from "vue"
+import { computed, ref, useModel } from "vue"
 import PInputText from "primevue/inputtext"
 import StateSuggestionPanel from "./state/StateSuggestionPanel.vue"
 import { stopPropagation } from "../../../main"
@@ -40,16 +40,19 @@ const props = defineProps<{
 
 const container = ref<HTMLElement>()
 const suggestionVisible = ref(false)
+const emit = defineEmits(["update:modelValue"])
 
 //Some bug in typescript incorrectly infered our model type
-const model = useModel<
-	{
-		modelValue: T | string | undefined
-		templateMode: boolean
-		inputId: string
+//const model = useModel<any>(props, "modelValue")
+
+const model = computed<any>({
+	get() {
+		return props.modelValue
 	},
-	"modelValue"
->(props, "modelValue")
+	set(v) {
+		emit("update:modelValue", v)
+	},
+})
 
 function suggestionClick(ev: MouseEvent) {
 	ev.stopPropagation()
@@ -63,7 +66,9 @@ function isString(obj: any): obj is string {
 
 function onSuggest(suggestion: string) {
 	const suggestionTemplate = `{{ ${suggestion} }}`
-	if (model.value != null && isString(model.value)) {
+	const currentValue = model.value
+
+	if (currentValue != null && isString(currentValue)) {
 		model.value += suggestionTemplate
 	} else {
 		model.value = suggestionTemplate
