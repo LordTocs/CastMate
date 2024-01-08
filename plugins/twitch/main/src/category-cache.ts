@@ -1,6 +1,7 @@
 import { TwitchCategory, TwitchCategoryUnresolved, TwitchViewer } from "castmate-plugin-twitch-shared"
 import { Service, defineRendererCallable, onLoad, registerSchemaExpose, registerSchemaUnexpose } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
+import fuzzysort from "fuzzysort"
 
 export function setupCategoryCache() {
 	onLoad(() => {
@@ -52,7 +53,10 @@ export const CategoryCache = Service(
 					this.cacheCategory(c)
 				}
 
-				return categories
+				const fuzzySearch = fuzzysort.go(query, categories, { key: "name" })
+				const finalResult = fuzzySearch.map((r) => r.obj)
+
+				return finalResult
 			} catch (err) {
 				return []
 			}
