@@ -25,10 +25,20 @@ export const TwitchCategory: TwitchCategoryFactory = {
 	[twitchCategorySymbol]: "TwitchCategory",
 }
 
-export interface SchemaTwitchCategory extends SchemaBase<TwitchCategory> {}
+export interface SchemaTwitchCategory extends SchemaBase<TwitchCategory> {
+	type: TwitchCategoryFactory
+}
+
+registerType("TwitchCategory", {
+	constructor: TwitchCategory,
+})
 
 declare module "castmate-schema" {
 	interface SchemaTypeMap {
+		TwitchCategory: [SchemaTwitchCategory, TwitchCategoryUnresolved]
+	}
+
+	interface ExposedSchemaTypeMap {
 		TwitchCategory: [SchemaTwitchCategory, TwitchCategory]
 	}
 }
