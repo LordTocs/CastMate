@@ -106,6 +106,10 @@ export class Account<
 		this.state.authenticated = true
 	}
 
+	get isAuthenticated() {
+		return this.state.authenticated
+	}
+
 	readonly onAuthorized = new EventList()
 }
 
