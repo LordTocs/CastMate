@@ -18,6 +18,7 @@ export * from "./util/retry-timer"
 export * from "./util/async-cache"
 export * from "./util/events"
 export * from "./util/ipc-schema"
+export * from "./util/electron"
 export * from "./io/file-system"
 
 export * from "./templates/template"
