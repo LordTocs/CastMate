@@ -16,8 +16,10 @@
 					v-bind="labelProps"
 				>
 					<template v-if="selectedDisplayData">
-						<img class="box-art" :src="selectedDisplayData.image" />
-						<span> {{ selectedDisplayData.name }}</span>
+						<span class="flex flex-row align-items-center">
+							<img class="box-art" :src="selectedDisplayData.image" />
+							<span> {{ selectedDisplayData.name }}</span>
+						</span>
 					</template>
 				</input-box>
 				<p-input-text
@@ -59,6 +61,7 @@
 </template>
 
 <script setup lang="ts">
+import PInputText from "primevue/inputtext"
 import {
 	SchemaTwitchCategory,
 	TwitchCategory,
