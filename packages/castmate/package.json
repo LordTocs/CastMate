@@ -10,7 +10,7 @@
 		"electron:build": "electron-builder --config electron-builder-config.cjs",
 		"electron:buildpublish": "electron-builder --config electron-builder-config.cjs --publish always"
 	},
-	"main": "dist-electron/background.js",
+	"main": "dist/dist-electron/background.js",
 	"engines": {
 		"node": "^14.18.0 || >=16.0.0"
 	},
