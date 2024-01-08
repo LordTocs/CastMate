@@ -10,6 +10,9 @@
 				</dashboard-card>
 				<dashboard-obs-card v-for="obs in obsConnections" :key="obs.id" :obs-id="obs.id" />
 			</div>
+			<div class="stat-row">
+				<stream-info-dashboard-card />
+			</div>
 			<action-queue-dash-widget v-for="queue in queues" :key="queue.id" :queue-id="queue.id" class="mb-2" />
 		</div>
 	</flex-scroller>
@@ -19,6 +22,7 @@
 import { useResourceArray, FlexScroller, DashboardStat, DashboardCard } from "castmate-ui-core"
 import ActionQueueDashWidget from "./queues/ActionQueueDashWidget.vue"
 import { DashboardObsCard } from "castmate-plugin-obs-renderer"
+import { StreamInfoDashboardCard } from "castmate-plugin-twitch-renderer"
 
 const queues = useResourceArray("ActionQueue")
 const obsConnections = useResourceArray("OBSConnection")

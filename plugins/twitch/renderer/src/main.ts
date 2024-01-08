@@ -18,6 +18,9 @@ import { Color, Duration } from "castmate-schema"
 import TwitchViewerInputVue from "./components/viewer/TwitchViewerInput.vue"
 import GroupPageVue from "./components/groups/GroupPage.vue"
 import TwitchCategoryInputVue from "./components/category/TwitchCategoryInput.vue"
+import { useCategoryStore } from "./util/category"
+
+export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
 
 export async function initPlugin(app: App<Element>) {
 	console.log("Registering", TwitchViewerGroup, "TwitchViewerGroup")
@@ -56,6 +59,8 @@ export async function initPlugin(app: App<Element>) {
 
 	const projectStore = useProjectStore()
 	const dockingStore = useDockingStore()
+	const categoryStore = useCategoryStore()
+	categoryStore.initialize()
 
 	// const g = getResourceAsDirectProjectGroup(app, {
 	// 	resourceType: "CustomTwitchViewerGroup",
@@ -68,6 +73,7 @@ export async function initPlugin(app: App<Element>) {
 		resourceType: "CustomTwitchViewerGroup",
 		resourceName: "Viewer Groups",
 		groupIcon: "mdi mdi-account-group",
+		//@ts-ignore
 		page: GroupPageVue,
 	})
 

@@ -6,3 +6,4 @@ export * from "./emotes"
 export * from "./viewers/viewer"
 
 export * from "./data/category"
+export * from "./data/stream-info"

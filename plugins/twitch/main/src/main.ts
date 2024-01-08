@@ -18,6 +18,8 @@ import { setupUndocumented } from "./undocumented"
 import { EmoteSet, createEmoteTrie, parseEmotesRegex, parseEmotesTrie } from "castmate-plugin-twitch-shared"
 import { setupEmotes } from "./emote-cache"
 import { setup7tv } from "./seventv"
+import { setupCategoryCache } from "./category-cache"
+import { setupInfoManager } from "./info-manager"
 
 export default definePlugin(
 	{
@@ -40,6 +42,8 @@ export default definePlugin(
 
 		setupViewerCache()
 		setupViewerGroups()
+		setupCategoryCache()
+		setupInfoManager()
 		setupAds()
 		setupChannelPointRewards()
 		setupChat()
