@@ -45,7 +45,7 @@ module.exports = {
 			filter: ["**/*"],
 		},
 	],
-	extraFiles: [
+	/*extraFiles: [
 		{
 			from: "../castmate-obs-overlay/dist/obs-overlay",
 			to: "obs-overlay",
@@ -54,7 +54,7 @@ module.exports = {
 			from: "starter_media",
 			to: "starter_media"
 		}
-	],
+	],*/
 	publish: [
 		{
 			provider: "github",

@@ -12,7 +12,7 @@ import { library, plugins } from "castmate-vite"
 //import { library, subpackage } from "../../vite-util/vite-subpackage-plugin"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
-//const dist = path.join(dirname, "dist")
+const dist = path.join(dirname, "dist")
 
 rmSync("dist", { recursive: true, force: true }) // v14.14.0
 
@@ -25,6 +25,7 @@ export default defineConfig({
 			vite: {
 				plugins: [nodeResolve()],
 				build: {
+					outDir: path.join(dist, "dist-electron"),
 					minify: false,
 					rollupOptions: {
 						external: [
