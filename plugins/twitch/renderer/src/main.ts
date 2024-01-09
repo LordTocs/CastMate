@@ -1,3 +1,4 @@
+import { useStreamPlanStore } from "./../../../../libs/castmate-ui-core/src/components/stream-plan/stream-plan-types"
 import "./css/icons.css"
 import {
 	ProjectGroup,
@@ -19,6 +20,7 @@ import TwitchViewerInputVue from "./components/viewer/TwitchViewerInput.vue"
 import GroupPageVue from "./components/groups/GroupPage.vue"
 import TwitchCategoryInputVue from "./components/category/TwitchCategoryInput.vue"
 import { useCategoryStore } from "./util/category"
+import StreamInfoPlanComponentVue from "./components/stream-info/StreamInfoPlanComponent.vue"
 
 export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
 
@@ -101,4 +103,7 @@ export async function initPlugin(app: App<Element>) {
 			}
 		})
 	)
+
+	const streamPlanStore = useStreamPlanStore()
+	streamPlanStore.registerStreamPlanComponent("twitch-stream-info", StreamInfoPlanComponentVue)
 }

@@ -18,6 +18,7 @@ export * from "./types/resource"
 export * from "./types/account"
 export * from "./types/queues"
 export * from "./types/automations"
+export * from "./types/stream-plan"
 
 export * from "./util/type-helpers"
 export * from "./util/promise-helpers"

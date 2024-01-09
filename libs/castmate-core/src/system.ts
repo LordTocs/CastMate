@@ -9,6 +9,7 @@ import { ProfileManager } from "./profile/profile-system"
 import { defineCallableIPC, defineIPCFunc } from "./util/electron"
 import { Automation } from "./automation/automation"
 import util from "util"
+import { setupStreamPlans } from "./stream-plan/stream-plan"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -35,6 +36,7 @@ export async function initializeCastMate() {
 	PluginManager.initialize()
 	MediaManager.initialize()
 	ResourceRegistry.initialize()
+	setupStreamPlans()
 
 	//How do we load plugins???
 	//await loadPlugin("twitch")

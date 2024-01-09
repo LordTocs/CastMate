@@ -42,6 +42,8 @@ export { default as DashboardCard } from "./components/dashboard/DashboardCard.v
 export { default as DashboardCardItem } from "./components/dashboard/DashboardCardItem.vue"
 export { default as DashboardStat } from "./components/dashboard/DashboardStat.vue"
 
+export { default as StreamPlanEditorPage } from "./components/stream-plan/StreamPlanEditorPage.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"
@@ -62,6 +64,8 @@ export * from "./media/media-store"
 export * from "./resources/resource-store"
 export * from "./docking/docking-store"
 export * from "./queue-system/action-queue-store"
+
+export * from "./components/stream-plan/stream-plan-types"
 
 export * from "./util/panning"
 

@@ -9,6 +9,7 @@ import {
 	useMediaStore,
 	useActionQueueStore,
 	useIpcCaller,
+	initializeStreamPlans,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -32,7 +33,7 @@ import "@mdi/font/css/materialdesignicons.css"
 import { createPinia } from "pinia"
 import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import AutomationEditPageVue from "./components/automation/AutomationEditPage.vue"
-import { initData } from "castmate-ui-core"
+import { initData, StreamPlanEditorPage } from "castmate-ui-core"
 import { createRouter, createWebHistory } from "vue-router"
 
 import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
@@ -94,10 +95,13 @@ async function init() {
 
 	await initializeProfiles(app)
 	await initializeAutomations(app)
+	await initializeStreamPlans(app)
 
 	const documentStore = useDocumentStore()
 	documentStore.registerDocumentComponent("profile", ProfileEditorVue)
 	documentStore.registerDocumentComponent("automation", AutomationEditPageVue)
+	documentStore.registerDocumentComponent("streamplan", StreamPlanEditorPage)
+
 	initSettingsDocuments()
 
 	initializeQueues()

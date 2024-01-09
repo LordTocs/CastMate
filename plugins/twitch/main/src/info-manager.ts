@@ -15,6 +15,7 @@ import {
 	runOnChange,
 	templateSchema,
 	writeYAML,
+	StreamPlanComponents,
 } from "castmate-core"
 import { StreamInfo, StreamInfoSchema, TwitchCategory } from "castmate-plugin-twitch-shared"
 import { TwitchAccount } from "./twitch-auth"
@@ -97,6 +98,16 @@ export function setupInfoManager() {
 	onLoad(async () => {
 		StreamInfoManager.initialize()
 		await StreamInfoManager.getInstance().initialize()
+
+		StreamPlanComponents.getInstance().registerComponentType({
+			id: "twitch-stream-info",
+			onActivate(segmentId, config: StreamInfo) {
+				StreamInfoManager.getInstance().setInfo(config)
+			},
+			activeConfigChanged(segmentId, config: StreamInfo) {
+				StreamInfoManager.getInstance().setInfo(config)
+			},
+		})
 	})
 
 	defineRendererCallable("setStreamInfo", async (streamInfo: StreamInfo) => {
