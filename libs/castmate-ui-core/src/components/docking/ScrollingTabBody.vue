@@ -23,5 +23,5 @@ const scrollY = useModel(props, "scrollY")
 
 const scroller = ref<InstanceType<typeof FlexScroller>>()
 
-provideScrollAttachable(scroller.value?.scroller ?? undefined)
+provideScrollAttachable(() => scroller.value?.scroller ?? undefined)
 </script>
