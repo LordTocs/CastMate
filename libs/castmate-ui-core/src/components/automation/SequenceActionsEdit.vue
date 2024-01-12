@@ -59,7 +59,7 @@ import { useSequenceDrag, type SelectionGetter } from "../../util/automation-dra
 import _cloneDeep from "lodash/cloneDeep"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence } from "castmate-schema"
-import { SelectionPos, Selection } from "castmate-ui-core"
+import { SelectionPos, Selection } from "../../main"
 import { useDuration } from "../../util/actions"
 import { FlowAction } from "castmate-schema"
 

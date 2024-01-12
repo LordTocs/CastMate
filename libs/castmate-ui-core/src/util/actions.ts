@@ -1,5 +1,5 @@
 import { IPCDurationState, IPCInstantDurationState, getByPath } from "castmate-schema"
-import { ActionSelection, ipcInvoke, useAction } from "castmate-ui-core"
+import { ActionSelection, ipcInvoke, useAction } from "../main"
 import { MaybeRefOrGetter, toValue, watch, ref, computed, onMounted, isRef } from "vue"
 
 export function useDuration(

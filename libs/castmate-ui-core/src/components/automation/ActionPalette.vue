@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { MenuItem } from "primevue/menuitem"
 import { computed, ref } from "vue"
-import { ActionSelection, usePluginStore, FilterPalette } from "castmate-ui-core"
+import { ActionSelection, usePluginStore, FilterPalette } from "../../main"
 
 const props = withDefaults(
 	defineProps<{

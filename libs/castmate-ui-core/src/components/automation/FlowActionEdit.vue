@@ -64,13 +64,13 @@ import {
 	useIsSelected,
 	SelectionPos,
 	Selection,
-} from "castmate-ui-core"
+	selectionOverlaps,
+} from "../../main"
 import { ref, useModel } from "vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import SequenceActionsEdit from "./SequenceActionsEdit.vue"
 import { Sequence } from "castmate-schema"
 import { SelectionGetter } from "../../util/automation-dragdrop"
-import { selectionOverlaps } from "castmate-ui-core"
 
 const props = defineProps<{
 	modelValue: FlowAction

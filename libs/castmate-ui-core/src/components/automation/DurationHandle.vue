@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { useEventListener, useVModel, useElementSize } from "@vueuse/core"
-import { type PanState, usePanState, usePanQuery, getInternalMousePos } from "castmate-ui-core"
+import { type PanState, usePanState, usePanQuery, getInternalMousePos } from "../../main"
 import { ref, type Ref, inject, computed } from "vue"
 import { automationTimeScale } from "./automation-shared"
 

@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { useModel, ref, provide } from "vue"
 import { Sequence, type NonStackActionInfo } from "castmate-schema"
-import { type SelectionPos, type Selection } from "castmate-ui-core"
+import { type SelectionPos, type Selection } from "../../main"
 import SequenceActionsEdit from "./SequenceActionsEdit.vue"
 import SequenceStart from "./SequenceStart.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"

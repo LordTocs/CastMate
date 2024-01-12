@@ -28,9 +28,9 @@ import {
 	useDragLeave,
 	useDragOver,
 	useDrop,
-} from "castmate-ui-core"
-
-import { SelectionPos, Selection } from "castmate-ui-core"
+	SelectionPos,
+	Selection,
+} from "../main"
 
 export interface SelectionGetter {
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection

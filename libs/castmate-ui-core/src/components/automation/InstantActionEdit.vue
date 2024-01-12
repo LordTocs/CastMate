@@ -32,13 +32,14 @@ import {
 	useIsSelected,
 	useDocumentPath,
 	useActionTestTime,
-} from "castmate-ui-core"
+	SelectionPos,
+	Selection,
+} from "../../main"
 import { useModel, ref } from "vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence } from "castmate-schema"
 import { ActionStack } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
-import { SelectionPos, Selection } from "castmate-ui-core"
 
 const props = withDefaults(
 	defineProps<{

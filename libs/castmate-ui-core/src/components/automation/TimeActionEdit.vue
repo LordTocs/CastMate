@@ -79,7 +79,7 @@ import {
 	TextHider,
 	useActionTestTime,
 	DurationLabel,
-} from "castmate-ui-core"
+} from "../../main"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence, OffsetActions, TimeAction } from "castmate-schema"

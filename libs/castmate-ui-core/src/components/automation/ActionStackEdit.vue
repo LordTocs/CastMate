@@ -26,7 +26,7 @@ import { SelectionGetter, useSequenceDrag } from "../../util/automation-dragdrop
 import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
 import { Sequence } from "castmate-schema"
-import { Selection, SelectionPos } from "castmate-ui-core"
+import { Selection, SelectionPos } from "../../main"
 
 const props = withDefaults(defineProps<{ modelValue: ActionStack; offset?: number; dragging?: boolean }>(), {
 	offset: 0,

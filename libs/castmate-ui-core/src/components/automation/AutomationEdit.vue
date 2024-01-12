@@ -52,10 +52,12 @@ import {
 	useDocumentSelection,
 	TriggerSelection,
 	useTrigger,
-} from "castmate-ui-core"
+	useSelectionRect,
+	useActiveTestSequence,
+	useActionQueueStore,
+} from "../../main"
 import SequenceEdit from "./SequenceEdit.vue"
 import { provideAutomationEditState } from "../../util/automation-dragdrop"
-import { useSelectionRect, useActiveTestSequence, useActionQueueStore } from "castmate-ui-core"
 import ActionPalette from "./ActionPalette.vue"
 import { FloatingSequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"

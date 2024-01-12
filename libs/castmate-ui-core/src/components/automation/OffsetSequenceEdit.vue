@@ -19,11 +19,10 @@ import { MaybeRefOrGetter, computed, toValue, useModel, ref, type Ref, inject } 
 import { type OffsetActions } from "castmate-schema"
 import { SequenceActions } from "castmate-schema"
 import { isActionStack } from "castmate-schema"
-import { usePluginStore, useColors, usePanState } from "castmate-ui-core"
+import { usePluginStore, useColors, usePanState, Selection, SelectionPos } from "../../main"
 import { useElementSize, useEventListener } from "@vueuse/core"
 import _clamp from "lodash/clamp"
 import { TimeActionInfo } from "castmate-schema"
-import { Selection, SelectionPos } from "castmate-ui-core"
 import { SelectionGetter, useAutomationEditState } from "../../util/automation-dragdrop"
 import { automationTimeScale } from "./automation-shared"
 

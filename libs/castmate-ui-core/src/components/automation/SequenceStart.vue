@@ -16,7 +16,7 @@ import {
 	useIsSelected,
 	useDocumentPath,
 	useParentTestSequence,
-} from "castmate-ui-core"
+} from "../../main"
 import { ref } from "vue"
 import PButton from "primevue/button"
 

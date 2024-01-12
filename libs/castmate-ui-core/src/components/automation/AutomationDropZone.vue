@@ -8,11 +8,9 @@
 </template>
 
 <script setup lang="ts">
-import { Ref, inject, onMounted, onUnmounted, ref, shallowRef, computed, onBeforeUnmount, nextTick, markRaw } from "vue"
+import { Ref, inject, onMounted, ref, computed, onBeforeUnmount } from "vue"
 import { useAutomationEditState, type DropZone } from "../../util/automation-dragdrop"
-import { Sequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
-import { isInstantAction, isActionStack } from "castmate-schema"
 
 const props = withDefaults(
 	defineProps<{
