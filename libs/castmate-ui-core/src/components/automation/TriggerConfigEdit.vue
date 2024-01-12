@@ -15,12 +15,11 @@
 
 <script setup lang="ts">
 import { TriggerData } from "castmate-schema"
-import { useTrigger } from "castmate-ui-core"
+import { useTrigger, DataInput } from "../../main"
 import { useModel } from "vue"
-import { DataInput } from "castmate-ui-core"
 
 const props = defineProps<{
-	modelValue: TriggerData
+	modelValue: { plugin?: string; trigger?: string; config?: any }
 }>()
 
 const model = useModel(props, "modelValue")

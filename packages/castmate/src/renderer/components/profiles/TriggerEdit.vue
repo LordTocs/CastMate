@@ -34,19 +34,14 @@
 			:style="{ height: `${view.height}px` }"
 			ref="cardBody"
 		>
-			<div class="flex flex-row h-full">
+			<document-path local-path="automation">
 				<automation-edit
+					class="h-full flex-grow-1"
 					v-model="modelObj"
-					v-model:view="view.automationView"
-					local-path="sequence"
-					style="flex: 1"
+					v-model:view="view"
 					:trigger="modelObj"
 				/>
-				<div class="config">
-					<action-config-edit v-if="selectedAction" v-model="selectedAction" />
-					<trigger-config-edit v-else-if="selectedTrigger" v-model="selectedTrigger" />
-				</div>
-			</div>
+			</document-path>
 			<expander-slider
 				v-model="view.height"
 				:color="(triggerColor as Color)"
@@ -62,7 +57,7 @@
 <script setup lang="ts">
 import { computed, markRaw, ref, useModel } from "vue"
 import PButton from "primevue/button"
-import { type TriggerData, getActionById } from "castmate-schema"
+import { type TriggerData, Color } from "castmate-schema"
 import {
 	useTrigger,
 	DataInput,
@@ -70,23 +65,14 @@ import {
 	TriggerSelector,
 	TriggerView,
 	useTriggerColors,
-	useDocumentSelection,
-	useDocumentPath,
-	joinDocumentPath,
-	usePluginStore,
 	ResourceProxyFactory,
 	stopPropagation,
 	provideDataContextSchema,
+	AutomationEdit,
+	ExpanderSlider,
+	DocumentPath,
 } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
-import AutomationEdit from "../automation/AutomationEdit.vue"
-import { AnyAction } from "castmate-schema"
-import { ActionStack } from "castmate-schema"
-import { ExpanderSlider } from "castmate-ui-core"
-import { Color } from "castmate-schema"
-import { isActionStack } from "castmate-schema"
-import ActionConfigEdit from "./ActionConfigEdit.vue"
-import TriggerConfigEdit from "./TriggerConfigEdit.vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -120,53 +106,6 @@ const isSelected = computed(() => {
 })
 
 const cardBody = ref<HTMLElement>()
-
-const documentPath = useDocumentPath()
-const selection = useDocumentSelection(() => joinDocumentPath(documentPath.value, "sequence"))
-const pluginStore = usePluginStore()
-
-function findActionById(id: string) {
-	let action: AnyAction | ActionStack | undefined = undefined
-
-	action = getActionById(id, modelObj.value.sequence)
-	if (action) {
-		return action
-	}
-
-	for (const floatingSequence of modelObj.value.floatingSequences) {
-		action = getActionById(id, floatingSequence)
-		if (action) {
-			return action
-		}
-	}
-}
-
-const selectedAction = computed<AnyAction | undefined>(() => {
-	if (selection.value.length > 1 || selection.value.length == 0) {
-		return undefined
-	}
-	const id = selection.value[0]
-
-	let action: AnyAction | ActionStack | undefined = undefined
-
-	action = findActionById(id)
-
-	if (!action) return undefined
-	if (isActionStack(action)) return undefined
-
-	return action
-})
-
-const selectedTrigger = computed(() => {
-	if (selection.value.length > 1 || selection.value.length == 0) {
-		return undefined
-	}
-	const id = selection.value[0]
-
-	if (id != "trigger") return undefined
-
-	return props.modelValue
-})
 
 const open = computed<boolean>({
 	get() {
@@ -240,14 +179,6 @@ const modelObj = useVModel(props, "modelValue", emit)
 	padding-left: 2.5rem;
 	padding-top: 0.25rem;
 	padding-bottom: 0.25rem;
-}
-
-.config {
-	background-color: var(--surface-b);
-	user-select: none;
-	width: 350px;
-	overflow-y: auto;
-	overflow-x: visible;
 }
 
 .trigger-name {
