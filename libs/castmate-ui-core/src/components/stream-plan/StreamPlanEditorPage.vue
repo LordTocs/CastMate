@@ -1,5 +1,16 @@
 <template>
 	<scrolling-tab-body v-model:scroll-x="view.scrollX" v-model:scroll-y="view.scrollY">
+		<inline-automation-edit
+			label="On Activate"
+			v-model="model.activationAutomation"
+			v-model:view="view.activationAutomation"
+		/>
+		<inline-automation-edit
+			label="On Deactivate"
+			v-model="model.deactivationAutomation"
+			v-model:view="view.deactivationAutomation"
+		/>
+
 		<document-data-collection
 			v-model="model.segments"
 			v-model:view="view.segments"
@@ -34,6 +45,7 @@ import { useModel } from "vue"
 import PButton from "primevue/button"
 import { nanoid } from "nanoid/non-secure"
 import { StreamPlanSegment } from "castmate-schema"
+import { createInlineAutomationView, InlineAutomationEdit } from "../../main"
 
 const props = defineProps<{
 	modelValue: StreamPlanConfig
@@ -56,11 +68,13 @@ function createNewSegment(): [StreamPlanSegment, StreamPlanSegmentView] {
 					category: undefined,
 				},
 			},
-			activationAutomation: { sequence: { actions: [] }, floatingSequences: [] },
-			deactivationAutomation: { sequence: { actions: [] }, floatingSequences: [] },
+			activationAutomation: { sequence: { actions: [] }, floatingSequences: [], queue: undefined },
+			deactivationAutomation: { sequence: { actions: [] }, floatingSequences: [], queue: undefined },
 		},
 		{
 			id,
+			activationAutomation: createInlineAutomationView(),
+			deactivationAutomation: createInlineAutomationView(),
 		},
 	]
 }

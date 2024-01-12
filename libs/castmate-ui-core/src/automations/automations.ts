@@ -16,6 +16,28 @@ export interface AutomationResourceView {
 	automationView: AutomationView
 }
 
+export interface InlineAutomationView {
+	open: boolean
+	height: number
+	automationView: AutomationView
+}
+
+export function createInlineAutomationView(): InlineAutomationView {
+	return {
+		open: false,
+		height: 600,
+		automationView: {
+			panState: {
+				zoomX: 1,
+				zoomY: 1,
+				panX: 0,
+				panY: 0,
+				panning: false,
+			},
+		},
+	}
+}
+
 function createAutomationViewData(resource: ResourceData<AutomationConfig>): AutomationResourceView {
 	return {
 		automationView: {

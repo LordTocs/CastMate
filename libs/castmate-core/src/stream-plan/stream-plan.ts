@@ -21,8 +21,8 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 
 		this._config = {
 			name: name ?? "",
-			activationAutomation: { sequence: { actions: [] }, floatingSequences: [] },
-			deactivationAutomation: { sequence: { actions: [] }, floatingSequences: [] },
+			activationAutomation: { sequence: { actions: [] }, floatingSequences: [], queue: undefined },
+			deactivationAutomation: { sequence: { actions: [] }, floatingSequences: [], queue: undefined },
 			segments: [],
 		}
 	}

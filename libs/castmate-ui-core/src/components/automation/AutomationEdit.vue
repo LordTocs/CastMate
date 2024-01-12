@@ -3,16 +3,23 @@
 		<document-path local-path="sequence">
 			<automation-edit-area v-model="model" v-model:view="view.automationView" style="flex: 1" :trigger="model" />
 		</document-path>
-		<div class="config">
+		<flex-scroller class="config">
 			<action-config-edit v-if="selectedActionDef" v-model="selectedActionDef" />
 			<trigger-config-edit v-else-if="selectedTriggerDef" v-model="selectedTriggerDef" />
-		</div>
+		</flex-scroller>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed, useModel } from "vue"
-import { AutomationView, useDocumentPath, useDocumentSelection, DocumentPath, joinDocumentPath } from "../../main"
+import {
+	AutomationView,
+	useDocumentPath,
+	useDocumentSelection,
+	DocumentPath,
+	joinDocumentPath,
+	FlexScroller,
+} from "../../main"
 import { AnyAction, ActionStack, AutomationData, isActionStack, findActionById } from "castmate-schema"
 import AutomationEditArea from "./AutomationEditArea.vue"
 import ActionConfigEdit from "./ActionConfigEdit.vue"
@@ -73,6 +80,5 @@ const selectedTriggerDef = computed(() => {
 	user-select: none;
 	width: 350px;
 	overflow-y: auto;
-	overflow-x: visible;
 }
 </style>

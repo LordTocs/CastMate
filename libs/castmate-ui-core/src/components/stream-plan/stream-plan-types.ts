@@ -1,16 +1,27 @@
 import { App, Component, markRaw, ref } from "vue"
-import { getResourceAsProjectGroup, useDocumentStore, useProjectStore, useResourceStore } from "../../main"
+import {
+	InlineAutomationView,
+	createInlineAutomationView,
+	getResourceAsProjectGroup,
+	useDocumentStore,
+	useProjectStore,
+	useResourceStore,
+} from "../../main"
 import { ResourceData, StreamPlanConfig } from "castmate-schema"
 import { defineStore } from "pinia"
 
 export interface StreamPlanSegmentView {
 	id: string
+	activationAutomation: InlineAutomationView
+	deactivationAutomation: InlineAutomationView
 }
 
 export interface StreamPlanView {
 	scrollX: number
 	scrollY: number
 	segments: StreamPlanSegmentView[]
+	activationAutomation: InlineAutomationView
+	deactivationAutomation: InlineAutomationView
 }
 
 export function initializeStreamPlans(app: App<Element>) {
@@ -32,8 +43,12 @@ export function initializeStreamPlans(app: App<Element>) {
 				return {
 					scrollX: 0,
 					scrollY: 0,
+					activationAutomation: createInlineAutomationView(),
+					deactivationAutomation: createInlineAutomationView(),
 					segments: resource.config.segments.map((s) => ({
 						id: s.id,
+						activationAutomation: createInlineAutomationView(),
+						deactivationAutomation: createInlineAutomationView(),
 					})),
 				} as StreamPlanView
 			},

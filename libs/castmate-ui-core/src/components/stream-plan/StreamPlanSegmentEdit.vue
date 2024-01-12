@@ -11,6 +11,17 @@
 			</div>
 		</div>
 		<div class="segment-card-body" @mousedown="stopPropagation">
+			<inline-automation-edit
+				label="On Activate"
+				v-model="model.activationAutomation"
+				v-model:view="view.activationAutomation"
+			/>
+			<inline-automation-edit
+				label="On Deactivate"
+				v-model="model.deactivationAutomation"
+				v-model:view="view.deactivationAutomation"
+			/>
+
 			<template v-for="componentId in Object.keys(model.components)" :key="componentId">
 				<component
 					v-if="streamPlanStore.components.has(componentId)"
@@ -26,7 +37,7 @@
 import { StreamPlanSegment } from "castmate-schema"
 import { StreamPlanSegmentView, useStreamPlanStore } from "./stream-plan-types"
 import { computed, useModel } from "vue"
-import { stopPropagation } from "../../main"
+import { InlineAutomationEdit, stopPropagation } from "../../main"
 import PInputText from "primevue/inputtext"
 
 const props = defineProps<{
@@ -71,5 +82,6 @@ const isSelected = computed(() => {
 .segment-card-body {
 	display: flex;
 	flex-direction: column;
+	padding: 0.5rem 0.75rem;
 }
 </style>

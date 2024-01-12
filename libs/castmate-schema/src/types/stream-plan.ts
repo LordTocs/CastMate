@@ -1,17 +1,18 @@
+import { InlineAutomation } from "./automations"
 import { AutomationData } from "./profile"
 
 export interface StreamPlanSegment {
 	id: string
 	name: string
 	components: Record<string, any>
-	activationAutomation: AutomationData
-	deactivationAutomation: AutomationData
+	activationAutomation: InlineAutomation
+	deactivationAutomation: InlineAutomation
 }
 
 export interface StreamPlanConfig {
 	name: string
-	activationAutomation: AutomationData
-	deactivationAutomation: AutomationData
+	activationAutomation: InlineAutomation
+	deactivationAutomation: InlineAutomation
 
 	segments: StreamPlanSegment[]
 }
