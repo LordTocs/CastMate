@@ -16,10 +16,14 @@ import {
 	templateSchema,
 	writeYAML,
 	StreamPlanComponents,
+	defineState,
 } from "castmate-core"
-import { StreamInfo, StreamInfoSchema, TwitchCategory } from "castmate-plugin-twitch-shared"
+import { StreamInfo, StreamInfoSchema, TwitchCategory, TwitchViewer } from "castmate-plugin-twitch-shared"
 import { TwitchAccount } from "./twitch-auth"
 import { HelixChannelUpdate } from "@twurple/api"
+import { onChannelAuth } from "./api-harness"
+import { CategoryCache } from "./category-cache"
+import { ExposedSchemaPropType, ExposedSchemaType, ExposedSchemaTypeUnion, declareSchema } from "castmate-schema"
 
 const rendererUpdateStreamInfo = defineCallableIPC<(info: StreamInfo) => any>("twitch", "updateStreamInfo")
 
@@ -131,5 +135,34 @@ export function setupInfoManager() {
 		async invoke(config, contextData, abortSignal) {
 			await StreamInfoManager.getInstance().setInfo(config)
 		},
+	})
+
+	const category = defineState("category", {
+		type: TwitchCategory,
+		name: "Category",
+	})
+
+	const title = defineState("title", {
+		type: String,
+		required: true,
+		default: "",
+	})
+
+	onChannelAuth(async (channel, service) => {
+		service.eventsub.onChannelUpdate(channel.twitchId, async (event) => {
+			console.log("Channel Update", event.streamTitle, event.categoryName)
+
+			title.value = event.streamTitle
+
+			const updateCategory = await CategoryCache.getInstance().getCategoryById(event.categoryId)
+
+			category.value = updateCategory
+		})
+
+		const queryResult = await channel.apiClient.channels.getChannelInfoById(channel.twitchId)
+		if (queryResult) {
+			title.value = queryResult?.title
+			category.value = await CategoryCache.getInstance().getCategoryById(queryResult.gameId)
+		}
 	})
 }
