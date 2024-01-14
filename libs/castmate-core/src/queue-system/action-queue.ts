@@ -80,9 +80,7 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 			source,
 		})
 
-		if (!this.isRunning && !this.config.paused) {
-			this.runNext()
-		}
+		this.checkQueueStart()
 	}
 
 	private pushToHistory(qs: QueuedSequence) {
@@ -122,13 +120,22 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		while ((queuedSequence = this.state.queue.shift())) {
 			if (queuedSequence.source.type == "profile" && queuedSequence.source.subid) {
 				const profile = Profile.storage.getById(queuedSequence.source.id)
-				if (!profile) continue
+				if (!profile) {
+					console.log("Couldn't find profile", queuedSequence.source.id)
+					continue
+				}
 
-				const sequence = profile.getSequence(queuedSequence.source.id)
-				if (!sequence) continue
+				const sequence = profile.getSequence(queuedSequence.source.subid)
+				if (!sequence) {
+					console.log("Couldn't find Sequence", queuedSequence.source.subid)
+					continue
+				}
 
-				const trigger = profile.getTrigger(queuedSequence.source.id)
-				if (!trigger) continue
+				const trigger = profile.getTrigger(queuedSequence.source.subid)
+				if (!trigger) {
+					console.log("Couldn't find trigger", queuedSequence.source.subid)
+					continue
+				}
 
 				return {
 					queuedSequence,
@@ -144,6 +151,7 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 	}
 
 	async runNext() {
+		console.log("runNext")
 		if (this.runner || this.state.running) {
 			return
 		}
@@ -151,6 +159,8 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		const seqItem = this.getNextSequence()
 
 		if (!seqItem) return
+
+		console.log("Running SeqItem", seqItem)
 
 		const resolvedContext = await deserializeSchema(seqItem.contextSchema, seqItem.queuedSequence.queueContext)
 		const finalContext = await exposeSchema(seqItem.contextSchema, resolvedContext)
