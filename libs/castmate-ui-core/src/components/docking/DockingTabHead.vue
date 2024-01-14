@@ -3,6 +3,7 @@
 		class="docked-tab-head"
 		:class="{ selected, unselected: !selected, dragHover }"
 		ref="tabHead"
+		@mousedown="TabMouseDown"
 		@click="onClicked"
 		draggable="true"
 		@dragstart="dragStart"
@@ -144,8 +145,16 @@ function onDropped(evt: DragEvent) {
 
 const selectTab = useSelectTab()
 
-function onClicked(evt: MouseEvent) {
-	selectTab(props.id)
+function onClicked(ev: MouseEvent) {
+	if (ev.button == 0) {
+		selectTab(props.id)
+	}
+}
+
+function TabMouseDown(ev: MouseEvent) {
+	if (ev.button == 1) {
+		closeTab(props.id)
+	}
 }
 </script>
 
