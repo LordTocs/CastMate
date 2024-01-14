@@ -28,6 +28,9 @@
 			:style="{ color: buttonColor }"
 			v-if="!isOutside || (selected && !document?.dirty)"
 		></p-button>
+		<div class="button-placeholder" v-if="isOutside && !selected && !document?.dirty">
+			<div style="width: 14px; height: 14px" />
+		</div>
 	</div>
 </template>
 
@@ -169,6 +172,8 @@ function TabMouseDown(ev: MouseEvent) {
 	align-items: center;
 	padding-left: 1rem;
 	border: 1px solid var(--surface-border);
+	white-space: nowrap;
+	flex-shrink: 0;
 }
 
 .selected {
@@ -200,5 +205,9 @@ function TabMouseDown(ev: MouseEvent) {
 .docked-tab-head .tiny-button {
 	padding: 0.4375rem;
 	width: unset;
+}
+
+.button-placeholder {
+	padding: calc(0.4375rem + 2px);
 }
 </style>

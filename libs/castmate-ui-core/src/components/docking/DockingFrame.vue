@@ -45,14 +45,4 @@ provide("docking-frame", modelObj.value)
 	flex-direction: column;
 	flex: 1;
 }
-
-.docking-tab-row {
-	position: relative;
-	display: flex;
-	flex-direction: row;
-	height: 2.5rem;
-	overflow-y: hidden;
-	overflow-x: auto;
-	width: 100%;
-}
 </style>
