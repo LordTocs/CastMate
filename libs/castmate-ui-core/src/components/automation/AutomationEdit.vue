@@ -3,7 +3,7 @@
 		<document-path local-path="sequence">
 			<automation-edit-area v-model="model" v-model:view="view.automationView" style="flex: 1" :trigger="model" />
 		</document-path>
-		<flex-scroller class="config">
+		<flex-scroller class="config" v-if="showSelectionEdit">
 			<action-config-edit v-if="selectedActionDef" v-model="selectedActionDef" />
 			<trigger-config-edit v-else-if="selectedTriggerDef" v-model="selectedTriggerDef" />
 		</flex-scroller>
@@ -45,6 +45,13 @@ const props = defineProps<{
 
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
+
+const showSelectionEdit = computed(() => {
+	if (selection.value.length > 1 || selection.value.length == 0) {
+		return false
+	}
+	return true
+})
 
 const selectedActionDef = computed<AnyAction | undefined>(() => {
 	if (selection.value.length > 1 || selection.value.length == 0) {
