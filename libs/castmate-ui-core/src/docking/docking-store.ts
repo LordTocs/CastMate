@@ -4,6 +4,7 @@ import { ref, computed, type Component, markRaw } from "vue"
 
 import { DockedArea, DockedFrame, DockedSplit, findAndRemoveTab, DockedTab } from "../main"
 import { nanoid } from "nanoid/non-secure"
+import _cloneDeep from "lodash/cloneDeep"
 
 function focusDocumentId(division: DockedFrame | DockedSplit, documentId: string) {
 	if (division.type == "frame") {
@@ -135,7 +136,7 @@ export const useDockingStore = defineStore("docking", () => {
 		}
 
 		//Document is not yet open... OPEN ONE
-		const doc = documentStore.addDocument(documentId, data, view, documentType)
+		const doc = documentStore.addDocument(documentId, _cloneDeep(data), view, documentType)
 
 		let targetFrame = findFrame(dockedInfo.value, dockedInfo.value.focusedFrame)
 
