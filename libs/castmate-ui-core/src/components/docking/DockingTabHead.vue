@@ -131,6 +131,7 @@ useDrop(tabHead, "tab-id", (ev) => {
 
 		insertToFrame(tabId, props.id, percentX < 0.5 ? "left" : "right")
 	}
+	dockingArea.dragging = false
 })
 
 const selectTab = useSelectTab()

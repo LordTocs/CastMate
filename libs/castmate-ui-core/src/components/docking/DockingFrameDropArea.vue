@@ -88,6 +88,7 @@ function onDropped(evt: DragEvent) {
 	if (tabId && !isOnlyTab(tabId)) {
 		moveToFrame(tabId, dropMode.value)
 	}
+	dockingArea.dragging = false
 	evt.preventDefault()
 	evt.stopPropagation()
 }
@@ -100,6 +101,7 @@ function onDropped(evt: DragEvent) {
 	right: 0;
 	top: 0;
 	bottom: 0;
+	z-index: 5;
 }
 
 .drag-indicator {
@@ -107,6 +109,7 @@ function onDropped(evt: DragEvent) {
 	background-color: rgba(255, 255, 255, 0.5);
 	pointer-events: none;
 	user-select: none;
+	z-index: 4;
 }
 
 .drop-all {

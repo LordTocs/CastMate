@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import DockingTabHead from "./DockingTabHead.vue"
-import { type DockedFrame, useMoveToFrame } from "../../util/docking"
+import { type DockedFrame, useMoveToFrame, useDockingArea } from "../../util/docking"
 import { useVModel } from "@vueuse/core"
 import { ref } from "vue"
 
@@ -28,6 +28,7 @@ const emit = defineEmits(["update:modelValue"])
 const modelObj = useVModel(props, "modelValue", emit)
 
 const moveToFrame = useMoveToFrame()
+const dockingArea = useDockingArea()
 
 const inner = ref<HTMLElement>()
 
@@ -37,14 +38,12 @@ function onDropped(evt: DragEvent) {
 	}
 
 	//A tab was dropped on top of this tab, move it to infront of it.
-
-	console.log("Row Drop")
 	dragHover.value = false
 	const tabId = evt.dataTransfer.getData("tab-id")
 
 	moveToFrame(tabId)
 
-	console.log("Dropped", tabId)
+	dockingArea.dragging = false
 
 	evt.preventDefault()
 	evt.stopPropagation()

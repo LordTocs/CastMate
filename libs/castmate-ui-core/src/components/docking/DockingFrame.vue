@@ -14,8 +14,8 @@
 </template>
 
 <script setup lang="ts">
-import { useElementBounding, useVModel } from "@vueuse/core"
-import { useDockingArea, type DockedFrame, useMoveToFrame } from "../../util/docking"
+import { useVModel } from "@vueuse/core"
+import { type DockedFrame } from "../../util/docking"
 import DockingTabBody from "./DockingTabBody.vue"
 import DockingTabRow from "./DockingTabRow.vue"
 import { provide, ref, unref } from "vue"
