@@ -38,6 +38,7 @@ export { default as DropDownPanel } from "./components/data/base-components/Drop
 
 export { default as AutomationEdit } from "./components/automation/AutomationEdit.vue"
 export { default as InlineAutomationEdit } from "./components/automation/InlineAutomation.vue"
+export { default as SequenceMiniPreview } from "./components/automation/mini/SequenceMiniPreview.vue"
 
 export { default as ExpanderSlider } from "./components/util/ExpanderSlider.vue"
 

@@ -1,10 +1,11 @@
 <template>
 	<div class="mb-2">
 		<div v-if="!view.open" class="fake-input-box flex flex-row align-items-center" @click="doOpen">
-			<span>
+			<span v-if="props.modelValue">
 				<i :class="icon" v-if="icon" />
 				{{ label }}
 			</span>
+			<sequence-mini-preview :sequence="props.modelValue.sequence" />
 		</div>
 		<div
 			v-else
@@ -49,7 +50,7 @@ import { useModel, ref } from "vue"
 import ExpanderSlider from "../util/ExpanderSlider.vue"
 import AutomationEdit from "./AutomationEdit.vue"
 import { ResourceProxyFactory, stopPropagation, DataInput } from "../../main"
-
+import SequenceMiniPreview from "./mini/SequenceMiniPreview.vue"
 import PButton from "primevue/button"
 
 const props = defineProps<{

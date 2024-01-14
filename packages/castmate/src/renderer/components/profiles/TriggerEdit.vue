@@ -49,7 +49,10 @@
 			></expander-slider>
 		</div>
 		<div class="closed-body" v-else>
-			<data-view v-if="trigger" :model-value="modelValue.config" :schema="trigger.config" />
+			<div style="width: 50%">
+				<data-view v-if="trigger" :model-value="modelValue.config" :schema="trigger.config" />
+			</div>
+			<sequence-mini-preview style="width: 50%" :sequence="modelValue.sequence" />
 		</div>
 	</div>
 </template>
@@ -71,6 +74,7 @@ import {
 	AutomationEdit,
 	ExpanderSlider,
 	DocumentPath,
+	SequenceMiniPreview,
 } from "castmate-ui-core"
 import { useVModel } from "@vueuse/core"
 
@@ -173,9 +177,10 @@ const modelObj = useVModel(props, "modelValue", emit)
 
 .closed-body {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 
-	background-color: var(--darkest-trigger-color);
+	/* background-color: var(--darkest-trigger-color); */
+	background-color: var(--surface-a);
 	padding-left: 2.5rem;
 	padding-top: 0.25rem;
 	padding-bottom: 0.25rem;
