@@ -1,13 +1,6 @@
 <template>
-	<div
-		class="docking-tab-row"
-		:class="{ dragHover }"
-		@drop="onDropped"
-		@dragover="onDragOver"
-		@dragenter="dragEnter"
-		@dragleave="dragLeave"
-	>
-		<div class="docking-tab-row-inner" @mousewheel="onScroll" ref="inner">
+	<div class="docking-tab-row" @drop="onDropped" @dragover="onDragOver" @dragenter="dragEnter" @dragleave="dragLeave">
+		<div class="docking-tab-row-inner" @mousewheel="onScroll" ref="inner" :class="{ dragHover }">
 			<docking-tab-head
 				v-for="tab in modelObj.tabs"
 				:key="tab.id"
@@ -85,7 +78,7 @@ function onDragOver(evt: DragEvent) {
 function onScroll(ev: WheelEvent) {
 	if (!inner.value) return
 
-	inner.value.scrollLeft += ev.deltaY
+	inner.value.scrollLeft += ev.deltaY * 0.75
 	ev.preventDefault()
 }
 </script>

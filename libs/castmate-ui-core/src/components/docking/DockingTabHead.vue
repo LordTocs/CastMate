@@ -3,15 +3,10 @@
 		class="docked-tab-head"
 		:class="{ selected, unselected: !selected, dragHover }"
 		ref="tabHead"
-		@mousedown="TabMouseDown"
+		@mousedown="tabMouseDown"
 		@click="onClicked"
 		draggable="true"
 		@dragstart="dragStart"
-		@dragend="dragEnd"
-		@dragenter="dragEnter"
-		@dragleave="dragLeave"
-		@dragover="dragOver"
-		@drop="onDropped"
 	>
 		{{ document?.data?.name ?? props.title }}
 
@@ -48,6 +43,15 @@ import { useDocument } from "../../util/document"
 
 import PButton from "primevue/button"
 import { useMouseInElement } from "@vueuse/core"
+import {
+	getInternalMousePos,
+	useDragEnd,
+	useDragEnter,
+	useDragLeave,
+	useDragOver,
+	useDragStart,
+	useDrop,
+} from "../../main"
 
 const props = defineProps<{
 	frame: DockedFrame
@@ -96,55 +100,38 @@ function dragStart(evt: DragEvent) {
 	dockingArea.dragging = true
 }
 
-function dragEnd(evt: DragEvent) {
-	evt.preventDefault()
-	console.log("dragEnd", props.id)
+useDragEnd(tabHead, (ev) => {
 	dragging.value = false
 	dockingArea.dragging = false
-}
+})
 
 const dragHover = ref<boolean>(false)
-function dragEnter(evt: DragEvent) {
-	if (evt.dataTransfer?.types.includes("tab-id")) {
-		dragHover.value = true
-		evt.preventDefault()
-		evt.stopPropagation()
-	}
-}
 
-function dragLeave(evt: DragEvent) {
-	if (evt.dataTransfer?.types.includes("tab-id")) {
-		dragHover.value = false
-		evt.preventDefault()
-		evt.stopPropagation()
-	}
-}
+useDragEnter(tabHead, "tab-id", (ev) => {
+	dragHover.value = true
+})
 
-function dragOver(evt: DragEvent) {
-	if (evt.dataTransfer?.types.includes("tab-id")) {
-		evt.dataTransfer.dropEffect = "move"
-		evt.preventDefault()
-		evt.stopPropagation()
-	}
-}
-
-function onDropped(evt: DragEvent) {
-	if (!evt.dataTransfer) {
-		return
-	}
-
-	//A tab was dropped on top of this tab, move it to infront of it.
+useDragLeave(tabHead, "tab-id", (ev) => {
 	dragHover.value = false
-	const tabId = evt.dataTransfer.getData("tab-id")
-	if (tabId != props.id && tabHead.value) {
-		const px = (evt.clientX - tabHead.value.clientLeft) / tabHead.value.clientWidth
-		console.log("Dropped", tabId, px, evt.clientX, tabHead.value.clientLeft, tabHead.value.clientWidth)
+})
 
-		insertToFrame(tabId, props.id, px < 0.5 ? "left" : "right")
+useDragOver(tabHead, "tab-id", (ev) => {
+	ev.dataTransfer.dropEffect = "move"
+})
+
+useDrop(tabHead, "tab-id", (ev) => {
+	dragHover.value = false
+	if (!tabHead.value) throw new Error("Shouldn't get here???")
+
+	const tabId = ev.dataTransfer.getData("tab-id")
+	if (tabId != props.id) {
+		const buttonRect = tabHead.value.getBoundingClientRect()
+		const internalX = ev.clientX - buttonRect.left
+		const percentX = internalX / buttonRect.width
+
+		insertToFrame(tabId, props.id, percentX < 0.5 ? "left" : "right")
 	}
-	evt.preventDefault()
-	evt.stopPropagation()
-}
+})
 
 const selectTab = useSelectTab()
 
@@ -154,7 +141,7 @@ function onClicked(ev: MouseEvent) {
 	}
 }
 
-function TabMouseDown(ev: MouseEvent) {
+function tabMouseDown(ev: MouseEvent) {
 	if (ev.button == 1) {
 		closeTab(props.id)
 	}
