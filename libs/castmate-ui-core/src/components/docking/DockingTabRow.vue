@@ -7,14 +7,16 @@
 		@dragenter="dragEnter"
 		@dragleave="dragLeave"
 	>
-		<docking-tab-head
-			v-for="tab in modelObj.tabs"
-			:key="tab.id"
-			:document-id="tab.documentId"
-			:title="tab.title"
-			:frame="modelObj"
-			:id="tab.id"
-		/>
+		<div class="docking-tab-row-inner" @mousewheel="onScroll" ref="inner">
+			<docking-tab-head
+				v-for="tab in modelObj.tabs"
+				:key="tab.id"
+				:document-id="tab.documentId"
+				:title="tab.title"
+				:frame="modelObj"
+				:id="tab.id"
+			/>
+		</div>
 	</div>
 </template>
 
@@ -33,6 +35,8 @@ const emit = defineEmits(["update:modelValue"])
 const modelObj = useVModel(props, "modelValue", emit)
 
 const moveToFrame = useMoveToFrame()
+
+const inner = ref<HTMLElement>()
 
 function onDropped(evt: DragEvent) {
 	if (!evt.dataTransfer) {
@@ -77,18 +81,38 @@ function onDragOver(evt: DragEvent) {
 		evt.stopPropagation()
 	}
 }
+
+function onScroll(ev: WheelEvent) {
+	if (!inner.value) return
+
+	inner.value.scrollLeft += ev.deltaY
+	ev.preventDefault()
+}
 </script>
 
 <style scoped>
 .docking-tab-row {
 	position: relative;
+	height: 2.5rem;
+	width: 100%;
+}
+
+.docking-tab-row-inner {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+
 	display: flex;
 	flex-direction: row;
-	height: 2.5rem;
 	overflow-y: hidden;
 	overflow-x: auto;
-	width: 100%;
 	background-color: var(--surface-b);
+}
+
+.docking-tab-row-inner::-webkit-scrollbar {
+	display: none;
 }
 
 .dragHover {
