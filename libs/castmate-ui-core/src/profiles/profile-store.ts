@@ -1,3 +1,4 @@
+import _cloneDeep from "lodash/cloneDeep"
 import { ProfileConfig, ProfileState, ResourceData } from "castmate-schema"
 import {
 	ProfileView,
@@ -101,7 +102,12 @@ export async function initializeProfiles(app: App<Element>) {
 	const projectStore = useProjectStore()
 
 	documentStore.registerSaveFunction("profile", async (doc) => {
-		await resourceStore.setResourceConfig("Profile", doc.id, doc.data)
+		const docDataCopy = _cloneDeep(doc.data)
+
+		delete docDataCopy.activationMode
+		delete docDataCopy.name
+
+		await resourceStore.applyResourceConfig("Profile", doc.id, docDataCopy)
 	})
 
 	projectStore.registerProjectGroupItem(createProfileGroup(app))
