@@ -1,57 +1,66 @@
 <template>
-	<div class="mb-2">
-		<div v-if="!view.open" class="fake-input-box flex flex-row align-items-center" @click="doOpen">
-			<span v-if="props.modelValue">
-				<i :class="icon" v-if="icon" />
-				{{ label }}
-			</span>
-			<sequence-mini-preview :sequence="props.modelValue.sequence" />
-		</div>
-		<div
-			v-else
-			ref="editBody"
-			@mousedown="stopPropagation"
-			:style="{ height: `${view.height}px` }"
-			class="edit-body"
-		>
-			<div class="flex flex-row edit-header align-items-center">
-				<span class="mr-2">
-					<i :class="icon" v-if="icon" />
-					{{ label }}
-				</span>
-				<data-input
-					class="flex-grow-1 mr-2"
-					no-float
-					v-model="model.queue"
-					:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
+	<div class="p-inputgroup" style="margin-top: 1.5rem">
+		<label-floater :label="label" :icon="icon" input-id="inline-automation" v-slot="labelProps">
+			<input-box
+				v-if="!view.open"
+				:model="hasActions"
+				v-bind="labelProps"
+				style="cursor: pointer"
+				@click="doOpen"
+			>
+				<sequence-mini-preview :sequence="props.modelValue.sequence" />
+			</input-box>
+			<div
+				v-else
+				ref="editBody"
+				@mousedown="stopPropagation"
+				:style="{ height: `${view.height}px` }"
+				class="edit-body"
+				:class="{
+					'p-filled': true,
+					'p-inputwrapper-filled': true,
+				}"
+			>
+				<div class="flex flex-row edit-header align-items-center">
+					<span class="mr-2">
+						<i :class="icon" v-if="icon" />
+						{{ label }}
+					</span>
+					<data-input
+						class="flex-grow-1 mr-2"
+						no-float
+						v-model="model.queue"
+						:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
+					/>
+					<p-button
+						text
+						class="no-focus-highlight pl-1"
+						@click.stop="doClose"
+						@mousedown.stop
+						icon="mdi mdi-chevron-up"
+					/>
+				</div>
+				<automation-edit
+					v-model="model"
+					v-model:view="view"
+					style="border-radius: --border-radius; flex-grow: 1; flex-shrink: 1"
 				/>
-				<p-button
-					text
-					class="no-focus-highlight pl-1"
-					@click.stop="doClose"
-					@mousedown.stop
-					icon="mdi mdi-chevron-up"
-				/>
+				<expander-slider color="#3c3c3c" v-model="view.height" :container="editBody" />
 			</div>
-			<automation-edit
-				v-model="model"
-				v-model:view="view"
-				style="border-radius: --border-radius; flex-grow: 1; flex-shrink: 1"
-			/>
-			<expander-slider color="#3c3c3c" v-model="view.height" :container="editBody" />
-		</div>
+		</label-floater>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { InlineAutomation } from "castmate-schema"
 import { InlineAutomationView } from "../../automations/automations.ts"
-import { useModel, ref } from "vue"
+import { useModel, ref, computed } from "vue"
 import ExpanderSlider from "../util/ExpanderSlider.vue"
 import AutomationEdit from "./AutomationEdit.vue"
 import { ResourceProxyFactory, stopPropagation, DataInput } from "../../main"
 import SequenceMiniPreview from "./mini/SequenceMiniPreview.vue"
 import PButton from "primevue/button"
+import { DocumentPath, LabelFloater, InputBox } from "../../main"
 
 const props = defineProps<{
 	label?: string
@@ -59,6 +68,12 @@ const props = defineProps<{
 	modelValue: InlineAutomation
 	view: InlineAutomationView
 }>()
+
+const hasActions = computed(() => {
+	if (!props.modelValue?.sequence?.actions) return undefined
+	if (props.modelValue.sequence.actions.length == 0) return undefined
+	return true
+})
 
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
@@ -90,6 +105,7 @@ function doClose(ev: MouseEvent) {
 	border-radius: 6px;
 	font-family: Lato, Helvetica, sans-serif;
 	font-size: 1rem;
+	width: 100%;
 }
 
 .edit-header {

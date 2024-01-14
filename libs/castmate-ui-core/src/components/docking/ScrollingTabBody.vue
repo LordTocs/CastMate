@@ -1,17 +1,24 @@
 <template>
-	<flex-scroller ref="scroller" :scroll-x="scrollX" :scroll-y="scrollY">
+	<flex-scroller
+		ref="scroller"
+		:inner-class="innerClass"
+		:inner-style="innerStyle"
+		:scroll-x="scrollX"
+		:scroll-y="scrollY"
+	>
 		<slot></slot>
 	</flex-scroller>
 </template>
 
 <script setup lang="ts">
-import { ref, useModel } from "vue"
+import { StyleValue, ref, useModel } from "vue"
 import FlexScroller from "../util/FlexScroller.vue"
 import { provideScrollAttachable } from "../../main"
 
 const props = withDefaults(
 	defineProps<{
 		innerClass?: string
+		innerStyle?: StyleValue
 		scrollY?: number
 		scrollX?: number
 	}>(),

@@ -1,17 +1,18 @@
 <template>
 	<div class="scroller-outer">
-		<div :class="['scroller-inner', innerClass]" @scroll="onScroll" ref="scroller">
+		<div :class="['scroller-inner', innerClass]" :style="innerStyle" @scroll="onScroll" ref="scroller">
 			<slot></slot>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue"
+import { StyleValue, computed, onMounted, ref, watch } from "vue"
 
 const props = withDefaults(
 	defineProps<{
 		innerClass?: string
+		innerStyle?: StyleValue
 		scrollY?: number
 		scrollX?: number
 	}>(),

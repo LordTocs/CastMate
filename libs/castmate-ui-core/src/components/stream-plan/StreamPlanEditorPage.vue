@@ -1,5 +1,6 @@
 <template>
-	<scrolling-tab-body v-model:scroll-x="view.scrollX" v-model:scroll-y="view.scrollY">
+	<scrolling-tab-body v-model:scroll-x="view.scrollX" v-model:scroll-y="view.scrollY" inner-class="px-2">
+		<div style="height: 2rem" />
 		<inline-automation-edit
 			label="On Activate"
 			v-model="model.activationAutomation"
