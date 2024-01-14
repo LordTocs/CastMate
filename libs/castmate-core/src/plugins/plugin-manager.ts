@@ -14,8 +14,8 @@ defineIPCFunc("plugins", "getPluginIds", () => {
 	return ids
 })
 
-defineIPCFunc("plugins", "getPlugin", (id: string) => {
-	return PluginManager.getInstance().getPlugin(id)?.toIPC()
+defineIPCFunc("plugins", "getPlugin", async (id: string) => {
+	return await PluginManager.getInstance().getPlugin(id)?.toIPC()
 })
 
 defineIPCFunc("plugins", "uiLoadComplete", () => {
@@ -71,7 +71,7 @@ export const PluginManager = Service(
 					this.plugins.delete(plugin.id)
 					return
 				}
-				rendererRegisterPlugin(plugin.toIPC())
+				rendererRegisterPlugin(await plugin.toIPC())
 			} catch (err) {
 				console.error("Load REALLY failed for", plugin.id)
 				console.error(err)

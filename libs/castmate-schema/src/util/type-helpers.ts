@@ -18,6 +18,20 @@ export function mapRecord<V, T>(map: Map<string, V>, mapFunc: (key: string, valu
 	return result
 }
 
+export async function awaitKeys<V>(map: Record<string | symbol | number, MaybePromise<V>>) {
+	const result: Record<string | symbol | number, V> = {}
+
+	const promises = []
+
+	for (let key in map) {
+		promises.push((async () => (result[key] = await map[key]))())
+	}
+
+	await Promise.all(promises)
+
+	return result
+}
+
 export function mapKeys<V, T>(
 	map: Record<string | symbol | number, V>,
 	mapFunc: (key: string | symbol | number, value: V) => T
@@ -66,3 +80,5 @@ export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>
 export type MapToUnion<T> = T[keyof T]
 
 export type Modify<T, R> = Omit<T, keyof R> & R
+
+export type Fallback<T, F> = [T] extends [never] ? F : T

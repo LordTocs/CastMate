@@ -8,6 +8,7 @@ import {
 	IPCActionDefinition,
 	IPCPluginDefinition,
 	mapRecord,
+	awaitKeys,
 	IPCSettingsDefinition,
 	IPCStateDefinition,
 } from "castmate-schema"
@@ -228,20 +229,20 @@ interface ComponentSetting {
 
 type SettingDefinition = SettingValue | ResourceSetting | SecretValue | ComponentSetting
 
-function toIPCSetting(setting: SettingDefinition, path: string): IPCSettingsDefinition {
+async function toIPCSetting(setting: SettingDefinition, path: string): Promise<IPCSettingsDefinition> {
 	if (setting.type == "resource") {
 		return setting
 	} else if (setting.type == "value") {
 		return {
 			type: "value",
 			schema: ipcConvertSchema(setting.schema, path),
-			value: serializeSchema(setting.schema, setting.ref.value),
+			value: await serializeSchema(setting.schema, setting.ref.value),
 		}
 	} else if (setting.type == "secret") {
 		return {
 			type: "secret",
 			schema: ipcConvertSchema(setting.schema, path),
-			value: serializeSchema(setting.schema, setting.ref.value),
+			value: await serializeSchema(setting.schema, setting.ref.value),
 		}
 	} else if (setting.type == "component") {
 		return setting
@@ -257,12 +258,12 @@ function registerIPCSetting(setting: SettingDefinition, path: string) {
 	}
 }
 
-function toIPCState(state: StateDefinition, path: string): IPCStateDefinition {
-	//const serialized = serializeSchema(state.schema, state.ref.value)
-	//console.log("Serializing", serialized, state.ref.value, typeof false, typeof serialized)
+async function toIPCState(state: StateDefinition, path: string): Promise<IPCStateDefinition> {
+	const unexposed = await unexposeSchema(state.schema, state.ref.value)
+
 	return {
 		schema: ipcConvertSchema(state.schema, path),
-		value: serializeSchema(state.schema, state.ref.value),
+		value: await serializeSchema(state.schema, unexposed),
 	}
 }
 
@@ -311,7 +312,7 @@ export function defineSetting<T extends Schema>(id: string, schema: T) {
 		runOnChange(
 			() => value.value,
 			async () => {
-				rendererUpdateSettings(plugin.id, id, serializeSchema(schema, value.value))
+				rendererUpdateSettings(plugin.id, id, await serializeSchema(schema, value.value))
 				plugin.triggerSettingsUpdate()
 			}
 		)
@@ -360,7 +361,7 @@ export function defineSecret<T extends Schema>(id: string, schema: T) {
 		runOnChange(
 			() => value.value,
 			async () => {
-				rendererUpdateSettings(plugin.id, id, serializeSchema(schema, value.value))
+				rendererUpdateSettings(plugin.id, id, await serializeSchema(schema, value.value))
 				plugin.triggerSecretsUpdate()
 			}
 		)
@@ -451,7 +452,7 @@ export class Plugin {
 		const data: Record<string, any> = {}
 		for (const [sid, setting] of this.settings) {
 			if (setting.type != "value") continue
-			data[sid] = serializeSchema(setting.schema, setting.ref.value)
+			data[sid] = await serializeSchema(setting.schema, setting.ref.value)
 		}
 		await writeYAML(data, "settings", `${this.id}.yaml`)
 	}
@@ -486,7 +487,7 @@ export class Plugin {
 		const data: Record<string, any> = {}
 		for (const [sid, setting] of this.settings) {
 			if (setting.type != "secret") continue
-			data[sid] = serializeSchema(setting.schema, setting.ref.value)
+			data[sid] = await serializeSchema(setting.schema, setting.ref.value)
 		}
 		await writeSecretYAML(data, "secrets", `${this.id}.yaml`)
 	}
@@ -571,7 +572,7 @@ export class Plugin {
 		mapRecord(this.state, (k, v) => registerIPCState(v, `${this.id}_state_${k}`))
 	}
 
-	toIPC(): IPCPluginDefinition {
+	async toIPC(): Promise<IPCPluginDefinition> {
 		const result: IPCPluginDefinition = {
 			id: this.id,
 			name: this.name,
@@ -579,10 +580,10 @@ export class Plugin {
 			icon: this.icon,
 			color: this.color,
 			version: this.version,
-			actions: mapRecord(this.actions, (k, v) => v.toIPC(`${this.id}_actions_${k}`)),
-			triggers: mapRecord(this.triggers, (k, v) => v.toIPC(`${this.id}_triggers_${k}`)),
-			settings: mapRecord(this.settings, (k, v) => toIPCSetting(v, `${this.id}_settings_${k}`)),
-			state: mapRecord(this.state, (k, v) => toIPCState(v, `${this.id}_state_${k}`)),
+			actions: await awaitKeys(mapRecord(this.actions, (k, v) => v.toIPC(`${this.id}_actions_${k}`))),
+			triggers: await awaitKeys(mapRecord(this.triggers, (k, v) => v.toIPC(`${this.id}_triggers_${k}`))),
+			settings: await awaitKeys(mapRecord(this.settings, (k, v) => toIPCSetting(v, `${this.id}_settings_${k}`))),
+			state: await awaitKeys(mapRecord(this.state, (k, v) => toIPCState(v, `${this.id}_state_${k}`))),
 		}
 		return result
 	}
@@ -599,12 +600,13 @@ export class Plugin {
 		stateDef.updateEffect = await runOnChange(
 			() => stateDef.ref.value,
 			async () => {
-				rendererUpdateState(this.id, id, serializeSchema(schema, stateDef.ref.value))
+				const unexposed = await unexposeSchema(schema, stateDef.ref.value)
+				rendererUpdateState(this.id, id, await serializeSchema(schema, unexposed))
 			}
 		)
 
 		//Notify UI
-		rendererSetStateDef(this.id, id, toIPCState(stateDef, `${this.id}_state_${id}`))
+		rendererSetStateDef(this.id, id, await toIPCState(stateDef, `${this.id}_state_${id}`))
 	}
 
 	async dynamicRemoveState(id: string) {

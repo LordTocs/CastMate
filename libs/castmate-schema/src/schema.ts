@@ -1,5 +1,5 @@
 import { cloneDeep, isFunction } from "lodash"
-import { MaybePromise, MapToUnion, Modify } from "./util/type-helpers"
+import { MaybePromise, MapToUnion, Modify, Fallback } from "./util/type-helpers"
 
 ////////////////////////////////////// ENUMs /////////////////////////////////////////////
 export interface EnumPair<T> {
@@ -217,13 +217,15 @@ export interface ExposedSchemaTypeMap {
 	dummy: [Dummy, Dummy]
 }
 
-type ExposedSchemaTypeUnion = MapToUnion<ExposedSchemaTypeMap>
+export type ExposedSchemaTypeUnion = MapToUnion<ExposedSchemaTypeMap>
 
-type ExposedSchemaPropType<T extends Schema> = ExposedSchemaTypeUnion extends (
-	T extends { type: infer ConstructorOrFactory } ? [{ type: ConstructorOrFactory }, any] : [never, SchemaPropType<T>]
-)
-	? ExposedSchemaTypeUnion[1]
-	: SchemaPropType<T>
+export type ExposedSchemaPropType<T extends Schema> = Fallback<
+	Extract<
+		ExposedSchemaTypeUnion,
+		T extends { type: infer ConstructorOrFactory } ? [{ type: ConstructorOrFactory }, any] : [never, any]
+	>[1],
+	SchemaPropType<T>
+>
 
 type ExposedSchemaArrayType<T extends SchemaArray> = Array<ExposedSchemaType<T["items"]>>
 
