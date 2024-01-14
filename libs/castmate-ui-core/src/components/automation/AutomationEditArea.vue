@@ -2,7 +2,7 @@
 	<div
 		ref="editArea"
 		class="automation-edit"
-		:style="{ '--time-scale': `${automationTimeScale}px` }"
+		:style="{ '--time-scale': `${automationTimeScale}px`, backgroundColor: 'var(--surface-a)' }"
 		tabindex="-1"
 		@contextmenu="onContextMenu"
 		@keydown="onKeyDown"

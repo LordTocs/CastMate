@@ -110,7 +110,6 @@ function doClose(ev: MouseEvent) {
 
 .edit-header {
 	padding: 0.5rem 0.75rem;
-	padding-bottom: 1rem;
 }
 
 .trigger-name {
