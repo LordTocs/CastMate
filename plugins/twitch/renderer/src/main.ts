@@ -21,6 +21,7 @@ import GroupPageVue from "./components/groups/GroupPage.vue"
 import TwitchCategoryInputVue from "./components/category/TwitchCategoryInput.vue"
 import { useCategoryStore } from "./util/category"
 import StreamInfoPlanComponentVue from "./components/stream-info/StreamInfoPlanComponent.vue"
+import TwitchCategoryViewVue from "./components/category/TwitchCategoryView.vue"
 
 export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
 
@@ -32,6 +33,7 @@ export async function initPlugin(app: App<Element>) {
 	dataStore.registerInputComponent(TwitchViewer, TwitchViewerInputVue)
 
 	dataStore.registerInputComponent(TwitchCategory, TwitchCategoryInputVue)
+	dataStore.registerViewComponent(TwitchCategory, TwitchCategoryViewVue)
 
 	const resourceStore = useResourceStore()
 	resourceStore.registerSettingComponent("TwitchAccount", TwitchAccountSettingsVue)
