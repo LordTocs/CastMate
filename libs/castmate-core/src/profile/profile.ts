@@ -93,8 +93,6 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 			}
 			ProfileManager.getInstance()?.signalProfilesChanged()
 		})
-
-		this.stateEffect.debugDump()
 	}
 
 	getSequence(id: string): Sequence | undefined {
