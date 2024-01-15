@@ -19,14 +19,19 @@ function randomBytes(num: number) {
 	})
 }
 
-export async function authenticateTwinkly(ip: string) {
+export interface TwinklyAuthToken {
+	token: string | undefined
+	expiry: number | undefined
+}
+
+export async function authenticateTwinkly(ip: string, token: TwinklyAuthToken) {
 	const randomBuffer = await randomBytes(32)
-	const token = randomBuffer.toString("base64")
+	const challenge = randomBuffer.toString("base64")
 	try {
 		const resp = await axios.post(
 			`login`,
 			{
-				challenge: token,
+				challenge,
 			},
 			{
 				baseURL: `http://${ip}/xled/v1/`,
@@ -35,7 +40,7 @@ export async function authenticateTwinkly(ip: string) {
 
 		const authResp = resp.data as TwinklyAuthResponse
 
-		const verifyResp = await axios.post(
+		await axios.post(
 			"verify",
 			{
 				"challenge-response": authResp["challenge-response"],
@@ -48,10 +53,100 @@ export async function authenticateTwinkly(ip: string) {
 			}
 		)
 
-		return authResp
+		console.log("Authenticating Twinkly", ip)
+		token.token = authResp.authentication_token
+		token.expiry = Date.now() + authResp.authentication_token_expires_in * 1000 - 5 * 1000
+
+		console.log(token)
+
+		return true
 	} catch (err) {
+		console.error("Failed Twinkly Auth", err.response.data)
 		console.error(err)
-		return undefined
+		return false
+	}
+}
+
+function hasAuth(token: TwinklyAuthToken): token is { token: string; expiry: number } {
+	if (token.token == null) return false
+	if (token.expiry == null) return false
+	const now = Date.now()
+	if (token.expiry < now) {
+		console.log("Token Expired", token.expiry, now)
+		return false
+	}
+	return true
+}
+
+export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path: string) {
+	if (!hasAuth(token)) {
+		console.error(`token invalid in get ${path}`)
+		await authenticateTwinkly(ip, token)
+	}
+
+	try {
+		const resp = await axios.get(path, {
+			baseURL: `http://${ip}/xled/v1/`,
+			headers: {
+				"X-Auth-Token": token.token,
+			},
+		})
+
+		return resp.data as T
+	} catch (err) {
+		console.log("Error w/", path)
+		console.log(err.response.data)
+		if (err.response.data == "Invalid Token") {
+			console.error(`get ${path} failed, reauthing`)
+			//Somebody invalidated our token, try again
+			await authenticateTwinkly(ip, token)
+
+			const resp = await axios.get(path, {
+				baseURL: `http://${ip}/xled/v1/`,
+				headers: {
+					"X-Auth-Token": token.token,
+				},
+			})
+
+			return resp.data as T
+		} else {
+			throw err
+		}
+	}
+}
+
+export async function postTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path: string, data: object) {
+	if (!hasAuth(token)) {
+		console.error(`token invalid in post ${path}`)
+		await authenticateTwinkly(ip, token)
+	}
+
+	try {
+		const resp = await axios.post(path, data, {
+			baseURL: `http://${ip}/xled/v1/`,
+			headers: {
+				"X-Auth-Token": token.token,
+			},
+		})
+
+		return resp.data as T
+	} catch (err) {
+		if (err.response.data == "Invalid Token") {
+			console.error(`post ${path} failed, reauthing`)
+			//Somebody invalidated our token, try again
+			await authenticateTwinkly(ip, token)
+
+			const resp = await axios.post(path, data, {
+				baseURL: `http://${ip}/xled/v1/`,
+				headers: {
+					"X-Auth-Token": token.token,
+				},
+			})
+
+			return resp.data as T
+		} else {
+			throw err
+		}
 	}
 }
 
@@ -76,78 +171,41 @@ export async function getTwinklyInfo(ip: string) {
 	return gestalt
 }
 
-export async function setTwinklyColor(ip: string, token: string, color: LightColor) {
+export async function setTwinklyColor(ip: string, token: TwinklyAuthToken, color: LightColor) {
 	const parsedColor = LightColor.parse(color)
 
 	if ("hue" in parsedColor) {
-		await axios.post(
-			`/led/color`,
-			{
-				hue: parsedColor.hue,
-				saturation: (parsedColor.sat / 100) * 255,
-				value: (parsedColor.bri / 100) * 255,
-			},
-			{
-				baseURL: `http://${ip}/xled/v1/`,
-				headers: {
-					"X-Auth-Token": token,
-				},
-			}
-		)
+		await postTwinklyApi(ip, token, `/led/color`, {
+			hue: parsedColor.hue,
+			saturation: (parsedColor.sat / 100) * 255,
+			value: (parsedColor.bri / 100) * 255,
+		})
 	} else {
 		throw new Error("Help this isn't implemented!")
 	}
 
-	await axios.post(
-		`/led/mode`,
-		{
-			mode: "color",
-			effect_id: 0,
-		},
-		{
-			baseURL: `http://${ip}/xled/v1/`,
-			headers: {
-				"X-Auth-Token": token,
-			},
-		}
-	)
+	await await postTwinklyApi(ip, token, `/led/mode`, {
+		mode: "color",
+		effect_id: 0,
+	})
 }
 
-export async function turnTwinklyOff(ip: string, token: string) {
-	await axios.post(
-		`/led/mode`,
-		{
-			mode: "off",
-			effect_id: 0,
-		},
-		{
-			baseURL: `http://${ip}/xled/v1/`,
-			headers: {
-				"X-Auth-Token": token,
-			},
-		}
-	)
+export async function turnTwinklyOff(ip: string, token: TwinklyAuthToken) {
+	await postTwinklyApi(ip, token, `/led/mode`, {
+		mode: "off",
+		effect_id: 0,
+	})
 }
 export type TwinklyMode = "off" | "color" | "demo" | "movie" | "rt" | "effect" | "playlist"
-export async function getTwinklyMode(ip: string, token: string): Promise<TwinklyMode> {
-	const resp = await axios.get(`/led/mode`, {
-		baseURL: `http://${ip}/xled/v1/`,
-		headers: {
-			"X-Auth-Token": token,
-		},
-	})
-	return resp.data.mode
+export async function getTwinklyMode(ip: string, token: TwinklyAuthToken): Promise<TwinklyMode> {
+	const data = await getTwinklyApi<{ mode: TwinklyMode }>(ip, token, "/led/mode")
+	return data.mode
 }
 
-export async function getTwinklyColor(ip: string, token: string) {
-	const resp = await axios.get(`/led/color`, {
-		baseURL: `http://${ip}/xled/v1/`,
-		headers: {
-			"X-Auth-Token": token,
-		},
-	})
+export async function getTwinklyColor(ip: string, token: TwinklyAuthToken) {
+	const data = await getTwinklyApi<{ hue: number; saturation: number; value: number }>(ip, token, "/led/color")
 
-	return `hsb(${resp.data.hue}, ${resp.data.saturation}, ${resp.data.value})` as LightColor
+	return `hsb(${data.hue}, ${data.saturation}, ${data.value})` as LightColor
 }
 
 export interface TwinklyMovie {
@@ -166,51 +224,21 @@ export interface TwinklyMovieQuery {
 }
 
 //https://xled-docs.readthedocs.io/en/latest/rest_api.html#get-list-of-movies
-export async function getTwinklyMovies(ip: string, token: string) {
-	const resp = await axios.get("movies", {
-		baseURL: `http://${ip}/xled/v1/`,
-		headers: {
-			"X-Auth-Token": token,
-		},
+export async function getTwinklyMovies(ip: string, token: TwinklyAuthToken) {
+	return await getTwinklyApi<TwinklyMovieQuery>(ip, token, "movies")
+}
+
+export async function setTwinklyMovie(ip: string, token: TwinklyAuthToken, movieId: string) {
+	try {
+		await postTwinklyApi(ip, token, "movies/current", {
+			id: movieId,
+		})
+	} catch (err) {
+		console.error("Failed to set twinkly movie", ip)
+	}
+
+	await await postTwinklyApi(ip, token, `/led/mode`, {
+		mode: "movie",
+		effect_id: 0,
 	})
-
-	return resp.data as TwinklyMovieQuery
-}
-
-export async function setTwinklyMovie(ip: string, token: string, movieId: string) {
-	try {
-		const resp = await axios.post(
-			"movies/current",
-			{
-				id: movieId,
-			},
-			{
-				baseURL: `http://${ip}/xled/v1/`,
-				headers: {
-					"X-Auth-Token": token,
-				},
-			}
-		)
-	} catch (err) {
-		console.error("Failed to set twinkly mode", ip)
-	}
-}
-
-export async function setTwinklyMode(ip: string, token: string, mode: "movie" | "color") {
-	try {
-		const resp = await axios.post(
-			"led/mode",
-			{
-				mode,
-			},
-			{
-				baseURL: `http://${ip}/xled/v1/`,
-				headers: {
-					"X-Auth-Token": token,
-				},
-			}
-		)
-	} catch (err) {
-		console.error("Failed to set twinkly mode", ip)
-	}
 }

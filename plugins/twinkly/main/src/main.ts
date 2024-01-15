@@ -15,10 +15,8 @@ import { PollingLight } from "castmate-plugin-iot-main/src/light"
 import { LightColor, LightConfig } from "castmate-plugin-iot-shared"
 
 import {
-	TwinklyAuthResponse,
-	TwinklyGestaltResponse,
+	TwinklyAuthToken,
 	TwinklyMovie,
-	authenticateTwinkly,
 	getTwinklyColor,
 	getTwinklyInfo,
 	getTwinklyMode,
@@ -26,7 +24,6 @@ import {
 	setTwinklyColor,
 	setTwinklyMovie,
 	turnTwinklyOff,
-	setTwinklyMode,
 } from "./api"
 import { Toggle } from "castmate-schema"
 
@@ -37,8 +34,7 @@ interface TwinklyLightConfig extends LightConfig {
 class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 	api: AxiosInstance
 
-	private authToken: string | undefined = undefined
-	private authExpiry: number | undefined = undefined
+	private authToken: TwinklyAuthToken = { token: undefined, expiry: undefined }
 
 	constructor(ip: string, id: string) {
 		super()
@@ -71,29 +67,7 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 		this.state = {}
 	}
 
-	async authenticate() {
-		const tokens = await authenticateTwinkly(this.config.ip)
-		if (!tokens) {
-			console.error("Auth Failed")
-			return false
-		}
-
-		this.authToken = tokens.authentication_token
-		//Set the expiry slightly early to reauth.
-		this.authExpiry = Date.now() + tokens.authentication_token_expires_in - 5 * 1000
-		return true
-	}
-
-	isAuthenticated() {
-		if (!this.authToken) return false
-		if (!this.authExpiry) return false
-		if (this.authExpiry > Date.now()) return false
-		return true
-	}
-
 	async initialize() {
-		await this.authenticate()
-
 		try {
 			const deviceData = await getTwinklyInfo(this.config.ip)
 
@@ -114,14 +88,6 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 	}
 
 	async setLightState(color: LightColor, on: Toggle, transition: number): Promise<void> {
-		if (!this.authToken || !this.isAuthenticated()) {
-			await this.authenticate()
-
-			if (!this.authToken) {
-				return
-			}
-		}
-
 		if (on == "toggle") {
 			await this.poll()
 			on = !this.state.on
@@ -129,21 +95,12 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 
 		if (on) {
 			await setTwinklyColor(this.config.ip, this.authToken, color)
-			await setTwinklyMode(this.config.ip, this.authToken, "color")
 		} else {
 			await turnTwinklyOff(this.config.ip, this.authToken)
 		}
 	}
 
 	async poll() {
-		if (!this.authToken || !this.isAuthenticated()) {
-			await this.authenticate()
-
-			if (!this.authToken) {
-				return
-			}
-		}
-
 		try {
 			const mode = await getTwinklyMode(this.config.ip, this.authToken)
 			this.state.on = mode != "off"
@@ -160,13 +117,6 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 	}
 
 	private movieCache = new AsyncCache<TwinklyMovie[]>(async () => {
-		if (!this.authToken || !this.isAuthenticated()) {
-			await this.authenticate()
-
-			if (!this.authToken) {
-				return []
-			}
-		}
 		const movies = await getTwinklyMovies(this.config.ip, this.authToken)
 		return movies.movies
 	})
@@ -175,16 +125,7 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 	}
 
 	async setMovie(id: string) {
-		if (!this.authToken || !this.isAuthenticated()) {
-			await this.authenticate()
-
-			if (!this.authToken) {
-				return
-			}
-		}
-
 		await setTwinklyMovie(this.config.ip, this.authToken, id)
-		await setTwinklyMode(this.config.ip, this.authToken, "movie")
 	}
 }
 
@@ -199,7 +140,7 @@ export default definePlugin(
 		const subnetMask = defineSetting("subnetMask", {
 			type: String,
 			required: true,
-			name: "TP-Link Kasa Subnet Mask",
+			name: "Twinkly Subnet Mask",
 			default: "255.255.255.255",
 		})
 
