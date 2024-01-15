@@ -19,7 +19,7 @@ function randomBytes(num: number) {
 	})
 }
 
-export async function authenticate(ip: string) {
+export async function authenticateTwinkly(ip: string) {
 	const randomBuffer = await randomBytes(32)
 	const token = randomBuffer.toString("base64")
 	try {
@@ -148,4 +148,69 @@ export async function getTwinklyColor(ip: string, token: string) {
 	})
 
 	return `hsb(${resp.data.hue}, ${resp.data.saturation}, ${resp.data.value})` as LightColor
+}
+
+export interface TwinklyMovie {
+	id: string
+	name: string
+	unique_id: string
+	descriptor_type: string
+	leds_per_frame: number
+	frames_number: number
+	fps: number
+}
+
+export interface TwinklyMovieQuery {
+	code: number
+	movies: TwinklyMovie[]
+}
+
+//https://xled-docs.readthedocs.io/en/latest/rest_api.html#get-list-of-movies
+export async function getTwinklyMovies(ip: string, token: string) {
+	const resp = await axios.get("movies", {
+		baseURL: `http://${ip}/xled/v1/`,
+		headers: {
+			"X-Auth-Token": token,
+		},
+	})
+
+	return resp.data as TwinklyMovieQuery
+}
+
+export async function setTwinklyMovie(ip: string, token: string, movieId: string) {
+	try {
+		const resp = await axios.post(
+			"movies/current",
+			{
+				id: movieId,
+			},
+			{
+				baseURL: `http://${ip}/xled/v1/`,
+				headers: {
+					"X-Auth-Token": token,
+				},
+			}
+		)
+	} catch (err) {
+		console.error("Failed to set twinkly mode", ip)
+	}
+}
+
+export async function setTwinklyMode(ip: string, token: string, mode: "movie" | "color") {
+	try {
+		const resp = await axios.post(
+			"led/mode",
+			{
+				mode,
+			},
+			{
+				baseURL: `http://${ip}/xled/v1/`,
+				headers: {
+					"X-Auth-Token": token,
+				},
+			}
+		)
+	} catch (err) {
+		console.error("Failed to set twinkly mode", ip)
+	}
 }

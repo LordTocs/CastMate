@@ -1,5 +1,14 @@
 import { LightResource } from "castmate-plugin-iot-main"
-import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, defineSecret, defineSetting } from "castmate-core"
+import {
+	defineAction,
+	defineTrigger,
+	onLoad,
+	onUnload,
+	definePlugin,
+	defineSecret,
+	defineSetting,
+	AsyncCache,
+} from "castmate-core"
 import axios, { AxiosInstance } from "axios"
 import { TwinklyDiscovery } from "./discovery"
 import { PollingLight } from "castmate-plugin-iot-main/src/light"
@@ -8,12 +17,16 @@ import { LightColor, LightConfig } from "castmate-plugin-iot-shared"
 import {
 	TwinklyAuthResponse,
 	TwinklyGestaltResponse,
-	authenticate,
+	TwinklyMovie,
+	authenticateTwinkly,
 	getTwinklyColor,
 	getTwinklyInfo,
 	getTwinklyMode,
+	getTwinklyMovies,
 	setTwinklyColor,
+	setTwinklyMovie,
 	turnTwinklyOff,
+	setTwinklyMode,
 } from "./api"
 import { Toggle } from "castmate-schema"
 
@@ -59,7 +72,7 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 	}
 
 	async authenticate() {
-		const tokens = await authenticate(this.config.ip)
+		const tokens = await authenticateTwinkly(this.config.ip)
 		if (!tokens) {
 			console.error("Auth Failed")
 			return false
@@ -79,17 +92,23 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 	}
 
 	async initialize() {
-		const deviceData = await getTwinklyInfo(this.config.ip)
-
-		await this.applyConfig({
-			name: deviceData.device_name,
-			kelvin: {
-				available: deviceData.led_profile.includes("W"),
-			},
-		})
-
 		await this.authenticate()
-		await this.poll()
+
+		try {
+			const deviceData = await getTwinklyInfo(this.config.ip)
+
+			await this.applyConfig({
+				name: deviceData.device_name,
+				kelvin: {
+					available: deviceData.led_profile.includes("W"),
+				},
+			})
+
+			await this.poll()
+		} catch (err) {
+			console.error("Error Querying Twinkly Info")
+			console.error(err)
+		}
 
 		this.startPolling(30)
 	}
@@ -110,18 +129,62 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 
 		if (on) {
 			await setTwinklyColor(this.config.ip, this.authToken, color)
+			await setTwinklyMode(this.config.ip, this.authToken, "color")
 		} else {
 			await turnTwinklyOff(this.config.ip, this.authToken)
 		}
 	}
 
 	async poll() {
-		if (!this.authToken) return
-		const mode = await getTwinklyMode(this.config.ip, this.authToken)
-		const color = await getTwinklyColor(this.config.ip, this.authToken)
+		if (!this.authToken || !this.isAuthenticated()) {
+			await this.authenticate()
 
-		this.state.on = mode != "off"
-		this.state.color = color
+			if (!this.authToken) {
+				return
+			}
+		}
+
+		try {
+			const mode = await getTwinklyMode(this.config.ip, this.authToken)
+			this.state.on = mode != "off"
+		} catch (err) {
+			console.log("Failed to get twinkly mode", err)
+		}
+
+		try {
+			const color = await getTwinklyColor(this.config.ip, this.authToken)
+			this.state.color = color
+		} catch (err) {
+			console.log("Failed to get twinkly color")
+		}
+	}
+
+	private movieCache = new AsyncCache<TwinklyMovie[]>(async () => {
+		if (!this.authToken || !this.isAuthenticated()) {
+			await this.authenticate()
+
+			if (!this.authToken) {
+				return []
+			}
+		}
+		const movies = await getTwinklyMovies(this.config.ip, this.authToken)
+		return movies.movies
+	})
+	getMovies() {
+		return this.movieCache.get()
+	}
+
+	async setMovie(id: string) {
+		if (!this.authToken || !this.isAuthenticated()) {
+			await this.authenticate()
+
+			if (!this.authToken) {
+				return
+			}
+		}
+
+		await setTwinklyMovie(this.config.ip, this.authToken, id)
+		await setTwinklyMode(this.config.ip, this.authToken, "movie")
 	}
 }
 
@@ -152,11 +215,46 @@ export default definePlugin(
 				if (existing) return
 
 				const twinkly = new TwinklyLight(ip, id)
-				await twinkly.initialize()
-				await LightResource.storage.inject(twinkly)
+				try {
+					await twinkly.initialize()
+					await LightResource.storage.inject(twinkly)
+				} catch (err) {
+					console.error("Error Initializing Twinkly", ip, id, err)
+				}
 			})
 
 			discovery.startPolling()
+		})
+
+		defineAction({
+			id: "movie",
+			name: "Twinkly Movie",
+			icon: "iot iot-twinkly",
+			config: {
+				type: Object,
+				properties: {
+					twinkly: {
+						type: LightResource,
+						name: "Twinkly Device",
+						filter: { provider: "twinkly" },
+						required: true,
+					},
+					movie: {
+						type: String,
+						name: "Movie",
+						required: true,
+						async enum(context: { twinkly: TwinklyLight }) {
+							if (!context.twinkly) return []
+
+							const movies = await context.twinkly.getMovies()
+							return movies?.map((m) => ({ name: m.name, value: m.id })) ?? []
+						},
+					},
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				await (config.twinkly as TwinklyLight)?.setMovie(config.movie)
+			},
 		})
 	}
 )
