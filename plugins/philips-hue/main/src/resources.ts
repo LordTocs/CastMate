@@ -95,9 +95,7 @@ export class PhilipsHUELight extends LightResource {
 		this.state.on = apiState.on?.on ?? false
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number): Promise<void> {
-		const parsedColor = LightColor.parse(color)
-
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number): Promise<void> {
 		if (on == "toggle") {
 			on = !this.state.on
 		}
@@ -106,28 +104,33 @@ export class PhilipsHUELight extends LightResource {
 			on: {
 				on,
 			},
-			dimming: {
-				brightness: _clamp(Number(parsedColor.bri), 0, 100),
-			},
 			dynamics: {
 				duration: Math.round(transition * 1000),
 			},
 		}
 
-		if ("hue" in parsedColor) {
-			const hue = _clamp(parsedColor.hue ?? 0, 0, 360)
-			const sat = _clamp(parsedColor.sat ?? 100, 0, 100)
-			const bri = _clamp(parsedColor.bri ?? 100, 0, 100)
-			const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
-			update.color = {
-				xy: {
-					x: cie.x,
-					y: cie.y,
-				},
+		if (color) {
+			const parsedColor = LightColor.parse(color)
+
+			update.dimming = {
+				brightness: _clamp(Number(parsedColor.bri), 0, 100),
 			}
-		} else {
-			update.color_temperature = {
-				mirek: Math.round(1000000 / parsedColor.kelvin),
+
+			if ("hue" in parsedColor) {
+				const hue = _clamp(parsedColor.hue ?? 0, 0, 360)
+				const sat = _clamp(parsedColor.sat ?? 100, 0, 100)
+				const bri = _clamp(parsedColor.bri ?? 100, 0, 100)
+				const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
+				update.color = {
+					xy: {
+						x: cie.x,
+						y: cie.y,
+					},
+				}
+			} else {
+				update.color_temperature = {
+					mirek: Math.round(1000000 / parsedColor.kelvin),
+				}
 			}
 		}
 
@@ -229,9 +232,7 @@ export class PhilipsHUEGroup extends LightResource<PhilipsHUEGroupConfig> {
 		this.state.on = on
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number) {
-		const parsedColor = LightColor.parse(color)
-
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number) {
 		if (on == "toggle") {
 			//this.gatherChildStates()
 			on = !this.state.on
@@ -241,28 +242,33 @@ export class PhilipsHUEGroup extends LightResource<PhilipsHUEGroupConfig> {
 			on: {
 				on,
 			},
-			dimming: {
-				brightness: _clamp(Number(parsedColor.bri), 0, 100),
-			},
 			dynamics: {
 				duration: Math.round(transition * 1000),
 			},
 		}
 
-		if ("hue" in parsedColor) {
-			const hue = _clamp(parsedColor.hue ?? 0, 0, 360)
-			const sat = _clamp(parsedColor.sat ?? 100, 0, 100)
-			const bri = _clamp(parsedColor.bri ?? 100, 0, 100)
-			const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
-			update.color = {
-				xy: {
-					x: cie.x,
-					y: cie.y,
-				},
+		if (color) {
+			const parsedColor = LightColor.parse(color)
+
+			update.dimming = {
+				brightness: _clamp(Number(parsedColor.bri), 0, 100),
 			}
-		} else {
-			update.color_temperature = {
-				mirek: Math.round(1000000 / parsedColor.kelvin),
+
+			if ("hue" in parsedColor) {
+				const hue = _clamp(parsedColor.hue ?? 0, 0, 360)
+				const sat = _clamp(parsedColor.sat ?? 100, 0, 100)
+				const bri = _clamp(parsedColor.bri ?? 100, 0, 100)
+				const cie = chromatism.convert({ h: hue, s: sat, v: bri }).xyY
+				update.color = {
+					xy: {
+						x: cie.x,
+						y: cie.y,
+					},
+				}
+			} else {
+				update.color_temperature = {
+					mirek: Math.round(1000000 / parsedColor.kelvin),
+				}
 			}
 		}
 

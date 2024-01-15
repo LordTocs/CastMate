@@ -22,10 +22,13 @@ import { Toggle } from "castmate-schema"
 import { computed } from "vue"
 
 const props = defineProps<{
-	modelValue: { lightColor: LightColor; on: Toggle }
+	modelValue: { lightColor: LightColor | undefined; on: Toggle }
 }>()
 
 const lightColor = computed(() => {
+	if (props.modelValue.lightColor == null) {
+		return "#000000"
+	}
 	return LightColor.toColor(props.modelValue.lightColor)
 })
 

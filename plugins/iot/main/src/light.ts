@@ -8,7 +8,7 @@ export class LightResource<
 > extends Resource<Config, State> {
 	static storage = new ResourceStorage<LightResource>("Light")
 
-	async setLightState(color: LightColor, on: Toggle, transition: Duration) {}
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: Duration) {}
 }
 
 export class PollingLight<
@@ -63,7 +63,6 @@ export function setupLights() {
 					type: LightColor,
 					name: "Color",
 					resource: "light",
-					required: true,
 				},
 				transition: { type: Duration, name: "Transition Time", required: true, default: 0.5 },
 			},

@@ -150,7 +150,7 @@ class LIFXLight extends PollingLight {
 		this.lifxLight.color(hue, sat, bri, kelvin, Math.round(duration * 1000), undefined)
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number) {
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number) {
 		await this.poll()
 
 		if (on == "toggle") {
@@ -161,10 +161,10 @@ class LIFXLight extends PollingLight {
 			this.setPower(false, transition)
 		} else {
 			if (!this.state.on) {
-				this.setColor(color, 0)
+				if (color) this.setColor(color, 0)
 				this.setPower(true, transition)
 			} else {
-				this.setColor(color, transition)
+				if (color) this.setColor(color, transition)
 			}
 		}
 	}

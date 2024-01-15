@@ -6,11 +6,12 @@
 					<input-box v-bind="templateProps" :model="model" @click="onClick">
 						<div
 							class="color-splash"
-							:style="{ backgroundColor: model ? LightColor.toColor(model) : undefined }"
+							:style="{ backgroundColor: model != null ? LightColor.toColor(model) : undefined }"
 						></div>
 					</input-box>
 				</template-toggle>
 			</label-floater>
+			<p-button class="flex-none no-focus-highlight" v-if="!schema.required" icon="pi pi-times" @click="clear" />
 		</div>
 		<drop-down-panel v-model="overlayVisible" :container="container">
 			<light-color-wheel style="width: 15rem" v-if="LightColor.isHSB(model) || !model" v-model="model" />
@@ -32,6 +33,7 @@ import {
 } from "castmate-ui-core"
 import { ref, useModel } from "vue"
 import LightColorWheel from "./LightColorWheel.vue"
+import PButton from "primevue/button"
 
 const props = defineProps<
 	{
@@ -42,13 +44,7 @@ const props = defineProps<
 
 const model = useModel(props, "modelValue")
 
-//Overlay stuff
-
-const appendTo = injectScrollAttachable()
-
 const container = ref<HTMLElement>()
-const overlayDiv = ref<HTMLElement>()
-
 const overlayVisible = ref(false)
 
 function show() {
@@ -72,6 +68,11 @@ function onClick(ev: MouseEvent) {
 	toggle()
 	ev.stopPropagation()
 	ev.preventDefault()
+}
+
+function clear() {
+	console.log("Clear!")
+	model.value = undefined
 }
 </script>
 

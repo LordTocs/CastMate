@@ -87,14 +87,16 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 		this.startPolling(30)
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number): Promise<void> {
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number): Promise<void> {
 		if (on == "toggle") {
 			await this.poll()
 			on = !this.state.on
 		}
 
 		if (on) {
-			await setTwinklyColor(this.config.ip, this.authToken, color)
+			if (color) {
+				await setTwinklyColor(this.config.ip, this.authToken, color ?? this.state.color)
+			}
 		} else {
 			await turnTwinklyOff(this.config.ip, this.authToken)
 		}

@@ -73,13 +73,15 @@ class ElgatoKeyLight extends PollingLight {
 		this.state.color = `kb(${kelvin}, ${bri})`
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number): Promise<void> {
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number): Promise<void> {
+		await this.poll()
+
 		if (on == "toggle") {
-			await this.poll()
 			on = !this.state.on
 		}
 
-		const parsedColor = LightColor.parse(color)
+		const finalColor = color ?? this.state.color
+		const parsedColor = LightColor.parse(finalColor)
 
 		if ("hue" in parsedColor) return
 
@@ -166,12 +168,15 @@ class ElgatoLightStrip extends PollingLight<ElgatoLightStripConfig> {
 		this.parseState(state)
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number): Promise<void> {
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number): Promise<void> {
+		await this.poll()
+
 		if (on == "toggle") {
 			on = !this.state.on
 		}
 
-		const parsedColor = LightColor.parse(color)
+		const finalColor = color ?? this.state.color
+		const parsedColor = LightColor.parse(finalColor)
 
 		const lightState: Record<string, any> = {
 			on,

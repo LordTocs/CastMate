@@ -35,6 +35,7 @@ export const LightColor = {
 		return false
 	},
 	parse(color: LightColor): LightColorObj {
+		if (!color) throw new Error("Color was falsy!")
 		if (color.startsWith("hsb(") && color.endsWith(")")) {
 			const contents = color.substring(4, color.length - 1)
 			const [h, s, b] = contents.split(",")

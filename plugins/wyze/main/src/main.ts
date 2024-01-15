@@ -343,24 +343,26 @@ class WyzeLight extends LightResource<WyzeLightConfig> {
 		}
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number) {
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number) {
 		if (on == "toggle") {
 			await this.updateState()
 			on = !this.state.on
 		}
 
-		const parsedColor = LightColor.parse(color)
-
 		const stateUpdate: WyzeDeviceState = {}
 
 		stateUpdate.power = on
-		stateUpdate.brightness = parsedColor.bri
-		if ("hue" in parsedColor) {
-			stateUpdate.color = chromatism
-				.convert({ h: parsedColor.hue, s: parsedColor.sat, v: parsedColor.bri })
-				.hex.substring(1)
-		} else {
-			stateUpdate.colorTemp = _clamp(Math.round(parsedColor.kelvin), 2000, 6500)
+
+		if (color) {
+			const parsedColor = LightColor.parse(color)
+			stateUpdate.brightness = parsedColor.bri
+			if ("hue" in parsedColor) {
+				stateUpdate.color = chromatism
+					.convert({ h: parsedColor.hue, s: parsedColor.sat, v: parsedColor.bri })
+					.hex.substring(1)
+			} else {
+				stateUpdate.colorTemp = _clamp(Math.round(parsedColor.kelvin), 2000, 6500)
+			}
 		}
 
 		await WyzeAccount.main.runAction(this.config.providerId, this.config.model, "set_mesh_property", stateUpdate)

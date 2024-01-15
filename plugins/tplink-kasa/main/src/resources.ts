@@ -57,27 +57,29 @@ class KasaLight extends LightResource {
 		}
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number): Promise<void> {
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number): Promise<void> {
 		if (on == "toggle") {
 			const powerState = await this.kasaBulb.getPowerState()
 			on = !powerState
 		}
 
-		const parsedColor = LightColor.parse(color)
-
 		const update: LightStateInput = {
 			on_off: on ? 1 : 0,
 		}
 
-		update.brightness = parsedColor.bri
-		if ("kelvin" in parsedColor) {
-			update.color_temp = Math.ceil(parsedColor.kelvin)
-			update.hue = 0
-			update.saturation = 0
-		} else {
-			update.hue = Math.floor(parsedColor.hue)
-			update.saturation = Math.ceil(parsedColor.sat)
-			update.color_temp = 0
+		if (color) {
+			const parsedColor = LightColor.parse(color)
+
+			update.brightness = parsedColor.bri
+			if ("kelvin" in parsedColor) {
+				update.color_temp = Math.ceil(parsedColor.kelvin)
+				update.hue = 0
+				update.saturation = 0
+			} else {
+				update.hue = Math.floor(parsedColor.hue)
+				update.saturation = Math.ceil(parsedColor.sat)
+				update.color_temp = 0
+			}
 		}
 
 		update.transition_period = Math.round(transition * 1000)

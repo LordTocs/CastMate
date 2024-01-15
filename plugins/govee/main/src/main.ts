@@ -155,22 +155,23 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 		}
 	}
 
-	async setLightState(color: LightColor, on: Toggle, transition: number) {
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: number) {
 		if (on == "toggle") {
 			await this.poll()
 			on = !this.state.on
 		}
 
 		if (this.config.hasLan && this.lanDevice) {
-			const parsedColor = LightColor.parse(color)
-
-			if ("hue" in parsedColor) {
-				await this.lanDevice.setColor({ h: parsedColor.hue, s: parsedColor.sat, v: parsedColor.bri })
-			} else {
-				await Promise.allSettled([
-					this.lanDevice.setColorKelvin(parsedColor.kelvin, true),
-					this.lanDevice.setBrightness(parsedColor.bri),
-				])
+			if (color) {
+				const parsedColor = LightColor.parse(color)
+				if ("hue" in parsedColor) {
+					await this.lanDevice.setColor({ h: parsedColor.hue, s: parsedColor.sat, v: parsedColor.bri })
+				} else {
+					await Promise.allSettled([
+						this.lanDevice.setColorKelvin(parsedColor.kelvin, true),
+						this.lanDevice.setBrightness(parsedColor.bri),
+					])
+				}
 			}
 
 			if (on) {
@@ -182,7 +183,7 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 			const apiKey = getPluginSetting<string | undefined>("govee", "apiKey")
 			if (!apiKey?.value) return
 			await Promise.allSettled([
-				setColor(apiKey.value, this.config.providerId, this.config.model, color),
+				color ? setColor(apiKey.value, this.config.providerId, this.config.model, color) : undefined,
 				setPowerState(apiKey.value, this.config.providerId, this.config.model, on),
 			])
 		}
