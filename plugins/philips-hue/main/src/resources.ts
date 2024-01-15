@@ -138,6 +138,7 @@ export class PhilipsHUELight extends LightResource {
 interface PhilipsHUEGroupConfig extends LightConfig {
 	roomId: string
 	lightIds: string[]
+	hueType: "group"
 }
 
 export class PhilipsHUEGroup extends LightResource<PhilipsHUEGroupConfig> {
@@ -156,6 +157,7 @@ export class PhilipsHUEGroup extends LightResource<PhilipsHUEGroupConfig> {
 			name: roomInfo.metadata.name,
 			provider: "philips-hue",
 			providerId: group.rid,
+			hueType: "group",
 			lightIds: [],
 			roomId: roomInfo.id,
 			rgb: {

@@ -257,3 +257,15 @@ export interface HUEEventUpdateData extends HUEApiLightState {
 	id: string
 	type: string
 }
+
+export interface HUEScene {
+	type: "scene"
+	id: string
+	metadata: {
+		name: string
+	}
+	group: {
+		rid: string
+		rtype: HUEApiResourceType
+	}
+}
