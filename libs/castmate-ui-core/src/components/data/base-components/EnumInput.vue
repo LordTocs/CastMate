@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { Enumable, EnumItem, Schema } from "castmate-schema"
-import { computed, ref, useModel } from "vue"
+import { computed, onMounted, ref, useModel } from "vue"
 import _isFunction from "lodash/isFunction"
 import { isObject } from "@vueuse/core"
 import CAutocomplete from "./CAutocomplete.vue"
@@ -69,5 +69,9 @@ const items = computed<{ id: any; name: string }[]>(() => {
 	} else {
 		return enumable.enum.map((i) => toAutoComplete(i))
 	}
+})
+
+onMounted(() => {
+	onOpen()
 })
 </script>

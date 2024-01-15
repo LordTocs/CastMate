@@ -15,7 +15,7 @@
 			:bezel-right="false"
 			:placeholder="placeholder"
 		>
-			<slot name="selectedItem" v-if="props.modelValue" :item="selectedItem" :item-id="props.modelValue">
+			<slot name="selectedItem" v-if="props.modelValue != null" :item="selectedItem" :item-id="props.modelValue">
 				{{ selectedItem ? getItemText(selectedItem, props) : props.modelValue }}
 			</slot>
 		</input-box>
