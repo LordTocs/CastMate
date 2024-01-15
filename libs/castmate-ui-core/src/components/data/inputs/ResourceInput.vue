@@ -6,7 +6,7 @@
 				:required="!!schema.required"
 				:label="schema.name"
 				text-prop="config.name"
-				:items="resourceItems"
+				:items="filteredResourceItems"
 				:no-float="noFloat"
 				v-bind="labelProps"
 			/>
@@ -38,6 +38,7 @@ import PButton from "primevue/button"
 import PMenu from "primevue/menu"
 import { MenuItem } from "primevue/menuitem"
 import _clamp from "lodash/clamp"
+import _isMatch from "lodash/isMatch"
 import { SharedDataInputProps } from "../DataInputTypes"
 
 import CAutocomplete from "../base-components/CAutocomplete.vue"
@@ -53,6 +54,11 @@ const model = useModel(props, "modelValue")
 const resourceStore = useResourceData(() => props.schema.resourceType)
 
 const resourceItems = useResourceArray(() => props.schema.resourceType)
+
+const filteredResourceItems = computed(() => {
+	if (props.schema.filter == null) return resourceItems.value
+	return resourceItems.value.filter((r) => _isMatch(r.config, props.schema.filter as object))
+})
 
 const hasDialogs = computed(() => resourceStore.value?.editDialog && resourceStore.value?.createDialog)
 

@@ -121,6 +121,7 @@ type ResourceTypeConstructor = { new (...args: any[]): ResourceType }
 //Match resource constructors
 export interface SchemaResource extends SchemaBase {
 	type: ResourceTypeConstructor
+	filter?: Record<string, any>
 }
 
 type SchemaResourceType<T extends SchemaResource> = InstanceType<T["type"]>
