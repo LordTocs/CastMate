@@ -4,8 +4,10 @@ import {
 	BooleanSubExpression,
 	BooleanValueExpression,
 	ExpressionValue,
+	Schema,
 } from "castmate-schema"
 import { PluginManager } from "../plugins/plugin-manager"
+import { unexposeSchema } from "./ipc-schema"
 
 function getExpressionValue(expression: ExpressionValue) {
 	if (expression.type == "state") {
@@ -20,9 +22,33 @@ function getExpressionValue(expression: ExpressionValue) {
 	return undefined
 }
 
-function evaluateValueExpression(expression: BooleanValueExpression) {
-	const left = getExpressionValue(expression.lhs)
-	const right = getExpressionValue(expression.rhs)
+function getExpressionSchema(expression: ExpressionValue): Schema | undefined {
+	if (expression.type == "state") {
+		if (!expression.plugin) return undefined
+		if (!expression.state) return undefined
+
+		const state = PluginManager.getInstance().getState(expression.plugin, expression.state)
+		return state?.schema
+	}
+}
+
+async function evaluateValueExpression(expression: BooleanValueExpression) {
+	let left = getExpressionValue(expression.lhs)
+	const leftSchema = getExpressionSchema(expression.lhs)
+	let right = getExpressionValue(expression.rhs)
+	const rightSchema = getExpressionSchema(expression.rhs)
+
+	//console.log("Evaluating", left, right, leftSchema, rightSchema)
+
+	if (rightSchema) {
+		right = await unexposeSchema(rightSchema, right)
+	}
+
+	if (leftSchema) {
+		left = await unexposeSchema(leftSchema, left)
+	}
+
+	//console.log("Eval Final", leftFinal, rightFinal)
 
 	if (expression.operator == "equal") {
 		return left == right
@@ -37,17 +63,25 @@ function evaluateValueExpression(expression: BooleanValueExpression) {
 	} else if (expression.operator == "greaterThanEq") {
 		return left >= right
 	}
+	return false
 }
 
-function evaluateGroupExpression(expression: BooleanExpressionGroup) {
+async function evaluateGroupExpression(expression: BooleanExpressionGroup) {
 	if (expression.operands.length == 0) return true
 
-	const results = expression.operands.map((o) => {
-		if ("operands" in o) {
-			return evaluateGroupExpression(o)
-		} else {
-			return evaluateValueExpression(o)
-		}
+	const results = (
+		await Promise.allSettled(
+			expression.operands.map(async (o) => {
+				if ("operands" in o) {
+					return await evaluateGroupExpression(o)
+				} else {
+					return await evaluateValueExpression(o)
+				}
+			})
+		)
+	).map((r) => {
+		if (r.status == "rejected") return false
+		return r.value
 	})
 
 	if (expression.operator == "and") {
@@ -63,6 +97,6 @@ function evaluateGroupExpression(expression: BooleanExpressionGroup) {
 	}
 }
 
-export function evalueBooleanExpression(expression: BooleanExpression) {
-	return evaluateGroupExpression(expression)
+export async function evalueBooleanExpression(expression: BooleanExpression) {
+	return await evaluateGroupExpression(expression)
 }

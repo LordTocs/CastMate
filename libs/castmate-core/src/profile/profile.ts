@@ -84,15 +84,17 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 	private async setupReactivity() {
 		this.stopAutoActivate()
 
-		this.stateEffect = await autoRerun(() => {
-			const currentActive = this.state.active
+		this.stateEffect = await autoRerun(async () => {
 			if (this.config.activationMode == "toggle") {
-				this.state.active = evalueBooleanExpression(this.config.activationCondition)
+				const activationResult = await evalueBooleanExpression(this.config.activationCondition)
+				this.state.active = activationResult
 			} else {
 				this.state.active = this.config.activationMode
 			}
 			ProfileManager.getInstance()?.signalProfilesChanged()
 		})
+
+		this.stateEffect.debugDump()
 	}
 
 	getSequence(id: string): Sequence | undefined {
@@ -105,7 +107,7 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 	}
 
 	getTrigger(id: string) {
-		const triggerData = this.config.triggers.find(t => t.id == id)
+		const triggerData = this.config.triggers.find((t) => t.id == id)
 		if (!triggerData?.plugin || !triggerData?.trigger) return undefined
 		return PluginManager.getInstance().getPlugin(triggerData.plugin)?.triggers?.get(triggerData.trigger)
 	}

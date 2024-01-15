@@ -1,4 +1,5 @@
 import { PluginManager } from "../plugins/plugin-manager"
+import { ignoreReactivity } from "../reactivity/reactivity"
 import { Service } from "../util/service"
 import { Profile } from "./profile"
 
@@ -26,10 +27,13 @@ export const ProfileManager = Service(
 		}
 
 		private activeProfileChange = false
+
 		signalProfilesChanged() {
 			if (!this.activeProfileChange && this.inited) {
 				this.activeProfileChange = true
-				process.nextTick(() => this.recomputeActiveProfiles())
+				ignoreReactivity(() => {
+					process.nextTick(() => this.recomputeActiveProfiles())
+				})
 			}
 		}
 
@@ -70,7 +74,6 @@ export const ProfileManager = Service(
 			this._activeProfiles = active
 			this._inactiveProfiles = inactive
 
-			//Notify the UI
 			PluginManager.getInstance().onProfilesChanged(this._activeProfiles, this._inactiveProfiles)
 
 			this.activeProfileChange = false

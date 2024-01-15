@@ -11,8 +11,18 @@ function getActiveEffect() {
 	return activeEffectStorage.getStore()
 }
 
+export function ignoreReactivity(func: () => any) {
+	activeEffectStorage.exit(func)
+}
+
+function reactiveLog(...values: any[]) {
+	//console.log(...values)
+}
+
 class ReactiveDependency {
 	effects: Set<ReactiveEffect> = new Set()
+
+	constructor(private debugName?: string) {}
 
 	addEffect(effect: ReactiveEffect) {
 		this.effects.add(effect)
@@ -33,7 +43,14 @@ class ReactiveDependency {
 		if (effect) {
 			this.addEffect(effect)
 			effect.added(this)
+			if (effect.debug) {
+				console.log("Added Dep", this.debugName, "to", effect.debugName)
+			}
 		}
+	}
+
+	get name() {
+		return this.debugName
 	}
 }
 
@@ -81,7 +98,7 @@ export namespace DependencyStorage {
 
 		let dependency = objMap?.get(propKey)
 		if (dependency == null) {
-			dependency = new ReactiveDependency()
+			dependency = new ReactiveDependency(String(propKey))
 			objMap?.set(propKey, dependency)
 		}
 		return dependency
@@ -98,6 +115,8 @@ export namespace DependencyStorage {
 export class ReactiveEffect<T = any> {
 	private dependencies: ReactiveDependency[] = []
 	private pendingRun = false
+	public debug = false
+	public debugName: string | undefined = undefined
 	constructor(private func: () => T, private scheduler?: () => any) {}
 
 	added(dep: ReactiveDependency) {
@@ -112,7 +131,9 @@ export class ReactiveEffect<T = any> {
 	}
 
 	async run() {
+		if (this.debug) console.log("Running", this.debugName)
 		await activeEffectStorage.run(this, this.func)
+		if (this.debug) console.log("Finished", this.debugName)
 	}
 
 	trigger() {
@@ -130,6 +151,12 @@ export class ReactiveEffect<T = any> {
 				this.pendingRun = false
 			}
 		})
+	}
+
+	debugDump() {
+		for (const dep of this.dependencies) {
+			console.log("Dep: ", dep.name)
+		}
 	}
 }
 
@@ -236,8 +263,12 @@ export function rawify<T extends object>(obj: T) {
 	return raw ?? obj
 }
 
-export async function autoRerun(func: () => any) {
+export async function autoRerun(func: () => any, debugName?: string) {
 	const effect = new ReactiveEffect(func)
+	if (debugName) {
+		effect.debug = true
+		effect.debugName = debugName
+	}
 	await effect.run()
 	return effect
 }
@@ -300,6 +331,7 @@ export function ReactiveGet<T extends any>(getValue: T, self: any, prop: string 
 
 export function ReactiveSet(self: any, prop: string | symbol | number) {
 	if (shouldTrack(self, prop)) {
+		reactiveLog("Reactive Set", self, prop)
 		DependencyStorage.getPropDependency(self, prop).notify()
 	}
 }
