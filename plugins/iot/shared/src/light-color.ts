@@ -34,6 +34,13 @@ export const LightColor = {
 		}
 		return false
 	},
+	isKelvin(color: LightColor | undefined): color is KB {
+		if (!color) return false
+		if (color.startsWith("kb(") && color.endsWith(")")) {
+			return true
+		}
+		return false
+	},
 	parse(color: LightColor): LightColorObj {
 		if (!color) throw new Error("Color was falsy!")
 		if (color.startsWith("hsb(") && color.endsWith(")")) {
@@ -46,8 +53,21 @@ export const LightColor = {
 			}
 		} else if (color.startsWith("kb(") && color.endsWith(")")) {
 			const contents = color.substring(3, color.length - 1)
+			const [k, b] = contents.split(",")
+			return {
+				kelvin: Number(k),
+				bri: Number(b),
+			}
 		}
 		throw new Error(`Unknown Light Format: ${color}`)
+	},
+	serialize(color: LightColorObj): LightColor {
+		if (!color) throw new Error("Color was falsy!")
+		if ("hue" in color) {
+			return `hsb(${color.hue}, ${color.sat}, ${color.bri})`
+		} else {
+			return `kb(${color.kelvin}, ${color.bri})`
+		}
 	},
 	toColor(color: LightColor): Color {
 		const parsed = LightColor.parse(color)
@@ -121,11 +141,11 @@ export function kelvinToRGB(kelvin: number) {
 	return color
 }
 
-export function kelvinToCSS(kelvin: number, bri: number): Color {
+export function kelvinToCSS(kelvin: number, bri?: number): Color {
 	const rgb = kelvinToRGB(kelvin ?? 4000)
 	const hsv = chromatism.convert(rgb).hsv
 
-	hsv.v = (bri ?? 1) * 100
+	hsv.v = bri ?? 100
 
 	return chromatism.convert(hsv).cssrgb as Color
 }

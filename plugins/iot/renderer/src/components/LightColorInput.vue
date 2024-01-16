@@ -14,13 +14,19 @@
 			<p-button class="flex-none no-focus-highlight" v-if="!schema.required" icon="pi pi-times" @click="clear" />
 		</div>
 		<drop-down-panel v-model="overlayVisible" :container="container">
-			<light-color-wheel style="width: 15rem" v-if="LightColor.isHSB(model) || !model" v-model="model" />
+			<p-tab-view v-model="tabIndex">
+				<p-tab-panel header="RGB">
+					<light-color-wheel style="width: 15rem" v-model="model" />
+				</p-tab-panel>
+				<p-tab-panel header="Temp">
+					<light-temperature-slider style="height: 15rem" v-model="model" />
+				</p-tab-panel>
+			</p-tab-view>
 		</drop-down-panel>
 	</div>
 </template>
 
 <script setup lang="ts">
-import PPortal from "primevue/portal"
 import { LightColor, SchemaLightcolor } from "castmate-plugin-iot-shared"
 import {
 	LabelFloater,
@@ -33,7 +39,10 @@ import {
 } from "castmate-ui-core"
 import { ref, useModel } from "vue"
 import LightColorWheel from "./LightColorWheel.vue"
+import LightTemperatureSlider from "./LightTemperatureSlider.vue"
 import PButton from "primevue/button"
+import PTabView from "primevue/tabview"
+import PTabPanel from "primevue/tabpanel"
 
 const props = defineProps<
 	{
@@ -46,6 +55,8 @@ const model = useModel(props, "modelValue")
 
 const container = ref<HTMLElement>()
 const overlayVisible = ref(false)
+
+const tabIndex = ref(0)
 
 function show() {
 	if (!overlayVisible.value) {

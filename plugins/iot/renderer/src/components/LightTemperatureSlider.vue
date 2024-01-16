@@ -18,15 +18,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeUnmount } from "vue"
-import { KB } from "castmate-plugin-iot-shared"
+import { ref, computed, onBeforeUnmount, useModel } from "vue"
+import { KB, LightColor, LightColorObj, kelvinToCSS } from "castmate-plugin-iot-shared"
 import { Color } from "castmate-schema"
 import { useEventListener } from "@vueuse/core"
-//import { kelvinToCSS } from "../../utils/color"
 
 const props = defineProps<{
-	modelValue: KB
+	modelValue: LightColor | undefined
 }>()
+
+const model = useModel(props, "modelValue")
+const parsedModel = computed<LightColorObj | undefined>({
+	get() {
+		if (model.value == null) return undefined
+		return LightColor.parse(model.value)
+	},
+	set(v) {
+		if (v == null) {
+			model.value = undefined
+			return
+		}
+		console.log("New Value", v)
+		model.value = LightColor.serialize(v)
+	},
+})
 
 const minTemperature = computed(() => 2000)
 const maxTemperature = computed(() => 6535)
@@ -37,7 +52,7 @@ const kelvinColors = computed(() => {
 	const steps = 30
 	const tempStep = (maxTemperature.value - minTemperature.value) / steps
 	for (let k = minTemperature.value; k < maxTemperature.value; k += tempStep) {
-		result.push("#000000") //kelvinToCSS(k, 100))
+		result.push(kelvinToCSS(k, 100))
 	}
 
 	return result
@@ -59,7 +74,17 @@ const kelvinGradient = computed(() => {
 	return result + ")"
 })
 
-const kelvin = computed(() => 4000)
+const kelvin = computed({
+	get() {
+		if (parsedModel.value && "kelvin" in parsedModel.value) {
+			return parsedModel.value.kelvin
+		}
+		return (minTemperature.value + maxTemperature.value) / 2
+	},
+	set(v) {
+		parsedModel.value = { kelvin: v, bri: parsedModel.value?.bri ?? 100 }
+	},
+})
 
 const dotPos = computed(() => {
 	return (kelvin.value - minTemperature.value) / (maxTemperature.value - minTemperature.value)
@@ -83,9 +108,11 @@ function posToKelvin(x: number, y: number) {
 const dragging = ref(false)
 
 function onMouseDown(ev: MouseEvent) {
-	ev.preventDefault()
-	ev.stopPropagation()
-	dragging.value = true
+	if (ev.button == 0) {
+		ev.preventDefault()
+		ev.stopPropagation()
+		dragging.value = true
+	}
 }
 
 useEventListener(
@@ -98,7 +125,8 @@ useEventListener(
 		const localX = ev.clientX - rect.left
 		const localY = ev.clientY - rect.top
 
-		const kelvin = posToKelvin(localX, localY)
+		console.log("Move", localX, localY)
+		kelvin.value = posToKelvin(localX, localY)
 	}
 )
 

@@ -13,11 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeUnmount } from "vue"
+import { ref, computed, onBeforeUnmount, useModel } from "vue"
 import { HSB, HSBColor, LightColor, LightColorObj } from "castmate-plugin-iot-shared"
 import { useEventListener, useElementSize } from "@vueuse/core"
 const props = defineProps<{
-	modelValue: HSB | undefined
+	modelValue: LightColor | undefined
 }>()
 
 const emit = defineEmits(["update:modelValue"])
@@ -26,46 +26,37 @@ const wheel = ref<HTMLElement>()
 
 const wheelSize = useElementSize(wheel)
 
-const parsedModel = computed<HSBColor | undefined>(() => {
-	if (!props.modelValue) return undefined
-	const parsed = LightColor.parse(props.modelValue)
-	if (!("hue" in parsed)) return undefined
-	return parsed
-})
-
-const bri = computed<number>(() => parsedModel.value?.bri ?? 1)
-
-const hue = computed<number>({
+const model = useModel(props, "modelValue")
+const parsedModel = computed<LightColorObj | undefined>({
 	get() {
-		return parsedModel.value?.hue ?? 0
+		if (model.value == null) return undefined
+		return LightColor.parse(model.value)
 	},
 	set(v) {
-		const newColor = `hsb(${v ?? 0}, ${sat.value}, ${bri.value})`
-		emit("update:modelValue", newColor)
-	},
-})
-
-const sat = computed<number>({
-	get() {
-		return parsedModel.value?.sat ?? 100
-	},
-	set(v) {
-		const newColor = `hsb(${hue.value}, ${v ?? 100}, ${bri.value})`
-		emit("update:modelValue", newColor)
-	},
-})
-
-const hueSat = computed<{ hue: number; sat: number }>({
-	get() {
-		return {
-			hue: parsedModel.value?.hue ?? 0,
-			sat: parsedModel.value?.sat ?? 100,
+		if (v == null) {
+			model.value = undefined
+			return
 		}
+		model.value = LightColor.serialize(v)
 	},
-	set(v) {
-		const newColor = `hsb(${v.hue}, ${v.sat}, ${bri.value})`
-		emit("update:modelValue", newColor)
-	},
+})
+
+const defaultHue = 0
+const defaultSat = 100
+const defaultBri = 100
+
+const bri = computed(() => parsedModel.value?.bri ?? defaultBri)
+
+const hue = computed(() => {
+	if (!parsedModel.value) return defaultHue
+	if (!("hue" in parsedModel.value)) return defaultHue
+	return parsedModel.value.hue
+})
+
+const sat = computed(() => {
+	if (!parsedModel.value) return defaultSat
+	if (!("sat" in parsedModel.value)) return defaultSat
+	return parsedModel.value.sat
 })
 
 const dotPosition = computed(() => {
@@ -118,7 +109,7 @@ useEventListener(
 		const localX = ev.clientX - rect.left
 		const localY = ev.clientY - rect.top
 
-		hueSat.value = posToHueSat(localX, localY)
+		parsedModel.value = { ...posToHueSat(localX, localY), bri: bri.value }
 	}
 )
 
