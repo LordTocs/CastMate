@@ -15,11 +15,13 @@
 		</div>
 		<drop-down-panel v-model="overlayVisible" :container="container">
 			<p-tab-view v-model="tabIndex">
-				<p-tab-panel header="RGB">
+				<p-tab-panel header="RGB" class="flex flex-row">
 					<light-color-wheel style="width: 15rem" v-model="model" />
+					<light-brightness-slider style="height: 15rem" v-model="model" />
 				</p-tab-panel>
-				<p-tab-panel header="Temp">
+				<p-tab-panel header="Temp" class="flex flex-row">
 					<light-temperature-slider style="height: 15rem" v-model="model" />
+					<light-brightness-slider style="height: 15rem" v-model="model" />
 				</p-tab-panel>
 			</p-tab-view>
 		</drop-down-panel>
@@ -40,6 +42,7 @@ import {
 import { ref, useModel } from "vue"
 import LightColorWheel from "./LightColorWheel.vue"
 import LightTemperatureSlider from "./LightTemperatureSlider.vue"
+import LightBrightnessSlider from "./LightBrightnessSlider.vue"
 import PButton from "primevue/button"
 import PTabView from "primevue/tabview"
 import PTabPanel from "primevue/tabpanel"
