@@ -159,6 +159,10 @@ export class OverlayManager {
 
 			webServices.wsProxies["/overlays/"] = devProxy
 
+			devProxy.on("error", (err) => {
+				logger.error(`Proxy Error, ${err}`)
+			})
+
 			overlayRoutes.get(`/:id`, (req, res, next) => {
 				console.log("Checking Overlay", req.params.id)
 				const overlay = this.overlayResources.getById(req.params.id)
