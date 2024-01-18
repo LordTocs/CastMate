@@ -6,14 +6,12 @@ import logger from "./logger.js"
 import path from "path"
 import axios from "axios"
 import { StaticAuthProvider } from "@twurple/auth"
-const defaultScopes = [
+
+export const minScopes = [
 	"bits:read",
 
-	"channel:edit:commercial", //Start ads
-
 	"channel:manage:broadcast", //Change title/category, Stream Markers, Tags
-	"user:read:broadcast", //Get current values
-	"user:edit:broadcast", //Extensions
+	"user:read:broadcast", //Get current extensions
 
 	"channel:read:redemptions",
 	"channel:manage:redemptions", //Change channel point rewards
@@ -31,15 +29,23 @@ const defaultScopes = [
 	"moderator:read:followers", //Follower eventsub
 	"moderator:manage:shoutouts", //create / react to shoutouts
 
-	"moderator:manage:banned_users",
-
 	"clips:edit", //Create clips
+
+	"chat:read", //See the chat
+]
+
+export const defaultScopes = [
+	...minScopes,
+
+	"channel:edit:commercial", //Start ads
+
+	"user:edit:broadcast", //Extensions
+
+	"moderator:manage:banned_users",
 
 	"user:read:email",
 
-	"channel:moderate", //Chat moderation options
 	"chat:edit", //Send chat
-	"chat:read", //See the chat
 ]
 
 async function getTokenInfo(token) {
@@ -231,8 +237,15 @@ export class ElectronAuthManager {
 		return promise
 	}
 
-	doAuth(forceAuth = false) {
+	doAuth(forceAuth = false, overrideScopes = undefined) {
 		const promise = new Promise((resolve, reject) => {
+			if (overrideScopes) {
+				console.log("Override Scopes!")
+				this.scopes = overrideScopes
+			}
+
+			console.log("Authing!", this.scopes)
+
 			const params = {
 				response_type: "token",
 				client_id: this._clientId,

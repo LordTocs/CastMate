@@ -1,4 +1,8 @@
-import { ElectronAuthManager } from "../utils/twitchAuth.js"
+import {
+	ElectronAuthManager,
+	defaultScopes,
+	minScopes,
+} from "../utils/twitchAuth.js"
 import { ApiClient } from "@twurple/api"
 import { ChatClient } from "@twurple/chat"
 import { PubSubClient, BasicPubSubClient } from "@twurple/pubsub"
@@ -175,7 +179,14 @@ export default {
 			this.channelAuth = new ElectronAuthManager({
 				clientId,
 				name: "Channel",
+				scopes: this.state.minAuth ? minScopes : defaultScopes,
 			})
+
+			console.log(
+				"Main Perms",
+				this.state.minAuth ? minScopes : defaultScopes
+			)
+
 			this.botAuth = new ElectronAuthManager({
 				clientId,
 				name: "Bot",
@@ -306,7 +317,7 @@ export default {
 				const channel =
 					await this.channelTwitchClient.users.getAuthenticatedUser(
 						this.channelAuth.userId,
-						true
+						!this.state.minAuth
 					)
 				this.state.channelName = channel.displayName
 				this.state.channelProfileUrl = channel.profilePictureUrl
@@ -1028,6 +1039,34 @@ export default {
 
 		async doChannelAuth() {
 			try {
+				this.state.minAuth = false
+				let result = await this.channelAuth.doAuth(true, defaultScopes)
+				if (result) {
+					await this.completeAuth()
+					return true
+				}
+			} finally {
+				return false
+			}
+		},
+
+		async doMinChannelAuth() {
+			try {
+				this.state.minAuth = true
+				console.log("Min Auth!!")
+				let result = await this.channelAuth.doAuth(true, minScopes)
+				if (result) {
+					await this.completeAuth()
+					return true
+				}
+			} finally {
+				return false
+			}
+		},
+
+		async doChannelReauth() {
+			try {
+				this.state.minAuth = true
 				let result = await this.channelAuth.doAuth(true)
 				if (result) {
 					await this.completeAuth()
@@ -1389,6 +1428,13 @@ export default {
 			type: Boolean,
 			name: "Helper for UI to know scopes have changed to prompt for re-signin",
 			hidden: true,
+		},
+		minAuth: {
+			type: Boolean,
+			name: "Whether to use the minimum set of scopes to auth the main account",
+			hidden: true,
+			default: false,
+			serialized: true,
 		},
 	},
 	triggers: {
@@ -2370,9 +2416,15 @@ export default {
 						predictionData.duration,
 						context
 					),
-					choices: await Promise.all(
-						predictionData.choices.map((t) => template(t, context))
-					),
+					choices: (
+						await Promise.all(
+							predictionData.choices.map((t) =>
+								template(t, context)
+							)
+						)
+					)
+						.map((t) => t.trim())
+						.filter((t) => t.length > 0),
 					channelPointsPerVote: await templateNumber(
 						predictionData.channelPointsPerVote,
 						context

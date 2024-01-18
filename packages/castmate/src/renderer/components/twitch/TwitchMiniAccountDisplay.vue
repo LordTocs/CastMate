@@ -44,7 +44,7 @@ const profilePictureUrl = computed(() => {
 
 const signingIn = ref(false)
 
-const doChannelAuth = useIpc("twitch", "doChannelAuth")
+const doChannelAuth = useIpc("twitch", "doChannelReauth")
 const doBotAuth = useIpc("twitch", "doBotAuth")
 
 async function signIn() {

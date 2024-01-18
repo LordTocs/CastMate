@@ -19,22 +19,38 @@
 					<span v-else> Not Signed In </span>
 				</v-card-text>
 				<v-card-actions>
-					<v-btn
-						color="#9147FF"
-						:loading="channelWorking"
-						@click="startChannelAuth"
-						v-if="!channelName"
-					>
-						Sign In
-					</v-btn>
-					<v-btn
-						color="#5B4B72"
-						:loading="channelWorking"
-						@click="startChannelAuth"
-						v-else
-					>
-						Sign In Again
-					</v-btn>
+					<template v-if="!channelName">
+						<v-btn
+							color="#9147FF"
+							:loading="channelWorking"
+							@click="startChannelAuth"
+						>
+							Sign In
+						</v-btn>
+						<v-btn
+							color="#9147FF"
+							:loading="channelWorking"
+							@click="startMinChannelAuth"
+						>
+							Sign In (Fewer Permissions)
+						</v-btn>
+					</template>
+					<template v-else>
+						<v-btn
+							color="#5B4B72"
+							:loading="channelWorking"
+							@click="startChannelAuth"
+						>
+							Sign In Again
+						</v-btn>
+						<v-btn
+							color="#5B4B72"
+							:loading="channelWorking"
+							@click="startMinChannelAuth"
+						>
+							Sign In Again (Fewer Permissions)
+						</v-btn>
+					</template>
 				</v-card-actions>
 			</v-card>
 		</v-col>
@@ -103,10 +119,21 @@ export default {
 		},
 	},
 	methods: {
-		...mapIpcs("twitch", ["doChannelAuth", "doBotAuth"]),
+		...mapIpcs("twitch", [
+			"doChannelAuth",
+			"doMinChannelAuth",
+			"doBotAuth",
+		]),
 		async startChannelAuth() {
 			this.channelWorking = true
 			if (await this.doChannelAuth()) {
+				this.hasChannelAuthed = true
+			}
+			this.channelWorking = false
+		},
+		async startMinChannelAuth() {
+			this.channelWorking = true
+			if (await this.doMinChannelAuth()) {
 				this.hasChannelAuthed = true
 			}
 			this.channelWorking = false
