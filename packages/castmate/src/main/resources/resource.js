@@ -119,10 +119,12 @@ export class Resource {
 		}
 		this._setupReactivity(newResource)
 
-		console.log("Injecting", this.spec.type, newResource.id)
-
 		const release = await this.resourceMutex.acquire()
-		this.resources.push(newResource)
+		const existing = this.getById(newResource.id)
+		if (!existing) {
+			console.log("Injecting", this.spec.type, newResource.id)
+			this.resources.push(newResource)
+		}
 		release()
 
 		this._triggerUpdate()
