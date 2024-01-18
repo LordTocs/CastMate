@@ -419,7 +419,7 @@ class GoveeIoTProvider extends IoTProvider {
 				const lanlight = new GoveeLanLight(device)
 
 				const existingLight = this.lights.find((l) => {
-					l.config.goveeId == device.id
+					return l.config.goveeId == device.id
 				})
 				if (existingLight) {
 					await this._removeLight(existingLight)
