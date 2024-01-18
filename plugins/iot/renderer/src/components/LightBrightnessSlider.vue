@@ -56,7 +56,7 @@ const fullBrightness = computed(() => {
 })
 
 const brightnessGradient = computed(() => {
-	return `linear-gradient(180deg, #000000, ${fullBrightness})`
+	return `linear-gradient(180deg, ${fullBrightness.value}, #000000)`
 })
 
 const brightness = computed({
@@ -64,12 +64,12 @@ const brightness = computed({
 		return parsedModel.value?.bri ?? 100
 	},
 	set(v) {
-		parsedModel.value = { ...(parsedModel.value ?? { hue: 0, sat: 100 }), bri: parsedModel.value?.bri ?? 100 }
+		parsedModel.value = { ...(parsedModel.value ?? { hue: 0, sat: 100 }), bri: v ?? 100 }
 	},
 })
 
 const dotPos = computed(() => {
-	return brightness.value / 100
+	return (100 - brightness.value) / 100
 })
 
 const slider = ref<HTMLElement>()
@@ -84,7 +84,7 @@ function posToBrightness(x: number, y: number) {
 
 	y = Math.max(0, Math.min(height, y))
 
-	const result = y / height
+	const result = (1 - y / height) * 100
 	return result
 }
 const dragging = ref(false)
@@ -124,7 +124,7 @@ useEventListener(
 <style scoped>
 .light-brightness-slider {
 	position: relative;
-	aspect-ratio: 0.15;
+	aspect-ratio: 0.25;
 	border-radius: 20px;
 }
 

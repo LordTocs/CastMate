@@ -15,13 +15,17 @@
 		</div>
 		<drop-down-panel v-model="overlayVisible" :container="container">
 			<p-tab-view v-model="tabIndex">
-				<p-tab-panel header="RGB" class="flex flex-row">
-					<light-color-wheel style="width: 15rem" v-model="model" />
-					<light-brightness-slider style="height: 15rem" v-model="model" />
+				<p-tab-panel header="RGB">
+					<div class="flex flex-row gap-2">
+						<light-color-wheel style="width: 15rem" v-model="model" />
+						<light-brightness-slider style="height: 15rem" v-model="model" />
+					</div>
 				</p-tab-panel>
-				<p-tab-panel header="Temp" class="flex flex-row">
-					<light-temperature-slider style="height: 15rem" v-model="model" />
-					<light-brightness-slider style="height: 15rem" v-model="model" />
+				<p-tab-panel header="Temp">
+					<div class="flex flex-row gap-2">
+						<light-temperature-slider style="height: 15rem" v-model="model" />
+						<light-brightness-slider style="height: 15rem" v-model="model" />
+					</div>
 				</p-tab-panel>
 			</p-tab-view>
 		</drop-down-panel>
