@@ -84,6 +84,10 @@ export class WebServices extends EventEmitter {
 				}
 			}
 		})
+
+		this.websocketServer.on("error", (err) => {
+			logger.error(`Websocket Error`, err)
+		})
 	}
 
 	start() {
