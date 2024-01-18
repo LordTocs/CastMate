@@ -4,6 +4,7 @@ import logger from "./logger.js"
 import thumbsupply from "thumbsupply"
 import { app, dialog } from "./electronBridge.js"
 import path from "path"
+import os from "os"
 
 export function osInit() {
 	logger.info("Initing OS Util Funcs")
@@ -52,9 +53,6 @@ export function getLocalIP() {
 		for (let net of interfaces[interfaceKeys]) {
 			const familyV4Value = typeof net.family === "string" ? "IPv4" : 4
 			if (net.family === familyV4Value && !net.internal) {
-				if (!results[name]) {
-					results[name] = []
-				}
 				return net.address
 			}
 		}
