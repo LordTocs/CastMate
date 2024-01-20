@@ -498,7 +498,12 @@ export class Plugin {
 			await this.writeSecrets()
 		}
 
-		this.serializedSecretData = await loadSecretYAML("secrets", `${this.id}.yaml`)
+		try {
+			this.serializedSecretData = await loadSecretYAML("secrets", `${this.id}.yaml`)
+		} catch (err) {
+			console.error(`Failed to load secrets for ${this.id}`)
+			this.serializedSecretData = {}
+		}
 	}
 
 	async finishLoadingSecret(id: string) {
