@@ -290,7 +290,7 @@ export default definePlugin(
 
 			lan = new goveeLan.Govee({
 				discover: false,
-				debug: true,
+				// debug: true,
 			})
 
 			lan.on(goveeLan.GoveeEventTypes.Error, (err) => {
