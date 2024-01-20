@@ -22,7 +22,7 @@ registerSchemaExpose(TwitchCategory, async (value: TwitchCategoryUnresolved) => 
 })
 
 registerSchemaUnexpose(TwitchCategory, async (value: TwitchCategory) => {
-	return value.id
+	return value?.id
 })
 
 export const CategoryCache = Service(

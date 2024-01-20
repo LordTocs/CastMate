@@ -113,7 +113,7 @@ registerSchemaExpose(TwitchViewer, async (value: TwitchViewerUnresolved) => {
 })
 
 registerSchemaUnexpose(TwitchViewer, async (value: TwitchViewer) => {
-	return value.id
+	return value?.id
 })
 
 export const ViewerCache = Service(
