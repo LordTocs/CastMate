@@ -101,6 +101,7 @@ export class Account<
 		if (!(await this.checkCachedCreds())) {
 			if (!(await this.refreshCreds())) {
 				this.state.authenticated = false
+				return
 			}
 		}
 		this.state.authenticated = true
