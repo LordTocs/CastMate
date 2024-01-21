@@ -48,6 +48,8 @@ export { default as DashboardStat } from "./components/dashboard/DashboardStat.v
 
 export { default as StreamPlanEditorPage } from "./components/stream-plan/StreamPlanEditorPage.vue"
 
+export { default as VariableNameInput } from "./components/data/base-components/VariableNameInput.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"

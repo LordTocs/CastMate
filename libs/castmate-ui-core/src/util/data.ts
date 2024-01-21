@@ -14,6 +14,7 @@ import {
 	IPCDynamicTypable,
 	DynamicType,
 	Directory,
+	Command,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -55,6 +56,9 @@ import ObjectViewVue from "../components/data/views/ObjectView.vue"
 import RangeViewVue from "../components/data/views/RangeView.vue"
 import ResourceViewVue from "../components/data/views/ResourceView.vue"
 import ToggleViewVue from "../components/data/views/ToggleView.vue"
+
+import CommandInputVue from "../components/data/inputs/CommandInput.vue"
+import CommandViewVue from "../components/data/views/CommandView.vue"
 
 import { ipcRenderer } from "electron"
 import { isObject } from "@vueuse/core"
@@ -225,6 +229,7 @@ export function initData() {
 	inputStore.registerInputComponent(Duration, DurationInputVue)
 	inputStore.registerInputComponent(DynamicType, DynamicTypeInputVue)
 	inputStore.registerInputComponent(Directory, DirectoryInputVue)
+	inputStore.registerInputComponent(Command, CommandInputVue)
 
 	inputStore.registerViewComponent(String, GenericDataViewVue)
 	inputStore.registerViewComponent(Number, GenericDataViewVue)
@@ -235,6 +240,7 @@ export function initData() {
 	inputStore.registerViewComponent(Toggle, ToggleViewVue)
 	inputStore.registerViewComponent(Color, ColorViewVue)
 	inputStore.registerViewComponent(Duration, DurationViewVue)
+	inputStore.registerViewComponent(Command, CommandViewVue)
 }
 
 export function provideDataContextSchema(schema: MaybeRefOrGetter<Schema>) {

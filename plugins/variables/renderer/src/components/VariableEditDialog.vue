@@ -2,13 +2,7 @@
 	<div ref="container" v-if="variableDef" class="variable-edit-dialog">
 		<div class="p-inputgroup var-edit">
 			<span class="p-float-label">
-				<p-input-text
-					id="name"
-					v-model="variableDef.id"
-					ref="nameInput"
-					autofocus
-					:pattern="String(jsNameRegex)"
-				/>
+				<variable-name-input v-model="variableDef.id" />
 				<label for="name"> Variable Name </label>
 			</span>
 		</div>
@@ -41,18 +35,16 @@
 
 <script setup lang="ts">
 import { computed, markRaw, onMounted, ref } from "vue"
-import { useDialogRef, DataInput, provideScrollAttachable } from "castmate-ui-core"
+import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput } from "castmate-ui-core"
 import _cloneDeep from "lodash/cloneDeep"
 
 import PDropdown from "primevue/dropdown"
 
 import { RendererVariableDefinition } from "../variable-store"
-import { getTypeByConstructor, getAllTypes } from "castmate-schema"
+import { getTypeByConstructor, getAllVariableTypes } from "castmate-schema"
 import { getTypeByName } from "castmate-schema"
-import { jsNameRegex } from "castmate-plugin-variables-shared"
 
 import PButton from "primevue/button"
-import PInputText from "primevue/inputtext"
 import PCheckBox from "primevue/checkbox"
 import { MenuItem } from "primevue/menuitem"
 import { constructDefault } from "castmate-schema"
@@ -125,7 +117,7 @@ onMounted(async () => {
 
 //Types dropdown
 const variableTypes = computed(() => {
-	return getAllTypes().map((t) => t.name)
+	return getAllVariableTypes().map((t) => t.name)
 })
 
 const variableTypeOptions = computed<MenuItem[]>(() => {

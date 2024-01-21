@@ -65,6 +65,7 @@ registerType("Number", {
 
 		return undefined
 	},
+	canBeCommandArg: true,
 })
 
 export interface SchemaString extends Enumable<string>, SchemaBase<string> {
@@ -89,6 +90,7 @@ registerType("String", {
 
 		return undefined
 	},
+	canBeCommandArg: true,
 })
 
 export interface SchemaBoolean extends SchemaBase<boolean> {
@@ -392,6 +394,7 @@ export type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor
 export interface DataTypeMetaData<T = any> {
 	constructor: DataConstructorOrFactory<T>
 	canBeVariable?: boolean
+	canBeCommandArg?: boolean
 	expose?: (value: any, schema: Schema) => any
 	unexpose?: (value: any, schema: Schema) => any
 	/**
@@ -408,17 +411,26 @@ export interface DataTypeMetaData<T = any> {
 interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
 	name: string
 	canBeVariable: boolean
+	canBeCommandArg: boolean
 }
 
 export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
 	console.log("Registering Type", name)
-	const fullMetaData = { canBeVariable: true, ...metaData, name }
+	const fullMetaData = { canBeVariable: true, canBeCommandArg: false, ...metaData, name }
 	dataNameLookup.set(name, fullMetaData)
 	dataConstructorLookup.set(metaData.constructor, fullMetaData)
 }
 
 export function getAllTypes() {
 	return [...dataNameLookup.values()]
+}
+
+export function getAllVariableTypes() {
+	return [...dataNameLookup.values()].filter((d) => d.canBeVariable)
+}
+
+export function getAllCommandArgTypes() {
+	return [...dataNameLookup.values()].filter((d) => d.canBeCommandArg)
 }
 
 export function getTypeByName<T = any>(name: string) {

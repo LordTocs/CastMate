@@ -2,7 +2,7 @@ import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
 import { defineTrigger, defineAction, defineTransformTrigger } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
-import { Color, Range } from "castmate-schema"
+import { Color, Command, Range, matchAndParseCommand } from "castmate-schema"
 import { ViewerCache } from "./viewer-cache"
 import { EmoteParsedString, TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
@@ -79,7 +79,12 @@ export function setupChat() {
 		config: {
 			type: Object,
 			properties: {
-				command: { type: String, name: "Command", required: true, default: "" },
+				command: {
+					type: Command,
+					name: "Command",
+					required: true,
+					default: { mode: "command", match: "", arguments: [], hasMessage: false },
+				},
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
@@ -93,9 +98,12 @@ export function setupChat() {
 		},
 		async handle(config, context) {
 			console.log("Handling", config.command, context.message)
-			if (!context.message.toLocaleLowerCase().startsWith(config.command?.toLocaleLowerCase())) {
-				return false
-			}
+
+			const matchResult = await matchAndParseCommand(context.message, config.command)
+
+			if (matchResult == null) return false
+
+			//TODO: Inject matchResult into context??
 
 			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return false
