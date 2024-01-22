@@ -59,7 +59,6 @@ export const StreamInfoManager = Service(
 				PluginManager.getInstance().state
 			)
 
-			console.log(TwitchAccount.channel)
 			if (!TwitchAccount.channel.isAuthenticated) {
 				return
 			}
