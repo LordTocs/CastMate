@@ -17,6 +17,7 @@ import {
 	writeYAML,
 	StreamPlanComponents,
 	defineState,
+	isProbablyFromTemplate,
 } from "castmate-core"
 import { StreamInfo, StreamInfoSchema, TwitchCategory, TwitchViewer } from "castmate-plugin-twitch-shared"
 import { TwitchAccount } from "./twitch-auth"
@@ -92,6 +93,20 @@ export const StreamInfoManager = Service(
 			await writeYAML(this.activeInfo, "twitch", "info-manager.yaml")
 		}
 
+		async reconcileTwitchUpdate(title: string, categoryId: string) {
+			const titleMatches = isProbablyFromTemplate(title, this.activeInfo.title ?? "")
+
+			const updateInfo: StreamInfo = {
+				title: titleMatches ? this.activeInfo.title : title,
+				category: categoryId,
+			}
+			const needsUpdate = !titleMatches || this.activeInfo.category != categoryId
+
+			if (needsUpdate) {
+				await this.setInfo(updateInfo)
+			}
+		}
+
 		get streamInfo() {
 			return this.activeInfo
 		}
@@ -157,12 +172,16 @@ export function setupInfoManager() {
 			const updateCategory = await CategoryCache.getInstance().getCategoryById(event.categoryId)
 
 			category.value = updateCategory
+
+			await StreamInfoManager.getInstance().reconcileTwitchUpdate(event.streamTitle, event.categoryId)
 		})
 
 		const queryResult = await channel.apiClient.channels.getChannelInfoById(channel.twitchId)
 		if (queryResult) {
-			title.value = queryResult?.title
+			title.value = queryResult.title
 			category.value = await CategoryCache.getInstance().getCategoryById(queryResult.gameId)
+
+			await StreamInfoManager.getInstance().reconcileTwitchUpdate(queryResult.title, queryResult.gameId)
 		}
 	})
 }

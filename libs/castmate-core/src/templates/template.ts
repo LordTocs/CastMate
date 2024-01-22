@@ -14,6 +14,7 @@ import {
 	parseTemplateString,
 	trimTemplateJS,
 } from "castmate-schema"
+import escapeRegExp from "lodash/escapeRegExp"
 
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
@@ -52,6 +53,26 @@ export async function template(templateStr: string, data: object) {
 	}
 
 	return result
+}
+
+export function isProbablyFromTemplate(value: string, template: string) {
+	const templateData = parseTemplateString(template)
+
+	let exp = "^"
+
+	for (const region of templateData.regions) {
+		if (region.type == "string") {
+			exp += escapeRegExp(getTemplateRegionString(templateData, region))
+		} else if (region.type == "template") {
+			exp += ".*"
+		}
+	}
+
+	exp += "$"
+
+	const regexp = new RegExp(exp)
+
+	return value.match(regexp) != null
 }
 
 export async function templateNumber(value: string | number, context: object) {
