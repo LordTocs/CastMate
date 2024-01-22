@@ -65,6 +65,11 @@ registerType("Number", {
 
 		return undefined
 	},
+	async fromString(str: string) {
+		const num = Number(str)
+		if (isNaN(num)) return undefined
+		return num
+	},
 	canBeCommandArg: true,
 })
 
@@ -89,6 +94,9 @@ registerType("String", {
 		}
 
 		return undefined
+	},
+	async fromString(value) {
+		return value
 	},
 	canBeCommandArg: true,
 })
@@ -406,6 +414,7 @@ export interface DataTypeMetaData<T = any> {
 	validate?: (value: any, schema: Schema) => string | undefined
 	deserialize?: (value: any, schema: Schema) => Promise<T>
 	serialize?: (value: T, schema: Schema) => any
+	fromString?: (value: string) => Promise<T | undefined>
 }
 
 interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {

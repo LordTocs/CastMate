@@ -1,4 +1,4 @@
-import { IPCSchema, SchemaBase, registerType } from "../schema"
+import { IPCSchema, SchemaBase, getTypeByName, registerType } from "../schema"
 
 export type CommandMode = "command" | "string" | "regex"
 
@@ -92,10 +92,27 @@ function skipWhitespace(str: string, parse: ParseContext) {
 	}
 }
 
-export async function parseArgs(argString: string, command: Command): Promise<Record<string, any> | undefined> {
+function expectWhitespace(str: string, parse: ParseContext) {
+	let count = 0
+
+	if (parse.index >= str.length) return true
+
+	while (parse.index < str.length && isWhitespace(str[parse.index])) {
+		parse.index++
+		count++
+	}
+
+	return count > 0
+}
+
+export async function parseArgs(
+	argString: string,
+	command: Command,
+	parse: ParseContext
+): Promise<Record<string, any> | undefined> {
 	let result: Record<string, any> = {}
 
-	let parse: ParseContext = { index: 0 }
+	console.log(`Parse Args "${argString}"`)
 
 	for (const arg of command.arguments) {
 		skipWhitespace(argString, parse)
@@ -119,6 +136,7 @@ export async function parseArgs(argString: string, command: Command): Promise<Re
 				return undefined
 			}
 			end = parse.index
+			parse.index++ //Step past the closing "
 		} else {
 			//just a word
 			while (parse.index < argString.length && !isWhitespace(argString[parse.index])) {
@@ -131,19 +149,22 @@ export async function parseArgs(argString: string, command: Command): Promise<Re
 
 		if (localString.length == 0) return undefined
 
-		//TODO: Parse from string to type
-		const parseFailed = false
-		if (parseFailed) {
-			return undefined
-		}
+		const dataType = getTypeByName(arg.schema.type)
+		if (!dataType) return undefined
 
-		result[arg.name] = localString
+		const parsed = await dataType?.fromString?.(localString)
+		if (parsed == undefined) return undefined
+
+		result[arg.name] = parsed
 	}
 
 	if (command.hasMessage) {
 		skipWhitespace(argString, parse)
 
+		if (parse.index >= argString.length) return undefined
+
 		result["commandMessage"] = argString.substring(parse.index)
+		parse.index = argString.length
 	}
 
 	return result
@@ -154,9 +175,27 @@ export async function matchAndParseCommand(
 	command: Command
 ): Promise<Record<string, any> | undefined> {
 	if (command.mode == "command") {
-		if (!message || !message.toLocaleLowerCase().startsWith(command.match.toLocaleLowerCase())) return undefined
+		const commandLower = command.match.toLocaleLowerCase()
+		if (!message || !message.toLocaleLowerCase().startsWith(commandLower)) return undefined
 
-		return await parseArgs(message.substring(command.match.length + 1), command)
+		let parse: ParseContext = { index: commandLower.length }
+
+		if (!expectWhitespace(message, parse)) {
+			return undefined
+		}
+
+		const argValues = await parseArgs(message, command, parse)
+
+		if (!argValues) return undefined
+
+		console.log("Arg Values", argValues)
+
+		if (!expectWhitespace(message, parse)) {
+			return undefined
+		}
+		if (parse.index != message.length) return undefined
+
+		return argValues
 	} else if (command.mode == "string") {
 		if (message.toLocaleLowerCase().includes(command.match.toLocaleLowerCase())) {
 			return {}
