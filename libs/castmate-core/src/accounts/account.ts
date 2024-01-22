@@ -3,6 +3,7 @@ import { onLoad, onUnload } from "../plugins/plugin"
 import { Resource, ResourceBase, ResourceConstructor, ResourceStorage } from "../resources/resource"
 import { ResourceRegistry } from "../resources/resource-registry"
 import { EventList } from "../util/events"
+import util, { InspectOptions } from "util"
 
 import { AccountConfig, AccountSecrets, AccountState } from "castmate-schema"
 
@@ -111,7 +112,11 @@ export class Account<
 		return this.state.authenticated
 	}
 
-	readonly onAuthorized = new EventList()
+	readonly onAuthorized = new EventList();
+
+	[util.inspect.custom](depth: number, options: InspectOptions, inspect: (obj: any) => string): string {
+		return `[Account ${this.constructor.name}: ${this.id}]`
+	}
 }
 
 export function onAccountAuth<AccountType extends AccountConstructor>(
