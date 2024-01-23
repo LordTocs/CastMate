@@ -6,10 +6,15 @@
 				:required="!!schema.required"
 				:label="schema.name"
 				text-prop="config.name"
-				:items="filteredResourceItems"
+				:items="sortedResourceItems"
+				:group-prop="resourceStore?.configGroupPath ? 'config.' + resourceStore.configGroupPath : undefined"
 				:no-float="noFloat"
 				v-bind="labelProps"
-			/>
+			>
+				<template #groupHeader="{ item }" v-if="resourceStore?.selectorGroupHeaderComponent">
+					<component :is="resourceStore.selectorGroupHeaderComponent" :item="item" />
+				</template>
+			</c-autocomplete>
 		</label-floater>
 		<p-button
 			class="ml-1"
@@ -58,6 +63,13 @@ const resourceItems = useResourceArray(() => props.schema.resourceType)
 const filteredResourceItems = computed(() => {
 	if (props.schema.filter == null) return resourceItems.value
 	return resourceItems.value.filter((r) => _isMatch(r.config, props.schema.filter as object))
+})
+
+const sortedResourceItems = computed(() => {
+	if (resourceStore.value?.selectSort == null) return filteredResourceItems.value
+
+	const items = [...filteredResourceItems.value]
+	return items.sort(resourceStore.value.selectSort)
 })
 
 const hasDialogs = computed(() => resourceStore.value?.editDialog && resourceStore.value?.createDialog)

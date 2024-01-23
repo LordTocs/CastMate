@@ -11,6 +11,9 @@ import ResourceEditDialogVue from "../components/resources/ResourceEditDialog.vu
 interface ResourceStorage<TResourceData extends ResourceData = ResourceData> {
 	resources: Map<string, TResourceData>
 	selectorItemComponent?: Component
+	configGroupPath?: string
+	selectorGroupHeaderComponent?: Component
+	selectSort?: (a: TResourceData, b: TResourceData) => number
 	viewComponent?: Component
 	settingComponent?: Component
 	createDialog?: Component
@@ -146,6 +149,21 @@ export const useResourceStore = defineStore("resources", () => {
 		resource.stateSchema = markRaw(schema)
 	}
 
+	function groupResourceItems(resourceType: string, configPath: string, groupHeader?: Component) {
+		const resource = resourceMap.value.get(resourceType)
+		if (!resource) return
+
+		resource.configGroupPath = configPath
+		resource.selectorGroupHeaderComponent = groupHeader
+	}
+
+	function sortResourceItems<T extends ResourceData>(resourceType: string, sortFunc: (a: T, b: T) => number) {
+		const resource = resourceMap.value.get(resourceType)
+		if (!resource) return
+
+		resource.selectSort = sortFunc as (a: ResourceData, b: ResourceData) => number
+	}
+
 	return {
 		resourceMap,
 		initialize,
@@ -158,6 +176,8 @@ export const useResourceStore = defineStore("resources", () => {
 		registerCreateComponent,
 		registerConfigSchema,
 		registerStateSchema,
+		groupResourceItems,
+		sortResourceItems,
 	}
 })
 

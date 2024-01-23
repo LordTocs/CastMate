@@ -10,12 +10,17 @@ import {
 	useProjectStore,
 	useResourceStore,
 } from "castmate-ui-core"
-import { TwitchViewer, TwitchViewerGroup, TwitchCategory } from "castmate-plugin-twitch-shared"
+import {
+	TwitchViewer,
+	TwitchViewerGroup,
+	TwitchCategory,
+	ChannelPointRewardConfig,
+} from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupInput from "./components/TwitchViewerGroupInput.vue"
 import { computed, App } from "vue"
 import ChannelPointsEditPageVue from "./components/channel-points/ChannelPointsEditPage.vue"
 import TwitchAccountSettingsVue from "./components/account/TwitchAccountSettings.vue"
-import { Color, Duration } from "castmate-schema"
+import { Color, Duration, ResourceData } from "castmate-schema"
 import TwitchViewerInputVue from "./components/viewer/TwitchViewerInput.vue"
 import GroupPageVue from "./components/groups/GroupPage.vue"
 import TwitchCategoryInputVue from "./components/category/TwitchCategoryInput.vue"
@@ -23,6 +28,7 @@ import { useCategoryStore } from "./util/category"
 import StreamInfoPlanComponentVue from "./components/stream-info/StreamInfoPlanComponent.vue"
 import TwitchCategoryViewVue from "./components/category/TwitchCategoryView.vue"
 import TwitchViewerViewVue from "./components/viewer/TwitchViewerView.vue"
+import ChannelPointGroupHeaderVue from "./components/channel-points/ChannelPointGroupHeader.vue"
 
 export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
 
@@ -62,6 +68,13 @@ export async function initPlugin(app: App<Element>) {
 	})
 	resourceStore.registerEditComponent("ChannelPointReward", ResourceSchemaEdit)
 	resourceStore.registerCreateComponent("ChannelPointReward", ResourceSchemaEdit)
+
+	resourceStore.groupResourceItems("ChannelPointReward", "controllable", ChannelPointGroupHeaderVue)
+	resourceStore.sortResourceItems<ResourceData<ChannelPointRewardConfig>>("ChannelPointReward", (a, b) => {
+		if (a.config.controllable == b.config.controllable) return 0
+		if (a.config.controllable) return -1
+		return 1
+	})
 
 	const projectStore = useProjectStore()
 	const dockingStore = useDockingStore()
