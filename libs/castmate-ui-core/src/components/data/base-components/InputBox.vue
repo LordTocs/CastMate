@@ -18,7 +18,7 @@
 			@focus="$emit('focus', $event)"
 			@blur="$emit('blur', $event)"
 		>
-			<slot v-if="model != null"> {{ model }} </slot>
+			<slot v-if="model != null && model !== ''"> {{ model }} </slot>
 			<span v-else-if="placeholder"> {{ placeholder }}</span>
 			<span v-else>&nbsp;</span>
 		</div>
