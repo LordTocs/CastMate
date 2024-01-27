@@ -144,7 +144,7 @@ export function setupInfoManager() {
 			type: Object,
 			properties: {
 				title: { type: String, name: "Title", template: true },
-				category: { type: TwitchCategory, name: "Category" },
+				category: { type: TwitchCategory, name: "Category", template: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {

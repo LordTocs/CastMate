@@ -7,31 +7,44 @@
 			}"
 		>
 			<label-floater :no-float="noFloat" :label="schema.name" input-id="twitch-viewer" v-slot="labelProps">
-				<input-box
-					:model="model"
-					:focused="focused"
-					v-if="!focused"
-					@focus="onFocus"
-					:tab-index="-1"
+				<template-toggle
+					v-model="model"
+					:template-mode="templateMode"
 					v-bind="labelProps"
+					v-slot="templateProps"
 				>
-					<template v-if="selectedDisplayData">
-						<span class="flex flex-row align-items-center">
-							<img class="box-art" :src="selectedDisplayData.image" />
-							<span> {{ selectedDisplayData.name }}</span>
-						</span>
-					</template>
-				</input-box>
-				<p-input-text
-					v-else
-					@blur="onBlur"
-					class="p-dropdown-label"
-					ref="filterInputElement"
-					v-model="queryValue"
-					@keydown="onFilterKeyDown"
-					v-bind="labelProps"
-				/>
+					<input-box
+						:model="model"
+						:focused="focused"
+						v-if="!focused"
+						@focus="onFocus"
+						:tab-index="-1"
+						v-bind="templateProps"
+					>
+						<template v-if="selectedDisplayData">
+							<span class="flex flex-row align-items-center">
+								<img class="box-art" :src="selectedDisplayData.image" />
+								<span> {{ selectedDisplayData.name }}</span>
+							</span>
+						</template>
+					</input-box>
+					<p-input-text
+						v-else
+						@blur="onBlur"
+						class="p-dropdown-label"
+						ref="filterInputElement"
+						v-model="queryValue"
+						@keydown="onFilterKeyDown"
+						v-bind="labelProps"
+					/>
+				</template-toggle>
 			</label-floater>
+			<p-button
+				v-if="canTemplate"
+				class="flex-none"
+				icon="mdi mdi-code-braces"
+				@click="templateMode = !templateMode"
+			/>
 		</div>
 		<autocomplete-drop-list
 			ref="dropDown"
@@ -62,13 +75,15 @@
 
 <script setup lang="ts">
 import PInputText from "primevue/inputtext"
+import PButton from "primevue/button"
+
 import {
 	SchemaTwitchCategory,
 	TwitchCategory,
 	TwitchCategoryUnresolved,
 	TwitchCategoryData,
 } from "castmate-plugin-twitch-shared"
-import { SharedDataInputProps, AutocompleteDropList, InputBox, LabelFloater } from "castmate-ui-core"
+import { SharedDataInputProps, AutocompleteDropList, InputBox, LabelFloater, TemplateToggle } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
 import { useCategoryStore } from "../../util/category"
 import _debounce from "lodash/debounce"
@@ -86,6 +101,9 @@ const model = useModel(props, "modelValue")
 const container = ref<HTMLElement>()
 const filterInputElement = ref<{ $el: HTMLElement } | null>(null)
 const dropDown = ref<InstanceType<typeof AutocompleteDropList>>()
+
+const templateMode = ref(false)
+const canTemplate = computed(() => !!props.schema?.template)
 
 const categoryStore = useCategoryStore()
 

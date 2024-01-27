@@ -27,6 +27,7 @@ export const TwitchCategory: TwitchCategoryFactory = {
 
 export interface SchemaTwitchCategory extends SchemaBase<TwitchCategory> {
 	type: TwitchCategoryFactory
+	template?: boolean
 }
 
 registerType("TwitchCategory", {
