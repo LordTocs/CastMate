@@ -48,6 +48,7 @@ type TwitchViewerFactory = typeof TwitchViewer
 
 export interface SchemaTwitchViewer extends SchemaBase<TwitchViewerUnresolved> {
 	type: TwitchViewerFactory
+	template?: boolean
 }
 
 declare module "castmate-schema" {

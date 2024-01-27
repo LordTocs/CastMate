@@ -6,7 +6,9 @@ import {
 	onLoad,
 	reactiveRef,
 	registerSchemaExpose,
+	registerSchemaTemplate,
 	registerSchemaUnexpose,
+	template,
 } from "castmate-core"
 import { Color, getTypeByConstructor } from "castmate-schema"
 import { TwitchAccount } from "./twitch-auth"
@@ -21,6 +23,7 @@ import { rawDataSymbol } from "@twurple/common"
 import fuzzysort from "fuzzysort"
 import { defineCallableIPC } from "castmate-core/src/util/electron"
 import {
+	SchemaTwitchViewer,
 	TwitchViewer,
 	TwitchViewerData,
 	TwitchViewerDisplayData,
@@ -115,6 +118,32 @@ registerSchemaExpose(TwitchViewer, async (value: TwitchViewerUnresolved) => {
 registerSchemaUnexpose(TwitchViewer, async (value: TwitchViewer) => {
 	return value?.id
 })
+
+registerSchemaTemplate(
+	"TwitchViewer",
+	async (value: TwitchViewerUnresolved, context: any, schema: SchemaTwitchViewer) => {
+		if (isDefinitelyNotTwitchId(value)) {
+			console.log("Templating Viewer", value)
+			//We know this is a template string, so template the value to a name and then get the userId from it
+			const resultName = await template(value, context)
+			console.log("Template Result", resultName)
+			return await ViewerCache.getInstance().getUserId(resultName)
+		}
+
+		if (await ViewerCache.getInstance().validateUserId(value)) {
+			return value
+		} else {
+			return await ViewerCache.getInstance().getUserId(value)
+		}
+	}
+)
+
+//Twitch IDs only contain numbers, so if it has any non-number it must be a username.
+//BUT a twitch username CAN be only numbers. So we can't write an isTwitchId() without running an API query
+function isDefinitelyNotTwitchId(maybeId: string) {
+	const nonDigits = /\D/g
+	return maybeId.match(nonDigits) != null
+}
 
 export const ViewerCache = Service(
 	class {
@@ -607,6 +636,16 @@ export const ViewerCache = Service(
 				color: u.color as Color,
 				profilePicture: u.profilePicture as string,
 			}))
+		}
+
+		async validateUserId(userId: string) {
+			const cached = this._viewerLookup.get(userId)
+			if (cached) return true
+
+			await this.queryUserInfo(userId)
+
+			const cached2 = this._viewerLookup.get(userId)
+			return cached2 != null
 		}
 
 		async getDisplayName(userId: string) {

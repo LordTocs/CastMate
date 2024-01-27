@@ -100,7 +100,7 @@ export function setupViewerGroups() {
 			type: Object,
 			properties: {
 				group: { type: CustomTwitchViewerGroup, name: "Group", required: true },
-				viewer: { type: TwitchViewer, name: "Viewer", required: true },
+				viewer: { type: TwitchViewer, name: "Viewer", required: true, template: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
@@ -116,7 +116,7 @@ export function setupViewerGroups() {
 			type: Object,
 			properties: {
 				group: { type: CustomTwitchViewerGroup, name: "Group", required: true },
-				viewer: { type: TwitchViewer, name: "Viewer", required: true },
+				viewer: { type: TwitchViewer, name: "Viewer", required: true, template: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {

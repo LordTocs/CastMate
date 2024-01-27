@@ -23,7 +23,7 @@ export function setupModeration() {
 		config: {
 			type: Object,
 			properties: {
-				viewer: { type: TwitchViewer, name: "Viewer", required: true },
+				viewer: { type: TwitchViewer, name: "Viewer", required: true, template: true },
 				duration: { type: Duration, name: "Duration", required: true, template: true },
 				reason: { type: String, name: "Reason", template: true },
 			},
@@ -44,7 +44,7 @@ export function setupModeration() {
 		config: {
 			type: Object,
 			properties: {
-				viewer: { type: TwitchViewer, name: "Viewer", required: true },
+				viewer: { type: TwitchViewer, name: "Viewer", required: true, template: true },
 				reason: { type: String, name: "Reason", template: true },
 			},
 		},
@@ -63,7 +63,7 @@ export function setupModeration() {
 		config: {
 			type: Object,
 			properties: {
-				viewer: { type: TwitchViewer, name: "Viewer", required: true },
+				viewer: { type: TwitchViewer, name: "Viewer", required: true, template: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {

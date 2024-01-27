@@ -143,7 +143,7 @@ export function setupChat() {
 		config: {
 			type: Object,
 			properties: {
-				streamer: { type: TwitchViewer, name: "Streamer", required: true },
+				streamer: { type: TwitchViewer, name: "Streamer", required: true, template: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
