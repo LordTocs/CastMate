@@ -3,7 +3,7 @@
 		<slot :placeholder="undefined" :input-id="inputId"> </slot>
 		<label :for="inputId"> <i v-if="icon" :class="icon" /> {{ label }}</label>
 	</span>
-	<slot v-else :placeholder="label" :input-id="inputId"> </slot>
+	<slot v-else :placeholder="label" :input-id="inputId" v-bind="$attrs"> </slot>
 </template>
 
 <script setup lang="ts">

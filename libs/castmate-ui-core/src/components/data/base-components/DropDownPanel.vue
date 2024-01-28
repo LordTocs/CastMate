@@ -27,6 +27,10 @@ import { usePrimeVue } from "primevue/config"
 import { injectScrollAttachable, positionPortal, stopPropagation } from "../../../main"
 import { useEventListener, useResizeObserver } from "@vueuse/core"
 
+defineOptions({
+	inheritAttrs: false,
+})
+
 const props = defineProps<{
 	modelValue: boolean
 	container: HTMLElement | undefined | null
