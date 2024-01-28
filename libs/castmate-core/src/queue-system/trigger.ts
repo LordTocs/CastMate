@@ -1,11 +1,13 @@
-import { Color, ExposedSchemaType, ResolvedSchemaType } from "castmate-schema"
+import { Color, ExposedSchemaType, ResolvedSchemaType, TriggerData } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin"
 import {
 	deserializeSchema,
 	exposeSchema,
+	ipcConvertDynamicSchema,
 	ipcConvertSchema,
+	ipcRegisterDynamicSchema,
 	ipcRegisterSchema,
 	serializeSchema,
 } from "../util/ipc-schema"
@@ -13,6 +15,8 @@ import { IPCTriggerDefinition } from "castmate-schema"
 import { ProfileManager } from "../profile/profile-system"
 import { ActionQueue } from "./action-queue"
 import { SequenceRunner } from "./sequence"
+import { isFunction } from "lodash"
+import { Profile } from "../profile/profile"
 
 interface TriggerMetaData {
 	id: string
@@ -29,13 +33,15 @@ interface TriggerDefinitionSpec<ConfigSchema extends Schema, ContextDataSchema e
 	handle(config: SchemaType<ConfigSchema>, context: SchemaType<ContextDataSchema>): Promise<boolean>
 }
 
+//A transform trigger is a trigger that outputs a different context schema than it is triggered on.
+//
 interface TransformTriggerDefinitionSpec<
 	ConfigSchema extends Schema,
 	ContextDataSchema extends Schema,
 	InvokeContextDataSchema extends Schema
 > extends TriggerMetaData {
 	config: ConfigSchema
-	context: ContextDataSchema
+	context: ContextDataSchema | ((config: SchemaType<ConfigSchema>) => Promise<ContextDataSchema>)
 	invokeContext: InvokeContextDataSchema
 	handle(
 		config: SchemaType<ConfigSchema>,
@@ -51,7 +57,7 @@ export interface TriggerDefinition {
 	readonly color: Color
 	readonly version: string
 	readonly config: Schema
-	readonly context: Schema
+	//readonly context: Schema
 
 	trigger(context: any): Promise<boolean>
 	registerIPC(path: string): any
@@ -123,55 +129,79 @@ class TriggerImplementation<
 		return "invokeContext" in this.spec
 	}
 
+	private async getContextSchema(configData: SchemaType<ConfigSchema>) {
+		if (isFunction(this.spec.context)) {
+			return await this.spec.context(configData)
+		} else {
+			return this.spec.context
+		}
+	}
+
+	private async triggerForData(
+		context: ResolvedSchemaType<InvokeContextDataSchema>,
+		profile: Profile,
+		trigger: TriggerData<SchemaType<ConfigSchema>>
+	) {
+		//First Deserialize the config for the trigger stored in the profile.
+		const configValue = await deserializeSchema(this.config, trigger.config)
+
+		//Invoke the handle function to determine if this trigger matches
+		//Store our resolved config, if this is a "transform" trigger we will receive a final context to use as a return value
+		let resolvedContext: ResolvedSchemaType<ContextDataSchema> | undefined
+		if (isTransformSpec(this.spec)) {
+			const invokeResult = await this.spec.handle(configValue, context)
+			if (invokeResult != undefined) {
+				resolvedContext = invokeResult
+			}
+		} else {
+			if (await this.spec.handle(configValue, context)) {
+				resolvedContext = context as ResolvedSchemaType<ContextDataSchema> //Type system too stupid
+			}
+		}
+
+		//The handle function indicated this trigger isn't a match, so don't do anything
+		if (resolvedContext == null) return false
+
+		//Get the context our resolved data is using
+		const resolvedContextSchema = await this.getContextSchema(configValue)
+
+		if (trigger.queue) {
+			const queue = ActionQueue.storage.getById(trigger.queue)
+			if (!queue) {
+				console.error("Missing Queue!", queue)
+				return false
+			}
+
+			console.log("Running On Queue", queue.config.name)
+
+			queue.enqueue(
+				{ type: "profile", id: profile.id, subid: trigger.id },
+				serializeSchema(resolvedContextSchema, resolvedContext) as Record<string, any>
+			)
+		} else {
+			let finalContext = await exposeSchema(resolvedContextSchema, resolvedContext)
+
+			const runner = new SequenceRunner(trigger.sequence, {
+				//@ts-ignore //Todo some sort of schema object restriction?
+				contextState: finalContext,
+			})
+			runner.run()
+		}
+
+		return true
+	}
+
 	async trigger(context: ResolvedSchemaType<InvokeContextDataSchema>) {
 		const activeProfiles = ProfileManager.getInstance().activeProfiles
 		let triggered = false
 		//Check all the active profiles to see if they have any triggers of this type
+
 		for (const profile of activeProfiles) {
 			for (const trigger of profile.config.triggers) {
 				if (trigger.plugin != this.pluginId || trigger.trigger != this.id) continue
 
-				let resolvedContext: ResolvedSchemaType<ContextDataSchema> | undefined
-
-				const configValue = await deserializeSchema(this.config, trigger.config)
-				if (isTransformSpec(this.spec)) {
-					const invokeResult = await this.spec.handle(configValue, context)
-					if (invokeResult != undefined) {
-						resolvedContext = invokeResult
-					}
-				} else {
-					if (await this.spec.handle(configValue, context)) {
-						resolvedContext = context as ResolvedSchemaType<ContextDataSchema> //Type system too stupid
-					}
-				}
-
-				if (resolvedContext != null) {
-					//If spec.handle returns true then this sequence should run
+				if (await this.triggerForData(context, profile, trigger)) {
 					triggered = true
-					if (trigger.queue) {
-						const queue = ActionQueue.storage.getById(trigger.queue)
-						if (!queue) {
-							//ERROR!
-							console.error("Missing Queue!", queue)
-							continue
-						}
-
-						console.log("Running On Queue", queue.config.name)
-
-						queue.enqueue(
-							{ type: "profile", id: profile.id, subid: trigger.id },
-							serializeSchema(this.context, resolvedContext) as Record<string, any>
-						)
-					} else {
-						let finalContext = await exposeSchema(this.context, resolvedContext)
-
-						//This
-						const runner = new SequenceRunner(trigger.sequence, {
-							//@ts-ignore //Todo some sort of schema object restriction?
-							contextState: finalContext,
-						})
-						runner.run()
-					}
 				}
 			}
 		}
@@ -181,7 +211,7 @@ class TriggerImplementation<
 
 	registerIPC(path: string) {
 		ipcRegisterSchema(this.spec.config, `${path}_config`)
-		ipcRegisterSchema(this.spec.context, `${path}_context`)
+		ipcRegisterDynamicSchema(this.spec.context, `${path}_context`)
 	}
 
 	toIPC(path: string): IPCTriggerDefinition {
@@ -193,7 +223,7 @@ class TriggerImplementation<
 			color: this.color,
 			version: this.version,
 			config: ipcConvertSchema(this.spec.config, `${path}_config`),
-			context: ipcConvertSchema(this.spec.context, `${path}_context`),
+			context: ipcConvertDynamicSchema(this.spec.context, `${path}_context`),
 		}
 
 		//console.log(triggerDef.config)

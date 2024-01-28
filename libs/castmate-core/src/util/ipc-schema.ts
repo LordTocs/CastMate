@@ -121,6 +121,18 @@ export function ipcRegisterSchema<T extends Schema>(schema: T, path: string, top
 	}
 }
 
+export function ipcRegisterDynamicSchema<T extends Schema>(schema: T | ((...args: any[]) => Promise<T>), path: string) {
+	if (isFunction(schema)) {
+		console.log("Registering", `${path}_dynamic`)
+		ipcMain.handle(`${path}_dynamic`, async (event, ...args: any[]) => {
+			const finalSchema = await schema(...args)
+			return ipcConvertSchema(finalSchema, `${path}`)
+		})
+	} else {
+		ipcRegisterSchema(schema, path)
+	}
+}
+
 /**
  * Converts a Schema to it's IPC compatible IPCSchema
  * @param schema
@@ -165,6 +177,14 @@ export function ipcConvertSchema<T extends Schema>(schema: T, path: string): IPC
 			...convertIPCDynamic(schema as PossiblyDynamic, path),
 			type: typeName,
 		}
+	}
+}
+
+export function ipcConvertDynamicSchema<T extends Schema>(schema: T | ((...args: any[]) => Promise<T>), path: string) {
+	if (isFunction(schema)) {
+		return `${path}_dynamic`
+	} else {
+		return ipcConvertSchema(schema, path)
 	}
 }
 

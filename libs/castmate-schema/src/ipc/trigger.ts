@@ -10,5 +10,5 @@ export interface IPCTriggerDefinition {
 	readonly version: string
 
 	readonly config: IPCSchema
-	readonly context: IPCSchema
+	readonly context: IPCSchema | string
 }

@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, ref, useModel } from "vue"
+import { computed, markRaw, ref, useModel, onMounted, watch } from "vue"
 import PButton from "primevue/button"
 import { type TriggerData, Color } from "castmate-schema"
 import {
@@ -76,7 +76,10 @@ import {
 	DocumentPath,
 	SequenceMiniPreview,
 } from "castmate-ui-core"
-import { useVModel } from "@vueuse/core"
+import isFunction from "lodash/isFunction"
+import { useVModel, asyncComputed } from "@vueuse/core"
+import { Schema } from "castmate-schema"
+import _debounce from "lodash/debounce"
 
 const props = withDefaults(
 	defineProps<{
@@ -137,7 +140,40 @@ const triggerModel = computed({
 
 const trigger = useTrigger(() => props.modelValue)
 
-provideDataContextSchema(() => trigger.value?.context || markRaw({ type: Object, properties: {} }))
+const context = ref<Schema>({ type: markRaw(Object), properties: {} })
+
+async function fetchContext() {
+	if (trigger.value == null) {
+		context.value = { type: markRaw(Object), properties: {} }
+		return
+	}
+
+	if (isFunction(trigger.value.context)) {
+		const schema = await trigger.value.context(props.modelValue.config)
+		context.value = schema
+	} else {
+		context.value = trigger.value.context
+	}
+}
+const fetchContextDebounced = _debounce(fetchContext, 400)
+
+onMounted(() => {
+	watch(
+		() => {
+			return {
+				config: props.modelValue.config,
+				trigger: props.modelValue.trigger,
+				plugin: props.modelValue.plugin,
+			}
+		},
+		() => {
+			fetchContextDebounced()
+		},
+		{ immediate: true, deep: true }
+	)
+})
+
+provideDataContextSchema(context)
 
 const { triggerColorStyle, triggerColor } = useTriggerColors(() => props.modelValue)
 

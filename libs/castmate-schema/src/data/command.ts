@@ -1,4 +1,4 @@
-import { IPCSchema, SchemaBase, getTypeByName, registerType } from "../schema"
+import { IPCSchema, Schema, SchemaBase, SchemaObj, getTypeByName, registerType } from "../schema"
 
 export type CommandMode = "command" | "string" | "regex"
 
@@ -211,4 +211,45 @@ export async function matchAndParseCommand(
 	}
 
 	throw new Error(`Unknown Command Mode ${command.mode}`)
+}
+
+export function getCommandDataSchema(command: Command): SchemaObj {
+	if (command.mode == "string") return { type: Object, properties: {} }
+	if (command.mode == "regex") {
+		return {
+			type: Object,
+			properties: {
+				matches: { type: Array, items: { type: String, required: true }, required: true },
+			},
+		}
+	}
+	if (command.mode == "command") {
+		const result: SchemaObj = {
+			type: Object,
+			properties: {},
+		}
+
+		for (const arg of command.arguments) {
+			const type = getTypeByName(arg.schema.type)
+
+			if (!type) continue
+
+			result.properties[arg.name] = {
+				...arg.schema,
+				type: type?.constructor,
+				required: true,
+			} as unknown as Schema
+		}
+
+		if (command.hasMessage) {
+			result.properties.commandMessage = {
+				type: String,
+				required: true,
+			}
+		}
+
+		return result
+	}
+
+	throw new Error(`Unknown Command Mode: ${command.mode}`)
 }

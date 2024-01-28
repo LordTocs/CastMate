@@ -63,6 +63,7 @@ import CommandViewVue from "../components/data/views/CommandView.vue"
 import { ipcRenderer } from "electron"
 import { isObject } from "@vueuse/core"
 import _cloneDeep from "lodash/cloneDeep"
+import { ipcInvoke } from "./electron"
 
 export type ResourceProxy = string
 export const ResourceProxyFactory = {
@@ -176,6 +177,19 @@ export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
 			...ipcParseSchemaDynamic(ipcSchema as IPCDynamicTypable),
 			type,
 		}
+	}
+}
+
+export function ipcParseDynamicSchema(ipcSchema: IPCSchema | string): Schema | ((...args: any[]) => Promise<Schema>) {
+	if (typeof ipcSchema == "string") {
+		return markRaw(async (...args: any[]) => {
+			console.log("Invoking", ipcSchema)
+			const schema = await ipcInvoke(ipcSchema, ...args)
+			console.log("Result", schema)
+			return ipcParseSchema(schema)
+		})
+	} else {
+		return ipcParseSchema(ipcSchema)
 	}
 }
 

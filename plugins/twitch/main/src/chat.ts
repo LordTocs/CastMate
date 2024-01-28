@@ -2,7 +2,7 @@ import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
 import { defineTrigger, defineAction, defineTransformTrigger } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
-import { Color, Command, Range, matchAndParseCommand } from "castmate-schema"
+import { Color, Command, Range, getCommandDataSchema, matchAndParseCommand } from "castmate-schema"
 import { ViewerCache } from "./viewer-cache"
 import { EmoteParsedString, TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
@@ -71,7 +71,7 @@ export function setupChat() {
 		},
 	})
 
-	const chat = defineTrigger({
+	const chat = defineTransformTrigger({
 		id: "chat",
 		name: "Chat Command",
 		icon: "mdi mdi-chat",
@@ -88,7 +88,7 @@ export function setupChat() {
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
-		context: {
+		invokeContext: {
 			type: Object,
 			properties: {
 				viewer: { type: TwitchViewer, required: true, default: "27082158", name: "Viewer" },
@@ -96,20 +96,32 @@ export function setupChat() {
 				messageId: { type: String, required: true, default: "1234" },
 			},
 		},
+		async context(config) {
+			return {
+				type: Object,
+				properties: {
+					viewer: { type: TwitchViewer, required: true, default: "27082158", name: "Viewer" },
+					message: { type: String, required: true, default: "Thanks for using CastMate!" },
+					messageId: { type: String, required: true, default: "1234" },
+					...getCommandDataSchema(config.command).properties,
+				},
+			}
+		},
 		async handle(config, context) {
 			console.log("Handling", config.command, context.message)
 
 			const matchResult = await matchAndParseCommand(context.message, config.command)
 
-			if (matchResult == null) return false
-
-			//TODO: Inject matchResult into context??
+			if (matchResult == null) return undefined
 
 			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
-				return false
+				return undefined
 			}
 
-			return true
+			return {
+				...context,
+				...matchResult,
+			}
 		},
 	})
 

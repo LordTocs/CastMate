@@ -22,7 +22,7 @@ import { computed, ref, unref, type MaybeRefOrGetter, toValue, Component, markRa
 
 import * as chromatism from "chromatism2"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
-import { ipcParseSchema } from "../util/data"
+import { ipcParseDynamicSchema, ipcParseSchema } from "../util/data"
 import { nanoid } from "nanoid/non-secure"
 
 interface BaseActionDefinition {
@@ -85,11 +85,11 @@ interface TriggerDefinition {
 	readonly color: Color
 	readonly version: string
 	config: Schema
-	context: Schema
+	context: Schema | ((config: any) => Promise<Schema>)
 }
 
 function ipcParseTriggerDefinition(def: IPCTriggerDefinition): TriggerDefinition {
-	const triggerDef = {
+	const triggerDef: TriggerDefinition = {
 		id: def.id,
 		name: def.name,
 		description: def.description,
@@ -97,7 +97,7 @@ function ipcParseTriggerDefinition(def: IPCTriggerDefinition): TriggerDefinition
 		color: def.color,
 		version: def.version,
 		config: ipcParseSchema(def.config),
-		context: ipcParseSchema(def.context),
+		context: ipcParseDynamicSchema(def.context),
 	}
 
 	return triggerDef
