@@ -13,7 +13,7 @@ import ActionMiniIcon from "./ActionMiniIcon.vue"
 const props = withDefaults(
 	defineProps<{
 		sequence: Sequence | undefined
-		maxLength: number
+		maxLength?: number
 	}>(),
 	{ maxLength: 10 }
 )
