@@ -34,7 +34,6 @@ import { createPinia } from "pinia"
 import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import AutomationEditPageVue from "./components/automation/AutomationEditPage.vue"
 import { initData, StreamPlanEditorPage } from "castmate-ui-core"
-import { createRouter, createWebHistory } from "vue-router"
 
 import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
 import { initPlugin as initVariablesPlugin } from "castmate-plugin-variables-renderer"
@@ -56,14 +55,17 @@ import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
 import Tooltip from "primevue/tooltip"
 
+/*
 const router = createRouter({
 	history: createWebHistory(),
 	routes: [],
-})
+})*/
 
 const pinia = createPinia()
 const app = createApp(App)
 
+//DialogService.install?.(app)
+console.log("Dialog service inited")
 app.use(PrimeVue)
 app.use(DialogService)
 app.use(ConfirmationService)
@@ -71,7 +73,7 @@ app.use(ConfirmationService)
 app.directive("tooltip", Tooltip)
 //app.use(Maska)
 
-app.use(router)
+//app.use(router)
 app.use(pinia)
 
 const initStore = useInitStore()

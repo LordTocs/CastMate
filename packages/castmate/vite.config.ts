@@ -60,6 +60,9 @@ export default defineConfig({
 				//updater: resolve(dirname, "updater.html"),
 			},
 			//external: ["fluent-ffmpeg"],
+			manualChunks: {
+				primevueConfirm: ["primevue/useconfirm", "primevue/confirmationservice"],
+			},
 		},
 	},
 })

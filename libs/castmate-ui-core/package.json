@@ -1,31 +1,31 @@
 {
-  "name": "castmate-ui-core",
-  "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "main": "src/main.ts",
-  "devMain": "src/main.ts",
-  "types": "./dist/types/main.d.ts",
-  "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@vueuse/core": "*",
-    "castmate-schema": "workspace:^",
-    "chromatism2": "*",
-    "electron": "*",
-    "nanoid": "*",
-    "pinia": "*",
-    "primevue": "*",
-    "vue": "*"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "*",
-    "ts-toolbelt": "*",
-    "typescript": "*",
-    "vite": "*",
-    "vue-tsc": "*"
-  }
+	"name": "castmate-ui-core",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"types": "./dist/types/main.d.ts",
+	"scripts": {
+		"dev": "vite",
+		"build": "vue-tsc && vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@vueuse/core": "*",
+		"castmate-schema": "workspace:^",
+		"chromatism2": "*",
+		"electron": "*",
+		"nanoid": "*",
+		"pinia": "*",
+		"primevue": "^3.47.2",
+		"vue": "*"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "*",
+		"ts-toolbelt": "*",
+		"typescript": "*",
+		"vite": "*",
+		"vue-tsc": "*"
+	}
 }
