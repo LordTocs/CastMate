@@ -101,11 +101,11 @@ export const useResourceStore = defineStore("resources", () => {
 			const storage = resourceMap.value.get(type)
 
 			if (!storage) {
-				throw new Error("Resource type doesn't exist")
+				return
 			}
 
 			if (!storage.resources.has(data.id)) {
-				throw new Error("Resource doesn't exist")
+				return
 			}
 
 			storage.resources.set(data.id, data)
