@@ -42,6 +42,7 @@ export interface SchemaNumber extends Enumable<number>, SchemaBase<number> {
 	template?: boolean
 }
 
+export type TemplateNumber = number | string
 registerType("Number", {
 	constructor: Number,
 	validate(value: number | string | undefined, schema: SchemaNumber) {
@@ -152,6 +153,10 @@ type SchemaTypes = SchemaTypeUnion[0]
 
 export type Schema = SchemaTypes | SchemaObj | SchemaArray | SchemaResource
 
+export type SchemaTypeByConstructor<T extends DataConstructorOrFactory> = Extract<
+	SchemaTypeUnion,
+	T extends infer ConstructorOrFactory ? [{ type: ConstructorOrFactory }, any] : [never, any]
+>[0]
 //Extracts the type for a Schema out of SchemaTypeMap
 type SchemaPropType<T extends Schema> = Extract<
 	SchemaTypeUnion,
@@ -170,11 +175,11 @@ type SchemaApplyRequired<SchemaT extends Schema, T> = SchemaT["required"] extend
 interface MaybeTemplated {
 	template?: boolean
 }
-type SchemaApplyTemplate<SchemaT extends Schema, T> = SchemaT extends MaybeTemplated
+type SchemaApplyTemplate<SchemaT extends Schema> = SchemaT extends MaybeTemplated
 	? SchemaT["template"] extends true
-		? T | string
-		: T
-	: T
+		? TemplateSchemaPropType<SchemaT>
+		: SchemaPropType<SchemaT>
+	: SchemaPropType<SchemaT>
 
 //Converts a schema into the type it will be at runtime
 export type SchemaType<T extends Schema> = T extends SchemaObj
@@ -185,7 +190,7 @@ export type SchemaType<T extends Schema> = T extends SchemaObj
 				? SchemaArrayType<T>
 				: T extends SchemaResource
 				? SchemaResourceType<T>
-				: SchemaApplyTemplate<T, SchemaPropType<T>>
+				: SchemaApplyTemplate<T>
 	  >
 
 ///////////////////////////////Resolved Schema Types////////////////////////////////////////////
@@ -208,6 +213,37 @@ export type ResolvedSchemaType<T extends Schema> = T extends SchemaObj
 				? SchemaResourceType<T>
 				: SchemaPropType<T>
 	  >
+
+export type ResolvedTypeByConstructor<T extends DataConstructorOrFactory> = Fallback<
+	Extract<
+		SchemaTypeUnion,
+		T extends infer ConstructorOrFactory ? [{ type: ConstructorOrFactory }, any] : [never, any]
+	>[1],
+	any
+>
+
+/////////////////////////////// Template type Map ///////////////////////////////////////////////
+export interface TemplateSchemaTypeMap {
+	dummy: [Dummy, Dummy]
+}
+
+export type TemplateSchemaTypeUnion = MapToUnion<TemplateSchemaTypeMap>
+
+export type TemplateSchemaPropType<T extends Schema> = Fallback<
+	Extract<
+		TemplateSchemaTypeUnion,
+		T extends { type: infer ConstructorOrFactory } ? [{ type: ConstructorOrFactory }, any] : [never, any]
+	>[1],
+	SchemaPropType<T> | string
+>
+
+export type TemplateTypeByConstructor<T extends DataConstructorOrFactory> = Fallback<
+	Extract<
+		TemplateSchemaTypeUnion,
+		T extends infer ConstructorOrFactory ? [{ type: ConstructorOrFactory }, any] : [never, any]
+	>[1],
+	ResolvedTypeByConstructor<T> | string
+>
 
 ///////////////////////////////Exposed Schema Types////////////////////////////////////////////
 
@@ -254,6 +290,14 @@ export type ExposedSchemaType<T extends Schema> = T extends SchemaObj
 				? SchemaResourceType<T>
 				: ExposedSchemaPropType<T>
 	  >
+
+export type ExposedTypeByConstructor<T extends DataConstructorOrFactory> = Fallback<
+	Extract<
+		ExposedSchemaTypeUnion,
+		T extends infer ConstructorOrFactory ? [{ type: ConstructorOrFactory }, any] : [never, any]
+	>[1],
+	ResolvedTypeByConstructor<T>
+>
 
 ////////////////////////////////////////////////////////////////
 
@@ -399,31 +443,31 @@ type DataConstructor<T = any> = { new (...args: any): T }
 
 export type DataConstructorOrFactory<T = any> = DataFactory<T> | DataConstructor<T>
 
-export interface DataTypeMetaData<T = any> {
-	constructor: DataConstructorOrFactory<T>
+export interface DataTypeMetaData<T extends DataConstructorOrFactory> {
+	constructor: T
 	canBeVariable?: boolean
 	canBeCommandArg?: boolean
-	expose?: (value: any, schema: Schema) => any
-	unexpose?: (value: any, schema: Schema) => any
+	expose?: (value: ResolvedTypeByConstructor<T>, schema: Schema) => ExposedTypeByConstructor<T>
+	unexpose?: (value: ExposedTypeByConstructor<T>, schema: Schema) => ResolvedTypeByConstructor<T>
 	/**
 	 * Checks a value against it's schema, returns an error string if there's a problem
 	 * @param value
 	 * @param schema
 	 * @returns string if there's a problem, undefined otherwise
 	 */
-	validate?: (value: any, schema: Schema) => string | undefined
-	deserialize?: (value: any, schema: Schema) => Promise<T>
-	serialize?: (value: T, schema: Schema) => any
-	fromString?: (value: string) => Promise<T | undefined>
+	validate?: (value: TemplateTypeByConstructor<T> | undefined, schema: Schema) => string | undefined
+	deserialize?: (value: any, schema: Schema) => Promise<TemplateTypeByConstructor<T>>
+	serialize?: (value: TemplateTypeByConstructor<T>, schema: Schema) => any
+	fromString?: (value: string) => Promise<ResolvedTypeByConstructor<T> | undefined>
 }
 
-interface FullDataTypeMetaData<T = any> extends DataTypeMetaData<T> {
+interface FullDataTypeMetaData<T extends DataConstructorOrFactory = any> extends DataTypeMetaData<T> {
 	name: string
 	canBeVariable: boolean
 	canBeCommandArg: boolean
 }
 
-export function registerType<T>(name: string, metaData: DataTypeMetaData<T>) {
+export function registerType<T extends DataConstructorOrFactory>(name: string, metaData: DataTypeMetaData<T>) {
 	console.log("Registering Type", name)
 	const fullMetaData = { canBeVariable: true, canBeCommandArg: false, ...metaData, name }
 	dataNameLookup.set(name, fullMetaData)
@@ -442,11 +486,11 @@ export function getAllCommandArgTypes() {
 	return [...dataNameLookup.values()].filter((d) => d.canBeCommandArg)
 }
 
-export function getTypeByName<T = any>(name: string) {
-	return dataNameLookup.get(name) as FullDataTypeMetaData<T> | undefined
+export function getTypeByName(name: string) {
+	return dataNameLookup.get(name)
 }
 
-export function getTypeByConstructor<T = any>(constructor: DataConstructorOrFactory<T>) {
+export function getTypeByConstructor<T extends DataConstructorOrFactory>(constructor: T) {
 	return dataConstructorLookup.get(constructor) as FullDataTypeMetaData<T> | undefined
 }
 

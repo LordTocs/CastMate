@@ -2,12 +2,16 @@ import { isResourceConstructor } from "../resources/resource"
 import { isArray, isBoolean, isNumber, isObject, isString } from "../util/type-helpers"
 import {
 	Color,
+	DataConstructorOrFactory,
 	ResolvedSchemaType,
+	ResolvedTypeByConstructor,
 	Schema,
 	SchemaColor,
 	SchemaNumber,
 	SchemaString,
 	SchemaType,
+	SchemaTypeByConstructor,
+	TemplateTypeByConstructor,
 	getTemplateRegionString,
 	getTypeByConstructor,
 	getTypeByName,
@@ -82,7 +86,11 @@ export async function templateNumber(value: string | number, context: object) {
 	return value
 }
 
-export type SchemaTemplater<T = any> = (value: T | string, context: object, schema: any) => Promise<T>
+export type SchemaTemplater<T extends DataConstructorOrFactory> = (
+	value: TemplateTypeByConstructor<T>,
+	context: object,
+	schema: SchemaTypeByConstructor<T>
+) => Promise<ResolvedTypeByConstructor<T> | undefined>
 
 declare module "castmate-schema" {
 	interface DataTypeMetaData<T = any> {
@@ -126,14 +134,17 @@ export async function templateSchema<TSchema extends Schema>(
 	}
 }
 
-export function registerSchemaTemplate<T>(name: string, templateFunc: SchemaTemplater<T>) {
-	const schemaType = getTypeByName(name)
+export function registerSchemaTemplate<DataCon extends DataConstructorOrFactory>(
+	constructor: DataCon,
+	templateFunc: SchemaTemplater<DataCon>
+) {
+	const schemaType = getTypeByConstructor(constructor)
 	if (!schemaType) throw new Error(`Missing Schema Type ${name}`)
 
 	schemaType.template = templateFunc
 }
 
-registerSchemaTemplate("String", async (value: string, context: object, schema: SchemaString) => {
+registerSchemaTemplate(String, async (value, context, schema) => {
 	let str = await template(value, context)
 
 	if (schema.maxLength != null) {
@@ -143,7 +154,7 @@ registerSchemaTemplate("String", async (value: string, context: object, schema: 
 	return str
 })
 
-registerSchemaTemplate("Number", async (value: number | string, context: object, schema: SchemaNumber) => {
+registerSchemaTemplate(Number, async (value, context, schema) => {
 	if (isNumber(value)) return value
 	let num = Number(await template(value, context))
 
@@ -157,12 +168,12 @@ registerSchemaTemplate("Number", async (value: number | string, context: object,
 	return num
 })
 
-registerSchemaTemplate("Boolean", async (value: boolean | string, context: object, schema: SchemaNumber) => {
+registerSchemaTemplate(Boolean, async (value, context, schema) => {
 	if (isBoolean(value)) return value
 	const strValue = await template(value, context)
 	return strValue !== "false"
 })
 
-registerSchemaTemplate("Color", async (value: Color | string, context: object, schema: SchemaColor) => {
+registerSchemaTemplate(Color, async (value, context, schema) => {
 	return await template(value, context)
 })

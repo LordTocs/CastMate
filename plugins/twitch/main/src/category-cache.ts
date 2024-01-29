@@ -38,20 +38,17 @@ registerSchemaUnexpose(TwitchCategory, async (value: TwitchCategory) => {
 	return value?.id
 })
 
-registerSchemaTemplate(
-	"TwitchCategory",
-	async (value: TwitchCategoryUnresolved, context: any, schema: SchemaTwitchCategory) => {
-		if (isDefinitelyNotTwitchId(value)) {
-			const name = await template(value, context)
-			const category = await CategoryCache.getInstance().getCategoryByName(name)
+registerSchemaTemplate(TwitchCategory, async (value, context, schema) => {
+	if (isDefinitelyNotTwitchId(value)) {
+		const name = await template(value, context)
+		const category = await CategoryCache.getInstance().getCategoryByName(name)
 
-			return category?.id
-		}
-
-		const category = await CategoryCache.getInstance().getCategoryById(value)
 		return category?.id
 	}
-)
+
+	const category = await CategoryCache.getInstance().getCategoryById(value)
+	return category?.id
+})
 
 function isDefinitelyNotTwitchId(maybeId: string) {
 	const nonDigits = /\D/g

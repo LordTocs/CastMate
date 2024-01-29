@@ -120,7 +120,7 @@ registerSchemaUnexpose(TwitchViewer, async (value: TwitchViewer) => {
 })
 
 registerSchemaTemplate(
-	"TwitchViewer",
+	TwitchViewer,
 	async (value: TwitchViewerUnresolved, context: any, schema: SchemaTwitchViewer) => {
 		if (isDefinitelyNotTwitchId(value)) {
 			console.log("Templating Viewer", value)

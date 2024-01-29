@@ -163,7 +163,7 @@ async function runPowershellCommand(command: string, workingDir: string | undefi
 	})
 }
 
-registerSchemaTemplate("PowerShellCommand", powershellTemplate)
+registerSchemaTemplate(PowerShellCommand, powershellTemplate)
 
 export function setupPowershell() {
 	//Note I chose to include powershell commands instead of CMD commands because Powershell actually has string rules that allow escaping.
