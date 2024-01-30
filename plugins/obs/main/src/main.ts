@@ -19,6 +19,7 @@ import { setupSources } from "./sources"
 import { setupScenes } from "./scenes"
 import { setupMedia } from "./media"
 import { setupToggles } from "./toggles"
+import { setupTransforms } from "./transform"
 
 export default definePlugin(
 	{
@@ -118,6 +119,7 @@ export default definePlugin(
 		setupSources(obsDefault)
 		setupMedia(obsDefault)
 		setupToggles(obsDefault)
+		setupTransforms(obsDefault)
 
 		defineAction({
 			id: "hotkey",

@@ -1,8 +1,13 @@
 import { FileResource, definePluginResource, ResourceStorage } from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
-import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
+import {
+	OBSConnectionConfig,
+	OBSConnectionState,
+	OBSSceneListItem,
+	OBSWSInput,
+	OBSWSSceneItem,
+} from "castmate-plugin-obs-shared"
 import { nanoid } from "nanoid/non-secure"
-import { OBSSceneListItem, OBSWSInput, OBSWSSceneItem } from "./websocket-models"
 import _flatten from "lodash/flatten"
 import { SceneSource } from "./obs-data"
 

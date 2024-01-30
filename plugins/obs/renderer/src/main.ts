@@ -1,7 +1,10 @@
-import { useResourceStore, ResourceSettingList, ResourceSchemaEdit } from "castmate-ui-core"
+import { useResourceStore, ResourceSettingList, ResourceSchemaEdit, useDataInputStore } from "castmate-ui-core"
 import "./css/icons.css"
+import { OBSSourceTransform } from "castmate-plugin-obs-shared"
 
-export { default as DashboardObsCard} from "./components/DashboardObsCard.vue"
+export { default as DashboardObsCard } from "./components/DashboardObsCard.vue"
+
+import ObsTransformInputVue from "./components/transform/ObsTransformInput.vue"
 
 export function initPlugin() {
 	const resourceStore = useResourceStore()
@@ -19,4 +22,8 @@ export function initPlugin() {
 			password: { type: String, name: "Password" },
 		},
 	})
+
+	const dataStore = useDataInputStore()
+
+	dataStore.registerInputComponent(OBSSourceTransform, ObsTransformInputVue)
 }
