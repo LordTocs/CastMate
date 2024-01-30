@@ -80,10 +80,8 @@ export function isProbablyFromTemplate(value: string, template: string) {
 }
 
 export async function templateNumber(value: string | number, context: object) {
-	if (isString(value)) {
-		return Number(await evaluateTemplate(value, context))
-	}
-	return value
+	if (isNumber(value)) return value
+	return Number(await template(value, context))
 }
 
 export type SchemaTemplater<T extends DataConstructorOrFactory> = (
@@ -124,7 +122,7 @@ export async function templateSchema<TSchema extends Schema>(
 	} else {
 		//Some type crap means this has to be out here instead of inside the if
 		const type = getTypeByConstructor<any>(schema.type)
-		if ("template" in schema && schema.template && isString(obj)) {
+		if ("template" in schema && schema.template && obj != null) {
 			if (!type) throw new Error("Unknown Schema Type!")
 			if (!type.template) throw new Error("Trying to template a type that doesn't have a templater registered")
 			return await type.template(obj, context, schema)
