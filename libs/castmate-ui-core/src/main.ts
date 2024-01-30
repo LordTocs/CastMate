@@ -35,6 +35,7 @@ export { default as EnumInput } from "./components/data/base-components/EnumInpu
 export { default as DocumentPath } from "./components/document/DocumentPath.vue"
 export { default as BooleanExpressionInput } from "./components/data/inputs/BooleanExpressionInput.vue"
 export { default as DropDownPanel } from "./components/data/base-components/DropDownPanel.vue"
+export { default as ClearButton } from "./components/data/base-components/ClearButton.vue"
 
 export { default as AutomationEdit } from "./components/automation/AutomationEdit.vue"
 export { default as InlineAutomationEdit } from "./components/automation/InlineAutomation.vue"
