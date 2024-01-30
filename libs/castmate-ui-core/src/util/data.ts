@@ -8,7 +8,6 @@ import {
 	Toggle,
 	Color,
 	Duration,
-	EnumItem,
 	IPCEnumable,
 	IPCDefaultable,
 	IPCDynamicTypable,
@@ -60,8 +59,6 @@ import ToggleViewVue from "../components/data/views/ToggleView.vue"
 import CommandInputVue from "../components/data/inputs/CommandInput.vue"
 import CommandViewVue from "../components/data/views/CommandView.vue"
 
-import { ipcRenderer } from "electron"
-import { isObject } from "@vueuse/core"
 import _cloneDeep from "lodash/cloneDeep"
 import { ipcInvoke } from "./electron"
 
@@ -86,7 +83,7 @@ export function ipcParseSchemaEnum<T>(ipcSchema: IPCEnumable<T>) {
 		return {
 			enum: markRaw(async (context: any) => {
 				try {
-					return await ipcRenderer.invoke(ipcPath, toRaw(context))
+					return await ipcInvoke(ipcPath, context)
 				} catch (err) {
 					console.error("Error Invoking Enum", ipcPath)
 					console.error(err)
@@ -103,12 +100,11 @@ export function ipcParseSchemaDynamic<T>(ipcSchema: IPCDynamicTypable) {
 		const ipcPath = ipcSchema.dynamicType.ipc
 		return {
 			dynamicType: markRaw(async (context: any) => {
-				const rawContext = _cloneDeep(context)
 				try {
-					const result = (await ipcRenderer.invoke(ipcPath, rawContext)) as IPCSchema
+					const result = await ipcInvoke(ipcPath, context) // (await ipcRenderer.invoke(ipcPath, rawContext)) as IPCSchema
 					return ipcParseSchema(result)
 				} catch (err) {
-					console.error("Error Invoking Dynamic Type", ipcPath, rawContext)
+					console.error("Error Invoking Dynamic Type", ipcPath, context)
 					console.error(err)
 					return []
 				}
@@ -124,7 +120,7 @@ export function ipcParseSchemaDefault<T>(ipcSchema: IPCDefaultable<T>) {
 		return {
 			default: markRaw(async (): Promise<T> => {
 				try {
-					return await ipcRenderer.invoke(ipcPath)
+					return await ipcInvoke(ipcPath)
 				} catch (err) {
 					console.error("Error Invoking Default", ipcPath)
 					console.error(err)
