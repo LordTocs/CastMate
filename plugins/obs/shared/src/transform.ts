@@ -7,6 +7,7 @@ export interface OBSSourceTransform {
 		y: TemplateNumber | undefined
 	}
 	rotation: TemplateNumber | undefined
+	alignment: OBSAlignment | undefined
 	scale: {
 		x: TemplateNumber | undefined
 		y: TemplateNumber | undefined
@@ -31,6 +32,7 @@ export interface ResolvedOBSSourceTransform {
 		y: number | undefined
 	}
 	rotation: number | undefined
+	alignment: OBSAlignment | undefined
 	scale: {
 		x: number | undefined
 		y: number | undefined
@@ -55,6 +57,7 @@ export function createEmptyOBSSourceTransform() {
 			x: undefined,
 			y: undefined,
 		},
+		alignment: undefined,
 		rotation: undefined,
 		scale: {
 			x: undefined,
@@ -120,6 +123,10 @@ export function transformToOBSWS(value: ResolvedOBSSourceTransform): Partial<OBS
 		result.rotation = value.rotation
 	}
 
+	if (value.alignment != null) {
+		result.alignment = value.alignment
+	}
+
 	if (value.crop.top != null) {
 		result.cropTop = value.crop.top
 	}
@@ -168,6 +175,10 @@ export function OBSWSToTransform(value: Partial<OBSWSSourceTransform>): Resolved
 
 	if (value.rotation != null) {
 		result.rotation = value.rotation
+	}
+
+	if (value.alignment != null) {
+		result.alignment = value.alignment
 	}
 
 	if (value.cropBottom != null) {

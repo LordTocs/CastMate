@@ -22,8 +22,8 @@ const props = defineProps<{
 <style scoped>
 .data-transform-group {
 	padding: 0.5rem;
-	margin: 0.5rem;
-	border: solid 1px var(--surface-border);
+	margin-top: 1.5rem;
+	border: solid 1px var(--surface-100);
 	border-radius: var(--border-radius);
 }
 </style>

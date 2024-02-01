@@ -26,7 +26,13 @@
 			:can-template="canTemplate"
 			unit="deg"
 		/>
-
+		<obs-transform-enum-input
+			label="Alignment"
+			v-model="model.alignment"
+			input-id="boundsAlignment"
+			ws-prop="boundsAlignment"
+			:enum="alignmentEnum"
+		/>
 		<obs-transform-data-group v-model="model.scale" inner-class="flex flex-row gap-1" label="Size">
 			<obs-transform-number-input
 				label="X"
@@ -168,4 +174,10 @@ const boundsTypeEnum = computed<{ name: string; value: OBSBoundsType }[]>(() => 
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.transform-input {
+	background-color: var(--surface-a);
+	padding: 0.5rem;
+	border-radius: var(--border-radius);
+}
+</style>
