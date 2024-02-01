@@ -10,14 +10,17 @@
 					{{ trigger?.name }}
 				</span>
 			</div>
-			<div class="flex flex-row flex-grow-1 align-items-center mt-1 mb-1" v-else>
-				<trigger-selector v-model="triggerModel" class="flex-grow-1 mr-2" label="Trigger" />
-				<data-input
-					class="flex-grow-1 mr-2"
-					no-float
-					v-model="modelObj.queue"
-					:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
-				/>
+			<div class="flex flex-row flex-grow-1 align-items-center mt-1 mb-1 gap-1" v-else>
+				<div class="flex-grow-1">
+					<trigger-selector v-model="triggerModel" label="Trigger" />
+				</div>
+				<div class="flex-grow-1">
+					<data-input
+						no-float
+						v-model="modelObj.queue"
+						:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
+					/>
+				</div>
 			</div>
 			<p-button
 				text

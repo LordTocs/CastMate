@@ -52,6 +52,6 @@ const props = withDefaults(
 }
 
 .input-box {
-	min-width: 200px;
+	min-width: 150px;
 }
 </style>

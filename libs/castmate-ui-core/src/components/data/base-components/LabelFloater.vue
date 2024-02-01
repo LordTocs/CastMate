@@ -1,5 +1,5 @@
 <template>
-	<span class="p-float-label flex-grow-1" v-if="!noFloat" style="width: unset">
+	<span class="p-float-label" v-if="!noFloat">
 		<slot :placeholder="undefined" :input-id="inputId"> </slot>
 		<label :for="inputId"> <i v-if="icon" :class="icon" /> {{ label }}</label>
 	</span>

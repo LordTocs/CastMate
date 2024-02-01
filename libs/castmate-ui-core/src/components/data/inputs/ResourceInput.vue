@@ -1,6 +1,12 @@
 <template>
 	<div class="flex flex-row">
-		<label-floater :no-float="noFloat" :label="schema.name" input-id="resource" v-slot="labelProps">
+		<label-floater
+			:no-float="noFloat"
+			:label="schema.name"
+			input-id="resource"
+			v-slot="labelProps"
+			class="flex-grow-1"
+		>
 			<c-autocomplete
 				v-model="model"
 				:required="!!schema.required"
@@ -10,6 +16,7 @@
 				:group-prop="resourceStore?.configGroupPath ? 'config.' + resourceStore.configGroupPath : undefined"
 				:no-float="noFloat"
 				v-bind="labelProps"
+				class="flex-grow-1 flex-shrink-0"
 			>
 				<template #groupHeader="{ item }" v-if="resourceStore?.selectorGroupHeaderComponent">
 					<component :is="resourceStore.selectorGroupHeaderComponent" :item="item" />

@@ -1,6 +1,6 @@
 <template>
 	<div
-		class="autocomplete-container flex-grow-1 flex-shrink-0 p-inputgroup"
+		class="autocomplete-container p-inputgroup"
 		:class="{ 'p-inputwrapper-filled': props.modelValue != null }"
 		ref="container"
 		v-bind="$attrs"
@@ -22,7 +22,7 @@
 		<p-input-text
 			v-else
 			@blur="onBlur"
-			class="p-dropdown-label"
+			class="p-dropdown-label query-input"
 			ref="filterInputElement"
 			v-model="filterValue"
 			@keydown="onFilterKeyDown"
@@ -176,7 +176,12 @@ function onFilterKeyDown(ev: KeyboardEvent) {
 
 .autocomplete-container {
 	position: relative;
-	display: flex;
-	flex-direction: row;
+	/* display: flex; */
+	/* flex-direction: row; */
+	width: 100% !important;
+}
+
+.query-input {
+	min-width: 150px;
 }
 </style>
