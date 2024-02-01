@@ -1,3 +1,5 @@
+export * from "./tts"
+
 export interface SoundOutputConfig {
 	name: string
 }
