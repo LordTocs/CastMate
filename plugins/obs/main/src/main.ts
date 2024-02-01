@@ -26,7 +26,7 @@ export default definePlugin(
 		id: "obs",
 		name: "OBS",
 		description: "Provides OBS Control over OBS Websocket 5",
-		color: "#607A7F",
+		color: "#256eff",
 		icon: "obsi obsi-obs",
 	},
 	() => {
