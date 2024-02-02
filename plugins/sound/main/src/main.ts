@@ -91,10 +91,11 @@ export default definePlugin(
 		defineAction({
 			id: "tts",
 			name: "Text to Speech",
+			icon: "mdi mdi-account-voice",
 			config: {
 				type: Object,
 				properties: {
-					output: { type: SoundOutput, name: "Output", required: true },
+					output: { type: SoundOutput, name: "Output", default: () => defaultOutput.value, required: true },
 					voice: { type: TTSVoice, name: "Voice", required: true, template: true },
 					text: { type: String, name: "Text", required: true, template: true },
 					volume: {
