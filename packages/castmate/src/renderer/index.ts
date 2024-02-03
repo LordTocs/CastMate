@@ -115,7 +115,7 @@ async function init() {
 
 	//TODO: This init function is bonkers, we should formalize initing these plugins after their main process side gets inited.
 
-	await initSoundPlugin()
+	await initSoundPlugin(app)
 	await initObsPlugin()
 	await initDiscordPlugin()
 	await initInputPlugin()

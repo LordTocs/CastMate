@@ -1,8 +1,21 @@
 import { WebAudioDeviceInfo } from "castmate-plugin-sound-shared"
-import { handleIpcMessage, handleIpcRpc, useIpcCaller, usePluginStore } from "castmate-ui-core"
+import {
+	ProjectGroup,
+	getResourceAsProjectGroup,
+	handleIpcMessage,
+	handleIpcRpc,
+	useDocumentStore,
+	useIpcCaller,
+	usePluginStore,
+	useProjectStore,
+	useResourceStore,
+} from "castmate-ui-core"
 
 import SoundActionComponent from "./components/SoundActionComponent.vue"
 import { useSoundPlayerStore } from "./player-store"
+import { computed, App } from "vue"
+import VoiceEditPageVue from "./components/tts/VoiceEditPage.vue"
+import _cloneDeep from "lodash/cloneDeep"
 
 export async function getOutputDevices(): Promise<WebAudioDeviceInfo[]> {
 	const devices = await navigator.mediaDevices.enumerateDevices()
@@ -24,7 +37,7 @@ export async function getOutputDeviceWebId(name: string) {
 	return device?.deviceId
 }
 
-export async function initPlugin() {
+export async function initPlugin(app: App<Element>) {
 	const playerStore = useSoundPlayerStore()
 	console.log(await getOutputDevices())
 
@@ -36,4 +49,40 @@ export async function initPlugin() {
 
 	const pluginStore = usePluginStore()
 	pluginStore.setActionComponent("sound", "sound", SoundActionComponent)
+
+	//Setup TTS Resources
+
+	const resourceStore = useResourceStore()
+	const documentStore = useDocumentStore()
+	documentStore.registerDocumentComponent("ttsvoice", VoiceEditPageVue)
+
+	documentStore.registerSaveFunction("ttsvoice", async (doc) => {
+		const docDataCopy = _cloneDeep(doc.data)
+
+		delete docDataCopy.name
+
+		await resourceStore.applyResourceConfig("TTSVoice", doc.id, docDataCopy)
+	})
+
+	//Setup Audio Project View
+
+	const projectStore = useProjectStore()
+
+	const voices = getResourceAsProjectGroup(app, {
+		resourceType: "TTSVoice",
+		resourceName: "TTS Voices",
+		groupIcon: "mdi mdi-account-voice",
+		documentType: "ttsvoice",
+	})
+
+	projectStore.registerProjectGroupItem(
+		computed<ProjectGroup>(() => {
+			return {
+				id: "sound",
+				title: "Audio",
+				icon: "mdi mdi-volume-high",
+				items: [voices.value],
+			}
+		})
+	)
 }
