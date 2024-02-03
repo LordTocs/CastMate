@@ -14,6 +14,7 @@
 
 #include "util.hh"
 #include "audio-interface.hh"
+#include "tts-interface.hh"
 
 using namespace Microsoft::WRL;
 
@@ -57,6 +58,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     env.SetInstanceData<instance_data>(new instance_data(env));
 
     audio_device_interface::init(env, exports);
+    os_tts_interface::init(env, exports);
 
     return exports;
 }

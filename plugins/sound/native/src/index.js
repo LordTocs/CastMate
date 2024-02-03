@@ -3,7 +3,7 @@ const EventEmitter = require("events")
 
 // console.log("Root?", __dirname)
 
-const { NativeAudioDeviceInterface } = bindings({
+const { NativeAudioDeviceInterface, OsTTSInterface } = bindings({
 	bindings: "castmate-plugin-sound-native",
 	// module_root: bindings.getRoot(import.meta.url),
 })
@@ -29,4 +29,4 @@ class AudioDeviceInterface extends EventEmitter {
 	}
 }
 
-module.exports = { AudioDeviceInterface }
+module.exports = { AudioDeviceInterface, OsTTSInterface }

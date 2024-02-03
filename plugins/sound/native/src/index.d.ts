@@ -33,6 +33,16 @@ declare namespace CastmatePluginSoundNative {
 			...args: Parameters<AudioDeviceInterfaceEvents[U]>
 		): boolean
 	}
+
+	interface OsTTSVoice {
+		id: string
+		name: string
+	}
+
+	class OsTTSInterface {
+		getVoices(): OsTTSVoice[]
+		speakToFile(message: string, filename: string, voiceId: string): boolean
+	}
 }
 
 export = CastmatePluginSoundNative
