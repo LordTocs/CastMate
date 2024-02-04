@@ -394,7 +394,7 @@ export default {
 				properties: {
 					device: {
 						type: Light,
-						name: "Twinly Device",
+						name: "Twinkly Device",
 						filter: {
 							plugin: "twinkly",
 						},
