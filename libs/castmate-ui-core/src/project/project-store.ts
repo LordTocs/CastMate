@@ -170,7 +170,7 @@ export function getResourceAsProjectGroup<TData extends ResourceData>(
 
 		return {
 			id: config.resourceType,
-			title: config.resourceType,
+			title: config.resourceName,
 			icon: config.groupIcon,
 			items,
 			create() {
