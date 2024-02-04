@@ -59,9 +59,10 @@ export default defineConfig({
 				main: resolve(dirname, "html", "index.html"),
 				//updater: resolve(dirname, "updater.html"),
 			},
-			//external: ["fluent-ffmpeg"],
-			manualChunks: {
-				primevueConfirm: ["primevue/useconfirm", "primevue/confirmationservice"],
+			output: {
+				manualChunks: {
+					primevueConfirm: ["primevue/useconfirm", "primevue/confirmationservice"],
+				},
 			},
 		},
 	},
