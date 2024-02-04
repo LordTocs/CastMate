@@ -14,7 +14,7 @@ const PLUG_PRODUCT_TYPES = ["Plug"]
 
 const WYZE_API_KEY = "WMXHYf79Nr5gIlt3r0r7p9Tcw5bvs6BB4U8O8nGJ"
 const WYZE_AUTH_URL = "https://auth-prod.api.wyze.com"
-const WYZE_API_URL = "https://api.wyzecam.com:8443"
+const WYZE_API_URL = "https://api.wyzecam.com"
 const WYZE_USER_AGENT = "wyze_ios_2.21.35"
 const WYZE_PHONE_ID = "wyze_developer_api"
 const WYZE_APP_VERSION = "wyze_developer_api"
@@ -204,7 +204,7 @@ class WyzeApi {
 				})
 			)
 
-			if (result.data.msg === "AcessTokenError") {
+			if (result.data.msg === "AccessTokenError") {
 				throw new Error("Unable to refresh access token!")
 			}
 		}
