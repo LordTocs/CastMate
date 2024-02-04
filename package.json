@@ -15,6 +15,7 @@
 	],
 	"author": "LordTocs",
 	"license": "AGPL",
+	"electronVersion": "20.0.1",
 	"devDependencies": {
 		"eslint": "^8.34.0",
 		"eslint-plugin-vue": "^9.9.0",

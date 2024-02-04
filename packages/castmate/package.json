@@ -5,7 +5,8 @@
 	"author": "LordTocs",
 	"scripts": {
 		"electron:build": "electron-builder --config electron-builder-config.cjs",
-		"electron:buildpublish": "electron-builder --config electron-builder-config.cjs --publish always"
+		"electron:buildpublish": "electron-builder --config electron-builder-config.cjs --publish always",
+		"fix-app-deps": "electron-builder install-app-deps"
 	},
 	"main": "dist/electron/main/backgroundLoader.js",
 	"electronVersion": "20.0.1",
