@@ -16,7 +16,7 @@
 			</div>
 
 			<template v-if="actionInfo.flowConfig" v-for="(flow, i) in model.subFlows" :key="flow.id">
-				<div class="flow-header">
+				<div class="section-header">
 					<span style="padding-left: 1rem; flex: 1">Flow {{ i + 1 }}</span>
 					<p-button text icon="mdi mdi-delete" size="small" @click="deleteFlow(i)"></p-button>
 				</div>
@@ -27,19 +27,23 @@
 				></data-input>
 			</template>
 		</template>
+		<template v-if="actionInfo.type == 'regular' && actionInfo.result">
+			<div class="section-title">
+				<span style="text-align: center; flex: 1">Returns</span>
+			</div>
+			<return-namer v-model="model.resultMapping" :result-schema="actionInfo.result" />
+		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { AnyAction } from "castmate-schema"
-import { useAction } from "castmate-ui-core"
+import { AnyAction, constructDefault, isFlowAction } from "castmate-schema"
+import { useAction, DataInput } from "../../main"
 import { useModel } from "vue"
-import { DataInput } from "castmate-ui-core"
-import { isFlowAction } from "castmate-schema"
 import PButton from "primevue/button"
 import { SubFlow } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
-import { constructDefault } from "castmate-schema"
+import ReturnNamer from "../data/returns/ReturnNamer.vue"
 const props = defineProps<{
 	modelValue: AnyAction
 }>()
@@ -92,7 +96,7 @@ async function addFlow() {
 	align-items: center;
 }
 
-.flow-title {
+.section-title {
 	display: flex;
 	flex-direction: row;
 	align-items: center;

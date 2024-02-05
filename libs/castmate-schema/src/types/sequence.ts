@@ -40,6 +40,7 @@ export interface ActionInfo {
 	action: string
 	//version: SemanticVersion
 	config: any
+	resultMapping?: Record<string, string>
 }
 
 export interface SubFlow extends SequenceActions {

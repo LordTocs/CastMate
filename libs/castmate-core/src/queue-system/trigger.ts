@@ -58,7 +58,7 @@ export interface TriggerDefinition {
 	readonly color: Color
 	readonly version: string
 	readonly config: Schema
-	//readonly context: Schema
+	readonly context: Schema
 
 	trigger(context: any): Promise<boolean>
 	registerIPC(path: string): any

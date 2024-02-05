@@ -17,6 +17,7 @@ import {
 	isTimeAction,
 	isFlowAction,
 	SequenceContext,
+	mapRecord,
 } from "castmate-schema"
 import { ActionInvokeContextData } from "./action"
 import { globalLogger } from "../logging/logging"
@@ -62,8 +63,23 @@ export class SequenceRunner {
 			const deserializedConfig = await deserializeSchema(actionDef.configSchema, action.config)
 			//Todo construct action context
 			const actionContext: ActionInvokeContextData = this.context
+			globalLogger.log("Running Context", actionContext.contextState)
 			const result = await actionDef.invoke(deserializedConfig, actionContext, this.abortController.signal)
 			this.dbg?.logResult(action.id, result)
+
+			let resultMapped: Record<string, any> = {}
+
+			if (action.resultMapping) {
+				for (const key in action.resultMapping) {
+					resultMapped[action.resultMapping[key]] = result[key]
+				}
+			}
+
+			this.context.contextState = {
+				...this.context.contextState,
+				...resultMapped,
+			}
+
 			return result
 		} catch (err) {
 			globalLogger.error("Error ", action.plugin, action.action, err)

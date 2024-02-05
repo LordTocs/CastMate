@@ -5,6 +5,7 @@ import {
 	IPCPluginDefinition,
 	IPCTriggerDefinition,
 	Schema,
+	SchemaObj,
 	Color,
 	mapKeys,
 	constructDefault,
@@ -38,7 +39,7 @@ interface RegularActionDefinition extends BaseActionDefinition {
 	actionComponent?: Component
 	duration: IPCDurationConfig
 	config: Schema
-	result?: Schema
+	result?: SchemaObj
 }
 
 interface FlowActionDefinition extends BaseActionDefinition {
@@ -62,6 +63,12 @@ function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
 			...(def.flowConfig ? { flowConfig: ipcParseSchema(def.flowConfig) } : {}),
 		}
 	} else if (def.type == "regular") {
+		const resultSchema = def.result ? ipcParseSchema(def.result) : undefined
+
+		if (resultSchema && !(resultSchema.type == Object && "properties" in resultSchema)) {
+			throw new Error("Results Must be Objects")
+		}
+
 		return {
 			type: "regular",
 			id: def.id,
@@ -71,7 +78,7 @@ function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
 			icon: def.icon,
 			config: ipcParseSchema(def.config),
 			duration: def.duration,
-			...(def.result ? { result: ipcParseSchema(def.result) } : {}),
+			...(resultSchema ? { result: resultSchema } : {}),
 		}
 	}
 	throw new Error("Parse Error?")
