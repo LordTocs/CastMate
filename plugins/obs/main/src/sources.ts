@@ -1,6 +1,7 @@
-import { ReactiveRef, defineAction } from "castmate-core"
+import { ReactiveRef, defineAction, ensureDirectory } from "castmate-core"
 import { OBSConnection } from "./connection"
-import { Toggle } from "castmate-schema"
+import { Directory, Toggle } from "castmate-schema"
+import path from "path"
 
 export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 	defineAction({
@@ -144,6 +145,98 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				filterName,
 				filterEnabled: enabled,
 			})
+		},
+	})
+
+	defineAction({
+		id: "screenshot",
+		name: "Screenshot",
+		icon: "mdi mdi-camera",
+		config: {
+			type: Object,
+			properties: {
+				obs: {
+					type: OBSConnection,
+					name: "OBS Connection",
+					required: true,
+					default: () => obsDefault.value,
+				},
+				sourceName: {
+					type: String,
+					name: "Source Name",
+					async enum(context: { obs: OBSConnection }) {
+						const obs = context?.obs?.connection
+						if (!obs) return []
+
+						const { inputs } = await obs.call("GetInputList")
+						const { scenes } = await obs.call("GetSceneList")
+						return [
+							...inputs.map((i) => i.inputName as string),
+							...scenes.map((s) => s.sceneName as string),
+						]
+					},
+				},
+				width: {
+					type: Number,
+					name: "Width",
+					template: true,
+				},
+				height: {
+					type: Number,
+					name: "Height",
+					template: true,
+				},
+				directory: {
+					type: Directory,
+					name: "Directory",
+					required: true,
+				},
+				filename: {
+					type: String,
+					name: "Filename",
+					default: "screenshot-{{ Date.now() }}.png",
+					template: true,
+					required: true,
+				},
+			},
+		},
+		result: {
+			type: Object,
+			properties: {
+				screenshot: { type: String, required: true, name: "Screenshot File" },
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			let ext = path.extname(config.filename)
+			const basename = path.basename(config.filename, ext)
+
+			//if (ext == "") {
+			ext = ".png"
+			//}
+
+			await ensureDirectory(config.directory)
+
+			const filename = path.join(config.directory, `${basename}${ext}`)
+
+			//TODO: Check for other formats? JPG?
+
+			let sourceName = config.sourceName
+			if (!sourceName) {
+				//HACK: We want to screenshot the stream output if there's no supplied source. However,
+				// OBS Websocket doesn't have this feature. Instead we screenshot the active scene.
+				// This can miss in progress transitions and downstream keyer elements.
+				sourceName = config.obs.state.scene
+			}
+
+			const resp = await config.obs.connection.call("SaveSourceScreenshot", {
+				sourceName,
+				imageFormat: "png",
+				imageFilePath: filename,
+			})
+
+			return {
+				screenshot: filename,
+			}
 		},
 	})
 }
