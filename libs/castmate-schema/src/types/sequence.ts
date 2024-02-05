@@ -140,3 +140,51 @@ export function assignNewIds(sequence: Sequence) {
 		}
 	}
 }
+
+export function getSequenceResultVariables(sequence: Sequence, targetId?: string): string[] {
+	const result = new Set<string>()
+
+	for (const action of sequence.actions) {
+		if (action.id == targetId) break
+
+		getActionResultVariables(action, targetId).forEach((v) => result.add(v))
+	}
+
+	return [...result]
+}
+
+export function getActionResultVariables(
+	action: InstantAction | TimeAction | ActionStack | FlowAction,
+	targetId?: string
+): string[] {
+	if (isActionStack(action)) {
+		const result = new Set<string>()
+
+		for (const a of action.stack) {
+			getActionResultVariables(action, targetId).forEach((r) => result.add(r))
+		}
+		return [...result]
+	}
+
+	if (isTimeAction(action)) {
+		const result = new Set<string>()
+
+		if (action.resultMapping) {
+			Object.keys(action.resultMapping).forEach((r) => result.add(r))
+		}
+
+		for (const subSeq of action.offsets) {
+			getSequenceResultVariables(subSeq, targetId).forEach((r) => result.add(r), targetId)
+		}
+
+		return [...result]
+	}
+
+	if (isInstantAction(action)) {
+		if (action.resultMapping) {
+			return [...new Set(Object.values(action.resultMapping))]
+		}
+	}
+
+	return []
+}

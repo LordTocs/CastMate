@@ -37,15 +37,17 @@
 </template>
 
 <script setup lang="ts">
-import { AnyAction, constructDefault, isFlowAction } from "castmate-schema"
+import { AnyAction, constructDefault, isFlowAction, getSequenceResultVariables } from "castmate-schema"
 import { useAction, DataInput } from "../../main"
-import { useModel } from "vue"
+import { computed, inject, provide, useModel } from "vue"
 import PButton from "primevue/button"
 import { SubFlow } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import ReturnNamer from "../data/returns/ReturnNamer.vue"
+import { Sequence } from "castmate-schema"
 const props = defineProps<{
 	modelValue: AnyAction
+	sequence?: Sequence
 }>()
 
 const model = useModel(props, "modelValue")
@@ -57,6 +59,14 @@ function deleteFlow(index: number) {
 
 	model.value.subFlows.splice(index, 1)
 }
+
+const flowVariables = computed(() => {
+	if (!props.sequence) return []
+
+	return getSequenceResultVariables(props.sequence, props.modelValue.id)
+})
+
+provide("flowVariables", flowVariables)
 
 async function addFlow() {
 	if (!isFlowAction(model.value) || actionInfo.value?.type != "flow") return

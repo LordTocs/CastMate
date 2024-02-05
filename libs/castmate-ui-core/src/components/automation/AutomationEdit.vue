@@ -4,7 +4,7 @@
 			<automation-edit-area v-model="model" v-model:view="view.automationView" style="flex: 1" :trigger="model" />
 		</document-path>
 		<flex-scroller class="config" v-if="showSelectionEdit">
-			<action-config-edit v-if="selectedActionDef" v-model="selectedActionDef" />
+			<action-config-edit v-if="selectedActionDef" v-model="selectedActionDef" :sequence="selectedSequence" />
 			<trigger-config-edit v-else-if="selectedTriggerDef" v-model="selectedTriggerDef" />
 		</flex-scroller>
 	</div>
@@ -24,6 +24,7 @@ import { AnyAction, ActionStack, AutomationData, isActionStack, findActionById }
 import AutomationEditArea from "./AutomationEditArea.vue"
 import ActionConfigEdit from "./ActionConfigEdit.vue"
 import TriggerConfigEdit from "./TriggerConfigEdit.vue"
+import { findActionAndSequenceById } from "castmate-schema"
 
 const path = useDocumentPath()
 const selection = useDocumentSelection(() => joinDocumentPath(path.value, "sequence"))
@@ -51,6 +52,20 @@ const showSelectionEdit = computed(() => {
 		return false
 	}
 	return true
+})
+
+const selectedSequence = computed(() => {
+	if (selection.value.length > 1 || selection.value.length == 0) {
+		return undefined
+	}
+	const id = selection.value[0]
+
+	const actionSeq = findActionAndSequenceById(id, props.modelValue)
+
+	if (actionSeq == null) return undefined
+	if (isActionStack(actionSeq.action)) return undefined
+
+	return actionSeq.sequence
 })
 
 const selectedActionDef = computed<AnyAction | undefined>(() => {

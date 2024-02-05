@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useModel } from "vue"
+import { ComputedRef, computed, inject, ref, useModel } from "vue"
 import DropDownPanel from "../DropDownPanel.vue"
 import { usePluginStore, TriggerSelection, injectDataContextSchema } from "../../../../main"
 import StateListItem from "../state/StateListItem.vue"
@@ -50,6 +50,10 @@ interface Suggestion {
 }
 
 const dataContext = injectDataContextSchema()
+const flowVariables = inject<ComputedRef<string[]>>(
+	"flowVariables",
+	computed(() => [])
+)
 
 const suggestions = computed(() => {
 	const result: Suggestion[] = []
@@ -64,6 +68,13 @@ const suggestions = computed(() => {
 				state: propKey,
 			})
 		}
+	}
+
+	for (const flowVar of flowVariables.value) {
+		result.push({
+			id: flowVar,
+			state: flowVar,
+		})
 	}
 
 	for (const plugin of pluginStore.pluginMap.values()) {
