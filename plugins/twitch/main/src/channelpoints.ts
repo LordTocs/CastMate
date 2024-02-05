@@ -9,6 +9,7 @@ import {
 	runOnChange,
 	template,
 	templateSchema,
+	usePluginLogger,
 } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { Color } from "castmate-schema"
@@ -220,7 +221,6 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 
 		const fileLoadPromises = files.map(async (file) => {
 			const id = path.basename(file, ".yaml")
-			console.log("Loading", this.storage.name, id)
 			const fullFile = path.join(resolvedDir, file)
 
 			try {
@@ -421,6 +421,8 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 }
 
 export function setupChannelPointRewards() {
+	const logger = usePluginLogger()
+
 	onLoad(() => {
 		ChannelPointReward.initialize()
 	})
@@ -571,7 +573,7 @@ export function setupChannelPointRewards() {
 			}
 		}
 
-		console.log("Active Reward Ids", [...activeRewards])
+		logger.log("Active Reward Ids", [...activeRewards])
 
 		for (const reward of ChannelPointReward.storage) {
 			if (!reward.config.controllable) continue

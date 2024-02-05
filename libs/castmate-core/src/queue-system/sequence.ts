@@ -19,6 +19,7 @@ import {
 	SequenceContext,
 } from "castmate-schema"
 import { ActionInvokeContextData } from "./action"
+import { globalLogger } from "../logging/logging"
 
 export interface SequenceDebugger {
 	sequenceStarted(): void
@@ -65,7 +66,7 @@ export class SequenceRunner {
 			this.dbg?.logResult(action.id, result)
 			return result
 		} catch (err) {
-			console.error("Error ", action.plugin, action.action, err)
+			globalLogger.error("Error ", action.plugin, action.action, err)
 			this.dbg?.logError(action.id, err)
 			return undefined
 		} finally {

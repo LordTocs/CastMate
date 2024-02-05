@@ -2,6 +2,7 @@ import { Resource, ResourceBase } from "./resource"
 import * as fs from "fs/promises"
 import * as path from "path"
 import { ensureDirectory, loadYAML, resolveProjectPath, writeYAML } from "../io/file-system"
+import { globalLogger, usePluginLogger } from "../logging/logging"
 
 interface FileResourceConstructor {
 	new (...args: any[]): ResourceBase
@@ -43,7 +44,8 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 	}
 
 	static async onDelete(resource: FileResource<any, any>) {
-		console.log("Deleting!", resource.id)
+		const logger = usePluginLogger("resources")
+		logger.log("Deleting", this.storage.name, ":", resource.config.name, resource.id)
 		await fs.unlink(resource.filepath)
 	}
 
@@ -70,7 +72,8 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 			throw new Error("Cannot load resources, no directory set!")
 		}
 
-		console.log("Loading Resources from ", this.resourceDirectory)
+		const logger = usePluginLogger("resources")
+		logger.log("Loading Resources from ", this.resourceDirectory)
 
 		const resolvedDir = resolveProjectPath(this.resourceDirectory)
 		await ensureDirectory(resolvedDir)
@@ -79,7 +82,7 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 		const fileLoadPromises = files.map(async (file) => {
 			const id = path.basename(file, ".yaml")
 
-			console.log("Loading", this.storage.name, id)
+			logger.log("Loading", this.storage.name, id)
 
 			const fullFile = path.join(resolvedDir, file)
 
@@ -89,13 +92,13 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 				resource._id = id
 
 				if ((await resource.load(data)) === false) {
-					console.error("Load Failed", id)
+					logger.error("Load Failed", id)
 					return undefined
 				}
 
 				return resource
 			} catch (err) {
-				console.error("Load Errored", id, err)
+				logger.error("Loading Resource Threw", id, err)
 				return undefined
 			}
 		})

@@ -468,7 +468,6 @@ interface FullDataTypeMetaData<T extends DataConstructorOrFactory = any> extends
 }
 
 export function registerType<T extends DataConstructorOrFactory>(name: string, metaData: DataTypeMetaData<T>) {
-	console.log("Registering Type", name)
 	const fullMetaData = { canBeVariable: true, canBeCommandArg: false, ...metaData, name }
 	dataNameLookup.set(name, fullMetaData)
 	dataConstructorLookup.set(metaData.constructor, fullMetaData)

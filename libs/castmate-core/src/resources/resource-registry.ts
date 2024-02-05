@@ -1,3 +1,4 @@
+import { globalLogger, usePluginLogger } from "../logging/logging"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Service } from "../util/service"
 import { Resource, ResourceBase, ResourceStorage, ResourceConstructor } from "./resource"
@@ -115,10 +116,12 @@ export const ResourceRegistry = Service(
 
 		//Don't extends Resource here because the metadata function can't recursively satisfy it.
 		register<T extends ResourceBase>(constructor: ResourceConstructor<T>) {
+			const logger = usePluginLogger("resources")
 			if (!constructor.storage) {
-				console.log("ERROR REGISTERING RESOURCE NO STORAGE", constructor)
+				logger.error("Cannot Register Resource", constructor)
+				return
 			}
-			console.log("Registering Resource", constructor.storage.name)
+			logger.log("Registering Resource", constructor.storage.name)
 
 			this.resourceTypes.push({
 				typeName: constructor.storage.name,
@@ -131,7 +134,8 @@ export const ResourceRegistry = Service(
 		}
 
 		unregister<T extends ResourceBase>(constructor: ResourceConstructor<T>) {
-			console.log("Unregistering Resource")
+			const logger = usePluginLogger("resources")
+			logger.log("Unregistering Resource")
 
 			const idx = this.resourceTypes.findIndex((rt) => rt.constructor == constructor)
 

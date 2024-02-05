@@ -4,6 +4,7 @@ import { ResourceRegistry } from "./resource-registry"
 import { defineCallableIPC } from "../util/electron"
 import { ResourceData } from "castmate-schema"
 import { isObject } from "../util/type-helpers"
+import { globalLogger } from "../logging/logging"
 
 interface ResourceIPCDescription {
 	id: string
@@ -87,10 +88,9 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 	}
 
 	async remove(id: string) {
-		console.log("Deleting", id)
+		globalLogger.log("Deleting", id)
 		const entry = this.resources.get(id)
 		if (entry) {
-			console.log("Entry Found")
 			//Run on delete first incase it throws
 			const constructor = entry.resource.constructor as ResourceConstructor<T>
 			await constructor.onDelete?.(entry.resource)
@@ -98,7 +98,6 @@ export class ResourceStorage<T extends ResourceBase> implements ResourceStorageB
 			this.resources.delete(id)
 			entry.stateEffect.dispose()
 			rendererDeleteResource(this.name, id)
-			console.log("Delete Successful")
 		}
 	}
 }

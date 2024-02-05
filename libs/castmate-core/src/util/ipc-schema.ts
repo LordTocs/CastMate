@@ -1,19 +1,17 @@
 import {
 	DataConstructorOrFactory,
-	Defaultable,
 	Enumable,
 	ExposedSchemaType,
 	IPCSchema,
 	ResolvedSchemaType,
 	Schema,
-	SchemaBase,
-	SchemaObj,
 	SchemaType,
 	getTypeByConstructor,
 } from "castmate-schema"
 import { ResourceBase, isResourceConstructor } from "../resources/resource"
 import { isArray, isFunction, isObject, isString } from "lodash"
 import { ipcMain } from "electron"
+import { globalLogger } from "../logging/logging"
 
 function convertIPCEnum(schema: Enumable<any>, path: string) {
 	if (schema.enum) {
@@ -47,8 +45,8 @@ function registerIPCEnum(schema: Enumable<any>, path: string, topLevelSchema: Sc
 			const parsedContext = await deserializeSchema(topLevelSchema, context)
 			return (await enumFunc(parsedContext)).map((r) => serializeSchema(schema as Schema, r))
 		} catch (err) {
-			console.log("Error Invoking Enum IPC", path)
-			console.error(err)
+			globalLogger.log("Error Invoking Enum IPC", path)
+			globalLogger.error(err)
 			return []
 		}
 	})
@@ -65,8 +63,8 @@ function registerIPCDynamic(schema: PossiblyDynamic, path: string, topLevelSchem
 			const schema = await schemaFunc(parsedContext)
 			return ipcConvertSchema(schema, `${path}_dynamicTypeResult`)
 		} catch (err) {
-			console.log("Error Invoking DynamicType IPC", path)
-			console.error(err)
+			globalLogger.log("Error Invoking DynamicType IPC", path)
+			globalLogger.error(err)
 			return []
 		}
 	})
@@ -93,8 +91,8 @@ function registerIPCDefault(schema: Schema, path: string) {
 		try {
 			return serializeSchema(schema, await defaultFunc())
 		} catch (err) {
-			console.log("Error Invoking Default IPC", path)
-			console.error(err)
+			globalLogger.log("Error Invoking Default IPC", path)
+			globalLogger.error(err)
 			return []
 		}
 	})
@@ -112,7 +110,7 @@ export function ipcRegisterSchema<T extends Schema>(schema: T, path: string, top
 	} else {
 		const typeName = getTypeByConstructor(schema.type)?.name
 		if (!typeName) {
-			console.error("Unconvertable Schema Type: ", schema)
+			globalLogger.error("Unconvertable Schema Type: ", schema)
 			throw new Error("Unconvertable Schema Type")
 		}
 		registerIPCEnum(schema as Enumable<any>, path, topLevelSchema ?? schema)
@@ -123,7 +121,7 @@ export function ipcRegisterSchema<T extends Schema>(schema: T, path: string, top
 
 export function ipcRegisterDynamicSchema<T extends Schema>(schema: T | ((...args: any[]) => Promise<T>), path: string) {
 	if (isFunction(schema)) {
-		console.log("Registering", `${path}_dynamic`)
+		globalLogger.log("Registering", `${path}_dynamic`)
 		ipcMain.handle(`${path}_dynamic`, async (event, ...args: any[]) => {
 			const finalSchema = await schema(...args)
 			return ipcConvertSchema(finalSchema, `${path}`)
@@ -167,7 +165,7 @@ export function ipcConvertSchema<T extends Schema>(schema: T, path: string): IPC
 	} else {
 		const typeName = getTypeByConstructor(schema.type)?.name
 		if (!typeName) {
-			console.error("Unconvertable Schema Type: ", schema)
+			globalLogger.error("Unconvertable Schema Type: ", schema)
 			throw new Error("Unconvertable Schema Type")
 		}
 		return {
@@ -211,7 +209,7 @@ export async function deserializeSchema<TSchema extends Schema>(
 			Object.keys(objValue).map(async (key) => {
 				const propSchema = schema.properties[key]
 				if (!propSchema) {
-					console.error("Unable to find type for", key, value)
+					globalLogger.error("Unable to find type for", key, value)
 					return
 				}
 				copyValue[key] = await deserializeSchema(propSchema, objValue[key])
@@ -222,7 +220,6 @@ export async function deserializeSchema<TSchema extends Schema>(
 		const arrValue: Array<any> = value
 		return (await Promise.all(arrValue.map((i) => deserializeSchema(schema.items, i)))) as SchemaType<TSchema>
 	} else if (isResourceConstructor(schema.type) && isString(value)) {
-		console.log("Deserializing Resource", value, schema.type.storage.getById(value)?.config?.name)
 		return schema.type.storage.getById(value)
 	} else {
 		const valueType = getTypeByConstructor(schema.type)
@@ -237,7 +234,7 @@ export function serializeSchema<TSchema extends Schema>(schema: TSchema, value: 
 		for (const key of Object.keys(objValue)) {
 			const propSchema = schema.properties[key]
 			if (!propSchema) {
-				console.error("Unable to find type for", key, value)
+				globalLogger.error("Unable to find type for", key, value)
 				continue
 			}
 			copyValue[key] = serializeSchema(propSchema, objValue[key])
@@ -276,7 +273,7 @@ export async function exposeSchema<TSchema extends Schema>(
 			Object.keys(objValue).map(async (key) => {
 				const propSchema = schema.properties[key]
 				if (!propSchema) {
-					console.error("Unable to find type for", key, value)
+					globalLogger.error("Unable to find type for", key, value)
 					return
 				}
 				copyValue[key] = await exposeSchema(propSchema, objValue[key])
@@ -306,7 +303,7 @@ export async function unexposeSchema<TSchema extends Schema>(
 			Object.keys(objValue).map(async (key) => {
 				const propSchema = schema.properties[key]
 				if (!propSchema) {
-					console.error("Unable to find type for", key, value)
+					globalLogger.error("Unable to find type for", key, value)
 					return
 				}
 				copyValue[key] = await unexposeSchema(propSchema, objValue[key])

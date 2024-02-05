@@ -5,6 +5,7 @@ import { Plugin } from "./plugin"
 import { deserializeSchema } from "../util/ipc-schema"
 import { Profile } from "../profile/profile"
 import { aliasReactiveValue, reactify } from "../reactivity/reactivity"
+import { globalLogger, usePluginLogger } from "../logging/logging"
 
 const rendererRegisterPlugin = defineCallableIPC<(plugin: IPCPluginDefinition) => void>("plugins", "registerPlugin")
 const rendererUnregisterPlugin = defineCallableIPC<(id: string) => void>("plugins", "unregisterPlugin")
@@ -64,17 +65,18 @@ export const PluginManager = Service(
 
 		async registerPlugin(plugin: Plugin) {
 			this.plugins.set(plugin.id, plugin)
-			console.log("Loading Plugin", plugin.id)
+			const logger = usePluginLogger(plugin.id)
+			logger.log("Loading Plugin", plugin.id)
 			try {
 				if (!(await plugin.load())) {
-					console.error("Load failed for", plugin.id)
+					logger.error("Load failed for", plugin.id)
 					this.plugins.delete(plugin.id)
 					return
 				}
 				rendererRegisterPlugin(await plugin.toIPC())
 			} catch (err) {
-				console.error("Load REALLY failed for", plugin.id)
-				console.error(err)
+				logger.error("Load REALLY failed for", plugin.id)
+				logger.error(err)
 
 				//Remove broken plugins
 				this.plugins.delete(plugin.id)

@@ -1,3 +1,4 @@
+import { globalLogger } from "../logging/logging"
 import { PluginManager } from "../plugins/plugin-manager"
 import { ignoreReactivity } from "../reactivity/reactivity"
 import { Service } from "../util/service"
@@ -62,11 +63,11 @@ export const ProfileManager = Service(
 				//TODO: OnProfileDeactivate
 			}
 
-			console.log(
+			globalLogger.log(
 				"Active Profiles",
 				active.map((p) => p.config.name)
 			)
-			console.log(
+			globalLogger.log(
 				"Inactive Profiles",
 				inactive.map((p) => p.config.name)
 			)

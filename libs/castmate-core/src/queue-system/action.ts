@@ -16,6 +16,7 @@ import { SemanticVersion, isArray } from "../util/type-helpers"
 import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
 import { defineIPCFunc } from "../util/electron"
 import { templateSchema } from "../templates/template"
+import { usePluginLogger } from "../logging/logging"
 
 interface ActionMetaData {
 	id: string
@@ -237,7 +238,9 @@ export function defineAction<ConfigSchema extends Schema, ResultSchema extends S
 		throw new Error("Can only be used while initing a plugin")
 	}
 
-	console.log("Defining", spec.id)
+	const logger = usePluginLogger()
+
+	logger.log("Defining Action", spec.id)
 	const impl = new ActionImplementation<ConfigSchema, ResultSchema>(
 		{
 			icon: "mdi mdi-pencil",
@@ -372,7 +375,9 @@ export function defineFlowAction<ConfigSchema extends Schema, FlowSchema extends
 		throw new Error("Can only be used while initing a plugin")
 	}
 
-	console.log("Defining Flow", spec.id)
+	const logger = usePluginLogger()
+
+	logger.log("Defining Flow Action", spec.id)
 	const impl = new FlowActionImplementation<ConfigSchema, FlowSchema>(
 		{
 			icon: "mdi mdi-pencil",

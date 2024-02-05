@@ -17,6 +17,7 @@ import { FileResource } from "../resources/file-resource"
 import { ResourceRegistry } from "../resources/resource-registry"
 import { deserializeSchema, exposeSchema } from "../util/ipc-schema"
 import { PluginManager } from "../plugins/plugin-manager"
+import { globalLogger } from "../logging/logging"
 
 export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueState> {
 	static resourceDirectory: string = "./queues"
@@ -103,14 +104,13 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 
 	spliceQueue(index: number, deleteCount: number, ...sequence: QueuedSequence[]) {
 		this.state.queue.splice(index, deleteCount, ...sequence)
-		console.log("Spliced", index, deleteCount, ...sequence)
 	}
 
 	replay(id: string) {
 		const played = this.state.history.find((i) => i.id == id)
 		if (!played) return
 
-		this.enqueue(played.source, played.queueContext)
+		this.enqueue(played.source, played.queueContext.contextState)
 	}
 
 	private getNextSequence():
@@ -121,19 +121,19 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 			if (queuedSequence.source.type == "profile" && queuedSequence.source.subid) {
 				const profile = Profile.storage.getById(queuedSequence.source.id)
 				if (!profile) {
-					console.log("Couldn't find profile", queuedSequence.source.id)
+					globalLogger.log("Couldn't find profile", queuedSequence.source.id)
 					continue
 				}
 
 				const sequence = profile.getSequence(queuedSequence.source.subid)
 				if (!sequence) {
-					console.log("Couldn't find Sequence", queuedSequence.source.subid)
+					globalLogger.log("Couldn't find Sequence", queuedSequence.source.subid)
 					continue
 				}
 
 				const trigger = profile.getTrigger(queuedSequence.source.subid)
 				if (!trigger) {
-					console.log("Couldn't find trigger", queuedSequence.source.subid)
+					globalLogger.log("Couldn't find trigger", queuedSequence.source.subid)
 					continue
 				}
 
@@ -151,7 +151,6 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 	}
 
 	async runNext() {
-		console.log("runNext")
 		if (this.runner || this.state.running) {
 			return
 		}
@@ -160,12 +159,13 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 
 		if (!seqItem) return
 
-		console.log("Running SeqItem", seqItem)
-
-		const resolvedContext = await deserializeSchema(seqItem.contextSchema, seqItem.queuedSequence.queueContext)
+		const resolvedContext = await deserializeSchema(
+			seqItem.contextSchema,
+			seqItem.queuedSequence.queueContext.contextState
+		)
 		const finalContext = await exposeSchema(seqItem.contextSchema, resolvedContext)
 
-		this.runner = new SequenceRunner(seqItem.sequence, finalContext)
+		this.runner = new SequenceRunner(seqItem.sequence, { contextState: finalContext })
 
 		this.state.running = seqItem.queuedSequence
 		const doRun = async () => {
@@ -225,12 +225,10 @@ class TestRunnerDebugger implements SequenceDebugger {
 	}
 
 	sequenceStarted() {
-		console.log("Sequence Start")
 		markTestSequenceStart(this.sequenceId)
 	}
 
 	sequenceEnded() {
-		console.log("Sequence End")
 		markTestSequenceEnd(this.sequenceId)
 	}
 }

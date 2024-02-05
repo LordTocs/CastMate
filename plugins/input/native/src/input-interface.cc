@@ -219,7 +219,6 @@ Napi::Value input_interface::start_events(const Napi::CallbackInfo& info)
 		return info.Env().Undefined();
 	}
 
-    std::cout << "Starting Input Events" << std::endl;
     input_window = CreateWindow("InputEventWindow", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, 0, 0);
 
     if (!input_window) {

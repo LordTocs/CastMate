@@ -23,6 +23,8 @@ export * from "./util/ipc-schema"
 export * from "./util/electron"
 export * from "./io/file-system"
 
+export * from "./logging/logging"
+
 export * from "./templates/template"
 
 export * from "./reactivity/reactivity"

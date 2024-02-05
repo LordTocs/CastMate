@@ -17,6 +17,7 @@ import { ActionQueue } from "./action-queue"
 import { SequenceRunner } from "./sequence"
 import { isFunction } from "lodash"
 import { Profile } from "../profile/profile"
+import { globalLogger } from "../logging/logging"
 
 interface TriggerMetaData {
 	id: string
@@ -168,11 +169,11 @@ class TriggerImplementation<
 		if (trigger.queue) {
 			const queue = ActionQueue.storage.getById(trigger.queue)
 			if (!queue) {
-				console.error("Missing Queue!", queue)
+				globalLogger.error("Missing Queue!", queue)
 				return false
 			}
 
-			console.log("Running On Queue", queue.config.name)
+			globalLogger.log("Running On Queue", queue.config.name)
 
 			queue.enqueue(
 				{ type: "profile", id: profile.id, subid: trigger.id },

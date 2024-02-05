@@ -18,7 +18,6 @@ export const RendererSoundPlayer = Service(
 
 		constructor() {
 			defineIPCFunc("sound", "soundFinishedInRenderer", (id: string) => {
-				console.log("Sound Complete", id)
 				this.resolveSound(id)
 			})
 		}

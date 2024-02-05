@@ -8,6 +8,7 @@ import * as chokidar from "chokidar"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { ensureDirectory, resolveProjectPath } from "../io/file-system"
 import { shell } from "electron"
+import { globalLogger } from "../logging/logging"
 //Thumbnails?
 //Durations?
 
@@ -62,7 +63,7 @@ export const MediaManager = Service(
 		}
 
 		private async setupFolderScanner(id: string, path: string) {
-			console.log("Scanning", path, "for media")
+			globalLogger.log("Scanning", path, "for media")
 			await ensureDirectory(path)
 			const watcher = chokidar.watch(path)
 

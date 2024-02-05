@@ -12,7 +12,6 @@ class AudioDeviceInterface extends EventEmitter {
 	constructor() {
 		super()
 		const boundEmit = this.emit.bind(this)
-		console.log("Passing Bound Emit", boundEmit)
 		this._native = new NativeAudioDeviceInterface(boundEmit)
 	}
 

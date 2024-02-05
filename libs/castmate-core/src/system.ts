@@ -10,6 +10,7 @@ import { defineCallableIPC, defineIPCFunc } from "./util/electron"
 import { Automation } from "./automation/automation"
 import util from "util"
 import { setupStreamPlans } from "./stream-plan/stream-plan"
+import { globalLogger, initializeLogging } from "./logging/logging"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -28,8 +29,9 @@ export async function loadPlugin(name: string) {
 let setupComplete = false
 
 export async function initializeCastMate() {
-	console.log("Initing CastMate")
 	await setProjectDirectory("../../user")
+	await initializeLogging()
+	globalLogger.log("Initing Castmate")
 	await ensureDirectory(resolveProjectPath("settings"))
 	await ensureDirectory(resolveProjectPath("secrets"))
 	await initializeFileSystem()
@@ -46,14 +48,14 @@ export async function initializeCastMate() {
 const notifyRendererSetupFinished = defineCallableIPC<() => void>("castmate", "setupFinished")
 
 export async function finializeCastMateSetup() {
-	console.log("Finalizing Init")
+	globalLogger.log("Finalizing Init")
 	await Profile.initialize()
 	await Automation.initialize()
 	await ActionQueue.initialize()
 	ActionQueueManager.initialize()
 	ProfileManager.initialize()
 	await ProfileManager.getInstance().finishSetup()
-	console.log("CastMate Init Complete")
+	globalLogger.log("CastMate Init Complete")
 	setupComplete = true
 	notifyRendererSetupFinished()
 }

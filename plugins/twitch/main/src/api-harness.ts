@@ -2,8 +2,10 @@ import { EventSubWsListener } from "@twurple/eventsub-ws"
 import { TwitchAccount } from "./twitch-auth"
 import { ChatClient } from "@twurple/chat"
 import { PubSubClient } from "@twurple/pubsub"
-import { Service, onLoad, onUnload } from "castmate-core"
+import { Service, onLoad, onUnload, usePluginLogger } from "castmate-core"
 import { EventList } from "castmate-core/src/util/events"
+
+const logger = usePluginLogger("twitch")
 
 export const TwitchAPIService = Service(
 	class {
@@ -46,7 +48,6 @@ export const TwitchAPIService = Service(
 
 		async finalize() {
 			if (TwitchAccount.channel.config.name.length > 0) {
-				console.log("Reauthing Channel")
 				await this.onReauthChannel()
 			}
 		}
@@ -68,7 +69,7 @@ export const TwitchAPIService = Service(
 
 			await this._chatClient.connect()
 
-			console.log("Reauthing Channel")
+			logger.log("Reauthing Channel")
 
 			//@ts-ignore Damned type system
 			await this.onChannelReauthList.run(channelAccount, this)

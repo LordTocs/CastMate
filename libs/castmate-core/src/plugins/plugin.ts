@@ -37,6 +37,7 @@ import {
 } from "../util/ipc-schema"
 import { ResourceBase, ResourceConstructor } from "../resources/resource"
 import { PluginManager } from "./plugin-manager"
+import { Logger, globalLogger, usePluginLogger } from "../logging/logging"
 
 interface PluginSpec {
 	id: string
@@ -50,7 +51,7 @@ interface PluginSpec {
 export function definePlugin(spec: PluginSpec, initter: () => void) {
 	return new Plugin(
 		{
-			icon: "mdi-puzzle",
+			icon: "mdi mdi-puzzle",
 			color: "#fefefe",
 			version: "0.0.0",
 			...spec,
@@ -127,6 +128,8 @@ interface StateDefinition<StateSchema extends Schema = any> {
 export function defineState<T extends Schema>(id: string, schema: T) {
 	if (!initingPlugin) throw new Error()
 
+	const logger = usePluginLogger()
+
 	//Cheat a little
 	const result = reactiveRef<ExposedSchemaType<T>>(undefined as unknown as ExposedSchemaType<T>)
 
@@ -140,7 +143,7 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 		const stateDef = plugin.state.get(id)
 
 		if (!stateDef) {
-			console.error("Attempted loading invalid state", id)
+			logger.error("Attempted loading invalid state", id)
 			return
 		}
 
@@ -172,6 +175,7 @@ export function useState<T>(id: string) {
 
 export function defineReactiveState<T extends Schema>(id: string, schema: T, func: () => ResolvedSchemaType<T>) {
 	if (!initingPlugin) throw new Error()
+	const logger = usePluginLogger()
 
 	const result = reactiveComputed<ExposedSchemaType<T>>(func)
 
@@ -184,7 +188,7 @@ export function defineReactiveState<T extends Schema>(id: string, schema: T, fun
 		const stateDef = plugin.state.get(id)
 
 		if (!stateDef) {
-			console.error("Attempted loading invalid state", id)
+			logger.error("Attempted loading invalid state", id)
 			return
 		}
 
@@ -417,6 +421,7 @@ export class Plugin {
 	private uiloader = new EventList<PluginCallback>()
 	private profilesChanged = new EventList<ProfilesChangedCallback>()
 	stateContainer = reactify<Record<string, any>>({})
+	private logger: Logger
 
 	get id() {
 		return this.spec.id
@@ -444,6 +449,7 @@ export class Plugin {
 
 	constructor(private spec: PluginSpec, initer: () => void) {
 		initingPlugin = this
+		this.logger = usePluginLogger(spec.id)
 		initer()
 		initingPlugin = null
 	}
@@ -501,7 +507,7 @@ export class Plugin {
 		try {
 			this.serializedSecretData = await loadSecretYAML("secrets", `${this.id}.yaml`)
 		} catch (err) {
-			console.error(`Failed to load secrets for ${this.id}`)
+			this.logger.error(`Failed to load secrets for ${this.id}`)
 			this.serializedSecretData = {}
 		}
 	}
@@ -510,7 +516,6 @@ export class Plugin {
 		const setting = this.settings.get(id)
 		if (setting?.type != "secret") return
 		if (!(id in this.serializedSecretData)) return
-		console.log("Deserializing", id)
 		setting.ref.value = await deserializeSchema(setting.schema, this.serializedSecretData[id])
 	}
 
@@ -536,8 +541,8 @@ export class Plugin {
 			this.registerIPC()
 		} catch (err) {
 			//TODO_ERRRORS
-			console.error("Error Loading", this.id)
-			console.error(err)
+			this.logger.error("Error Loading", this.id)
+			this.logger.error(err)
 			return false
 		}
 		return true

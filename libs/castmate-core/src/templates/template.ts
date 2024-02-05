@@ -1,3 +1,4 @@
+import { globalLogger } from "../logging/logging"
 import { isResourceConstructor } from "../resources/resource"
 import { isArray, isBoolean, isNumber, isObject, isString } from "../util/type-helpers"
 import {
@@ -29,7 +30,7 @@ export async function evaluateTemplate(template: string, data: object) {
 		let func = new AsyncFunction(...Object.keys(contextObjs), `return (${template})`)
 		return await func(...Object.values(contextObjs))
 	} catch (err) {
-		console.error("Error Evaluating Template", err)
+		globalLogger.error("Error Evaluating Template", err)
 		return undefined
 	}
 }

@@ -1,4 +1,4 @@
-import { ReactiveRef, onLoad, onSettingChanged, removeAllSubResource } from "castmate-core"
+import { ReactiveRef, onLoad, onSettingChanged, removeAllSubResource, usePluginLogger } from "castmate-core"
 import { LightResource, PlugResource } from "castmate-plugin-iot-main"
 import { LightColor } from "castmate-plugin-iot-shared"
 import { Toggle } from "castmate-schema"
@@ -127,6 +127,8 @@ class KasaPlug extends PlugResource {
 	}
 }
 
+const logger = usePluginLogger("tplink-kasa")
+
 export function setupLights(subnetMask: ReactiveRef<string>) {
 	let client: Client
 
@@ -139,7 +141,6 @@ export function setupLights(subnetMask: ReactiveRef<string>) {
 		client = new Client()
 
 		client.on("plug-new", async (plug: Plug) => {
-			console.log("New TPLINK Plug!")
 			const powerState = await plug.getPowerState()
 			const resource = new KasaPlug(plug, powerState)
 
@@ -154,16 +155,16 @@ export function setupLights(subnetMask: ReactiveRef<string>) {
 		})
 
 		client.on("error", async (err) => {
-			console.error("TP-Link Kasa Error", err)
+			logger.error("TP-Link Kasa Error", err)
 		})
 
 		client.on("discover-invalid", (err) => {
-			console.error("Kasa Discovery Invalid?", err)
+			logger.error("Kasa Discovery Invalid?", err)
 		})
 	}
 
 	async function setupDiscovery() {
-		console.log("Starting TP-Link Kasa Discovery", subnetMask.value)
+		logger.log("Starting TP-Link Kasa Discovery", subnetMask.value)
 		client.startDiscovery({
 			breakoutChildren: true,
 			broadcast: subnetMask.value.trim(),

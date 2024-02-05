@@ -1,6 +1,7 @@
 import { DelayedResolver, createDelayedResolver } from "castmate-schema"
 import { ipcMain, IpcMainInvokeEvent, WebContents, BrowserWindow } from "electron"
 import { nanoid } from "nanoid/non-secure"
+import { globalLogger } from "../logging/logging"
 
 export function defineIPCFunc<T extends (...args: any[]) => any>(category: string, name: string, func: T) {
 	ipcMain.handle(`${category}_${name}`, async (event: IpcMainInvokeEvent, ...args: any[]) => {
@@ -19,9 +20,9 @@ export function defineCallableIPC<T extends (...args: any[]) => void>(category: 
 			try {
 				window.webContents.send(`${category}_${name}`, ...args)
 			} catch (err) {
-				console.error(`Error Sending Broadcast ${category}_${name}`)
-				console.error(`Broadcast Args`, ...args)
-				console.error(err)
+				globalLogger.error(`Error Sending Broadcast ${category}_${name}`)
+				globalLogger.error(`Broadcast Args`, ...args)
+				globalLogger.error(err)
 			}
 		}
 	}

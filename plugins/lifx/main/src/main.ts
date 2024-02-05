@@ -7,12 +7,15 @@ import {
 	defineSetting,
 	removeAllSubResource,
 	onSettingChanged,
+	usePluginLogger,
 } from "castmate-core"
 import { LightResource, PollingLight } from "castmate-plugin-iot-main/src/light"
 import { LightColor } from "castmate-plugin-iot-shared"
 import { Toggle } from "castmate-schema"
 import EventEmitter from "events"
 import { Client, Light } from "lifx-lan-client"
+
+const logger = usePluginLogger("lifx")
 
 //HACK: The .d.ts file for lifx-lan-client doesn't propery have EventEmitter referenced.
 type LIFXClient = Client & EventEmitter
@@ -120,7 +123,7 @@ class LIFXLight extends PollingLight {
 			const lightState = await getLightState(this.lifxLight)
 			this.parseState(lightState)
 		} catch (err) {
-			console.error("Failed LIFX State Update")
+			logger.error("Failed LIFX State Update")
 		}
 	}
 
@@ -194,7 +197,6 @@ export default definePlugin(
 						broadcast: subnetMask.value,
 					},
 					(err: any, data: any) => {
-						console.log("Init Complete")
 						if (err) {
 							return reject(err)
 						}
@@ -218,7 +220,7 @@ export default definePlugin(
 
 			lifxClient = new Client() as LIFXClient
 
-			console.log("Starting LIFX Discovery", subnetMask.value)
+			logger.log("Starting LIFX Discovery", subnetMask.value)
 
 			lifxClient.on("light-new", async (light: Light) => {
 				const resource = new LIFXLight(light)
@@ -227,7 +229,7 @@ export default definePlugin(
 			})
 
 			lifxClient.on("error", (err) => {
-				console.error("LIFX Error", err)
+				logger.error("LIFX Error", err)
 			})
 
 			await initClient()

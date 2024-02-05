@@ -1,6 +1,9 @@
 import axios from "axios"
+import { usePluginLogger } from "castmate-core"
 import { LightColor } from "castmate-plugin-iot-shared"
 import crypto from "crypto"
+
+const logger = usePluginLogger("twinkly")
 
 export interface TwinklyAuthResponse {
 	["challenge-response"]: string
@@ -53,16 +56,14 @@ export async function authenticateTwinkly(ip: string, token: TwinklyAuthToken) {
 			}
 		)
 
-		console.log("Authenticating Twinkly", ip)
+		logger.log("Authenticating Twinkly", ip)
 		token.token = authResp.authentication_token
 		token.expiry = Date.now() + authResp.authentication_token_expires_in * 1000 - 5 * 1000
 
-		console.log(token)
-
 		return true
 	} catch (err) {
-		console.error("Failed Twinkly Auth", err.response.data)
-		console.error(err)
+		logger.error("Failed Twinkly Auth", err.response.data)
+		logger.error(err)
 		return false
 	}
 }
@@ -72,7 +73,7 @@ function hasAuth(token: TwinklyAuthToken): token is { token: string; expiry: num
 	if (token.expiry == null) return false
 	const now = Date.now()
 	if (token.expiry < now) {
-		console.log("Token Expired", token.expiry, now)
+		logger.log("Token Expired", token.expiry, now)
 		return false
 	}
 	return true
@@ -80,7 +81,7 @@ function hasAuth(token: TwinklyAuthToken): token is { token: string; expiry: num
 
 export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path: string) {
 	if (!hasAuth(token)) {
-		console.error(`token invalid in get ${path}`)
+		logger.error(`token invalid in get ${path}`)
 		await authenticateTwinkly(ip, token)
 	}
 
@@ -94,10 +95,8 @@ export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path
 
 		return resp.data as T
 	} catch (err) {
-		console.log("Error w/", path)
-		console.log(err.response.data)
 		if (err.response.data == "Invalid Token") {
-			console.error(`get ${path} failed, reauthing`)
+			logger.error(`get ${path} failed, reauthing`)
 			//Somebody invalidated our token, try again
 			await authenticateTwinkly(ip, token)
 
@@ -117,7 +116,7 @@ export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path
 
 export async function postTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path: string, data: object) {
 	if (!hasAuth(token)) {
-		console.error(`token invalid in post ${path}`)
+		logger.error(`token invalid in post ${path}`)
 		await authenticateTwinkly(ip, token)
 	}
 
@@ -132,7 +131,7 @@ export async function postTwinklyApi<T>(ip: string, token: TwinklyAuthToken, pat
 		return resp.data as T
 	} catch (err) {
 		if (err.response.data == "Invalid Token") {
-			console.error(`post ${path} failed, reauthing`)
+			logger.error(`post ${path} failed, reauthing`)
 			//Somebody invalidated our token, try again
 			await authenticateTwinkly(ip, token)
 
@@ -234,7 +233,7 @@ export async function setTwinklyMovie(ip: string, token: TwinklyAuthToken, movie
 			id: movieId,
 		})
 	} catch (err) {
-		console.error("Failed to set twinkly movie", ip)
+		logger.error("Failed to set twinkly movie", ip)
 	}
 
 	await await postTwinklyApi(ip, token, `/led/mode`, {

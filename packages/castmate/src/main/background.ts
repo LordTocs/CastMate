@@ -42,7 +42,6 @@ app.whenReady().then(async () => {
 		} catch {}
 	}
 
-	console.log("Win Ready!")
 	await createMainWindow()
 
 	await initializeCastMate()
