@@ -4,6 +4,8 @@ import { isArray, isBoolean, isNumber, isObject, isString } from "../util/type-h
 import {
 	Color,
 	DataConstructorOrFactory,
+	Directory,
+	FilePath,
 	ResolvedSchemaType,
 	ResolvedTypeByConstructor,
 	Schema,
@@ -175,4 +177,14 @@ registerSchemaTemplate(Boolean, async (value, context, schema) => {
 
 registerSchemaTemplate(Color, async (value, context, schema) => {
 	return await template(value, context)
+})
+
+registerSchemaTemplate(FilePath, async (value, context, schema) => {
+	let str = await template(value, context)
+	return str
+})
+
+registerSchemaTemplate(Directory, async (value, context, schema) => {
+	let str = await template(value, context)
+	return str
 })

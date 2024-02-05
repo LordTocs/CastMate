@@ -63,7 +63,6 @@ export class SequenceRunner {
 			const deserializedConfig = await deserializeSchema(actionDef.configSchema, action.config)
 			//Todo construct action context
 			const actionContext: ActionInvokeContextData = this.context
-			globalLogger.log("Running Context", actionContext.contextState)
 			const result = await actionDef.invoke(deserializedConfig, actionContext, this.abortController.signal)
 			this.dbg?.logResult(action.id, result)
 

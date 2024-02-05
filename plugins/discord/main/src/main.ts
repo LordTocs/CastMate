@@ -9,9 +9,13 @@ import {
 	ResourceStorage,
 	definePluginResource,
 	defineResourceSetting,
+	usePluginLogger,
 } from "castmate-core"
 import { WebhookClient } from "discord.js"
 import { nanoid } from "nanoid/non-secure"
+import { FilePath } from "castmate-schema"
+import * as fs from "fs"
+import { Stream } from "stream"
 
 class DiscordWebHook extends FileResource<DiscordWebhookConfig> {
 	static resourceDirectory = "./discord/webhooks"
@@ -61,6 +65,8 @@ export default definePlugin(
 		color: "#7289da",
 	},
 	() => {
+		const logger = usePluginLogger()
+
 		definePluginResource(DiscordWebHook)
 
 		defineResourceSetting(DiscordWebHook, "Discord WebHooks")
@@ -74,11 +80,37 @@ export default definePlugin(
 				properties: {
 					webhook: { type: DiscordWebHook, name: "Channel Webhook", required: true },
 					message: { type: String, name: "Message", required: true, default: "", template: true },
+					files: {
+						type: Array,
+						name: "Files",
+						items: {
+							type: FilePath,
+							name: "File",
+							template: true,
+							required: true,
+						},
+					},
 				},
 			},
 			async invoke(config, contextData, abortSignal) {
+				let files: Stream[] | undefined = undefined
+
+				if (config.files) {
+					files = []
+					for (const f of config.files) {
+						try {
+							const stream = fs.createReadStream(f)
+							files.push(stream)
+						} catch (err) {
+							logger.error("Error opening file", f)
+							logger.error(err)
+						}
+					}
+				}
+
 				await config.webhook?.client?.send({
 					content: config.message,
+					files,
 				})
 			},
 		})

@@ -79,4 +79,35 @@ export async function initializeFileSystem() {
 
 		return result?.filePaths?.[0]
 	})
+
+	ipcMain.handle(
+		"filesystem_getFileInput",
+		async (event: IpcMainInvokeEvent, existing: string | undefined, exts: string[] | undefined) => {
+			const window = BrowserWindow.fromWebContents(event.sender)
+
+			if (!window) return undefined
+
+			const filters: Electron.FileFilter[] = []
+
+			if (exts?.length) {
+				filters.push({
+					name: "File",
+					extensions: exts,
+				})
+			}
+
+			filters.push({
+				name: "All",
+				extensions: ["*"],
+			})
+
+			const result = await dialog.showOpenDialog(window, {
+				properties: ["openFile"],
+				defaultPath: existing,
+				filters,
+			})
+
+			return result?.filePaths?.[0]
+		}
+	)
 }

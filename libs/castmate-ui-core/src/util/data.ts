@@ -14,6 +14,7 @@ import {
 	DynamicType,
 	Directory,
 	Command,
+	FilePath,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -61,6 +62,8 @@ import CommandViewVue from "../components/data/views/CommandView.vue"
 
 import _cloneDeep from "lodash/cloneDeep"
 import { ipcInvoke } from "./electron"
+import FilePathInputVue from "../components/data/inputs/FilePathInput.vue"
+import ArrayInputVue from "../components/data/inputs/ArrayInput.vue"
 
 export type ResourceProxy = string
 export const ResourceProxyFactory = {
@@ -230,6 +233,7 @@ export function initData() {
 	inputStore.registerInputComponent(String, StringInputVue)
 	inputStore.registerInputComponent(Number, NumberInputVue)
 	inputStore.registerInputComponent(Object, ObjectInputVue)
+	inputStore.registerInputComponent(Array, ArrayInputVue)
 	inputStore.registerInputComponent(Range, RangeInputVue)
 	inputStore.registerInputComponent(MediaFile, MediaFileInput)
 	inputStore.registerInputComponent(ResourceProxyFactory, ResourceInputVue)
@@ -239,6 +243,7 @@ export function initData() {
 	inputStore.registerInputComponent(Duration, DurationInputVue)
 	inputStore.registerInputComponent(DynamicType, DynamicTypeInputVue)
 	inputStore.registerInputComponent(Directory, DirectoryInputVue)
+	inputStore.registerInputComponent(FilePath, FilePathInputVue)
 	inputStore.registerInputComponent(Command, CommandInputVue)
 
 	inputStore.registerViewComponent(String, GenericDataViewVue)
