@@ -112,7 +112,7 @@ export async function parseArgs(
 ): Promise<Record<string, any> | undefined> {
 	let result: Record<string, any> = {}
 
-	console.log(`Parse Args "${argString}"`)
+	//console.log(`Parse Args "${argString}"`)
 
 	for (const arg of command.arguments) {
 		skipWhitespace(argString, parse)
@@ -188,7 +188,7 @@ export async function matchAndParseCommand(
 
 		if (!argValues) return undefined
 
-		console.log("Arg Values", argValues)
+		//console.log("Arg Values", argValues)
 
 		if (!expectWhitespace(message, parse)) {
 			return undefined

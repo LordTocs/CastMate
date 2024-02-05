@@ -34,17 +34,14 @@ export function createWindow(
 	}
 
 	win.addListener("maximize", () => {
-		console.log("maximized")
 		win.webContents.send("windowFuncs_stateChanged", "maximized")
 	})
 
 	win.addListener("minimize", () => {
-		console.log("minimized")
 		win.webContents.send("windowFuncs_stateChanged", "minimized")
 	})
 
 	win.addListener("unmaximize", () => {
-		console.log("unmaximized")
 		win.webContents.send("windowFuncs_stateChanged", "unmaximized")
 	})
 

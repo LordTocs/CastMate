@@ -12,8 +12,6 @@ export function setupUndocumented() {
 		service.pubsubClient.onCustomTopic(channel.twitchId, "video-playback-by-id", async (event) => {
 			const data = event.data as Record<string, any>
 			viewers.value = "viewers" in data ? data.viewers : 0
-
-			console.log("playback", data)
 		})
 	})
 }

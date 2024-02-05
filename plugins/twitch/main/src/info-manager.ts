@@ -18,6 +18,7 @@ import {
 	StreamPlanComponents,
 	defineState,
 	isProbablyFromTemplate,
+	usePluginLogger,
 } from "castmate-core"
 import { StreamInfo, StreamInfoSchema, TwitchCategory, TwitchViewer } from "castmate-plugin-twitch-shared"
 import { TwitchAccount } from "./twitch-auth"
@@ -27,6 +28,7 @@ import { CategoryCache } from "./category-cache"
 import { ExposedSchemaPropType, ExposedSchemaType, ExposedSchemaTypeUnion, declareSchema } from "castmate-schema"
 
 const rendererUpdateStreamInfo = defineCallableIPC<(info: StreamInfo) => any>("twitch", "updateStreamInfo")
+const logger = usePluginLogger("twitch")
 
 export const StreamInfoManager = Service(
 	class {
@@ -165,7 +167,7 @@ export function setupInfoManager() {
 
 	onChannelAuth(async (channel, service) => {
 		service.eventsub.onChannelUpdate(channel.twitchId, async (event) => {
-			console.log("Channel Update", event.streamTitle, event.categoryName)
+			logger.log("Channel Update", event.streamTitle, event.categoryName)
 
 			title.value = event.streamTitle
 

@@ -8,6 +8,7 @@ import {
 	defineSecret,
 	defineSetting,
 	AsyncCache,
+	usePluginLogger,
 } from "castmate-core"
 import axios, { AxiosInstance } from "axios"
 import { TwinklyDiscovery } from "./discovery"
@@ -26,6 +27,8 @@ import {
 	turnTwinklyOff,
 } from "./api"
 import { Toggle } from "castmate-schema"
+
+const logger = usePluginLogger("twinkly")
 
 interface TwinklyLightConfig extends LightConfig {
 	ip: string
@@ -107,14 +110,14 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 			const mode = await getTwinklyMode(this.config.ip, this.authToken)
 			this.state.on = mode != "off"
 		} catch (err) {
-			console.log("Failed to get twinkly mode", err)
+			logger.log("Failed to get twinkly mode", err)
 		}
 
 		try {
 			const color = await getTwinklyColor(this.config.ip, this.authToken)
 			this.state.color = color
 		} catch (err) {
-			console.log("Failed to get twinkly color")
+			logger.log("Failed to get twinkly color")
 		}
 	}
 
@@ -162,7 +165,7 @@ export default definePlugin(
 					await twinkly.initialize()
 					await LightResource.storage.inject(twinkly)
 				} catch (err) {
-					console.error("Error Initializing Twinkly", ip, id, err)
+					logger.error("Error Initializing Twinkly", ip, id, err)
 				}
 			})
 

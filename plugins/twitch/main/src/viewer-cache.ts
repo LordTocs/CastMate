@@ -123,10 +123,8 @@ registerSchemaTemplate(
 	TwitchViewer,
 	async (value: TwitchViewerUnresolved, context: any, schema: SchemaTwitchViewer) => {
 		if (isDefinitelyNotTwitchId(value)) {
-			console.log("Templating Viewer", value)
 			//We know this is a template string, so template the value to a name and then get the userId from it
 			const resultName = await template(value, context)
-			console.log("Template Result", resultName)
 			return await ViewerCache.getInstance().getUserId(resultName)
 		}
 

@@ -7,7 +7,7 @@ import colors from "@colors/colors"
 
 const fileLogFormat = winston.format.printf((info) => {
 	const timestamp = info.timestamp
-	const plugin = info.label
+	const plugin = info.plugin
 	const level = info.level
 	const message = info.message
 

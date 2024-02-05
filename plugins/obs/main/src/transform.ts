@@ -113,7 +113,5 @@ registerSchemaTemplate(OBSSourceTransform, async (value, context, schema) => {
 		result.boundingBox.height = await templateNumber(value.boundingBox.height, context)
 	}
 
-	console.log("Final Templated Transform", result)
-
 	return result
 })

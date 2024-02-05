@@ -1,5 +1,5 @@
 import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
-import { defineTrigger, defineAction, defineTransformTrigger } from "castmate-core"
+import { defineTrigger, defineAction, defineTransformTrigger, usePluginLogger } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { Color, Command, Range, getCommandDataSchema, matchAndParseCommand } from "castmate-schema"
@@ -52,6 +52,8 @@ function parseEmotesFromMsg(chatMessage: ChatMessage): EmoteParsedString {
 }
 
 export function setupChat() {
+	const logger = usePluginLogger()
+
 	defineAction({
 		id: "chat",
 		name: "Chat Message",
@@ -108,8 +110,6 @@ export function setupChat() {
 			}
 		},
 		async handle(config, context) {
-			console.log("Handling", config.command, context.message)
-
 			const matchResult = await matchAndParseCommand(context.message, config.command)
 
 			if (matchResult == null) return undefined
@@ -230,8 +230,6 @@ export function setupChat() {
 
 			const twitchOnlyEmotes = parseEmotesFromMsg(msgInfo)
 			const allEmotes = EmoteCache.getInstance().parseThirdParty(twitchOnlyEmotes)
-
-			console.log(allEmotes)
 
 			ViewerCache.getInstance().cacheChatUser(msgInfo.userInfo)
 

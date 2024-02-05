@@ -1,4 +1,4 @@
-import { ReactiveRef, abortableSleep, defineAction } from "castmate-core"
+import { ReactiveRef, abortableSleep, defineAction, usePluginLogger } from "castmate-core"
 import { OBSConnection } from "./connection"
 import { Toggle } from "castmate-schema"
 import { OBSFFmpegSourceSettings } from "./input-settings"
@@ -32,6 +32,8 @@ export async function forceGetMediaDuration(obs: OBSConnection, sourceName: stri
 }
 
 export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
+	const logger = usePluginLogger()
+
 	defineAction({
 		id: "mediaAction",
 		name: "Media Controls",
@@ -100,7 +102,7 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 
 					const duration = await forceGetMediaDuration(config.obs, sceneItem.sourceName)
 
-					console.log("Duration Detected: ", duration)
+					logger.log("Duration Detected: ", duration)
 
 					return {
 						indefinite: duration == null,
@@ -109,7 +111,7 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 					}
 				} catch (err) {
 					//TODO: Cache Media Lengths??
-					console.error(err)
+					logger.error(err)
 
 					return {
 						indefinite: true,

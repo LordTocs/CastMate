@@ -17,7 +17,7 @@ import { ActionQueue } from "./action-queue"
 import { SequenceRunner } from "./sequence"
 import { isFunction } from "lodash"
 import { Profile } from "../profile/profile"
-import { globalLogger } from "../logging/logging"
+import { globalLogger, usePluginLogger } from "../logging/logging"
 
 interface TriggerMetaData {
 	id: string
@@ -207,6 +207,11 @@ class TriggerImplementation<
 			}
 		}
 
+		if (triggered) {
+			const logger = usePluginLogger(this.pluginId)
+			logger.log("Triggered", this.id, context)
+		}
+
 		return triggered
 	}
 
@@ -226,9 +231,6 @@ class TriggerImplementation<
 			config: ipcConvertSchema(this.spec.config, `${path}_config`),
 			context: ipcConvertDynamicSchema(this.spec.context, `${path}_context`),
 		}
-
-		//console.log(triggerDef.config)
-
 		return triggerDef
 	}
 }

@@ -22,6 +22,7 @@ import {
 	templateSchema,
 	defineRendererCallable,
 	runOnChange,
+	usePluginLogger,
 } from "castmate-core"
 
 import { DynamicType, Range, Schema, constructDefault, getTypeByConstructor, getTypeByName } from "castmate-schema"
@@ -65,6 +66,8 @@ const variablesPlugin = definePlugin(
 		color: "#D3934A",
 	},
 	() => {
+		const logger = usePluginLogger()
+
 		const variables = new Map<string, VariableDefinition>()
 
 		const setVariableRenderer = defineRendererInvoker<(def: IPCVariableDefinition) => any>("setVariable")
@@ -212,7 +215,7 @@ const variablesPlugin = definePlugin(
 			if (originalId != ipcDef.id) {
 				existing.id = ipcDef.id
 				//This is a rename!
-				console.log("Renaming", originalId, ipcDef.id)
+				logger.log("Renaming", originalId, ipcDef.id)
 				variables.delete(originalId)
 				deleteVariableRenderer(originalId)
 				await variablesPlugin.dynamicRemoveState(originalId)
@@ -348,8 +351,6 @@ const variablesPlugin = definePlugin(
 								name: "Value",
 								template: true,
 							}
-
-							//console.log("DYNAMIC TYPE", result)
 
 							return result
 						},

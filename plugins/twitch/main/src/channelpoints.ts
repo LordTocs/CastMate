@@ -64,11 +64,6 @@ interface TwurpleReward {
 function helixNeedsUpdate(reward: TwurpleReward | undefined, data: HelixCreateCustomRewardData) {
 	if (!reward) return true
 
-	// console.log("Needs Update")
-	// console.log(getRawData(reward))
-	// console.log("---")
-	// console.log(data)
-
 	if (reward.title != data.title) return true
 	if (reward.cost != data.cost) return true
 	if (reward.prompt != data.prompt) return true
@@ -104,6 +99,8 @@ interface ChannelPointRewardConstructor {
 	new (...args: any): ChannelPointReward
 	resourceDirectory: string
 }
+
+const logger = usePluginLogger("twitch")
 
 export class ChannelPointReward extends Resource<ChannelPointRewardConfig, ChannelPointRewardState> {
 	static storage = new ResourceStorage<ChannelPointReward>("ChannelPointReward")
@@ -229,13 +226,13 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 				resource._id = id
 
 				if ((await resource.load(data)) === false) {
-					console.error("Load Failed", id)
+					logger.error("Load Failed", id)
 					return undefined
 				}
 
 				return resource
 			} catch (err) {
-				console.error("Load Errored", id, err)
+				logger.error("Load Errored", id, err)
 				return undefined
 			}
 		})
@@ -246,7 +243,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 
 	//Called when we discover a CastMate controlled reward that doesn't have a resource
 	static async recoverLocalReward(reward: TwurpleReward) {
-		console.log("Recovering ", reward.title)
+		logger.log("Recovering ", reward.title)
 		const rewardData = rewardDataFromTwurple(reward)
 
 		const result = new ChannelPointReward()
@@ -353,8 +350,8 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			//We didn't find an equivalent reward at twitch. Create One
 			if (this.config.transient) return //Transient rewards don't need to exist
 
-			console.log("Reward Found in files but not on twitch")
-			console.log(expectedHelixData.title)
+			logger.log("Reward Found in files but not on twitch")
+			logger.log(expectedHelixData.title)
 
 			const created = await TwitchAccount.channel.apiClient.channelPoints.createCustomReward(
 				TwitchAccount.channel.twitchId,
@@ -387,12 +384,10 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 	}
 
 	private updateServerDebounced = _debounce(async () => {
-		//console.log("Debounced Twurple Reward Update")
 		await this.updateTwitchServers()
 	}, 300)
 
 	async initializeReactivity() {
-		//console.log("Initializing Reactivity", this.id)
 		this.clearReactivity()
 		this.reactiveEffect = await runOnChange(async () => await this.getHelixRewardData(), this.updateServerDebounced)
 	}
@@ -410,7 +405,6 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			)
 			await this.updateFromTwurple(update)
 		} else {
-			console.log("Update Twitch Servers Create")
 			const created = await TwitchAccount.channel.apiClient.channelPoints.createCustomReward(
 				TwitchAccount.channel.twitchId,
 				helixData
@@ -500,7 +494,6 @@ export function setupChannelPointRewards() {
 			},
 		},
 		async handle(config, context) {
-			//console.log("Redemption Check", config.reward.id, context.reward.id)
 			if (config.reward.id != context.reward.id) {
 				return false
 			}

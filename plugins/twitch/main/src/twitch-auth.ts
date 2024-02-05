@@ -77,7 +77,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 
 		for (const requiredScope of this.config.scopes) {
 			if (!info.scopes.includes(requiredScope)) {
-				console.log("Missing Scope", requiredScope)
+				logger.log("Missing Scope", requiredScope)
 				return false
 			}
 		}
