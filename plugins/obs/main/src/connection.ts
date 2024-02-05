@@ -1,4 +1,4 @@
-import { FileResource, definePluginResource, ResourceStorage } from "castmate-core"
+import { FileResource, definePluginResource, ResourceStorage, usePluginLogger } from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
 import {
 	OBSConnectionConfig,
@@ -31,6 +31,8 @@ class SceneHistory {
 		return this.history[this.history.length - 1]
 	}
 }
+
+const logger = usePluginLogger("obs")
 
 export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnectionState> {
 	static resourceDirectory = "./obs/connections"
@@ -91,7 +93,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 		this.connection.on("CurrentProgramSceneChanged", ({ sceneName }) => {
 			this.state.scene = sceneName
-			console.log("Scene Changed", sceneName)
+			logger.log("Scene Changed", sceneName)
 
 			//Keep track of a scene history using a stack, but don't push a scene to history if we're currently popping
 			if (!this.poppingScene) {
@@ -163,7 +165,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 	async getSceneNames(): Promise<string[]> {
 		try {
-			console.log("Fetching Scene Names")
+			logger.log("Fetching Scene Names")
 			const resp = await this.connection.call("GetSceneList")
 			const scenes = resp.scenes as unknown as OBSSceneListItem[]
 			return scenes.map((s) => s.sceneName).reverse()
