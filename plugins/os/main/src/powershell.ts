@@ -1,5 +1,5 @@
 import { PowerShellCommand } from "castmate-plugin-os-shared"
-import { defineAction, evaluateTemplate, registerSchemaTemplate } from "castmate-core"
+import { defineAction, evaluateTemplate, registerSchemaTemplate, usePluginLogger } from "castmate-core"
 import { abortablePromise } from "castmate-core/src/util/abort-utils"
 import { getTemplateRegionString, parseTemplateString, trimTemplateJS, Directory } from "castmate-schema"
 import { ChildProcess, exec, spawn } from "child_process"
@@ -166,6 +166,8 @@ async function runPowershellCommand(command: string, workingDir: string | undefi
 registerSchemaTemplate(PowerShellCommand, powershellTemplate)
 
 export function setupPowershell() {
+	const logger = usePluginLogger()
+
 	//Note I chose to include powershell commands instead of CMD commands because Powershell actually has string rules that allow escaping.
 	//Trying to properly escape a CMD string to avoid malicious behaviour is an exercise in madness.
 	//It's also worth noting that the escaping of the {{ templates }} doesn't completely prevent malicious behavior depending on the configured command
@@ -189,11 +191,11 @@ export function setupPowershell() {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
-			console.log("Running PS: ", config.command)
+			logger.log("Running PS: ", config.command)
 
 			const stdout = await runPowershellCommand(config.command, config.cwd, abortSignal)
 
-			console.log("Result", stdout)
+			logger.log("Result", stdout)
 
 			return {
 				processOutput: stdout,

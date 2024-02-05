@@ -1,6 +1,13 @@
 import { LightResource, PlugResource, defineIoTProvider } from "castmate-plugin-iot-main"
 
-import { ReactiveRef, iterSubResource, onLoad, onSettingChanged, removeAllSubResource } from "castmate-core"
+import {
+	ReactiveRef,
+	iterSubResource,
+	onLoad,
+	onSettingChanged,
+	removeAllSubResource,
+	usePluginLogger,
+} from "castmate-core"
 import { Toggle } from "castmate-schema"
 import axios, { Method } from "axios"
 import https from "https"
@@ -143,7 +150,7 @@ interface PhilipsHUEGroupConfig extends LightConfig {
 	lightIds: string[]
 	hueType: "group"
 }
-
+const logger = usePluginLogger("philips-hue")
 export class PhilipsHUEGroup extends LightResource<PhilipsHUEGroupConfig> {
 	childDeviceIds: string[] = []
 	constructor(roomInfo: HUEApiRoom, private hubInfo: HubInfo) {
@@ -220,10 +227,10 @@ export class PhilipsHUEGroup extends LightResource<PhilipsHUEGroupConfig> {
 		for (const childId of this.config.lightIds) {
 			const childLight = LightResource.storage.getById(`philips-hue.${childId}`)
 			if (!childLight) {
-				console.log("Missing", `philips-hue.${childId}`)
+				logger.log("Missing", `philips-hue.${childId}`)
 				continue
 			}
-			console.log("Child!", childLight.state)
+			logger.log("Child!", childLight.state)
 
 			if (childLight.state.on) {
 				on = true
