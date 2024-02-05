@@ -18,13 +18,15 @@ const shortHands: Record<string, string> = {
 	info: colors.blue("log"),
 	error: colors.red("err"),
 }
-
+function padLines(str: string, padding: number) {
+	return str.replaceAll("\n", "\n" + " ".repeat(padding))
+}
 const consoleLogFormat = winston.format.printf((info) => {
 	const plugin: string = info.plugin
 	const level = info.level
 	const message = info.messageColored
 
-	return `${plugin.padStart(11, " ")}:${shortHands[level]}: ${message}`
+	return `${plugin.padStart(11, " ")}:${shortHands[level]}: ${padLines(message, 17)}`
 })
 
 export let winstonLogger: winston.Logger
