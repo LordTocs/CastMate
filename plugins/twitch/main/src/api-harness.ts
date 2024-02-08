@@ -55,16 +55,30 @@ export const TwitchAPIService = Service(
 		private async onReauthChannel() {
 			const channelAccount = TwitchAccount.channel
 
+			const twurpleLog = {
+				custom(level: number, message: string) {
+					if (level > 2) return
+					let levelName = ""
+					if (level == 2) levelName = "warning"
+					if (level == 1) levelName = "error"
+					if (level == 0) levelName = "critical"
+					logger.error("Twurple", levelName, ":", message)
+				},
+			}
+
 			this._chatClient = new ChatClient({
 				authProvider: channelAccount,
 				channels: [channelAccount.config.name],
+				logger: twurpleLog,
 			})
 			this._pubsubClient = new PubSubClient({
 				authProvider: channelAccount,
+				logger: twurpleLog,
 			})
 
 			this._eventsub = new EventSubWsListener({
 				apiClient: channelAccount.apiClient,
+				logger: twurpleLog,
 			})
 
 			await this._chatClient.connect()

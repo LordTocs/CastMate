@@ -56,7 +56,6 @@ export async function authenticateTwinkly(ip: string, token: TwinklyAuthToken) {
 			}
 		)
 
-		logger.log("Authenticating Twinkly", ip)
 		token.token = authResp.authentication_token
 		token.expiry = Date.now() + authResp.authentication_token_expires_in * 1000 - 5 * 1000
 
@@ -81,7 +80,7 @@ function hasAuth(token: TwinklyAuthToken): token is { token: string; expiry: num
 
 export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path: string) {
 	if (!hasAuth(token)) {
-		logger.error(`token invalid in get ${path}`)
+		//logger.error(`token invalid in get ${path}`)
 		await authenticateTwinkly(ip, token)
 	}
 
@@ -96,7 +95,7 @@ export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path
 		return resp.data as T
 	} catch (err) {
 		if (err.response.data == "Invalid Token") {
-			logger.error(`get ${path} failed, reauthing`)
+			//logger.error(`get ${path} failed, reauthing`)
 			//Somebody invalidated our token, try again
 			await authenticateTwinkly(ip, token)
 
@@ -116,7 +115,7 @@ export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path
 
 export async function postTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path: string, data: object) {
 	if (!hasAuth(token)) {
-		logger.error(`token invalid in post ${path}`)
+		//logger.error(`token invalid in post ${path}`)
 		await authenticateTwinkly(ip, token)
 	}
 
