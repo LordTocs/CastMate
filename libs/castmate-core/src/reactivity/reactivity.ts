@@ -4,8 +4,11 @@
 import { AsyncLocalStorage } from "node:async_hooks"
 import { isArray, isObject, isString, isSymbol } from "../util/type-helpers"
 import { isResource } from "../resources/resource"
+import { usePluginLogger } from "../logging/logging"
 
 const activeEffectStorage = new AsyncLocalStorage<ReactiveEffect>()
+
+const logger = usePluginLogger("reactivity")
 
 function getActiveEffect() {
 	return activeEffectStorage.getStore()
@@ -16,7 +19,7 @@ export function ignoreReactivity(func: () => any) {
 }
 
 function reactiveLog(...values: any[]) {
-	//console.log(...values)
+	//logger.log(...values)
 }
 
 class ReactiveDependency {
@@ -44,7 +47,7 @@ class ReactiveDependency {
 			this.addEffect(effect)
 			effect.added(this)
 			if (effect.debug) {
-				console.log("Added Dep", this.debugName, "to", effect.debugName)
+				logger.log("Added Dep", this.debugName, "to", effect.debugName)
 			}
 		}
 	}
@@ -112,11 +115,18 @@ export namespace DependencyStorage {
 	}
 }
 
+interface PendingTrigger {
+	timestamp: number
+	timeoutTrigger: NodeJS.Timeout
+}
+
 export class ReactiveEffect<T = any> {
 	private dependencies: ReactiveDependency[] = []
 	private pendingRun = false
 	public debug = false
 	public debugName: string | undefined = undefined
+	public futureTrigger?: PendingTrigger
+
 	constructor(private func: () => T, private scheduler?: () => any) {}
 
 	added(dep: ReactiveDependency) {
@@ -128,12 +138,14 @@ export class ReactiveEffect<T = any> {
 		for (const dep of this.dependencies) {
 			dep.removeEffect(this)
 		}
+
+		this.removeFutureTrigger()
 	}
 
 	async run() {
-		if (this.debug) console.log("Running", this.debugName)
+		if (this.debug) logger.log("Running", this.debugName)
 		await activeEffectStorage.run(this, this.func)
-		if (this.debug) console.log("Finished", this.debugName)
+		if (this.debug) logger.log("Finished", this.debugName)
 	}
 
 	trigger() {
@@ -155,8 +167,43 @@ export class ReactiveEffect<T = any> {
 
 	debugDump() {
 		for (const dep of this.dependencies) {
-			console.log("Dep: ", dep.name)
+			logger.log("Dep: ", dep.name)
 		}
+	}
+
+	private removeFutureTrigger() {
+		if (!this.futureTrigger) return
+
+		clearTimeout(this.futureTrigger.timeoutTrigger)
+
+		this.futureTrigger = undefined
+	}
+
+	scheduleTrigger(timestamp: number) {
+		if (this.futureTrigger) {
+			//If our future trigger is sooner, don't bother scheduling a new trigger
+			if (this.futureTrigger.timestamp < timestamp) return
+
+			this.removeFutureTrigger()
+		}
+
+		const remainingMs = timestamp - Date.now()
+		if (remainingMs < 0) return
+
+		this.futureTrigger = {
+			timestamp,
+			timeoutTrigger: setTimeout(() => {
+				this.futureTrigger = undefined
+				this.trigger()
+			}, remainingMs),
+		}
+	}
+}
+
+export function scheduleReactiveTrigger(timestamp: number) {
+	const activeEffect = activeEffectStorage.getStore()
+	if (activeEffect) {
+		activeEffect.scheduleTrigger(timestamp)
 	}
 }
 
@@ -252,8 +299,8 @@ export function reactify<T extends object>(obj: T) {
 	try {
 		return new Proxy(obj, new ReactiveProxy<T>())
 	} catch (err) {
-		console.error(err)
-		console.error(`Invalid Proxy`, obj)
+		logger.error(err)
+		logger.error(`Invalid Proxy`, obj)
 		throw err
 	}
 }
@@ -363,10 +410,10 @@ export function Reactive<This extends object, T>(
 ): ClassAccessorDecoratorResult<This, T> {
 	return {
 		get() {
-			console.log("----------------------------------------------------------")
-			console.log("Accessor", accessor)
-			console.log("Context", context)
-			console.log("Reactive Get On", Object.getOwnPropertyNames(this))
+			logger.log("----------------------------------------------------------")
+			logger.log("Accessor", accessor)
+			logger.log("Context", context)
+			logger.log("Reactive Get On", Object.getOwnPropertyNames(this))
 			let result = accessor.get.call(this)
 
 			if (shouldTrack(this, context.name)) {
@@ -380,10 +427,10 @@ export function Reactive<This extends object, T>(
 			return result
 		},
 		set(newValue: T) {
-			console.log("----------------------------------------------------------")
-			console.log("Accessor", accessor)
-			console.log("Context", context)
-			console.log("Reactive Set On", Object.getOwnPropertyNames(this))
+			logger.log("----------------------------------------------------------")
+			logger.log("Accessor", accessor)
+			logger.log("Context", context)
+			logger.log("Reactive Set On", Object.getOwnPropertyNames(this))
 			const result = accessor.set.call(this, newValue)
 
 			if (shouldTrack(this, context.name)) {
