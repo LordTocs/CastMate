@@ -46,11 +46,10 @@ export const StreamInfoManager = Service(
 			await ensureYAML({ title: undefined, category: undefined }, "twitch", "info-manager.yaml")
 			this.activeInfo = await loadYAML("twitch", "info-manager.yaml")
 			rendererUpdateStreamInfo(this.activeInfo)
-			await this.createUpdateEffect()
+		}
 
-			TwitchAccount.channel.onAuthorized.register(() => {
-				this.createUpdateEffect()
-			})
+		async startManagingInfo() {
+			await this.createUpdateEffect()
 		}
 
 		private updateEffect: ReactiveEffect
@@ -185,5 +184,7 @@ export function setupInfoManager() {
 
 			await StreamInfoManager.getInstance().reconcileTwitchUpdate(queryResult.title, queryResult.gameId)
 		}
+
+		await StreamInfoManager.getInstance().startManagingInfo()
 	})
 }
