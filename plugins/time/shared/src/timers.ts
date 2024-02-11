@@ -1,6 +1,8 @@
-import { Duration, SchemaBase, registerType } from "castmate-schema"
+import { Duration, SchemaBase, formatDuration, registerType } from "castmate-schema"
 
-interface TimerBase {}
+interface TimerBase {
+	[Symbol.toPrimitive](hint: "default" | "string" | "number"): any
+}
 
 interface RunningTimer extends TimerBase {
 	/**
@@ -24,9 +26,20 @@ export type TimerFactory = {
 	[TimerSymbol]: "Timer"
 }
 
+function timerToPrimitive(hint: "default" | "string" | "number", timer: Timer) {
+	if (hint == "default" || hint == "string") {
+		return formatDuration(getTimeRemaining(timer), 0)
+	}
+}
+
 export const Timer: TimerFactory = {
 	factoryCreate(): Timer {
-		return { remainingTime: 0 }
+		return {
+			remainingTime: 0,
+			[Symbol.toPrimitive](hint) {
+				return timerToPrimitive(hint, this)
+			},
+		}
 	},
 	[TimerSymbol]: "Timer",
 }
@@ -36,6 +49,9 @@ export function pauseTimer(timer: Timer): Timer {
 
 	return {
 		remainingTime: getTimeRemaining(timer),
+		[Symbol.toPrimitive](hint) {
+			return timerToPrimitive(hint, this)
+		},
 	}
 }
 
@@ -46,6 +62,9 @@ export function startTimer(timer: Timer): Timer {
 
 	return {
 		endTime,
+		[Symbol.toPrimitive](hint) {
+			return timerToPrimitive(hint, this)
+		},
 	}
 }
 
@@ -55,9 +74,19 @@ export function isTimerStarted(timer: Timer) {
 
 export function setTimer(timer: Timer, duration: Duration): Timer {
 	if ("endTime" in timer) {
-		return { endTime: Date.now() + duration * 1000 }
+		return {
+			endTime: Date.now() + duration * 1000,
+			[Symbol.toPrimitive](hint) {
+				return timerToPrimitive(hint, this)
+			},
+		}
 	} else {
-		return { remainingTime: duration }
+		return {
+			remainingTime: duration,
+			[Symbol.toPrimitive](hint) {
+				return timerToPrimitive(hint, this)
+			},
+		}
 	}
 }
 
@@ -68,15 +97,24 @@ export function offsetTimer(timer: Timer, duration: Duration): Timer {
 		if (timer.endTime > now) {
 			return {
 				endTime: timer.endTime + duration * 1000,
+				[Symbol.toPrimitive](hint) {
+					return timerToPrimitive(hint, this)
+				},
 			}
 		} else {
 			return {
 				endTime: now + duration * 1000,
+				[Symbol.toPrimitive](hint) {
+					return timerToPrimitive(hint, this)
+				},
 			}
 		}
 	} else {
 		return {
 			remainingTime: timer.remainingTime + duration * 1000,
+			[Symbol.toPrimitive](hint) {
+				return timerToPrimitive(hint, this)
+			},
 		}
 	}
 }
@@ -108,4 +146,24 @@ declare module "castmate-schema" {
 registerType("Timer", {
 	constructor: Timer,
 	canBeVariable: true,
+	async deserialize(value, schema): Promise<Timer | undefined> {
+		if (isTimer(value)) {
+			if ("endTime" in value) {
+				return {
+					endTime: value.endTime,
+					[Symbol.toPrimitive](hint) {
+						return timerToPrimitive(hint, this)
+					},
+				}
+			} else if ("remainingTime" in value) {
+				return {
+					remainingTime: value.remainingTime,
+					[Symbol.toPrimitive](hint) {
+						return timerToPrimitive(hint, this)
+					},
+				}
+			}
+		}
+		return undefined
+	},
 })
