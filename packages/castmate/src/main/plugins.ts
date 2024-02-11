@@ -22,6 +22,7 @@ import goveePlugin from "castmate-plugin-govee-main"
 import twinklyPlugin from "castmate-plugin-twinkly-main"
 
 import castmatePlugin from "./builtin-plugin"
+import { WebService } from "castmate-core"
 
 export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
@@ -54,4 +55,6 @@ export async function loadPlugins() {
 	]
 
 	await Promise.allSettled(iotPromises)
+
+	await WebService.getInstance().startWebsockets()
 }

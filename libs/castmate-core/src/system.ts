@@ -10,6 +10,7 @@ import { Automation } from "./automation/automation"
 import util from "util"
 import { setupStreamPlans } from "./stream-plan/stream-plan"
 import { globalLogger, initializeLogging } from "./logging/logging"
+import { WebService } from "./webserver/internal-webserver"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -34,6 +35,7 @@ export async function initializeCastMate() {
 	await ensureDirectory(resolveProjectPath("settings"))
 	await ensureDirectory(resolveProjectPath("secrets"))
 	await initializeFileSystem()
+	WebService.initialize()
 	PluginManager.initialize()
 	MediaManager.initialize()
 	ResourceRegistry.initialize()

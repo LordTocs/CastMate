@@ -4,9 +4,12 @@ import {
 	Automation,
 	Profile,
 	SequenceRunner,
+	WebService,
 	defineAction,
 	definePlugin,
 	defineSetting,
+	onLoad,
+	runOnChange,
 } from "castmate-core"
 import { abortableSleep } from "castmate-core/src/util/abort-utils"
 import { defineFlowAction } from "castmate-core/src/queue-system/action"
@@ -28,6 +31,17 @@ export default definePlugin(
 			max: 65535,
 			name: "Internal Webserver Port",
 		})
+
+		onLoad(() => {
+			WebService.getInstance().startHttp(port.value)
+		})
+
+		runOnChange(
+			() => port.value,
+			() => {
+				WebService.getInstance().updatePort(port.value)
+			}
+		)
 
 		defineFlowAction({
 			id: "random",
