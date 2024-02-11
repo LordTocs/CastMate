@@ -1,7 +1,6 @@
 import { Profile } from "./profile/profile"
 import { ActionQueue, ActionQueueManager } from "./queue-system/action-queue"
 import { ResourceRegistry } from "./resources/resource-registry"
-import { Plugin } from "./plugins/plugin"
 import { PluginManager } from "./plugins/plugin-manager"
 import { ensureDirectory, resolveProjectPath, setProjectDirectory, initializeFileSystem } from "./io/file-system"
 import { MediaManager } from "./media/media-manager"

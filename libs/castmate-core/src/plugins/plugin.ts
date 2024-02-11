@@ -1,4 +1,5 @@
-import { ExposedSchemaType, ResolvedSchemaType } from "./../../../castmate-schema/src/schema"
+import { initingPlugin, setInitingPlugin } from "./plugin-init"
+import { ExposedSchemaType, ResolvedSchemaType } from "castmate-schema"
 import { Profile } from "./../profile/profile"
 import {
 	Color,
@@ -408,8 +409,6 @@ export function getPluginSetting<T>(plugin: string, setting: string) {
 	return settingDef.ref as ReactiveRef<T>
 }
 
-export let initingPlugin: Plugin | null = null
-
 export class Plugin {
 	actions: Map<string, ActionDefinition> = new Map()
 	triggers: Map<string, TriggerDefinition> = new Map()
@@ -448,10 +447,10 @@ export class Plugin {
 	}
 
 	constructor(private spec: PluginSpec, initer: () => void) {
-		initingPlugin = this
+		setInitingPlugin(this)
 		this.logger = usePluginLogger(spec.id)
 		initer()
-		initingPlugin = null
+		setInitingPlugin(null)
 	}
 
 	private async writeSettings() {

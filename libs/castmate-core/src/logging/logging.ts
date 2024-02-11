@@ -1,6 +1,6 @@
 import winston from "winston"
 import util from "util"
-import { initingPlugin } from "../plugins/plugin"
+import { initingPlugin } from "../plugins/plugin-init"
 import { ensureDirectory, resolveProjectPath } from "../io/file-system"
 import fs from "fs"
 import colors from "@colors/colors"

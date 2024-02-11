@@ -1,7 +1,7 @@
 import { Color, ExposedSchemaType, ResolvedSchemaType, TriggerData } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
-import { initingPlugin } from "../plugins/plugin"
+import { initingPlugin } from "../plugins/plugin-init"
 import {
 	deserializeSchema,
 	exposeSchema,
@@ -28,10 +28,19 @@ interface TriggerMetaData {
 	version?: SemanticVersion
 }
 
+export interface TriggerMapping {
+	profileId: string
+	triggerId: string
+}
+
 interface TriggerDefinitionSpec<ConfigSchema extends Schema, ContextDataSchema extends Schema> extends TriggerMetaData {
 	config: ConfigSchema
 	context: ContextDataSchema
-	handle(config: SchemaType<ConfigSchema>, context: SchemaType<ContextDataSchema>): Promise<boolean>
+	handle(
+		config: SchemaType<ConfigSchema>,
+		context: SchemaType<ContextDataSchema>,
+		mapping: TriggerMapping
+	): Promise<boolean>
 }
 
 //A transform trigger is a trigger that outputs a different context schema than it is triggered on.
@@ -46,7 +55,8 @@ interface TransformTriggerDefinitionSpec<
 	invokeContext: InvokeContextDataSchema
 	handle(
 		config: SchemaType<ConfigSchema>,
-		context: SchemaType<InvokeContextDataSchema>
+		context: SchemaType<InvokeContextDataSchema>,
+		mapping: TriggerMapping
 	): Promise<ResolvedSchemaType<ContextDataSchema> | undefined>
 }
 
@@ -150,12 +160,15 @@ class TriggerImplementation<
 		//Store our resolved config, if this is a "transform" trigger we will receive a final context to use as a return value
 		let resolvedContext: ResolvedSchemaType<ContextDataSchema> | undefined
 		if (isTransformSpec(this.spec)) {
-			const invokeResult = await this.spec.handle(configValue, context)
+			const invokeResult = await this.spec.handle(configValue, context, {
+				profileId: profile.id,
+				triggerId: trigger.id,
+			})
 			if (invokeResult != undefined) {
 				resolvedContext = invokeResult
 			}
 		} else {
-			if (await this.spec.handle(configValue, context)) {
+			if (await this.spec.handle(configValue, context, { profileId: profile.id, triggerId: trigger.id })) {
 				resolvedContext = context as ResolvedSchemaType<ContextDataSchema> //Type system too stupid
 			}
 		}
