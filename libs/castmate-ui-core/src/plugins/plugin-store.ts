@@ -266,10 +266,16 @@ export const usePluginStore = defineStore("plugins", () => {
 		const ids = await getPluginIds()
 		console.log("Received Plugin Ids", ids)
 
-		const plugins = await Promise.all(ids.map((id) => getPlugin(id)))
+		const plugins = await Promise.allSettled(ids.map((id) => getPlugin(id)))
 
 		for (let i = 0; i < ids.length; ++i) {
-			pluginMap.value.set(ids[i], ipcParsePluginDefinition(plugins[i]))
+			const pluginResult = plugins[i]
+			if (pluginResult.status == "fulfilled") {
+				pluginMap.value.set(ids[i], ipcParsePluginDefinition(pluginResult.value))
+			} else {
+				console.error("Failed Loading ", ids[i])
+				console.error(pluginResult.reason)
+			}
 		}
 
 		console.log("Loaded All Plugins", JSON.stringify(ids))
