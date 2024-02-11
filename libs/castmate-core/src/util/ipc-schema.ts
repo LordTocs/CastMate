@@ -2,10 +2,12 @@ import {
 	DataConstructorOrFactory,
 	Enumable,
 	ExposedSchemaType,
+	ExposedTypeByConstructor,
 	IPCSchema,
 	ResolvedSchemaType,
 	Schema,
 	SchemaType,
+	ValueCompareOperator,
 	getTypeByConstructor,
 } from "castmate-schema"
 import { ResourceBase, isResourceConstructor } from "../resources/resource"
@@ -336,7 +338,17 @@ export function registerSchemaUnexpose<T extends DataConstructorOrFactory>(
 	func: (value: any, schema: Schema) => any
 ) {
 	const schemaType = getTypeByConstructor(schemaConstructor)
-	if (!schemaType) throw new Error(`Missing Schema Type ${name}`)
+	if (!schemaType) throw new Error(`Missing Schema Type`)
 
 	schemaType.unexpose = func
+}
+
+export function registerSchemaCompare<T extends DataConstructorOrFactory>(
+	schemaConstructor: T,
+	func: (lhs: ExposedTypeByConstructor<T>, rhs: any, operator: ValueCompareOperator) => boolean
+) {
+	const schemaType = getTypeByConstructor(schemaConstructor)
+	if (!schemaType) throw new Error(`Missing Schema Type`)
+
+	schemaType.compare = func
 }
