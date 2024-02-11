@@ -2998,6 +2998,8 @@ __metadata:
   resolution: "castmate-plugin-time-main@workspace:plugins/time/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-time-shared: "workspace:^"
+    castmate-plugin-variables-main: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "*"
   languageName: unknown
@@ -3009,6 +3011,7 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
+    castmate-plugin-time-shared: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "*"
     electron: "*"
@@ -3018,6 +3021,17 @@ __metadata:
     vite: "*"
     vue: "*"
     vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-time-shared@workspace:^, castmate-plugin-time-shared@workspace:plugins/time/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-time-shared@workspace:plugins/time/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
   languageName: unknown
   linkType: soft
 

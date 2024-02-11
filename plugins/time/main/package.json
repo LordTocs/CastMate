@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "castmate-core": "workspace:^",
+    "castmate-plugin-time-shared": "workspace:^",
+    "castmate-plugin-variables-main": "workspace:^",
     "castmate-schema": "workspace:^"
   }
 }
