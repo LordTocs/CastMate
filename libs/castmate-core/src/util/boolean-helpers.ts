@@ -5,6 +5,8 @@ import {
 	BooleanValueExpression,
 	ExpressionValue,
 	Schema,
+	ValueCompareOperator,
+	getTypeByConstructor,
 } from "castmate-schema"
 import { PluginManager } from "../plugins/plugin-manager"
 import { unexposeSchema } from "./ipc-schema"
@@ -32,13 +34,30 @@ function getExpressionSchema(expression: ExpressionValue): Schema | undefined {
 	}
 }
 
+function baseCompare(left: any, right: any, operator: ValueCompareOperator) {
+	if (operator == "equal") {
+		return left == right
+	} else if (operator == "notEqual") {
+		return left != right
+	} else if (operator == "lessThan") {
+		return left < right
+	} else if (operator == "greaterThan") {
+		return left > right
+	} else if (operator == "lessThanEq") {
+		return left <= right
+	} else if (operator == "greaterThanEq") {
+		return left >= right
+	}
+	return false
+}
+
 async function evaluateValueExpression(expression: BooleanValueExpression) {
 	let left = getExpressionValue(expression.lhs)
 	const leftSchema = getExpressionSchema(expression.lhs)
 	let right = getExpressionValue(expression.rhs)
 	const rightSchema = getExpressionSchema(expression.rhs)
 
-	//console.log("Evaluating", left, right, leftSchema, rightSchema)
+	let compareFunc = baseCompare
 
 	if (rightSchema) {
 		right = await unexposeSchema(rightSchema, right)
@@ -46,24 +65,13 @@ async function evaluateValueExpression(expression: BooleanValueExpression) {
 
 	if (leftSchema) {
 		left = await unexposeSchema(leftSchema, left)
+		const typeMeta = getTypeByConstructor(leftSchema.type)
+		if (typeMeta?.compare) {
+			compareFunc = typeMeta.compare
+		}
 	}
 
-	//console.log("Eval Final", leftFinal, rightFinal)
-
-	if (expression.operator == "equal") {
-		return left == right
-	} else if (expression.operator == "notEqual") {
-		return left != right
-	} else if (expression.operator == "lessThan") {
-		return left < right
-	} else if (expression.operator == "greaterThan") {
-		return left > right
-	} else if (expression.operator == "lessThanEq") {
-		return left <= right
-	} else if (expression.operator == "greaterThanEq") {
-		return left >= right
-	}
-	return false
+	return compareFunc(left, right, expression.operator)
 }
 
 async function evaluateGroupExpression(expression: BooleanExpressionGroup) {

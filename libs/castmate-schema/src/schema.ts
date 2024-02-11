@@ -1,5 +1,6 @@
 import { cloneDeep, isFunction } from "lodash"
 import { MaybePromise, MapToUnion, Modify, Fallback } from "./util/type-helpers"
+import { ValueCompareOperator } from "./data/boolean-expression"
 
 ////////////////////////////////////// ENUMs /////////////////////////////////////////////
 export interface EnumPair<T> {
@@ -459,6 +460,7 @@ export interface DataTypeMetaData<T extends DataConstructorOrFactory> {
 	deserialize?: (value: any, schema: Schema) => Promise<TemplateTypeByConstructor<T>>
 	serialize?: (value: TemplateTypeByConstructor<T>, schema: Schema) => any
 	fromString?: (value: string) => Promise<ResolvedTypeByConstructor<T> | undefined>
+	compare?: (lhs: ExposedTypeByConstructor<T>, rhs: any, operator: ValueCompareOperator) => boolean
 }
 
 interface FullDataTypeMetaData<T extends DataConstructorOrFactory = any> extends DataTypeMetaData<T> {
