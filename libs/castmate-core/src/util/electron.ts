@@ -2,23 +2,31 @@ import { DelayedResolver, createDelayedResolver } from "castmate-schema"
 import { ipcMain, IpcMainInvokeEvent, WebContents, BrowserWindow } from "electron"
 import { nanoid } from "nanoid/non-secure"
 import { globalLogger } from "../logging/logging"
+import _cloneDeep from "lodash/cloneDeep"
 
 export function defineIPCFunc<T extends (...args: any[]) => any>(category: string, name: string, func: T) {
 	ipcMain.handle(`${category}_${name}`, async (event: IpcMainInvokeEvent, ...args: any[]) => {
-		return await func(...args)
+		try {
+			return _cloneDeep(await func(...args))
+		} catch (err) {
+			globalLogger.error("Error Responding to", `${category}_${name}`)
+			globalLogger.error("Args: ", ...args)
+			globalLogger.error(err)
+			throw err
+		}
 	})
 	return func
 }
 
 export function defineCallableIPC<T extends (...args: any[]) => void>(category: string, name: string) {
 	const singleFunc = (sender: WebContents, ...args: Parameters<T>) => {
-		return sender.send(`${category}_${name}`, ...args)
+		return sender.send(`${category}_${name}`, ..._cloneDeep(args))
 	}
 
 	const broadcast = (...args: Parameters<T>) => {
 		for (let window of BrowserWindow.getAllWindows()) {
 			try {
-				window.webContents.send(`${category}_${name}`, ...args)
+				window.webContents.send(`${category}_${name}`, ..._cloneDeep(args))
 			} catch (err) {
 				globalLogger.error(`Error Sending Broadcast ${category}_${name}`)
 				globalLogger.error(`Broadcast Args`, ...args)
