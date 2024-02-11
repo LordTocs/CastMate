@@ -93,7 +93,6 @@ export const VariableManager = Service(
 		}
 
 		private async serializeVariables() {
-			logger.log("Serializing Variables...")
 			const result: Record<string, SerializedVariableDefinition> = {}
 			for (const [id, variable] of this.variables.entries()) {
 				const type = getTypeByConstructor(variable.schema.type)
