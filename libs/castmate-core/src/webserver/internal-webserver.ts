@@ -6,6 +6,7 @@ import { usePluginLogger } from "../logging/logging"
 import { PluginManager } from "../plugins/plugin-manager"
 import { EventList } from "../util/events"
 import { onLoad, onUnload } from "../plugins/plugin"
+import { initingPlugin } from "../plugins/plugin-init"
 
 function closeHttpServer(httpServer: http.Server | undefined) {
 	return new Promise<void>((resolve, reject) => {
@@ -73,6 +74,17 @@ export const WebService = Service(
 			})
 		}
 
+		addPluginRouter(baseName: string, router: express.Router) {
+			this.routes.use(baseName, router)
+		}
+
+		removePluginRouter(router: express.Router) {
+			const idx = this.routes.stack.findIndex((layer) => layer == router)
+			if (idx >= 0) {
+				this.routes.stack.splice(idx, 1)
+			}
+		}
+
 		async startHttp(port: number) {
 			this.httpServer.listen(port, () => {
 				logger.log("Internal Webserver Started on port", port)
@@ -129,4 +141,28 @@ export function onWebsocketMessage(func: (socket: ws.WebSocket, message: any) =>
 	onUnload(() => {
 		WebService.getInstance().onMessage.unregister(func)
 	})
+}
+
+export function useHTTPRouter(baseRoute?: string): Router {
+	const routeName = baseRoute ?? initingPlugin?.id
+
+	if (!routeName) throw new Error("Supply a route name!")
+
+	const router = express.Router()
+
+	onLoad(() => {
+		WebService.getInstance().addPluginRouter(`/${routeName}/`, router)
+	})
+
+	onUnload(() => {
+		WebService.getInstance().removePluginRouter(router)
+	})
+
+	return router
+}
+
+export function resetRouter(router: Router) {
+	router.stack = []
+	//@ts-ignore
+	router.methods = {}
 }

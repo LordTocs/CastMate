@@ -111,7 +111,7 @@ export function setupTimers() {
 			type: Object,
 			properties: {
 				delay: { type: Duration, name: "Delay" },
-				interval: { type: Duration, name: "Interval", required: true },
+				interval: { type: Duration, name: "Interval", required: true, default: 30 },
 			},
 		},
 		context: {
