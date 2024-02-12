@@ -4,5 +4,6 @@ export { default as TimedReveal } from "./components/TimedReveal.vue"
 
 export * from "./util/editor-util"
 export * from "./util/media-util"
-export * from "./util/stylesheet"
+export * from "./util/stylesheets"
 export * from "./util/animation-util"
+export * from "./util/widget-util"

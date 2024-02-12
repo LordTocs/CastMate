@@ -1,5 +1,5 @@
 {
-	"name": "castmate-plugin-{{name}}-renderer",
+	"name": "castmate-plugin-overlays-renderer",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "*",
-		"castmate-plugin-{{name}}-shared": "workspace:^",
+		"castmate-plugin-overlays-shared": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"castmate-ui-core": "workspace:^",
 		"chromatism2": "*",

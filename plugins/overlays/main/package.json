@@ -1,5 +1,5 @@
 {
-	"name": "castmate-plugin-{{name}}-main",
+	"name": "castmate-plugin-overlays-main",
 	"version": "1.0.0",
 	"description": "",
 	"main": "src/main.ts",
@@ -14,7 +14,7 @@
 	},
 	"dependencies": {
 		"castmate-core": "workspace:^",
-		"castmate-plugin-{{name}}-shared": "workspace:^",
+		"castmate-plugin-overlays-shared": "workspace:^",
 		"castmate-schema": "workspace:^"
 	}
 }

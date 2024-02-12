@@ -1,8 +1,9 @@
 {
-	"name": "castmate-plugin-{{name}}-renderer",
+	"name": "castmate-plugin-overlay-overlays",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"main": "src/main.ts",
 	"devMain": "src/main.ts",
 	"types": "./dist/types/main.d.ts",
 	"scripts": {
@@ -12,17 +13,18 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "*",
-		"castmate-plugin-{{name}}-shared": "workspace:^",
+		"castmate-overlay-core": "workspace:^",
 		"castmate-schema": "workspace:^",
-		"castmate-ui-core": "workspace:^",
 		"chromatism2": "*",
 		"electron": "*",
 		"nanoid": "*",
 		"pinia": "*",
+		"primevue": "*",
 		"vue": "*"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "*",
+		"ts-toolbelt": "*",
 		"typescript": "*",
 		"vite": "*",
 		"vue-tsc": "*"
