@@ -981,7 +981,7 @@ export default {
 					1.0
 				)
 				sceneItemTransform.boundsHeight = Math.max(
-					sceneItemTransform.boundsWidth,
+					sceneItemTransform.boundsHeight,
 					1.0
 				)
 
