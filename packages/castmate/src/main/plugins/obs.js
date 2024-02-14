@@ -163,7 +163,6 @@ export default {
 
 				this.state.connected = true
 				this.analytics.set({ usesOBS: true })
-
 				return true
 			} catch (error) {
 				/*this.logger.error(
@@ -173,6 +172,10 @@ export default {
 					`Failed to connect ${error.code}: ${error.message}`
 				)*/
 				this.state.connected = false
+				try {
+					//Disconnect here if we need to since if we get a not ready error OBS won't disconnect to start the loop over.
+					await this.obs.disconnect()
+				} catch (err) {}
 				return false
 			}
 		},
