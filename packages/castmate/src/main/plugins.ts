@@ -21,6 +21,8 @@ import wyzePlugin from "castmate-plugin-wyze-main"
 import goveePlugin from "castmate-plugin-govee-main"
 import twinklyPlugin from "castmate-plugin-twinkly-main"
 
+import overlayPlugin from "castmate-plugin-overlays-main"
+
 import castmatePlugin from "./builtin-plugin"
 import { WebService } from "castmate-core"
 
@@ -28,6 +30,7 @@ export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
 	const promises = [
 		pluginManager.registerPlugin(castmatePlugin),
+		pluginManager.registerPlugin(overlayPlugin),
 		pluginManager.registerPlugin(variablesPlugin),
 		pluginManager.registerPlugin(timePlugin),
 		pluginManager.registerPlugin(twitchPlugin),

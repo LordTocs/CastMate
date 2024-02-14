@@ -1,4 +1,5 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
+import { setupOverlayResources } from "./overlay-resource"
 
 export default definePlugin(
 	{
@@ -8,6 +9,6 @@ export default definePlugin(
 		icon: "mdi mdi-web",
 	},
 	() => {
-		//Plugin Intiialization
+		setupOverlayResources()
 	}
 )
