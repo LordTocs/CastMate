@@ -4,11 +4,15 @@
 			<div class="pt-4">
 				<data-input
 					:schema="{ type: ResourceProxyFactory, resourceType: 'OBSConnection', name: `OBS Connection` }"
-					v-model="obsId"
+					v-model="view.obsId"
 				/>
+				<div class="p-inputgroup var-edit" v-bind="$attrs">
+					<p-check-box binary input-id="showPreview" v-model="view.showPreview" />
+					<label for="showPreview" class="ml-2"> Preview </label>
+				</div>
 			</div>
 		</div>
-		<overlay-edit-area v-model="model" v-model:view="view.editView" style="flex: 1" />
+		<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
 	</div>
 </template>
 
@@ -18,6 +22,7 @@ import { OverlayEditorView } from "./overlay-edit-types"
 import { DataInput, ResourceProxyFactory, usePluginStore, useResourceStore } from "castmate-ui-core"
 import { onMounted, ref, useModel } from "vue"
 import PButton from "primevue/button"
+import PCheckBox from "primevue/checkbox"
 import OverlayEditArea from "./OverlayEditArea.vue"
 
 const props = defineProps<{
@@ -25,17 +30,14 @@ const props = defineProps<{
 	view: OverlayEditorView
 }>()
 
-const resourceStore = useResourceStore()
 const pluginStore = usePluginStore()
-
-const obsId = ref<string>()
 
 onMounted(() => {
 	const defaultObsSetting = pluginStore.pluginMap.get("obs")?.settings?.obsDefault
 	if (defaultObsSetting?.type == "value") {
 		const defaultId = defaultObsSetting.value
 		if (defaultId) {
-			obsId.value = defaultId
+			view.value.obsId = defaultId
 		}
 	}
 })

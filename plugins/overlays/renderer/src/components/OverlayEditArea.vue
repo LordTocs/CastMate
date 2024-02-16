@@ -8,8 +8,10 @@
 			'--zoom-scale': zoomScale,
 		}"
 	>
-		<pan-area class="panner grid-paper" v-model:pan-state="view.panState">
-			<div class="overlay-boundary"></div>
+		<pan-area class="panner grid-paper" v-model:pan-state="view.editView.panState">
+			<div class="overlay-boundary">
+				<obs-preview class="preview-image" :obs-id="view.obsId" v-if="view.showPreview" />
+			</div>
 		</pan-area>
 	</div>
 </template>
@@ -17,12 +19,13 @@
 <script setup lang="ts">
 import { PanArea } from "castmate-ui-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { OverlayEditView } from "./overlay-edit-types"
+import { OverlayEditorView } from "./overlay-edit-types"
+import { ObsPreview } from "castmate-plugin-obs-renderer"
 import { computed, ref, useModel } from "vue"
 import { useElementSize } from "@vueuse/core"
 const props = defineProps<{
 	modelValue: OverlayConfig
-	view: OverlayEditView
+	view: OverlayEditorView
 }>()
 
 const model = useModel(props, "modelValue")
@@ -57,6 +60,7 @@ const zoomScale = computed(() => {
 }
 
 .overlay-boundary {
+	position: relative;
 	border: 1px solid yellow;
 	width: calc(var(--overlay-width) * var(--zoom-x) * var(--zoom-scale));
 	height: calc(var(--overlay-height) * var(--zoom-y) * var(--zoom-scale));
@@ -68,5 +72,16 @@ const zoomScale = computed(() => {
 	right: 0;
 	top: 0;
 	bottom: 0;
+}
+
+.preview-image {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
 }
 </style>

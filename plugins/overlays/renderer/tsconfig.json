@@ -20,7 +20,8 @@
 		// "noUnusedParameters": true,
 		// "noFallthroughCasesInSwitch": true
 		"paths": {
-			"castmate-ui-core": ["../../../libs/castmate-ui-core/src/main.ts"]
+			"castmate-ui-core": ["../../../libs/castmate-ui-core/src/main.ts"],
+			"castmate-plugin-obs-renderer": ["../../obs/renderer/src/main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

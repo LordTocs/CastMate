@@ -1,4 +1,4 @@
-import { FileResource, definePluginResource, ResourceStorage, usePluginLogger } from "castmate-core"
+import { FileResource, definePluginResource, ResourceStorage, usePluginLogger, ResourceRegistry } from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
 import {
 	OBSConnectionConfig,
@@ -228,6 +228,21 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 			this.poppingScene = true
 			this.connection.call("SetCurrentProgramScene", { sceneName: prevScene })
 		}
+	}
+
+	async getPreview() {
+		const screenshot = await this.connection.call("GetSourceScreenshot", {
+			sourceName: this.state.scene,
+			imageFormat: "png",
+		})
+		return screenshot.imageData
+	}
+
+	static async initialize(): Promise<void> {
+		await super.initialize()
+
+		//@ts-ignore
+		ResourceRegistry.getInstance().exposeIPCFunction(OBSConnection, "getPreview")
 	}
 }
 

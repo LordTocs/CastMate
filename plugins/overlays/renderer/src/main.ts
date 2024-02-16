@@ -44,6 +44,8 @@ export function initPlugin(app: App<Element>) {
 						panning: false,
 					},
 				},
+				obsId: undefined,
+				showPreview: false,
 			}
 		},
 	})
