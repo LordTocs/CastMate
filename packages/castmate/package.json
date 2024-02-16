@@ -44,6 +44,7 @@
 		"@rollup/plugin-node-resolve": "^15.2.1",
 		"@vitejs/plugin-vue": "*",
 		"@vueuse/core": "*",
+		"castmate-overlay-widget-loader": "workspace:^",
 		"castmate-plugin-discord-renderer": "workspace:^",
 		"castmate-plugin-govee-renderer": "workspace:^",
 		"castmate-plugin-http-renderer": "workspace:^",

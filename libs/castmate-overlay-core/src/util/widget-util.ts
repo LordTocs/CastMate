@@ -15,6 +15,11 @@ export function declareWidgetOptions<PropSchema extends SchemaObj>(opts: {
 	return opts
 }
 
-export function definePluginOverlays(opts: { id: string; widgets: Component[] }) {
+export interface OverlayPluginOptions {
+	id: string
+	widgets: Component[]
+}
+
+export function definePluginOverlays(opts: OverlayPluginOptions) {
 	return opts
 }

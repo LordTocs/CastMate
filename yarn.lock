@@ -2666,6 +2666,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-overlay-widget-loader@workspace:^, castmate-overlay-widget-loader@workspace:libs/castmate-overlay-widget-loader":
+  version: 0.0.0-use.local
+  resolution: "castmate-overlay-widget-loader@workspace:libs/castmate-overlay-widget-loader"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-overlay-core: "workspace:^"
+    castmate-plugin-overlays-overlays: "workspace:^"
+    castmate-schema: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    primevue: "*"
+    ts-toolbelt: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-discord-main@workspace:^, castmate-plugin-discord-main@workspace:plugins/discord/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-discord-main@workspace:plugins/discord/main"
@@ -3146,9 +3168,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-overlay-overlays@workspace:plugins/overlays/overlay":
+"castmate-plugin-overlays-main@workspace:plugins/overlays/main":
   version: 0.0.0-use.local
-  resolution: "castmate-plugin-overlay-overlays@workspace:plugins/overlays/overlay"
+  resolution: "castmate-plugin-overlays-main@workspace:plugins/overlays/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-overlays-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-overlays-overlays@workspace:^, castmate-plugin-overlays-overlays@workspace:plugins/overlays/overlay":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-overlays-overlays@workspace:plugins/overlays/overlay"
   dependencies:
     "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
@@ -3164,17 +3197,6 @@ __metadata:
     vite: "*"
     vue: "*"
     vue-tsc: "*"
-  languageName: unknown
-  linkType: soft
-
-"castmate-plugin-overlays-main@workspace:plugins/overlays/main":
-  version: 0.0.0-use.local
-  resolution: "castmate-plugin-overlays-main@workspace:plugins/overlays/main"
-  dependencies:
-    castmate-core: "workspace:^"
-    castmate-plugin-overlays-shared: "workspace:^"
-    castmate-schema: "workspace:^"
-    typescript: "*"
   languageName: unknown
   linkType: soft
 
@@ -3709,6 +3731,7 @@ __metadata:
     "@vitejs/plugin-vue": "*"
     "@vueuse/core": "*"
     castmate-core: "workspace:^"
+    castmate-overlay-widget-loader: "workspace:^"
     castmate-plugin-discord-main: "workspace:^"
     castmate-plugin-discord-renderer: "workspace:^"
     castmate-plugin-elgato-main: "workspace:^"

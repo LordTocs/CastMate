@@ -52,6 +52,9 @@ import { initPlugin as initGoveePlugin } from "castmate-plugin-govee-renderer"
 import { initPlugin as initKasaPlugin } from "castmate-plugin-tplink-kasa-renderer"
 import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
 import { initPlugin as initOverlaysPlugin } from "castmate-plugin-overlays-renderer"
+
+import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
+
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
@@ -134,6 +137,8 @@ async function init() {
 	await initKasaPlugin()
 
 	await useMediaStore().initialize()
+
+	loadOverlayWidgets()
 
 	await uiLoadComplete()
 }

@@ -4,8 +4,8 @@
 
 <script setup lang="ts">
 import { declareWidgetOptions } from "castmate-overlay-core"
-import { ResolvedSchemaType } from "castmate-schema"
-import { defineAsyncComponent } from "vue"
+import { ResolvedSchemaType, declareSchema } from "castmate-schema"
+import { defineAsyncComponent, getCurrentInstance } from "vue"
 
 const widgetOptions = declareWidgetOptions({
 	id: "label",
@@ -30,9 +30,32 @@ const widgetOptions = declareWidgetOptions({
 })
 
 defineOptions({
-	widget: widgetOptions,
+	widget: declareWidgetOptions({
+		id: "label",
+		name: "Label",
+		description: "Puts some text in the overlay",
+		icon: "mdi mdi-cursor-text",
+		defaultSize: {
+			width: 300,
+			height: 200,
+		},
+		config: {
+			type: Object,
+			properties: {
+				message: {
+					type: String,
+					required: true,
+					default: "",
+					template: true,
+				},
+			},
+		},
+	}),
 })
-const props = defineProps<ResolvedSchemaType<typeof widgetOptions.config>>()
+
+//Vue compiler is too stupid to compile this?
+//const props = defineProps<ResolvedSchemaType<typeof widgetOptions.config>>()
+const props = defineProps<{ message: string }>()
 </script>
 
 <style scoped>
