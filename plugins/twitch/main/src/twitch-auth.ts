@@ -38,6 +38,9 @@ const defaultScopes = [
 	"moderation:read",
 	"channel:manage:moderators",
 
+	"channel:read:ads", //Get ad schedule
+	"channel:manage:ads", //Snooze ad
+
 	"clips:edit", //Create clips
 
 	"user:read:email",
