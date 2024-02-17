@@ -59,9 +59,9 @@ export function setupAds() {
 		required: true,
 	})
 
-	const nextAdLength = defineState("nextAdLength", {
+	const nextAdDuration = defineState("nextAdDuration", {
 		type: Duration,
-		name: "Next Ad Length",
+		name: "Next Ad Duration",
 		required: true,
 	})
 
@@ -71,11 +71,16 @@ export function setupAds() {
 		required: true,
 	})
 
+	const adTimer = defineState("adTimer", {
+		type: Timer,
+		name: "Current Ad Timer",
+		required: true,
+	})
+
 	async function queryAdSchedule() {
 		const schedule = await TwitchAccount.channel.apiClient.channels.getAdSchedule(TwitchAccount.channel.twitchId)
 
-		nextAdLength.value = schedule.duration
-
+		nextAdDuration.value = schedule.duration
 		nextAdTimer.value = Timer.fromDate(schedule.nextAdDate)
 
 		if (schedule.prerollFreeTime <= 0) {
@@ -241,10 +246,12 @@ export function setupAds() {
 			adStarted({ duration: event.durationSeconds })
 
 			inAdBreak.value = true
+			adTimer.value = Timer.fromDuration(event.durationSeconds)
 
 			setTimeout(() => {
 				adEnded({ duration: event.durationSeconds })
 				inAdBreak.value = false
+				adTimer.value = Timer.factoryCreate()
 			}, event.durationSeconds * 1000)
 
 			await queryAdSchedule()
