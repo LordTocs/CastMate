@@ -9,9 +9,8 @@ import {
 	scheduleReactiveTrigger,
 	usePluginLogger,
 } from "castmate-core"
-import { Timer, getTimeRemaining, isTimer, isTimerStarted } from "castmate-plugin-time-shared"
 import { VariableManager } from "castmate-plugin-variables-main"
-import { Duration, ValueCompareOperator } from "castmate-schema"
+import { Duration, ValueCompareOperator, Timer, getTimeRemaining, isTimer, isTimerStarted } from "castmate-schema"
 
 export function compareTimer(lhs: Timer, rhs: any, operator: ValueCompareOperator) {
 	if (typeof rhs == "number") {

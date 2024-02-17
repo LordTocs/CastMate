@@ -9,6 +9,7 @@ export * from "./data/boolean-expression"
 export * from "./data/dynamic-type"
 export * from "./data/directory"
 export * from "./data/filepath"
+export * from "./data/timers"
 
 export * from "./ipc/action"
 export * from "./ipc/trigger"

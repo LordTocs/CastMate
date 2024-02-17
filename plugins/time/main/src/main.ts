@@ -1,4 +1,4 @@
-import { Duration, Toggle } from "castmate-schema"
+import { Duration, Toggle, Timer, isTimerStarted, offsetTimer, pauseTimer, setTimer, startTimer } from "castmate-schema"
 import {
 	defineAction,
 	defineTrigger,
@@ -10,7 +10,6 @@ import {
 } from "castmate-core"
 import { setupTimers } from "./timers"
 import { VariableManager } from "castmate-plugin-variables-main"
-import { Timer, isTimerStarted, offsetTimer, pauseTimer, setTimer, startTimer } from "castmate-plugin-time-shared"
 
 export default definePlugin(
 	{

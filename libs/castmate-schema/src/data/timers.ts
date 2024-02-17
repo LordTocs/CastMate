@@ -24,6 +24,8 @@ const TimerSymbol = Symbol()
 export type TimerFactory = {
 	factoryCreate(): Timer
 	[TimerSymbol]: "Timer"
+	fromDate(date: Date): Timer
+	fromDuration(duration: Duration): Timer
 }
 
 function timerToPrimitive(hint: "default" | "string" | "number", timer: Timer) {
@@ -36,6 +38,22 @@ export const Timer: TimerFactory = {
 	factoryCreate(): Timer {
 		return {
 			remainingTime: 0,
+			[Symbol.toPrimitive](hint) {
+				return timerToPrimitive(hint, this)
+			},
+		}
+	},
+	fromDate(date: Date): Timer {
+		return {
+			endTime: date.getTime(),
+			[Symbol.toPrimitive](hint) {
+				return timerToPrimitive(hint, this)
+			},
+		}
+	},
+	fromDuration(duration: Duration): Timer {
+		return {
+			endTime: Date.now() + duration * 1000,
 			[Symbol.toPrimitive](hint) {
 				return timerToPrimitive(hint, this)
 			},
@@ -68,7 +86,7 @@ export function startTimer(timer: Timer): Timer {
 	}
 }
 
-export function isTimerStarted(timer: Timer) {
+export function isTimerStarted(timer: Timer): timer is RunningTimer {
 	return "endTime" in timer && getTimeRemaining(timer) > 0
 }
 
@@ -135,10 +153,12 @@ export function isTimer(value: any): value is Timer {
 	return false
 }
 
-export interface SchemaTimer extends SchemaBase<Timer> {}
+export interface SchemaTimer extends SchemaBase<Timer> {
+	type: TimerFactory
+}
 
-declare module "castmate-schema" {
-	interface SchemaTimer {
+declare module "../schema" {
+	interface SchemaTypeMap {
 		Timer: [SchemaTimer, Timer]
 	}
 }
@@ -146,7 +166,7 @@ declare module "castmate-schema" {
 registerType("Timer", {
 	constructor: Timer,
 	canBeVariable: true,
-	async deserialize(value, schema): Promise<Timer | undefined> {
+	async deserialize(value, schema): Promise<Timer> {
 		if (isTimer(value)) {
 			if ("endTime" in value) {
 				return {
@@ -164,6 +184,6 @@ registerType("Timer", {
 				}
 			}
 		}
-		return undefined
+		return Timer.factoryCreate()
 	},
 })

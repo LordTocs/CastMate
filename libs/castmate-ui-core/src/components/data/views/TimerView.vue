@@ -4,9 +4,8 @@
 </template>
 
 <script setup lang="ts">
-import { SchemaTimer, Timer, isTimerStarted, getTimeRemaining } from "castmate-plugin-time-shared"
-import { SharedDataViewProps } from "castmate-ui-core"
-import { formatDuration } from "castmate-schema"
+import { SharedDataViewProps } from "../DataInputTypes"
+import { formatDuration, SchemaTimer, Timer, isTimerStarted, getTimeRemaining } from "castmate-schema"
 import { computed, onMounted, watch, ref } from "vue"
 
 const props = defineProps<

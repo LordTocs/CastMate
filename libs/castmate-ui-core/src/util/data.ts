@@ -15,6 +15,7 @@ import {
 	Directory,
 	Command,
 	FilePath,
+	Timer,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -56,6 +57,7 @@ import ObjectViewVue from "../components/data/views/ObjectView.vue"
 import RangeViewVue from "../components/data/views/RangeView.vue"
 import ResourceViewVue from "../components/data/views/ResourceView.vue"
 import ToggleViewVue from "../components/data/views/ToggleView.vue"
+import TimerViewVue from "../components/data/views/TimerView.vue"
 
 import CommandInputVue from "../components/data/inputs/CommandInput.vue"
 import CommandViewVue from "../components/data/views/CommandView.vue"
@@ -256,6 +258,7 @@ export function initData() {
 	inputStore.registerViewComponent(Color, ColorViewVue)
 	inputStore.registerViewComponent(Duration, DurationViewVue)
 	inputStore.registerViewComponent(Command, CommandViewVue)
+	inputStore.registerViewComponent(Timer, TimerViewVue)
 }
 
 export function provideDataContextSchema(schema: MaybeRefOrGetter<Schema>) {
