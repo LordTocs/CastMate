@@ -21,6 +21,7 @@ import ConfirmationService from "primevue/confirmationservice"
 //theme
 // import "primevue/resources/themes/lara-dark-blue/theme.css"
 import "./css/theme.css"
+import "./css/theme-ext.css"
 import "./css/spellcast.css"
 //core
 import "primevue/resources/primevue.min.css"

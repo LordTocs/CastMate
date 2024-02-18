@@ -1,0 +1,34 @@
+.mdi {
+	font-family: "primeicons"; /* Without this the icons will all be off center. Fonts are weird. Don't think about this too hard */
+}
+
+.active-profile-icon {
+	color: var(--primary-color);
+}
+
+.no-focus-highlight {
+	box-shadow: none !important;
+}
+
+a.p-button {
+	text-decoration: none;
+}
+
+.p-inputgroup {
+	width: unset !important;
+}
+
+.column-fit-width {
+	width: 1px;
+	white-space: nowrap;
+}
+
+.no-right-bezel {
+	border-top-right-radius: 0px !important;
+	border-bottom-right-radius: 0px !important;
+}
+
+.no-left-bezel {
+	border-top-left-radius: 0px !important;
+	border-bottom-left-radius: 0px !important;
+}
