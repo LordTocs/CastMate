@@ -16,6 +16,7 @@ export { default as CContextMenu } from "./components/util/CContextMenu.vue"
 
 export { default as FilterPalette } from "./components/util/FilterPalette.vue"
 export { default as PanArea } from "./components/panning/PanArea.vue"
+export { default as PanAreaResizable } from "./components/panning/PanAreaResizable.vue"
 
 export { default as DurationLabel } from "./components/data/base-components/DurationLabel.vue"
 

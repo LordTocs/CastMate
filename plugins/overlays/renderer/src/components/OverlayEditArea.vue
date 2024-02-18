@@ -12,12 +12,20 @@
 			<div class="overlay-boundary">
 				<obs-preview class="preview-image" :obs-id="view.obsId" v-if="view.showPreview" />
 			</div>
+			<pan-area-resizable
+				:show-drag="true"
+				v-model:position="testPos"
+				v-model:size="testSize"
+				:scale-size="zoomScale"
+			>
+				hello?
+			</pan-area-resizable>
 		</pan-area>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { PanArea } from "castmate-ui-core"
+import { PanArea, PanAreaResizable } from "castmate-ui-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
 import { ObsPreview } from "castmate-plugin-obs-renderer"
@@ -34,6 +42,16 @@ const view = useModel(props, "view")
 const editArea = ref<HTMLElement>()
 
 const editSize = useElementSize(editArea)
+
+const testPos = ref({
+	x: 10,
+	y: 10,
+})
+
+const testSize = ref({
+	width: 100,
+	height: 100,
+})
 
 const zoomScale = computed(() => {
 	const horizontalScale = editSize.width.value / model.value.size.width

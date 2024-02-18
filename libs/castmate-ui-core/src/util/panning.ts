@@ -9,13 +9,20 @@ export interface PanState {
 }
 
 export interface PanQuery {
+	/**
+	 * Computes client position relative to the pan, but not scale.
+	 */
 	computePosition(ev: { clientX: number; clientY: number }): { x: number; y: number }
+	getPanClientRect(): DOMRect
 }
 
 export function usePanQuery() {
 	return inject<PanQuery>("panQuery", {
 		computePosition(ev) {
 			return { x: 0, y: 0 }
+		},
+		getPanClientRect() {
+			return DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 })
 		},
 	})
 }

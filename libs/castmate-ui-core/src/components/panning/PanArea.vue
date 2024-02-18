@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { useEventListener, useVModel } from "@vueuse/core"
-import { PanState } from "../../util/panning"
+import { PanQuery, PanState } from "../../util/panning"
 import { computed, ref, provide, toRaw, markRaw } from "vue"
 import { getInternalMousePos } from "../../main"
 
@@ -65,10 +65,13 @@ function computePosition(ev: { clientX: number; clientY: number }) {
 	return { x, y }
 }
 
-provide("panQuery", {
+provide<PanQuery>("panQuery", {
 	computePosition(ev: { clientX: number; clientY: number }) {
 		if (!panner.value) return { x: 0, y: 0 }
 		return getInternalMousePos(panner.value, ev)
+	},
+	getPanClientRect() {
+		return panner.value?.getBoundingClientRect() ?? DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 })
 	},
 })
 
