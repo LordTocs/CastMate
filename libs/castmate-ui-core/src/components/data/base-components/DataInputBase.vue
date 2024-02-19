@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<div class="flex flex-row">
-			<div class="p-inputgroup" style="flex-grow: 1; flex-shrink: 1">
+			<div class="p-inputgroup" style="flex-grow: 1; flex-shrink: 1" @contextmenu="onContext">
 				<label-floater :model-value="modelValue" :label="schema.name" :no-float="noFloat" v-slot="labelProps">
 					<template-toggle v-bind="labelProps" v-model="model" :template-mode="canTemplate && templateMode">
 						<slot v-bind="labelProps"></slot>
@@ -19,6 +19,7 @@
 				@click="menu?.toggle($event)"
 			></p-button>
 			<p-menu ref="menu" id="input_menu" :model="menuItems" :popup="true" v-if="hasMenu" />
+			<c-context-menu ref="contextMenu" :items="menuItems" v-if="hasMenu" />
 		</div>
 
 		<div class="flex flex-row">
@@ -29,6 +30,7 @@
 
 <script setup lang="ts">
 import { computed, markRaw, ref, useModel } from "vue"
+import CContextMenu from "../../util/CContextMenu.vue"
 import { LabelFloater, TemplateToggle, DocumentPath } from "../../../main"
 import ErrorLabel from "./ErrorLabel.vue"
 import { Schema } from "castmate-schema"
@@ -102,10 +104,19 @@ const hasMenu = computed(() => {
 })
 
 const menu = ref<PMenu>()
+const contextMenu = ref<InstanceType<typeof CContextMenu>>()
 
 const canTemplate = computed(() => !!props.schema.template)
 
 const templateMode = ref(false)
 
 const errorMessage = useValidator(model, () => props.schema)
+
+function onContext(ev: MouseEvent) {
+	if (hasMenu.value) {
+		contextMenu.value?.show(ev)
+		ev.stopPropagation()
+		ev.preventDefault()
+	}
+}
 </script>
