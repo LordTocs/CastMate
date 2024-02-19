@@ -1,52 +1,31 @@
 <template>
-	<div class="container" ref="container">
-		<div
-			class="p-inputgroup"
-			:class="{
-				'p-inputwrapper-filled': props.modelValue != null,
-			}"
-		>
-			<label-floater :no-float="noFloat" :label="schema.name" input-id="twitch-viewer" v-slot="labelProps">
-				<template-toggle
-					v-model="model"
-					:template-mode="templateMode"
-					v-bind="labelProps"
-					v-slot="templateProps"
-				>
-					<input-box
-						:model="model"
-						:focused="focused"
-						v-if="!focused"
-						@focus="onFocus"
-						:tab-index="-1"
-						v-bind="templateProps"
-					>
-						<template v-if="selectedDisplayData">
-							<img class="twitch-avatar" :src="selectedDisplayData.profilePicture" />
-							<span :style="{ color: selectedDisplayData.color }">
-								{{ selectedDisplayData.displayName }}</span
-							>
-						</template>
-					</input-box>
-					<p-input-text
-						v-else
-						@blur="onBlur"
-						class="p-dropdown-label"
-						ref="filterInputElement"
-						v-model="nameValue"
-						@keydown="onFilterKeyDown"
-						v-bind="templateProps"
-					/>
-				</template-toggle>
-			</label-floater>
-			<p-button
-				v-if="canTemplate"
-				class="flex-none"
-				icon="mdi mdi-code-braces"
-				@click="templateMode = !templateMode"
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+		<div class="container w-full" ref="container">
+			<input-box
+				:model="model"
+				:focused="focused"
+				@focus="onFocus"
+				:tab-index="-1"
+				v-bind="inputProps"
+				v-if="!focused"
+			>
+				<template v-if="selectedDisplayData">
+					<img class="twitch-avatar" :src="selectedDisplayData.profilePicture" />
+					<span :style="{ color: selectedDisplayData.color }"> {{ selectedDisplayData.displayName }}</span>
+				</template>
+			</input-box>
+
+			<p-input-text
+				v-else
+				@blur="onBlur"
+				class="p-dropdown-label"
+				ref="filterInputElement"
+				v-model="nameValue"
+				@keydown="onFilterKeyDown"
+				v-bind="inputProps"
 			/>
-			<p-button v-if="!schema.required" class="flex-none" icon="pi pi-times" />
 		</div>
+
 		<autocomplete-drop-list
 			ref="dropDown"
 			:container="container"
@@ -71,17 +50,23 @@
 				</li>
 			</template>
 		</autocomplete-drop-list>
-	</div>
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
-import { SharedDataInputProps, AutocompleteDropList, InputBox, LabelFloater, TemplateToggle } from "castmate-ui-core"
+import {
+	SharedDataInputProps,
+	AutocompleteDropList,
+	InputBox,
+	LabelFloater,
+	TemplateToggle,
+	DataInputBase,
+} from "castmate-ui-core"
 import { TwitchViewerUnresolved, SchemaTwitchViewer, TwitchViewerDisplayData } from "castmate-plugin-twitch-shared"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
 import { useViewerStore } from "../../util/viewer"
 import _debounce from "lodash/debounce"
 import PInputText from "primevue/inputtext"
-import PButton from "primevue/button"
 
 const props = defineProps<
 	{
@@ -98,9 +83,6 @@ const dropDown = ref<InstanceType<typeof AutocompleteDropList>>()
 const dropDownOpen = ref(false)
 const focused = ref(false)
 const focusedId = ref<string>()
-
-const templateMode = ref(false)
-const canTemplate = computed(() => !!props.schema?.template)
 
 const nameValue = ref("")
 
@@ -206,9 +188,12 @@ watch(
 
 <style scoped>
 .container {
-	cursor: pointer;
+	cursor: text;
 	position: relative;
 	user-select: none;
+
+	display: flex;
+	flex-direction: row;
 }
 
 .twitch-avatar {

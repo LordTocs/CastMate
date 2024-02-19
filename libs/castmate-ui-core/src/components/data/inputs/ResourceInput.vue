@@ -1,41 +1,32 @@
 <template>
-	<div class="flex flex-row">
-		<label-floater
-			:no-float="noFloat"
+	<data-input-base
+		:schema="schema"
+		v-model="model"
+		:toggle-template="false"
+		:no-float="noFloat"
+		:menu-extra="hasDialogs ? menuItems : []"
+		v-slot="inputProps"
+	>
+		<c-autocomplete
+			v-model="model"
+			:required="!!schema.required"
 			:label="schema.name"
-			input-id="resource"
-			v-slot="labelProps"
-			class="flex-grow-1"
+			text-prop="config.name"
+			:items="sortedResourceItems"
+			:group-prop="resourceStore?.configGroupPath ? 'config.' + resourceStore.configGroupPath : undefined"
+			:no-float="noFloat"
+			v-bind="inputProps"
+			class="flex-grow-1 flex-shrink-0"
 		>
-			<c-autocomplete
-				v-model="model"
-				:required="!!schema.required"
-				:label="schema.name"
-				text-prop="config.name"
-				:items="sortedResourceItems"
-				:group-prop="resourceStore?.configGroupPath ? 'config.' + resourceStore.configGroupPath : undefined"
-				:no-float="noFloat"
-				v-bind="labelProps"
-				class="flex-grow-1 flex-shrink-0"
-			>
-				<template #groupHeader="{ item }" v-if="resourceStore?.selectorGroupHeaderComponent">
-					<component :is="resourceStore.selectorGroupHeaderComponent" :item="item" />
-				</template>
-			</c-autocomplete>
-		</label-floater>
-		<p-button
-			class="ml-1"
-			text
-			icon="mdi mdi-dots-vertical"
-			v-if="hasDialogs"
-			aria-controls="overlay_menu"
-			@click="menu?.toggle($event)"
-		></p-button>
-		<p-menu ref="menu" id="overlay_menu" :model="menuItems" :popup="true" v-if="hasDialogs" />
-	</div>
+			<template #groupHeader="{ item }" v-if="resourceStore?.selectorGroupHeaderComponent">
+				<component :is="resourceStore.selectorGroupHeaderComponent" :item="item" />
+			</template>
+		</c-autocomplete>
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
+import DataInputBase from "../base-components/DataInputBase.vue"
 import { SchemaResource, ResourceData } from "castmate-schema"
 import { ResourceProxy } from "../../../util/data"
 import { computed, nextTick, ref, useModel, watch } from "vue"

@@ -1,10 +1,10 @@
 <template>
-	<div class="p-inputgroup" @mousedown="stopPropagation" ref="container">
-		<label-floater :label="schema.name" :no-float="noFloat" input-id="media" v-slot="labelProps">
-			<input-box :model="model" v-bind="labelProps" @click="onClick" :placeholder="schema.name">
+	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps">
+		<div class="container w-full" ref="container">
+			<input-box :model="model" v-bind="inputProps" @click="onClick">
 				{{ selectedMedia?.name ?? model }}
 			</input-box>
-		</label-floater>
+		</div>
 		<drop-down-panel
 			:container="container"
 			v-model="dropDown"
@@ -25,10 +25,12 @@
 				<media-tree root="default" :files="mediaItems.map((i) => i.path)" @click="mediaClicked" />
 			</table>
 		</drop-down-panel>
-	</div>
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
+import DataInputBase from "../base-components/DataInputBase.vue"
+
 import { SchemaMediaFile, SchemaBase } from "castmate-schema"
 import { computed, ref, useModel } from "vue"
 import { FilterMatchMode } from "primevue/api"
@@ -94,3 +96,14 @@ function mediaClicked(media: MediaFile) {
 	dropDown.value = false
 }
 </script>
+
+<style scoped>
+.container {
+	position: relative;
+	cursor: pointer;
+	user-select: none;
+
+	display: flex;
+	flex-direction: row;
+}
+</style>

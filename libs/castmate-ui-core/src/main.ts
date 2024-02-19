@@ -52,6 +52,8 @@ export { default as StreamPlanEditorPage } from "./components/stream-plan/Stream
 
 export { default as VariableNameInput } from "./components/data/base-components/VariableNameInput.vue"
 
+export { default as DataInputBase } from "./components/data/base-components/DataInputBase.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"

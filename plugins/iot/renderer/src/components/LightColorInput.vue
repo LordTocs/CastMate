@@ -1,48 +1,47 @@
 <template>
-	<div class="light-color-container flex-grow-1" ref="container">
+	<data-input-base v-model="model" :schema="schema">
+		<template #default="inputProps">
+			<div class="light-color-container w-full" ref="container">
+				<input-box v-bind="inputProps" :model="model" @click="onClick">
+					<div
+						class="color-splash"
+						:style="{ backgroundColor: model != null ? LightColor.toColor(model) : undefined }"
+					></div>
+				</input-box>
+			</div>
+			<drop-down-panel v-model="overlayVisible" :container="container">
+				<p-tab-view v-model="tabIndex">
+					<p-tab-panel header="RGB">
+						<div class="flex flex-row gap-2">
+							<light-color-wheel style="width: 15rem" v-model="model" />
+							<light-brightness-slider style="height: 15rem" v-model="model" />
+						</div>
+					</p-tab-panel>
+					<p-tab-panel header="Temp">
+						<div class="flex flex-row gap-2">
+							<light-temperature-slider style="height: 15rem" v-model="model" />
+							<light-brightness-slider style="height: 15rem" v-model="model" />
+						</div>
+					</p-tab-panel>
+				</p-tab-view>
+			</drop-down-panel>
+		</template>
+	</data-input-base>
+	<!-- <div class="light-color-container flex-grow-1" ref="container">
 		<div class="p-inputgroup" @mousedown="stopPropagation">
 			<label-floater :no-float="noFloat" :label="schema.name" input-id="light-color" v-slot="labelProps">
 				<template-toggle v-model="model" :template-mode="false" v-bind="labelProps" v-slot="templateProps">
-					<input-box v-bind="templateProps" :model="model" @click="onClick">
-						<div
-							class="color-splash"
-							:style="{ backgroundColor: model != null ? LightColor.toColor(model) : undefined }"
-						></div>
-					</input-box>
 				</template-toggle>
 			</label-floater>
 			<p-button class="flex-none no-focus-highlight" v-if="!schema.required" icon="pi pi-times" @click="clear" />
 		</div>
-		<drop-down-panel v-model="overlayVisible" :container="container">
-			<p-tab-view v-model="tabIndex">
-				<p-tab-panel header="RGB">
-					<div class="flex flex-row gap-2">
-						<light-color-wheel style="width: 15rem" v-model="model" />
-						<light-brightness-slider style="height: 15rem" v-model="model" />
-					</div>
-				</p-tab-panel>
-				<p-tab-panel header="Temp">
-					<div class="flex flex-row gap-2">
-						<light-temperature-slider style="height: 15rem" v-model="model" />
-						<light-brightness-slider style="height: 15rem" v-model="model" />
-					</div>
-				</p-tab-panel>
-			</p-tab-view>
-		</drop-down-panel>
-	</div>
+		
+	</div> -->
 </template>
 
 <script setup lang="ts">
 import { LightColor, SchemaLightcolor } from "castmate-plugin-iot-shared"
-import {
-	LabelFloater,
-	TemplateToggle,
-	InputBox,
-	SharedDataInputProps,
-	stopPropagation,
-	injectScrollAttachable,
-	DropDownPanel,
-} from "castmate-ui-core"
+import { InputBox, SharedDataInputProps, DropDownPanel, DataInputBase } from "castmate-ui-core"
 import { ref, useModel } from "vue"
 import LightColorWheel from "./LightColorWheel.vue"
 import LightTemperatureSlider from "./LightTemperatureSlider.vue"
@@ -87,14 +86,17 @@ function onClick(ev: MouseEvent) {
 	ev.stopPropagation()
 	ev.preventDefault()
 }
-
-function clear() {
-	console.log("Clear!")
-	model.value = undefined
-}
 </script>
 
 <style scoped>
+.light-color-container {
+	cursor: pointer;
+	user-select: none;
+
+	display: flex;
+	flex-direction: row;
+}
+
 .color-splash {
 	display: inline-block;
 	height: 1em;

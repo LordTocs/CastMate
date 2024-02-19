@@ -39,6 +39,7 @@ import { ipcRenderer } from "electron"
 import { useEventListener } from "@vueuse/core"
 import { useDockingStore, useIpcMessage } from "castmate-ui-core"
 import { useOpenSettings } from "../settings/SettingsTypes"
+import InputTestPage from "../test/InputTestPage.vue"
 
 async function close() {
 	await ipcRenderer.invoke("windowFuncs_close")
@@ -87,6 +88,13 @@ const menuItems = ref<MenuItem[]>([
 				icon: "mdi mdi-cog",
 				command() {
 					openSettings()
+				},
+			},
+			{
+				label: "Input Test",
+				icon: "mdi mdi-pencil",
+				command() {
+					dockingStore.openPage("input-test", "Input Test", InputTestPage)
 				},
 			},
 		],

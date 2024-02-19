@@ -1,49 +1,29 @@
 <template>
-	<div class="container" ref="container">
-		<div
-			class="p-inputgroup"
-			:class="{
-				'p-inputwrapper-filled': props.modelValue != null,
-			}"
-		>
-			<label-floater :no-float="noFloat" :label="schema.name" input-id="twitch-viewer" v-slot="labelProps">
-				<template-toggle
-					v-model="model"
-					:template-mode="templateMode"
-					v-bind="labelProps"
-					v-slot="templateProps"
-				>
-					<input-box
-						:model="model"
-						:focused="focused"
-						v-if="!focused"
-						@focus="onFocus"
-						:tab-index="-1"
-						v-bind="templateProps"
-					>
-						<template v-if="selectedDisplayData">
-							<span class="flex flex-row align-items-center">
-								<img class="box-art" :src="selectedDisplayData.image" />
-								<span> {{ selectedDisplayData.name }}</span>
-							</span>
-						</template>
-					</input-box>
-					<p-input-text
-						v-else
-						@blur="onBlur"
-						class="p-dropdown-label"
-						ref="filterInputElement"
-						v-model="queryValue"
-						@keydown="onFilterKeyDown"
-						v-bind="labelProps"
-					/>
-				</template-toggle>
-			</label-floater>
-			<p-button
-				v-if="canTemplate"
-				class="flex-none"
-				icon="mdi mdi-code-braces"
-				@click="templateMode = !templateMode"
+	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps">
+		<div class="container w-full" ref="container">
+			<input-box
+				:model="model"
+				:focused="focused"
+				v-if="!focused"
+				@focus="onFocus"
+				:tab-index="-1"
+				v-bind="inputProps"
+			>
+				<template v-if="selectedDisplayData">
+					<span class="flex flex-row align-items-center">
+						<img class="box-art" :src="selectedDisplayData.image" />
+						<span> {{ selectedDisplayData.name }}</span>
+					</span>
+				</template>
+			</input-box>
+			<p-input-text
+				v-else
+				@blur="onBlur"
+				class="p-dropdown-label"
+				ref="filterInputElement"
+				v-model="queryValue"
+				@keydown="onFilterKeyDown"
+				v-bind="inputProps"
 			/>
 		</div>
 		<autocomplete-drop-list
@@ -70,7 +50,7 @@
 				</li>
 			</template>
 		</autocomplete-drop-list>
-	</div>
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
@@ -83,7 +63,14 @@ import {
 	TwitchCategoryUnresolved,
 	TwitchCategoryData,
 } from "castmate-plugin-twitch-shared"
-import { SharedDataInputProps, AutocompleteDropList, InputBox, LabelFloater, TemplateToggle } from "castmate-ui-core"
+import {
+	SharedDataInputProps,
+	AutocompleteDropList,
+	InputBox,
+	LabelFloater,
+	TemplateToggle,
+	DataInputBase,
+} from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
 import { useCategoryStore } from "../../util/category"
 import _debounce from "lodash/debounce"
@@ -213,6 +200,9 @@ watch(queryValue, () => {
 	cursor: pointer;
 	position: relative;
 	user-select: none;
+
+	display: flex;
+	flex-direction: row;
 }
 
 .box-art {

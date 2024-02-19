@@ -14,9 +14,12 @@
 			:tab-index="-1"
 			:bezel-right="false"
 			:placeholder="placeholder"
+			class="clickable-input"
 		>
 			<slot name="selectedItem" v-if="props.modelValue != null" :item="selectedItem" :item-id="props.modelValue">
-				{{ selectedItem ? getItemText(selectedItem, props) : props.modelValue }}
+				<span style="white-space: nowrap">{{
+					selectedItem ? getItemText(selectedItem, props) : props.modelValue
+				}}</span>
 			</slot>
 		</input-box>
 		<p-input-text
@@ -29,12 +32,6 @@
 			:placeholder="placeholder"
 		/>
 		<slot name="append"></slot>
-		<p-button
-			class="flex-none no-focus-highlight flex-shrink-0"
-			v-if="!required"
-			icon="pi pi-times"
-			@click.stop="clear"
-		/>
 		<p-button class="no-focus-highlight flex-shrink-0" @click="onDropDownClick"><p-chevron-down-icon /></p-button>
 	</div>
 	<autocomplete-drop-list
@@ -86,13 +83,10 @@ const props = withDefaults(
 			modelValue: any | undefined
 			placeholder?: string
 			items: ItemType[]
-			required: boolean
-			inputId: string
+			inputId?: string
 		} & AutocompleteItemProps
 	>(),
-	{
-		required: true,
-	}
+	{}
 )
 
 const model = useModel(props, "modelValue")

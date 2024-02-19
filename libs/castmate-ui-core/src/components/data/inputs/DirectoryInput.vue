@@ -1,30 +1,16 @@
 <template>
-	<div class="p-inputgroup" @mousedown="stopPropagation">
-		<document-path :local-path="localPath">
-			<label-floater :label="schema.name" :no-float="noFloat" input-id="directory" v-slot="labelProps">
-				<template-toggle
-					v-model="model"
-					:template-mode="false"
-					v-bind="labelProps"
-					v-slot="templateProps"
-					:error-message="errorMessage"
-				>
-					<input-box :model="model" v-bind="templateProps" @click="dirClick" />
-				</template-toggle>
-			</label-floater>
-			<p-button class="flex-none no-focus-highlight" v-if="!schema.required" icon="pi pi-times" @click="clear" />
-		</document-path>
-	</div>
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" />
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
+import DataInputBase from "../base-components/DataInputBase.vue"
 import { Directory, SchemaDirectory } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { DocumentPath, InputBox, LabelFloater, stopPropagation, useIpcCaller } from "../../../main"
-import TemplateToggle from "../base-components/TemplateToggle.vue"
+import { InputBox, useIpcCaller } from "../../../main"
 import { useModel } from "vue"
 import { useValidator } from "../../../util/validation"
-import PButton from "primevue/button"
 
 const props = defineProps<
 	{
@@ -34,8 +20,6 @@ const props = defineProps<
 >()
 
 const model = useModel(props, "modelValue")
-
-const errorMessage = useValidator(model, () => props.schema)
 
 const getFolderInput = useIpcCaller<(existing: string | undefined) => string | undefined>(
 	"filesystem",
@@ -52,9 +36,5 @@ async function dirClick(ev: MouseEvent) {
 	if (folder != null) {
 		model.value = folder
 	}
-}
-
-function clear() {
-	model.value = undefined
 }
 </script>

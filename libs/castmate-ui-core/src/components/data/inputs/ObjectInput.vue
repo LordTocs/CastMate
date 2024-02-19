@@ -1,9 +1,9 @@
 <template>
 	<document-path :local-path="localPath">
-		<div class="data-input" tabindex="-1" v-bind="$attrs" @mousedown="onMouseDown">
+		<div class="data-input" tabindex="-1" v-bind="$attrs" @mousedown="onMouseDown" v-if="propKeys.length > 0">
 			<data-input
 				class="data-prop"
-				v-for="(prop, i) in Object.keys(schema.properties)"
+				v-for="(prop, i) in propKeys"
 				:key="prop"
 				:model-value="getModelProp(prop)"
 				@update:model-value="setModelProp(prop, $event)"
@@ -21,6 +21,7 @@ import { type SchemaObj } from "castmate-schema"
 import DataInput from "../DataInput.vue"
 import DocumentPath from "../../document/DocumentPath.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
+import { computed } from "vue"
 
 interface ObjType {
 	[prop: string]: any
@@ -32,6 +33,8 @@ const props = defineProps<
 		modelValue: ObjType | undefined
 	} & SharedDataInputProps
 >()
+
+const propKeys = computed(() => Object.keys(props.schema.properties))
 
 const emit = defineEmits(["update:modelValue"])
 

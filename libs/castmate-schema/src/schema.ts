@@ -62,7 +62,7 @@ registerType("Number", {
 		}
 
 		if (schema.max != null && value > schema.max) {
-			return `${schema.name} must be less than ${schema.min}`
+			return `${schema.name} must be less than ${schema.max}`
 		}
 
 		return undefined

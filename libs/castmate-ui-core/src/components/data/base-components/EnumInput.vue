@@ -22,7 +22,7 @@ const props = defineProps<{
 	modelValue: any
 	schema: Schema
 	placeholder?: string
-	inputId: string
+	inputId?: string
 	context?: any
 	errorMessage?: string
 }>()

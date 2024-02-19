@@ -1,65 +1,31 @@
 <template>
-	<div class="p-inputgroup" v-bind="$attrs">
-		<document-path :local-path="localPath">
-			<div style="flex: 1">
-				<label-floater :label="schema.name ?? ''" :no-float="!!noFloat" input-id="text" v-slot="labelProps">
-					<template-toggle
-						v-model="numModel"
-						:template-mode="templateMode"
-						v-bind="labelProps"
-						v-slot="templateProps"
-					>
-						<p-input-number
-							v-model="numModel"
-							:min="min"
-							:max="max"
-							:step="step"
-							:suffix="unit"
-							:format="false"
-							v-bind="templateProps"
-							:class="{ 'p-invalid': errorMessage }"
-							v-if="!schema.enum"
-						/>
-						<enum-input
-							v-else
-							:schema="schema"
-							v-model="strModel"
-							:no-float="!!noFloat"
-							:context="context"
-							v-bind="templateProps"
-							:error-message="errorMessage"
-						/>
-					</template-toggle>
-				</label-floater>
-				<p-slider v-if="schema.slider && !templateMode" v-model="numModel" :min="min" :max="max" :step="step" />
-			</div>
-		</document-path>
-		<p-button
-			v-if="canTemplate"
-			class="flex-none"
-			icon="mdi mdi-code-braces"
-			@click="templateMode = !templateMode"
+	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps">
+		<div v-if="!schema.enum" class="w-full">
+			<c-number-input v-model="numModel" v-bind="inputProps" :min="min" :max="max" :step="step" class="w-full" />
+			<p-slider v-if="schema.slider" v-model="numModel" :min="min" :max="max" :step="step" />
+		</div>
+
+		<enum-input
+			v-else
+			:schema="schema"
+			v-model="model"
+			:no-float="!!noFloat"
+			:context="context"
+			v-bind="inputProps"
 		/>
-		<p-button v-if="!schema.required" class="flex-none" icon="pi pi-times" @click="clear" />
-	</div>
-	<error-label :error-message="errorMessage" />
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
-import PInputText from "primevue/inputtext"
+import DataInputBase from "../base-components/DataInputBase.vue"
 import PInputNumber from "primevue/inputnumber"
-import PButton from "primevue/button"
+import CNumberInput from "../base-components/CNumberInput.vue"
 import PSlider from "primevue/slider"
 import { type SchemaBase, type SchemaNumber } from "castmate-schema"
-import { useVModel } from "@vueuse/core"
-import { computed, ref, onMounted, useModel } from "vue"
-import DocumentPath from "../../document/DocumentPath.vue"
-import LabelFloater from "../base-components/LabelFloater.vue"
+import { computed, ref, onMounted, useModel, watch } from "vue"
 import EnumInput from "../base-components/EnumInput.vue"
+import PInputText from "primevue/inputtext"
 import { SharedDataInputProps } from "../DataInputTypes"
-import TemplateToggle from "../base-components/TemplateToggle.vue"
-import ErrorLabel from "../base-components/ErrorLabel.vue"
-import { useValidator } from "../../../util/validation"
 
 const props = defineProps<
 	{
@@ -69,16 +35,11 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
-const lazyNumberData = ref(null)
-
 const isSlider = computed(() => props.schema?.slider ?? false)
 const min = computed(() => props.schema?.min ?? (isSlider.value ? 0 : undefined))
 const max = computed(() => props.schema?.max ?? (isSlider.value ? 100 : undefined))
 const step = computed(() => props.schema?.step ?? (isSlider.value ? 1 : undefined))
 const unit = computed(() => props.schema?.unit)
-
-const templateMode = ref(false)
-const canTemplate = computed(() => !!props.schema?.template)
 
 const isValueNumber = computed(() => {
 	if (props.modelValue == null) return true
@@ -86,34 +47,16 @@ const isValueNumber = computed(() => {
 	return !isNaN(Number(props.modelValue))
 })
 
-onMounted(() => {
-	templateMode.value = !isValueNumber.value
-	//lazyNumberData.value = props.modelValue != null ? String(props.modelValue) : ""
-})
-
-function clear() {
-	strModel.value = undefined
-}
-
 const emit = defineEmits(["update:modelValue"])
 
-const strModel = computed<string | undefined>({
-	get() {
-		return props.modelValue as string | undefined
-	},
-	set(v) {
-		emit("update:modelValue", v)
-	},
-})
+const model = useModel(props, "modelValue")
 
 const numModel = computed<number | undefined>({
 	get() {
-		return props.modelValue as number | undefined
+		return props.modelValue as number
 	},
 	set(v) {
 		emit("update:modelValue", v)
 	},
 })
-
-const errorMessage = useValidator(numModel, () => props.schema)
 </script>

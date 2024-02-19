@@ -10,7 +10,7 @@
 const props = defineProps<{
 	noFloat?: boolean
 	label?: string
-	inputId: string
+	inputId?: string
 	icon?: string
 }>()
 </script>

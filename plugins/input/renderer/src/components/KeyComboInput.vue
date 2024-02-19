@@ -1,12 +1,12 @@
 <template>
-	<div class="p-inputgroup">
-		<label-floater :label="schema.name" v-slot="labelProps" input-id="keyboardkey" :no-float="!!noFloat">
+	<data-input-base v-model="model" :schema="schema" :no-float="noFloat">
+		<template #default="inputProps">
 			<input-box
 				class="key-input"
 				:class="{ 'capture-mode': captureMode }"
 				ref="inputRef"
 				:model="modelString"
-				v-bind="labelProps"
+				v-bind="inputProps"
 				tabindex="-1"
 				@focus="onFocus"
 				@blur="onBlur"
@@ -14,14 +14,16 @@
 				@keydown="onKeyDown"
 				@keyup="onKeyUp"
 			/>
-		</label-floater>
-		<p-button class="flex-none no-focus-highlight" icon="mdi mdi-keyboard" @click="startCapture"></p-button>
-		<p-button class="flex-none no-focus-highlight" v-if="!schema.required" icon="pi pi-times" @click.stop="clear" />
-	</div>
+		</template>
+
+		<template #extra>
+			<p-button class="flex-none no-focus-highlight" icon="mdi mdi-keyboard" @click="startCapture"></p-button>
+		</template>
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
-import { LabelFloater, InputBox, SharedDataInputProps } from "castmate-ui-core"
+import { LabelFloater, InputBox, SharedDataInputProps, DataInputBase } from "castmate-ui-core"
 import { KeyboardKey, SchemaKeyboardKey, Keys, getKeyboardKey, KeyCombo } from "castmate-plugin-input-shared"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"

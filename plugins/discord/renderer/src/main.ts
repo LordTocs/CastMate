@@ -12,7 +12,7 @@ export function initPlugin() {
 		type: Object,
 		properties: {
 			name: { type: String, name: "Connection Name", required: true },
-			webhookUrl: { type: String, name: "Webhook URL", required: true },
+			webhookUrl: { type: String, name: "Webhook URL", required: true, secret: true },
 		},
 	})
 }

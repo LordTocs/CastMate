@@ -1,19 +1,21 @@
 <template>
-	<div class="tvg-input p-inputgroup" @mousedown="stopPropagation" ref="container">
-		<div class="p-inputtext" @click="onClick">
-			{{ phrase }}
+	<data-input-base v-model="model" :schema="schema" :toggle-template="false">
+		<div class="container w-full" ref="container">
+			<input-box :model="model" @click="onClick">
+				{{ phrase }}
+			</input-box>
 		</div>
 		<drop-down-panel :container="container" v-model="overlayVisible">
 			<twitch-viewer-group-edit v-model="model" />
 		</drop-down-panel>
-	</div>
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
 import { SchemaTwitchViewerGroup, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupEdit from "./TwitchViewerGroupEdit.vue"
 import { useModel, ref, computed } from "vue"
-import { stopPropagation, useResourceStore, DropDownPanel } from "castmate-ui-core"
+import { stopPropagation, useResourceStore, DropDownPanel, DataInputBase, InputBox } from "castmate-ui-core"
 import { getGroupPhrase } from "../util/group"
 
 const props = defineProps<{
@@ -46,11 +48,12 @@ function onClick(ev: MouseEvent) {
 </script>
 
 <style scoped>
-.tvg-input {
+.container {
 	position: relative;
-}
+	cursor: pointer;
+	user-select: none;
 
-.overlay {
-	border-radius: var(--border-radius);
+	display: flex;
+	flex-direction: row;
 }
 </style>

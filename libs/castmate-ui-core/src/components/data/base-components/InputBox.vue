@@ -11,14 +11,16 @@
 		}"
 	>
 		<div
-			class="p-inputtext p-component"
+			class="p-inputtext p-component input-box-internal"
 			:class="{ 'focus-outline': focused, 'no-left-bezel': !bezelLeft, 'no-right-bezel': !bezelRight }"
 			:tabindex="tabIndex"
 			style="width: unset"
 			@focus="$emit('focus', $event)"
 			@blur="$emit('blur', $event)"
 		>
-			<slot v-if="model != null && model !== ''"> {{ model }} </slot>
+			<slot v-if="model != null && model !== ''">
+				<span class="model-span">{{ model }}</span>
+			</slot>
 			<span v-else-if="placeholder"> {{ placeholder }}</span>
 			<span v-else>&nbsp;</span>
 		</div>
@@ -52,6 +54,14 @@ const props = withDefaults(
 }
 
 .input-box {
-	min-width: 150px;
+	width: 0;
+}
+
+.model-span {
+	white-space: nowrap;
+}
+
+.input-box-internal {
+	overflow-x: hidden;
 }
 </style>

@@ -1,21 +1,11 @@
 <template>
-	<div class="p-inputgroup" @mousedown="stopEvent">
-		<label-floater :no-float="noFloat" :label="schema.name" input-id="duration" v-slot="labelProps">
-			<template-toggle v-model="model" :template-mode="templateMode" v-bind="labelProps" v-slot="templateProps">
-				<duration-field v-model="model" :required="schema.required" v-bind="templateProps" />
-			</template-toggle>
-		</label-floater>
-		<p-button
-			class="flex-none no-focus-highlight"
-			v-if="schema.template"
-			icon="mdi mdi-code-braces"
-			@click="toggleTemplate"
-		/>
-		<p-button class="flex-none" v-if="!schema.required" icon="pi pi-times" @click.stop="clear" />
-	</div>
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+		<duration-field v-model="model" :required="schema.required" v-bind="inputProps" />
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
+import DataInputBase from "../base-components/DataInputBase.vue"
 import { Duration } from "castmate-schema"
 import { TemplateToggle, stopEvent } from "../../../main"
 import { SchemaDuration } from "castmate-schema"

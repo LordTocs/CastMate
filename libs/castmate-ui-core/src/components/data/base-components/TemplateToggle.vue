@@ -3,9 +3,9 @@
 		<div
 			class="p-password p-component p-input-wrapper p-input-icon-right flex flex-row flex-grow-1"
 			:class="{
-				'p-filled': model != false,
+				'p-filled': !!model,
 				'p-focused': focused,
-				'p-inputwrapper-filled': model != false,
+				'p-inputwrapper-filled': !!model,
 				'p-inputwrapper-focused': focused,
 				'p-invalid': errorMessage,
 				'p-inputwrapper-invalid': errorMessage,
@@ -33,7 +33,7 @@ const focused = ref(false)
 const props = defineProps<{
 	modelValue: T | string | undefined
 	templateMode: boolean
-	inputId: string
+	inputId?: string
 	noRightBezel?: boolean
 	errorMessage?: string
 }>()

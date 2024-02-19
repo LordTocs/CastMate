@@ -1,56 +1,23 @@
 <template>
-	<div class="container" ref="container">
-		<div class="p-inputgroup" @mousedown="stopPropagation">
-			<label-floater :no-float="props.noFloat" :label="schema.name" input-id="color" v-slot="labelProps">
-				<template-toggle
-					v-model="model"
-					:template-mode="templateMode"
-					v-bind="labelProps"
-					v-slot="templateProps"
-				>
-					<div
-						class="p-dropdown p-inputwrapper"
-						:class="{
-							'p-filled': model != null,
-							'p-focused': focused,
-							'p-inputwrapper-filled': model != null,
-							'p-inputwrapper-focused': focused || overlayVisible,
-							'no-right-bezel': !schema.required || schema.template,
-						}"
-						v-bind="templateProps"
-						@click="toggle"
-					>
-						<div class="p-dropdown-label p-inputtext">
-							<div v-if="model" class="color-splash" :style="{ backgroundColor: model }"></div>
-							<span v-else>&nbsp;</span>
-						</div>
-					</div>
-				</template-toggle>
-			</label-floater>
-			<p-button
-				class="flex-none no-focus-highlight"
-				v-if="schema.template"
-				icon="mdi mdi-code-braces"
-				@click="toggleTemplate"
-			/>
-			<p-button class="flex-none no-focus-highlight" v-if="!schema.required" icon="pi pi-times" @click="clear" />
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+		<div class="container w-full" ref="container">
+			<input-box v-bind="inputProps" :model="model" @click="toggle">
+				<div class="color-splash" :style="{ backgroundColor: model }"></div>
+			</input-box>
 		</div>
 		<drop-down-panel v-model="overlayVisible" :container="container">
 			<p-color-picker v-model="poundConverter" inline />
 		</drop-down-panel>
-	</div>
+	</data-input-base>
 </template>
 
 <script setup lang="ts">
-import { SchemaColor } from "castmate-schema"
-import { Color, isHexColor } from "castmate-schema"
+import DataInputBase from "../base-components/DataInputBase.vue"
+import InputBox from "../base-components/InputBox.vue"
+import { Color, isHexColor, SchemaColor } from "castmate-schema"
 import { computed, onMounted, ref, useModel, watch } from "vue"
-import PButton from "primevue/button"
 import PColorPicker from "primevue/colorpicker"
-import { stopPropagation } from "../../../main"
 import { SharedDataInputProps } from "../DataInputTypes"
-import LabelFloater from "../base-components/LabelFloater.vue"
-import TemplateToggle from "../base-components/TemplateToggle.vue"
 import DropDownPanel from "../base-components/DropDownPanel.vue"
 
 const props = defineProps<
@@ -65,11 +32,6 @@ const model = useModel(props, "modelValue")
 const isColorString = computed(() => {
 	return !model.value || isHexColor(model.value)
 })
-
-function clear() {
-	model.value = undefined
-}
-const focused = ref(false)
 
 const overlayVisible = ref(false)
 
@@ -107,19 +69,6 @@ function toggle(ev: MouseEvent) {
 }
 
 const container = ref<HTMLElement | null>(null)
-
-const templateMode = ref(false)
-onMounted(() => {
-	templateMode.value = !isColorString.value
-})
-
-function toggleTemplate() {
-	if (!props.schema.template) {
-		return
-	}
-
-	templateMode.value = !templateMode.value
-}
 </script>
 
 <style scoped>
@@ -127,6 +76,9 @@ function toggleTemplate() {
 	cursor: pointer;
 	position: relative;
 	user-select: none;
+
+	display: flex;
+	flex-direction: row;
 }
 
 .overlay {
