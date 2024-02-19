@@ -20,7 +20,7 @@ import ConfirmationService from "primevue/confirmationservice"
 
 //theme
 // import "primevue/resources/themes/lara-dark-blue/theme.css"
-import "./css/theme.css"
+import "./theme/castmate/theme.scss"
 import "./css/theme-ext.css"
 import "./css/spellcast.css"
 //core

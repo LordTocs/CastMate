@@ -1,0 +1,174 @@
+// core
+.p-tree-container {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    overflow: auto;
+}
+
+.p-treenode-children {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.p-tree-wrapper {
+    overflow: auto;
+}
+
+.p-treenode-selectable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.p-tree-toggler {
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.p-treenode-leaf > .p-treenode-content .p-tree-toggler {
+    visibility: hidden;
+}
+
+.p-treenode-content {
+    display: flex;
+    align-items: center;
+}
+
+.p-tree-filter {
+    width: 100%;
+}
+
+.p-tree-filter-container {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.p-tree-filter-icon {
+    position: absolute;
+    top: 50%;
+    margin-top: -0.5rem;
+}
+
+.p-tree-loading {
+    position: relative;
+    min-height: 4rem;
+}
+
+.p-tree .p-tree-loading-overlay {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p-tree-flex-scrollable {
+    display: flex;
+    flex: 1;
+    height: 100%;
+    flex-direction: column;
+}
+
+.p-tree-flex-scrollable .p-tree-wrapper {
+    flex: 1;
+}
+
+// theme
+.p-tree {
+    border: $panelContentBorder;
+    background: $panelContentBg;
+    color: $panelContentTextColor;
+    padding: $panelContentPadding;
+    border-radius: $borderRadius;
+
+    .p-tree-container {
+        .p-treenode {
+            padding: $treeNodePadding;
+            outline: 0 none;
+
+            &:focus > .p-treenode-content {
+                @include focused-listitem();
+            }
+
+            .p-treenode-content {
+                border-radius: $borderRadius;
+                transition: $listItemTransition;
+                padding: $treeNodeContentPadding;
+
+                .p-tree-toggler {
+                    margin-right: $inlineSpacing;
+                    @include action-icon();
+                }
+
+                .p-treenode-icon {
+                    margin-right: $inlineSpacing;
+                    color: $treeNodeIconColor;
+                }
+
+                .p-checkbox {
+                    margin-right: $inlineSpacing;
+
+                    &.p-indeterminate {
+                        .p-checkbox-icon {
+                            color: $textColor;
+                        }
+                    }
+                }
+
+                &.p-highlight {
+                    background: $highlightBg;
+                    color: $highlightTextColor;
+
+                    .p-tree-toggler,
+                    .p-treenode-icon {
+                        color: $highlightTextColor;
+
+                        &:hover {
+                            color: $highlightTextColor;
+                        }
+                    }
+                }
+
+                &.p-treenode-selectable:not(.p-highlight):hover {
+                    background: $inputListItemHoverBg;
+                    color: $inputListItemTextHoverColor;
+                }
+            }
+        }
+    }
+
+    .p-tree-filter-container {
+        margin-bottom: $inlineSpacing;
+
+        .p-tree-filter {
+            width: 100%;
+            padding-right: nth($inputPadding, 2) + $primeIconFontSize;
+        }
+
+        .p-tree-filter-icon {
+            right: nth($inputPadding, 2);
+            color: $inputIconColor;
+        }
+    }
+
+    .p-treenode-children {
+        padding: $treeNodeChildrenPadding;
+    }
+
+    .p-tree-loading-icon {
+        font-size: $loadingIconFontSize;
+
+        &.p-icon {
+            width:  $loadingIconFontSize;
+            height: $loadingIconFontSize;
+        }
+    }
+}

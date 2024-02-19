@@ -1,0 +1,87 @@
+// core
+.p-splitter {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.p-splitter-vertical {
+    flex-direction: column;
+}
+
+.p-splitter-gutter {
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: col-resize;
+}
+
+.p-splitter-horizontal.p-splitter-resizing {
+    cursor: col-resize;
+    user-select: none;
+}
+
+.p-splitter-horizontal > .p-splitter-gutter > .p-splitter-gutter-handle {
+    height: 24px;
+    width: 100%;
+}
+
+.p-splitter-horizontal > .p-splitter-gutter {
+    cursor: col-resize;
+}
+
+.p-splitter-vertical.p-splitter-resizing {
+    cursor: row-resize;
+    user-select: none;
+}
+
+.p-splitter-vertical > .p-splitter-gutter {
+    cursor: row-resize;
+}
+
+.p-splitter-vertical > .p-splitter-gutter > .p-splitter-gutter-handle {
+    width: 24px;
+    height: 100%;
+}
+
+.p-splitter-panel {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.p-splitter-panel-nested {
+    display: flex;
+}
+
+.p-splitter-panel .p-splitter {
+    flex-grow: 1;
+    border: 0 none;
+}
+
+// theme
+.p-splitter {
+    border: $panelContentBorder;
+    background: $panelContentBg;
+    border-radius: $borderRadius;
+    color: $panelContentTextColor;
+
+    .p-splitter-gutter {
+        transition: $actionIconTransition;
+        background: $splitterGutterBg;
+        
+        .p-splitter-gutter-handle {
+            background: $splitterGutterHandleBg;
+            transition: $formElementTransition;
+            outline-color: transparent;
+            
+            &:focus-visible {
+                @include focused();
+            }
+        }
+    }
+
+    .p-splitter-gutter-resizing {
+        background: $splitterGutterHandleBg;
+    }
+}
