@@ -23,13 +23,13 @@ onMounted(() => {
 	watch(
 		() => props.modelValue,
 		() => {
-			console.log(props.modelValue, "CHAAAANGE")
 			if (props.modelValue != null) {
 				numEditModel.value = String(props.modelValue)
 			} else {
 				numEditModel.value = ""
 			}
-		}
+		},
+		{ immediate: true }
 	)
 })
 
