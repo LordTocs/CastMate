@@ -2,7 +2,6 @@
 	<div class="container">
 		<div class="inner-container" ref="containerDiv">
 			<p-data-table
-				v-model:filters="filters"
 				class="flex flex-column"
 				:value="channelPoints"
 				data-key="id"
@@ -14,14 +13,14 @@
 				sort-field="config.controllable"
 				:sort-order="-1"
 			>
-				<template #header>
+				<!-- <template #header>
 					<div class="flex justify-content-end">
 						<span class="p-input-icon-left">
 							<i class="pi pi-search" />
 							<p-input-text v-model="filters['global'].value" placeholder="Search" />
 						</span>
 					</div>
-				</template>
+				</template> -->
 				<template #groupheader="{ data }">
 					<div>
 						<template v-if="(data as ChannelPointResource).config.controllable">
@@ -142,6 +141,8 @@ import { ChannelPointRewardConfig, ChannelPointRewardState } from "castmate-plug
 import { DurationLabel } from "castmate-ui-core"
 import { Duration } from "castmate-schema"
 import { useResourceEditDialog, useResourceCreateDialog, useResourceDeleteDialog } from "castmate-ui-core"
+
+const filterValue = ref("")
 
 const filters = ref({
 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
