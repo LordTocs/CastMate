@@ -58,8 +58,6 @@ export function settableArray<T>(config: {
 	}
 
 	const symbols = Object.getOwnPropertySymbols(innerComputed)
-	console.log(innerComputed, symbols)
-
 	const result = {
 		get value() {
 			return getStackedProxy(innerComputed.value)
