@@ -66,6 +66,7 @@ import _cloneDeep from "lodash/cloneDeep"
 import { ipcInvoke } from "./electron"
 import FilePathInputVue from "../components/data/inputs/FilePathInput.vue"
 import ArrayInputVue from "../components/data/inputs/ArrayInput.vue"
+import TimerInputVue from "../components/data/inputs/TimerInput.vue"
 
 export type ResourceProxy = string
 export const ResourceProxyFactory = {
@@ -243,6 +244,7 @@ export function initData() {
 	inputStore.registerInputComponent(Boolean, BooleanInputVue)
 	inputStore.registerInputComponent(Color, ColorInputVue)
 	inputStore.registerInputComponent(Duration, DurationInputVue)
+	inputStore.registerInputComponent(Timer, TimerInputVue)
 	inputStore.registerInputComponent(DynamicType, DynamicTypeInputVue)
 	inputStore.registerInputComponent(Directory, DirectoryInputVue)
 	inputStore.registerInputComponent(FilePath, FilePathInputVue)
