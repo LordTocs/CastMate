@@ -2,6 +2,7 @@
 	<div>
 		<div class="flex flex-row">
 			<div class="p-inputgroup" style="flex-grow: 1; flex-shrink: 1" @contextmenu="onContext">
+				<slot name="prepend" v-if="!(canTemplate && templateMode)"></slot>
 				<label-floater :model-value="modelValue" :label="schema.name" :no-float="noFloat" v-slot="labelProps">
 					<template-toggle v-bind="labelProps" v-model="model" :template-mode="canTemplate && templateMode">
 						<slot v-bind="labelProps"></slot>
