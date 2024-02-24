@@ -15,6 +15,7 @@
 			v-model:focused="focused"
 			v-model:selection="selection"
 			@blur="onBlur"
+			@focus="onFocus"
 		/>
 		<div
 			class="p-dropdown-label p-component p-inputtext duration-input"
@@ -73,6 +74,7 @@ import FakeInputString from "../../fake-input/FakeInputString.vue"
 import FakeInputBackbone from "../../fake-input/FakeInputBackbone.vue"
 import { InputSelection, PartialSelectionResult, useCombinedPartialSelects } from "../../fake-input/FakeInputTypes"
 import { useClickDragRect } from "../../../util/dom"
+import { emit } from "process"
 
 const props = defineProps<{
 	modelValue: Duration | undefined
@@ -80,6 +82,8 @@ const props = defineProps<{
 	inputId?: string
 	placeholder?: string
 }>()
+
+const emits = defineEmits(["update:modelValue", "blur", "focus"])
 
 const model = useModel(props, "modelValue")
 
@@ -217,9 +221,14 @@ function sendToModel() {
 	model.value = hours * HOUR_DUR + minutes * MINUTE_DUR + seconds
 }
 
-function onBlur() {
+function onBlur(ev: FocusEvent) {
 	sendToModel()
 	parseFromModel()
+	emits("blur", ev)
+}
+
+function onFocus(ev: FocusEvent) {
+	emits("focus", ev)
 }
 
 onMounted(() => {
