@@ -83,7 +83,7 @@ const queuedItems = settableArray({
 })
 
 const history = computed(() => {
-	return queue.value.state.history.reverse()
+	return [...queue.value.state.history].reverse()
 })
 
 const queueList = ref<HTMLElement>()
