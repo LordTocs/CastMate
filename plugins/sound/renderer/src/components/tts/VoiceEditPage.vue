@@ -1,9 +1,9 @@
 <template>
 	<scrolling-tab-body v-model:scroll-x="view.scrollX" v-model:scroll-y="view.scrollY" inner-class="px-2 py-2">
-		<div class="flex flex-row gap-1 mb-3">
+		<!-- <div class="flex flex-row gap-1 mb-3">
 			<p-input-text class="flex-grow-1" v-model="testMessage"></p-input-text>
 			<p-button icon="mdi mdi-play" />
-		</div>
+		</div> -->
 		<div class="pt-3">
 			<data-input
 				v-model="model.voiceProvider"
