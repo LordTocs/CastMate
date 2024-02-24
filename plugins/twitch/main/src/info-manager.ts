@@ -26,6 +26,7 @@ import { HelixChannelUpdate } from "@twurple/api"
 import { onChannelAuth } from "./api-harness"
 import { CategoryCache } from "./category-cache"
 import { ExposedSchemaPropType, ExposedSchemaType, ExposedSchemaTypeUnion, declareSchema } from "castmate-schema"
+import { ViewerCache } from "./viewer-cache"
 
 const rendererUpdateStreamInfo = defineCallableIPC<(info: StreamInfo) => any>("twitch", "updateStreamInfo")
 const logger = usePluginLogger("twitch")
@@ -164,6 +165,12 @@ export function setupInfoManager() {
 		default: "",
 	})
 
+	const live = defineState("live", {
+		type: Boolean,
+		required: true,
+		default: false,
+	})
+
 	onChannelAuth(async (channel, service) => {
 		service.eventsub.onChannelUpdate(channel.twitchId, async (event) => {
 			logger.log("Channel Update", event.streamTitle, event.categoryName)
@@ -185,6 +192,20 @@ export function setupInfoManager() {
 			await StreamInfoManager.getInstance().reconcileTwitchUpdate(queryResult.title, queryResult.gameId)
 		}
 
+		const stream = await channel.apiClient.streams.getStreamByUserId(channel.twitchId)
+		live.value = stream != null
+
 		await StreamInfoManager.getInstance().startManagingInfo()
+
+		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
+			//TODO: Check if there's a stream plan active
+			ViewerCache.getInstance().resetPerStreamData()
+			live.value = true
+		})
+
+		service.eventsub.onStreamOffline(channel.twitchId, async (event) => {
+			//TODO: Check if there's a stream plan active
+			live.value = false
+		})
 	})
 }

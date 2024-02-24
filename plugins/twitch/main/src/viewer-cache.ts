@@ -1,5 +1,6 @@
 import { ChatUser } from "@twurple/chat"
 import {
+	EventList,
 	ReactiveRef,
 	Service,
 	defineRendererCallable,
@@ -29,6 +30,7 @@ import {
 	TwitchViewerDisplayData,
 	TwitchViewerUnresolved,
 } from "castmate-plugin-twitch-shared"
+import { nextTick } from "process"
 
 interface CachedTwitchViewer extends Partial<TwitchViewerData> {
 	id: string
@@ -163,6 +165,9 @@ export const ViewerCache = Service(
 		//Twitch doesn't allow bulk follow checking?
 		//private unknownFollows = new Set<string>()
 
+		private viewersSeenThisStream = new Set<string>()
+		onFirstSeenThisStream = new EventList<(userId: string) => any>()
+
 		constructor() {}
 
 		async resetCache() {
@@ -225,6 +230,12 @@ export const ViewerCache = Service(
 			viewer.lastSeen = Date.now()
 			if (!this.chatters.has(viewer.id)) {
 				this.chatters.set(viewer.id, viewer)
+			}
+			if (!this.viewersSeenThisStream.has(viewer.id)) {
+				this.viewersSeenThisStream.add(viewer.id)
+				nextTick(() => {
+					this.onFirstSeenThisStream.run(viewer.id)
+				})
 			}
 		}
 
@@ -681,6 +692,14 @@ export const ViewerCache = Service(
 
 			const result = fuzzySearch.map((r) => r.obj)
 			return result
+		}
+
+		resetPerStreamData() {
+			this.viewersSeenThisStream = new Set()
+		}
+
+		async hasUserBeenSeenThisStream(userId: string) {
+			return this.viewersSeenThisStream.has(userId)
 		}
 	}
 )

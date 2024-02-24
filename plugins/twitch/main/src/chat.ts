@@ -1,5 +1,5 @@
 import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
-import { defineTrigger, defineAction, defineTransformTrigger, usePluginLogger } from "castmate-core"
+import { defineTrigger, defineAction, defineTransformTrigger, usePluginLogger, onLoad } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { Color, Command, Range, getCommandDataSchema, matchAndParseCommand } from "castmate-schema"
@@ -253,6 +253,35 @@ export function setupChat() {
 				bits: event.bits,
 				viewer: event.userId ?? "anonymouse",
 				message: event.message,
+			})
+		})
+	})
+
+	const walkon = defineTrigger({
+		id: "walkon",
+		name: "Walk on",
+		icon: "mdi mdi-walk",
+		config: {
+			type: Object,
+			properties: {
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
+			},
+		},
+		context: {
+			type: Object,
+			properties: {
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
+			},
+		},
+		async handle(config, context, mapping) {
+			return await inTwitchViewerGroup(context.viewer, config.group)
+		},
+	})
+
+	onLoad(() => {
+		ViewerCache.getInstance().onFirstSeenThisStream.register(async (userId) => {
+			walkon({
+				viewer: userId,
 			})
 		})
 	})
