@@ -1,4 +1,4 @@
-import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { TwitchViewerGroup, isViewerGroupPropertyRule } from "castmate-plugin-twitch-shared"
 import { useResourceStore } from "castmate-ui-core"
 //TODO: Uhhhh i18n??
 
@@ -16,33 +16,43 @@ export function getGroupPhrase(group: TwitchViewerGroup, resourceStore: ReturnTy
 	}
 
 	const words: String[] = []
+
 	for (const rule of rules) {
-		if ("property" in rule) {
-			switch (rule.property) {
-				case "following":
-					words.push("Followers")
-					break
-				case "subscribed":
-					words.push("Subscribers")
-					break
-				case "sub-tier-1":
+		if (isViewerGroupPropertyRule(rule)) {
+			if (rule.properties.following) {
+				words.push("Followers")
+			}
+
+			const subTier1 = rule.properties.subTier1
+			const subTier2 = rule.properties.subTier1
+			const subTier3 = rule.properties.subTier1
+
+			const allSub = subTier1 && subTier2 && subTier3
+
+			if (allSub) {
+				words.push("Subscribers")
+			} else {
+				if (subTier1) {
 					words.push("Tier 1 Subs")
-					break
-				case "sub-tier-2":
+				}
+				if (subTier2) {
 					words.push("Tier 2 Subs")
-					break
-				case "sub-tier-3":
+				}
+				if (subTier3) {
 					words.push("Tier 3 Subs")
-					break
-				case "mod":
-					words.push("Mods")
-					break
-				case "vip":
-					words.push("VIPs")
-					break
-				case "broadcaster":
-					words.push("Broadcaster")
-					break
+				}
+			}
+
+			if (rule.properties.mod) {
+				words.push("Mods")
+			}
+
+			if (rule.properties.vip) {
+				words.push("VIPs")
+			}
+
+			if (rule.properties.broadcaster) {
+				words.push("Broadcaster")
 			}
 		}
 	}
@@ -56,6 +66,10 @@ export function getGroupPhrase(group: TwitchViewerGroup, resourceStore: ReturnTy
 				}
 			}
 		}
+	}
+
+	if (words.length == 0) {
+		return "Custom"
 	}
 
 	let result = ""

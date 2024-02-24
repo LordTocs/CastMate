@@ -4,14 +4,20 @@
 			<p>Trigger runs for Everyone</p>
 			<p-button @click="addEither">Customize</p-button>
 		</div>
-		<twitch-viewer-group-rule v-model="model.rule" v-else @delete="model.rule = undefined" />
+		<twitch-viewer-group-logic-op
+			v-model="model.rule"
+			:excluded="false"
+			v-else
+			@delete="model.rule = undefined"
+			:root="true"
+		/>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { useModel } from "vue"
-import TwitchViewerGroupRule from "./groups/TwitchViewerGroupRule.vue"
+import TwitchViewerGroupLogicOp from "./groups/TwitchViewerGroupLogicOp.vue"
 import PButton from "primevue/button"
 import PCheckBox from "primevue/checkbox"
 import PDropDown from "primevue/dropdown"
@@ -25,7 +31,7 @@ const model = useModel(props, "modelValue")
 function addEither() {
 	model.value = {
 		rule: {
-			or: [],
+			or: [{ properties: {} }],
 		},
 	}
 }

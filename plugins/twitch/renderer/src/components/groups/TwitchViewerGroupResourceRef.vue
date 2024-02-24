@@ -1,7 +1,14 @@
 <template>
-	<div class="group-ref">
-		<data-input v-model="groupRef" :schema="groupSchema" />
-		<p-button text icon="mdi mdi-close" @click="deleteMe"></p-button>
+	<div class="group-ref p-1 pt-4">
+		<data-input v-model="groupRef" :schema="groupSchema" class="flex-grow-1 flex-shrink-0" style="width: 0" />
+
+		<p-button text size="small" icon="mdi mdi-close" @click="deleteMe"></p-button>
+		<p-button
+			text
+			size="small"
+			:icon="excluded ? 'mdi mdi-equal' : 'mdi mdi-not-equal-variant'"
+			@click="excluded = !excluded"
+		></p-button>
 	</div>
 </template>
 
@@ -14,15 +21,18 @@ import PButton from "primevue/button"
 
 const props = defineProps<{
 	modelValue: TwitchViewerGroupRule
+	excluded: boolean
 }>()
 
 const model = useModel(props, "modelValue")
+const excluded = useModel(props, "excluded")
 const emit = defineEmits(["delete"])
 
 const groupSchema: Schema = {
 	type: ResourceProxyFactory,
 	resourceType: "CustomTwitchViewerGroup",
 	required: true,
+	name: "Group",
 }
 
 const groupRef = computed({
@@ -45,10 +55,16 @@ function deleteMe() {
 </script>
 
 <style scoped>
+.excluded > * > .group-ref {
+	border-color: red;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
 .group-ref {
-	padding: 0.2rem;
 	border-radius: var(--border-radius);
 	display: flex;
 	flex-direction: row;
+	border: solid 1px var(--surface-d);
 }
 </style>

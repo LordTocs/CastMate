@@ -5,15 +5,23 @@ export interface TwitchViewerGroupConfig {
 	userIds: Set<string>
 }
 
-export interface TwitchViewerGroupProperty {
-	property: string
+export interface TwitchViewerGroupProperties {
+	properties: {
+		following?: boolean
+		vip?: boolean
+		subTier1?: boolean
+		subTier2?: boolean
+		subTier3?: boolean
+		mod?: boolean
+		broadcaster?: boolean
+	}
 }
 
-export interface CustomTwitchViewerGroupRef {
+export interface TwitchViewerGroupResourceRef {
 	group: string | null
 }
 
-export interface TwitchViewerGroupList {
+export interface TwitchViewerGroupInlineList {
 	userIds: string[]
 }
 
@@ -21,14 +29,16 @@ export interface TwitchViewerGroupExclusion {
 	exclude: Exclude<TwitchViewerGroupRule, TwitchViewerGroupExclusion>
 }
 
-export type TwitchViewerGroupBaseRule = TwitchViewerGroupProperty | CustomTwitchViewerGroupRef
+export type TwitchViewerGroupBaseRule =
+	| TwitchViewerGroupProperties
+	| TwitchViewerGroupResourceRef
+	| TwitchViewerGroupInlineList
 
 export type TwitchViewerGroupRule =
 	| TwitchViewerGroupAnd
 	| TwitchViewerGroupOr
 	| TwitchViewerGroupExclusion
 	| TwitchViewerGroupBaseRule
-	| TwitchViewerGroupList
 
 export interface TwitchViewerGroupAnd {
 	and: TwitchViewerGroupRule[]
@@ -62,6 +72,34 @@ registerType("TwitchViewerGroup", {
 	constructor: TwitchViewerGroup,
 })
 
+export function isInlineViewerGroup(rule: TwitchViewerGroupRule | undefined): rule is TwitchViewerGroupInlineList {
+	if (!rule) return false
+	return "userIds" in rule
+}
+
+export function isGroupResourceRef(rule: TwitchViewerGroupRule | undefined): rule is TwitchViewerGroupResourceRef {
+	if (!rule) return false
+	return "group" in rule
+}
+
+export function isExclusionRule(rule: TwitchViewerGroupRule | undefined): rule is TwitchViewerGroupExclusion {
+	if (!rule) return false
+	return "exclude" in rule
+}
+
+export function isLogicGroup(
+	rule: TwitchViewerGroupRule | undefined
+): rule is TwitchViewerGroupOr | TwitchViewerGroupAnd {
+	if (!rule) return false
+	return "and" in rule || "or" in rule
+}
+
+export function isViewerGroupPropertyRule(
+	rule: TwitchViewerGroupRule | undefined
+): rule is TwitchViewerGroupProperties {
+	if (!rule) return false
+	return "properties" in rule
+}
 // Everyone
 // []
 
