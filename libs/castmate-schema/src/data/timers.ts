@@ -25,7 +25,7 @@ export type TimerFactory = {
 	factoryCreate(): Timer
 	[TimerSymbol]: "Timer"
 	fromDate(date: Date): Timer
-	fromDuration(duration: Duration): Timer
+	fromDuration(duration: Duration, paused?: boolean): Timer
 }
 
 function timerToPrimitive(hint: "default" | "string" | "number", timer: Timer) {
@@ -51,12 +51,21 @@ export const Timer: TimerFactory = {
 			},
 		}
 	},
-	fromDuration(duration: Duration): Timer {
-		return {
-			endTime: Date.now() + duration * 1000,
-			[Symbol.toPrimitive](hint) {
-				return timerToPrimitive(hint, this)
-			},
+	fromDuration(duration: Duration, paused: boolean = false): Timer {
+		if (!paused) {
+			return {
+				endTime: Date.now() + duration * 1000,
+				[Symbol.toPrimitive](hint) {
+					return timerToPrimitive(hint, this)
+				},
+			}
+		} else {
+			return {
+				remainingTime: duration,
+				[Symbol.toPrimitive](hint) {
+					return timerToPrimitive(hint, this)
+				},
+			}
 		}
 	},
 	[TimerSymbol]: "Timer",
