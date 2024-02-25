@@ -1,7 +1,7 @@
 {
     "targets": [
         {
-            "target_name": "castmate-plugin-sound-native",
+            "target_name": "castmate-plugin-{{name}}-native",
             "cflags!": [ "-fno-exceptions" ],
             "cflags_cc!": [ "-fno-exceptions" ],
             "sources": [ "src/native-index.cc" ],
