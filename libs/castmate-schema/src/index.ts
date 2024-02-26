@@ -29,3 +29,4 @@ export * from "./util/substring-helper"
 export * from "./util/object-helpers"
 
 export * from "./template/template-utils"
+export * from "./template/remote-templates"

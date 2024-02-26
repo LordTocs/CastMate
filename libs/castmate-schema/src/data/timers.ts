@@ -1,4 +1,6 @@
-import { Duration, SchemaBase, formatDuration, registerRemoteDataDeserializer, registerType } from "castmate-schema"
+import { Duration, formatDuration } from "../data/duration"
+import { SchemaBase, registerType } from "../schema"
+import { registerRemoteDataDeserializer } from "../template/remote-templates"
 
 interface TimerBase {
 	[Symbol.toPrimitive](hint: "default" | "string" | "number"): any

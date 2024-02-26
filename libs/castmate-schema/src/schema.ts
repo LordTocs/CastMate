@@ -1,7 +1,7 @@
 import { cloneDeep, isFunction } from "lodash"
 import { MaybePromise, MapToUnion, Modify, Fallback } from "./util/type-helpers"
 import { ValueCompareOperator } from "./data/boolean-expression"
-import { RemoteTemplateString } from "./template/template-utils"
+import { RemoteTemplateString } from "./template/remote-templates"
 
 ////////////////////////////////////// ENUMs /////////////////////////////////////////////
 export interface EnumPair<T> {
