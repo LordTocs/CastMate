@@ -1,22 +1,28 @@
-import { Duration, SchemaBase, formatDuration, registerType } from "castmate-schema"
+import { Duration, SchemaBase, formatDuration, registerRemoteDataDeserializer, registerType } from "castmate-schema"
 
 interface TimerBase {
 	[Symbol.toPrimitive](hint: "default" | "string" | "number"): any
 }
 
-interface RunningTimer extends TimerBase {
+interface RunningTimerData {
 	/**
 	 * Date.now() timestamp the timer will run out
 	 */
 	endTime: number
 }
 
-interface PausedTimer extends TimerBase {
+interface RunningTimer extends TimerBase, RunningTimerData {}
+
+interface PausedTimerData {
 	/**
 	 * Seconds remaining
 	 */
 	remainingTime: number
 }
+
+interface PausedTimer extends PausedTimerData, TimerBase {}
+
+type TimerData = RunningTimerData | PausedTimerData
 
 export type Timer = RunningTimer | PausedTimer
 
@@ -36,36 +42,24 @@ function timerToPrimitive(hint: "default" | "string" | "number", timer: Timer) {
 
 export const Timer: TimerFactory = {
 	factoryCreate(): Timer {
-		return {
+		return wrapTimerData({
 			remainingTime: 0,
-			[Symbol.toPrimitive](hint) {
-				return timerToPrimitive(hint, this)
-			},
-		}
+		})
 	},
 	fromDate(date: Date): Timer {
-		return {
+		return wrapTimerData({
 			endTime: date.getTime(),
-			[Symbol.toPrimitive](hint) {
-				return timerToPrimitive(hint, this)
-			},
-		}
+		})
 	},
 	fromDuration(duration: Duration, paused: boolean = false): Timer {
 		if (!paused) {
-			return {
+			return wrapTimerData({
 				endTime: Date.now() + duration * 1000,
-				[Symbol.toPrimitive](hint) {
-					return timerToPrimitive(hint, this)
-				},
-			}
+			})
 		} else {
-			return {
+			return wrapTimerData({
 				remainingTime: duration,
-				[Symbol.toPrimitive](hint) {
-					return timerToPrimitive(hint, this)
-				},
-			}
+			})
 		}
 	},
 	[TimerSymbol]: "Timer",
@@ -74,12 +68,9 @@ export const Timer: TimerFactory = {
 export function pauseTimer(timer: Timer): Timer {
 	if ("remainingTime" in timer) return timer
 
-	return {
+	return wrapTimerData({
 		remainingTime: getTimeRemaining(timer),
-		[Symbol.toPrimitive](hint) {
-			return timerToPrimitive(hint, this)
-		},
-	}
+	})
 }
 
 export function startTimer(timer: Timer): Timer {
@@ -87,12 +78,9 @@ export function startTimer(timer: Timer): Timer {
 
 	const endTime = Date.now() + timer.remainingTime * 1000
 
-	return {
+	return wrapTimerData({
 		endTime,
-		[Symbol.toPrimitive](hint) {
-			return timerToPrimitive(hint, this)
-		},
-	}
+	})
 }
 
 export function isTimerStarted(timer: Timer): timer is RunningTimer {
@@ -101,19 +89,13 @@ export function isTimerStarted(timer: Timer): timer is RunningTimer {
 
 export function setTimer(timer: Timer, duration: Duration): Timer {
 	if ("endTime" in timer) {
-		return {
+		return wrapTimerData({
 			endTime: Date.now() + duration * 1000,
-			[Symbol.toPrimitive](hint) {
-				return timerToPrimitive(hint, this)
-			},
-		}
+		})
 	} else {
-		return {
+		return wrapTimerData({
 			remainingTime: duration,
-			[Symbol.toPrimitive](hint) {
-				return timerToPrimitive(hint, this)
-			},
-		}
+		})
 	}
 }
 
@@ -122,27 +104,18 @@ export function offsetTimer(timer: Timer, duration: Duration): Timer {
 		const now = Date.now()
 		//Handle the case that the timer has been left running past 0
 		if (timer.endTime > now) {
-			return {
+			return wrapTimerData({
 				endTime: timer.endTime + duration * 1000,
-				[Symbol.toPrimitive](hint) {
-					return timerToPrimitive(hint, this)
-				},
-			}
+			})
 		} else {
-			return {
+			return wrapTimerData({
 				endTime: now + duration * 1000,
-				[Symbol.toPrimitive](hint) {
-					return timerToPrimitive(hint, this)
-				},
-			}
+			})
 		}
 	} else {
-		return {
+		return wrapTimerData({
 			remainingTime: timer.remainingTime + duration * 1000,
-			[Symbol.toPrimitive](hint) {
-				return timerToPrimitive(hint, this)
-			},
-		}
+		})
 	}
 }
 
@@ -178,21 +151,29 @@ registerType("Timer", {
 	async deserialize(value, schema): Promise<Timer> {
 		if (isTimer(value)) {
 			if ("endTime" in value) {
-				return {
+				return wrapTimerData({
 					endTime: value.endTime,
-					[Symbol.toPrimitive](hint) {
-						return timerToPrimitive(hint, this)
-					},
-				}
+				})
 			} else if ("remainingTime" in value) {
-				return {
+				return wrapTimerData({
 					remainingTime: value.remainingTime,
-					[Symbol.toPrimitive](hint) {
-						return timerToPrimitive(hint, this)
-					},
-				}
+				})
 			}
 		}
 		return Timer.factoryCreate()
 	},
+})
+
+function wrapTimerData(data: TimerData): Timer {
+	return {
+		...data,
+		[Symbol.toPrimitive](hint) {
+			return timerToPrimitive(hint, this)
+		},
+	}
+}
+
+registerRemoteDataDeserializer("Timer", (data) => {
+	const timer = wrapTimerData(data.data as TimerData)
+	return String(timer)
 })

@@ -1,6 +1,7 @@
 import { cloneDeep, isFunction } from "lodash"
 import { MaybePromise, MapToUnion, Modify, Fallback } from "./util/type-helpers"
 import { ValueCompareOperator } from "./data/boolean-expression"
+import { RemoteTemplateString } from "./template/template-utils"
 
 ////////////////////////////////////// ENUMs /////////////////////////////////////////////
 export interface EnumPair<T> {
@@ -222,8 +223,60 @@ export type ResolvedTypeByConstructor<T extends DataConstructorOrFactory> = Fall
 	>[1],
 	any
 >
+///////////////////////////////////Remote Schema Type//////////////////////////////////////////////
+//Overrides the Resolved type to an intermediate type to be transmitted and resolved later.
+//RemoteSchemaType exists as an intermediate format to transmit templated data. It's main purpose is timers and stopwatches.
+//When a timer is templated into a string, instead of templating the final formatted string we format with the timer info.
+//Then we can transmit the data and the other side can finish transforming the timer into text and update it as time passes.
+
+export interface RemoteTemplateSchemaTypeMap {
+	dummy: [Dummy, Dummy]
+	String: [SchemaString, RemoteTemplateString]
+}
+export type RemoteTemplateSchemaTypeUnion = MapToUnion<RemoteTemplateSchemaTypeMap>
+
+type RemoteSchemaObjType<T extends SchemaObj> = {
+	[Property in keyof T["properties"]]: RemoteSchemaType<T["properties"][Property]>
+}
+
+type RemoteSchemaArrayType<T extends SchemaArray> = Array<RemoteSchemaType<T["items"]>>
+
+export type RemoteTemplateSchemaPropType<T extends Schema> = Fallback<
+	Extract<
+		RemoteTemplateSchemaTypeUnion,
+		T extends { type: infer ConstructorOrFactory } ? [{ type: ConstructorOrFactory }, any] : [never, any]
+	>[1],
+	SchemaPropType<T>
+>
+
+type SchemaApplyRemoteTemplate<SchemaT extends Schema> = SchemaT extends MaybeTemplated
+	? SchemaT["template"] extends true
+		? RemoteTemplateSchemaPropType<SchemaT>
+		: SchemaPropType<SchemaT>
+	: SchemaPropType<SchemaT>
+
+export type RemoteSchemaType<T extends Schema> = T extends SchemaObj
+	? RemoteSchemaObjType<T>
+	: SchemaApplyRequired<
+			T,
+			T extends SchemaArray
+				? RemoteSchemaArrayType<T>
+				: T extends SchemaResource
+				? SchemaResourceType<T>
+				: SchemaApplyRemoteTemplate<T>
+	  >
+
+export type RemoteTemplateTypeByConstructor<T extends DataConstructorOrFactory> = Fallback<
+	Extract<
+		RemoteTemplateSchemaTypeUnion,
+		T extends infer ConstructorOrFactory ? [{ type: ConstructorOrFactory }, any] : [never, any]
+	>[1],
+	ResolvedTypeByConstructor<T>
+>
 
 /////////////////////////////// Template type Map ///////////////////////////////////////////////
+//The template type map is used to override the type that holds the pre-template data, by default pre-templated data is a string
+
 export interface TemplateSchemaTypeMap {
 	dummy: [Dummy, Dummy]
 }
@@ -461,6 +514,10 @@ export interface DataTypeMetaData<T extends DataConstructorOrFactory> {
 	serialize?: (value: TemplateTypeByConstructor<T>, schema: Schema) => any
 	fromString?: (value: string) => Promise<ResolvedTypeByConstructor<T> | undefined>
 	compare?: (lhs: ExposedTypeByConstructor<T>, rhs: any, operator: ValueCompareOperator) => boolean
+	remoteTemplateResolve?: (
+		remoteValue: RemoteTemplateTypeByConstructor<T>,
+		schema: Schema
+	) => ResolvedTypeByConstructor<T>
 }
 
 interface FullDataTypeMetaData<T extends DataConstructorOrFactory = any> extends DataTypeMetaData<T> {

@@ -6,18 +6,20 @@ import {
 	DataConstructorOrFactory,
 	Directory,
 	FilePath,
+	RemoteSchemaType,
+	RemoteTemplateIntermediateSubstring,
+	RemoteTemplateString,
+	RemoteTemplateTypeByConstructor,
 	ResolvedSchemaType,
 	ResolvedTypeByConstructor,
 	Schema,
-	SchemaColor,
-	SchemaNumber,
-	SchemaString,
 	SchemaType,
 	SchemaTypeByConstructor,
 	TemplateTypeByConstructor,
 	getTemplateRegionString,
 	getTypeByConstructor,
-	getTypeByName,
+	isTimer,
+	isTimerStarted,
 	parseTemplateString,
 	trimTemplateJS,
 } from "castmate-schema"
@@ -93,9 +95,16 @@ export type SchemaTemplater<T extends DataConstructorOrFactory> = (
 	schema: SchemaTypeByConstructor<T>
 ) => Promise<ResolvedTypeByConstructor<T> | undefined>
 
+export type SchemaRemoteTemplater<T extends DataConstructorOrFactory> = (
+	value: TemplateTypeByConstructor<T>,
+	context: object,
+	schema: SchemaTypeByConstructor<T>
+) => Promise<RemoteTemplateTypeByConstructor<T> | undefined>
+
 declare module "castmate-schema" {
 	interface DataTypeMetaData<T = any> {
 		template?: SchemaTemplater<T>
+		remoteTemplate?: SchemaRemoteTemplater<T>
 	}
 }
 
@@ -135,6 +144,90 @@ export async function templateSchema<TSchema extends Schema>(
 	}
 }
 
+export async function remoteTemplateSchema<TSchema extends Schema>(
+	obj: SchemaType<TSchema>,
+	schema: TSchema,
+	context: object
+): Promise<RemoteSchemaType<TSchema>> {
+	if (schema.type === Object && "properties" in schema && isObject(obj)) {
+		const result: Record<string, any> = {}
+
+		await Promise.all(
+			Object.keys(schema.properties).map(async (key) => {
+				//@ts-ignore Type system too stupid again.
+				result[key] = await templateSchema(obj[key], schema.properties[key], context)
+			})
+		)
+
+		return result as RemoteSchemaType<TSchema>
+	} else if (schema.type === Array && "items" in schema && isArray(obj)) {
+		return (await Promise.all(
+			obj.map((item: any) => templateSchema(item, schema.items, context))
+		)) as RemoteSchemaType<TSchema>
+	} else if (isResourceConstructor(schema.type)) {
+		//How to template resources??
+		return obj
+	} else {
+		//Some type crap means this has to be out here instead of inside the if
+		const type = getTypeByConstructor<any>(schema.type)
+		if ("template" in schema && schema.template && obj != null) {
+			if (!type) throw new Error("Unknown Schema Type!")
+			if (type.remoteTemplate) {
+				return (await type.remoteTemplate(obj, context, schema)) as RemoteSchemaType<TSchema>
+			} else if (type.template) {
+				return await type.template(obj, context, schema)
+			} else {
+				throw new Error("Trying to remote template a type that doesn't have a templater registered")
+			}
+		} else {
+			return obj
+		}
+	}
+}
+
+export async function remoteTemplate(templateStr: string, data: object): Promise<RemoteTemplateString> {
+	const templateData = parseTemplateString(templateStr)
+
+	let result: RemoteTemplateString = []
+
+	for (const region of templateData.regions) {
+		const last = result[result.length - 1]
+
+		if (region.type == "string") {
+			const str = getTemplateRegionString(templateData, region)
+			if (last && typeof last == "string") {
+				result[result.length - 1] = last + str
+			} else {
+				result.push(str)
+			}
+		} else {
+			const js = getTemplateRegionString(templateData, region)
+			const trimmed = trimTemplateJS(js)
+			if (trimmed) {
+				let templateResult = undefined
+				try {
+					templateResult = await evaluateTemplate(trimmed, data)
+					const remoteTemplateValue = await getRemoteTemplateIntermediate(templateResult)
+					if (remoteTemplateValue != null) {
+						result.push(remoteTemplateValue)
+					} else {
+						const str = String(templateResult)
+						if (last && typeof last == "string") {
+							result[result.length - 1] = last + str
+						} else {
+							result.push(str)
+						}
+					}
+				} catch (err) {
+					console.error("Error evaluating Template", err)
+				}
+			}
+		}
+	}
+
+	return result
+}
+
 export function registerSchemaTemplate<DataCon extends DataConstructorOrFactory>(
 	constructor: DataCon,
 	templateFunc: SchemaTemplater<DataCon>
@@ -145,6 +238,16 @@ export function registerSchemaTemplate<DataCon extends DataConstructorOrFactory>
 	schemaType.template = templateFunc
 }
 
+export function registerSchemaRemoteTemplate<DataCon extends DataConstructorOrFactory>(
+	constructor: DataCon,
+	templateFunc: SchemaRemoteTemplater<DataCon>
+) {
+	const schemaType = getTypeByConstructor(constructor)
+	if (!schemaType) throw new Error(`Missing Schema Type ${name}`)
+
+	schemaType.remoteTemplate = templateFunc
+}
+
 registerSchemaTemplate(String, async (value, context, schema) => {
 	let str = await template(value, context)
 
@@ -153,6 +256,10 @@ registerSchemaTemplate(String, async (value, context, schema) => {
 	}
 
 	return str
+})
+
+registerSchemaRemoteTemplate(String, async (value, context, schema) => {
+	return remoteTemplate(value, context)
 })
 
 registerSchemaTemplate(Number, async (value, context, schema) => {
@@ -187,4 +294,53 @@ registerSchemaTemplate(FilePath, async (value, context, schema) => {
 registerSchemaTemplate(Directory, async (value, context, schema) => {
 	let str = await template(value, context)
 	return str
+})
+
+////
+// Remote Data Serialization
+export type RemoteDataSerializer = (data: any) => Promise<RemoteTemplateIntermediateSubstring | undefined>
+
+const remoteDataSerializers: RemoteDataSerializer[] = []
+
+export function registerRemoteDataSerializer(serializer: RemoteDataSerializer) {
+	remoteDataSerializers.push(serializer)
+}
+
+function successfulSerializer(
+	result: PromiseSettledResult<RemoteTemplateIntermediateSubstring | undefined>
+): result is PromiseFulfilledResult<RemoteTemplateIntermediateSubstring> {
+	return result.status == "fulfilled" && result.value != null
+}
+
+async function getRemoteTemplateIntermediate(data: any) {
+	const serializers = await Promise.allSettled(remoteDataSerializers.map((s) => s(data)))
+
+	const successfulSerializers = serializers.filter(successfulSerializer)
+
+	if (successfulSerializers.length == 0) {
+		return undefined
+	}
+
+	return successfulSerializers[0].value
+}
+
+registerRemoteDataSerializer(async (data) => {
+	if (isTimer(data)) {
+		if (isTimerStarted(data)) {
+			return {
+				type: "Timer",
+				data: {
+					endTime: data.endTime,
+				},
+			}
+		} else {
+			return {
+				type: "Timer",
+				data: {
+					remainingTime: data.remainingTime,
+				},
+			}
+		}
+	}
+	return undefined
 })
