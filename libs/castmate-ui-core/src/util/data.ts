@@ -252,6 +252,7 @@ export function initData() {
 
 	inputStore.registerViewComponent(String, GenericDataViewVue)
 	inputStore.registerViewComponent(Number, GenericDataViewVue)
+	inputStore.registerViewComponent(Boolean, BooleanViewVue)
 	inputStore.registerViewComponent(Object, ObjectViewVue)
 	inputStore.registerViewComponent(Range, RangeViewVue)
 	inputStore.registerViewComponent(MediaFile, MediaFileViewVue)
