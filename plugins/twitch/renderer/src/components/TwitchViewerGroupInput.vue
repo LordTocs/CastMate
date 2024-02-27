@@ -2,7 +2,9 @@
 	<data-input-base v-model="model" :schema="schema" :toggle-template="false">
 		<div class="container w-full" ref="container">
 			<input-box :model="model" @click="onClick">
-				{{ phrase }}
+				<span style="white-space: nowrap">
+					<twitch-viewer-group-span :group="model" />
+				</span>
 			</input-box>
 		</div>
 		<drop-down-panel :container="container" v-model="overlayVisible">
@@ -17,7 +19,7 @@ import TwitchViewerGroupEdit from "./TwitchViewerGroupEdit.vue"
 import { useModel, ref, computed } from "vue"
 import { stopPropagation, useResourceStore, DropDownPanel, DataInputBase, InputBox } from "castmate-ui-core"
 import { getGroupPhrase } from "../util/group"
-
+import TwitchViewerGroupSpan from "./groups/TwitchViewerGroupSpan.vue"
 const props = defineProps<{
 	modelValue: TwitchViewerGroup | undefined
 	schema: SchemaTwitchViewerGroup
