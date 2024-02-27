@@ -74,7 +74,7 @@ export const CategoryCache = Service(
 					(g): TwitchCategory => ({
 						id: g.id,
 						name: g.name,
-						image: g.boxArtUrl,
+						image: g.boxArtUrl.replace("{width}", "52").replace("{height}", "72"),
 						[Symbol.toPrimitive]() {
 							this.name
 						},
@@ -105,7 +105,7 @@ export const CategoryCache = Service(
 				const data: TwitchCategory = {
 					id: game.id,
 					name: game.name,
-					image: game.boxArtUrl,
+					image: game.boxArtUrl.replace("{width}", "52").replace("{height}", "72"),
 					[Symbol.toPrimitive]() {
 						this.name
 					},
@@ -127,7 +127,7 @@ export const CategoryCache = Service(
 				const data: TwitchCategory = {
 					id: game.id,
 					name: game.name,
-					image: game.boxArtUrl,
+					image: game.boxArtUrl.replace("{width}", "52").replace("{height}", "72"),
 					[Symbol.toPrimitive]() {
 						this.name
 					},
