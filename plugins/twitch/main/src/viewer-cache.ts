@@ -10,6 +10,7 @@ import {
 	registerSchemaTemplate,
 	registerSchemaUnexpose,
 	template,
+	usePluginLogger,
 } from "castmate-core"
 import { Color, getTypeByConstructor } from "castmate-schema"
 import { TwitchAccount } from "./twitch-auth"
@@ -31,6 +32,8 @@ import {
 	TwitchViewerUnresolved,
 } from "castmate-plugin-twitch-shared"
 import { nextTick } from "process"
+
+const logger = usePluginLogger("twitch")
 
 interface CachedTwitchViewer extends Partial<TwitchViewerData> {
 	id: string
@@ -240,6 +243,8 @@ export const ViewerCache = Service(
 		}
 
 		private getOrCreate(userId: string) {
+			if (userId == "") throw new Error("No empty IDs!")
+
 			let cached = this._viewerLookup.get(userId)
 			if (!cached) {
 				//Store our users as reactive so if they get used in a condition or overlay template they will update it
@@ -588,7 +593,9 @@ export const ViewerCache = Service(
 			}))
 		}
 
-		async getDisplayDataById(userId: string): Promise<TwitchViewerDisplayData> {
+		async getDisplayDataById(userId: string): Promise<TwitchViewerDisplayData | undefined> {
+			if (!userId) return undefined
+
 			const cached = this.getOrCreate(userId)
 
 			const queries: Promise<any>[] = []
