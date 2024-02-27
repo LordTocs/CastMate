@@ -146,8 +146,8 @@ export function getGroupSpanItems(group: TwitchViewerGroup | undefined): GroupSp
 			}
 
 			const subTier1 = rule.properties.subTier1
-			const subTier2 = rule.properties.subTier1
-			const subTier3 = rule.properties.subTier1
+			const subTier2 = rule.properties.subTier2
+			const subTier3 = rule.properties.subTier3
 
 			const allSub = subTier1 && subTier2 && subTier3
 
