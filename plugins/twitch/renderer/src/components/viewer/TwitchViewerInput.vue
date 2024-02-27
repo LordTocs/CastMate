@@ -91,7 +91,7 @@ const selectedDisplayData = ref<TwitchViewerDisplayData>()
 const viewerStore = useViewerStore()
 
 async function queryDisplay() {
-	if (props.modelValue == null) {
+	if (!props.modelValue) {
 		selectedDisplayData.value = undefined
 	} else {
 		selectedDisplayData.value = await viewerStore.getUserById(props.modelValue)

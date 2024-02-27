@@ -22,7 +22,7 @@ const props = defineProps<
 const viewerStore = useViewerStore()
 
 const viewerDisplayData = computedAsync(async () => {
-	if (props.modelValue == null) return undefined
+	if (!props.modelValue) return undefined
 	return await viewerStore.getUserById(props.modelValue)
 })
 </script>

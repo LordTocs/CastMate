@@ -29,6 +29,7 @@ import StreamInfoPlanComponentVue from "./components/stream-info/StreamInfoPlanC
 import TwitchCategoryViewVue from "./components/category/TwitchCategoryView.vue"
 import TwitchViewerViewVue from "./components/viewer/TwitchViewerView.vue"
 import ChannelPointGroupHeaderVue from "./components/channel-points/ChannelPointGroupHeader.vue"
+import TwitchViewerGroupViewVue from "./components/TwitchViewerGroupView.vue"
 
 export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
 
@@ -36,6 +37,7 @@ export async function initPlugin(app: App<Element>) {
 	console.log("Registering", TwitchViewerGroup, "TwitchViewerGroup")
 	const dataStore = useDataInputStore()
 	dataStore.registerInputComponent(TwitchViewerGroup, TwitchViewerGroupInput)
+	dataStore.registerViewComponent(TwitchViewerGroup, TwitchViewerGroupViewVue)
 
 	dataStore.registerInputComponent(TwitchViewer, TwitchViewerInputVue)
 	dataStore.registerViewComponent(TwitchViewer, TwitchViewerViewVue)
