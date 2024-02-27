@@ -1,12 +1,12 @@
 <template>
 	<boolean-group-expression
-		v-if="'operands' in model"
+		v-if="isBooleanGroup(model)"
 		v-model="model"
 		:selected-ids="selectedIds"
 		@delete="emit('delete', $event)"
 	/>
 	<boolean-value-expression-editor
-		v-else
+		v-else-if="isBooleanValueExpr(model)"
 		v-model="model"
 		:selected-ids="selectedIds"
 		@delete="emit('delete', $event)"
@@ -18,6 +18,9 @@ import { BooleanSubExpression, BooleanValueExpression, BooleanExpressionGroup } 
 import BooleanGroupExpression from "./BooleanGroupExpression.vue"
 import BooleanValueExpressionEditor from "./BooleanValueExpressionEditor.vue"
 import { useModel } from "vue"
+import { isBooleanGroup } from "castmate-schema"
+import { isBooleanRangeExpr } from "castmate-schema"
+import { isBooleanValueExpr } from "castmate-schema"
 
 const props = defineProps<{
 	modelValue: BooleanSubExpression

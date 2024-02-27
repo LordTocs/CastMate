@@ -18,6 +18,7 @@ import { MenuItem } from "primevue/menuitem"
 
 const props = defineProps<{
 	modelValue: ValueCompareOperator
+	inequalities?: boolean
 }>()
 
 const model = useModel(props, "modelValue")
@@ -27,15 +28,22 @@ function getIcon(value: ValueCompareOperator) {
 }
 
 const options = computed<MenuItem[]>(() => {
-	return [
-		{
-			icon: "mdi mdi-less-than-or-equal",
-			code: "lessThanEq",
-		},
-		{
-			icon: "mdi mdi-less-than",
-			code: "lessThan",
-		},
+	const result: MenuItem[] = []
+
+	if (props.inequalities) {
+		result.push(
+			{
+				icon: "mdi mdi-less-than-or-equal",
+				code: "lessThanEq",
+			},
+			{
+				icon: "mdi mdi-less-than",
+				code: "lessThan",
+			}
+		)
+	}
+
+	result.push(
 		{
 			icon: "mdi mdi-equal",
 			code: "equal",
@@ -43,15 +51,22 @@ const options = computed<MenuItem[]>(() => {
 		{
 			icon: "mdi mdi-not-equal-variant",
 			code: "notEqual",
-		},
-		{
-			icon: "mdi mdi-greater-than",
-			code: "greaterThan",
-		},
-		{
-			icon: "mdi mdi-greater-than-or-equal",
-			code: "greaterThanEq",
-		},
-	]
+		}
+	)
+
+	if (props.inequalities) {
+		result.push(
+			{
+				icon: "mdi mdi-greater-than",
+				code: "greaterThan",
+			},
+			{
+				icon: "mdi mdi-greater-than-or-equal",
+				code: "greaterThanEq",
+			}
+		)
+	}
+
+	return result
 })
 </script>

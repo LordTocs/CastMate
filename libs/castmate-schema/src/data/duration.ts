@@ -25,6 +25,16 @@ declare module "../schema" {
 
 registerType("Duration", {
 	constructor: Duration,
+	comparisonTypes: [
+		{
+			otherType: Duration,
+			inequalities: true,
+		},
+		{
+			otherType: Number,
+			inequalities: true,
+		},
+	],
 })
 
 const HOUR_DUR = 60 * 60

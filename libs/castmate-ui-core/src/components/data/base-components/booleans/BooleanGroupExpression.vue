@@ -75,6 +75,7 @@ const isOr = computed(() => {
 
 function addValue() {
 	const defaultValueExpression: BooleanValueExpression = {
+		type: "value",
 		id: nanoid(),
 		lhs: {
 			type: "state",
@@ -83,6 +84,7 @@ function addValue() {
 		},
 		rhs: {
 			type: "value",
+			schemaType: "String",
 			value: undefined,
 		},
 		operator: "equal",
@@ -90,6 +92,7 @@ function addValue() {
 
 	if (!model.value) {
 		model.value = {
+			type: "group",
 			operator: "or",
 			operands: [defaultValueExpression],
 		}
@@ -102,12 +105,14 @@ function addValue() {
 function addGroup() {
 	const defaultGroup: BooleanSubExpressionGroup = {
 		id: nanoid(),
+		type: "group",
 		operator: "or",
 		operands: [],
 	}
 
 	if (!model.value) {
 		model.value = {
+			type: "group",
 			operator: "and",
 			operands: [defaultGroup],
 		}
@@ -131,6 +136,7 @@ const operator = computed({
 	set(v) {
 		if (!model.value) {
 			model.value = {
+				type: "group",
 				operator: v,
 				operands: [],
 			}

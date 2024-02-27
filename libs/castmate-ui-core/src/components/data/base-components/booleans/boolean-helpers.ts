@@ -4,6 +4,8 @@ import {
 	BooleanSubExpression,
 	BooleanValueExpression,
 	ExpressionValue,
+	isBooleanGroup,
+	isBooleanValueExpr,
 } from "castmate-schema"
 import { MaybeRefOrGetter, computed, toValue } from "vue"
 import { usePluginStore } from "../../../../main"
@@ -42,9 +44,9 @@ function evaluateGroupExpression(expression: BooleanExpressionGroup, pluginStore
 	if (expression.operands.length == 0) return true
 
 	const results = expression.operands.map((o) => {
-		if ("operands" in o) {
+		if (isBooleanGroup(o)) {
 			return evaluateGroupExpression(o, pluginStore)
-		} else {
+		} else if (isBooleanValueExpr(o)) {
 			return evaluateValueExpression(o, pluginStore)
 		}
 	})

@@ -1,12 +1,17 @@
 import {
 	BooleanExpression,
 	BooleanExpressionGroup,
+	BooleanRangeExpression,
 	BooleanSubExpression,
 	BooleanValueExpression,
 	ExpressionValue,
 	Schema,
 	ValueCompareOperator,
 	getTypeByConstructor,
+	isBooleanGroup,
+	isBooleanValueExpr,
+	Range,
+	isBooleanRangeExpr,
 } from "castmate-schema"
 import { PluginManager } from "../plugins/plugin-manager"
 import { unexposeSchema } from "./ipc-schema"
@@ -74,16 +79,56 @@ async function evaluateValueExpression(expression: BooleanValueExpression) {
 	return compareFunc(left, right, expression.operator)
 }
 
+function inRangeCompare(
+	range: Range | undefined,
+	value: any,
+	compareFunc: (lhs: any, rhs: any, operator: ValueCompareOperator) => boolean
+) {
+	if (!range) return true //Empty range is considered all numbers
+
+	if (range.min != null) {
+		if (compareFunc(value, range.min, "lessThan")) {
+			return false
+		}
+	}
+
+	if (range.max != null) {
+		if (compareFunc(value, range.max, "greaterThan")) {
+			return false
+		}
+	}
+	return true
+}
+
+async function evaluateValueRange(expression: BooleanRangeExpression) {
+	let left = getExpressionValue(expression.lhs)
+	const leftSchema = getExpressionSchema(expression.lhs)
+
+	let compareFunc = baseCompare
+
+	if (leftSchema) {
+		left = await unexposeSchema(leftSchema, left)
+		const typeMeta = getTypeByConstructor(leftSchema.type)
+		if (typeMeta?.compare) {
+			compareFunc = typeMeta.compare
+		}
+	}
+
+	return inRangeCompare(expression.range, left, compareFunc)
+}
+
 async function evaluateGroupExpression(expression: BooleanExpressionGroup) {
 	if (expression.operands.length == 0) return true
 
 	const results = (
 		await Promise.allSettled(
 			expression.operands.map(async (o) => {
-				if ("operands" in o) {
+				if (isBooleanGroup(o)) {
 					return await evaluateGroupExpression(o)
-				} else {
+				} else if (isBooleanValueExpr(o)) {
 					return await evaluateValueExpression(o)
+				} else if (isBooleanRangeExpr(o)) {
+					return await evaluateValueRange(o)
 				}
 			})
 		)

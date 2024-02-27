@@ -1,19 +1,16 @@
 <template>
-	<div class="state-expression-value" ref="expressionDiv" :class="{ selected: isSelected, 'boolean-true': isTrue }">
+	<div class="state-expression-value" ref="expressionDiv" :class="{ 'boolean-true': isTrue }">
 		<div class="state-expression-left boolean-drag-handle">
 			<i class="mdi mdi-drag" style="font-size: 2rem"></i>
 		</div>
 		<div class="state-expression-right">
-			<state-selector
-				v-if="model.lhs.type == 'state'"
-				v-model="lhsState"
-				:required="true"
-				input-id="state"
-				class="flex-grow-1 flex-shrink-0"
-			></state-selector>
-			<value-compare-operator-selector v-model="model.operator" />
-			<div class="value-placeholder flex-shrink-0 flex-grow-1" v-if="!selectedState"></div>
-			<data-input class="flex-shrink-0 flex-grow-1" v-model="rhsValue" v-else :schema="selectedState.schema" />
+			<expression-value-edit v-model="model.lhs" class="w-0 flex-grow-1 flex-shrink-0 align-self-stretch" />
+			<value-compare-operator-selector v-model="model.operator" :inequalities="inequalities" />
+			<expression-value-edit
+				v-model="model.rhs"
+				:left-schema="leftSchema"
+				class="w-0 flex-grow-1 flex-shrink-0 align-self-stretch"
+			/>
 			<p-button icon="mdi mdi-delete" text @click="emit('delete', $event)"></p-button>
 		</div>
 	</div>
@@ -24,9 +21,16 @@ import { BooleanValueExpression } from "castmate-schema"
 import { computed, ref, useModel } from "vue"
 import StateSelector from "../state/StateSelector.vue"
 import ValueCompareOperatorSelector from "./ValueCompareOperatorSelector.vue"
-import { DataInput, useState } from "../../../../main"
+import { DataInput, usePluginStore, useState } from "../../../../main"
 import PButton from "primevue/button"
 import { useBooleanExpressionEvaluator } from "./boolean-helpers"
+
+import ExpressionValueEdit from "./ExpressionValueEdit.vue"
+import { isStateValueExpr } from "castmate-schema"
+import { isValueValueExpr } from "castmate-schema"
+import { getTypeByName } from "castmate-schema"
+import { Schema } from "castmate-schema"
+import { getTypeByConstructor } from "castmate-schema"
 
 const props = defineProps<{
 	modelValue: BooleanValueExpression
@@ -36,49 +40,55 @@ const props = defineProps<{
 const model = useModel(props, "modelValue")
 const emit = defineEmits(["update:modelValue", "delete"])
 
-const isSelected = computed(() => props.selectedIds.includes(model.value.id))
-
 const isTrue = useBooleanExpressionEvaluator(() => props.modelValue)
 
-const lhsState = computed({
-	get() {
-		if (model.value.lhs.type != "state") return undefined
+const pluginStore = usePluginStore()
+
+const leftSchema = computed<Schema | undefined>(() => {
+	if (isStateValueExpr(model.value.lhs)) {
+		if (!model.value.lhs.plugin) return undefined
+		if (!model.value.lhs.state) return undefined
+
+		const state = pluginStore.pluginMap.get(model.value.lhs.plugin)?.state?.[model.value.lhs?.state]
+		return state?.schema
+	} else if (isValueValueExpr(model.value.lhs)) {
+		const constructor = getTypeByName(model.value.lhs.schemaType)?.constructor
+		if (!constructor) return undefined
 		return {
-			plugin: model.value.lhs.plugin,
-			state: model.value.lhs.state,
+			type: constructor,
 		}
-	},
-	set(v) {
-		if (model.value.lhs.type != "state") return
-		if (!v) return
-
-		model.value.lhs.plugin = v.plugin
-		model.value.lhs.state = v.state
-	},
+	}
 })
 
-const rhsValue = computed({
-	get() {
-		if (model.value.rhs.type != "value") return undefined
-		return model.value.rhs.value
-	},
-	set(v) {
-		if (v == null) {
-			model.value.rhs = {
-				type: "value",
-				value: undefined,
-			}
-			return
-		}
+const rightSchema = computed<Schema | undefined>(() => {
+	if (isStateValueExpr(model.value.rhs)) {
+		if (!model.value.rhs.plugin) return undefined
+		if (!model.value.rhs.state) return undefined
 
-		model.value.rhs = {
-			type: "value",
-			value: v,
+		const state = pluginStore.pluginMap.get(model.value.rhs.plugin)?.state?.[model.value.rhs?.state]
+		return state?.schema
+	} else if (isValueValueExpr(model.value.rhs)) {
+		const constructor = getTypeByName(model.value.rhs.schemaType)?.constructor
+		if (!constructor) return undefined
+		return {
+			type: constructor,
 		}
-	},
+	}
 })
 
-const selectedState = useState(() => lhsState.value)
+const inequalities = computed(() => {
+	if (!leftSchema.value) return false
+	if (!rightSchema.value) return false
+	const leftMetaData = getTypeByConstructor(leftSchema.value.type)
+	if (!leftMetaData) return false
+	const rightMetaData = getTypeByConstructor(rightSchema.value.type)
+	if (!rightMetaData) return false
+
+	const comparison = leftMetaData.comparisonTypes.find(
+		(ct) => rightSchema.value && ct.otherType == rightSchema.value.type
+	)
+	return comparison?.inequalities ?? false
+})
 </script>
 
 <style scoped>
@@ -121,7 +131,6 @@ const selectedState = useState(() => lhsState.value)
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.5rem;
-	padding-top: 1.6rem;
 	background-color: var(--surface-0);
 }
 

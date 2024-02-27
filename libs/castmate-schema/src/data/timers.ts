@@ -164,6 +164,12 @@ registerType("Timer", {
 		}
 		return Timer.factoryCreate()
 	},
+	comparisonTypes: [
+		{
+			otherType: Duration,
+			inequalities: true,
+		},
+	],
 })
 
 function wrapTimerData(data: TimerData): Timer {

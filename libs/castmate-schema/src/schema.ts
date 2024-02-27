@@ -68,6 +68,12 @@ registerType("Number", {
 
 		return undefined
 	},
+	comparisonTypes: [
+		{
+			otherType: Number,
+			inequalities: true,
+		},
+	],
 	async fromString(str: string) {
 		const num = Number(str)
 		if (isNaN(num)) return undefined
@@ -98,6 +104,12 @@ registerType("String", {
 
 		return undefined
 	},
+	comparisonTypes: [
+		{
+			otherType: String,
+			inequalities: true,
+		},
+	],
 	async fromString(value) {
 		return value
 	},
@@ -152,6 +164,8 @@ export interface SchemaTypeMap {
 
 type SchemaTypeUnion = MapToUnion<SchemaTypeMap>
 type SchemaTypes = SchemaTypeUnion[0]
+
+export type SchemaTypeConstructorFactories = SchemaTypeUnion[0]["type"]
 
 export type Schema = SchemaTypes | SchemaObj | SchemaArray | SchemaResource
 
@@ -492,6 +506,11 @@ export function declareSchema<T extends Schema>(schema: T): Readonly<T> {
 
 ////////////////////////////////////Type Registry//////////////////////////////////////////
 
+interface DataTypeComparisonInfo {
+	otherType: SchemaTypeConstructorFactories
+	inequalities: boolean
+}
+
 export type DataFactory<T = any> = { factoryCreate(...args: any[]): T }
 type DataConstructor<T = any> = { new (...args: any): T }
 
@@ -513,6 +532,7 @@ export interface DataTypeMetaData<T extends DataConstructorOrFactory> {
 	deserialize?: (value: any, schema: Schema) => Promise<TemplateTypeByConstructor<T>>
 	serialize?: (value: TemplateTypeByConstructor<T>, schema: Schema) => any
 	fromString?: (value: string) => Promise<ResolvedTypeByConstructor<T> | undefined>
+	comparisonTypes?: DataTypeComparisonInfo[]
 	compare?: (lhs: ExposedTypeByConstructor<T>, rhs: any, operator: ValueCompareOperator) => boolean
 	remoteTemplateResolve?: (
 		remoteValue: RemoteTemplateTypeByConstructor<T>,
@@ -524,10 +544,17 @@ interface FullDataTypeMetaData<T extends DataConstructorOrFactory = any> extends
 	name: string
 	canBeVariable: boolean
 	canBeCommandArg: boolean
+	comparisonTypes: DataTypeComparisonInfo[]
 }
 
 export function registerType<T extends DataConstructorOrFactory>(name: string, metaData: DataTypeMetaData<T>) {
-	const fullMetaData = { canBeVariable: true, canBeCommandArg: false, ...metaData, name }
+	const fullMetaData: FullDataTypeMetaData<T> = {
+		canBeVariable: true,
+		canBeCommandArg: false,
+		comparisonTypes: [{ otherType: metaData.constructor as SchemaTypeConstructorFactories, inequalities: false }],
+		...metaData,
+		name,
+	}
 	dataNameLookup.set(name, fullMetaData)
 	dataConstructorLookup.set(metaData.constructor, fullMetaData)
 }

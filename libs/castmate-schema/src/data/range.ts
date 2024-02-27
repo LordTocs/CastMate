@@ -18,15 +18,17 @@ export const Range: RangeFactory = {
 
 	inRange(range: Range | undefined, num: number) {
 		if (!range) return true //Empty range is considered all numbers
-		if (!isNumber(range.min) || !isNumber(range.max)) return false
+		//if (!isNumber(range.min) || !isNumber(range.max)) return false
 
 		if (range.min != null) {
+			if (!isNumber(range.min)) return false
 			if (range.min > num) {
 				return false
 			}
 		}
 
 		if (range.max != null) {
+			if (!isNumber(range.max)) return false
 			if (range.max < num) {
 				return false
 			}
