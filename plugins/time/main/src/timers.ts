@@ -12,26 +12,40 @@ import {
 import { VariableManager } from "castmate-plugin-variables-main"
 import { Duration, ValueCompareOperator, Timer, getTimeRemaining, isTimer, isTimerStarted } from "castmate-schema"
 
+//Schedules a reactive effect to wake up at a certain duration remaining.
+function scheduleTimerWakeup(timer: Timer, duration: Duration) {
+	if (!isTimerStarted(timer)) return
+
+	const remaining = getTimeRemaining(timer)
+
+	if (remaining <= duration) return //Timers only go down, so we've already passed this threshold no need to wake up
+
+	//Always wake up about 5 milliseconds late to allow for deviation in timer calculations
+	const difference = remaining - duration + 0.005
+
+	if (difference <= 0) return
+
+	scheduleReactiveTrigger(Date.now() + difference * 1000)
+}
+
 export function compareTimer(lhs: Timer, rhs: any, operator: ValueCompareOperator) {
 	if (typeof rhs == "number") {
 		const remaining = getTimeRemaining(lhs)
 		const difference = rhs - remaining
+
+		scheduleTimerWakeup(lhs, rhs)
 
 		if (operator == "equal") {
 			return difference == 0
 		} else if (operator == "notEqual") {
 			return difference != 0
 		} else if (operator == "greaterThan") {
-			scheduleReactiveTrigger(Date.now() - difference)
 			return difference < 0
 		} else if (operator == "greaterThanEq") {
-			scheduleReactiveTrigger(Date.now() - difference)
 			return difference <= 0
 		} else if (operator == "lessThan") {
-			scheduleReactiveTrigger(Date.now() + difference)
 			return difference > 0
 		} else if (operator == "lessThanEq") {
-			scheduleReactiveTrigger(Date.now() + difference)
 			return difference >= 0
 		}
 	} else if (isTimer(rhs)) {
@@ -45,16 +59,16 @@ export function compareTimer(lhs: Timer, rhs: any, operator: ValueCompareOperato
 		} else if (operator == "notEqual") {
 			return difference != 0
 		} else if (operator == "greaterThan") {
-			scheduleReactiveTrigger(Date.now() - difference)
+			//scheduleReactiveTrigger(Date.now() - difference)
 			return difference < 0
 		} else if (operator == "greaterThanEq") {
-			scheduleReactiveTrigger(Date.now() - difference)
+			//scheduleReactiveTrigger(Date.now() - difference)
 			return difference <= 0
 		} else if (operator == "lessThan") {
-			scheduleReactiveTrigger(Date.now() + difference)
+			//scheduleReactiveTrigger(Date.now() + difference)
 			return difference > 0
 		} else if (operator == "lessThanEq") {
-			scheduleReactiveTrigger(Date.now() + difference)
+			//scheduleReactiveTrigger(Date.now() + difference)
 			return difference >= 0
 		}
 	}
