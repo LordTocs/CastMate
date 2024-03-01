@@ -1,6 +1,10 @@
 export class EventList<TFunc extends (...args: any[]) => any = () => any> {
 	private list: TFunc[] = []
 
+	get handlerCount() {
+		return this.list.length
+	}
+
 	register(func: TFunc) {
 		this.list.push(func)
 	}

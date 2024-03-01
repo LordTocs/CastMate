@@ -19,6 +19,57 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/abort-controller@npm:^1.0.0":
+  version: 1.1.0
+  resolution: "@azure/abort-controller@npm:1.1.0"
+  dependencies:
+    tslib: ^2.2.0
+  checksum: 0f45e504d4aea799486867179afe7589255f6c111951279958e9d0aa5faebb2c96b8f88e3e3c958ce07b02bcba0b0cddb1bbec94705f573a48ecdb93eec1a92a
+  languageName: node
+  linkType: hard
+
+"@azure/abort-controller@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@azure/abort-controller@npm:2.0.0"
+  dependencies:
+    tslib: ^2.2.0
+  checksum: 9eece9e860767fb2845b16cd1f66597bedc023c3078482d082be03ecd59d4a0187b36e30d5ee5346aae9baf9e4320dd2b104e1d612eaffce9825d5c3c9b316f7
+  languageName: node
+  linkType: hard
+
+"@azure/core-util@npm:^1.1.1":
+  version: 1.7.0
+  resolution: "@azure/core-util@npm:1.7.0"
+  dependencies:
+    "@azure/abort-controller": ^2.0.0
+    tslib: ^2.2.0
+  checksum: a393c7d64a7738289b14b5d9ec04e48e5db8e8154341024623b68f6cebf5921858bedd6f85e224253edfcf72af70a44877840cf94b348bd5f3d319a8d6e2ce4b
+  languageName: node
+  linkType: hard
+
+"@azure/logger@npm:^1.0.0":
+  version: 1.0.4
+  resolution: "@azure/logger@npm:1.0.4"
+  dependencies:
+    tslib: ^2.2.0
+  checksum: 2c243d4c667bbc5cd3e60d4473d0f1169fcef2498a02138398af15547fe1b2870197bcb4c487327451488e4d71dee05244771d51328f03611e193b99fb9aa9af
+  languageName: node
+  linkType: hard
+
+"@azure/web-pubsub-client@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@azure/web-pubsub-client@npm:1.0.0"
+  dependencies:
+    "@azure/abort-controller": ^1.0.0
+    "@azure/core-util": ^1.1.1
+    "@azure/logger": ^1.0.0
+    buffer: ^6.0.0
+    tslib: ^2.2.0
+    ws: ^7.4.5
+  checksum: f136b59537ea7f5538a6a250f66caa77c2d804ce1331b92458c894155723884a5e1c9b8707fb9958a0c8576754fe4ebdd3a2c1ad633f3caff8d9daa5255eda5f
+  languageName: node
+  linkType: hard
+
 "@babel/helper-string-parser@npm:^7.23.4":
   version: 7.23.4
   resolution: "@babel/helper-string-parser@npm:7.23.4"
@@ -2376,6 +2427,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"buffer@npm:^6.0.0":
+  version: 6.0.3
+  resolution: "buffer@npm:6.0.3"
+  dependencies:
+    base64-js: ^1.3.1
+    ieee754: ^1.2.1
+  checksum: 5ad23293d9a731e4318e420025800b42bf0d264004c0286c8cc010af7a270c7a0f6522e84f54b9ad65cbd6db20b8badbfd8d2ebf4f80fa03dab093b89e68c3f9
+  languageName: node
+  linkType: hard
+
 "builder-util-runtime@npm:8.9.2":
   version: 8.9.2
   resolution: "builder-util-runtime@npm:8.9.2"
@@ -2524,6 +2585,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-core@workspace:libs/castmate-core"
   dependencies:
+    "@azure/web-pubsub-client": ^1.0.0
     "@colors/colors": ^1.6.0
     "@joshyour/ffprobe-client": ^1.1.7
     "@types/express": ^4.17.21
@@ -5621,7 +5683,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ieee754@npm:^1.1.13":
+"ieee754@npm:^1.1.13, ieee754@npm:^1.2.1":
   version: 1.2.1
   resolution: "ieee754@npm:1.2.1"
   checksum: 5144c0c9815e54ada181d80a0b810221a253562422e7c6c3a60b1901154184f49326ec239d618c416c1c5945a2e197107aee8d986a3dd836b53dffefd99b5e7e
@@ -8219,7 +8281,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.6.2, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.4.1, tslib@npm:^2.6.2":
+"tslib@npm:2.6.2, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.4.0, tslib@npm:^2.4.1, tslib@npm:^2.6.2":
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
@@ -8836,6 +8898,21 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: 3ca0dad26e8cc6515ff392b622a1467430814c463b3368b0258e33696b1d4bed7510bc7030f7b72838b9fdeb8dbd8839cbf808367d6aae2e1d668ce741d4308b
+  languageName: node
+  linkType: hard
+
+"ws@npm:^7.4.5":
+  version: 7.5.9
+  resolution: "ws@npm:7.5.9"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ^5.0.2
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: c3c100a181b731f40b7f2fddf004aa023f79d64f489706a28bc23ff88e87f6a64b3c6651fbec3a84a53960b75159574d7a7385709847a62ddb7ad6af76f49138
   languageName: node
   linkType: hard
 

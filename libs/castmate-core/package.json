@@ -18,6 +18,7 @@
 		"typescript": "*"
 	},
 	"dependencies": {
+		"@azure/web-pubsub-client": "^1.0.0",
 		"@colors/colors": "^1.6.0",
 		"@joshyour/ffprobe-client": "^1.1.7",
 		"@types/fluent-ffmpeg": "^2.1.21",
