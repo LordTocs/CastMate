@@ -5,6 +5,7 @@ import {
 	Color,
 	DataConstructorOrFactory,
 	Directory,
+	Duration,
 	FilePath,
 	RemoteSchemaType,
 	RemoteTemplateIntermediateSubstring,
@@ -273,6 +274,12 @@ registerSchemaTemplate(Number, async (value, context, schema) => {
 		num = Math.min(schema.max, num)
 	}
 
+	return num
+})
+
+registerSchemaTemplate(Duration, async (value, context, schema) => {
+	if (isNumber(value)) return value
+	let num = Number(await template(value, context))
 	return num
 })
 
