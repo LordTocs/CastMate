@@ -30,6 +30,7 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> implement
 			activationMode: "toggle",
 			triggers: [],
 			activationCondition: {
+				type: "group",
 				operator: "or",
 				operands: [],
 			},
