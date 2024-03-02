@@ -25,6 +25,8 @@ export const PubSubManager = Service(
 
 		private onMessage = new EventList<(plugin: string, event: string, context: object) => any>()
 
+		private onConnect = new EventList()
+
 		constructor() {}
 
 		setToken(token: string | undefined) {
@@ -166,6 +168,14 @@ export const PubSubManager = Service(
 			this.onMessage.unregister(func)
 			this.checkEvents()
 		}
+
+		registerOnConnect(func: () => any) {
+			this.onConnect.register(func)
+		}
+
+		unregisterOnConnect(func: () => any) {
+			this.onConnect.unregister(func)
+		}
 	}
 )
 
@@ -216,4 +226,23 @@ export function onCloudPubSubMessage<T extends object>(
 			registered = false
 		}
 	})
+}
+
+export function onCloudPubSubConnect(func: () => any) {
+	onLoad(() => {
+		PubSubManager.getInstance().registerOnConnect(func)
+	})
+
+	onUnload(() => {
+		PubSubManager.getInstance().unregisterOnConnect(func)
+	})
+}
+
+export function useSendCloudPubSubMessage<T extends object>(eventName: string) {
+	if (!initingPlugin) throw new Error()
+	const pluginId = initingPlugin.name
+
+	return async (data: T) => {
+		return await PubSubManager.getInstance().send(pluginId, eventName, data)
+	}
 }
