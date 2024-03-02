@@ -7,7 +7,7 @@ import { setupPolls } from "./poll"
 import { setupPredictions } from "./prediction"
 import { setupAds } from "./ads"
 import { setupClips } from "./clips"
-import { TwitchAPIService } from "./api-harness"
+import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { setupFollows } from "./follows"
 import { setupRaids } from "./raids"
 import { setupHypeTrains } from "./hype-train"
@@ -64,3 +64,5 @@ export default definePlugin(
 		})
 	}
 )
+
+export { TwitchAccount, onChannelAuth }
