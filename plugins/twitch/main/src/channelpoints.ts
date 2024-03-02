@@ -238,7 +238,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 		})
 
 		const resources = (await Promise.all(fileLoadPromises)).filter((r) => r != undefined) as ChannelPointReward[]
-		this.storage.inject(...resources)
+		await this.storage.inject(...resources)
 	}
 
 	//Called when we discover a CastMate controlled reward that doesn't have a resource
