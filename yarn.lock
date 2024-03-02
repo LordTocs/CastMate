@@ -3350,6 +3350,56 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-spellcast-main@workspace:^, castmate-plugin-spellcast-main@workspace:plugins/spellcast/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-spellcast-main@workspace:plugins/spellcast/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-spellcast-shared: "workspace:^"
+    castmate-plugin-twitch-main: "workspace:^"
+    castmate-plugin-twitch-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-spellcast-renderer@workspace:^, castmate-plugin-spellcast-renderer@workspace:plugins/spellcast/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-spellcast-renderer@workspace:plugins/spellcast/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "*"
+    "@vueuse/core": "*"
+    castmate-plugin-spellcast-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "*"
+    electron: "*"
+    nanoid: "*"
+    pinia: "*"
+    typescript: "*"
+    vite: "*"
+    vue: "*"
+    vue-tsc: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-spellcast-shared@workspace:^, castmate-plugin-spellcast-shared@workspace:plugins/spellcast/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-spellcast-shared@workspace:plugins/spellcast/shared"
+  dependencies:
+    axios: "*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-spellcast@workspace:plugins/spellcast":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-spellcast@workspace:plugins/spellcast"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-time-main@workspace:^, castmate-plugin-time-main@workspace:plugins/time/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-time-main@workspace:plugins/time/main"
@@ -3758,6 +3808,8 @@ __metadata:
     castmate-plugin-philips-hue-renderer: "workspace:^"
     castmate-plugin-sound-main: "workspace:^"
     castmate-plugin-sound-renderer: "workspace:^"
+    castmate-plugin-spellcast-main: "workspace:^"
+    castmate-plugin-spellcast-renderer: "workspace:^"
     castmate-plugin-time-main: "workspace:^"
     castmate-plugin-time-renderer: "workspace:^"
     castmate-plugin-tplink-kasa-main: "workspace:^"

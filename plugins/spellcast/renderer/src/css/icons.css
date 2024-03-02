@@ -1,0 +1,16 @@
+.sci::before {
+	display: inline-block;
+	text-rendering: auto;
+	line-height: inherit;
+	position: relative;
+}
+
+.sci {
+	height: 1em;
+}
+
+.sci.sci-spellcast::before {
+	content: url("../svg/spellcast.svg");
+	height: 1em;
+	top: 0.15em;
+}
