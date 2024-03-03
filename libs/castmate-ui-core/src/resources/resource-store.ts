@@ -18,6 +18,7 @@ interface ResourceStorage<TResourceData extends ResourceData = ResourceData> {
 	settingComponent?: Component
 	createDialog?: Component
 	editDialog?: Component
+	editSaveFunction?: (id: string, data: TResourceData["config"]) => any
 	configSchema?: Schema
 	stateSchema?: Schema
 }
@@ -125,10 +126,15 @@ export const useResourceStore = defineStore("resources", () => {
 		resource.settingComponent = markRaw(component)
 	}
 
-	function registerEditComponent(resourceType: string, component: Component) {
+	function registerEditComponent(
+		resourceType: string,
+		component: Component,
+		saveFunc?: (id: string, data: any) => any
+	) {
 		const resource = resourceMap.value.get(resourceType)
 		if (!resource) return
 		resource.editDialog = markRaw(component)
+		resource.editSaveFunction = saveFunc
 	}
 
 	function registerCreateComponent(resourceType: string, component: Component) {
@@ -277,7 +283,11 @@ export function useResourceEditDialog(resourceType: MaybeRefOrGetter<string | un
 					return
 				}
 
-				resourceStore.setResourceConfig(resourceName, id, options.data)
+				if (resourceData?.editSaveFunction) {
+					resourceData.editSaveFunction(id, options.data)
+				} else {
+					resourceStore.setResourceConfig(resourceName, id, options.data)
+				}
 			},
 		})
 	}
