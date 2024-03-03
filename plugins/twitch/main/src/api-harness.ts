@@ -31,12 +31,17 @@ export const TwitchAPIService = Service(
 			})
 		}
 
+		private finalized = false
 		private onChannelReauthList = new EventList<
 			(channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
 		>()
 		registerOnChannelReauth(
 			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
 		) {
+			if (TwitchAccount.channel.isAuthenticated && this.finalized) {
+				func(TwitchAccount.channel, this)
+			}
+
 			this.onChannelReauthList.register(func)
 		}
 
@@ -47,6 +52,7 @@ export const TwitchAPIService = Service(
 		}
 
 		async finalize() {
+			this.finalized = true
 			if (TwitchAccount.channel.config.name.length > 0) {
 				await this.onReauthChannel()
 			}
