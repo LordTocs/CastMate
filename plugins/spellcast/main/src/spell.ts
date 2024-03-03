@@ -21,7 +21,12 @@ import {
 	ProfileManager,
 	onCloudPubSubConnect,
 } from "castmate-core"
-import { SpellConfigSchema, SpellResourceConfig, SpellResourceState } from "castmate-plugin-spellcast-shared"
+import {
+	SpellConfig,
+	SpellConfigSchema,
+	SpellResourceConfig,
+	SpellResourceState,
+} from "castmate-plugin-spellcast-shared"
 import { nanoid } from "nanoid/non-secure"
 import _debounce from "lodash/debounce"
 import { onChannelAuth } from "castmate-plugin-twitch-main"
@@ -53,14 +58,22 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 	static storage = new ResourceStorage<SpellHook>("SpellHook")
 	static resourceDirectory = "./spellcast/spells"
 
-	constructor(config?: SpellResourceConfig) {
+	constructor(config?: SpellConfig) {
 		super()
 
 		if (config) {
 			this._id = nanoid()
 			this._config = {
-				...config,
+				spellId: "",
+				name: config.name,
+				spellData: {
+					enabled: config.enabled,
+					description: config.description,
+					bits: config.bits,
+					color: config.color,
+				},
 			}
+		} else {
 		}
 
 		this.state = {
@@ -197,16 +210,16 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 	 * @returns
 	 */
 	static async recoverLocalSpell(apiData: SpellCastSpell) {
+		logger.log("Recovering Spell", apiData)
 		const spell = new SpellHook({
-			spellId: apiData._id,
 			name: apiData.name,
-			spellData: {
-				enabled: apiData.enabled,
-				bits: apiData.bits,
-				color: apiData.color,
-				description: apiData.description,
-			},
+			enabled: apiData.enabled,
+			bits: apiData.bits,
+			color: apiData.color,
+			description: apiData.description,
 		})
+
+		spell._config.spellId = apiData._id
 
 		spell.state.spellData = {
 			name: apiData.name,
@@ -228,6 +241,8 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 				spellId: apiData._id,
 			})
 		}
+
+		//logger.log("Inited Spell State", apiData.name)
 
 		this.state.spellData = {
 			name: apiData.name,
@@ -293,6 +308,7 @@ export function setupSpells() {
 		id: "spellHook",
 		name: "SpellCast Spell",
 		description: "Triggers when a viewer uses a spell through the SpellCast extension",
+		icon: "sci sci-spellcast",
 		config: {
 			type: Object,
 			properties: {
@@ -371,8 +387,23 @@ export function setupSpells() {
 	})
 
 	onChannelAuth(async (channel, service) => {
+		logger.log("Loading Spells from server...")
+		const spells = await getSpells()
+
+		const spellResources = [...SpellHook.storage]
+		for (const apiSpell of spells) {
+			const spell = spellResources.find((s) => s.config.spellId == apiSpell._id)
+
+			if (!spell) {
+				await SpellHook.recoverLocalSpell(apiSpell)
+			}
+		}
+
 		for (const spell of SpellHook.storage) {
-			await SpellHook.storage.remove(spell.id)
+			const apiSpell = spells.find((s) => s._id == spell.config.spellId)
+
+			await spell.initializeFromServer(apiSpell)
+			await spell.initializeReactivity()
 		}
 	})
 }
