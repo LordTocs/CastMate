@@ -242,6 +242,10 @@ export function setupAds() {
 	onChannelAuth(async (channel, service) => {
 		await queryAdSchedule()
 
+		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
+			await queryAdSchedule()
+		})
+
 		service.eventsub.onChannelAdBreakBegin(channel.twitchId, async (event) => {
 			adStarted({ duration: event.durationSeconds })
 
