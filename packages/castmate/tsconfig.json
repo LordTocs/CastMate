@@ -43,7 +43,8 @@
 			"castmate-plugin-govee-renderer": ["../../plugins/govee/renderer/src/main.ts"],
 			"castmate-plugin-tplink-kasa-renderer": ["../../plugins/tplink-kasa/renderer/src/main.ts"],
 			"castmate-plugin-variables-renderer": ["../../plugins/variables/renderer/src/main.ts"],
-			"castmate-plugin-overlays-renderer": ["../../plugins/overlays/renderer/src/main.ts"]
+			"castmate-plugin-overlays-renderer": ["../../plugins/overlays/renderer/src/main.ts"],
+			"castmate-plugin-spellcast-renderer": ["../../plugins/spellcast/renderer/src/main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

@@ -21,6 +21,8 @@ import wyzePlugin from "castmate-plugin-wyze-main"
 import goveePlugin from "castmate-plugin-govee-main"
 import twinklyPlugin from "castmate-plugin-twinkly-main"
 
+import spellcastPlugin from "castmate-plugin-spellcast-main"
+
 import overlayPlugin from "castmate-plugin-overlays-main"
 
 import castmatePlugin from "./builtin-plugin"
@@ -45,6 +47,8 @@ export async function loadPlugins() {
 		pluginManager.registerPlugin(minecraftPlugin),
 	]
 	await Promise.allSettled(promises)
+
+	await pluginManager.registerPlugin(spellcastPlugin)
 
 	//iot
 	const iotPromises = [

@@ -53,6 +53,7 @@ import { initPlugin as initGoveePlugin } from "castmate-plugin-govee-renderer"
 import { initPlugin as initKasaPlugin } from "castmate-plugin-tplink-kasa-renderer"
 import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
 import { initPlugin as initOverlaysPlugin } from "castmate-plugin-overlays-renderer"
+import { initPlugin as initSpellCastPlugin } from "castmate-plugin-spellcast-renderer"
 
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
 
@@ -119,6 +120,7 @@ async function init() {
 
 	await initVariablesPlugin()
 	await initTwitchPlugin(app)
+	await initSpellCastPlugin(app)
 
 	//TODO: This init function is bonkers, we should formalize initing these plugins after their main process side gets inited.
 
