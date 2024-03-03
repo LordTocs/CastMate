@@ -10,6 +10,7 @@ function apiGet<T = any>(url: string) {
 	const token = TwitchAccount.channel.secrets.accessToken
 
 	return axios.get<T>(url, {
+		baseURL,
 		headers: {
 			Authorization: `Bearer ${token}`,
 		},
@@ -22,6 +23,7 @@ function apiPost<T = any>(url: string, data: any) {
 	const token = TwitchAccount.channel.secrets.accessToken
 
 	return axios.post<T>(url, data, {
+		baseURL,
 		headers: {
 			Authorization: `Bearer ${token}`,
 		},
@@ -34,6 +36,7 @@ function apiPut<T = any>(url: string, data: any) {
 	const token = TwitchAccount.channel.secrets.accessToken
 
 	return axios.put<T>(url, data, {
+		baseURL,
 		headers: {
 			Authorization: `Bearer ${token}`,
 		},
@@ -46,6 +49,7 @@ function apiDel<T = any>(url: string) {
 	const token = TwitchAccount.channel.secrets.accessToken
 
 	return axios.delete<T>(url, {
+		baseURL,
 		headers: {
 			Authorization: `Bearer ${token}`,
 		},
