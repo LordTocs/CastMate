@@ -16,6 +16,7 @@ export default definePlugin(
 		name: "SpellCast",
 		description: "UI Description",
 		icon: "sci sci-spellcast",
+		color: "#488EE2",
 	},
 	() => {
 		setupSpells()
