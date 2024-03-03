@@ -30,6 +30,7 @@ export const PubSubManager = Service(
 		constructor() {}
 
 		setToken(token: string | undefined) {
+			logger.log("Cloud PubSub Received Auth Token")
 			this.token = token
 
 			this.disconnect()
@@ -54,6 +55,7 @@ export const PubSubManager = Service(
 
 		private disconnect() {
 			if (this.azSocket) {
+				logger.log("Disconnecting from Cloud PubSub")
 				this.azSocket?.stop()
 				this.azSocket = undefined
 			}
@@ -62,7 +64,7 @@ export const PubSubManager = Service(
 			this.connecting = false
 		}
 
-		private connect() {
+		private async connect() {
 			if (!this.shouldConnect) return
 			if (!this.token) return
 			if (this.connecting) return
@@ -73,10 +75,16 @@ export const PubSubManager = Service(
 				return
 			}
 
-			this.connectInternal()
+			try {
+				await this.connectInternal()
+			} catch (err) {
+				logger.error("Failed to Connect to Cloud PubSub")
+				logger.error(err)
+			}
 		}
 
 		private async connectInternal() {
+			logger.log("Starting Cloud PubSub Connection")
 			this.connecting = true
 
 			const negotiationResp = await axios.get("/pubsub/negotiate", {
@@ -119,10 +127,10 @@ export const PubSubManager = Service(
 				this.onMessage.run(messageData.plugin, messageData.message, messageData.context)
 			})
 
-			this.azSocket.on("connected", (ev) => {
+			this.azSocket.on("connected", async (ev) => {
 				logger.log(`Connected to CastMate PubSub as ${ev.userId}:${ev.connectionId}`)
 				this.connected = true
-				//ON CONNECT
+				await this.onConnect.run()
 			})
 
 			this.azSocket.on("disconnected", (ev) => {
@@ -133,6 +141,8 @@ export const PubSubManager = Service(
 				this.connected = false
 				this.connecting = false
 			})
+
+			await this.azSocket.start()
 		}
 
 		async send(plugin: string, event: string, data: object) {
@@ -148,7 +158,11 @@ export const PubSubManager = Service(
 				return
 			}
 
-			await this.azSocket.sendEvent(eventName, data, "json")
+			try {
+				await this.azSocket.sendEvent(eventName, data, "json")
+			} catch (err) {
+				logger.error("Cloud PubSub Error", err)
+			}
 		}
 
 		private checkEvents() {
@@ -165,7 +179,9 @@ export const PubSubManager = Service(
 		}
 
 		unregisterOnMessage(func: (plugin: string, event: string, context: object) => any) {
-			this.onMessage.unregister(func)
+			if (!this.onMessage.unregister(func)) {
+				logger.error("Failed to unregister", func)
+			}
 			this.checkEvents()
 		}
 
@@ -212,7 +228,9 @@ export function onCloudPubSubMessage<T extends object>(
 				if (!registered) {
 					registered = true
 					PubSubManager.getInstance().registerOnMessage(handler)
-				} else {
+				}
+			} else {
+				if (registered) {
 					registered = false
 					PubSubManager.getInstance().unregisterOnMessage(handler)
 				}
@@ -223,6 +241,7 @@ export function onCloudPubSubMessage<T extends object>(
 	onUnload(() => {
 		if (registered) {
 			PubSubManager.getInstance().unregisterOnMessage(handler)
+			registrationWatcher?.dispose()
 			registered = false
 		}
 	})
