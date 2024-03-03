@@ -10,9 +10,12 @@ export class EventList<TFunc extends (...args: any[]) => any = () => any> {
 	}
 
 	unregister(func: TFunc) {
-		const idx = this.list.findIndex((li) => li === func)
-		if (idx > 0) {
+		const idx = this.list.findIndex((li) => li == func)
+		if (idx >= 0) {
 			this.list.splice(idx, 1)
+			return true
+		} else {
+			return false
 		}
 	}
 
