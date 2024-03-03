@@ -352,21 +352,24 @@ export function setupSpells() {
 
 	const setActiveSpells = useSendCloudPubSubMessage<{ spells: string[] }>("setActiveSpells")
 	async function updateActiveSpells() {
-		const activeSpellIds = new Set<string>()
+		const activeSpells = new Set<string>()
 
 		for (const profile of ProfileManager.getInstance().activeProfiles) {
 			for (const trigger of profile.iterTriggers(spellHook)) {
-				const id = trigger.config.spell?.id
-				if (!id) continue
+				const spell = trigger.config.spell
+				if (!spell) continue
 
 				//We don't have to obey the enabled flag here, the server does that for us
-				activeSpellIds.add(id)
+				//TODO/HACK: Iter triggers doesn't deserialize from ID to Resource
+				activeSpells.add(spell as unknown as string)
 			}
 		}
 
-		hasActiveSpells.value = activeSpellIds.size > 0
+		hasActiveSpells.value = activeSpells.size > 0
 
-		await setActiveSpells({ spells: Array.from(activeSpellIds) })
+		logger.log("Active SpellCast Spells", Array.from(activeSpells))
+
+		await setActiveSpells({ spells: Array.from(activeSpells) })
 	}
 
 	onCloudPubSubMessage<{}>(
