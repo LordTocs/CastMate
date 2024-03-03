@@ -25,7 +25,7 @@ function reactiveLog(...values: any[]) {
 class ReactiveDependency {
 	effects: Set<ReactiveEffect> = new Set()
 
-	constructor(private debugName?: string) {}
+	constructor(public debugName?: string) {}
 
 	addEffect(effect: ReactiveEffect) {
 		this.effects.add(effect)
@@ -46,9 +46,6 @@ class ReactiveDependency {
 		if (effect) {
 			this.addEffect(effect)
 			effect.added(this)
-			if (effect.debug) {
-				logger.log("Added Dep", this.debugName, "to", effect.debugName)
-			}
 		}
 	}
 
@@ -56,6 +53,8 @@ class ReactiveDependency {
 		return this.debugName
 	}
 }
+
+const REACTIVE_ITERATE = Symbol()
 
 export namespace DependencyStorage {
 	type ObjectDependencyMap = Map<PropertyKey, ReactiveDependency>
@@ -107,6 +106,17 @@ export namespace DependencyStorage {
 		return dependency
 	}
 
+	export function getIterDependency(obj: any) {
+		let objMap = getObjectDependencies(obj)
+
+		let dependency = objMap?.get(REACTIVE_ITERATE)
+		if (dependency == null) {
+			dependency = new ReactiveDependency("REACTIVE_ITERATE")
+			objMap?.set(REACTIVE_ITERATE, dependency)
+		}
+		return dependency
+	}
+
 	export function removePropDependency(obj: any, propKey: PropertyKey) {
 		const objMap = getObjectDependencies(obj, false)
 		if (!objMap) return false
@@ -132,6 +142,9 @@ export class ReactiveEffect<T = any> {
 	added(dep: ReactiveDependency) {
 		if (this.dependencies.includes(dep)) return
 		this.dependencies.push(dep)
+		if (this.debug) {
+			logger.log("Added Dep", dep.debugName, "to", this.debugName)
+		}
 	}
 
 	dispose() {
@@ -149,7 +162,12 @@ export class ReactiveEffect<T = any> {
 	}
 
 	trigger() {
+		if (this.debug) {
+			logger.log("Triggered", this.debugName)
+		}
+
 		if (this.pendingRun) return
+
 		this.pendingRun = true
 		process.nextTick(async () => {
 			try {
@@ -227,7 +245,7 @@ function shouldTrack(target: object, propKey: PropertyKey) {
 	return true
 }
 
-class ReactiveProxy<T extends object> {
+class ReactiveProxy<T extends object> implements ProxyHandler<T> {
 	get(target: T, propKey: PropertyKey, receiver: any) {
 		if (propKey === ReactivityProps.RAW) {
 			return target
@@ -252,9 +270,15 @@ class ReactiveProxy<T extends object> {
 			propKey = alias.key
 		}
 
+		const hasProp = propKey in target
+
 		Reflect.set(target, propKey, newValue, receiver)
 
 		ReactiveSet(target, propKey)
+
+		if (!hasProp) {
+			ReactiveAdd(target)
+		}
 
 		return true
 	}
@@ -270,6 +294,7 @@ class ReactiveProxy<T extends object> {
 		if (shouldTrack(target, propKey)) {
 			DependencyStorage.getPropDependency(target, propKey).track()
 		}
+
 		return Reflect.has(target, propKey)
 	}
 
@@ -281,7 +306,15 @@ class ReactiveProxy<T extends object> {
 		}
 
 		Reflect.deleteProperty(target, propKey)
+
+		ReactiveDelete(target)
 		return true
+	}
+
+	ownKeys(target: T): ArrayLike<string | symbol> {
+		DependencyStorage.getIterDependency(target).track()
+
+		return Reflect.ownKeys(target)
 	}
 }
 
@@ -364,7 +397,7 @@ export function reactiveComputed<T>(func: () => T): ReactiveComputed<T> {
 	return result
 }
 
-export function ReactiveGet<T extends any>(getValue: T, self: any, prop: string | symbol | number) {
+export function ReactiveGet<T extends any>(getValue: T, self: any, prop: PropertyKey) {
 	if (shouldTrack(self, prop)) {
 		DependencyStorage.getPropDependency(self, prop).track()
 	}
@@ -376,11 +409,23 @@ export function ReactiveGet<T extends any>(getValue: T, self: any, prop: string 
 	return getValue
 }
 
-export function ReactiveSet(self: any, prop: string | symbol | number) {
+export function ReactiveSet(self: any, prop: PropertyKey) {
 	if (shouldTrack(self, prop)) {
 		reactiveLog("Reactive Set", self, prop)
 		DependencyStorage.getPropDependency(self, prop).notify()
 	}
+}
+
+export function ReactiveIter(self: any) {
+	DependencyStorage.getIterDependency(self).track()
+}
+
+export function ReactiveAdd(self: any) {
+	DependencyStorage.getIterDependency(self).notify()
+}
+
+export function ReactiveDelete(self: any) {
+	DependencyStorage.getIterDependency(self).notify()
 }
 
 export function aliasReactiveValue(
