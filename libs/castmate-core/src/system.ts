@@ -11,6 +11,7 @@ import util from "util"
 import { setupStreamPlans } from "./stream-plan/stream-plan"
 import { globalLogger, initializeLogging } from "./logging/logging"
 import { WebService } from "./webserver/internal-webserver"
+import { PubSubManager } from "./pubsub/pubsub-service"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -39,6 +40,7 @@ export async function initializeCastMate() {
 	PluginManager.initialize()
 	MediaManager.initialize()
 	ResourceRegistry.initialize()
+	PubSubManager.initialize()
 	setupStreamPlans()
 
 	//How do we load plugins???
