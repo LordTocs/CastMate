@@ -1,4 +1,4 @@
-import { defineAction, definePlugin, defineResourceSetting, onLoad, onUnload } from "castmate-core"
+import { PubSubManager, defineAction, definePlugin, defineResourceSetting, onLoad, onUnload } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { setupChat } from "./chat"
 import { setupSubscriptions } from "./subscriptions"
@@ -39,6 +39,11 @@ export default definePlugin(
 		defineResourceSetting(TwitchAccount, "Twitch Accounts")
 
 		onUnload(() => {})
+
+		onChannelAuth((channel) => {
+			//Pass the auth token to the pubsub so it can auth with the CastMate servers
+			PubSubManager.getInstance().setToken(channel.secrets.accessToken)
+		})
 
 		setupViewerCache()
 		setupViewerGroups()
