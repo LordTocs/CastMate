@@ -27,6 +27,7 @@
 		"electron": "26.2.0",
 		"eslint": "^8.34.0",
 		"eslint-plugin-vue": "^9.9.0",
+		"node-gyp": "^10.0.1",
 		"pinia": "2.1.4",
 		"prettier": "^2.8.4",
 		"primeflex": "3.3.1",
