@@ -1516,6 +1516,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^20.9.0":
+  version: 20.11.24
+  resolution: "@types/node@npm:20.11.24"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10/7f34bfae5f9b98b9910230af4b4c52dc7fb2d1e96fdebfbc3d7576f8ab3d100076f193f9469add9e7418b455294155e7e6a028498cc5e98f9d49349875a459cf
+  languageName: node
+  linkType: hard
+
 "@types/plist@npm:^3.0.1":
   version: 3.0.5
   resolution: "@types/plist@npm:3.0.5"
@@ -2533,7 +2542,7 @@ __metadata:
     "@vueuse/core": "npm:10.7.2"
     axios: "npm:^1.5.1"
     chromatism2: "npm:^3.0.2"
-    electron: "npm:26.2.0"
+    electron: "npm:29.1.0"
     eslint: "npm:^8.34.0"
     eslint-plugin-vue: "npm:^9.9.0"
     nanoid: "npm:^4.0.2"
@@ -3244,7 +3253,6 @@ __metadata:
     vite: "npm:*"
     vue: "npm:*"
     vue-tsc: "npm:*"
-    wavesurfer.js: "npm:^7.1.5"
   languageName: unknown
   linkType: soft
 
@@ -4464,16 +4472,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:26.2.0":
-  version: 26.2.0
-  resolution: "electron@npm:26.2.0"
+"electron@npm:29.1.0":
+  version: 29.1.0
+  resolution: "electron@npm:29.1.0"
   dependencies:
     "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^18.11.18"
+    "@types/node": "npm:^20.9.0"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10/27485e960a188c95c52bdad9797471fdcbeaadcdfecb48731816c143fb89be68ca259d97a74575c52c0c73465333b118eaea692e64265e8fc19fe99943042789
+  checksum: 10/e3df818ed473d017f9fa46ed2b3561a15cf9f9bf17a8696c6e5b1b58be205d26a3709cbcdde94a67310c20137de44d25efb154e24e7a6c5be434120b7b984631
   languageName: node
   linkType: hard
 
@@ -8477,13 +8485,6 @@ __metadata:
     typescript:
       optional: true
   checksum: 10/e45ef76e40ac44d802e62e638f44f49d77be49f4839dcfda4479f58a822213db1aa7c3a65b1ae0a6dde744a2504c9f56b0d038e81c086c4de60ae5fdc10b84dc
-  languageName: node
-  linkType: hard
-
-"wavesurfer.js@npm:^7.1.5":
-  version: 7.7.1
-  resolution: "wavesurfer.js@npm:7.7.1"
-  checksum: 10/3d3709e67227849dba1dbaf10a90d5ceb6a04bd0f1ace4fa734fae0012f705a40572ee1205ed97ad7ec12bf576b5427872d991a3c9243c01c42273bc94900776
   languageName: node
   linkType: hard
 
