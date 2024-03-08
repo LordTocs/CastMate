@@ -8,7 +8,8 @@
 		"buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish",
 		"dev": "node ./vite-util/multi-vite.mjs",
 		"format": "prettier . --write",
-		"clearnode": "node ./vite-util/clear-node-modules.mjs"
+		"clearnode": "node ./vite-util/clear-node-modules.mjs",
+		"ebuild": "electron-rebuild -f"
 	},
 	"keywords": [],
 	"workspaces": [
@@ -19,16 +20,17 @@
 	"author": "LordTocs",
 	"license": "AGPL",
 	"devDependencies": {
+		"@electron/rebuild": "^3.6.0",
 		"@types/node": "^20.4.8",
 		"@vitejs/plugin-vue": "^4.3.4",
 		"@vue/tsconfig": "^0.4.0",
 		"@vueuse/core": "10.7.2",
 		"chromatism2": "^3.0.2",
-		"electron": "29.1.0",
+		"electron": "^29.1.1",
 		"eslint": "^8.34.0",
 		"eslint-plugin-vue": "^9.9.0",
 		"node-gyp": "^10.0.1",
-		"pinia": "2.1.4",
+		"pinia": "2.1.7",
 		"prettier": "^2.8.4",
 		"primeflex": "3.3.1",
 		"primevue": "3.47.2",

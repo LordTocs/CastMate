@@ -24,7 +24,7 @@
 		"@types/fluent-ffmpeg": "^2.1.21",
 		"castmate-schema": "workspace:^",
 		"chokidar": "^3.5.3",
-		"electron": "*",
+		"electron": "^29.1.1",
 		"express": "^4.18.2",
 		"fluent-ffmpeg": "^2.1.2",
 		"lodash": "^4.17.21",

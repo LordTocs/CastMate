@@ -16,7 +16,7 @@
     "castmate-plugin-time-shared": "workspace:^",
     "castmate-schema": "workspace:^",
     "chromatism2": "*",
-    "electron": "*",
+    "electron": "^29.1.1",
     "nanoid": "*",
     "pinia": "*",
     "vue": "*"

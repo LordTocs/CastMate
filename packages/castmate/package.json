@@ -14,7 +14,7 @@
 	"engines": {
 		"node": "^14.18.0 || >=16.0.0"
 	},
-	"electronVersion": "25.1.1",
+	"electronVersion": "29.1.1",
 	"dependencies": {
 		"castmate-core": "workspace:^",
 		"castmate-plugin-discord-main": "workspace:^",
@@ -69,7 +69,7 @@
 		"castmate-ui-core": "workspace:^",
 		"castmate-vite": "workspace:^",
 		"chromatism2": "*",
-		"electron": "*",
+		"electron": "29.1.1",
 		"electron-builder": "^24.4.0",
 		"electron-devtools-installer": "^3.2.0",
 		"eslint": "^8.17.0",
