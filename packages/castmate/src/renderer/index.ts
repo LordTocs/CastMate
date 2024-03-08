@@ -84,6 +84,13 @@ app.directive("tooltip", Tooltip)
 app.use(pinia)
 
 const initStore = useInitStore()
+const pluginStore = usePluginStore()
+const projecStore = useProjectStore()
+const documentStore = useDocumentStore()
+const resourceStore = useResourceStore()
+const actionQueueStore = useActionQueueStore()
+const dashboardStore = useDashboardStore()
+const mediaStore = useMediaStore()
 
 const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
@@ -93,20 +100,17 @@ async function init() {
 	await initStore.waitForInit()
 
 	//Now init all the stores
-	await Promise.all([
-		usePluginStore().initialize(),
-		useResourceStore().initialize(),
-		useProjectStore().initialize(),
-		useActionQueueStore().initialize(),
-	])
 
-	await useDashboardStore().initialize()
+	await pluginStore.initialize()
+	await resourceStore.initialize()
+	await projecStore.initialize()
+	await actionQueueStore.initialize()
+	await dashboardStore.initialize()
 
 	await initializeProfiles(app)
 	await initializeAutomations(app)
 	await initializeStreamPlans(app)
 
-	const documentStore = useDocumentStore()
 	documentStore.registerDocumentComponent("profile", ProfileEditorVue)
 	documentStore.registerDocumentComponent("automation", AutomationEditPageVue)
 	documentStore.registerDocumentComponent("streamplan", StreamPlanEditorPage)
@@ -139,7 +143,7 @@ async function init() {
 	await initGoveePlugin()
 	await initKasaPlugin()
 
-	await useMediaStore().initialize()
+	await mediaStore.initialize()
 
 	loadOverlayWidgets()
 
