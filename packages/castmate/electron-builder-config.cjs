@@ -23,6 +23,8 @@ module.exports = {
 		artifactName: "${productName}_${version}.${ext}",
 		target: ["dmg"],
 	},
+	npmRebuild: false,
+	nodeGypRebuild: false,
 	win: {
 		target: [
 			{
@@ -38,23 +40,23 @@ module.exports = {
 		allowToChangeInstallationDirectory: true,
 		deleteAppDataOnUninstall: true,
 	},
-	extraResources: [
-		{
-			from: "../../node_modules/regedit/vbs",
-			to: "regedit/vbs",
-			filter: ["**/*"],
-		},
-	],
-	/*extraFiles: [
-		{
-			from: "../castmate-obs-overlay/dist/obs-overlay",
-			to: "obs-overlay",
-		},
-		{
-			from: "starter_media",
-			to: "starter_media"
-		}
-	],*/
+	// extraResources: [
+	// 	{
+	// 		from: "../../node_modules/regedit/vbs",
+	// 		to: "regedit/vbs",
+	// 		filter: ["**/*"],
+	// 	},
+	// ],
+	// extraFiles: [
+	// 	{
+	// 		from: "../castmate-obs-overlay/dist/obs-overlay",
+	// 		to: "obs-overlay",
+	// 	},
+	// 	{
+	// 		from: "starter_media",
+	// 		to: "starter_media"
+	// 	}
+	// ],
 	publish: [
 		{
 			provider: "github",
