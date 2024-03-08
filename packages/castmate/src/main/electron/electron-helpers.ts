@@ -30,7 +30,7 @@ export function createWindow(
 		const url = path.posix.join(process.env.VITE_DEV_SERVER_URL, "html", htmlFile)
 		win.loadURL(url) //TODO: FORMAT URL WITH QUERY
 	} else {
-		win.loadFile(path.join(__dirname, `../../../dist/html/${htmlFile}`))
+		win.loadFile(path.join(__dirname, `../../dist/html/${htmlFile}`))
 	}
 
 	win.addListener("maximize", () => {
