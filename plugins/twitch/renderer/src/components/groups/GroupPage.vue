@@ -10,12 +10,17 @@
 		>
 			<template #header>
 				<div class="flex">
-					<twitch-viewer-input v-model="memberAdder" :schema="{ type: TwitchViewer, name: 'Add Member' }" />
+					<div style="width: 20rem">
+						<twitch-viewer-input
+							v-model="memberAdder"
+							:schema="{ type: TwitchViewer, name: 'Add Member' }"
+						/>
+					</div>
 					<div class="flex-grow-1"></div>
-					<span class="p-input-icon-left">
+					<!-- <span class="p-input-icon-left">
 						<i class="pi pi-search" />
 						<p-input-text v-model="filters['global'].value" placeholder="Search" />
-					</span>
+					</span> -->
 				</div>
 			</template>
 
