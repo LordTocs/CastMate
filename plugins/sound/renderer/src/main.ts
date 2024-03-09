@@ -39,7 +39,6 @@ export async function getOutputDeviceWebId(name: string) {
 
 export async function initPlugin(app: App<Element>) {
 	const playerStore = useSoundPlayerStore()
-	console.log(await getOutputDevices())
 
 	playerStore.initialize()
 
