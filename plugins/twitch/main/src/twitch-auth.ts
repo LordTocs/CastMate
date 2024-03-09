@@ -72,25 +72,30 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 	}
 
 	async checkToken(token: string) {
-		const info = await getTokenInfo(token, CLIENT_ID)
+		try {
+			const info = await getTokenInfo(token, CLIENT_ID)
 
-		if (!info.userId || !info.userName) {
-			return false
-		}
-
-		for (const requiredScope of this.config.scopes) {
-			if (!info.scopes.includes(requiredScope)) {
-				logger.log("Missing Scope", requiredScope)
+			if (!info.userId || !info.userName) {
 				return false
 			}
+
+			for (const requiredScope of this.config.scopes) {
+				if (!info.scopes.includes(requiredScope)) {
+					logger.log("Missing Scope", requiredScope)
+					return false
+				}
+			}
+
+			await this.applyConfig({
+				//scopes: info.scopes,
+				twitchId: info.userId,
+			})
+
+			return true
+		} catch (err) {
+			logger.error("Error Validating Token", err)
+			return false
 		}
-
-		await this.applyConfig({
-			//scopes: info.scopes,
-			twitchId: info.userId,
-		})
-
-		return true
 	}
 
 	async checkCachedCreds(): Promise<boolean> {
