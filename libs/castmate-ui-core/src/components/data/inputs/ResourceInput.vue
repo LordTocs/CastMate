@@ -6,6 +6,7 @@
 		:no-float="noFloat"
 		:menu-extra="hasDialogs ? menuItems : []"
 		v-slot="inputProps"
+		:disabled="disabled"
 	>
 		<c-autocomplete
 			v-model="model"

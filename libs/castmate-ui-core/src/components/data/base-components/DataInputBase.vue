@@ -4,7 +4,12 @@
 			<div class="p-inputgroup" style="flex-grow: 1; flex-shrink: 1" @contextmenu="onContext">
 				<slot name="prepend" v-if="!(canTemplate && templateMode)"></slot>
 				<label-floater :model-value="modelValue" :label="schema.name" :no-float="noFloat" v-slot="labelProps">
-					<template-toggle v-bind="labelProps" v-model="model" :template-mode="canTemplate && templateMode">
+					<template-toggle
+						v-bind="labelProps"
+						v-model="model"
+						:template-mode="canTemplate && templateMode"
+						:disabled
+					>
 						<slot v-bind="labelProps"></slot>
 					</template-toggle>
 				</label-floater>
@@ -18,6 +23,7 @@
 				icon="mdi mdi-dots-vertical"
 				aria-controls="input_menu"
 				@click="menu?.toggle($event)"
+				:disabled="disabled"
 			></p-button>
 			<p-menu ref="menu" id="input_menu" :model="menuItems" :popup="true" v-if="hasMenu" />
 			<c-context-menu ref="contextMenu" :items="menuItems" v-if="hasMenu" />
@@ -49,6 +55,7 @@ const props = withDefaults(
 		showClear?: boolean
 		menuExtra?: MenuItem[]
 		toggleTemplate?: boolean
+		disabled?: boolean
 	}>(),
 	{
 		showClear: true,

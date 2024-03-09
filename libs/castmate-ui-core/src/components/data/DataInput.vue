@@ -8,6 +8,7 @@
 		:no-float="noFloat"
 		:context="context"
 		:secret="secret"
+		:disabled="disabled"
 	/>
 </template>
 

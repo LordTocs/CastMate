@@ -1,13 +1,16 @@
-import { App, Component, markRaw, ref } from "vue"
+import { App, Component, computed, markRaw, ref } from "vue"
 import {
 	InlineAutomationView,
 	createInlineAutomationView,
 	getResourceAsProjectGroup,
+	handleIpcMessage,
 	useDocumentStore,
+	useIpcCaller,
 	useProjectStore,
+	useResourceData,
 	useResourceStore,
 } from "../../main"
-import { ResourceData, StreamPlanConfig } from "castmate-schema"
+import { ResourceData, StreamPlanConfig, StreamPlanState } from "castmate-schema"
 import { defineStore } from "pinia"
 
 export interface StreamPlanSegmentView {
@@ -56,15 +59,44 @@ export function initializeStreamPlans(app: App<Element>) {
 	)
 }
 
+const setActivePlan = useIpcCaller<(planId: string | undefined) => any>("stream-plan", "setActivePlan")
+const setActiveSegment = useIpcCaller<(planId: string) => any>("stream-plan", "setActiveSegment")
+
 export const useStreamPlanStore = defineStore("stream-plan", () => {
 	const components = ref(new Map<string, Component>())
+
+	async function initialize() {
+		handleIpcMessage("stream-plan", "activePlanChanged", (event, planId: string | undefined) => {
+			console.log("Active Plan Changed", planId)
+			activePlanId.value = planId
+		})
+	}
+
+	const planResources = useResourceData<ResourceData<StreamPlanConfig, StreamPlanState>>("StreamPlan")
+
+	const activePlanId = ref<string>()
+	const activePlan = computed(() => {
+		if (!activePlanId.value) return undefined
+		return planResources.value?.resources?.get?.(activePlanId.value)
+	})
+	const activeSegment = computed(() => {
+		if (!activePlan.value) return undefined
+		if (!activePlan.value.state.activeSegment) return undefined
+
+		return activePlan.value.config.segments.find((s) => s.id == activePlan.value?.state?.activeSegment)
+	})
 
 	function registerStreamPlanComponent(id: string, comp: Component) {
 		components.value.set(id, markRaw(comp))
 	}
 
 	return {
+		initialize,
 		components,
 		registerStreamPlanComponent,
+		activePlan,
+		activeSegment,
+		setActivePlan,
+		setActiveSegment,
 	}
 })

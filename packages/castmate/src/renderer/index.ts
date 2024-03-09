@@ -10,6 +10,7 @@ import {
 	useActionQueueStore,
 	useIpcCaller,
 	initializeStreamPlans,
+	useStreamPlanStore,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -91,6 +92,7 @@ const resourceStore = useResourceStore()
 const actionQueueStore = useActionQueueStore()
 const dashboardStore = useDashboardStore()
 const mediaStore = useMediaStore()
+const planStore = useStreamPlanStore()
 
 const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
@@ -106,6 +108,7 @@ async function init() {
 	await projecStore.initialize()
 	await actionQueueStore.initialize()
 	await dashboardStore.initialize()
+	await planStore.initialize()
 
 	await initializeProfiles(app)
 	await initializeAutomations(app)

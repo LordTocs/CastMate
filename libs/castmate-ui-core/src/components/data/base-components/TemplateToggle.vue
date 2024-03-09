@@ -19,6 +19,7 @@
 				:class="{ 'no-right-bezel': noRightBezel }"
 				style="padding-right: 2rem"
 				v-model="model"
+				:disabled="disabled"
 			/>
 			<i class="mdi mdi-code-json input-icon" @click="suggestionClick" @mousedown="stopPropagation" />
 			<state-suggestion-panel :container="container" v-model:open="suggestionVisible" @suggest="onSuggest" />
@@ -41,6 +42,7 @@ const props = defineProps<{
 	inputId?: string
 	noRightBezel?: boolean
 	errorMessage?: string
+	disabled?: boolean
 }>()
 
 const container = ref<HTMLElement>()

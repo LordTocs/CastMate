@@ -12,6 +12,7 @@
 			</div>
 			<div class="stat-row">
 				<stream-info-dashboard-card />
+				<stream-plan-dashboard-widget />
 			</div>
 			<action-queue-dash-widget v-for="queue in queues" :key="queue.id" :queue-id="queue.id" class="mb-2" />
 		</div>
@@ -19,7 +20,13 @@
 </template>
 
 <script setup lang="ts">
-import { useResourceArray, FlexScroller, DashboardStat, DashboardCard } from "castmate-ui-core"
+import {
+	useResourceArray,
+	FlexScroller,
+	DashboardStat,
+	DashboardCard,
+	StreamPlanDashboardWidget,
+} from "castmate-ui-core"
 import ActionQueueDashWidget from "./queues/ActionQueueDashWidget.vue"
 import { DashboardObsCard } from "castmate-plugin-obs-renderer"
 import { StreamInfoDashboardCard } from "castmate-plugin-twitch-renderer"

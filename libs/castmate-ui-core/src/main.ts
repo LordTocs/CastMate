@@ -54,6 +54,8 @@ export { default as VariableNameInput } from "./components/data/base-components/
 
 export { default as DataInputBase } from "./components/data/base-components/DataInputBase.vue"
 
+export { default as StreamPlanDashboardWidget } from "./components/stream-plan/StreamPlanDashboardWidget.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"
