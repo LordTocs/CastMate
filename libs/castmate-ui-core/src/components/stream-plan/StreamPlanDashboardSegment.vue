@@ -20,7 +20,13 @@
 			</div>
 		</div>
 		<div class="controls flex flex-row">
-			<p-button size="small" icon="mdi mdi-play" :disabled="active || !activePlan" @click="activate"></p-button>
+			<p-button
+				size="small"
+				icon="mdi mdi-play"
+				:disabled="!activePlan"
+				@click="activate"
+				severity="success"
+			></p-button>
 			<div class="flex-grow-1" />
 			<!-- <p-button size="small" text icon="mdi mdi-pencil"></p-button> -->
 		</div>

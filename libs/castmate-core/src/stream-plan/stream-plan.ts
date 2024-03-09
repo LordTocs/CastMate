@@ -90,6 +90,38 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 			await component.onActivate?.(segment.id, segment.components[componentTypeId])
 		}
 	}
+
+	async activate() {
+		if (this.state.active) return
+
+		const activationRunner = new SequenceRunner(this.config.activationAutomation.sequence, {
+			contextState: {},
+		})
+		await activationRunner.run()
+
+		const segment = this.config.segments[0]
+		if (!segment) return
+
+		await this.activateSegment(segment.id)
+
+		this.state.active = true
+	}
+
+	async deactivate() {
+		if (!this.state.active) return
+
+		if (this.state.activeSegment) {
+			await this.deactivateSegment(this.state.activeSegment)
+			this.state.activeSegment = undefined
+		}
+
+		const deactivationRunner = new SequenceRunner(this.config.deactivationAutomation.sequence, {
+			contextState: {},
+		})
+		await deactivationRunner.run()
+
+		this.state.active = false
+	}
 }
 
 export interface StreamPlanComponent<Config = any> {
@@ -134,6 +166,11 @@ export const StreamPlanManager = Service(
 				return
 			}
 
+			if (this.activePlanId) {
+				const plan = StreamPlan.storage.getById(this.activePlanId)
+				await plan?.deactivate()
+			}
+
 			if (!plan) {
 				this.activePlanId = undefined
 				await activePlanChanged(this.activePlanId)
@@ -143,10 +180,7 @@ export const StreamPlanManager = Service(
 				await activePlanChanged(this.activePlanId)
 				logger.log("StreamPlan Started", plan.config.name)
 
-				const segment = plan.config.segments[0]
-				if (!segment) return
-
-				await plan.activateSegment(segment.id)
+				await plan.activate()
 			}
 		}
 	}
