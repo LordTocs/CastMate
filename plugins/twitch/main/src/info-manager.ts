@@ -15,7 +15,7 @@ import {
 	runOnChange,
 	templateSchema,
 	writeYAML,
-	StreamPlanComponents,
+	StreamPlanManager,
 	defineState,
 	isProbablyFromTemplate,
 	usePluginLogger,
@@ -25,7 +25,6 @@ import { TwitchAccount } from "./twitch-auth"
 import { HelixChannelUpdate } from "@twurple/api"
 import { onChannelAuth } from "./api-harness"
 import { CategoryCache } from "./category-cache"
-import { ExposedSchemaPropType, ExposedSchemaType, ExposedSchemaTypeUnion, declareSchema } from "castmate-schema"
 import { ViewerCache } from "./viewer-cache"
 
 const rendererUpdateStreamInfo = defineCallableIPC<(info: StreamInfo) => any>("twitch", "updateStreamInfo")
@@ -95,6 +94,13 @@ export const StreamInfoManager = Service(
 			await writeYAML(this.activeInfo, "twitch", "info-manager.yaml")
 		}
 
+		async updateInfo(newInfo: Partial<StreamInfo>) {
+			Object.assign(this.activeInfo, newInfo)
+			rendererUpdateStreamInfo(this.activeInfo)
+			await this.createUpdateEffect()
+			await writeYAML(this.activeInfo, "twitch", "info-manager.yaml")
+		}
+
 		async reconcileTwitchUpdate(title: string, categoryId: string) {
 			const titleMatches = isProbablyFromTemplate(title, this.activeInfo.title ?? "")
 
@@ -120,13 +126,13 @@ export function setupInfoManager() {
 		StreamInfoManager.initialize()
 		await StreamInfoManager.getInstance().initialize()
 
-		StreamPlanComponents.getInstance().registerComponentType({
+		StreamPlanManager.getInstance().registerComponentType({
 			id: "twitch-stream-info",
-			onActivate(segmentId, config: StreamInfo) {
-				StreamInfoManager.getInstance().setInfo(config)
+			onActivate(segmentId, config: Partial<StreamInfo>) {
+				StreamInfoManager.getInstance().updateInfo(config)
 			},
-			activeConfigChanged(segmentId, config: StreamInfo) {
-				StreamInfoManager.getInstance().setInfo(config)
+			activeConfigChanged(segmentId, config: Partial<StreamInfo>) {
+				StreamInfoManager.getInstance().updateInfo(config)
 			},
 		})
 	})
