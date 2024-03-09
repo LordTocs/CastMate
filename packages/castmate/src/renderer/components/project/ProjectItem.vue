@@ -4,7 +4,7 @@
 		:class="{ openable: props.item?.open != null }"
 		:style="{ '--indent': indent }"
 		@click="onClick"
-		@contextmenu="contextMenu?.show($event)"
+		@contextmenu="showContext"
 	>
 		<i class="chevron-spacer"></i>
 		<slot name="icon">
@@ -56,7 +56,7 @@ const menuItems = computed<MenuItem[]>(() => {
 						existingName: props.item.title,
 					},
 					onClose(options) {
-						if (!options) {
+						if (!options?.data) {
 							return
 						}
 
@@ -95,6 +95,12 @@ function onClick(ev: MouseEvent) {
 		ev.preventDefault()
 		ev.stopPropagation()
 	}
+}
+
+function showContext(ev: MouseEvent) {
+	if (menuItems.value.length == 0) return
+
+	contextMenu.value?.show(ev)
 }
 </script>
 
