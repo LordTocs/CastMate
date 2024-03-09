@@ -77,10 +77,6 @@ export const useResourceStore = defineStore("resources", () => {
 				throw new Error("Resource type doesn't exist")
 			}
 
-			if (storage.resources.has(data.id)) {
-				throw new Error("Resource already exists")
-			}
-
 			storage.resources.set(data.id, data)
 		})
 
