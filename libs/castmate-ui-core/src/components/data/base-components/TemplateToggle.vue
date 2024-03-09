@@ -14,7 +14,12 @@
 			:input-id="inputId"
 			ref="container"
 		>
-			<p-input-text class="flex-grow-1" :class="{ 'no-right-bezel': noRightBezel }" v-model="model" />
+			<p-input-text
+				class="flex-grow-1"
+				:class="{ 'no-right-bezel': noRightBezel }"
+				style="padding-right: 2rem"
+				v-model="model"
+			/>
 			<i class="mdi mdi-code-json input-icon" @click="suggestionClick" @mousedown="stopPropagation" />
 			<state-suggestion-panel :container="container" v-model:open="suggestionVisible" @suggest="onSuggest" />
 		</div>
