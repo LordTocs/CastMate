@@ -82,7 +82,7 @@ function createProfileGroup(app: App<Element>) {
 						modal: true,
 					},
 					onClose(options) {
-						if (!options) {
+						if (!options?.data) {
 							return
 						}
 

@@ -116,7 +116,7 @@ export function getResourceAsDirectProjectGroup<TData extends ResourceData>(
 						modal: true,
 					},
 					onClose(options) {
-						if (!options) {
+						if (!options?.data) {
 							return
 						}
 
@@ -185,7 +185,7 @@ export function getResourceAsProjectGroup<TData extends ResourceData>(
 						modal: true,
 					},
 					onClose(options) {
-						if (!options) {
+						if (!options?.data) {
 							return
 						}
 
