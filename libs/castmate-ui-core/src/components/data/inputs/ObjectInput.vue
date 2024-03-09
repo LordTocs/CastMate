@@ -11,6 +11,7 @@
 				:local-path="prop"
 				:context="context"
 				:secret="secret"
+				:disabled="disabled"
 			/>
 		</div>
 	</document-path>

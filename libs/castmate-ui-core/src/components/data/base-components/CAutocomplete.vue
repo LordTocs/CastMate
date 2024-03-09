@@ -15,6 +15,7 @@
 			:bezel-right="false"
 			:placeholder="placeholder"
 			class="clickable-input"
+			:disabled="disabled"
 		>
 			<slot name="selectedItem" v-if="props.modelValue != null" :item="selectedItem" :item-id="props.modelValue">
 				<span style="white-space: nowrap">{{
@@ -30,9 +31,12 @@
 			v-model="filterValue"
 			@keydown="onFilterKeyDown"
 			:placeholder="placeholder"
+			:disabled="disabled"
 		/>
-		<slot name="append"></slot>
-		<p-button class="no-focus-highlight flex-shrink-0" @click="onDropDownClick"><p-chevron-down-icon /></p-button>
+		<slot name="append" :disabled="disabled"></slot>
+		<p-button :disabled="disabled" class="no-focus-highlight flex-shrink-0" @click="onDropDownClick"
+			><p-chevron-down-icon
+		/></p-button>
 	</div>
 	<autocomplete-drop-list
 		ref="dropDown"
@@ -84,6 +88,7 @@ const props = withDefaults(
 			placeholder?: string
 			items: ItemType[]
 			inputId?: string
+			disabled?: boolean
 		} & AutocompleteItemProps
 	>(),
 	{}

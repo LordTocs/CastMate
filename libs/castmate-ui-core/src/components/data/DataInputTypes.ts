@@ -3,6 +3,7 @@ export interface SharedDataInputProps {
 	noFloat?: boolean
 	context?: any
 	secret?: boolean
+	disabled?: boolean
 }
 
 export interface SharedDataViewProps {

@@ -16,6 +16,7 @@
 			:group-prop="resourceStore?.configGroupPath ? 'config.' + resourceStore.configGroupPath : undefined"
 			:no-float="noFloat"
 			v-bind="inputProps"
+			:disabled="disabled"
 			class="flex-grow-1 flex-shrink-0"
 		>
 			<template #groupHeader="{ item }" v-if="resourceStore?.selectorGroupHeaderComponent">

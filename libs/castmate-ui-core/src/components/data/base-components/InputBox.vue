@@ -8,6 +8,7 @@
 			'p-inputwrapper-focused': focused,
 			'p-invalid': errorMessage,
 			'p-inputwrapper-invalid': errorMessage,
+			'p-disabled': disabled == true,
 		}"
 	>
 		<div
@@ -37,6 +38,7 @@ const props = withDefaults(
 		bezelLeft?: boolean
 		bezelRight?: boolean
 		errorMessage?: string
+		disabled?: boolean
 	}>(),
 	{
 		bezelLeft: true,
@@ -51,6 +53,10 @@ const props = withDefaults(
 	outline-offset: 0;
 	/* box-shadow: 0 0 0 1px #e9aaff; */
 	border-color: #c9b1cb;
+}
+
+.input-box-internal:hover {
+	border-color: var(--primary-color);
 }
 
 .input-box {
