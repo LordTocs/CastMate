@@ -5,7 +5,7 @@
 			<data-input v-model="editValue" :schema="StreamInfoSchema" />
 			<div class="flex flex-row">
 				<div class="flex-grow-1"></div>
-				<p-button @click="save">Save</p-button>
+				<p-button @click="save" size="small">Save</p-button>
 			</div>
 		</div>
 	</dashboard-card>
