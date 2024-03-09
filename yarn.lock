@@ -3873,7 +3873,7 @@ __metadata:
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:^29.1.1"
+    electron: "npm:29.1.1"
     electron-builder: "npm:^24.4.0"
     electron-devtools-installer: "npm:^3.2.0"
     electron-updater: "npm:^4.6.1"
@@ -4643,7 +4643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^29.1.1":
+"electron@npm:29.1.1, electron@npm:^29.1.1":
   version: 29.1.1
   resolution: "electron@npm:29.1.1"
   dependencies:
