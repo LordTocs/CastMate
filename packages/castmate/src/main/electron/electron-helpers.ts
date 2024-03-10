@@ -3,7 +3,7 @@ import path from "path"
 
 const viteDevURL = `http://${process.env["VITE_DEV_SERVER_HOSTNAME"]}:${process.env["VITE_DEV_SERVER_PORT"]}`
 
-const iconPath = "TODO"
+const iconPath = app.isPackaged ? path.join(__dirname, "../..", "renderer/assets/icons/") : "src/renderer/assets/icons/"
 
 export function createWindow(
 	htmlFile: string,
