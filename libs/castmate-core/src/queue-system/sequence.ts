@@ -38,6 +38,7 @@ type SequenceCompletion = "complete" | "aborted"
 
 export class SequenceRunner {
 	private abortController = new AbortController()
+	private disconnectedFlows = new Array<Promise<any>>()
 
 	constructor(private sequence: Sequence, private context: SequenceContext, private dbg?: SequenceDebugger) {}
 
@@ -52,6 +53,7 @@ export class SequenceRunner {
 	async run(): Promise<SequenceCompletion> {
 		this.dbg?.sequenceStarted()
 		const completion = await this.runSequence(this.sequence)
+		await Promise.allSettled(this.disconnectedFlows)
 		this.dbg?.sequenceEnded()
 		return completion
 	}
@@ -175,7 +177,11 @@ export class SequenceRunner {
 			await this.runOffset(offset)
 		})
 
-		await Promise.allSettled([actionPromise, ...promises])
+		this.disconnectedFlows.push(...promises)
+
+		await actionPromise
+
+		//await Promise.allSettled([actionPromise, ...promises])
 	}
 
 	private runOffset(offset: OffsetActions) {
