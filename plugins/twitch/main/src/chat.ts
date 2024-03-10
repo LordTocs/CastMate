@@ -1,7 +1,7 @@
 import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
 import { defineTrigger, defineAction, defineTransformTrigger, usePluginLogger, onLoad } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
-import { TwitchAPIService, onChannelAuth } from "./api-harness"
+import { TwitchAPIService, onBotAuth, onChannelAuth } from "./api-harness"
 import { Color, Command, Range, getCommandDataSchema, matchAndParseCommand } from "castmate-schema"
 import { ViewerCache } from "./viewer-cache"
 import { EmoteParsedString, TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
@@ -220,8 +220,9 @@ export function setupChat() {
 		},
 	})
 
-	onChannelAuth((account, service) => {
+	onBotAuth((account, service) => {
 		service.chatClient.onMessage(async (channel, user, message, msgInfo) => {
+			logger.log("ChatMsg", message)
 			const context = {
 				viewer: msgInfo.userInfo.userId,
 				message,
@@ -239,7 +240,9 @@ export function setupChat() {
 
 			chat(context)
 		})
+	})
 
+	onChannelAuth((account, service) => {
 		service.eventsub.onChannelShoutoutCreate(account.twitchId, account.twitchId, async (event) => {
 			shoutoutSent({
 				viewer: event.shoutedOutBroadcasterId,

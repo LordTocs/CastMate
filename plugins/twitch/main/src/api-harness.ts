@@ -7,6 +7,17 @@ import { EventList } from "castmate-core/src/util/events"
 
 const logger = usePluginLogger("twitch")
 
+const twurpleLog = {
+	custom(level: number, message: string) {
+		if (level > 2) return
+		let levelName = ""
+		if (level == 2) levelName = "warning"
+		if (level == 1) levelName = "error"
+		if (level == 0) levelName = "critical"
+		logger.error("Twurple", levelName, ":", message)
+	},
+}
+
 export const TwitchAPIService = Service(
 	class {
 		private _chatClient: ChatClient
@@ -29,12 +40,20 @@ export const TwitchAPIService = Service(
 			channelAccount.onAuthorized.register(() => {
 				this.onReauthChannel()
 			})
+
+			TwitchAccount.bot.onAuthorized.register(() => {
+				this.onReauthBot()
+			})
 		}
 
 		private finalized = false
 		private onChannelReauthList = new EventList<
 			(channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
 		>()
+		private onBotReauthList = new EventList<
+			(botAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		>()
+
 		registerOnChannelReauth(
 			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
 		) {
@@ -51,32 +70,53 @@ export const TwitchAPIService = Service(
 			this.onChannelReauthList.unregister(func)
 		}
 
+		registerOnBotReauth(
+			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		) {
+			if (TwitchAccount.channel.isAuthenticated && this.finalized) {
+				func(TwitchAccount.channel, this)
+			}
+
+			this.onBotReauthList.register(func)
+		}
+
+		unregisterOnBotReauth(
+			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		) {
+			this.onBotReauthList.unregister(func)
+		}
+
 		async finalize() {
 			this.finalized = true
-			if (TwitchAccount.channel.config.name.length > 0) {
+			if (TwitchAccount.channel.isAuthenticated) {
 				await this.onReauthChannel()
 			}
+		}
+
+		private async onReauthBot() {
+			if (!TwitchAccount.channel.isAuthenticated) return
+			if (!TwitchAccount.bot.isAuthenticated) return
+
+			logger.log("Reauthing Bot")
+			this._chatClient?.quit()
+
+			this._chatClient = new ChatClient({
+				authProvider: TwitchAccount.bot,
+				channels: [TwitchAccount.channel.config.name],
+				logger: twurpleLog,
+			})
+
+			await this._chatClient.connect()
+
+			await this.onBotReauthList.run(TwitchAccount.bot, this)
 		}
 
 		private async onReauthChannel() {
 			const channelAccount = TwitchAccount.channel
 
-			const twurpleLog = {
-				custom(level: number, message: string) {
-					if (level > 2) return
-					let levelName = ""
-					if (level == 2) levelName = "warning"
-					if (level == 1) levelName = "error"
-					if (level == 0) levelName = "critical"
-					logger.error("Twurple", levelName, ":", message)
-				},
-			}
+			this._pubsubClient?.removeAllHandlers()
+			this._eventsub?.stop()
 
-			this._chatClient = new ChatClient({
-				authProvider: channelAccount,
-				channels: [channelAccount.config.name],
-				logger: twurpleLog,
-			})
 			this._pubsubClient = new PubSubClient({
 				authProvider: channelAccount,
 				logger: twurpleLog,
@@ -87,14 +127,15 @@ export const TwitchAPIService = Service(
 				logger: twurpleLog,
 			})
 
-			await this._chatClient.connect()
-
 			logger.log("Reauthing Channel")
 
 			//@ts-ignore Damned type system
 			await this.onChannelReauthList.run(channelAccount, this)
 
 			this.eventsub.start()
+
+			//Restart the bot stuffs since we've changed main channel.
+			await this.onReauthBot()
 		}
 	}
 )
@@ -106,5 +147,15 @@ export function onChannelAuth(func: (channel: TwitchAccount, service: InstanceTy
 
 	onUnload(() => {
 		TwitchAPIService.getInstance().unregisterOnChannelReauth(func)
+	})
+}
+
+export function onBotAuth(func: (channel: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any) {
+	onLoad(() => {
+		TwitchAPIService.getInstance().registerOnBotReauth(func)
+	})
+
+	onUnload(() => {
+		TwitchAPIService.getInstance().unregisterOnBotReauth(func)
 	})
 }

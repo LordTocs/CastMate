@@ -46,8 +46,15 @@ const defaultScopes = [
 	"user:read:email",
 
 	"channel:moderate", //Chat moderation options
-	"chat:edit", //Send chat
-	"chat:read", //See the chat
+]
+
+const botScopes = [
+	"chat:edit", //Send Chat
+	"chat:read", //Read Chat
+	"whispers:edit", //Send Whispers
+	"whispers:read", //Read Whispers
+	"user:manage:whispers", //Read Whispers
+	"moderator:manage:announcements", //Send Annoucements
 ]
 
 const CLIENT_ID = "qnybd4aoxlom3u3wjbsstsp5yd2sdl"
@@ -376,6 +383,12 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 		channel._id = "channel"
 		await channel.load()
 		await this.storage.inject(channel)
+
+		const bot = new TwitchAccount()
+		bot._id = "bot"
+		bot._config.scopes = botScopes
+		await bot.load()
+		await this.storage.inject(bot)
 	}
 
 	static async uninitialize(): Promise<void> {
@@ -384,6 +397,12 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 
 	static get channel() {
 		const channel = this.storage.getById("channel")
+		if (!channel) throw new Error(`TwitchAccount resource hasn't been initialized`)
+		return channel
+	}
+
+	static get bot() {
+		const channel = this.storage.getById("bot")
 		if (!channel) throw new Error(`TwitchAccount resource hasn't been initialized`)
 		return channel
 	}

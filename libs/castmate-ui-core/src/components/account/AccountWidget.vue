@@ -7,7 +7,7 @@
 			<p-button @click="forceAuth" :loading="doingLogin" plain text size="small"> Sign In Again </p-button>
 		</template>
 		<template v-else>
-			<p-button @click="forceAuth" :loading="doingLogin"> Sign In </p-button>
+			<p-button @click="forceAuth" :loading="doingLogin" size="small"> Sign In </p-button>
 		</template>
 	</div>
 </template>
