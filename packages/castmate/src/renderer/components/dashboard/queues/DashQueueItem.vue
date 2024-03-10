@@ -6,7 +6,13 @@
 			<i :class="queuedTrigger?.icon" /> {{ queuedTrigger?.name }}
 		</div>
 
-		<div class="data"></div>
+		<div class="data">
+			<data-view
+				:model-value="queueItem.queueContext.contextState"
+				v-if="queuedContextSchema"
+				:schema="queuedContextSchema"
+			/>
+		</div>
 
 		<div class="controls">
 			<p-button
@@ -31,10 +37,19 @@
 </template>
 
 <script setup lang="ts">
+import { asyncComputed } from "@vueuse/core"
 import { QueuedSequence, ResourceData, ProfileConfig } from "castmate-schema"
-import { useColors, useResourceData, useResourceIPCCaller, useTrigger, useTriggerColors } from "castmate-ui-core"
+import {
+	useColors,
+	useResourceData,
+	useResourceIPCCaller,
+	useTrigger,
+	useTriggerColors,
+	DataView,
+} from "castmate-ui-core"
 import PButton from "primevue/button"
 import { computed } from "vue"
+import { isFunction } from "lodash"
 
 const props = defineProps<{
 	queueItem: QueuedSequence
@@ -55,13 +70,20 @@ const queuedTriggerData = computed(() => {
 		return undefined
 	}
 
-	const trigger = profile.config.triggers.find((t) => t.id == props.queueItem.source.subid)
+	const trigger = profile.config.triggers.find((t) => t.id == props.queueItem.source.subId)
 
 	return trigger
 })
 
 const queuedTrigger = useTrigger(() => queuedTriggerData.value)
 const { triggerColorStyle } = useTriggerColors(() => queuedTriggerData.value)
+
+const queuedContextSchema = asyncComputed(async () => {
+	if (isFunction(queuedTrigger.value?.context)) {
+		return await queuedTrigger.value.context(queuedTriggerData.value?.config)
+	}
+	return queuedTrigger.value?.context
+})
 </script>
 
 <style scoped>

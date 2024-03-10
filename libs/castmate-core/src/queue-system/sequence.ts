@@ -18,9 +18,12 @@ import {
 	isFlowAction,
 	SequenceContext,
 	mapRecord,
+	Schema,
+	InlineAutomation,
 } from "castmate-schema"
 import { ActionInvokeContextData } from "./action"
 import { globalLogger } from "../logging/logging"
+import { Service } from "../util/service"
 
 export interface SequenceDebugger {
 	sequenceStarted(): void
@@ -195,3 +198,22 @@ export class SequenceRunner {
 		})
 	}
 }
+
+interface SequenceResolverImpl {
+	getAutomation(id: string, subId?: string): InlineAutomation | undefined
+	getContextSchema(id: string, subId?: string): Promise<Schema | undefined>
+}
+
+export const SequenceResolvers = Service(
+	class {
+		private lookup = new Map<string, SequenceResolverImpl>()
+
+		getResolver(type: string) {
+			return this.lookup.get(type)
+		}
+
+		registerResolver(type: string, resolver: SequenceResolverImpl) {
+			this.lookup.set(type, resolver)
+		}
+	}
+)

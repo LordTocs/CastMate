@@ -1,10 +1,9 @@
 import { nanoid } from "nanoid/non-secure"
-import { Sequence, StreamPlanConfig, StreamPlanState } from "castmate-schema"
+import { Sequence, StreamPlanConfig, StreamPlanState, SequenceProvider } from "castmate-schema"
 import { FileResource } from "../resources/file-resource"
-import { SequenceProvider } from "../profile/profile"
 import { Service } from "../util/service"
 import { ActionQueueManager } from "../queue-system/action-queue"
-import { SequenceRunner } from "../queue-system/sequence"
+import { SequenceResolvers, SequenceRunner } from "../queue-system/sequence"
 import { PluginManager } from "../plugins/plugin-manager"
 import { ResourceStorage } from "../resources/resource"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
@@ -12,7 +11,7 @@ import { usePluginLogger } from "../logging/logging"
 
 const logger = usePluginLogger("streamplan")
 
-export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> implements SequenceProvider {
+export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> {
 	static resourceDirectory: string = "./stream-plans"
 	static storage = new ResourceStorage<StreamPlan>("StreamPlan")
 
@@ -54,17 +53,14 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 		const segment = this.config.segments.find((seg) => seg.id == id)
 		if (!segment) return
 
-		const deactivationRunner = new SequenceRunner(segment.deactivationAutomation.sequence, {
-			contextState: {},
-		})
-		await deactivationRunner.run()
-
 		for (const componentTypeId in segment.components) {
 			const component = StreamPlanManager.getInstance().getComponentType(componentTypeId)
 			if (!component) continue
 
 			await component.onDeactivate?.(segment.id, segment.components[componentTypeId])
 		}
+
+		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `${segment.id}.deactivation`, {})
 	}
 
 	async activateSegment(id: string) {
@@ -78,26 +74,20 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 		this.state.activeSegment = segment.id
 
 		logger.log("Activating Segment", id)
-		const activationRunner = new SequenceRunner(segment.activationAutomation.sequence, {
-			contextState: {},
-		})
-		await activationRunner.run()
-
 		for (const componentTypeId in segment.components) {
 			const component = StreamPlanManager.getInstance().getComponentType(componentTypeId)
 			if (!component) continue
 
 			await component.onActivate?.(segment.id, segment.components[componentTypeId])
 		}
+
+		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `${segment.id}.activation`, {})
 	}
 
 	async activate() {
 		if (this.state.active) return
 
-		const activationRunner = new SequenceRunner(this.config.activationAutomation.sequence, {
-			contextState: {},
-		})
-		await activationRunner.run()
+		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `activation`, {})
 
 		const segment = this.config.segments[0]
 		if (!segment) return
@@ -115,10 +105,7 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 			this.state.activeSegment = undefined
 		}
 
-		const deactivationRunner = new SequenceRunner(this.config.deactivationAutomation.sequence, {
-			contextState: {},
-		})
-		await deactivationRunner.run()
+		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `deactivation`, {})
 
 		this.state.active = false
 	}
@@ -191,4 +178,31 @@ export function setupStreamPlans() {
 	StreamPlan.initialize()
 
 	StreamPlanManager.getInstance().initialize()
+
+	SequenceResolvers.getInstance().registerResolver("stream-plan", {
+		getAutomation(id, subId) {
+			const plan = StreamPlan.storage.getById(id)
+			if (!plan) return undefined
+
+			if (subId == "activation") return plan.config.activationAutomation
+			if (subId == "deactivation") return plan.config.deactivationAutomation
+			if (!subId) return
+
+			const split = subId.split(".")
+
+			const segment = plan.config.segments.find((s) => s.id == split[0])
+			if (segment) {
+				logger.log("Found Segment", segment.id)
+				if (split[1] == "activation") return segment.activationAutomation
+				if (split[1] == "deactivation") return segment.deactivationAutomation
+			} else {
+				logger.log("Can't find segment!", split[0])
+			}
+
+			return undefined
+		},
+		async getContextSchema(id, subId) {
+			return { type: Object, properties: {} }
+		},
+	})
 }

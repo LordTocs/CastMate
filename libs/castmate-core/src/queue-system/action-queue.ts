@@ -7,17 +7,18 @@ import {
 	ActionQueueState,
 	Schema,
 	constructDefault,
+	AutomationData,
+	InlineAutomation,
 } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { Service } from "../util/service"
-import { SequenceDebugger, SequenceRunner } from "./sequence"
+import { SequenceDebugger, SequenceResolvers, SequenceRunner } from "./sequence"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Profile } from "../profile/profile"
 import { FileResource } from "../resources/file-resource"
 import { ResourceRegistry } from "../resources/resource-registry"
-import { deserializeSchema, exposeSchema } from "../util/ipc-schema"
+import { deserializeSchema, exposeSchema, serializeSchema } from "../util/ipc-schema"
 import { PluginManager } from "../plugins/plugin-manager"
-import { globalLogger } from "../logging/logging"
 
 export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueState> {
 	static resourceDirectory: string = "./queues"
@@ -113,38 +114,10 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		this.enqueue(played.source, played.queueContext.contextState)
 	}
 
-	private getNextSequence():
-		| { queuedSequence: QueuedSequence; sequence: Sequence; contextSchema: Schema }
-		| undefined {
+	private async getNextSequence(): Promise<QueuedSequence | undefined> {
 		let queuedSequence: QueuedSequence | undefined
 		while ((queuedSequence = this.state.queue.shift())) {
-			if (queuedSequence.source.type == "profile" && queuedSequence.source.subid) {
-				const profile = Profile.storage.getById(queuedSequence.source.id)
-				if (!profile) {
-					globalLogger.log("Couldn't find profile", queuedSequence.source.id)
-					continue
-				}
-
-				const sequence = profile.getSequence(queuedSequence.source.subid)
-				if (!sequence) {
-					globalLogger.log("Couldn't find Sequence", queuedSequence.source.subid)
-					continue
-				}
-
-				const trigger = profile.getTrigger(queuedSequence.source.subid)
-				if (!trigger) {
-					globalLogger.log("Couldn't find trigger", queuedSequence.source.subid)
-					continue
-				}
-
-				return {
-					queuedSequence,
-					sequence,
-					contextSchema: trigger.context,
-				}
-			}
-
-			//Todo: This item didn't have a sequence source
+			return queuedSequence
 		}
 
 		return undefined
@@ -155,26 +128,33 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 			return
 		}
 
-		const seqItem = this.getNextSequence()
+		const seqItem = await this.getNextSequence()
 
 		if (!seqItem) return
 
-		const resolvedContext = await deserializeSchema(
-			seqItem.contextSchema,
-			seqItem.queuedSequence.queueContext.contextState
-		)
-		const finalContext = await exposeSchema(seqItem.contextSchema, resolvedContext)
+		const resolver = SequenceResolvers.getInstance().getResolver(seqItem.source.type)
 
-		this.runner = new SequenceRunner(seqItem.sequence, { contextState: finalContext })
+		if (!resolver) return
 
-		this.state.running = seqItem.queuedSequence
+		const automation = resolver.getAutomation(seqItem.source.id, seqItem.source.subId)
+		const contextSchema = await resolver.getContextSchema(seqItem.source.id, seqItem.source.subId)
+
+		if (!automation) return
+		if (!contextSchema) return
+
+		const deserializedContext = await deserializeSchema(contextSchema, seqItem.queueContext.contextState)
+		const finalContext = await exposeSchema(contextSchema, deserializedContext)
+
+		this.runner = new SequenceRunner(automation.sequence, { contextState: finalContext })
+		this.state.running = seqItem
+
 		const doRun = async () => {
 			try {
 				await this.runner?.run()
 			} finally {
 				this.runner = null
 				this.state.running = undefined
-				this.pushToHistory(seqItem.queuedSequence)
+				this.pushToHistory(seqItem)
 				if (!this.isPaused) {
 					this.runNext()
 				}
@@ -251,6 +231,30 @@ export const ActionQueueManager = Service(
 			defineIPCFunc("actionQueue", "stopTestSequence", (id: string) => {
 				return this.stopTestSequence(id)
 			})
+		}
+
+		async queueOrRun(type: string, id: string, subId: string | undefined, contextData: object) {
+			const resolver = SequenceResolvers.getInstance().getResolver(type)
+			if (!resolver) return
+
+			const automation = resolver.getAutomation(id, subId)
+			const contextSchema = await resolver.getContextSchema(id, subId)
+			if (!automation) return
+			if (!contextSchema) return
+
+			if (automation.queue) {
+				const queue = ActionQueue.storage.getById(automation.queue)
+
+				if (!queue) return
+
+				queue.enqueue({ type, id, subId }, serializeSchema(contextSchema, contextData))
+			} else {
+				const finalContext = await exposeSchema(contextSchema, contextData)
+				const sequenceRunner = new SequenceRunner(automation.sequence, {
+					contextState: finalContext,
+				})
+				await sequenceRunner.run()
+			}
 		}
 
 		async runTestSequence(id: string, sequence: Sequence, trigger?: { plugin?: string; trigger?: string }) {

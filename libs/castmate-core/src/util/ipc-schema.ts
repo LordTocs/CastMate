@@ -211,7 +211,7 @@ export async function deserializeSchema<TSchema extends Schema>(
 			Object.keys(objValue).map(async (key) => {
 				const propSchema = schema.properties[key]
 				if (!propSchema) {
-					globalLogger.error("Unable to find type for", key, value)
+					globalLogger.error("(deserialize) Unable to find type for", key, value)
 					return
 				}
 				copyValue[key] = await deserializeSchema(propSchema, objValue[key])
@@ -236,7 +236,7 @@ export function serializeSchema<TSchema extends Schema>(schema: TSchema, value: 
 		for (const key of Object.keys(objValue)) {
 			const propSchema = schema.properties[key]
 			if (!propSchema) {
-				globalLogger.error("Unable to find type for", key, value)
+				globalLogger.error("(serialize) Unable to find type for", key, value)
 				continue
 			}
 			copyValue[key] = serializeSchema(propSchema, objValue[key])
@@ -275,7 +275,7 @@ export async function exposeSchema<TSchema extends Schema>(
 			Object.keys(objValue).map(async (key) => {
 				const propSchema = schema.properties[key]
 				if (!propSchema) {
-					globalLogger.error("Unable to find type for", key, value)
+					globalLogger.error("(expose) Unable to find type for", key, value)
 					return
 				}
 				copyValue[key] = await exposeSchema(propSchema, objValue[key])
@@ -305,7 +305,7 @@ export async function unexposeSchema<TSchema extends Schema>(
 			Object.keys(objValue).map(async (key) => {
 				const propSchema = schema.properties[key]
 				if (!propSchema) {
-					globalLogger.error("Unable to find type for", key, value)
+					globalLogger.error("(unexpose) Unable to find type for", key, value)
 					return
 				}
 				copyValue[key] = await unexposeSchema(propSchema, objValue[key])

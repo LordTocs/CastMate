@@ -1,12 +1,20 @@
-import { AutomationData } from "./profile"
-import { ActionStack, AnyAction, Sequence, getActionById } from "./sequence"
+import { ActionStack, AnyAction, Sequence, FloatingSequence, getActionById } from "./sequence"
 
-export interface AutomationConfig extends AutomationData {
-	name: string
+export interface AutomationData {
+	sequence: Sequence
+	floatingSequences: FloatingSequence[]
 }
 
 export interface InlineAutomation extends AutomationData {
-	queue: string | undefined
+	queue?: string
+}
+
+export function createInlineAutomation(): InlineAutomation {
+	return { sequence: { actions: [] }, floatingSequences: [], queue: undefined }
+}
+
+export interface AutomationConfig extends AutomationData {
+	name: string
 }
 
 export function findActionById(id: string, automation: AutomationData) {

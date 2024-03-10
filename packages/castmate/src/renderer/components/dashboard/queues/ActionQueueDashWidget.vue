@@ -91,7 +91,7 @@ const queueList = ref<HTMLElement>()
 function onScroll(ev: WheelEvent) {
 	if (!queueList.value) return
 
-	queueList.value.scrollLeft -= ev.deltaY
+	//queueList.value.scrollLeft -= ev.deltaY
 }
 
 function convertRemToPixels(rem: number) {

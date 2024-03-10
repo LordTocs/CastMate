@@ -3,7 +3,11 @@ import { nanoid } from "nanoid/non-secure"
 export interface SequenceSource {
 	type: string
 	id: string
-	subid?: string
+	subId?: string
+}
+
+export interface SequenceProvider {
+	getSequence(id: string): Sequence | undefined
 }
 
 export interface QueuedSequence {

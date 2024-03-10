@@ -1,17 +1,11 @@
 import { BooleanExpression } from "../data/boolean-expression"
 import { Toggle } from "../data/toggle"
-import { FloatingSequence, Sequence } from "./sequence"
+import { InlineAutomation, AutomationData } from "./automations"
 
-export interface AutomationData {
-	sequence: Sequence
-	floatingSequences: FloatingSequence[]
-}
-
-export interface TriggerData<Config = any> extends AutomationData {
+export interface TriggerData<Config = any> extends InlineAutomation {
 	id: string
 	plugin?: string
 	trigger?: string
-	queue: string | null
 	config: Config
 }
 
@@ -20,6 +14,9 @@ export interface ProfileConfig {
 	activationMode: Toggle
 	triggers: TriggerData[]
 	activationCondition: BooleanExpression
+
+	activationAutomation: InlineAutomation
+	deactivationAutomation: InlineAutomation
 }
 
 export interface ProfileState {

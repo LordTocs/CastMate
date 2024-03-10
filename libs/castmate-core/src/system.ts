@@ -1,4 +1,4 @@
-import { Profile } from "./profile/profile"
+import { Profile, setupProfiles } from "./profile/profile"
 import { ActionQueue, ActionQueueManager } from "./queue-system/action-queue"
 import { ResourceRegistry } from "./resources/resource-registry"
 import { PluginManager } from "./plugins/plugin-manager"
@@ -12,6 +12,7 @@ import { setupStreamPlans } from "./stream-plan/stream-plan"
 import { globalLogger, initializeLogging } from "./logging/logging"
 import { WebService } from "./webserver/internal-webserver"
 import { PubSubManager } from "./pubsub/pubsub-service"
+import { SequenceResolvers } from "./queue-system/sequence"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -41,6 +42,7 @@ export async function initializeCastMate() {
 	MediaManager.initialize()
 	ResourceRegistry.initialize()
 	PubSubManager.initialize()
+	SequenceResolvers.initialize()
 	setupStreamPlans()
 
 	//How do we load plugins???
@@ -52,7 +54,7 @@ const notifyRendererSetupFinished = defineCallableIPC<() => void>("castmate", "s
 
 export async function finializeCastMateSetup() {
 	globalLogger.log("Finalizing Init")
-	await Profile.initialize()
+	await setupProfiles()
 	await Automation.initialize()
 	await ActionQueue.initialize()
 	ActionQueueManager.initialize()

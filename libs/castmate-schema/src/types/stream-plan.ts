@@ -1,5 +1,4 @@
 import { InlineAutomation } from "./automations"
-import { AutomationData } from "./profile"
 
 export interface StreamPlanSegment {
 	id: string
