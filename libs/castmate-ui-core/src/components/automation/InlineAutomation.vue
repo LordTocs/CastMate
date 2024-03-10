@@ -2,13 +2,13 @@
 	<div class="p-inputgroup" style="margin-top: 1.5rem">
 		<label-floater :label="label" :icon="icon" input-id="inline-automation" v-slot="labelProps">
 			<input-box
-				v-if="!view.open"
+				v-if="!view?.open"
 				:model="hasActions"
 				v-bind="labelProps"
 				style="cursor: pointer"
 				@click="doOpen"
 			>
-				<sequence-mini-preview :sequence="props.modelValue.sequence" />
+				<sequence-mini-preview :sequence="props.modelValue?.sequence" />
 			</input-box>
 			<div
 				v-else
