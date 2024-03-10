@@ -1,5 +1,6 @@
 import { globalLogger } from "../logging/logging"
 import { PluginManager } from "../plugins/plugin-manager"
+import { ActionQueueManager } from "../queue-system/action-queue"
 import { ignoreReactivity } from "../reactivity/reactivity"
 import { Service } from "../util/service"
 import { Profile } from "./profile"
@@ -56,11 +57,11 @@ export const ProfileManager = Service(
 			const newInactive = inactive.filter((p) => !this.inactiveProfiles.includes(p))
 
 			for (const newlyActive of newActive) {
-				//TODO: OnProfileActivate
+				ActionQueueManager.getInstance().queueOrRun("profile", newlyActive.id, "activation", {})
 			}
 
 			for (const newlyInactive of newInactive) {
-				//TODO: OnProfileDeactivate
+				ActionQueueManager.getInstance().queueOrRun("profile", newlyInactive.id, "deactivation", {})
 			}
 
 			globalLogger.log(

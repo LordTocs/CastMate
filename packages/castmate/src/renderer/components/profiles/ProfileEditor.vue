@@ -32,8 +32,18 @@
 				</template>
 			</document-data-collection>
 
-			<h1>Activation Conditions</h1>
+			<h1>Activation</h1>
 			<boolean-expression-input v-model="model.activationCondition" />
+			<inline-automation-edit
+				v-model="model.activationAutomation"
+				v-model:view="view.activationAutomation"
+				label="On Activate"
+			/>
+			<inline-automation-edit
+				v-model="model.deactivationAutomation"
+				v-model:view="view.deactivationAutomation"
+				label="On Deactivate"
+			/>
 		</div>
 	</flex-scroller>
 </template>
@@ -45,6 +55,8 @@ import {
 	ProfileView,
 	BooleanExpressionInput,
 	provideScrollAttachable,
+	InlineAutomationEdit,
+	createInlineAutomationView,
 } from "castmate-ui-core"
 import { ProfileConfig } from "castmate-schema"
 import TriggerEdit from "./TriggerEdit.vue"
@@ -62,6 +74,8 @@ const props = withDefaults(
 			scrollX: 0,
 			scrollY: 0,
 			triggers: [],
+			activationAutomation: createInlineAutomationView(),
+			deactivationAutomation: createInlineAutomationView(),
 		}),
 	}
 )
@@ -80,7 +94,7 @@ function createTriggerEnd() {
 
 	model.value.triggers.push({
 		id,
-		queue: null,
+		queue: undefined,
 		config: {},
 		sequence: { actions: [] },
 		floatingSequences: [],
@@ -107,7 +121,7 @@ function createTriggerBeginning() {
 
 	model.value.triggers.splice(0, 0, {
 		id,
-		queue: null,
+		queue: undefined,
 		config: {},
 		sequence: { actions: [] },
 		floatingSequences: [],

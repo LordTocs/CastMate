@@ -143,6 +143,9 @@ export async function setupProfiles() {
 
 			if (!profile) return undefined
 
+			if (subId == "activation") return profile.config.activationAutomation
+			if (subId == "deactivation") return profile.config.deactivationAutomation
+
 			return profile.config.triggers.find((t) => t.id == subId)
 		},
 
@@ -151,6 +154,9 @@ export async function setupProfiles() {
 
 			const profile = Profile.storage.getById(id)
 			if (!profile) return undefined
+
+			if (subId == "activation") return { type: Object, properties: {} }
+			if (subId == "deactivation") return { type: Object, properties: {} }
 
 			const trigger = profile.config.triggers.find((t) => t.id == subId)
 			if (!trigger) return undefined

@@ -4,6 +4,7 @@ import {
 	ProfileView,
 	ProjectGroup,
 	ProjectItem,
+	createInlineAutomationView,
 	registerResourceAsProjectGroup,
 	useDockingStore,
 	useDocumentStore,
@@ -34,6 +35,8 @@ function createProfileViewData(resource: ResourceData<ProfileConfig>) {
 				selection: [],
 			},
 		})),
+		activationAutomation: createInlineAutomationView(),
+		deactivationAutomation: createInlineAutomationView(),
 	} as ProfileView
 }
 

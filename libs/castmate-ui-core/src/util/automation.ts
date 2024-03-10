@@ -1,3 +1,4 @@
+import { InlineAutomationView } from "../main"
 import { PanState } from "./panning"
 
 export interface TriggerView {
@@ -17,4 +18,6 @@ export interface ProfileView {
 	scrollX: number
 	scrollY: number
 	triggers: TriggerView[]
+	activationAutomation: InlineAutomationView
+	deactivationAutomation: InlineAutomationView
 }
