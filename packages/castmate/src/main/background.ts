@@ -7,7 +7,7 @@ import { createWindow } from "./electron/electron-helpers"
 import { initializeCastMate, finializeCastMateSetup } from "castmate-core"
 import { loadPlugins } from "./plugins"
 
-const isDevelopment = true //TODO: import.meta.env.DEV
+const isDevelopment = !app.isPackaged // true //TODO: import.meta.env.DEV
 
 if (process.platform === "win32") app.setAppUserModelId(app.getName())
 
@@ -49,11 +49,6 @@ app.whenReady().then(async () => {
 	await loadPlugins()
 
 	await finializeCastMateSetup()
-
-	//initCastMate(mainWindow)
-
-	//autoUpdater.checkForUpdatesAndNotify();
-	//doUpdateCheck()
 })
 
 // Quit when all windows are closed.
