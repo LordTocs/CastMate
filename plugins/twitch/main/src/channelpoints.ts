@@ -213,7 +213,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 		await super.initialize()
 
 		const resolvedDir = resolveProjectPath(this.resourceDirectory)
-		ensureDirectory(resolvedDir)
+		await ensureDirectory(resolvedDir)
 		const files = await fs.readdir(resolvedDir)
 
 		const fileLoadPromises = files.map(async (file) => {
