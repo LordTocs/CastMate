@@ -1,4 +1,12 @@
-import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, defineSetting } from "castmate-core"
+import {
+	defineAction,
+	defineTrigger,
+	onLoad,
+	onUnload,
+	definePlugin,
+	defineSetting,
+	usePluginLogger,
+} from "castmate-core"
 import { VoiceModClient } from "./client"
 
 export default definePlugin(
@@ -10,6 +18,7 @@ export default definePlugin(
 		color: "#3F918D",
 	},
 	() => {
+		const logger = usePluginLogger()
 		let voiceMod: VoiceModClient = new VoiceModClient()
 
 		const voiceModHost = defineSetting("host", {
@@ -39,10 +48,29 @@ export default definePlugin(
 		defineAction({
 			id: "selectVoice",
 			name: "Change Voice",
+			icon: "mdi mdi-account-voice",
 			config: {
 				type: Object,
 				properties: {
-					voice: { type: String, name: "Voice", required: true, default: "nofx" },
+					voice: {
+						type: String,
+						name: "Voice",
+						required: true,
+						default: "nofx",
+						async enum() {
+							//logger.log("Voice Enum Fetch")
+							const voices = await voiceMod.getVoices()
+
+							const enumVoices = voices.filter((v) => v.isEnabled)
+
+							//logger.log(enumVoices)
+
+							return enumVoices.map((v) => ({
+								value: v.id,
+								name: v.friendlyName,
+							}))
+						},
+					},
 				},
 			},
 			async invoke(config, contextData, abortSignal) {

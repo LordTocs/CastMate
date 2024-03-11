@@ -1,9 +1,24 @@
 import { WebSocket } from "ws"
 import { nanoid } from "nanoid/non-secure"
+import { usePluginLogger } from "castmate-core"
+
+const logger = usePluginLogger("voicemod")
 
 interface PromiseStorage<T = any> {
 	resolve: (result: T) => any
 	reject: (reason?: any) => any
+}
+
+interface VoiceModVoice {
+	id: string
+	friendlyName: string
+	isEnabled: boolean
+	isCustom: boolean
+	favorited: boolean
+	isNew: boolean
+	bitmapChecksum: string
+	isPurchased: boolean
+	parameters: object
 }
 
 export class VoiceModClient {
@@ -11,7 +26,7 @@ export class VoiceModClient {
 	private connected: boolean = false
 	private handlers: Record<string, (payload: any) => any> = {}
 	private rpcCalls: Record<string, PromiseStorage> = {}
-	private pinger: NodeJS.Timer | null = null
+	private pinger: NodeJS.Timeout | null = null
 	private voicePromise: Promise<any> | null
 	private voiceResolver: PromiseStorage | null
 
@@ -19,19 +34,20 @@ export class VoiceModClient {
 	constructor() {
 		this.voicePromise = null
 
-		this._handle("getVoices", async (payload) => {
-			if (this.voicePromise) {
-				this.voiceResolver?.resolve(payload)
-				this.voiceResolver = null
-				this.voicePromise = null
-			}
-		})
+		// this._handle("getVoices", async (payload) => {
+		// 	if (this.voicePromise) {
+		// 		this.voiceResolver?.resolve(payload)
+		// 		this.voiceResolver = null
+		// 		this.voicePromise = null
+		// 	}
+		// })
 	}
 
 	private _send(message: object) {
 		return new Promise((resolve, reject) => {
 			if (!this.socket) return reject()
-			//console.log("Sent: ", message)
+			//logger.log("VM Send", message)
+
 			this.socket.send(JSON.stringify(message), (err) => {
 				if (!err) return resolve(undefined)
 				return reject(err)
@@ -48,7 +64,7 @@ export class VoiceModClient {
 
 		const id = nanoid()
 
-		return new Promise((resolve, reject) => {
+		return new Promise<Record<string, any>>((resolve, reject) => {
 			this.rpcCalls[id] = {
 				resolve: (payload) => {
 					resolve(payload)
@@ -65,20 +81,12 @@ export class VoiceModClient {
 		})
 	}
 
-	getVoices() {
-		if (this.voicePromise) return this.voicePromise
+	async getVoices(): Promise<VoiceModVoice[]> {
+		const voiceResp = await this._callRPC("getVoices")
 
-		this.voicePromise = new Promise((resolve, reject) => {
-			this.voiceResolver = { resolve, reject }
+		if (!voiceResp) return []
 
-			this._send({
-				id: nanoid(),
-				action: "getVoices",
-				payload: {},
-			})
-		})
-
-		return this.voicePromise
+		return voiceResp.voices as VoiceModVoice[]
 	}
 
 	selectVoice(id: string) {
@@ -98,6 +106,7 @@ export class VoiceModClient {
 
 			this.socket.on("close", () => {
 				this.connected = false
+				logger.log("Voicemod Connection Closed")
 
 				if (this.pinger) {
 					clearInterval(this.pinger)
@@ -108,6 +117,8 @@ export class VoiceModClient {
 			})
 
 			this.socket.on("open", async () => {
+				logger.log("Voicemod Connection Opened")
+
 				await this._callRPC("registerClient", { clientKey: "castmate" })
 				this.connected = true
 				this.pinger = setInterval(() => {
@@ -125,18 +136,24 @@ export class VoiceModClient {
 					const message = JSON.parse(data.toString())
 
 					//console.log("Received: ", message);
+					//logger.log("VM Recv", message)
 
 					const id = message.id
 
 					if (id) {
 						const rpc = this.rpcCalls[id]
-						rpc.resolve(message.payload)
-						return
+						if (rpc) {
+							//logger.log("VM Msg", message.id)
+							rpc.resolve(message.payload)
+							return
+						} else {
+							//logger.log("Missing RPC for", message.id)
+						}
 					}
 
 					if (message.actionType) {
 						const handler = this.handlers[message.actionType]
-						//console.log("Event: ", message.actionType)
+						//logger.log("VM Event: ", message.actionType)
 						if (handler) {
 							handler(message.actionObject)
 						}
