@@ -1,16 +1,20 @@
 import { Service } from "../util/service"
 import { ImageFormats, MediaMetadata, stillImageFormats } from "castmate-schema"
 import * as fs from "fs/promises"
-import * as pathTools from "path"
+import path, * as pathTools from "path"
 import * as rra from "recursive-readdir-async"
 import * as ffmpeg from "fluent-ffmpeg"
 import * as chokidar from "chokidar"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { ensureDirectory, resolveProjectPath } from "../io/file-system"
-import { shell } from "electron"
-import { globalLogger } from "../logging/logging"
+import { shell, app } from "electron"
+import { globalLogger, usePluginLogger } from "../logging/logging"
+
+//require("@ffmpeg-installer/win32-x64")
+//require("@ffprobe-installer/win32-x64")
 //Thumbnails?
 //Durations?
+const logger = usePluginLogger("media")
 
 function probeMedia(file: string) {
 	return new Promise<ffmpeg.FfprobeData>((resolve, reject) => {
@@ -137,3 +141,26 @@ export const MediaManager = Service(
 		}
 	}
 )
+
+export function setupMedia() {
+	let ffprobePath = ""
+	let ffmpegPath = ""
+	if (app.isPackaged) {
+		const binPath = path.join(__dirname, "../../../", "ffmpeg/bin")
+
+		ffprobePath = path.resolve(binPath, "ffprobe.exe")
+		ffmpegPath = path.resolve(binPath, "ffmpeg.exe")
+	} else {
+		const nodeModulesPath = path.join(__dirname, "../../../../", "node_modules")
+
+		ffprobePath = path.resolve(nodeModulesPath, "@ffprobe-installer/win32-x64/ffprobe.exe")
+		ffmpegPath = path.resolve(nodeModulesPath, "@ffmpeg-installer/win32-x64/ffmpeg.exe")
+	}
+
+	logger.log("ffmpeg path", ffmpegPath)
+	logger.log("ffprobe path", ffprobePath)
+
+	ffmpeg.setFfmpegPath(ffmpegPath)
+	ffmpeg.setFfprobePath(ffprobePath)
+	MediaManager.initialize()
+}

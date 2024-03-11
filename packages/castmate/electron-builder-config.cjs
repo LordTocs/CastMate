@@ -40,6 +40,18 @@ module.exports = {
 		allowToChangeInstallationDirectory: true,
 		deleteAppDataOnUninstall: true,
 	},
+	extraResources: [
+		{
+			from: "../../node_modules/@ffmpeg-installer/win32-x64",
+			to: "ffmpeg/bin",
+			filter: ["**/*.exe"],
+		},
+		{
+			from: "../../node_modules/@ffprobe-installer/win32-x64",
+			to: "ffmpeg/bin",
+			filter: ["**/*.exe"],
+		},
+	],
 	// extraResources: [
 	// 	{
 	// 		from: "../../node_modules/regedit/vbs",

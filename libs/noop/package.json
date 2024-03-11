@@ -1,0 +1,6 @@
+{
+	"name": "noop",
+	"version": "0.0.1",
+	"description": "Exists to trick yarn to no-hoist things",
+	"author": ""
+}

@@ -29,6 +29,8 @@ export default defineConfig({
 					minify: false,
 					rollupOptions: {
 						external: [
+							"@ffmpeg-installer/win32-x64",
+							"@ffprobe-installer/win32-x64",
 							"@twurple/api-call",
 							"@twurple/chat",
 							"@twurple/eventsub-ws",

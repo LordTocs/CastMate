@@ -785,6 +785,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ffmpeg-installer/win32-x64@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@ffmpeg-installer/win32-x64@npm:4.1.0"
+  checksum: 10/151ae57e16bbef2ea56bf5f3c43b6719d0c534521343344d9464e03e4cca9a9485a4b75808ab7e203a29d2850e5b80b281687f0ddb894a4f9fdf8c5ffcca4951
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@ffprobe-installer/win32-x64@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "@ffprobe-installer/win32-x64@npm:5.1.0"
+  checksum: 10/047f9e10115355d0dca51d1f6b955f4dc96e80b0e99926994d8dd334078911819f544d6642053ce9320f03e345e5a015e107c1206af9ca170dbd1d7467198a3a
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@gar/promisify@npm:^1.1.3":
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
@@ -2658,11 +2674,14 @@ __metadata:
   resolution: "castmate-monorepo@workspace:."
   dependencies:
     "@electron/rebuild": "npm:^3.6.0"
+    "@ffmpeg-installer/win32-x64": "npm:^4.1.0"
+    "@ffprobe-installer/win32-x64": "npm:^5.1.0"
     "@types/node": "npm:^20.4.8"
     "@vitejs/plugin-vue": "npm:^4.3.4"
     "@vue/tsconfig": "npm:^0.4.0"
     "@vueuse/core": "npm:10.7.2"
     axios: "npm:^1.5.1"
+    castmate-core: "workspace:^"
     chromatism2: "npm:^3.0.2"
     electron: "npm:^29.1.1"
     eslint: "npm:^8.34.0"
@@ -7067,6 +7086,12 @@ __metadata:
   checksum: 10/329b109b138e48cb0416a6bca56e171b0e479d6360a548b80f06eced4bef3cf37652a3d20d171c20023fb18d996bd7446a49d4297ddb59fc48100178a92f432d
   languageName: node
   linkType: hard
+
+"noop@workspace:libs/noop":
+  version: 0.0.0-use.local
+  resolution: "noop@workspace:libs/noop"
+  languageName: unknown
+  linkType: soft
 
 "nopt@npm:^6.0.0":
   version: 6.0.0

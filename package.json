@@ -41,7 +41,10 @@
 	},
 	"packageManager": "yarn@4.1.0",
 	"dependencies": {
+		"@ffmpeg-installer/win32-x64": "^4.1.0",
+		"@ffprobe-installer/win32-x64": "^5.1.0",
 		"axios": "^1.5.1",
+		"castmate-core": "workspace:^",
 		"nanoid": "^4.0.2",
 		"ts-toolbelt": "^9.6.0",
 		"typescript": "^5.1.3",
