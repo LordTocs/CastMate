@@ -3,10 +3,10 @@
 		<div class="flex align-items-center p-3">
 			<p-button @click="openMediaFolder">Open Media Folder</p-button>
 			<div class="flex-grow-1" />
-			<span class="p-input-icon-left">
+			<!-- <span class="p-input-icon-left">
 				<i class="pi pi-search" />
 				<p-input-text v-model="filters['global'].value" placeholder="Search" />
-			</span>
+			</span> -->
 		</div>
 		<table style="width: 100%">
 			<tr>
