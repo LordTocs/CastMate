@@ -13,13 +13,13 @@ class VoiceModClient {
 		this.connected = false
 		this.pinger = null
 
-		this._handle("getVoices", async (payload) => {
-			if (this.voicePromise) {
-				this.voiceResolver.resolve(payload)
-				this.voiceResolver = null
-				this.voicePromise = null
-			}
-		})
+		// this._handle("getVoices", async (payload) => {
+		// 	if (this.voicePromise) {
+		// 		this.voiceResolver.resolve(payload)
+		// 		this.voiceResolver = null
+		// 		this.voicePromise = null
+		// 	}
+		// })
 	}
 
 	_send(message) {
@@ -59,19 +59,21 @@ class VoiceModClient {
 	}
 
 	getVoices() {
-		if (this.voicePromise) return this.voicePromise
+		// if (this.voicePromise) return this.voicePromise
 
-		this.voicePromise = new Promise((resolve, reject) => {
-			this.voiceResolver = { resolve, reject }
+		// this.voicePromise = new Promise((resolve, reject) => {
+		// 	this.voiceResolver = { resolve, reject }
 
-			this._send({
-				id: nanoid(),
-				action: "getVoices",
-				payload: {},
-			})
-		})
+		// 	this._send({
+		// 		id: nanoid(),
+		// 		action: "getVoices",
+		// 		payload: {},
+		// 	})
+		// })
 
-		return this.voicePromise
+		// return this.voicePromise
+
+		return this._callRPC("getVoices")
 	}
 
 	selectVoice(id) {
@@ -206,7 +208,7 @@ export default {
 						async enum() {
 							const { voices } = await this.voiceCache.get()
 							return voices
-								.filter((v) => v.enabled)
+								.filter((v) => v.isEnabled)
 								.map((v) => ({
 									value: v.id,
 									name: v.friendlyName,
