@@ -20,6 +20,7 @@ import { setupEmotes } from "./emote-cache"
 import { setup7tv } from "./seventv"
 import { setupCategoryCache } from "./category-cache"
 import { setupInfoManager } from "./info-manager"
+import { setupWalkOns } from "./walk-on"
 
 export default definePlugin(
 	{
@@ -63,6 +64,7 @@ export default definePlugin(
 		setupUndocumented()
 		setupEmotes()
 		setup7tv()
+		setupWalkOns()
 
 		onLoad(async () => {
 			await TwitchAPIService.getInstance().finalize()

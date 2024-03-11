@@ -259,33 +259,4 @@ export function setupChat() {
 			})
 		})
 	})
-
-	const walkon = defineTrigger({
-		id: "walkon",
-		name: "Walk on",
-		icon: "mdi mdi-walk",
-		config: {
-			type: Object,
-			properties: {
-				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
-			},
-		},
-		context: {
-			type: Object,
-			properties: {
-				viewer: { type: TwitchViewer, required: true, default: "27082158" },
-			},
-		},
-		async handle(config, context, mapping) {
-			return await inTwitchViewerGroup(context.viewer, config.group)
-		},
-	})
-
-	onLoad(() => {
-		ViewerCache.getInstance().onFirstSeenThisStream.register(async (userId) => {
-			walkon({
-				viewer: userId,
-			})
-		})
-	})
 }

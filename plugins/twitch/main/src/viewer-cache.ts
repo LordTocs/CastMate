@@ -5,6 +5,7 @@ import {
 	Service,
 	defineRendererCallable,
 	onLoad,
+	onUnload,
 	reactiveRef,
 	registerSchemaExpose,
 	registerSchemaTemplate,
@@ -163,13 +164,12 @@ export const ViewerCache = Service(
 		private unknownUserInfo = new Set<string>()
 
 		private chatters = new Map<string, CachedTwitchViewer>()
-		private chatterQueryTimer: NodeJS.Timer | undefined = undefined
+		private chatterQueryTimer: NodeJS.Timeout | undefined = undefined
 
 		//Twitch doesn't allow bulk follow checking?
 		//private unknownFollows = new Set<string>()
 
-		private viewersSeenThisStream = new Set<string>()
-		onFirstSeenThisStream = new EventList<(userId: string) => any>()
+		onViewerSeen = new EventList<(viewer: TwitchViewerUnresolved) => any>()
 
 		constructor() {}
 
@@ -234,12 +234,8 @@ export const ViewerCache = Service(
 			if (!this.chatters.has(viewer.id)) {
 				this.chatters.set(viewer.id, viewer)
 			}
-			if (!this.viewersSeenThisStream.has(viewer.id)) {
-				this.viewersSeenThisStream.add(viewer.id)
-				nextTick(() => {
-					this.onFirstSeenThisStream.run(viewer.id)
-				})
-			}
+
+			this.onViewerSeen.run(viewer.id)
 		}
 
 		private getOrCreate(userId: string) {
@@ -700,13 +696,15 @@ export const ViewerCache = Service(
 			const result = fuzzySearch.map((r) => r.obj)
 			return result
 		}
-
-		resetPerStreamData() {
-			this.viewersSeenThisStream = new Set()
-		}
-
-		async hasUserBeenSeenThisStream(userId: string) {
-			return this.viewersSeenThisStream.has(userId)
-		}
 	}
 )
+
+export function onViewerSeen(func: (viewer: TwitchViewerUnresolved) => any) {
+	onLoad(() => {
+		ViewerCache.getInstance().onViewerSeen.register(func)
+	})
+
+	onUnload(() => {
+		ViewerCache.getInstance().onViewerSeen.unregister(func)
+	})
+}
