@@ -25,6 +25,8 @@ import spellcastPlugin from "castmate-plugin-spellcast-main"
 
 import overlayPlugin from "castmate-plugin-overlays-main"
 
+import remotePlugin from "castmate-plugin-remote-main"
+
 import castmatePlugin from "./builtin-plugin"
 import { WebService } from "castmate-core"
 
@@ -45,6 +47,7 @@ export async function loadPlugins() {
 		pluginManager.registerPlugin(inputPlugin),
 		pluginManager.registerPlugin(voicemodPlugin),
 		pluginManager.registerPlugin(minecraftPlugin),
+		pluginManager.registerPlugin(remotePlugin),
 	]
 	await Promise.allSettled(promises)
 

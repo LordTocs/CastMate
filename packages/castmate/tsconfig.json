@@ -33,6 +33,7 @@
 			"castmate-plugin-obs-renderer": ["../../plugins/obs/renderer/src/main.ts"],
 			"castmate-plugin-os-renderer": ["../../plugins/os/renderer/src/main.ts"],
 			"castmate-plugin-sound-renderer": ["../../plugins/sound/renderer/src/main.ts"],
+			"castmate-plugin-remote-renderer": ["../../plugins/remote/renderer/src/main.ts"],
 			"castmate-plugin-time-renderer": ["../../plugins/time/renderer/src/main.ts"],
 			"castmate-plugin-twitch-renderer": ["../../plugins/twitch/renderer/src/main.ts"],
 			"castmate-plugin-voicemod-renderer": ["../../plugins/voicemod/renderer/src/main.ts"],

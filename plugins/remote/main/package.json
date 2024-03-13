@@ -1,0 +1,20 @@
+{
+	"name": "castmate-plugin-remote-main",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "*"
+	},
+	"dependencies": {
+		"castmate-core": "workspace:^",
+		"castmate-plugin-remote-shared": "workspace:^",
+		"castmate-schema": "workspace:^"
+	}
+}

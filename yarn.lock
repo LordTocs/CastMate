@@ -3355,6 +3355,54 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-remote-main@workspace:^, castmate-plugin-remote-main@workspace:plugins/remote/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-remote-main@workspace:plugins/remote/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-remote-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-remote-renderer@workspace:^, castmate-plugin-remote-renderer@workspace:plugins/remote/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-remote-renderer@workspace:plugins/remote/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-plugin-remote-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:*"
+    nanoid: "npm:*"
+    pinia: "npm:*"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:*"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-remote-shared@workspace:^, castmate-plugin-remote-shared@workspace:plugins/remote/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-remote-shared@workspace:plugins/remote/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-remote@workspace:plugins/remote":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-remote@workspace:plugins/remote"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-sound-main@workspace:^, castmate-plugin-sound-main@workspace:plugins/sound/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-sound-main@workspace:plugins/sound/main"
@@ -3870,6 +3918,8 @@ __metadata:
     castmate-plugin-overlays-renderer: "workspace:^"
     castmate-plugin-philips-hue-main: "workspace:^"
     castmate-plugin-philips-hue-renderer: "workspace:^"
+    castmate-plugin-remote-main: "workspace:^"
+    castmate-plugin-remote-renderer: "workspace:^"
     castmate-plugin-sound-main: "workspace:^"
     castmate-plugin-sound-renderer: "workspace:^"
     castmate-plugin-spellcast-main: "workspace:^"
@@ -4662,7 +4712,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:29.1.1, electron@npm:^29.1.1":
+"electron@npm:*, electron@npm:29.1.1, electron@npm:^29.1.1":
   version: 29.1.1
   resolution: "electron@npm:29.1.1"
   dependencies:
