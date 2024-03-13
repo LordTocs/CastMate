@@ -31,7 +31,7 @@
 					{{ previewString }}
 				</div>
 			</p-tab-panel>
-			<p-tab-panel header="Match">
+			<p-tab-panel header="Anywhere">
 				<label-floater no-float label="Match Anywhere" input-id="match" v-slot="labelProps">
 					<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
 				</label-floater>
