@@ -12,7 +12,13 @@
 				</div>
 			</div>
 		</div>
-		<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
+		<div class="flex flex-row flex-grow-1">
+			<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
+			<div class="overlay-properties">
+				<div></div>
+				<div></div>
+			</div>
+		</div>
 	</div>
 </template>
 

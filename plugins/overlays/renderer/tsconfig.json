@@ -21,7 +21,10 @@
 		// "noFallthroughCasesInSwitch": true
 		"paths": {
 			"castmate-ui-core": ["../../../libs/castmate-ui-core/src/main.ts"],
-			"castmate-plugin-obs-renderer": ["../../obs/renderer/src/main.ts"]
+			"castmate-plugin-obs-renderer": ["../../obs/renderer/src/main.ts"],
+			"castmate-overlay-widget-loader": [
+				"../../../libs/castmate-overlay-widget-loader/src/overlay-widget-loader.ts"
+			]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

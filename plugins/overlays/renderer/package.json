@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "*",
+		"castmate-overlay-widget-loader": "workspace:^",
 		"castmate-plugin-obs-renderer": "workspace:^",
 		"castmate-plugin-overlays-shared": "workspace:^",
 		"castmate-schema": "workspace:^",

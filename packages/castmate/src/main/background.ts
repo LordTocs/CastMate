@@ -37,9 +37,12 @@ function createMainWindow() {
 app.whenReady().then(async () => {
 	if (isDevelopment && !process.env.IS_TEST) {
 		// Install Vue Devtools
+		console.log("Trying to install dev tools")
 		try {
 			await installExtension(VUEJS_DEVTOOLS)
-		} catch {}
+		} catch (err) {
+			console.error("Failed to install vue dev tools", err)
+		}
 	}
 
 	await createMainWindow()

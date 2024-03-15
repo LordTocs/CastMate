@@ -3274,6 +3274,7 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "npm:*"
     "@vueuse/core": "npm:*"
+    castmate-overlay-widget-loader: "workspace:^"
     castmate-plugin-obs-renderer: "workspace:^"
     castmate-plugin-overlays-shared: "workspace:^"
     castmate-schema: "workspace:^"

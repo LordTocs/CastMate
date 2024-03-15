@@ -1,5 +1,5 @@
 <template>
-	<p class="overlay-label">{{ message }}</p>
+	<p class="overlay-label">{{ config.message }}</p>
 </template>
 
 <script setup lang="ts">
@@ -55,7 +55,7 @@ defineOptions({
 
 //Vue compiler is too stupid to compile this?
 //const props = defineProps<ResolvedSchemaType<typeof widgetOptions.config>>()
-const props = defineProps<{ message: string }>()
+const props = defineProps<{ config: { message: string } }>()
 </script>
 
 <style scoped>

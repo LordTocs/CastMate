@@ -13,12 +13,15 @@ import {
 import _cloneDeep from "lodash/cloneDeep"
 import OverlayEditorPageVue from "./components/OverlayEditorPage.vue"
 import { OverlayEditorView } from "./components/overlay-edit-types"
+import { useOverlayRemoteConfigStore } from "./config/overlay-config"
 
 export function initPlugin(app: App<Element>) {
 	//Init Renderer Module
 
 	const resourceStore = useResourceStore()
 	const documentStore = useDocumentStore()
+
+	const configStore = useOverlayRemoteConfigStore()
 
 	documentStore.registerDocumentComponent("overlay", OverlayEditorPageVue)
 	documentStore.registerSaveFunction("overlay", async (doc) => {
@@ -51,4 +54,6 @@ export function initPlugin(app: App<Element>) {
 	})
 
 	projectStore.registerProjectGroupItem(overlayGroup)
+
+	configStore.initialize()
 }

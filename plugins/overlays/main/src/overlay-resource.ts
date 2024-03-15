@@ -8,12 +8,14 @@ import {
 	defineIPCFunc,
 	definePluginResource,
 	ipcParseSchema,
+	onWebsocketMessage,
 	remoteTemplateSchema,
 	usePluginLogger,
 } from "castmate-core"
 import { IPCOverlayWidgetDescriptor, OverlayConfig, OverlayWidgetOptions } from "castmate-plugin-overlays-shared"
 import { Schema, SchemaObj, filterPromiseAll } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
+import { setupConfigEval } from "./config-evaluation"
 
 const logger = usePluginLogger("overlays")
 
@@ -74,54 +76,10 @@ export const OverlayWidgetManager = Service(
 	}
 )
 
-interface OverlayConfigEvaluator {
-	config: OverlayConfig
-	effect?: ReactiveEffect
-	remoteConfig: OverlayConfig
-	sender: (config: OverlayConfig) => any
-}
-
-export async function createOverlayEvaluator(initialConfig: OverlayConfig, sender: (config: OverlayConfig) => any) {
-	const evaluator: OverlayConfigEvaluator = {
-		config: initialConfig,
-		remoteConfig: initialConfig,
-		sender,
-	}
-
-	evaluator.effect = await autoRerun(async () => {
-		evaluator.remoteConfig = {
-			name: evaluator.config.name,
-			size: evaluator.config.size,
-			widgets: await filterPromiseAll(
-				evaluator.config.widgets.map(async (w) => {
-					const widget = OverlayWidgetManager.getInstance().getWidget(w.plugin, w.widget)
-					if (!widget) throw new Error(`Missing Widget ${w.plugin}.${w.widget}`)
-					return {
-						id: w.id,
-						plugin: w.plugin,
-						widget: w.widget,
-						name: w.name,
-						size: w.size,
-						position: w.position,
-						config: await remoteTemplateSchema(
-							w.config,
-							widget.options.config,
-							PluginManager.getInstance().state
-						),
-					}
-				})
-			),
-		}
-	})
-
-	return evaluator
-}
-
-export function disposeOverlayEvaluator(evaluator: OverlayConfigEvaluator) {
-	evaluator.effect?.dispose()
-}
-
 export function setupOverlayResources() {
 	OverlayWidgetManager.initialize()
+	setupConfigEval()
 	definePluginResource(Overlay)
+
+	onWebsocketMessage((socket, message) => {})
 }

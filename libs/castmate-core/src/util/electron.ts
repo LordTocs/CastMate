@@ -18,6 +18,24 @@ export function defineIPCFunc<T extends (...args: any[]) => any>(category: strin
 	return func
 }
 
+export function defineIPCFuncRaw<T extends (event: IpcMainInvokeEvent, ...args: any[]) => any>(
+	category: string,
+	name: string,
+	func: T
+) {
+	ipcMain.handle(`${category}_${name}`, async (event: IpcMainInvokeEvent, ...args: any[]) => {
+		try {
+			return _cloneDeep(await func(event, ...args))
+		} catch (err) {
+			globalLogger.error("Error Responding to", `${category}_${name}`)
+			globalLogger.error("Args: ", ...args)
+			globalLogger.error(err)
+			throw err
+		}
+	})
+	return func
+}
+
 export function defineCallableIPC<T extends (...args: any[]) => void>(category: string, name: string) {
 	const singleFunc = (sender: WebContents, ...args: Parameters<T>) => {
 		return sender.send(`${category}_${name}`, ..._cloneDeep(args))
