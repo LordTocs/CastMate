@@ -2709,6 +2709,7 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "npm:*"
     "@vueuse/core": "npm:*"
+    castmate-plugin-overlays-shared: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
     electron: "npm:^29.1.1"
@@ -3895,6 +3896,7 @@ __metadata:
     "@vitejs/plugin-vue": "npm:*"
     "@vueuse/core": "npm:*"
     castmate-core: "workspace:^"
+    castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
     castmate-plugin-discord-main: "workspace:^"
     castmate-plugin-discord-renderer: "workspace:^"
@@ -3916,6 +3918,7 @@ __metadata:
     castmate-plugin-os-main: "workspace:^"
     castmate-plugin-os-renderer: "workspace:^"
     castmate-plugin-overlays-renderer: "workspace:^"
+    castmate-plugin-overlays-shared: "workspace:^"
     castmate-plugin-philips-hue-main: "workspace:^"
     castmate-plugin-philips-hue-renderer: "workspace:^"
     castmate-plugin-remote-main: "workspace:^"

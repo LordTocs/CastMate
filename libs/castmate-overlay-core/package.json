@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "*",
+		"castmate-plugin-overlays-shared": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"chromatism2": "*",
 		"electron": "^29.1.1",

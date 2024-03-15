@@ -64,6 +64,8 @@ import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
 import Tooltip from "primevue/tooltip"
+import { IPCOverlayWidgetDescriptor } from "castmate-plugin-overlays-shared"
+import { sendOverlaysToMain } from "./util/overlay-util"
 
 /*
 const router = createRouter({
@@ -152,6 +154,8 @@ async function init() {
 	await mediaStore.initialize()
 
 	loadOverlayWidgets()
+
+	sendOverlaysToMain()
 
 	await uiLoadComplete()
 }

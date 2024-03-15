@@ -14,3 +14,9 @@ export function createDelayedResolver<T = void>() {
 
 	return store as DelayedResolver<T>
 }
+
+export async function filterPromiseAll<T>(promises: Promise<T>[]): Promise<T[]> {
+	return (await Promise.allSettled(promises))
+		.filter((p): p is PromiseFulfilledResult<Awaited<T>> => p.status == "fulfilled")
+		.map((p) => p.value)
+}
