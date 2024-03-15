@@ -12,13 +12,36 @@
 			<div class="overlay-boundary">
 				<obs-preview class="preview-image" :obs-id="view.obsId" v-if="view.showPreview" />
 			</div>
-			<overlay-widget-edit v-for="(widget, i) in model.widgets" v-model="model.widgets[i]" :key="widget.id" />
+			<overlay-widget-edit
+				v-for="(widget, i) in model.widgets"
+				v-model="model.widgets[i]"
+				:key="widget.id"
+				ref="widgets"
+			/>
 		</pan-area>
+		<div
+			ref="selectionRect"
+			class="selection-rect"
+			v-if="selecting"
+			:style="{
+				left: `${selectFrom?.x ?? 0}px`,
+				top: `${selectFrom?.y ?? 0}px`,
+				width: `${(selectTo?.x ?? 0) - (selectFrom?.x ?? 0)}px`,
+				height: `${(selectTo?.y ?? 0) - (selectFrom?.y ?? 0)}px`,
+			}"
+		></div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { PanArea } from "castmate-ui-core"
+import {
+	PanArea,
+	getElementRelativeRect,
+	rectangleOverlaps,
+	useDocumentPath,
+	useDocumentSelection,
+	useSelectionRect,
+} from "castmate-ui-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
 import { ObsPreview } from "castmate-plugin-obs-renderer"
@@ -38,11 +61,47 @@ const editArea = ref<HTMLElement>()
 
 const editSize = useElementSize(editArea)
 
+const widgets = ref<InstanceType<typeof OverlayWidgetEdit>[]>([])
+
 const zoomScale = computed(() => {
 	const horizontalScale = editSize.width.value / model.value.size.width
 	const verticalScale = editSize.height.value / model.value.size.height
 	return Math.min(horizontalScale, verticalScale)
 })
+
+const path = useDocumentPath()
+const selection = useDocumentSelection(path)
+const {
+	selecting,
+	from: selectFrom,
+	to: selectTo,
+} = useSelectionRect(
+	editArea,
+	(from, to) => {
+		const areaElem = editArea.value
+		if (!areaElem) return []
+
+		const newSelect: string[] = []
+
+		for (let i = 0; i < widgets.value.length; ++i) {
+			const widget = widgets.value[i]
+			if (!widget.frame) {
+				console.error("NO FRAME ON WIDGET", i)
+				continue
+			}
+
+			const localRect = getElementRelativeRect(widget.frame, areaElem)
+			const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
+			if (rectangleOverlaps(selrect, localRect)) {
+				const id = props.modelValue.widgets[i].id
+				newSelect.push(id)
+			}
+		}
+
+		return newSelect
+	},
+	path
+)
 
 provide("overlay-zoom-scale", zoomScale)
 </script>
@@ -88,5 +147,15 @@ provide("overlay-zoom-scale", zoomScale)
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
+}
+
+.selection-rect {
+	pointer-events: none;
+	user-select: none;
+	position: absolute;
+	border-width: 2px;
+	border-color: white;
+	mix-blend-mode: difference;
+	border-style: dashed;
 }
 </style>

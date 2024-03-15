@@ -1,9 +1,11 @@
 <template>
 	<pan-area-resizable
+		ref="resizable"
 		v-model:position="model.position"
 		v-model:size="model.size"
 		:scale-size="zoomScale"
-		:show-drag="true"
+		:show-drag="isSelected"
+		:can-scale="isOnlySelection"
 	>
 		<component v-if="widgetComponent" :is="widgetComponent" :config="resolvedConfig" />
 	</pan-area-resizable>
@@ -11,14 +13,28 @@
 
 <script setup lang="ts">
 import { OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
-import { PanArea, PanAreaResizable } from "castmate-ui-core"
-import { ComputedRef, computed, inject, markRaw, onMounted, useModel, watch } from "vue"
+import { PanArea, PanAreaResizable, useDocumentPath, useDocumentSelection, useIsSelected } from "castmate-ui-core"
+import { ComputedRef, computed, inject, markRaw, onMounted, ref, useModel, watch } from "vue"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { useRemoteOverlayConfig } from "../config/overlay-config"
+
+const documentPath = useDocumentPath()
+const isSelected = useIsSelected(documentPath, () => props.modelValue.id)
+const selection = useDocumentSelection(documentPath)
+
+const isOnlySelection = computed(() => {
+	return isSelected.value && selection.value.length == 1
+})
 
 const props = defineProps<{
 	modelValue: OverlayWidgetConfig
 }>()
+
+const resizable = ref<InstanceType<typeof PanAreaResizable>>()
+
+defineExpose({
+	frame: computed(() => resizable.value?.frame),
+})
 
 const model = useModel(props, "modelValue")
 

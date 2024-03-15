@@ -10,7 +10,7 @@
 		class="drag-div"
 		@mousedown="onWidgetMouseDown"
 	>
-		<template v-if="showDrag">
+		<template v-if="showDrag && canScale">
 			<div
 				v-for="handle in dragHandles"
 				:key="handle.id"
@@ -33,12 +33,14 @@ const props = withDefaults(
 		position: { x: number; y: number }
 		color?: string
 		showDrag?: boolean
+		canScale?: boolean
 		scaleSize: number
 		aspectRatio?: number
 	}>(),
 	{
 		color: "#FF0000",
 		showDrag: false,
+		canScale: true,
 	}
 )
 
@@ -49,6 +51,10 @@ const frame = ref<HTMLElement>()
 
 const panState = usePanState()
 const panQuery = usePanQuery()
+
+defineExpose({
+	frame,
+})
 
 interface DragHandle {
 	id: string
@@ -86,6 +92,7 @@ const grabbedHandle = ref<string>()
 
 function onWidgetMouseDown(ev: MouseEvent) {
 	if (ev.button != 0) return
+	if (!props.showDrag) return
 
 	const panRect = panQuery.getPanClientRect()
 
@@ -105,6 +112,7 @@ function onWidgetMouseDown(ev: MouseEvent) {
 function onHandleMouseDown(ev: MouseEvent, handle: DragHandle) {
 	if (ev.button != 0) return
 	if (!frame.value) return
+	if (!props.showDrag) return
 
 	const panRect = panQuery.getPanClientRect()
 

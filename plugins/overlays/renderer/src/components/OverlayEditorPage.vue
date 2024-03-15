@@ -1,11 +1,13 @@
 <template>
 	<div class="overlay-editor">
 		<div class="overlay-editor-header">
-			<div class="pt-4">
-				<data-input
-					:schema="{ type: ResourceProxyFactory, resourceType: 'OBSConnection', name: `OBS Connection` }"
-					v-model="view.obsId"
-				/>
+			<div class="pt-4 flex flex-row w-full">
+				<div class="flex-grow-1">
+					<data-input
+						:schema="{ type: ResourceProxyFactory, resourceType: 'OBSConnection', name: `OBS Connection` }"
+						v-model="view.obsId"
+					/>
+				</div>
 				<div class="p-inputgroup var-edit" v-bind="$attrs">
 					<p-check-box binary input-id="showPreview" v-model="view.showPreview" />
 					<label for="showPreview" class="ml-2"> Preview </label>
@@ -13,7 +15,9 @@
 			</div>
 		</div>
 		<div class="flex flex-row flex-grow-1">
-			<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
+			<document-path local-path="widgets">
+				<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
+			</document-path>
 			<div class="overlay-properties">
 				<div></div>
 				<div></div>
@@ -25,7 +29,7 @@
 <script setup lang="ts">
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
-import { DataInput, ResourceProxyFactory, usePluginStore, useResourceStore } from "castmate-ui-core"
+import { DataInput, ResourceProxyFactory, usePluginStore, useResourceStore, DocumentPath } from "castmate-ui-core"
 import { onMounted, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import PCheckBox from "primevue/checkbox"
