@@ -16,6 +16,9 @@ import {
 	Command,
 	FilePath,
 	Timer,
+	getTypeByConstructor,
+	Enumable,
+	isArray,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -194,6 +197,90 @@ export function ipcParseDynamicSchema(ipcSchema: IPCSchema | string): Schema | (
 		return ipcParseSchema(ipcSchema)
 	}
 }
+///////////////////////IPC Schema Conversion///////////////////////////////
+export function ipcConvertSchema<T extends Schema>(schema: T, path: string): IPCSchema {
+	//TODO: Connect reactive defaults
+
+	if (schema.type === Object && "properties" in schema) {
+		const properties: Record<string, any> = {}
+
+		for (let key in schema.properties) {
+			properties[key] = ipcConvertSchema(schema.properties[key], `${path}_${key}`)
+		}
+
+		return { ...schema, ...convertIPCDefault(schema, path), properties, type: "Object" }
+	} else if (schema.type === Array && "items" in schema) {
+		return {
+			...schema,
+			...convertIPCDefault(schema, path),
+			type: "Array",
+			items: ipcConvertSchema(schema.items, `${path}_items`),
+		}
+	} else if (schema.type == ResourceProxyFactory && "resourceType" in schema) {
+		return {
+			...schema,
+			type: "Resource",
+			resourceType: schema.resourceType,
+			...convertIPCDefault(schema, path),
+		}
+	} else {
+		const typeName = getTypeByConstructor(schema.type)?.name
+		if (!typeName) {
+			console.error("Unconvertable Schema Type: ", schema)
+			throw new Error("Unconvertable Schema Type")
+		}
+		return {
+			...schema,
+			...convertIPCDefault(schema, path),
+			...convertIPCEnum(schema as Enumable<any>, path),
+			...convertIPCDynamic(schema as PossiblyDynamic, path),
+			type: typeName,
+		}
+	}
+}
+
+function convertIPCEnum(schema: Enumable<any>, path: string) {
+	if (schema.enum) {
+		if (isArray(schema.enum)) {
+			return { enum: schema.enum }
+		} else {
+			return { enum: { ipc: `${path}_enum` } }
+		}
+	} else {
+		return {}
+	}
+}
+
+function convertIPCDefault(schema: Schema, path: string) {
+	if (schema.default) {
+		if (typeof schema.default == "function") {
+			return { default: { ipc: `${path}_default` } }
+		} else {
+			//TODO: Serialize?????q
+			return { default: schema.default }
+		}
+	}
+}
+
+export interface PossiblyDynamic {
+	dynamicType?(context: any): Promise<Schema>
+}
+
+function convertIPCDynamic(schema: PossiblyDynamic, path: string) {
+	if (schema.dynamicType) {
+		return { dynamicType: { ipc: `${path}_dynamicType` } }
+	}
+}
+
+export function ipcConvertDynamicSchema<T extends Schema>(schema: T | ((...args: any[]) => Promise<T>), path: string) {
+	if (typeof schema == "function") {
+		return `${path}_dynamic`
+	} else {
+		return ipcConvertSchema(schema, path)
+	}
+}
+
+/////////////////////////////////////////////////
 
 export const useDataInputStore = defineStore("data-components", () => {
 	const componentMap = ref<Map<DataConstructorOrFactory, Component>>(new Map())

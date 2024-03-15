@@ -3,17 +3,22 @@ import {
 	Enumable,
 	ExposedSchemaType,
 	ExposedTypeByConstructor,
+	IPCDefaultable,
+	IPCDynamicTypable,
+	IPCEnumable,
 	IPCSchema,
 	ResolvedSchemaType,
 	Schema,
 	SchemaType,
 	ValueCompareOperator,
 	getTypeByConstructor,
+	getTypeByName,
 } from "castmate-schema"
 import { ResourceBase, isResourceConstructor } from "../resources/resource"
 import { isArray, isFunction, isObject, isString } from "lodash"
 import { ipcMain } from "electron"
 import { globalLogger } from "../logging/logging"
+import { ResourceRegistry } from "../resources/resource-registry"
 
 function convertIPCEnum(schema: Enumable<any>, path: string) {
 	if (schema.enum) {
@@ -351,4 +356,125 @@ export function registerSchemaCompare<T extends DataConstructorOrFactory>(
 	if (!schemaType) throw new Error(`Missing Schema Type`)
 
 	schemaType.compare = func
+}
+
+//////////// Conversion from IPC back to Native ////////////
+
+export function ipcParseSchemaEnum<T>(ipcSchema: IPCEnumable<T>) {
+	if (!ipcSchema.enum) return {}
+	if (Array.isArray(ipcSchema.enum)) {
+		return { enum: ipcSchema.enum }
+	} else if ("ipc" in ipcSchema.enum) {
+		const ipcPath = ipcSchema.enum.ipc
+		return {
+			enum: async (context: any) => {
+				try {
+					//TODO: HELP?
+					//return await ipcInvoke(ipcPath, context)
+				} catch (err) {
+					console.error("Error Invoking Enum", ipcPath)
+					console.error(err)
+					return []
+				}
+			},
+		}
+	}
+}
+
+export function ipcParseSchemaDynamic<T>(ipcSchema: IPCDynamicTypable) {
+	if (!ipcSchema.dynamicType) return {}
+	if ("ipc" in ipcSchema.dynamicType) {
+		const ipcPath = ipcSchema.dynamicType.ipc
+		return {
+			dynamicType: async (context: any) => {
+				try {
+					//TODO: HELP
+					//const result = await ipcInvoke(ipcPath, context) // (await ipcRenderer.invoke(ipcPath, rawContext)) as IPCSchema
+					return //ipcParseSchema(result)
+				} catch (err) {
+					console.error("Error Invoking Dynamic Type", ipcPath, context)
+					console.error(err)
+					return []
+				}
+			},
+		}
+	}
+}
+
+export function ipcParseSchemaDefault<T>(ipcSchema: IPCDefaultable<T>) {
+	if (ipcSchema.default == undefined) return { default: undefined }
+	if (typeof ipcSchema.default === "object" && "ipc" in ipcSchema.default) {
+		const ipcPath = ipcSchema.default.ipc
+		return {
+			default: async (): Promise<T> => {
+				try {
+					//TODO: HELP
+					//return await ipcInvoke(ipcPath)
+				} catch (err) {
+					console.error("Error Invoking Default", ipcPath)
+					console.error(err)
+				}
+				//I'm so tired.
+				return undefined as unknown as T
+			},
+		}
+	} else {
+		return {
+			default: ipcSchema.default as T,
+		}
+	}
+}
+
+export function ipcParseSchema(ipcSchema: IPCSchema): Schema {
+	if (ipcSchema.type === "Object" && "properties" in ipcSchema) {
+		const properties: Record<string, Schema> = {}
+
+		for (let prop in ipcSchema.properties) {
+			properties[prop] = ipcParseSchema(ipcSchema.properties[prop])
+		}
+
+		return { ...ipcSchema, ...ipcParseSchemaDefault(ipcSchema), type: Object, properties }
+	} else if (ipcSchema.type === "Array" && "items" in ipcSchema) {
+		return {
+			...ipcSchema,
+			type: Array,
+			items: ipcParseSchema(ipcSchema.items),
+			...ipcParseSchemaDefault(ipcSchema),
+		}
+	} else if (ipcSchema.type === "Resource" && "resourceType" in ipcSchema) {
+		const resourceType = ResourceRegistry.getInstance().getResourceType(ipcSchema.type)
+		return {
+			...ipcSchema,
+			type: resourceType.constructor,
+			...ipcParseSchemaDefault(ipcSchema),
+		}
+	} else {
+		const type = getTypeByName(ipcSchema.type)?.constructor
+		if (!type) {
+			throw new Error(`Unknown IPC Type ${ipcSchema.type}`)
+		}
+
+		//@ts-ignore
+		return {
+			...ipcSchema,
+			...ipcParseSchemaDefault(ipcSchema),
+			...ipcParseSchemaEnum(ipcSchema as IPCEnumable<any>),
+			...ipcParseSchemaDynamic(ipcSchema as IPCDynamicTypable),
+			type,
+		}
+	}
+}
+
+export function ipcParseDynamicSchema(ipcSchema: IPCSchema | string): Schema | ((...args: any[]) => Promise<Schema>) {
+	if (typeof ipcSchema == "string") {
+		//@ts-expect-error
+		return async (...args: any[]) => {
+			//console.log("Invoking", ipcSchema)
+			//const schema = await ipcInvoke(ipcSchema, ...args)
+			//console.log("Result", schema)
+			//return ipcParseSchema(schema)
+		}
+	} else {
+		return ipcParseSchema(ipcSchema)
+	}
 }
