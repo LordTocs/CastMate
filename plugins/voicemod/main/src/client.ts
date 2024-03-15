@@ -106,7 +106,7 @@ export class VoiceModClient {
 
 			this.socket.on("close", () => {
 				this.connected = false
-				logger.log("Voicemod Connection Closed")
+				//logger.log("Voicemod Connection Closed")
 
 				if (this.pinger) {
 					clearInterval(this.pinger)
