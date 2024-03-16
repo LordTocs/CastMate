@@ -5,28 +5,6 @@
 <script setup lang="ts">
 import { declareWidgetOptions } from "castmate-overlay-core"
 
-const widgetOptions = declareWidgetOptions({
-	id: "label",
-	name: "Label",
-	description: "Puts some text in the overlay",
-	icon: "mdi mdi-cursor-text",
-	defaultSize: {
-		width: 300,
-		height: 200,
-	},
-	config: {
-		type: Object,
-		properties: {
-			message: {
-				type: String,
-				required: true,
-				default: "",
-				template: true,
-			},
-		},
-	},
-})
-
 defineOptions({
 	widget: declareWidgetOptions({
 		id: "label",
