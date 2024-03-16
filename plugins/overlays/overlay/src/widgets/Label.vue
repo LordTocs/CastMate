@@ -4,8 +4,6 @@
 
 <script setup lang="ts">
 import { declareWidgetOptions } from "castmate-overlay-core"
-import { ResolvedSchemaType, declareSchema } from "castmate-schema"
-import { defineAsyncComponent, getCurrentInstance } from "vue"
 
 const widgetOptions = declareWidgetOptions({
 	id: "label",
@@ -43,6 +41,7 @@ defineOptions({
 			type: Object,
 			properties: {
 				message: {
+					name: "Text",
 					type: String,
 					required: true,
 					default: "",
