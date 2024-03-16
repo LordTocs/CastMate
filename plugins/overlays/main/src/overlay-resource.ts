@@ -65,7 +65,6 @@ export const OverlayWidgetManager = Service(
 					this.widgets.set(`${widget.plugin}.${widget.options.id}`, parsedWidget)
 
 					logger.log("Received Overlay Widget", widget.plugin, widget.options.id)
-					logger.log(parsedWidget.options.config)
 				}
 			})
 		}

@@ -64,7 +64,7 @@ export const useOverlayRemoteConfigStore = defineStore("overlay-remote-config", 
 		const effect = watch(
 			() => getEditUpdate(toValue(config)),
 			(update) => {
-				console.log("Updating Overlay Edit", id, update.plugin, update.widget, update.config)
+				//console.log("Updating Overlay Edit", id, update.plugin, update.widget, update.config)
 				updateEdit(id, update.plugin, update.widget, update.config)
 			}
 		)
@@ -82,7 +82,6 @@ export const useOverlayRemoteConfigStore = defineStore("overlay-remote-config", 
 
 	function stop(id: string) {
 		const remote = remotes.get(id)
-
 		if (!remote) return
 
 		stopEdit(id)

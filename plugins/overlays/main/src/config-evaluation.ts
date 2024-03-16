@@ -120,7 +120,7 @@ export const OverlayEditorConfigBridge = Service(
 						widget,
 						initialConfig,
 						async (config) => {
-							logger.log("Sending Updated Config", id, config)
+							//logger.log("Sending Updated Config", id, config)
 							//We don't need to serialize any schemas, since they have been templated for remote!
 							event.sender.send("overlays_configUpdated", id, config)
 						}
@@ -131,6 +131,7 @@ export const OverlayEditorConfigBridge = Service(
 			)
 
 			defineIPCFunc("overlays", "stopEdit", async (id: string) => {
+				logger.log("Stopping Overlay Edit", id)
 				const evaluator = this.evaluators.get(id)
 				evaluator?.effect?.dispose()
 				this.evaluators.delete(id)
@@ -143,7 +144,7 @@ export const OverlayEditorConfigBridge = Service(
 					const evaluator = this.evaluators.get(id)
 					if (!evaluator) throw new Error("Evaluator doesn't exist")
 
-					logger.log("Receiving Overlay Edit", id, plugin, widget, newConfig)
+					//logger.log("Receiving Overlay Edit", id, plugin, widget, newConfig)
 
 					evaluator.plugin = plugin
 					evaluator.widget = widget

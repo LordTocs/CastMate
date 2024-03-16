@@ -24,7 +24,8 @@
 			"castmate-plugin-obs-renderer": ["../../obs/renderer/src/main.ts"],
 			"castmate-overlay-widget-loader": [
 				"../../../libs/castmate-overlay-widget-loader/src/overlay-widget-loader.ts"
-			]
+			],
+			"castmate-overlay-core": ["../../../libs/castmate-overlay-core/src/overlay-core-main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

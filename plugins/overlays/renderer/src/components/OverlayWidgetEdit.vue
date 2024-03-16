@@ -50,17 +50,6 @@ const widgetStore = useOverlayWidgets()
 const widgetComponent = computed(
 	() => widgetStore.getWidget(props.modelValue.plugin, props.modelValue.widget)?.component
 )
-
-onMounted(() => {
-	console.log("Widget Component", resolvedConfig.value)
-	watch(
-		resolvedConfig,
-		() => {
-			console.log("Widget Component", resolvedConfig.value)
-		},
-		{ immediate: true }
-	)
-})
 </script>
 
 <style scoped></style>

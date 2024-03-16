@@ -18,8 +18,17 @@
 			<document-path local-path="widgets">
 				<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
 			</document-path>
-			<div class="overlay-properties">
-				<div></div>
+			<div class="overlay-properties flex flex-column">
+				<document-path local-path="widgets">
+					<overlay-widget-prop-edit v-model="model" />
+				</document-path>
+				<!-- <flex-scroller>
+					<data-input
+						v-if="selectedWidgetIndex != null && selectedWidgetInfo != null"
+						v-model="model.widgets[selectedWidgetIndex].config"
+						:schema="selectedWidgetInfo.component.widget.config"
+					/>
+				</flex-scroller> -->
 				<div></div>
 			</div>
 		</div>
@@ -29,9 +38,10 @@
 <script setup lang="ts">
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
-import { DataInput, ResourceProxyFactory, usePluginStore, useResourceStore, DocumentPath } from "castmate-ui-core"
-import { onMounted, ref, useModel } from "vue"
-import PButton from "primevue/button"
+import { DataInput, ResourceProxyFactory, usePluginStore, DocumentPath } from "castmate-ui-core"
+import { computed, onMounted, ref, useModel } from "vue"
+import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
+
 import PCheckBox from "primevue/checkbox"
 import OverlayEditArea from "./OverlayEditArea.vue"
 
@@ -67,5 +77,12 @@ const view = useModel(props, "view")
 .overlay-editor {
 	display: flex;
 	flex-direction: column;
+}
+
+.overlay-properties {
+	background-color: var(--surface-b);
+	user-select: none;
+	width: 350px;
+	overflow-y: auto;
 }
 </style>
