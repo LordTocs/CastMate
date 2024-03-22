@@ -1,0 +1,22 @@
+{
+	"name": "castmate-ws-rpc",
+	"version": "0.0.1",
+	"description": "",
+	"main": "src/ws-rpc-main.ts",
+	"devMain": "src/ws-rpc-main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/lodash": "^4.14.192",
+		"ts-toolbelt": "*",
+		"typescript": "*"
+	},
+	"dependencies": {
+		"castmate-schema": "workspace:^",
+		"lodash": "^4.17.21",
+		"ws": "^8.16.0"
+	}
+}

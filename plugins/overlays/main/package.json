@@ -10,11 +10,15 @@
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
+		"@types/http-proxy": "^1.17.14",
 		"typescript": "*"
 	},
 	"dependencies": {
 		"castmate-core": "workspace:^",
 		"castmate-plugin-overlays-shared": "workspace:^",
-		"castmate-schema": "workspace:^"
+		"castmate-schema": "workspace:^",
+		"castmate-ws-rpc": "workspace:^",
+		"express": "^4.19.1",
+		"http-proxy": "^1.18.1"
 	}
 }

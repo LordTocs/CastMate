@@ -1,5 +1,7 @@
-import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
+import { definePlugin } from "castmate-core"
+
 import { setupOverlayResources } from "./overlay-resource"
+import { setupWebsockets } from "./websocket-bridge"
 
 export default definePlugin(
 	{
@@ -10,5 +12,6 @@ export default definePlugin(
 	},
 	() => {
 		setupOverlayResources()
+		setupWebsockets()
 	}
 )

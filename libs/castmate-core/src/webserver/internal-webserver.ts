@@ -7,6 +7,9 @@ import { PluginManager } from "../plugins/plugin-manager"
 import { EventList } from "../util/events"
 import { onLoad, onUnload } from "../plugins/plugin"
 import { initingPlugin } from "../plugins/plugin-init"
+import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
+import { filterPromiseAll } from "castmate-schema"
+import HttpProxy from "http-proxy"
 
 function closeHttpServer(httpServer: http.Server | undefined) {
 	return new Promise<void>((resolve, reject) => {
@@ -24,15 +27,35 @@ function closeHttpServer(httpServer: http.Server | undefined) {
 
 const logger = usePluginLogger("webserver")
 
+interface WebSocketExtras {
+	heartbeat: boolean
+	call<T extends (...args: any[]) => any>(name: string, ...args: Parameters<T>): Promise<ReturnType<T>>
+}
+
+export type ExtendedWebsocket = ws.WebSocket & WebSocketExtras
+
+export type ExtendedServer = ws.Server & {
+	readonly clients: ExtendedWebsocket[]
+}
+
 export const WebService = Service(
 	class {
 		private app: Application
 		private httpServer: http.Server
-		private websocketServer: ws.Server
+		private websocketServer: ExtendedServer
 		private routes: Router
 
-		onConnection = new EventList<(socket: ws.WebSocket) => any>()
-		onMessage = new EventList<(socket: ws.WebSocket, message: any) => any>()
+		private pingInterval: NodeJS.Timeout
+		private rpcs: RPCHandler = new RPCHandler()
+
+		/**
+		 * Proxies to run in websocket upgrades
+		 */
+		private websocketProxies: Record<string, HttpProxy> = {}
+
+		onConnection = new EventList<(socket: ExtendedWebsocket, connectionUrl: URL) => any>()
+		onDisconnected = new EventList<(socket: ExtendedWebsocket) => any>()
+		onMessage = new EventList<(socket: ExtendedWebsocket, message: any) => any>()
 
 		constructor() {
 			this.app = express()
@@ -44,25 +67,64 @@ export const WebService = Service(
 			this.app.use("/plugins/", this.routes)
 
 			this.httpServer = http.createServer(this.app)
-			this.websocketServer = new ws.Server({ noServer: true })
+			this.websocketServer = new ws.Server({ noServer: true }) as ExtendedServer
+
+			this.pingInterval = setInterval(() => {
+				for (const socket of this.websocketServer.clients) {
+					if (socket.heartbeat === false) return socket.terminate()
+
+					socket.heartbeat = false
+					socket.ping()
+				}
+			}, 30000)
 
 			this.websocketServer.on("connection", async (socket, request) => {
 				logger.log("Websocket Connection")
 
-				socket.on("message", (rawData, isBinary) => {
-					if (isBinary || typeof rawData != "string") return
+				if (!request.url) return
+
+				const requestUrl = new URL(request.url, `http://${request.headers.host}`)
+
+				const expandedSocket: ExtendedWebsocket = Object.assign(socket, {
+					heartbeat: true,
+					call: async <T extends (...args: any[]) => any>(
+						name: string,
+						...args: Parameters<T>
+					): Promise<ReturnType<T>> => {
+						return (await WebService.getInstance().rpcs.call(
+							name,
+							async (message) => {
+								await expandedSocket.send(JSON.stringify(message))
+							},
+							...args
+						)) as any
+					},
+				} satisfies WebSocketExtras)
+
+				expandedSocket.on("message", (rawData, isBinary) => {
+					const dataString = rawData.toString()
 
 					let data: any
 					try {
-						data = JSON.parse(rawData)
+						data = JSON.parse(dataString)
 					} catch (err) {
 						return
 					}
 
-					this.onMessage.run(socket, data)
+					this.rpcs.handleMessage(data as RPCMessage, (msg) => expandedSocket.send(JSON.stringify(msg)))
+
+					this.onMessage.run(expandedSocket, data)
 				})
 
-				this.onConnection.run(socket)
+				expandedSocket.on("pong", async () => {
+					expandedSocket.heartbeat = true
+				})
+
+				expandedSocket.on("close", async () => {
+					this.onDisconnected.run(expandedSocket)
+				})
+
+				this.onConnection.run(expandedSocket, requestUrl)
 			})
 
 			this.httpServer.on("error", (err) => {
@@ -85,6 +147,17 @@ export const WebService = Service(
 			}
 		}
 
+		addRootRouter(baseName: string, router: express.Router) {
+			this.app.use(baseName, router)
+		}
+
+		removeRootRouter(router: express.Router) {
+			const idx = this.app.stack.findIndex((layer) => layer == router)
+			if (idx >= 0) {
+				this.app.stack.splice(idx, 1)
+			}
+		}
+
 		async startHttp(port: number) {
 			this.httpServer.listen(port, () => {
 				logger.log("Internal Webserver Started on port", port)
@@ -97,9 +170,15 @@ export const WebService = Service(
 
 				const url = new URL(request.url, `http://${request.headers.host}`)
 
-				//TODO: Proxy url?
+				const proxy = this.websocketProxies[url.pathname]
+				if (proxy) {
+					proxy.ws(request, socket, head)
+					return
+				}
 
-				this.websocketServer.handleUpgrade(request, socket, head, (socket) => {})
+				this.websocketServer.handleUpgrade(request, socket, head, (socket) => {
+					this.websocketServer.emit("connection", socket, request)
+				})
 			})
 		}
 
@@ -120,10 +199,37 @@ export const WebService = Service(
 				client.send(message)
 			}
 		}
+
+		async broadcastWebsocketRPC<T extends (...args: any[]) => any>(
+			name: string,
+			...args: Parameters<T>
+		): Promise<ReturnType<T>[]> {
+			return (await filterPromiseAll(
+				this.websocketServer.clients.map((client) =>
+					this.rpcs.call(name, (data) => client.send(JSON.stringify(data)), ...args)
+				)
+			)) as ReturnType<T>[]
+		}
+
+		registerRPC<T extends (...args: any[]) => any>(name: string, func: T) {
+			this.rpcs.handle(name, func)
+		}
+
+		unregisterRPC(name: string) {
+			this.rpcs.unhandle(name)
+		}
+
+		registerWebsocketProxy(path: string, proxy: HttpProxy) {
+			this.websocketProxies[path] = proxy
+		}
+
+		unregisterWebsocketProxy(path: string) {
+			delete this.websocketProxies[path]
+		}
 	}
 )
 
-export function onWebsocketConnection(func: (socket: ws.WebSocket) => any) {
+export function onWebsocketConnection(func: (socket: ExtendedWebsocket, url: URL) => any) {
 	onLoad(() => {
 		WebService.getInstance().onConnection.register(func)
 	})
@@ -133,13 +239,43 @@ export function onWebsocketConnection(func: (socket: ws.WebSocket) => any) {
 	})
 }
 
-export function onWebsocketMessage(func: (socket: ws.WebSocket, message: any) => any) {
+export function onWebsocketDisconnect(func: (socket: ExtendedWebsocket) => any) {
+	onLoad(() => {
+		WebService.getInstance().onDisconnected.register(func)
+	})
+
+	onUnload(() => {
+		WebService.getInstance().onDisconnected.unregister(func)
+	})
+}
+
+export function onWebsocketMessage(func: (socket: ExtendedWebsocket, message: any) => any) {
 	onLoad(() => {
 		WebService.getInstance().onMessage.register(func)
 	})
 
 	onUnload(() => {
 		WebService.getInstance().onMessage.unregister(func)
+	})
+}
+
+export function onWebsocketRPC<T extends (socket: ExtendedWebsocket, ...args: any[]) => any>(name: string, func: T) {
+	onLoad(() => {
+		WebService.getInstance().registerRPC(name, func)
+	})
+
+	onUnload(() => {
+		WebService.getInstance().unregisterRPC(name)
+	})
+}
+
+export function defineWebsocketProxy(path: string, proxy: HttpProxy) {
+	onLoad(() => {
+		WebService.getInstance().registerWebsocketProxy(path, proxy)
+	})
+
+	onUnload(() => {
+		WebService.getInstance().unregisterWebsocketProxy(path)
 	})
 }
 
@@ -156,6 +292,24 @@ export function useHTTPRouter(baseRoute?: string): Router {
 
 	onUnload(() => {
 		WebService.getInstance().removePluginRouter(router)
+	})
+
+	return router
+}
+
+/**
+ * Don't use this one, use useHTTPRouter(). This is for internal CastMate use
+ * @param baseRoute
+ */
+export function useRootHTTPRouter(baseRoute: string): Router {
+	const router = express.Router()
+
+	onLoad(() => {
+		WebService.getInstance().addRootRouter(`/${baseRoute}/`, router)
+	})
+
+	onUnload(() => {
+		WebService.getInstance().removeRootRouter(router)
 	})
 
 	return router

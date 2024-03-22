@@ -16,6 +16,7 @@ import { IPCOverlayWidgetDescriptor, OverlayConfig, OverlayWidgetOptions } from 
 import { Schema, SchemaObj, filterPromiseAll } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { setupConfigEval } from "./config-evaluation"
+import { OverlayWebsocketService } from "./websocket-bridge"
 
 const logger = usePluginLogger("overlays")
 
@@ -35,6 +36,18 @@ export class Overlay extends FileResource<OverlayConfig> {
 			size: { width: 1920, height: 1080 },
 			widgets: [],
 		}
+	}
+
+	async setConfig(config: OverlayConfig): Promise<boolean> {
+		const result = await super.setConfig(config)
+		OverlayWebsocketService.getInstance().overlayConfigChanged(this.id)
+		return result
+	}
+
+	async applyConfig(config: Partial<OverlayConfig>): Promise<boolean> {
+		const result = await super.applyConfig(config)
+		OverlayWebsocketService.getInstance().overlayConfigChanged(this.id)
+		return result
 	}
 }
 
@@ -79,6 +92,4 @@ export function setupOverlayResources() {
 	OverlayWidgetManager.initialize()
 	setupConfigEval()
 	definePluginResource(Overlay)
-
-	onWebsocketMessage((socket, message) => {})
 }

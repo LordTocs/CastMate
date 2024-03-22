@@ -5,6 +5,7 @@ import {
 	autoRerun,
 	defineIPCFunc,
 	defineIPCFuncRaw,
+	ignoreReactivity,
 	remoteTemplateSchema,
 	serializeSchema,
 	usePluginLogger,
@@ -53,6 +54,8 @@ export async function createOverlayEvaluator(initialConfig: OverlayConfig, sende
 				})
 			),
 		}
+
+		ignoreReactivity(() => sender(evaluator.remoteConfig))
 	})
 
 	return evaluator
@@ -96,7 +99,7 @@ export async function createOverlayWidgetEvaluator(
 			PluginManager.getInstance().state
 		)
 
-		sender(evaluator.remoteConfig)
+		ignoreReactivity(() => sender(evaluator.remoteConfig))
 	})
 
 	return evaluator

@@ -104,10 +104,10 @@ async function serve() {
 	}
 
 	const castmateDev = await servePackageSpawn({ port: 5173, ...config }, "castmate")
-	//const overlayDev = await servePackageSpawn({ port: 5174, ...config }, "castmate-obs-overlay")
+	const overlayDev = await servePackageSpawn({ port: 5174, ...config }, "castmate-obs-overlay")
 
 	castmateDev.on("close", () => {
-		//	overlayDev.kill("SIGTERM")
+		overlayDev.kill("SIGTERM")
 	})
 }
 

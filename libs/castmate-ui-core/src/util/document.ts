@@ -125,8 +125,20 @@ export function useDocument(id: MaybeRefOrGetter<string | undefined>) {
 	})
 }
 
+export function useDocumentId() {
+	return inject<ComputedRef<string>>(
+		"documentId",
+		computed(() => "")
+	)
+}
+
 export function provideDocument(id: MaybeRefOrGetter<string>) {
 	const documentStore = useDocumentStore()
+
+	provide(
+		"documentId",
+		computed(() => toValue(id))
+	)
 
 	provide(
 		"documentSelection",

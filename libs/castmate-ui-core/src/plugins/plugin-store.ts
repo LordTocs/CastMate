@@ -479,6 +479,23 @@ export function useActionColors(selection: MaybeRefOrGetter<ActionSelection | un
 	}
 }
 
+export function useSettingValue<T = any>(settingSel: MaybeRefOrGetter<{ plugin: string; setting: string }>) {
+	const pluginStore = usePluginStore()
+
+	return computed(() => {
+		const sel = toValue(settingSel)
+
+		const plugin = pluginStore.pluginMap.get(sel.plugin)
+		if (!plugin) return undefined
+
+		const setting = plugin.settings[sel.setting]
+		if (!setting) return undefined
+
+		if (setting.type != "value") return undefined
+		return setting.value as T
+	})
+}
+
 export function useState<T = any>(stateSel: MaybeRefOrGetter<{ plugin?: string; state?: string } | null | undefined>) {
 	const pluginStore = usePluginStore()
 
@@ -494,5 +511,23 @@ export function useState<T = any>(stateSel: MaybeRefOrGetter<{ plugin?: string; 
 		if (!state) return undefined
 
 		return state
+	})
+}
+
+export function useFullState() {
+	const pluginStore = usePluginStore()
+
+	return computed(() => {
+		const fullState: Record<string, Record<string, any>> = {}
+
+		for (const plugin of pluginStore.pluginMap.values()) {
+			fullState[plugin.id] = {}
+
+			for (const [key, state] of Object.entries(plugin.state)) {
+				fullState[plugin.id][key] = state.value
+			}
+		}
+
+		return fullState
 	})
 }

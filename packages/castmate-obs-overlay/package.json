@@ -3,6 +3,7 @@
 	"version": "0.0.1",
 	"description": "",
 	"main": "dist/obs-overlay/overlay.js",
+	"devMain": "src/overlay.ts",
 	"scripts": {
 		"dev": "vite --port 5174",
 		"build:test": "vite build --mode production"
@@ -11,13 +12,14 @@
 	"license": "ISC",
 	"dependencies": {
 		"axios": "^1.1.3",
-		"castmate-overlay-components": "^0.0.1",
+		"castmate-overlay-core": "workspace:^",
+		"castmate-overlay-widget-loader": "workspace:^",
 		"events": "^3.3.0",
-		"path-browserify": "^1.0.1",
-		"pinia": "^2.0.30",
+		"pinia": "*",
 		"vue": "^3.2.37"
 	},
 	"devDependencies": {
+		"castmate-vite": "workspace:^",
 		"vite-plugin-externals": "^0.5.1"
 	}
 }
