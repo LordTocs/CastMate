@@ -156,14 +156,14 @@ export async function remoteTemplateSchema<TSchema extends Schema>(
 		await Promise.all(
 			Object.keys(schema.properties).map(async (key) => {
 				//@ts-ignore Type system too stupid again.
-				result[key] = await templateSchema(obj[key], schema.properties[key], context)
+				result[key] = await remoteTemplateSchema(obj[key], schema.properties[key], context)
 			})
 		)
 
 		return result as RemoteSchemaType<TSchema>
 	} else if (schema.type === Array && "items" in schema && isArray(obj)) {
 		return (await Promise.all(
-			obj.map((item: any) => templateSchema(item, schema.items, context))
+			obj.map((item: any) => remoteTemplateSchema(item, schema.items, context))
 		)) as RemoteSchemaType<TSchema>
 	} else if (isResourceConstructor(schema.type)) {
 		//How to template resources??

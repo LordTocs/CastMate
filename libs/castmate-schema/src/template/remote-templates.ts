@@ -41,7 +41,8 @@ export function registerRemoteTemplateResolver<DataCon extends DataConstructorOr
 	con: DataCon,
 	resolver: (
 		remoteValue: RemoteTemplateTypeByConstructor<DataCon>,
-		schema: Schema
+		schema: Schema,
+		context: RemoteTemplateResolutionContext
 	) => ResolvedTypeByConstructor<DataCon>
 ) {
 	const schemaType = getTypeByConstructor(con)
@@ -52,18 +53,21 @@ export function registerRemoteTemplateResolver<DataCon extends DataConstructorOr
 
 export function resolveRemoteTemplateSchema<TSchema extends Schema>(
 	obj: RemoteSchemaType<TSchema>,
-	schema: TSchema
+	schema: TSchema,
+	context: RemoteTemplateResolutionContext
 ): ResolvedSchemaType<TSchema> {
 	if (schema.type === Object && "properties" in schema && isObject(obj)) {
 		const result: Record<string, any> = {}
 
 		for (const key of Object.keys(schema.properties)) {
-			result[key] = resolveRemoteTemplateSchema(obj[key], schema.properties[key])
+			result[key] = resolveRemoteTemplateSchema(obj[key], schema.properties[key], context)
 		}
 
 		return result as RemoteSchemaType<TSchema>
 	} else if (schema.type === Array && "items" in schema && isArray(obj)) {
-		return obj.map((item: any) => resolveRemoteTemplateSchema(item, schema.items)) as RemoteSchemaType<TSchema>
+		return obj.map((item: any) =>
+			resolveRemoteTemplateSchema(item, schema.items, context)
+		) as RemoteSchemaType<TSchema>
 	} else if (/*isResourceConstructor(schema.type)*/ false) {
 		//How to template resources??
 		return obj
@@ -73,7 +77,7 @@ export function resolveRemoteTemplateSchema<TSchema extends Schema>(
 		if ("template" in schema && schema.template && obj != null) {
 			if (!type) throw new Error("Unknown Schema Type!")
 			if (type.remoteTemplateResolve) {
-				return type.remoteTemplateResolve(obj, schema)
+				return type.remoteTemplateResolve(obj, schema, context)
 			} else {
 				return obj
 			}
@@ -83,13 +87,16 @@ export function resolveRemoteTemplateSchema<TSchema extends Schema>(
 	}
 }
 
-registerRemoteTemplateResolver(String, (remoteValue, schema) => {
-	return resolveRemoteTemplate(remoteValue)
+registerRemoteTemplateResolver(String, (remoteValue, schema, context) => {
+	return resolveRemoteTemplate(remoteValue, context)
 })
 
 ///
 let remoteDataDeserializers: Record<string, RemoteDataDeserializer> = {}
-export function resolveRemoteTemplate(remoteTemplate: RemoteTemplateString): string {
+export function resolveRemoteTemplate(
+	remoteTemplate: RemoteTemplateString,
+	context: RemoteTemplateResolutionContext
+): string {
 	let result = ""
 
 	for (const segment of remoteTemplate) {
@@ -98,7 +105,7 @@ export function resolveRemoteTemplate(remoteTemplate: RemoteTemplateString): str
 		} else {
 			const deserializer = remoteDataDeserializers?.[segment.type]
 			if (deserializer) {
-				result += deserializer(segment)
+				result += deserializer(segment, context)
 			}
 		}
 	}
@@ -106,7 +113,14 @@ export function resolveRemoteTemplate(remoteTemplate: RemoteTemplateString): str
 	return result
 }
 
-export type RemoteDataDeserializer = (data: RemoteTemplateIntermediateSubstring) => string
+export interface RemoteTemplateResolutionContext {
+	scheduleReEval(seconds: number): void
+}
+
+export type RemoteDataDeserializer = (
+	data: RemoteTemplateIntermediateSubstring,
+	context: RemoteTemplateResolutionContext
+) => string
 
 export function registerRemoteDataDeserializer(type: string, deserializer: RemoteDataDeserializer) {
 	remoteDataDeserializers[type] = deserializer

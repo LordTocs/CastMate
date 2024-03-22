@@ -1,7 +1,7 @@
 import { cloneDeep, isFunction } from "lodash"
 import { MaybePromise, MapToUnion, Modify, Fallback } from "./util/type-helpers"
 import { ValueCompareOperator } from "./data/boolean-expression"
-import { RemoteTemplateString } from "./template/remote-templates"
+import { RemoteTemplateResolutionContext, RemoteTemplateString } from "./template/remote-templates"
 
 ////////////////////////////////////// ENUMs /////////////////////////////////////////////
 export interface EnumPair<T> {
@@ -536,7 +536,8 @@ export interface DataTypeMetaData<T extends DataConstructorOrFactory> {
 	compare?: (lhs: ExposedTypeByConstructor<T>, rhs: any, operator: ValueCompareOperator) => boolean
 	remoteTemplateResolve?: (
 		remoteValue: RemoteTemplateTypeByConstructor<T>,
-		schema: Schema
+		schema: Schema,
+		context: RemoteTemplateResolutionContext
 	) => ResolvedTypeByConstructor<T>
 }
 

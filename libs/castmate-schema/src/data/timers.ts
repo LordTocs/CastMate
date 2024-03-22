@@ -181,7 +181,13 @@ function wrapTimerData(data: TimerData): Timer {
 	}
 }
 
-registerRemoteDataDeserializer("Timer", (data) => {
+registerRemoteDataDeserializer("Timer", (data, context) => {
 	const timer = wrapTimerData(data.data as TimerData)
+
+	if (isTimerStarted(timer)) {
+		const remaining = getTimeRemaining(timer)
+		context.scheduleReEval(remaining - Math.floor(remaining))
+	}
+
 	return String(timer)
 })
