@@ -21,11 +21,19 @@
 			<document-path local-path="widgets">
 				<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
 			</document-path>
-			<div class="overlay-properties flex flex-column">
-				<document-path local-path="widgets">
-					<overlay-widget-prop-edit v-model="model" />
-				</document-path>
-				<div></div>
+			<div class="overlay-properties">
+				<p-splitter layout="vertical" class="h-full">
+					<p-splitter-panel>
+						<document-path local-path="widgets">
+							<overlay-widget-prop-edit v-model="model" />
+						</document-path>
+					</p-splitter-panel>
+					<p-splitter-panel>
+						<document-path local-path="widgets">
+							<overlay-widget-list v-model="model" />
+						</document-path>
+					</p-splitter-panel>
+				</p-splitter>
 			</div>
 		</div>
 	</div>
@@ -44,7 +52,10 @@ import {
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel } from "vue"
 import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
+import OverlayWidgetList from "./OverlayWidgetList.vue"
 
+import PSplitter from "primevue/splitter"
+import PSplitterPanel from "primevue/splitterpanel"
 import PCheckBox from "primevue/checkbox"
 import PButton from "primevue/button"
 import OverlayEditArea from "./OverlayEditArea.vue"
@@ -95,6 +106,5 @@ const view = useModel(props, "view")
 	background-color: var(--surface-b);
 	user-select: none;
 	width: 350px;
-	overflow-y: auto;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-	<flex-scroller class="flex-grow-1">
+	<flex-scroller class="flex-grow-1 widget-props">
 		<data-input
 			v-if="selectedWidgetIndex != null && selectedWidgetInfo != null"
 			v-model="model.widgets[selectedWidgetIndex].config"
@@ -45,3 +45,9 @@ const selectedWidgetInfo = computed(() => {
 	return widgets.getWidget(widget.plugin, widget.widget)
 })
 </script>
+
+<style scoped>
+.widget-props {
+	min-height: 5rem;
+}
+</style>
