@@ -1,18 +1,38 @@
 <template>
 	<div class="flex flex-column widget-list">
-		<flex-scroller class="flex-grow-1">
-			<div
-				class="widget-list-item flex flex-row"
-				:class="{ selected: selection.includes(widget.id) }"
-				v-for="(widget, i) in model.widgets"
-				:key="widget.id"
-			>
-				<div class="flex-grow-1">{{ widget.name }}</div>
-				<p-toggle-button on-icon="mdi mdi-eye-outline" off-icon="mdi mdi-eye-off-outline" size="small" />
-			</div>
-		</flex-scroller>
-		<div class="flex flex-row">
-			<p-button icon="mdi mdi-plus" @click="popAddMenu" />
+		<div class="flex-grow-1 widget-list-container">
+			<flex-scroller class="h-full" inner-class="flex flex-column gap-1">
+				<div
+					class="widget-list-item gap-1"
+					:class="{ selected: selection.includes(widget.id) }"
+					v-for="(widget, i) in model.widgets"
+					:key="widget.id"
+					@click="widgetClick(i, $event)"
+				>
+					<span class="flex-grow-1">{{ widget.name }}</span>
+					<p-toggle-button
+						on-icon="mdi mdi-eye-outline"
+						on-label=""
+						off-icon="mdi mdi-eye-off-outline"
+						off-label=""
+						size="small"
+						text
+						class="extra-small-button"
+					/>
+					<p-toggle-button
+						on-icon="mdi mdi-lock-outline"
+						on-label=""
+						off-icon="mdi mdi-lock-open-outline"
+						off-label=""
+						size="small"
+						text
+						class="extra-small-button"
+					/>
+				</div>
+			</flex-scroller>
+		</div>
+		<div class="flex flex-row px-2 pb-2">
+			<p-button icon="mdi mdi-plus" @click="popAddMenu" class="extra-small-button" size="small" />
 			<p-menu :model="addMenuItems" ref="addMenu" :popup="true" />
 		</div>
 	</div>
@@ -95,17 +115,46 @@ function popAddMenu(ev: MouseEvent) {
 
 	addMenu.value?.toggle(ev)
 }
+
+function widgetClick(idx: number, ev: MouseEvent) {
+	if (ev.button != 0) return
+
+	const id = props.modelValue.widgets[idx].id
+
+	if (ev.ctrlKey) {
+		const selIdx = selection.value.findIndex((s) => s == id)
+		if (selIdx >= 0) {
+			selection.value.splice(selIdx, 1)
+		} else {
+			selection.value.push(id)
+		}
+	} else {
+		selection.value = [id]
+		ev.stopPropagation()
+	}
+}
 </script>
 
 <style scoped>
 .widget-list {
 	min-height: 5rem;
-	height: 100%;
+}
+
+.widget-list-container {
+	padding: 0.5rem 0;
+	margin: 0.5rem;
+	border: solid 1px var(--surface-border);
+	border-radius: var(--border-radius);
 }
 
 .widget-list-item {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 0 0.5rem;
 }
 
 .widget-list-item.selected {
+	background-color: rgba(96, 165, 250, 0.16);
 }
 </style>

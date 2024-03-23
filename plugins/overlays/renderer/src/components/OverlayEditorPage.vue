@@ -25,12 +25,12 @@
 				<p-splitter layout="vertical" class="h-full">
 					<p-splitter-panel>
 						<document-path local-path="widgets">
-							<overlay-widget-prop-edit v-model="model" />
+							<overlay-widget-prop-edit class="h-full" v-model="model" />
 						</document-path>
 					</p-splitter-panel>
 					<p-splitter-panel>
 						<document-path local-path="widgets">
-							<overlay-widget-list v-model="model" />
+							<overlay-widget-list class="h-full" v-model="model" />
 						</document-path>
 					</p-splitter-panel>
 				</p-splitter>
