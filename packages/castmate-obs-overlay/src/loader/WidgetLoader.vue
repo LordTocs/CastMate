@@ -17,7 +17,6 @@ import { OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import { CSSProperties, computed, onMounted, provide } from "vue"
 import { useWebsocketBridge } from "./utils/websocket"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
-import { resolveRemoteTemplateSchema } from "castmate-schema"
 import { OverlayWidgetComponent, useResolvedWidgetConfig } from "castmate-overlay-core"
 
 const props = defineProps<{
@@ -39,7 +38,7 @@ const widgetComponent = computed<OverlayWidgetComponent | undefined>(
 	() => widgetStore.getWidget(props.widgetConfig.plugin, props.widgetConfig.widget)?.component
 )
 //@ts-ignore
-const resolvedConfig = useResolvedWidgetConfig(() => props.widgetConfig, widgetComponent)
+const resolvedConfig = useResolvedWidgetConfig(() => props.widgetConfig.config, widgetComponent)
 
 const bridge = useWebsocketBridge()
 provide("castmate-bridge", bridge.getBridge(props.widgetConfig.id))

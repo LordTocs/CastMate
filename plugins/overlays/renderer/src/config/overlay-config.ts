@@ -1,3 +1,5 @@
+import { useResolvedWidgetConfig } from "castmate-overlay-core"
+import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import { handleIpcMessage, useIpcCaller, useIpcMessage } from "castmate-ui-core"
 import { nanoid } from "nanoid/non-secure"
@@ -103,11 +105,18 @@ export const useOverlayRemoteConfigStore = defineStore("overlay-remote-config", 
 
 export function useRemoteOverlayConfig(config: MaybeRefOrGetter<OverlayWidgetConfig>) {
 	const configStore = useOverlayRemoteConfigStore()
+	const widgets = useOverlayWidgets()
+
 	let id = ""
-	const resolved = ref<object>({})
+	const remote = ref<object>({})
+
+	const resolved = useResolvedWidgetConfig(remote, () => {
+		const configValue = toValue(config)
+		return widgets.getWidget(configValue.plugin, configValue.widget)?.component
+	})
 
 	onMounted(() => {
-		id = configStore.start(config, resolved)
+		id = configStore.start(config, remote)
 	})
 
 	onBeforeUnmount(() => {
