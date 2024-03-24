@@ -1,9 +1,10 @@
 <template>
-	<p class="overlay-label">{{ config.message }}</p>
+	<p class="overlay-label" :style="{ ...OverlayTextStyle.toCSSProperties(config.font) }">{{ config.message }}</p>
 </template>
 
 <script setup lang="ts">
 import { declareWidgetOptions } from "castmate-overlay-core"
+import { OverlayTextStyle } from "castmate-plugin-overlays-shared"
 
 defineOptions({
 	widget: declareWidgetOptions({
@@ -25,6 +26,11 @@ defineOptions({
 					default: "",
 					template: true,
 				},
+				font: {
+					name: "Font",
+					type: OverlayTextStyle,
+					required: true,
+				},
 			},
 		},
 	}),
@@ -32,7 +38,7 @@ defineOptions({
 
 //Vue compiler is too stupid to compile this?
 //const props = defineProps<ResolvedSchemaType<typeof widgetOptions.config>>()
-const props = defineProps<{ config: { message: string } }>()
+const props = defineProps<{ config: { message: string; font: OverlayTextStyle } }>()
 </script>
 
 <style scoped>

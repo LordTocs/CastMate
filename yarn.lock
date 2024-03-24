@@ -3440,6 +3440,7 @@ __metadata:
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
     electron: "npm:^29.1.1"
+    font-list: "npm:^1.5.1"
     nanoid: "npm:*"
     pinia: "npm:*"
     typescript: "npm:*"
@@ -5613,6 +5614,13 @@ __metadata:
     debug:
       optional: true
   checksum: 10/d467f13c1c6aa734599b8b369cd7a625b20081af358f6204ff515f6f4116eb440de9c4e0c49f10798eeb0df26c95dd05d5e0d9ddc5786ab1a8a8abefe92929b4
+  languageName: node
+  linkType: hard
+
+"font-list@npm:^1.5.1":
+  version: 1.5.1
+  resolution: "font-list@npm:1.5.1"
+  checksum: 10/e1500017b63e0a554348143f69d64d4f61dba8bd002456e161840e79454b67feea4bbd33b5fb1648f6f8d0415307616da14751f9289ceaabcbcd62414e0f3ff8
   languageName: node
   linkType: hard
 

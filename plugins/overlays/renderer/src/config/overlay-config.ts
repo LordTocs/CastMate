@@ -68,7 +68,8 @@ export const useOverlayRemoteConfigStore = defineStore("overlay-remote-config", 
 			(update) => {
 				//console.log("Updating Overlay Edit", id, update.plugin, update.widget, update.config)
 				updateEdit(id, update.plugin, update.widget, update.config)
-			}
+			},
+			{ deep: true }
 		)
 
 		const remote: ActiveRemoteConfig = {

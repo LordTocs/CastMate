@@ -4,6 +4,7 @@ import {
 	getResourceAsProjectGroup,
 	handleIpcMessage,
 	handleIpcRpc,
+	useDataInputStore,
 	useDocumentStore,
 	useIpcCaller,
 	usePluginStore,
@@ -14,9 +15,13 @@ import _cloneDeep from "lodash/cloneDeep"
 import OverlayEditorPageVue from "./components/OverlayEditorPage.vue"
 import { OverlayEditorView } from "./components/overlay-edit-types"
 import { useOverlayRemoteConfigStore } from "./config/overlay-config"
+import { OverlayTextStyle } from "castmate-plugin-overlays-shared"
+import OverlayTextStyleInput from "./components/style/OverlayTextStyleInput.vue"
 
 export function initPlugin(app: App<Element>) {
-	//Init Renderer Module
+	const dataStore = useDataInputStore()
+
+	dataStore.registerInputComponent(OverlayTextStyle, OverlayTextStyleInput)
 
 	const resourceStore = useResourceStore()
 	const documentStore = useDocumentStore()
