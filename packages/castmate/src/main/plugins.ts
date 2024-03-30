@@ -25,6 +25,7 @@ import spellcastPlugin from "castmate-plugin-spellcast-main"
 
 import overlayPlugin from "castmate-plugin-overlays-main"
 
+import randomPlugin from "castmate-plugin-random-main"
 import remotePlugin from "castmate-plugin-remote-main"
 
 import castmatePlugin from "./builtin-plugin"
@@ -34,6 +35,7 @@ export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
 	const promises = [
 		pluginManager.registerPlugin(castmatePlugin),
+		pluginManager.registerPlugin(randomPlugin),
 		pluginManager.registerPlugin(overlayPlugin),
 		pluginManager.registerPlugin(variablesPlugin),
 		pluginManager.registerPlugin(timePlugin),

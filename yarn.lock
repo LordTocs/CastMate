@@ -3517,6 +3517,54 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-random-main@workspace:^, castmate-plugin-random-main@workspace:plugins/random/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-random-main@workspace:plugins/random/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-random-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-random-renderer@workspace:^, castmate-plugin-random-renderer@workspace:plugins/random/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-random-renderer@workspace:plugins/random/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-plugin-random-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:*"
+    nanoid: "npm:*"
+    pinia: "npm:*"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:*"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-random-shared@workspace:^, castmate-plugin-random-shared@workspace:plugins/random/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-random-shared@workspace:plugins/random/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-random@workspace:plugins/random":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-random@workspace:plugins/random"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-remote-main@workspace:^, castmate-plugin-remote-main@workspace:plugins/remote/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-remote-main@workspace:plugins/remote/main"
@@ -4095,6 +4143,8 @@ __metadata:
     castmate-plugin-overlays-shared: "workspace:^"
     castmate-plugin-philips-hue-main: "workspace:^"
     castmate-plugin-philips-hue-renderer: "workspace:^"
+    castmate-plugin-random-main: "workspace:^"
+    castmate-plugin-random-renderer: "workspace:^"
     castmate-plugin-remote-main: "workspace:^"
     castmate-plugin-remote-renderer: "workspace:^"
     castmate-plugin-sound-main: "workspace:^"

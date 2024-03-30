@@ -56,6 +56,8 @@ import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
 import { initPlugin as initOverlaysPlugin } from "castmate-plugin-overlays-renderer"
 import { initPlugin as initSpellCastPlugin } from "castmate-plugin-spellcast-renderer"
 
+import { initPlugin as initRandomPlugin } from "castmate-plugin-random-renderer"
+
 import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
 
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
@@ -150,6 +152,8 @@ async function init() {
 	await initGoveePlugin()
 	await initKasaPlugin()
 	await initRemotePlugin()
+
+	await initRandomPlugin()
 
 	await mediaStore.initialize()
 
