@@ -54,6 +54,7 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 	rpcs.handle("overlays_setConfig", (configData: OverlayConfig) => {
 		console.log("Config Set", configData)
 		config.value = configData
+		document.title = `CastMate Overlay -- ${configData.name}`
 	})
 
 	function acquireState(plugin: string, state: string) {
