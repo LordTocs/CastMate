@@ -18,6 +18,8 @@ export interface OverlayWidgetConfig {
 	size: OverlayWidgetSize
 	position: OverlayWidgetPosition
 	config: Object
+	locked: boolean
+	visible: boolean
 }
 
 export interface OverlayConfig {

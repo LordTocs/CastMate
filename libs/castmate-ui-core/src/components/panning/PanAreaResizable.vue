@@ -9,6 +9,7 @@
 		:class="{ 'show-drag': showDrag, 'hidden-drag': !showDrag }"
 		class="drag-div"
 		@mousedown="onWidgetMouseDown"
+		@contextmenu="emit('contextmenu', $event)"
 	>
 		<template v-if="showDrag && canScale">
 			<div
@@ -43,6 +44,8 @@ const props = withDefaults(
 		canScale: true,
 	}
 )
+
+const emit = defineEmits(["contextmenu"])
 
 const size = useModel(props, "size")
 const position = useModel(props, "position")

@@ -4,11 +4,14 @@
 		v-model:position="model.position"
 		v-model:size="model.size"
 		:scale-size="zoomScale"
-		:show-drag="isSelected"
+		:show-drag="isSelected && !model.locked"
 		:can-scale="isOnlySelection"
+		v-bind="$attrs"
+		@contextmenu="onContext"
 	>
-		<component v-if="widgetComponent" :is="widgetComponent" :config="resolvedConfig" />
+		<component v-if="widgetComponent && props.modelValue.visible" :is="widgetComponent" :config="resolvedConfig" />
 	</pan-area-resizable>
+	<c-context-menu ref="contextMenu" :items="contextItems" />
 </template>
 
 <script setup lang="ts">
@@ -20,13 +23,16 @@ import {
 	useDocumentSelection,
 	useFullState,
 	useIsSelected,
-	usePluginStore,
-	useState,
+	CContextMenu,
+	NameDialog,
 } from "castmate-ui-core"
 import { ComputedRef, computed, inject, markRaw, onMounted, provide, ref, useModel, watch } from "vue"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { useRemoteOverlayConfig } from "../config/overlay-config"
 import { CastMateBridgeImplementation } from "castmate-overlay-core"
+
+import { useDialog } from "primevue/usedialog"
+import { MenuItem } from "primevue/menuitem"
 
 const documentPath = useDocumentPath()
 const isSelected = useIsSelected(documentPath, () => props.modelValue.id)
@@ -70,6 +76,53 @@ provide<CastMateBridgeImplementation>("castmate-bridge", {
 const widgetComponent = computed(
 	() => widgetStore.getWidget(props.modelValue.plugin, props.modelValue.widget)?.component
 )
+
+const contextMenu = ref<InstanceType<typeof CContextMenu>>()
+const dialog = useDialog()
+const emit = defineEmits(["delete"])
+
+const contextItems = computed<MenuItem[]>(() => {
+	return [
+		{
+			label: "Rename",
+			icon: "mdi mdi-rename",
+			command(event) {
+				dialog.open(NameDialog, {
+					props: {
+						header: `Rename ${model.value.name}?`,
+						style: {
+							width: "25vw",
+						},
+						modal: true,
+					},
+					data: {
+						existingName: model.value.name,
+					},
+					onClose(options) {
+						if (!options?.data) {
+							return
+						}
+
+						model.value.name = options.data as string
+					},
+				})
+			},
+		},
+		{
+			label: "Delete",
+			icon: "mdi mdi-delete",
+			command(event) {
+				emit("delete")
+			},
+		},
+	]
+})
+
+function onContext(ev: Event) {
+	if (props.modelValue.locked) return
+
+	contextMenu.value?.show(ev)
+}
 </script>
 
 <style scoped></style>

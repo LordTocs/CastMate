@@ -37,7 +37,10 @@ const widgets = useOverlayWidgets()
 const selectedWidgetIndex = computed(() => {
 	if (!selectedWidgetId.value) return
 
-	return props.modelValue.widgets.findIndex((w) => w.id == selectedWidgetId.value)
+	const idx = props.modelValue.widgets.findIndex((w) => w.id == selectedWidgetId.value)
+	if (idx < 0) return undefined
+
+	return idx
 })
 
 const selectedWidgetInfo = computed(() => {

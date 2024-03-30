@@ -50,6 +50,8 @@ export async function createOverlayEvaluator(initialConfig: OverlayConfig, sende
 							widget.options.config,
 							PluginManager.getInstance().state
 						),
+						locked: w.locked,
+						visible: w.visible,
 					}
 				})
 			),

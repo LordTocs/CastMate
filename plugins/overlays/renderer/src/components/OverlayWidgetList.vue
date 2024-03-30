@@ -2,33 +2,13 @@
 	<div class="flex flex-column widget-list">
 		<div class="flex-grow-1 widget-list-container">
 			<flex-scroller class="h-full" inner-class="flex flex-column gap-1">
-				<div
-					class="widget-list-item gap-1"
-					:class="{ selected: selection.includes(widget.id) }"
+				<overlay-widget-list-item
 					v-for="(widget, i) in model.widgets"
-					:key="widget.id"
+					v-model="model.widgets[i]"
+					:selected="selection.includes(widget.id)"
 					@click="widgetClick(i, $event)"
-				>
-					<span class="flex-grow-1">{{ widget.name }}</span>
-					<p-toggle-button
-						on-icon="mdi mdi-eye-outline"
-						on-label=""
-						off-icon="mdi mdi-eye-off-outline"
-						off-label=""
-						size="small"
-						text
-						class="extra-small-button"
-					/>
-					<p-toggle-button
-						on-icon="mdi mdi-lock-outline"
-						on-label=""
-						off-icon="mdi mdi-lock-open-outline"
-						off-label=""
-						size="small"
-						text
-						class="extra-small-button"
-					/>
-				</div>
+					@delete="deleteWidget(i)"
+				/>
 			</flex-scroller>
 		</div>
 		<div class="flex flex-row px-2 pb-2">
@@ -50,6 +30,7 @@ import { MenuItem } from "primevue/menuitem"
 import { nanoid } from "nanoid/non-secure"
 import { constructDefault } from "castmate-schema"
 import _cloneDeep from "lodash/cloneDeep"
+import OverlayWidgetListItem from "./OverlayWidgetListItem.vue"
 
 const props = defineProps<{
 	modelValue: OverlayConfig
@@ -94,6 +75,8 @@ async function addWidget(widget: OverlayWidgetInfo) {
 			y: 0,
 		},
 		name,
+		visible: true,
+		locked: false,
 	})
 }
 
@@ -132,6 +115,10 @@ function widgetClick(idx: number, ev: MouseEvent) {
 		selection.value = [id]
 		ev.stopPropagation()
 	}
+}
+
+function deleteWidget(idx: number) {
+	model.value.widgets.splice(idx, 1)
 }
 </script>
 

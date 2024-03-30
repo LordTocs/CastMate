@@ -17,6 +17,7 @@
 				v-model="model.widgets[i]"
 				:key="widget.id"
 				ref="widgets"
+				@delete="deleteWidget(i)"
 			/>
 		</pan-area>
 		<div
@@ -69,6 +70,10 @@ const zoomScale = computed(() => {
 	return Math.min(horizontalScale, verticalScale)
 })
 
+function deleteWidget(idx: number) {
+	model.value.widgets.splice(idx, 1)
+}
+
 const path = useDocumentPath()
 const selection = useDocumentSelection(path)
 const {
@@ -89,6 +94,8 @@ const {
 				console.error("NO FRAME ON WIDGET", i)
 				continue
 			}
+
+			if (props.modelValue.widgets[i].locked) continue
 
 			const localRect = getElementRelativeRect(widget.frame, areaElem)
 			const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)

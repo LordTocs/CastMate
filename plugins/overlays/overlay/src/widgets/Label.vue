@@ -38,7 +38,7 @@ defineOptions({
 					name: "Text",
 					type: String,
 					required: true,
-					default: "",
+					default: "Label",
 					template: true,
 				},
 				font: {

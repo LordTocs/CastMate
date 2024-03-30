@@ -113,6 +113,8 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 					size: { width: 0, height: 0 },
 					position: { x: 0, y: 0 },
 					config: {},
+					visible: false,
+					locked: false,
 				}
 			}),
 		}

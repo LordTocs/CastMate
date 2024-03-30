@@ -25,10 +25,14 @@ const OverlayTextSymbol = Symbol()
 export const OverlayTextStyle = {
 	factoryCreate(): OverlayTextStyle {
 		return {
-			fontSize: 10,
+			fontSize: 65,
 			fontColor: "#FFFFFF",
-			fontFamily: "Arial",
+			fontFamily: "Impact",
 			fontWeight: 300,
+			stroke: {
+				width: 4,
+				color: "#000000",
+			},
 		}
 	},
 	[OverlayTextSymbol]: "OverlayText",

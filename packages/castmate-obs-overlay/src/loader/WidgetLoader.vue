@@ -1,6 +1,6 @@
 <template>
 	<component
-		v-if="widgetComponent"
+		v-if="widgetComponent && widgetConfig.visible"
 		:is="widgetComponent"
 		:size="widgetConfig.size"
 		:position="widgetConfig.position"
