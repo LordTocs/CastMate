@@ -6,13 +6,22 @@
 			</div>
 			<div style="width: 0; flex: 1">
 				<label-floater label="Size" v-slot="labelProps">
-					<p-input-number v-model="model.fontSize" v-bind="labelProps" show-buttons :min="0" mode="decimal" />
+					<p-input-number
+						v-model="model.fontSize"
+						v-bind="labelProps"
+						show-buttons
+						:min="0"
+						mode="decimal"
+						suffix="px"
+					/>
 				</label-floater>
 			</div>
 		</div>
 		<div class="flex flex-row gap-1 mt-4">
 			<data-input class="flex-grow-1" v-model="model.fontColor" :schema="colorSchema" />
 		</div>
+		<overlay-text-stroke-edit v-model="model.stroke" />
+		<overlay-text-shadow-edit v-model="model.shadow" />
 	</div>
 </template>
 
@@ -21,6 +30,9 @@ import { OverlayTextStyle } from "castmate-plugin-overlays-shared"
 import FontSelect from "./FontSelect.vue"
 import PInputNumber from "primevue/inputnumber"
 import { useModel } from "vue"
+
+import OverlayTextStrokeEdit from "./OverlayTextStrokeEdit.vue"
+import OverlayTextShadowEdit from "./OverlayTextShadowEdit.vue"
 
 import { Color, declareSchema } from "castmate-schema"
 

@@ -26,7 +26,7 @@
 			<c-context-menu ref="contextMenu" :items="menuItems" v-if="hasMenu" />
 		</div>
 		<div class="flex flex-row">
-			<error-label :error-message="undefined" />
+			<!-- <error-label :error-message="undefined" /> -->
 		</div>
 	</div>
 </template>
@@ -57,9 +57,9 @@ const props = defineProps<
 const model = useModel(props, "modelValue")
 
 const previewStyle = computed<CSSProperties>(() => {
+	//Scale the preview so it ends up being 16px tall, the normal styled size
 	return {
-		...OverlayTextStyle.toCSSProperties(model.value),
-		fontSize: "16px",
+		...OverlayTextStyle.toCSSProperties(model.value, 16 / (model.value?.fontSize ?? 16)),
 	}
 })
 

@@ -28,7 +28,11 @@ export interface DOMPos {
 	y: number
 }
 
-export function getInternalMousePos(elem: HTMLElement, ev: ClientPosition): DOMPos {
+export function getInternalMousePos(elem: HTMLElement | undefined, ev: ClientPosition): DOMPos {
+	if (!elem) {
+		return { x: 0, y: 0 }
+	}
+
 	const rect = elem.getBoundingClientRect()
 	const scroll = getElementScroll(elem)
 

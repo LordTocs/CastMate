@@ -36,6 +36,11 @@ import {
 	provide,
 	ComputedRef,
 	inject,
+	Ref,
+	onMounted,
+	watch,
+	onBeforeMount,
+	UnwrapRef,
 } from "vue"
 
 import StringInputVue from "../components/data/inputs/StringInput.vue"
@@ -361,4 +366,26 @@ export function injectDataContextSchema(): ComputedRef<Schema> {
 	const dummyRef = computed<Schema>(() => markRaw({ type: Object, properties: {} }))
 
 	return inject("data-context", dummyRef)
+}
+
+export function useDefaulted<T>(edit: Ref<UnwrapRef<T> | undefined>, defaultValue: MaybeRefOrGetter<T>) {
+	const intermediate = ref<T>(toValue(defaultValue))
+
+	watch(
+		intermediate,
+		() => {
+			edit.value = intermediate.value
+		},
+		{ deep: true }
+	)
+
+	return computed<UnwrapRef<T>>({
+		get() {
+			if (edit.value != undefined) return edit.value
+			return intermediate.value
+		},
+		set(v) {
+			edit.value = v
+		},
+	})
 }

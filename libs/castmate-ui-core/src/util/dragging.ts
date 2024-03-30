@@ -1,6 +1,6 @@
 import { Arrayable, useEventListener } from "@vueuse/core"
-import { type MaybeRefOrGetter, toValue, onMounted, watch, onUnmounted, ref } from "vue"
-import { isChildOfClass } from "./dom"
+import { type MaybeRefOrGetter, toValue, onMounted, watch, onUnmounted, ref, Ref, computed } from "vue"
+import { getElementRelativeRect, getInternalMousePos, isChildOfClass } from "./dom"
 
 export type DragEventWithDataTransfer = DragEvent & { dataTransfer: DataTransfer }
 
@@ -197,4 +197,82 @@ export function useDraggable(
 	func: (index: number, ev: DragEvent) => any
 ) {
 	onMounted(() => {})
+}
+
+export function useDragValue(
+	element: MaybeRefOrGetter<HTMLElement | undefined>,
+	numRef: Ref<number>,
+	config?: MaybeRefOrGetter<{
+		direction?: "horizontal" | "vertical"
+		scale?: number
+		invert?: boolean
+		min?: number
+		max?: number
+	}>
+) {
+	const dragStart = ref({ x: 0, y: 0 })
+	const dragStartValue = ref(0)
+	const dragging = ref(false)
+
+	useEventListener(element, "mousedown", (ev) => {
+		const pos = getInternalMousePos(toValue(element), ev)
+
+		console.log("Drag Value Start")
+
+		dragging.value = true
+		dragStart.value = pos
+		dragStartValue.value = numRef.value
+	})
+
+	function updateNumber(ev: MouseEvent) {
+		const configValue = toValue(config)
+		const pos = getInternalMousePos(toValue(element), ev)
+
+		let offset: number
+		if (configValue?.direction == "vertical") {
+			offset = pos.y - dragStart.value.y
+		} else {
+			//Horizontal
+			offset = pos.x - dragStart.value.x
+		}
+
+		if (configValue?.invert) {
+			offset = -offset
+		}
+
+		let targetValue = Math.round(dragStartValue.value + offset / (configValue?.scale ?? 1))
+
+		if (configValue?.min != null) {
+			targetValue = Math.max(configValue.min, targetValue)
+		}
+
+		if (configValue?.max != null) {
+			targetValue = Math.min(configValue.max, targetValue)
+		}
+
+		numRef.value = targetValue
+	}
+
+	useEventListener(
+		() => (dragging.value ? window : undefined),
+		"mousemove",
+		(ev: MouseEvent) => {
+			updateNumber(ev)
+			console.log("Drag Value Move")
+		}
+	)
+
+	useEventListener(
+		() => (dragging.value ? window : undefined),
+		"mouseup",
+		(ev: MouseEvent) => {
+			updateNumber(ev)
+			dragging.value = false
+			console.log("Drag Value End")
+		}
+	)
+
+	return computed(() => {
+		return dragging.value
+	})
 }

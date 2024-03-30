@@ -1,10 +1,25 @@
 <template>
-	<p class="overlay-label" :style="{ ...OverlayTextStyle.toCSSProperties(config.font) }">{{ config.message }}</p>
+	<div
+		class="overlay-label"
+		:style="{
+			...OverlayTextStyle.toCSSProperties(config.font),
+			...OverlayBlockStyle.toCSSProperties(config.block),
+		}"
+	>
+		<div
+			:style="{
+				width: '100%',
+				...OverlayTextAlignment.toCSSProperties(config.textAlign),
+			}"
+		>
+			{{ config.message }}
+		</div>
+	</div>
 </template>
 
 <script setup lang="ts">
 import { declareWidgetOptions } from "castmate-overlay-core"
-import { OverlayTextStyle } from "castmate-plugin-overlays-shared"
+import { OverlayBlockStyle, OverlayTextAlignment, OverlayTextStyle } from "castmate-plugin-overlays-shared"
 
 defineOptions({
 	widget: declareWidgetOptions({
@@ -31,6 +46,19 @@ defineOptions({
 					type: OverlayTextStyle,
 					required: true,
 				},
+				textAlign: {
+					type: OverlayTextAlignment,
+					name: "Text Align",
+					required: true,
+				},
+				block: {
+					name: "Block",
+					type: OverlayBlockStyle,
+					required: true,
+					allowMargin: false,
+					allowPadding: false,
+					allowHorizontalAlign: false,
+				},
 			},
 		},
 	}),
@@ -38,11 +66,15 @@ defineOptions({
 
 //Vue compiler is too stupid to compile this?
 //const props = defineProps<ResolvedSchemaType<typeof widgetOptions.config>>()
-const props = defineProps<{ config: { message: string; font: OverlayTextStyle } }>()
+const props = defineProps<{
+	config: { message: string; font: OverlayTextStyle; textAlign: OverlayTextAlignment; block: OverlayBlockStyle }
+}>()
 </script>
 
 <style scoped>
 .overlay-label {
 	white-space: pre-wrap;
+	width: 100%;
+	height: 100%;
 }
 </style>

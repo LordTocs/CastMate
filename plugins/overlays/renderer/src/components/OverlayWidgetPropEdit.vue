@@ -1,10 +1,12 @@
 <template>
 	<flex-scroller class="flex-grow-1 widget-props">
-		<data-input
-			v-if="selectedWidgetIndex != null && selectedWidgetInfo != null"
-			v-model="model.widgets[selectedWidgetIndex].config"
-			:schema="selectedWidgetInfo.component.widget.config"
-		/>
+		<template v-if="selectedWidgetIndex != null && selectedWidgetInfo != null">
+			<data-input
+				v-model="model.widgets[selectedWidgetIndex].config"
+				:schema="selectedWidgetInfo.component.widget.config"
+			/>
+			<overlay-widget-transform-edit v-model="model.widgets[selectedWidgetIndex]" />
+		</template>
 	</flex-scroller>
 </template>
 
@@ -13,6 +15,7 @@ import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { FlexScroller, useDocumentPath, DataInput, useDocumentSelection } from "castmate-ui-core"
 import { computed, onMounted, useModel, watch } from "vue"
+import OverlayWidgetTransformEdit from "./OverlayWidgetTransformEdit.vue"
 
 const props = defineProps<{
 	modelValue: OverlayConfig

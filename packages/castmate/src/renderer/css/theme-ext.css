@@ -45,3 +45,7 @@ a.p-button {
 	width: 2rem !important;
 	padding: 0.25rem 0 !important;
 }
+.extra-small-button.p-button.p-button-icon-only {
+	width: 2rem !important;
+	padding: 0.25rem 0 !important;
+}
