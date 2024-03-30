@@ -8,6 +8,7 @@
 	>
 		<div
 			:style="{
+				whiteSpace: 'break-spaces',
 				width: '100%',
 				...OverlayTextAlignment.toCSSProperties(config.textAlign),
 			}"
@@ -73,7 +74,6 @@ const props = defineProps<{
 
 <style scoped>
 .overlay-label {
-	white-space: pre-wrap;
 	width: 100%;
 	height: 100%;
 }
