@@ -3,14 +3,24 @@
 		<div class="array-header flex flex-row align-items-center">
 			{{ schema.name }}
 			<div class="flex-grow-1"></div>
-			<p-button icon="pi pi-plus" @click="addItem" size="small"></p-button>
+			<p-button icon="pi pi-plus" class="extra-small-button" @click="addItem" size="small"></p-button>
 		</div>
 		<div class="flex flex-column gap-1">
 			<div class="array-item" v-if="model" v-for="(item, index) in modelValue">
-				<div class="array-item-header flex flex-row align-items-center w-full gap-1 mb-1">
+				<div class="array-item-header flex flex-row align-items-center w-full gap-1 p-2">
 					<div class="flex-grow-1" />
-					<p-button icon="mdi mdi-content-copy" size="small" @click="duplicateItem(index)"></p-button>
-					<p-button icon="mdi mdi-delete" size="small" @click="deleteItem(index)"></p-button>
+					<p-button
+						icon="mdi mdi-content-copy"
+						class="extra-small-button"
+						size="small"
+						@click="duplicateItem(index)"
+					></p-button>
+					<p-button
+						icon="mdi mdi-delete"
+						class="extra-small-button"
+						size="small"
+						@click="deleteItem(index)"
+					></p-button>
 				</div>
 				<div class="flex-grow-1">
 					<data-input
@@ -86,10 +96,9 @@ async function addItem() {
 }
 
 .array-item {
-	border-radius: var(--border-radius);
-	padding: 0.5rem;
-	margin: 0 0.5rem;
-	border: solid 1px var(--surface-border);
-	border-radius: var(--border-radius);
+	/* border-radius: var(--border-radius); */
+	/* padding: 0.5rem; */
+	border-top: solid 1px var(--surface-border);
+	/* border-radius: var(--border-radius); */
 }
 </style>
