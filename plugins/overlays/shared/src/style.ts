@@ -23,7 +23,7 @@ export interface OverlayTextStyle {
 
 const OverlayTextSymbol = Symbol()
 export const OverlayTextStyle = {
-	factoryCreate(): OverlayTextStyle {
+	factoryCreate(initial?: Partial<OverlayTextStyle>): OverlayTextStyle {
 		return {
 			fontSize: 65,
 			fontColor: "#FFFFFF",
@@ -33,6 +33,7 @@ export const OverlayTextStyle = {
 				width: 4,
 				color: "#000000",
 			},
+			...initial,
 		}
 	},
 	[OverlayTextSymbol]: "OverlayText",
@@ -102,12 +103,13 @@ function horizontalAlignToCSS(ha?: "left" | "center" | "right") {
 
 const OverlayBlockSymbol = Symbol()
 export const OverlayBlockStyle = {
-	factoryCreate(): OverlayBlockStyle {
+	factoryCreate(initial?: Partial<OverlayBlockStyle>): OverlayBlockStyle {
 		return {
 			margin: { top: 0, bottom: 0, left: 0, right: 0 },
 			padding: { top: 0, bottom: 0, left: 0, right: 0 },
 			horizontalAlign: "left",
 			verticalAlign: "top",
+			...initial,
 		}
 	},
 	[OverlayBlockSymbol]: "OverlayBlockStyle",
@@ -148,8 +150,8 @@ export interface OverlayTextAlignment {
 const OverlayTextAlignmentSymbol = Symbol()
 
 export const OverlayTextAlignment = {
-	factoryCreate(): OverlayTextAlignment {
-		return { textAlign: "left" }
+	factoryCreate(initial?: Partial<OverlayTextAlignment>): OverlayTextAlignment {
+		return { textAlign: "left", ...initial }
 	},
 	toCSSProperties(style: OverlayTextAlignment | undefined) {
 		if (!style) return {}
@@ -163,7 +165,7 @@ export const OverlayTextAlignment = {
 
 export type OverlayTextAlignmentFactory = typeof OverlayTextAlignment
 
-export interface SchemaOverlayTextAlignment {
+export interface SchemaOverlayTextAlignment extends SchemaBase<OverlayTextAlignment> {
 	type: OverlayTextAlignmentFactory
 }
 
