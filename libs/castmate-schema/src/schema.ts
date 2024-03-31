@@ -409,7 +409,7 @@ async function constructDefaultObjOnto<T extends SchemaObj>(target: Record<strin
 }
 
 function canConstructDefault<T extends Schema>(schema: T) {
-	return schema.type == Object || schema.required
+	return schema.type == Object || schema.type == Array || schema.required
 }
 
 /**
@@ -426,6 +426,15 @@ export async function constructDefault<T extends Schema>(schema: T): Promise<Sch
 		}
 
 		return result as SchemaType<T>
+	} else if (schema.type == Array) {
+		if (schema.default) {
+			if (isFunction(schema.default)) {
+				return await schema.default()
+			} else {
+				return cloneDeep(schema.default)
+			}
+		}
+		return [] as SchemaType<T>
 	} else if (schema.required) {
 		if (schema.default) {
 			if (isFunction(schema.default)) {
@@ -435,7 +444,6 @@ export async function constructDefault<T extends Schema>(schema: T): Promise<Sch
 			}
 		} else {
 			//Special cases for primitives
-			if (schema.type == Array) return [] as SchemaType<T>
 			if (schema.type == Number) return 0 as SchemaType<T>
 			if (schema.type == String) return "" as SchemaType<T>
 			if (schema.type == Boolean) return false as SchemaType<T>
