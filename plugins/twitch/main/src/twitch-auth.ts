@@ -196,7 +196,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 				}
 			})
 
-			window.loadURL(authUrl)
+			window.loadURL(authUrl).catch((err) => reject(err))
 		})
 	}
 
@@ -359,7 +359,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 				}
 			})
 
-			window.loadURL(authUrl)
+			window.loadURL(authUrl).catch((err) => reject(err))
 		})
 	}
 
@@ -386,13 +386,21 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 
 		const channel = new TwitchAccount()
 		channel._id = "channel"
-		await channel.load()
+		try {
+			await channel.load()
+		} catch (err) {
+			logger.error("Failed to auth Channel", err)
+		}
 		await this.storage.inject(channel)
 
 		const bot = new TwitchAccount()
 		bot._id = "bot"
 		bot._config.scopes = botScopes
-		await bot.load()
+		try {
+			await bot.load()
+		} catch (err) {
+			logger.error("Failed to auth Bot", err)
+		}
 		await this.storage.inject(bot)
 	}
 
