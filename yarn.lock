@@ -2896,6 +2896,7 @@ __metadata:
     "@vueuse/core": "npm:*"
     castmate-overlay-core: "workspace:^"
     castmate-plugin-overlays-overlays: "workspace:^"
+    castmate-plugin-random-overlays: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
     electron: "npm:^29.1.1"
@@ -3525,6 +3526,27 @@ __metadata:
     castmate-plugin-random-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-random-overlays@workspace:^, castmate-plugin-random-overlays@workspace:plugins/random/overlay":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-random-overlays@workspace:plugins/random/overlay"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-overlay-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:^29.1.1"
+    nanoid: "npm:*"
+    pinia: "npm:*"
+    primevue: "npm:*"
+    ts-toolbelt: "npm:*"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:*"
+    vue-tsc: "npm:*"
   languageName: unknown
   linkType: soft
 

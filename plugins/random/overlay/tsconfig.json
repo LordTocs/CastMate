@@ -20,9 +20,7 @@
 		// "noUnusedParameters": true,
 		// "noFallthroughCasesInSwitch": true
 		"paths": {
-			"castmate-overlay-core": ["../castmate-overlay-core/src/overlay-core-main.ts"],
-			"castmate-plugin-overlays-overlays": ["../../plugins/overlays/overlay/src/main.ts"],
-			"castmate-plugin-random-overlays": ["../../plugins/random/overlay/src/main.ts"]
+			"castmate-overlay-core": ["../../../libs/castmate-overlay-core/src/overlay-core-main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

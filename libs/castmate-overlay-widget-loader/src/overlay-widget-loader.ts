@@ -1,5 +1,6 @@
 import { OverlayPluginOptions, OverlayWidgetComponent } from "castmate-overlay-core"
 import overlaysPlugin from "castmate-plugin-overlays-overlays"
+import randomPlugin from "castmate-plugin-random-overlays"
 import { defineStore } from "pinia"
 import { ref, Component, computed, markRaw } from "vue"
 
@@ -30,4 +31,5 @@ export function loadOverlayWidgets() {
 	const widgets = useOverlayWidgets()
 
 	widgets.loadPluginWidgets(overlaysPlugin)
+	widgets.loadPluginWidgets(randomPlugin)
 }
