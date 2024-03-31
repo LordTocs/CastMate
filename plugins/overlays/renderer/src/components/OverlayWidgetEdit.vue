@@ -9,7 +9,13 @@
 		v-bind="$attrs"
 		@contextmenu="onContext"
 	>
-		<component v-if="widgetComponent && props.modelValue.visible" :is="widgetComponent" :config="resolvedConfig" />
+		<component
+			v-if="widgetComponent && props.modelValue.visible"
+			:is="widgetComponent"
+			:config="resolvedConfig"
+			:size="model.size"
+			:position="model.position"
+		/>
 	</pan-area-resizable>
 	<c-context-menu ref="contextMenu" :items="contextItems" />
 </template>
@@ -45,6 +51,10 @@ const isOnlySelection = computed(() => {
 const props = defineProps<{
 	modelValue: OverlayWidgetConfig
 }>()
+
+onMounted(() => {
+	console.log("Mount Widget Edit", props.modelValue)
+})
 
 const resizable = ref<InstanceType<typeof PanAreaResizable>>()
 
