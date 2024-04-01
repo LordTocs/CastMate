@@ -130,6 +130,7 @@ defineOptions({
 				},
 				style: {
 					type: Array,
+					name: "Slice Styles",
 					items: {
 						type: Object,
 						properties: {
