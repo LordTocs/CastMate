@@ -81,6 +81,10 @@ provide<CastMateBridgeImplementation>("castmate-bridge", {
 	releaseState(plugin, state) {},
 	config: computed(() => props.modelValue),
 	state,
+	registerRPC(id, func) {},
+	unregisterRPC(id) {},
+	registerMessage(id, func) {},
+	unregisterMessage(id, func) {},
 })
 
 const widgetComponent = computed(

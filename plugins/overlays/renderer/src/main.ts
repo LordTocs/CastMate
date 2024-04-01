@@ -15,10 +15,16 @@ import _cloneDeep from "lodash/cloneDeep"
 import OverlayEditorPageVue from "./components/OverlayEditorPage.vue"
 import { OverlayEditorView } from "./components/overlay-edit-types"
 import { useOverlayRemoteConfigStore } from "./config/overlay-config"
-import { OverlayBlockStyle, OverlayTextAlignment, OverlayTextStyle } from "castmate-plugin-overlays-shared"
+import {
+	OverlayBlockStyle,
+	OverlayTextAlignment,
+	OverlayTextStyle,
+	OverlayWidget,
+} from "castmate-plugin-overlays-shared"
 import OverlayTextStyleInput from "./components/style/OverlayTextStyleInput.vue"
 import OverlayBlockStyleInput from "./components/style/OverlayBlockStyleInput.vue"
 import OverlayTextAlignInput from "./components/style/OverlayTextAlignInput.vue"
+import OverlayWidgetInput from "./components/OverlayWidgetInput.vue"
 
 export function initPlugin(app: App<Element>) {
 	const dataStore = useDataInputStore()
@@ -26,6 +32,7 @@ export function initPlugin(app: App<Element>) {
 	dataStore.registerInputComponent(OverlayTextStyle, OverlayTextStyleInput)
 	dataStore.registerInputComponent(OverlayBlockStyle, OverlayBlockStyleInput)
 	dataStore.registerInputComponent(OverlayTextAlignment, OverlayTextAlignInput)
+	dataStore.registerInputComponent(OverlayWidget, OverlayWidgetInput)
 
 	const resourceStore = useResourceStore()
 	const documentStore = useDocumentStore()

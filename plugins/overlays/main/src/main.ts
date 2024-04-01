@@ -20,3 +20,5 @@ export default definePlugin(
 		setupWebsockets()
 	}
 )
+
+export { OverlayWebsocketService } from "./websocket-bridge"

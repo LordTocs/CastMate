@@ -20,6 +20,10 @@ export interface CastMateBridgeImplementation {
 	releaseState(plugin: string, state: string): void
 	state: { readonly value: Record<string, Record<string, any>> }
 	config: { readonly value: OverlayWidgetConfig }
+	registerRPC(id: string, func: (...args: any[]) => any): void
+	unregisterRPC(id: string): void
+	registerMessage(id: string, func: (...args: any[]) => any): void
+	unregisterMessage(id: string, func: (...args: any[]) => any): void
 }
 
 export function useCastMateBridge(): CastMateBridgeImplementation {
@@ -38,6 +42,10 @@ export function useCastMateBridge(): CastMateBridgeImplementation {
 			visible: false,
 			locked: false,
 		})),
+		registerRPC(id, func) {},
+		unregisterRPC(id) {},
+		registerMessage(id, func) {},
+		unregisterMessage(id) {},
 	})
 }
 
@@ -71,5 +79,29 @@ export function useCastMateState<T = any>(
 
 	return computed<T>(() => {
 		return bridge.state.value[toValue(plugin)]?.[toValue(state)] as T
+	})
+}
+
+export function handleOverlayMessage(id: string, func: (...args: any[]) => any) {
+	const bridge = useCastMateBridge()
+
+	onMounted(() => {
+		bridge.registerMessage(id, func)
+	})
+
+	onBeforeUnmount(() => {
+		bridge.unregisterMessage(id, func)
+	})
+}
+
+export function handleOverlayRPC(id: string, func: (...args: any[]) => any) {
+	const bridge = useCastMateBridge()
+
+	onMounted(() => {
+		bridge.registerRPC(id, func)
+	})
+
+	onBeforeUnmount(() => {
+		bridge.unregisterRPC(id)
 	})
 }

@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { declareWidgetOptions } from "castmate-overlay-core"
+import { declareWidgetOptions, handleOverlayMessage, handleOverlayRPC } from "castmate-overlay-core"
 import {
 	OverlayBlockStyle,
 	OverlayTextAlignment,
@@ -364,6 +364,10 @@ function spinWheel(spinStrength: number) {
 		requestNewFrame()
 	}
 }
+
+handleOverlayRPC("spinWheel", (strength: number) => {
+	spinWheel(strength)
+})
 </script>
 
 <style scoped>

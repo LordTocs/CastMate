@@ -3391,7 +3391,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-overlays-main@workspace:plugins/overlays/main":
+"castmate-plugin-overlays-main@workspace:^, castmate-plugin-overlays-main@workspace:plugins/overlays/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-overlays-main@workspace:plugins/overlays/main"
   dependencies:
@@ -3523,6 +3523,7 @@ __metadata:
   resolution: "castmate-plugin-random-main@workspace:plugins/random/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-overlays-main: "workspace:^"
     castmate-plugin-random-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "npm:*"

@@ -17,6 +17,9 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 	const stateStore = ref<Record<string, Record<string, any>>>({})
 	const stateMeta: Record<string, Record<string, { refCount: number }>> = {}
 
+	const widgetRpcs: Record<string, (...args: any) => any> = {}
+	const widgetBroadcastHandlers: Record<string, ((...args: any) => any)[]> = {}
+
 	const overlayId = ref(window.location.href.substring(window.location.href.lastIndexOf("/") + 1))
 
 	const sender = (data: RPCMessage) => websocket?.send(JSON.stringify(data))
@@ -55,6 +58,21 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 		console.log("Config Set", configData)
 		config.value = configData
 		document.title = `CastMate Overlay -- ${configData.name}`
+	})
+
+	rpcs.handle("overlays_widgetRPC", (widgetId: string, rpcId: string, ...args: any[]) => {
+		const widgetRpc = widgetRpcs[`${widgetId}.${rpcId}`]
+
+		if (widgetRpc) widgetRpc(...args)
+	})
+
+	rpcs.handle("overlays_broadcast", (broadcastId: string, ...args: any[]) => {
+		const handlers = widgetBroadcastHandlers[`${broadcastId}`]
+		if (!handlers) return
+
+		for (const handler of handlers) {
+			handler(...args)
+		}
 	})
 
 	function acquireState(plugin: string, state: string) {
@@ -118,6 +136,33 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 					locked: false,
 				}
 			}),
+			registerRPC(id, func) {
+				widgetRpcs[`${toValue(widget)}.${id}`] = func
+			},
+			unregisterRPC(id) {
+				delete widgetRpcs[`${toValue(widget)}.${id}`]
+			},
+			registerMessage(id, func) {
+				const slug = `${id}`
+				if (slug in widgetBroadcastHandlers) {
+					widgetBroadcastHandlers[slug] = [func]
+				} else {
+					widgetBroadcastHandlers[slug].push(func)
+				}
+			},
+			unregisterMessage(id, func) {
+				const handlers = widgetBroadcastHandlers[id]
+				if (!handlers) return
+
+				const idx = handlers.findIndex((h) => h == func)
+				if (idx < 0) return
+
+				handlers.splice(idx, 1)
+
+				if (handlers.length == 0) {
+					delete widgetBroadcastHandlers[id]
+				}
+			},
 		}
 	}
 

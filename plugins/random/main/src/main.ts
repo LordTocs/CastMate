@@ -1,5 +1,6 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, defineFlowAction } from "castmate-core"
-
+import { OverlayWebsocketService } from "castmate-plugin-overlays-main"
+import { OverlayWidget } from "castmate-plugin-overlays-shared"
 export default definePlugin(
 	{
 		id: "random",
@@ -47,6 +48,37 @@ export default definePlugin(
 				}
 
 				return ""
+			},
+		})
+
+		defineAction({
+			id: "spinWheel",
+			name: "Spin Wheel",
+			description: "Spins a wheel in an overlay",
+			icon: "mdi mdi-tire",
+			config: {
+				type: Object,
+				properties: {
+					widget: {
+						type: OverlayWidget,
+						required: true,
+						name: "Wheel",
+						widgetType: { plugin: "random", widget: "wheel" },
+					},
+					strength: {
+						type: Number,
+						required: true,
+						template: true,
+						default: 1,
+					},
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				await OverlayWebsocketService.getInstance().callOverlayRPC(
+					config.widget.widgetId,
+					"spinWheel",
+					config.strength
+				)
 			},
 		})
 	}
