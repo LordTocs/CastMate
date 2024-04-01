@@ -1,7 +1,7 @@
 <template>
 	<div class="array-input">
 		<div class="array-header flex flex-row align-items-center">
-			{{ schema.name }}
+			<span class="text-color-secondary text-sm">{{ schema.name }}</span>
 			<div class="flex-grow-1"></div>
 			<p-button icon="pi pi-plus" class="extra-small-button" @click="addItem" size="small"></p-button>
 		</div>

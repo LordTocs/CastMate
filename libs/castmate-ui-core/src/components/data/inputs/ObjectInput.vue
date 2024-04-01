@@ -1,6 +1,10 @@
 <template>
 	<document-path :local-path="localPath">
 		<div class="data-input" tabindex="-1" v-bind="$attrs" @mousedown="onMouseDown" v-if="propKeys.length > 0">
+			<div v-if="showLabel" class="flex flex-row">
+				<span class="text-color-secondary text-sm">{{ schema.name }}</span>
+				<div class="flex-grow-1"></div>
+			</div>
 			<data-input
 				class="data-prop"
 				v-for="(prop, i) in propKeys"
@@ -61,6 +65,8 @@ function setModelProp(prop: string, value: any) {
 function onMouseDown(ev: MouseEvent) {
 	ev.stopPropagation()
 }
+
+const showLabel = computed(() => props.schema.name != null)
 </script>
 
 <style scoped>
