@@ -145,9 +145,9 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 			registerMessage(id, func) {
 				const slug = `${id}`
 				if (slug in widgetBroadcastHandlers) {
-					widgetBroadcastHandlers[slug] = [func]
-				} else {
 					widgetBroadcastHandlers[slug].push(func)
+				} else {
+					widgetBroadcastHandlers[slug] = [func]
 				}
 			},
 			unregisterMessage(id, func) {
