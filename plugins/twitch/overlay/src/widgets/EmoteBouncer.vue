@@ -2,18 +2,18 @@
 	<div class="bounce-house" ref="bounceHouse">
 		<img
 			class="bouncey-body"
-			v-for="body in bodies"
-			:key="body.id"
-			:src="body.src"
+			v-for="body in bouncingEmotes"
+			:key="body.bodyId"
+			:src="body.imageUrl"
 			:style="{
 				width: `${body.width}px`,
-				width: `${body.height}px`,
-				transform: `translate(${body.x - body.width / 2}px, ${
-					body.y - body.height / 2
-				}px) rotate(${body.angle}rad)`,
+				height: `${body.height}px`,
+				transform: `translate(${body.x - body.width / 2}px, ${body.y - body.height / 2}px) rotate(${
+					body.angle
+				}rad)`,
 			}"
 		/>
-		<template v-if="isEditor && useLaunchPosition">
+		<!-- <template v-if="isEditor && useLaunchPosition">
 			<div
 				class="launch-indicator"
 				:style="{
@@ -33,28 +33,201 @@
 					}"
 				></div>
 			</div>
-		</template>
+		</template> -->
 	</div>
 </template>
 
-<script>
-import Matter from "matter-js"
-import { EmoteService } from "../utils/emotes.js"
-import { mapCastMateState } from "../utils/castmate-state.js"
+<script setup lang="ts">
+import Matter, { Engine, Body, Bodies, World, Runner, Events, Composite, Vertices } from "matter-js"
 
-const Engine = Matter.Engine
-const Render = Matter.Render
-const Runner = Matter.Runner
-const Body = Matter.Body
-const Events = Matter.Events
-const Composite = Matter.Composite
-const Composites = Matter.Composites
-const Common = Matter.Common
-const MouseConstraint = Matter.MouseConstraint
-const Mouse = Matter.Mouse
-const World = Matter.World
-const Bodies = Matter.Bodies
-const Vertices = Matter.Vertices
+import { declareWidgetOptions, handleOverlayMessage } from "castmate-overlay-core"
+import { Duration } from "castmate-schema"
+import { OverlayWidgetSize } from "castmate-plugin-overlays-shared"
+import { Range } from "castmate-schema"
+import { onMounted, ref } from "vue"
+
+import { EmoteParsedString } from "castmate-plugin-twitch-shared"
+
+defineOptions({
+	widget: declareWidgetOptions({
+		id: "emote-bounce",
+		name: "Emote Bouncer",
+		icon: "mdi mdi-emoticon",
+		defaultSize: { width: "canvas", height: "canvas" },
+		config: {
+			type: Object,
+			properties: {
+				lifeTime: { type: Range, required: true, default: { min: 7, max: 7 }, name: "Emote Life Time" },
+				shakeTime: { type: Duration, required: true, default: 5, name: "Time Between Shakes" },
+			},
+		},
+	}),
+})
+
+const props = defineProps<{
+	size: OverlayWidgetSize
+	config: {
+		lifetime: Range
+		shakeTime: Duration
+	}
+}>()
+
+const bounceHouse = ref<HTMLElement>()
+
+let engine: Engine
+let ground: Body
+let ceiling: Body
+let leftWall: Body
+let rightWall: Body
+let runner: Runner
+
+const lastTimestamp = ref(0)
+
+onMounted(() => {
+	if (!bounceHouse.value) return
+
+	const width = bounceHouse.value.clientWidth
+	const height = bounceHouse.value.clientHeight
+
+	console.log("Mounting Bounce House", Matter, width, height)
+
+	//if is editor stop
+
+	engine = Engine.create()
+
+	ground = Bodies.rectangle(width / 2, height + 40, width, 80, {
+		isStatic: true,
+	})
+	ceiling = Bodies.rectangle(width / 2, -40, width, 80, {
+		isStatic: true,
+	})
+	leftWall = Bodies.rectangle(-40, height / 2, 80, height, {
+		isStatic: true,
+	})
+	rightWall = Bodies.rectangle(width + 40, height / 2, 80, height, {
+		isStatic: true,
+	})
+
+	World.add(engine.world, [ground, ceiling, leftWall, rightWall])
+
+	runner = Runner.run(engine)
+
+	Events.on(engine, "beforeUpdate", (event) => {
+		if (props.config.shakeTime > 0 && event.timestamp % Math.ceil(props.config.shakeTime * 1000) < 50) shake()
+
+		lastTimestamp.value = event.timestamp
+		updateBodyVDom()
+	})
+})
+
+function shake() {}
+
+function setNewRectangle(body: Body, x: number, y: number, width: number, height: number) {
+	Body.setPosition(body, { x, y })
+	Body.setVertices(
+		body,
+		Vertices.fromPath("L 0 0 L " + width + " 0 L " + width + " " + height + " L 0 " + height, body)
+	)
+}
+
+interface BouncingEmote {
+	x: number
+	y: number
+	width: number
+	height: number
+	imageUrl: string
+	angle: number
+	bodyId: number
+}
+
+const bouncingEmotes = ref<BouncingEmote[]>([])
+
+function updateBodyVDom() {
+	const bodies = Composite.allBodies(engine.world)
+
+	for (let body of bodies) {
+		const vueBody = bouncingEmotes.value.find((b) => b.bodyId == body.id)
+		if (!vueBody) continue
+
+		vueBody.x = body.position.x
+		vueBody.y = body.position.y
+		vueBody.angle = body.angle
+	}
+}
+
+function spawnImage(image: string, aspectRatio: number) {
+	const spawnAreaWidth = props.size.width
+	const spawnAreaHeight = props.size.height
+
+	let x = Math.random() * spawnAreaWidth
+	let y = Math.random() * spawnAreaHeight
+
+	// if (this.useLaunchPosition) {
+	// 	x = this.launchParameters?.launchX ?? 0
+	// 	y = this.launchParameters?.launchY ?? 0
+	// }
+
+	const velocityMax = 0.4
+	let velX = (Math.random() - 0.5) * velocityMax
+	let velY = (Math.random() - 0.5) * velocityMax
+
+	// if (this.useLaunchPosition) {
+	// 	const angle =
+	// 		Number(this.launchParameters?.angle) +
+	// 		(Math.random() - 0.5) *
+	// 			Number(this.launchParameters?.spread)
+
+	// 	velX = Math.cos((angle * Math.PI) / 180) * velocityMax
+	// 	velY = Math.sin((angle * Math.PI) / 180) * velocityMax
+	// }
+
+	const height = 80
+	const width = height / aspectRatio
+
+	const circleBody = Bodies.circle(x, y, height / 2, {})
+
+	const bouncer: BouncingEmote = {
+		bodyId: circleBody.id,
+		imageUrl: image,
+		width,
+		height,
+		angle: 0,
+		x,
+		y,
+	}
+
+	bouncingEmotes.value.push(bouncer)
+
+	//circleBody.vueId = id
+
+	Body.applyForce(circleBody, { x, y }, { x: velX, y: velY })
+
+	World.add(engine.world, [circleBody])
+
+	const lifetime = 7 //props.config.lifetime.min || 7
+
+	setTimeout(() => {
+		World.remove(engine.world, circleBody)
+		const idx = bouncingEmotes.value.findIndex((b) => b.bodyId == circleBody.id)
+		if (idx >= 0) {
+			bouncingEmotes.value.splice(idx, 1)
+		}
+	}, lifetime * 1000)
+}
+
+handleOverlayMessage("twitch_message", (message: EmoteParsedString) => {
+	for (const chunk of message) {
+		console.log("Chunk", chunk)
+		if (chunk.type == "emote") {
+			const img =
+				chunk.emote.urls.url4x ?? chunk.emote.urls.url3x ?? chunk.emote.urls.url2x ?? chunk.emote.urls.url1x
+
+			if (!img) continue
+			spawnImage(img, chunk.emote.aspectRatio)
+		}
+	}
+})
+/*
 export default {
 	inject: ["isEditor", "stateProvider"],
 	props: {
@@ -77,21 +250,6 @@ export default {
 				spread: { type: Number, name: "Angle Spread" },
 			},
 		},
-	},
-	widget: {
-		name: "Emote Bouncer",
-		description: "Any emotes or emojis in chat will bounce around.",
-		icon: "mdi-emoticon",
-		defaultSize: {
-			width: 1920,
-			height: 1080,
-		},
-	},
-	data() {
-		return {
-			bodies: [],
-			spawnId: 1,
-		}
 	},
 	computed: {
 		...mapCastMateState("twitch", ["channelId", "channelName"]),
@@ -229,7 +387,7 @@ export default {
 		},
 		updateWalls() {
 			if (this.isEditor) return
-			
+
 			const width = this.size.width
 			const height = this.size.height
 			this.setNewRectangle(this.ground, width / 2, height + 40, width, 80)
@@ -239,43 +397,7 @@ export default {
 		}
 	},
 	mounted() {
-		const width = this.$refs.bounceHouse.clientWidth
-		const height = this.$refs.bounceHouse.clientHeight
 
-		console.log("Mounting Bounce House", Matter, width, height)
-
-		if (this.isEditor) return
-
-		this.emotes = new EmoteService(this.channelId, this.channelName)
-
-		this.engine = Engine.create()
-
-		this.ground = Bodies.rectangle(width / 2, height + 40, width, 80, {
-			isStatic: true,
-		})
-		this.ceiling = Bodies.rectangle(width / 2, -40, width, 80, {
-			isStatic: true,
-		})
-		this.leftWall = Bodies.rectangle(-40, height / 2, 80, height, {
-			isStatic: true,
-		})
-		this.rightWall = Bodies.rectangle(width + 40, height / 2, 80, height, {
-			isStatic: true,
-		})
-
-		World.add(this.engine.world, [this.ground, this.ceiling, this.leftWall, this.rightWall])
-
-		Engine.run(this.engine)
-
-		Events.on(this.engine, "beforeUpdate", (event) => {
-			if (
-				this.shakeTime > 0 &&
-				event.timestamp % Math.ceil(this.shakeTime * 1000) < 50
-			)
-				this.shake()
-
-			this.updateBodyVDom()
-		})
 	},
 	watch: {
 		channelId() {
@@ -291,7 +413,7 @@ export default {
 			}
 		}
 	},
-}
+}*/
 </script>
 
 <style scoped>

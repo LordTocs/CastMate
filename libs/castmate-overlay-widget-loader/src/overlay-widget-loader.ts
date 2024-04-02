@@ -1,6 +1,7 @@
 import { OverlayPluginOptions, OverlayWidgetComponent } from "castmate-overlay-core"
 import overlaysPlugin from "castmate-plugin-overlays-overlays"
 import randomPlugin from "castmate-plugin-random-overlays"
+import twitchPlugin from "castmate-plugin-twitch-overlays"
 import { defineStore } from "pinia"
 import { ref, Component, computed, markRaw } from "vue"
 
@@ -32,4 +33,5 @@ export function loadOverlayWidgets() {
 
 	widgets.loadPluginWidgets(overlaysPlugin)
 	widgets.loadPluginWidgets(randomPlugin)
+	widgets.loadPluginWidgets(twitchPlugin)
 }

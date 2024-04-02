@@ -1555,6 +1555,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/matter-js@npm:^0.19.6":
+  version: 0.19.6
+  resolution: "@types/matter-js@npm:0.19.6"
+  checksum: 10/769c13b7da71604814b5a97c1cefeca556ba8f999b2a804e72ca8ee1d394f84f3c1ff4dd008dc413be9c9ac740057e2c9bb63e736e1e000a232aa5d671bc6b52
+  languageName: node
+  linkType: hard
+
 "@types/md5@npm:^2.3.4":
   version: 2.3.5
   resolution: "@types/md5@npm:2.3.5"
@@ -2897,6 +2904,7 @@ __metadata:
     castmate-overlay-core: "workspace:^"
     castmate-plugin-overlays-overlays: "workspace:^"
     castmate-plugin-random-overlays: "workspace:^"
+    castmate-plugin-twitch-overlays: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
     electron: "npm:^29.1.1"
@@ -3900,11 +3908,36 @@ __metadata:
     "@twurple/eventsub-ws": "npm:7.1.0-pre.4"
     "@twurple/pubsub": "npm:7.1.0-pre.4"
     castmate-core: "workspace:^"
+    castmate-plugin-overlays-main: "workspace:^"
     castmate-plugin-twitch-shared: "workspace:^"
     castmate-schema: "workspace:^"
     electron: "npm:^29.1.1"
     fuzzysort: "npm:^2.0.4"
     typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-twitch-overlays@workspace:^, castmate-plugin-twitch-overlays@workspace:plugins/twitch/overlay":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-twitch-overlays@workspace:plugins/twitch/overlay"
+  dependencies:
+    "@types/matter-js": "npm:^0.19.6"
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-overlay-core: "workspace:^"
+    castmate-plugin-twitch-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:^29.1.1"
+    matter-js: "npm:^0.19.0"
+    nanoid: "npm:*"
+    pinia: "npm:*"
+    primevue: "npm:*"
+    ts-toolbelt: "npm:*"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:*"
+    vue-tsc: "npm:*"
   languageName: unknown
   linkType: soft
 
@@ -6998,6 +7031,13 @@ __metadata:
   dependencies:
     escape-string-regexp: "npm:^4.0.0"
   checksum: 10/8bee1a7ab7609c2c21d9c9254b6785fa708eadf289032b556d57a34e98fcd4c537659a004dafee6ce80ab157099e645c199dc52678dff1e7fb0a6684e0da4dbe
+  languageName: node
+  linkType: hard
+
+"matter-js@npm:^0.19.0":
+  version: 0.19.0
+  resolution: "matter-js@npm:0.19.0"
+  checksum: 10/7945824d9ec059437562d626479562d615b65bc2b519f08efdd5183fade213458388a35d54552c81c7edeea33cfe6e9ba9354983c1e7019b40dbb933e4c5a0ef
   languageName: node
   linkType: hard
 

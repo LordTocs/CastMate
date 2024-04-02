@@ -21,6 +21,7 @@
     "@twurple/eventsub-ws": "7.1.0-pre.4",
     "@twurple/pubsub": "7.1.0-pre.4",
     "castmate-core": "workspace:^",
+    "castmate-plugin-overlays-main": "workspace:^",
     "castmate-plugin-twitch-shared": "workspace:^",
     "castmate-schema": "workspace:^",
     "electron": "^29.1.1",

@@ -7,6 +7,7 @@ import { ViewerCache } from "./viewer-cache"
 import { EmoteParsedString, TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 import { EmoteCache } from "./emote-cache"
+import { OverlayWebsocketService } from "castmate-plugin-overlays-main"
 
 function parseEmotesFromMsg(chatMessage: ChatMessage): EmoteParsedString {
 	const result: EmoteParsedString = []
@@ -231,6 +232,8 @@ export function setupChat() {
 
 			const twitchOnlyEmotes = parseEmotesFromMsg(msgInfo)
 			const allEmotes = EmoteCache.getInstance().parseThirdParty(twitchOnlyEmotes)
+
+			OverlayWebsocketService.getInstance().sendOverlayMessage("twitch_message", allEmotes)
 
 			ViewerCache.getInstance().cacheChatUser(msgInfo.userInfo)
 
