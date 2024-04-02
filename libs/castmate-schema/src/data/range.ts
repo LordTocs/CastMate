@@ -6,12 +6,7 @@ export interface Range {
 	max?: number
 }
 
-export interface RangeFactory {
-	factoryCreate(): Range
-	inRange(range: Range, num: number): boolean
-	clamp(range: Range | undefined, num: number): number
-}
-export const Range: RangeFactory = {
+export const Range = {
 	factoryCreate(): Range {
 		return {}
 	},
@@ -53,7 +48,19 @@ export const Range: RangeFactory = {
 
 		return value
 	},
+
+	random(range: Range) {
+		const r = Math.random()
+
+		const min = range.min ?? 0
+
+		const max = range.max ?? Math.max(1, min)
+
+		return min + (max - min) * r
+	},
 }
+
+export type RangeFactory = typeof Range
 
 export interface SchemaRange extends SchemaBase<Range> {
 	type: RangeFactory
