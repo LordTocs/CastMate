@@ -71,7 +71,11 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 		if (!handlers) return
 
 		for (const handler of handlers) {
-			handler(...args)
+			try {
+				handler(...args)
+			} catch (err) {
+				console.error(err)
+			}
 		}
 	})
 
