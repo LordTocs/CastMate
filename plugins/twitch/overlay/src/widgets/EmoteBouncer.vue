@@ -46,7 +46,7 @@ import { OverlayWidgetSize } from "castmate-plugin-overlays-shared"
 import { Range } from "castmate-schema"
 import { onMounted, ref } from "vue"
 
-import { EmoteParsedString } from "castmate-plugin-twitch-shared"
+import { EmoteParsedString, EmoteInfo } from "castmate-plugin-twitch-shared"
 
 defineOptions({
 	widget: declareWidgetOptions({
@@ -58,7 +58,67 @@ defineOptions({
 			type: Object,
 			properties: {
 				lifeTime: { type: Range, required: true, default: { min: 7, max: 7 }, name: "Emote Life Time" },
-				shakeTime: { type: Duration, required: true, default: 5, name: "Time Between Shakes" },
+				emoteSize: {
+					type: Range,
+					name: "Emote Size",
+					default: { min: 80, max: 80 },
+					required: true,
+				},
+				velocityMax: {
+					type: Number,
+					name: "Launch Velocity Max",
+					default: 0.4,
+					template: true,
+					required: true,
+				},
+				shakeTime: {
+					type: Number,
+					name: "Time Between Shakes",
+					default: 5,
+					template: true,
+					required: true,
+				},
+				shakeStrength: {
+					type: Number,
+					name: "Shake Strength Multiplier",
+					default: 1,
+					template: true,
+					required: true,
+				},
+				gravityXScale: {
+					type: Number,
+					name: "Gravity X Scale",
+					default: 0.0,
+					template: true,
+					required: true,
+				},
+				gravityYScale: {
+					type: Number,
+					name: "Gravity Y Scale",
+					default: 1.0,
+					template: true,
+					required: true,
+				},
+				spamPrevention: {
+					type: Object,
+					name: "Spam Prevention",
+					properties: {
+						emoteRatio: {
+							type: Number,
+							name: "Emote Ratio",
+							default: 1,
+							required: true,
+						},
+						emoteCap: {
+							type: Number,
+							name: "Total Emote Cap",
+						},
+						emoteCapPerMessage: {
+							type: Number,
+							name: "Max Emotes per Chat Message",
+						},
+					},
+				},
 			},
 		},
 	}),
@@ -67,8 +127,18 @@ defineOptions({
 const props = defineProps<{
 	size: OverlayWidgetSize
 	config: {
-		lifetime: Range
+		lifeTime: Range
+		emoteSize: Range
+		velocityMax: number
 		shakeTime: Duration
+		shakeStrength: number
+		gravityXScale: number
+		gravityYScale: number
+		spamPrevention: {
+			emoteRatio: number
+			emoteCap: number | undefined
+			emoteCapPerMessage: number | undefined
+		}
 	}
 }>()
 
@@ -155,265 +225,123 @@ function updateBodyVDom() {
 	}
 }
 
-function spawnImage(image: string, aspectRatio: number) {
+interface SpawnInfo {
+	imageUrl: string
+	width: number
+	height: number
+	x: number
+	y: number
+	angle: number
+	velX: number
+	velY: number
+	angularVel: number
+	lifetime: number
+}
+
+const bodyMap = new Map<number, { body: Body; timeout: NodeJS.Timeout }>()
+
+function despawn(id: number) {
+	const bodyInfo = bodyMap.get(id)
+
+	if (!bodyInfo) return
+
+	clearTimeout(bodyInfo.timeout)
+
+	World.remove(engine.world, bodyInfo.body)
+
+	const idx = bouncingEmotes.value.findIndex((e) => e.bodyId == id)
+	if (idx >= 0) {
+		bouncingEmotes.value.splice(idx, 1)
+	}
+
+	bodyMap.delete(id)
+}
+
+function spawn(info: SpawnInfo) {
+	if (props.config.spamPrevention.emoteCap != null) {
+		while (bouncingEmotes.value.length >= props.config.spamPrevention.emoteCap) {
+			despawn(bouncingEmotes.value[0].bodyId)
+		}
+	}
+
+	const body = Bodies.circle(info.x, info.y, info.height / 2, {})
+	const bouncer: BouncingEmote = {
+		bodyId: body.id,
+		imageUrl: info.imageUrl,
+		width: info.width,
+		height: info.height,
+		angle: 0,
+		x: info.x,
+		y: info.y,
+	}
+
+	bouncingEmotes.value.push(bouncer)
+	Body.applyForce(body, { x: info.x, y: info.y }, { x: info.velX, y: info.velY })
+	World.add(engine.world, [body])
+
+	const timeout = setTimeout(() => {
+		despawn(body.id)
+	}, info.lifetime * 1000)
+
+	bodyMap.set(body.id, { body, timeout })
+
+	return body.id
+}
+
+function getDefaultSpawnInfo() {
 	const spawnAreaWidth = props.size.width
 	const spawnAreaHeight = props.size.height
 
 	let x = Math.random() * spawnAreaWidth
 	let y = Math.random() * spawnAreaHeight
 
-	// if (this.useLaunchPosition) {
-	// 	x = this.launchParameters?.launchX ?? 0
-	// 	y = this.launchParameters?.launchY ?? 0
-	// }
+	let velX = (Math.random() - 0.5) * props.config.velocityMax
+	let velY = (Math.random() - 0.5) * props.config.velocityMax
 
-	const velocityMax = 0.4
-	let velX = (Math.random() - 0.5) * velocityMax
-	let velY = (Math.random() - 0.5) * velocityMax
+	const angle = 0
+	const angularVel = 0
 
-	// if (this.useLaunchPosition) {
-	// 	const angle =
-	// 		Number(this.launchParameters?.angle) +
-	// 		(Math.random() - 0.5) *
-	// 			Number(this.launchParameters?.spread)
+	const lifetime = Range.random(props.config.lifeTime)
 
-	// 	velX = Math.cos((angle * Math.PI) / 180) * velocityMax
-	// 	velY = Math.sin((angle * Math.PI) / 180) * velocityMax
-	// }
-
-	const height = 80
-	const width = height / aspectRatio
-
-	const circleBody = Bodies.circle(x, y, height / 2, {})
-
-	const bouncer: BouncingEmote = {
-		bodyId: circleBody.id,
-		imageUrl: image,
-		width,
-		height,
-		angle: 0,
+	return {
 		x,
 		y,
+		velX,
+		velY,
+		angle,
+		angularVel,
+		lifetime,
 	}
+}
 
-	bouncingEmotes.value.push(bouncer)
+function spawnEmote(emote: EmoteInfo) {
+	const imageUrl = emote.urls.url4x ?? emote.urls.url3x ?? emote.urls.url2x ?? emote.urls.url1x
 
-	//circleBody.vueId = id
+	if (!imageUrl) return -1
 
-	Body.applyForce(circleBody, { x, y }, { x: velX, y: velY })
+	const height = Range.random(props.config.emoteSize)
+	const width = height / emote.aspectRatio
 
-	World.add(engine.world, [circleBody])
-
-	const lifetime = 7 //props.config.lifetime.min || 7
-
-	setTimeout(() => {
-		World.remove(engine.world, circleBody)
-		const idx = bouncingEmotes.value.findIndex((b) => b.bodyId == circleBody.id)
-		if (idx >= 0) {
-			bouncingEmotes.value.splice(idx, 1)
-		}
-	}, lifetime * 1000)
+	return spawn({
+		imageUrl,
+		width,
+		height,
+		...getDefaultSpawnInfo(),
+	})
 }
 
 handleOverlayMessage("twitch_message", (message: EmoteParsedString) => {
-	for (const chunk of message) {
-		console.log("Chunk", chunk)
-		if (chunk.type == "emote") {
-			const img =
-				chunk.emote.urls.url4x ?? chunk.emote.urls.url3x ?? chunk.emote.urls.url2x ?? chunk.emote.urls.url1x
-
-			if (!img) continue
-			spawnImage(img, chunk.emote.aspectRatio)
+	let spawned = 0
+	for (let i = 0; i < props.config.spamPrevention.emoteRatio; ++i) {
+		for (const chunk of message) {
+			if (chunk.type == "emote") {
+				spawnEmote(chunk.emote)
+				spawned++
+				if (spawned === props.config.spamPrevention.emoteCapPerMessage) return
+			}
 		}
 	}
 })
-/*
-export default {
-	inject: ["isEditor", "stateProvider"],
-	props: {
-		size: { type: Object },
-		lifetime: { type: Number, name: "Emote Life Time", default: 7 },
-		velocityMax: { type: Number, name: "Max Velocity", default: 0.4 },
-		shakeTime: { type: Number, name: "Time Between Shakes", default: 5 },
-		useLaunchPosition: {
-			type: Boolean,
-			name: "Use Launch Parameters",
-			default: false,
-		},
-		launchParameters: {
-			type: Object,
-			name: "Launch Parameters",
-			properties: {
-				launchX: { type: Number, name: "X Position" },
-				launchY: { type: Number, name: "Y Position" },
-				angle: { type: Number, name: "Angle" },
-				spread: { type: Number, name: "Angle Spread" },
-			},
-		},
-	},
-	computed: {
-		...mapCastMateState("twitch", ["channelId", "channelName"]),
-		launchWidth() {
-			return 400 * this.velocityMax
-		},
-		launchHeight() {
-			return (
-				this.launchWidth *
-				Math.sin(
-					((this.launchParameters?.spread || 0) * Math.PI) / 180 / 2
-				) *
-				2
-			)
-		},
-		launchClipPath() {
-			const radius = this.launchWidth
-			const spread = this.launchParameters?.spread || 0
-			const theta = (spread * Math.PI) / 180 / 2
-			const cosTheta = Math.cos(theta)
-			const sinTheta = Math.sin(theta)
-
-			const width = this.launchWidth
-			const height = this.launchHeight
-
-			const arcPath = `M 0,${height / 2 - 1} L${
-				cosTheta * width
-			},-1 A ${radius},${radius} ${spread} 0, 1, ${cosTheta * width}, ${
-				height + 1
-			} L 0,${height / 2 + 1} Z`
-
-			return arcPath
-		},
-	},
-	methods: {
-		onTwitchChat(chat) {
-			const emotes = this.emotes.parseMessage(chat)
-
-			if (emotes) {
-				for (let emote of emotes) {
-					this.spawnImage(emote)
-				}
-			}
-		},
-		updateBodyVDom() {
-			const bodies = Composite.allBodies(this.engine.world)
-
-			for (let body of bodies) {
-				if (body.vueId) {
-					const vueBody = this.bodies.find((b) => b.id == body.vueId)
-
-					vueBody.x = body.position.x
-					vueBody.y = body.position.y
-					vueBody.angle = body.angle
-				}
-			}
-		},
-		shake() {
-			if (this.isEditor) return
-
-			const bodies = Composite.allBodies(this.engine.world)
-
-			for (let body of bodies) {
-				if (!body.isStatic) {
-					const forceMagnitude = 0.02 * body.mass
-
-					Body.applyForce(body, body.position, {
-						x:
-							(forceMagnitude +
-								Common.random() * forceMagnitude) *
-							Common.choose([1, -1]),
-						y: -forceMagnitude + Common.random() * -forceMagnitude,
-					})
-				}
-			}
-		},
-		spawnImage(image) {
-			const width = this.size.width
-			const height = this.size.height
-
-			let x = Math.random() * width
-			let y = Math.random() * height
-
-			if (this.useLaunchPosition) {
-				x = this.launchParameters?.launchX ?? 0
-				y = this.launchParameters?.launchY ?? 0
-			}
-
-			const velocityMax = this.velocityMax ?? 0.4
-			let velX = (Math.random() - 0.5) * velocityMax
-			let velY = (Math.random() - 0.5) * velocityMax
-
-			if (this.useLaunchPosition) {
-				const angle =
-					Number(this.launchParameters?.angle) +
-					(Math.random() - 0.5) *
-						Number(this.launchParameters?.spread)
-
-				velX = Math.cos((angle * Math.PI) / 180) * velocityMax
-				velY = Math.sin((angle * Math.PI) / 180) * velocityMax
-			}
-
-			const id = this.spawnId++
-
-			this.bodies.push({
-				src: image,
-				id,
-				width: 80,
-				height: 80,
-				x,
-				y,
-				angle: 0,
-			})
-
-			const circleBody = Bodies.circle(x, y, 40, {})
-			circleBody.vueId = id
-
-			Body.applyForce(circleBody, { x, y }, { x: velX, y: velY })
-
-			World.add(this.engine.world, [circleBody])
-
-			const lifetime = this.lifetime || 7
-			setTimeout(() => {
-				World.remove(this.engine.world, circleBody)
-
-				const idx = this.bodies.findIndex((b) => b.id == id)
-				if (idx >= 0) {
-					this.bodies.splice(idx, 1)
-				}
-			}, lifetime * 1000)
-		},
-		setNewRectangle(body, x, y, width, height) {
-			Body.setPosition(body, { x, y})
-			Body.setVertices(body, Vertices.fromPath('L 0 0 L ' + width + ' 0 L ' + width + ' ' + height + ' L 0 ' + height))
-		},
-		updateWalls() {
-			if (this.isEditor) return
-
-			const width = this.size.width
-			const height = this.size.height
-			this.setNewRectangle(this.ground, width / 2, height + 40, width, 80)
-			this.setNewRectangle(this.ceiling, width / 2, -40, width, 80)
-			this.setNewRectangle(this.leftWall, -40, height / 2, 80, height)
-			this.setNewRectangle(this.rightWall, width + 40, height / 2, 80, height)
-		}
-	},
-	mounted() {
-
-	},
-	watch: {
-		channelId() {
-			this.emotes?.updateChannelId(this.channelId)
-		},
-		channelName() {
-			this.emotes?.updateChannelName(this.channelName)
-		},
-		size: {
-			deep: true,
-			handler() {
-				this.updateWalls()
-			}
-		}
-	},
-}*/
 </script>
 
 <style scoped>
