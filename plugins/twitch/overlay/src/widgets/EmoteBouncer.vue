@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import Matter, { Engine, Body, Bodies, World, Runner, Events, Composite, Vertices } from "matter-js"
+import Matter, { Engine, Body, Bodies, World, Runner, Events, Composite, Vertices, Common } from "matter-js"
 
 import { declareWidgetOptions, handleOverlayMessage } from "castmate-overlay-core"
 import { Duration } from "castmate-schema"
@@ -152,6 +152,7 @@ let rightWall: Body
 let runner: Runner
 
 const lastTimestamp = ref(0)
+const nextShakeTime = ref(0)
 
 onMounted(() => {
 	if (!bounceHouse.value) return
@@ -183,14 +184,64 @@ onMounted(() => {
 	runner = Runner.run(engine)
 
 	Events.on(engine, "beforeUpdate", (event) => {
-		if (props.config.shakeTime > 0 && event.timestamp % Math.ceil(props.config.shakeTime * 1000) < 50) shake()
+		if (nextShakeTime.value == 0) {
+			nextShakeTime.value = event.timestamp + props.config.shakeTime * 1000
+		}
+
+		if (event.timestamp > nextShakeTime.value) {
+			nextShakeTime.value = event.timestamp + props.config.shakeTime * 1000
+			shake()
+		}
 
 		lastTimestamp.value = event.timestamp
 		updateBodyVDom()
 	})
 })
 
-function shake() {}
+function shake() {
+	const bodies = Composite.allBodies(engine.world)
+
+	for (let body of bodies) {
+		if (!body.isStatic) {
+			const forceMagnitude = 0.02 * body.mass * (props.config.shakeStrength ?? 1.0)
+
+			//Warp force to be opposed to gravity
+			const gravity = {
+				x: engine.gravity.x,
+				y: engine.gravity.y,
+			}
+			const gravityMag = Math.sqrt(gravity.x * gravity.x + gravity.y * gravity.y)
+
+			if (gravityMag > 0) {
+				const forceX = Common.random(-1, 1) * forceMagnitude
+				const forceY = Common.random(0, 2) * -forceMagnitude
+
+				gravity.x /= gravityMag
+				gravity.y /= gravityMag
+
+				const gravityTangent = { x: -gravity.y, y: gravity.x }
+
+				const gravityAlignedForce = {
+					x: forceX * gravityTangent.x + forceY * gravity.x,
+					y: forceX * gravityTangent.y + forceY * gravity.y,
+				}
+
+				Body.applyForce(body, body.position, {
+					x: gravityAlignedForce.x,
+					y: gravityAlignedForce.y,
+				})
+			} else {
+				const forceX = Common.random(-2, 2) * forceMagnitude
+				const forceY = Common.random(-2, 2) * -forceMagnitude
+
+				Body.applyForce(body, body.position, {
+					x: forceX,
+					y: forceY,
+				})
+			}
+		}
+	}
+}
 
 function setNewRectangle(body: Body, x: number, y: number, width: number, height: number) {
 	Body.setPosition(body, { x, y })
