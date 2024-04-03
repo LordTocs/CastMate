@@ -4,6 +4,7 @@ import { setupOverlayResources } from "./overlay-resource"
 import { setupWebsockets } from "./websocket-bridge"
 
 import { OverlayTextStyle } from "castmate-plugin-overlays-shared"
+import { setupEmoteBouncer } from "./emote-bouncer"
 
 export default definePlugin(
 	{
@@ -18,6 +19,7 @@ export default definePlugin(
 
 		setupOverlayResources()
 		setupWebsockets()
+		setupEmoteBouncer()
 	}
 )
 

@@ -1,4 +1,10 @@
-import { MatchingTrie, buildMatchingTrie, buildTrieRegex, findNextTrieMatch, escapeRegExp } from "castmate-schema"
+import {
+	MatchingTrie,
+	buildMatchingTrie,
+	buildTrieRegex,
+	findNextTrieMatch,
+	escapeRegExp,
+} from "../util/substring-helper"
 
 export interface EmoteImageURLs {
 	url1x?: string

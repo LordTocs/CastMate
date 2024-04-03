@@ -13,6 +13,7 @@ import { globalLogger, initializeLogging } from "./logging/logging"
 import { WebService } from "./webserver/internal-webserver"
 import { PubSubManager } from "./pubsub/pubsub-service"
 import { SequenceResolvers } from "./queue-system/sequence"
+import { EmoteCache } from "./emotes/emote-service"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -43,6 +44,7 @@ export async function initializeCastMate() {
 	ResourceRegistry.initialize()
 	PubSubManager.initialize()
 	SequenceResolvers.initialize()
+	EmoteCache.initialize()
 	setupStreamPlans()
 
 	//How do we load plugins???
@@ -60,6 +62,7 @@ export async function finializeCastMateSetup() {
 	ActionQueueManager.initialize()
 	ProfileManager.initialize()
 	await ProfileManager.getInstance().finishSetup()
+	await EmoteCache.getInstance().initialize()
 	globalLogger.log("CastMate Init Complete")
 	setupComplete = true
 	notifyRendererSetupFinished()

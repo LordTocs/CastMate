@@ -1,8 +1,8 @@
-import { EmoteImageURLs, EmoteInfo, EmoteSet } from "castmate-plugin-twitch-shared"
-import { EmoteCache, TwitchEmoteProvider } from "./emote-cache"
 import { TwitchAccount } from "./twitch-auth"
 import axios, { AxiosResponse } from "axios"
-import { onLoad } from "castmate-core"
+import { EmoteCache, EmoteProvider, onLoad } from "castmate-core"
+import { onChannelAuth } from "./api-harness"
+import { EmoteImageURLs, EmoteInfo, EmoteSet } from "castmate-schema"
 
 interface SevenTVFile {
 	name: string
@@ -116,12 +116,20 @@ function sevenTVToEmoteSet(sevenTv: SevenTVEmoteSet) {
 	return result
 }
 
-class SevenTVEmoteProvider implements TwitchEmoteProvider {
+class SevenTVEmoteProvider implements EmoteProvider {
 	get id() {
 		return "7tv"
 	}
 
+	private emoteSets: EmoteSet[] = []
+
 	async getSets(): Promise<EmoteSet[]> {
+		return this.emoteSets
+	}
+
+	async initialize() {
+		if (!TwitchAccount.channel.isAuthenticated) return
+
 		const globalResp = await axios.get<SevenTVEmoteSet>("https://7tv.io/v3/emote-sets/global")
 		const userResp = await axios.get<SevenTVUserResp>(
 			`https://7tv.io/v3/users/twitch/${TwitchAccount.channel.twitchId}`
@@ -130,12 +138,20 @@ class SevenTVEmoteProvider implements TwitchEmoteProvider {
 		const globalSet = sevenTVToEmoteSet(globalResp.data)
 		const userSet = sevenTVToEmoteSet(userResp.data.emote_set)
 
-		return [globalSet, userSet]
+		this.emoteSets = [globalSet, userSet]
 	}
 
-	async initialize() {}
+	reset() {
+		for (const set of this.emoteSets) {
+			this.onSetRemoved(set.id)
+		}
 
-	reset() {}
+		this.initialize().then(() => {
+			for (const set of this.emoteSets) {
+				this.onSetAdded(set)
+			}
+		})
+	}
 
 	onSetUpdated: (set: EmoteSet) => any
 	onSetRemoved: (id: string) => any
@@ -143,7 +159,13 @@ class SevenTVEmoteProvider implements TwitchEmoteProvider {
 }
 
 export function setup7tv() {
+	const sevenTvEmotes = new SevenTVEmoteProvider()
+
 	onLoad(() => {
-		EmoteCache.getInstance().registerEmoteProvider(new SevenTVEmoteProvider())
+		EmoteCache.getInstance().registerEmoteProvider(sevenTvEmotes)
+	})
+
+	onChannelAuth((channel, service) => {
+		sevenTvEmotes.reset()
 	})
 }

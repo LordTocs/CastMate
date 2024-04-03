@@ -41,12 +41,10 @@
 import Matter, { Engine, Body, Bodies, World, Runner, Events, Composite, Vertices, Common } from "matter-js"
 
 import { declareWidgetOptions, handleOverlayMessage, handleOverlayRPC } from "castmate-overlay-core"
-import { Duration } from "castmate-schema"
+import { Duration, EmoteInfo, EmoteParsedString } from "castmate-schema"
 import { OverlayWidgetSize } from "castmate-plugin-overlays-shared"
 import { Range } from "castmate-schema"
 import { onMounted, ref, watch } from "vue"
-
-import { EmoteParsedString, EmoteInfo } from "castmate-plugin-twitch-shared"
 
 defineOptions({
 	widget: declareWidgetOptions({

@@ -1,12 +1,11 @@
 import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
-import { defineTrigger, defineAction, defineTransformTrigger, usePluginLogger, onLoad } from "castmate-core"
+import { defineTrigger, defineAction, defineTransformTrigger, usePluginLogger, onLoad, EmoteCache } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onBotAuth, onChannelAuth } from "./api-harness"
-import { Color, Command, Range, getCommandDataSchema, matchAndParseCommand } from "castmate-schema"
+import { Color, Command, Range, getCommandDataSchema, matchAndParseCommand, EmoteParsedString } from "castmate-schema"
 import { ViewerCache } from "./viewer-cache"
-import { EmoteParsedString, TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
+import { TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
-import { EmoteCache } from "./emote-cache"
 import { OverlayWebsocketService } from "castmate-plugin-overlays-main"
 
 function parseEmotesFromMsg(chatMessage: ChatMessage): EmoteParsedString {
