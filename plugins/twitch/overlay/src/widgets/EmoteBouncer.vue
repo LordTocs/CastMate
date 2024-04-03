@@ -40,11 +40,11 @@
 <script setup lang="ts">
 import Matter, { Engine, Body, Bodies, World, Runner, Events, Composite, Vertices, Common } from "matter-js"
 
-import { declareWidgetOptions, handleOverlayMessage } from "castmate-overlay-core"
+import { declareWidgetOptions, handleOverlayMessage, handleOverlayRPC } from "castmate-overlay-core"
 import { Duration } from "castmate-schema"
 import { OverlayWidgetSize } from "castmate-plugin-overlays-shared"
 import { Range } from "castmate-schema"
-import { onMounted, ref } from "vue"
+import { onMounted, ref, watch } from "vue"
 
 import { EmoteParsedString, EmoteInfo } from "castmate-plugin-twitch-shared"
 
@@ -181,6 +181,9 @@ onMounted(() => {
 
 	World.add(engine.world, [ground, ceiling, leftWall, rightWall])
 
+	engine.gravity.x = props.config.gravityXScale ?? 0
+	engine.gravity.y = props.config.gravityYScale ?? 1
+
 	runner = Runner.run(engine)
 
 	Events.on(engine, "beforeUpdate", (event) => {
@@ -197,6 +200,40 @@ onMounted(() => {
 		updateBodyVDom()
 	})
 })
+
+function setNewRectangle(body: Body, x: number, y: number, width: number, height: number) {
+	Body.setPosition(body, { x, y })
+	Body.setVertices(
+		body,
+		Vertices.fromPath("L 0 0 L " + width + " 0 L " + width + " " + height + " L 0 " + height, body)
+	)
+}
+
+watch(
+	() => props.size,
+	() => {
+		const width = props.size.width
+		const height = props.size.height
+		setNewRectangle(ground, width / 2, height + 40, width, 80)
+		setNewRectangle(ceiling, width / 2, -40, width, 80)
+		setNewRectangle(leftWall, -40, height / 2, 80, height)
+		setNewRectangle(rightWall, width + 40, height / 2, 80, height)
+	}
+)
+
+watch(
+	() => props.config.gravityXScale,
+	() => {
+		engine.gravity.x = props.config.gravityXScale ?? 0
+	}
+)
+
+watch(
+	() => props.config.gravityYScale,
+	() => {
+		engine.gravity.y = props.config.gravityYScale ?? 1
+	}
+)
 
 function shake() {
 	const bodies = Composite.allBodies(engine.world)
@@ -241,14 +278,6 @@ function shake() {
 			}
 		}
 	}
-}
-
-function setNewRectangle(body: Body, x: number, y: number, width: number, height: number) {
-	Body.setPosition(body, { x, y })
-	Body.setVertices(
-		body,
-		Vertices.fromPath("L 0 0 L " + width + " 0 L " + width + " " + height + " L 0 " + height, body)
-	)
 }
 
 interface BouncingEmote {
@@ -390,6 +419,14 @@ handleOverlayMessage("twitch_message", (message: EmoteParsedString) => {
 				spawned++
 				if (spawned === props.config.spamPrevention.emoteCapPerMessage) return
 			}
+		}
+	}
+})
+
+handleOverlayRPC("spawnEmotes", (message: EmoteParsedString) => {
+	for (const chunk of message) {
+		if (chunk.type == "emote") {
+			spawnEmote(chunk.emote)
 		}
 	}
 })
