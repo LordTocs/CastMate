@@ -13,39 +13,39 @@
 				class="slice"
 				:style="{
 					transform: `rotate(${i * degPerSlice + wheelAngle}deg)`,
-					'--sliceColor': slice.color,
+					'--sliceColor': slice?.color,
 					clipPath: `path('${clipPath}')`,
 				}"
 			>
 				<div
 					class="label"
 					:style="{
-						...OverlayBlockStyle.toCSSProperties(slice.block),
+						...OverlayBlockStyle.toCSSProperties(slice?.block),
 					}"
 				>
 					<div
 						:style="{
 							width: '100%',
 							whiteSpace: 'break-spaces',
-							...OverlayTextStyle.toCSSProperties(slice.font),
-							...OverlayTextAlignment.toCSSProperties(slice.textAlign),
+							...OverlayTextStyle.toCSSProperties(slice?.font),
+							...OverlayTextAlignment.toCSSProperties(slice?.textAlign),
 						}"
 					>
-						{{ slice.text }}
+						{{ slice?.text }}
 					</div>
 				</div>
 			</div>
 		</div>
-		<!-- <div
+		<div
 			class="clicker"
 			:style="{
-				backgroundColor: clicker?.color || '#A87B0B',
-				right: `${-((clicker?.width ?? 40) - (clicker?.inset ?? 10))}px`,
-				'--clickerWidth': `${clicker?.width ?? 40}px`,
-				'--clickerHeight': `${clicker?.height ?? 20}px`,
+				backgroundColor: config.clicker?.color || '#A87B0B',
+				right: `${-((config.clicker?.width ?? 40) - (config.clicker?.inset ?? 10))}px`,
+				'--clickerWidth': `${config.clicker?.width ?? 40}px`,
+				'--clickerHeight': `${config.clicker?.height ?? 20}px`,
 				clipPath: `path('${clickerClipPath}')`,
 			}"
-		></div> -->
+		></div>
 	</div>
 </template>
 
@@ -194,6 +194,36 @@ defineOptions({
 						},
 					},
 				},
+				clicker: {
+					name: "Clicker",
+					type: Object,
+					properties: {
+						color: {
+							type: Color,
+							name: "Color",
+							default: "#A87B0B",
+							required: true,
+						},
+						height: {
+							type: Number,
+							name: "Height",
+							default: 40,
+							required: true,
+						},
+						width: {
+							type: Number,
+							name: "Width",
+							default: 80,
+							required: true,
+						},
+						inset: {
+							type: Number,
+							name: "Inset",
+							default: 40,
+							required: true,
+						},
+					},
+				},
 			},
 		},
 	}),
@@ -207,32 +237,68 @@ interface ItemData {
 	block: OverlayBlockStyle
 }
 
-const props = defineProps<{
-	size: OverlayWidgetSize
-	config: {
-		slices: number
-		items: {
-			text: string
-			colorOverride: Color | undefined
-			fontOverride: OverlayTextStyle | undefined
-			textAlignOverride: OverlayTextAlignment | undefined
-			blockOverride: OverlayBlockStyle | undefined
-		}[]
-		style: {
-			color: Color
-			font: OverlayTextStyle
-			textAlign: OverlayTextAlignment
-			block: OverlayBlockStyle
-		}[]
-		damping: {
-			base: number
-			coefficient: number
+const props = withDefaults(
+	defineProps<{
+		size: OverlayWidgetSize
+		config: {
+			slices: number
+			items: {
+				text: string
+				colorOverride: Color | undefined
+				fontOverride: OverlayTextStyle | undefined
+				textAlignOverride: OverlayTextAlignment | undefined
+				blockOverride: OverlayBlockStyle | undefined
+			}[]
+			style: {
+				color: Color
+				font: OverlayTextStyle
+				textAlign: OverlayTextAlignment
+				block: OverlayBlockStyle
+			}[]
+			damping: {
+				base: number
+				coefficient: number
+			}
+			clicker: {
+				color: Color
+				height: number
+				width: number
+				inset: number
+			}
 		}
+	}>(),
+	{
+		size: () => ({ width: 0, height: 0 }),
+		config: () => ({
+			slices: 12,
+			items: [],
+			style: [],
+			damping: {
+				base: 1,
+				coefficient: 1,
+			},
+			clicker: {
+				color: "#000000",
+				width: 1,
+				height: 1,
+				inset: 1,
+			},
+		}),
 	}
-}>()
+)
 
 ///Rendering
 const wheelAngle = ref(0)
+
+onMounted(() => {
+	watch(
+		() => props.config,
+		() => {
+			console.log(props.config)
+		},
+		{ deep: true, immediate: true }
+	)
+})
 
 const radius = computed(() => props.size.width / 2)
 
@@ -368,6 +434,13 @@ function spinWheel(spinStrength: number) {
 
 handleOverlayRPC("spinWheel", (strength: number) => {
 	spinWheel(strength)
+})
+
+//clicker
+const clickerClipPath = computed(() => {
+	const height = props.config.clicker?.height || 20
+	const width = props.config.clicker?.width || 40
+	return `M 0 ${height / 2} L${width},0 L${width},${height} Z`
 })
 </script>
 
