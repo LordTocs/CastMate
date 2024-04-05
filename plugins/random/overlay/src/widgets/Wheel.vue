@@ -12,7 +12,7 @@
 				v-for="(slice, i) in sliceData"
 				class="slice"
 				:style="{
-					transform: `rotate(${i * (360 / config.slices) + wheelAngle}deg)`,
+					transform: `rotate(${i * degPerSlice + wheelAngle}deg)`,
 					'--sliceColor': slice.color,
 					clipPath: `path('${clipPath}')`,
 				}"
@@ -276,16 +276,17 @@ const itemIndex = computed(() => slicedLoopIndex(globalIndex.value, props.config
 const slotIndex = computed(() => slicedLoopIndex(globalIndex.value, props.config.slices))
 
 const sliceCount = computed(() => props.config.slices ?? 1)
-const items = computed(() => props.config.items ?? [])
+const items = computed(() => props.config.items ?? [{ text: "" }])
 const style = computed(() => props.config.style ?? defaultStyle)
 
 const sliceData = computed<ItemData[]>(() => {
-	const result: ItemData[] = []
+	const result = new Array<ItemData>(sliceCount.value)
 
-	const updateSlotIndex = slicedLoopIndex((-wheelAngle.value - 180) / degPerSlice.value, sliceCount.value)
-	const updateItemIndex = slicedLoopIndex((-wheelAngle.value - 180) / degPerSlice.value, sliceCount.value)
+	const iterStartIndex = (-wheelAngle.value - 180) / degPerSlice.value
+	const updateSlotIndex = slicedLoopIndex(iterStartIndex, sliceCount.value)
+	const updateItemIndex = slicedLoopIndex(iterStartIndex, items.value.length || 1)
 
-	for (let i = 0; i < props.config.slices; ++i) {
+	for (let i = 0; i < sliceCount.value; ++i) {
 		const slotIdx = (updateSlotIndex + i) % sliceCount.value
 		const itemIdx = (updateItemIndex + i) % (items.value.length || 1)
 		const styleIdx = slicedLoopIndex(slotIdx, style.value.length)
@@ -306,7 +307,7 @@ const sliceData = computed<ItemData[]>(() => {
 			block: item.blockOverride ?? sliceStyle.block,
 		}
 
-		result.push(resultData)
+		result[slotIdx] = resultData
 	}
 
 	return result
