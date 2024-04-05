@@ -11,6 +11,7 @@ export default definePlugin(
 		id: "overlays",
 		name: "Overlays",
 		description: "Overlay Plugin",
+		color: "#CC63A2",
 		icon: "mdi mdi-web",
 	},
 	() => {
