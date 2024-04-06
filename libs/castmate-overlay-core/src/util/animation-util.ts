@@ -1,3 +1,4 @@
+import { OverlayTransitionAnimation } from "castmate-plugin-overlays-shared"
 import { CSSProperties } from "vue"
 
 export interface RevealAnimation {
@@ -45,4 +46,23 @@ export const revealers: Record<string, RevealAnimation> = {
 			transform: `translateX(100%)`,
 		},
 	},
+	"Slide Left": {
+		enterFrom: {
+			opacity: 0,
+			transform: `translateX(100%)`,
+		},
+		active: {
+			transform: `translateX(0px)`,
+		},
+		leaveTo: {
+			opacity: 0,
+			transform: `translateX(-100%)`,
+		},
+	},
+}
+
+export function animationFromTransition(transition: OverlayTransitionAnimation | undefined): RevealAnimation {
+	if (!transition?.preset) return revealers["None"]
+
+	return revealers[transition.preset] ?? revealers["None"]
 }

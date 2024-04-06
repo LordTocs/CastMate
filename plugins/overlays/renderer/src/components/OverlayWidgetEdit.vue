@@ -31,11 +31,12 @@ import {
 	useIsSelected,
 	CContextMenu,
 	NameDialog,
+	useMediaStore,
 } from "castmate-ui-core"
 import { ComputedRef, computed, inject, markRaw, onMounted, provide, ref, useModel, watch } from "vue"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { useRemoteOverlayConfig } from "../config/overlay-config"
-import { CastMateBridgeImplementation } from "castmate-overlay-core"
+import { CastMateBridgeImplementation, provideEditorMediaResolver } from "castmate-overlay-core"
 
 import { useDialog } from "primevue/usedialog"
 import { MenuItem } from "primevue/menuitem"
@@ -54,6 +55,17 @@ const props = defineProps<{
 
 onMounted(() => {
 	console.log("Mount Widget Edit", props.modelValue)
+})
+
+provide("isEditor", true)
+
+const mediaStore = useMediaStore()
+provideEditorMediaResolver({
+	resolveMedia(file) {
+		const media = mediaStore.media[file]
+
+		return media?.file ?? ""
+	},
 })
 
 const resizable = ref<InstanceType<typeof PanAreaResizable>>()

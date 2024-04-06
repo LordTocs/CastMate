@@ -1,5 +1,5 @@
 <template>
-	<revealer :transition="props.transition" :animation="props.animation" v-show="visible">
+	<revealer :transition="transitionTime" :animation="animation" v-show="visible">
 		<slot></slot>
 	</revealer>
 </template>
@@ -7,12 +7,12 @@
 <script setup lang="ts">
 import { computed, ref, onBeforeUnmount } from "vue"
 import Revealer from "./Revealer.vue"
-import { RevealAnimation } from "../util/animation-util"
+import { RevealAnimation, animationFromTransition } from "../util/animation-util"
+import { OverlayTransitionAnimation } from "castmate-plugin-overlays-shared"
 
 const props = withDefaults(
 	defineProps<{
-		transition: number
-		animation: RevealAnimation
+		transition?: OverlayTransitionAnimation
 		appearDelay?: number
 		vanishAdvance?: number
 	}>(),
@@ -23,8 +23,10 @@ const props = withDefaults(
 )
 
 const transitionTime = computed(() => {
-	return props.transition
+	return props.transition?.duration ?? 0
 })
+
+const animation = computed(() => animationFromTransition(props.transition))
 
 const visible = ref(false)
 
@@ -33,8 +35,10 @@ let dissappearTimeout: NodeJS.Timeout | undefined
 
 defineExpose({
 	appear(duration: number) {
+		console.log("Start Appearing", duration)
 		appearTimeout = setTimeout(() => {
 			visible.value = true
+			console.log("Appearing")
 			appearTimeout = undefined
 		}, props.appearDelay * 1000)
 
@@ -43,6 +47,7 @@ defineExpose({
 		dissappearTimeout = setTimeout(() => {
 			visible.value = false
 			dissappearTimeout = undefined
+			console.log("Vanishing")
 		}, beginDisappearing * 1000)
 	},
 })

@@ -1,6 +1,6 @@
 <template>
 	<div class="container">
-		<video v-if="isVideo" class="fill" ref="video" :muted="isEditor" :src="url"></video>
+		<video v-if="isVideo" class="fill" ref="video" :muted="muted" :src="url"></video>
 		<img v-if="isImage" :src="imgSrc" ref="img" class="fill" :style="{ aspectRatio }" />
 		<div class="content">
 			<slot></slot>
@@ -9,31 +9,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue"
+import { computed, nextTick, onMounted, ref, watch } from "vue"
 import { ImageFormats } from "castmate-schema"
 import path from "path"
 import { useMediaUrl } from "../util/media-util"
 import { useIsEditor } from "../util/editor-util"
+import { useEventListener } from "@vueuse/core"
 
 const video = ref<HTMLVideoElement>()
 const img = ref<HTMLImageElement>()
-
+const aspectRatio = ref(0)
+const blankImg = ref(false)
 const isEditor = useIsEditor()
 
 const props = withDefaults(
 	defineProps<{
-		mediaFile: string | undefined
+		mediaFile?: string
 		muted?: boolean
 	}>(),
 	{ muted: false }
 )
 
-const blankImg = ref(false)
-
-const id = Math.round(Math.random() * 10000)
+const id = ref(Math.round(Math.random() * 10000))
 
 const mediaUrl = useMediaUrl(() => props.mediaFile)
-const url = computed(() => (mediaUrl.value ? `${mediaUrl.value}?=${id}` : ""))
+const url = computed(() => (mediaUrl.value ? `${mediaUrl.value}?=${id.value}` : ""))
 
 const imgSrc = computed(() => {
 	if (!props.mediaFile) return undefined
@@ -63,33 +63,32 @@ const isVideo = computed(() => {
 	return uppercase.endsWith("WEBM") || uppercase.endsWith("MP4") || uppercase.endsWith("OGG")
 })
 
-const aspectRatio = ref(0)
-
-watch(video, () => {
-	if (video.value) {
-		console.log("Video Element Created!")
-		video.value.addEventListener("loadedmetadata", () => {
-			if (!video.value) return
-
-			console.log("Video Info Loaded", video.value.videoWidth, video.value.videoHeight)
-			aspectRatio.value = video.value.videoWidth / video.value.videoHeight
-		})
-	}
+onMounted(() => {
+	watch(
+		() => props.mediaFile,
+		() => {
+			console.log("Media Container", props.mediaFile)
+		},
+		{ immediate: true }
+	)
 })
 
-watch(img, () => {
-	if (img.value) {
-		console.log("Image Element Created!")
-		img.value.addEventListener("load", () => {
-			if (!img.value) return
+useEventListener(video, "loadedmetadata", () => {
+	if (!video.value) return
 
-			aspectRatio.value = img.value.naturalWidth / img.value.naturalHeight
-		})
-	}
+	console.log("Video Info Loaded", video.value.videoWidth, video.value.videoHeight)
+	aspectRatio.value = video.value.videoWidth / video.value.videoHeight
+})
+
+useEventListener(img, "load", () => {
+	if (!img.value) return
+
+	console.log("Image Data Loaded", img.value.naturalWidth, img.value.naturalHeight)
+	aspectRatio.value = img.value.naturalWidth / img.value.naturalHeight
 })
 
 defineExpose({
-	restart: () => {
+	restart() {
 		if (isGIF.value && img.value) {
 			blankImg.value = true
 			//Wait for the next v-dom tick so blankImg's value is updated in the render
