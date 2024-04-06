@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import Matter, { Engine, Body, Bodies, World, Runner, Events, Composite, Vertices, Common } from "matter-js"
 
-import { declareWidgetOptions, handleOverlayMessage, handleOverlayRPC } from "castmate-overlay-core"
+import { declareWidgetOptions, handleOverlayMessage, handleOverlayRPC, useIsEditor } from "castmate-overlay-core"
 import { Duration, EmoteInfo, EmoteParsedString } from "castmate-schema"
 import { OverlayWidgetSize } from "castmate-plugin-overlays-shared"
 import { Range } from "castmate-schema"
@@ -140,6 +140,8 @@ const props = defineProps<{
 	}
 }>()
 
+const isEditor = useIsEditor()
+
 const bounceHouse = ref<HTMLElement>()
 
 let engine: Engine
@@ -154,6 +156,7 @@ const nextShakeTime = ref(0)
 
 onMounted(() => {
 	if (!bounceHouse.value) return
+	if (isEditor) return
 
 	const width = bounceHouse.value.clientWidth
 	const height = bounceHouse.value.clientHeight
@@ -200,6 +203,8 @@ onMounted(() => {
 })
 
 function setNewRectangle(body: Body, x: number, y: number, width: number, height: number) {
+	if (isEditor) return
+
 	Body.setPosition(body, { x, y })
 	Body.setVertices(
 		body,
@@ -319,6 +324,8 @@ interface SpawnInfo {
 const bodyMap = new Map<number, { body: Body; timeout: NodeJS.Timeout }>()
 
 function despawn(id: number) {
+	if (isEditor) return
+
 	const bodyInfo = bodyMap.get(id)
 
 	if (!bodyInfo) return
@@ -336,6 +343,8 @@ function despawn(id: number) {
 }
 
 function spawn(info: SpawnInfo) {
+	if (isEditor) return 0
+
 	if (props.config.spamPrevention.emoteCap != null) {
 		while (bouncingEmotes.value.length >= props.config.spamPrevention.emoteCap) {
 			despawn(bouncingEmotes.value[0].bodyId)
