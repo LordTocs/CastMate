@@ -31,28 +31,9 @@ const animation = computed(() => animationFromTransition(props.transition))
 const visible = ref(false)
 
 let appearTimeout: NodeJS.Timeout | undefined = undefined
-let dissappearTimeout: NodeJS.Timeout | undefined
+let dissappearTimeout: NodeJS.Timeout | undefined = undefined
 
-defineExpose({
-	appear(duration: number) {
-		console.log("Start Appearing", duration)
-		appearTimeout = setTimeout(() => {
-			visible.value = true
-			console.log("Appearing")
-			appearTimeout = undefined
-		}, props.appearDelay * 1000)
-
-		const beginDisappearing = Math.max(0, duration - (props.vanishAdvance + transitionTime.value))
-
-		dissappearTimeout = setTimeout(() => {
-			visible.value = false
-			dissappearTimeout = undefined
-			console.log("Vanishing")
-		}, beginDisappearing * 1000)
-	},
-})
-
-onBeforeUnmount(() => {
+function clearTimeouts() {
 	if (appearTimeout) {
 		clearTimeout(appearTimeout)
 		appearTimeout = undefined
@@ -61,5 +42,26 @@ onBeforeUnmount(() => {
 		clearTimeout(dissappearTimeout)
 		dissappearTimeout = undefined
 	}
+}
+
+defineExpose({
+	appear(duration: number) {
+		clearTimeouts()
+		appearTimeout = setTimeout(() => {
+			visible.value = true
+			appearTimeout = undefined
+		}, props.appearDelay * 1000)
+
+		const beginDisappearing = Math.max(0, duration - (props.vanishAdvance + transitionTime.value))
+
+		dissappearTimeout = setTimeout(() => {
+			visible.value = false
+			dissappearTimeout = undefined
+		}, beginDisappearing * 1000)
+	},
+})
+
+onBeforeUnmount(() => {
+	clearTimeouts()
 })
 </script>
