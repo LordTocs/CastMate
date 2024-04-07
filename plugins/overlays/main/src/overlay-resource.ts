@@ -49,6 +49,10 @@ export class Overlay extends FileResource<OverlayConfig> {
 		OverlayWebsocketService.getInstance().overlayConfigChanged(this.id)
 		return result
 	}
+
+	getWidgetConfig(widgetId: string) {
+		return this.config.widgets.find((w) => w.id == widgetId)
+	}
 }
 
 interface OverlayWidgetDescriptor {
