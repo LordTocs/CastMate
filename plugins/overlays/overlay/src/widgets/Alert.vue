@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { MediaContainer, TimedReveal, declareWidgetOptions, useIsEditor } from "castmate-overlay-core"
+import { MediaContainer, TimedReveal, declareWidgetOptions, handleOverlayRPC, useIsEditor } from "castmate-overlay-core"
 import {
 	OverlayBlockStyle,
 	OverlayTextAlignment,
@@ -36,6 +36,8 @@ defineOptions({
 	widget: declareWidgetOptions({
 		id: "alert",
 		name: "Alert",
+		icon: "mdi mdi-alert-box-outline",
+		description: "A classic alert box that can show two lines of text along with gifs, images, and videos",
 		defaultSize: { width: 300, height: 200 },
 		config: {
 			type: Object,
@@ -267,201 +269,12 @@ onUnmounted(() => {
 	}
 })
 
-/*
-import MediaContainer from "../utils/MediaContainer.vue"
-import { MediaFile } from "../typeProxies.js"
-import TimedReveal from "../utils/TimedReveal.vue"
-import Revealers from "../utils/Revealers.js"
-import _merge from "lodash/merge"
-
-export default {
-	components: { MediaContainer, TimedReveal },
-	inject: ["isEditor"],
-	props: {
-		media: {
-			type: MediaFile,
-			name: "Alert Media",
-			image: true,
-			video: true,
-		},
-		duration: { type: Number, name: "Duration", default: 4 },
-		transition: {
-			type: OverlayTransition,
-			name: "Transition",
-			default: () => ({ animation: "Fade", duration: 0.1 }),
-		},
-		textBelowMedia: {
-			type: Boolean,
-			name: "Text Below Media",
-			default: true,
-			required: true,
-		},
-		titleFormat: {
-			type: Object,
-			name: "Title",
-			properties: {
-				style: {
-					type: OverlayFontStyle,
-					name: "Style",
-					exampleText: "Title",
-					default: {
-						fontFamily: "Impact",
-						fontSize: 65,
-						fontColor: "#FFFFFF",
-						stroke: {
-							width: 1,
-							color: { ref: "alertColor" },
-						},
-					},
-				},
-				padding: { type: OverlayPadding, name: "Padding" },
-				transition: {
-					type: OverlayTransition,
-					name: "Transition",
-					default: {
-						duration: 0.1,
-						animation: "Fade",
-					},
-				},
-				timing: {
-					type: OverlayTransitionTiming,
-					name: "Timing",
-					default: {
-						appearDelay: 1,
-						vanishAdvance: 0.25,
-					},
-				},
-			},
-		},
-		messageFormat: {
-			type: Object,
-			name: "Message",
-			properties: {
-				style: {
-					type: OverlayFontStyle,
-					name: "Style",
-					exampleText: "Message",
-					default: {
-						fontFamily: "Impact",
-						fontSize: 50,
-						fontColor: "#FFFFFF",
-						stroke: {
-							width: 1,
-							color: { ref: "alertColor" },
-						},
-					},
-				},
-				padding: { type: OverlayPadding, name: "Padding" },
-				transition: {
-					type: OverlayTransition,
-					name: "Transition",
-					default: {
-						duration: 0.1,
-						animation: "Fade",
-					},
-				},
-				timing: {
-					type: OverlayTransitionTiming,
-					name: "Timing",
-					default: {
-						appearDelay: 1,
-						vanishAdvance: 0.25,
-					},
-				},
-			},
-		},
-	},
-	data() {
-		return {
-			message: null,
-			header: null,
-			colorRefs: {
-				alertColor: "#FF0000",
-			},
-		}
-	},
-	widget: {
-		name: "Alert Box",
-		description: "An ALERT!",
-		icon: "mdi-alert-box",
-		testActions: ["alerts.alert"],
-		colorRefs: ["alertColor"],
-		defaultSize: {
-			width: 300,
-			height: 200,
-		},
-	},
-	computed: {
-		alertAnimation() {
-			return Revealers[this.transition?.animation || "None"]
-		},
-		alertTransition() {
-			return this.transition?.duration || 0.5
-		},
-		titleAnimation() {
-			return Revealers[this.titleFormat?.transition?.animation || "None"]
-		},
-		messageAnimation() {
-			return Revealers[
-				this.messageFormat?.transition?.animation || "None"
-			]
-		},
-	},
-	methods: {
-		getFontStyle(headerStyle) {
-			return OverlayFontStyle.getStyleObj(headerStyle, this.colorRefs)
-		},
-		getPaddingStyle(padding) {
-			return OverlayPadding.getStyleObject(padding)
-		},
-		showAlert(header, message, color) {
-			this.header = header
-			this.message = message
-			this.colorRefs.alertColor = color
-
-			this.$refs.alertReveal?.appear(this.duration)
-			this.$refs.titleReveal?.appear(this.duration)
-			this.$refs.messageReveal?.appear(this.duration)
-			this.$refs.media.restart()
-		},
-		setEditorTimer() {
-			if (this.isEditor) {
-				if (this.timer) {
-					clearInterval(this.timer)
-					this.timer = null
-				}
-				//Show right away
-				this.showAlert("Title", "Message", "#FF0000")
-				//Show in the future
-				this.timer = setInterval(
-					() => this.showAlert("Title", "Message", "#FF0000"),
-					(this.duration + 1) * 1000
-				)
-			}
-		},
-	},
-	mounted() {
-		this.setEditorTimer()
-	},
-	unmounted() {
-		if (this.timer) {
-			clearInterval(this.timer)
-		}
-	},
-	watch: {
-		duration() {
-			this.setEditorTimer()
-		},
-	},
-}
-*/
+handleOverlayRPC("showAlert", (title: string, subtitle: string) => {
+	showAlert(title, subtitle, "#000000")
+})
 </script>
 
 <style scoped>
-p {
-	margin: 0;
-}
-
 .alert {
 	position: relative;
 	color: white;
@@ -469,22 +282,8 @@ p {
 	height: 100%;
 }
 
-.alert-head {
-	font-size: 40px;
-	text-align: center;
-}
-
-.alert-body {
-	font-size: 30px;
-	text-align: center;
-}
-
 .frame-sized {
 	position: absolute;
 	inset: 0px;
-}
-
-.message {
-	white-space: pre-wrap;
 }
 </style>
