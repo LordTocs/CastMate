@@ -63,7 +63,9 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 	rpcs.handle("overlays_widgetRPC", (widgetId: string, rpcId: string, ...args: any[]) => {
 		const widgetRpc = widgetRpcs[`${widgetId}.${rpcId}`]
 
-		if (widgetRpc) widgetRpc(...args)
+		if (widgetRpc) return widgetRpc(...args)
+
+		return undefined
 	})
 
 	rpcs.handle("overlays_broadcast", (broadcastId: string, ...args: any[]) => {

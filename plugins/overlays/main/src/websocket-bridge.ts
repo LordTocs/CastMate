@@ -159,20 +159,30 @@ export const OverlayWebsocketService = Service(
 			sockets.evaluator.effect?.trigger()
 		}
 
-		async callOverlayRPC(widgetId: string, rpcId: string, ...args: any[]) {
+		async callOverlayRPC<T extends (...args: any[]) => any = (...args: any[]) => any>(
+			widgetId: string,
+			rpcId: string,
+			...args: Parameters<T>
+		) {
 			for (const overlay of Overlay.storage) {
 				const widget = overlay.config.widgets.find((w) => w.id == widgetId)
 				if (!widget) continue
 
 				const openSockets = this.openOverlays.get(overlay.id)
-				if (!openSockets) return
+				if (!openSockets) return []
 
 				const calls = openSockets.sockets.map((s) => s.call("overlays_widgetRPC", widgetId, rpcId, ...args))
 
 				logger.log("Calling", widgetId, rpcId, "on", calls.length, "sockets")
 
-				await Promise.allSettled(calls)
+				const results = await Promise.allSettled(calls)
+
+				const successes = results.filter((r): r is PromiseFulfilledResult<any> => r.status == "fulfilled")
+
+				return successes.map((s) => s.value as ReturnType<T>)
 			}
+
+			return []
 		}
 
 		async sendOverlayMessage(messageId: string, ...args: any[]) {
