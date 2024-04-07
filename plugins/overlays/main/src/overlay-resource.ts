@@ -5,6 +5,7 @@ import {
 	ResourceStorage,
 	Service,
 	autoRerun,
+	defineAction,
 	defineIPCFunc,
 	definePluginResource,
 	ipcParseSchema,
@@ -12,8 +13,14 @@ import {
 	remoteTemplateSchema,
 	usePluginLogger,
 } from "castmate-core"
-import { IPCOverlayWidgetDescriptor, OverlayConfig, OverlayWidgetOptions } from "castmate-plugin-overlays-shared"
-import { Schema, SchemaObj, filterPromiseAll } from "castmate-schema"
+import {
+	IPCOverlayWidgetDescriptor,
+	OverlayConfig,
+	OverlayWidget,
+	OverlayWidgetConfig,
+	OverlayWidgetOptions,
+} from "castmate-plugin-overlays-shared"
+import { Schema, SchemaObj, Toggle, filterPromiseAll } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { setupConfigEval } from "./config-evaluation"
 import { OverlayWebsocketService } from "./websocket-bridge"
@@ -52,6 +59,16 @@ export class Overlay extends FileResource<OverlayConfig> {
 
 	getWidgetConfig(widgetId: string) {
 		return this.config.widgets.find((w) => w.id == widgetId)
+	}
+
+	async setWidgetConfig(widgetId: string, config: OverlayWidgetConfig) {
+		const idx = this.config.widgets.findIndex((w) => w.id == widgetId)
+		if (idx == -1) return
+
+		const newWidgets = [...this.config.widgets]
+		newWidgets[idx] = config
+
+		await this.applyConfig({ widgets: newWidgets })
 	}
 }
 
@@ -96,4 +113,38 @@ export function setupOverlayResources() {
 	OverlayWidgetManager.initialize()
 	setupConfigEval()
 	definePluginResource(Overlay)
+
+	defineAction({
+		id: "widgetVisibility",
+		name: "Widget Visibility",
+		description: "Toggles a Widget's visibliity on an overlay.",
+		icon: "mdi mdi-eye",
+		config: {
+			type: Object,
+			properties: {
+				widget: { type: OverlayWidget, required: true, name: "Widget" },
+				enabled: {
+					type: Toggle,
+					name: "Widget Visibility",
+					required: true,
+					default: true,
+					trueIcon: "mdi mdi-eye-outline",
+					falseIcon: "mdi mdi-eye-off-outline",
+				},
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			const overlay = Overlay.storage.getById(config.widget?.overlayId)
+			const widget = overlay?.getWidgetConfig(config.widget.widgetId)
+
+			if (!widget || !overlay) return
+
+			let visible = config.enabled == "toggle" ? !widget.visible : config.enabled
+
+			await overlay.setWidgetConfig(config.widget.widgetId, {
+				...widget,
+				visible,
+			})
+		},
+	})
 }
