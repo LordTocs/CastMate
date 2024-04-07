@@ -195,32 +195,25 @@ function chooseMedia() {
 		weightTotal += mediaOption.weight
 	}
 
-	//console.log("Random Weight Total", weightTotal)
-
 	let targetWeight = Math.random() * weightTotal
 
-	//console.log("Random Target Weight", targetWeight)
-
-	for (const mediaOption of options) {
+	for (let i = 0; i < options.length; ++i) {
+		const mediaOption = options[i]
 		targetWeight -= mediaOption.weight
-
-		//console.log("   ", targetWeight)
-
 		if (targetWeight <= 0) {
-			//console.log("Random", key)
-			return mediaOption
+			return i
 		}
 	}
 
-	return undefined
+	return 0
 }
 
-function showAlert(header: string, message: string, color: Color) {
+function showAlert(header: string, message: string, color: Color, mediaIdx: number) {
 	headerText.value = header
 	messageText.value = message
 	alertColor.value = color
 
-	const mediaOption = chooseMedia()
+	const mediaOption = props.config.media?.[mediaIdx]
 
 	const duration = mediaOption?.duration ?? 4
 
@@ -241,7 +234,7 @@ function showAlert(header: string, message: string, color: Color) {
 function showEditorAlert() {
 	if (!isEditor) return
 
-	const duration = showAlert("Title", "Message", "#FF0000")
+	const duration = showAlert("Title", "Message", "#FF0000", chooseMedia())
 
 	timer = setTimeout(() => showEditorAlert(), (duration + 1) * 1000)
 }
@@ -269,8 +262,8 @@ onUnmounted(() => {
 	}
 })
 
-handleOverlayRPC("showAlert", (title: string, subtitle: string) => {
-	showAlert(title, subtitle, "#000000")
+handleOverlayRPC("showAlert", (title: string, subtitle: string, idx: number) => {
+	return showAlert(title, subtitle, "#000000", idx)
 })
 </script>
 
