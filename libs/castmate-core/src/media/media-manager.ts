@@ -9,7 +9,8 @@ import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { ensureDirectory, resolveProjectPath } from "../io/file-system"
 import { shell, app } from "electron"
 import { globalLogger, usePluginLogger } from "../logging/logging"
-
+import { WebService } from "../webserver/internal-webserver"
+import express, { Application, Router } from "express"
 //require("@ffmpeg-installer/win32-x64")
 //require("@ffprobe-installer/win32-x64")
 //Thumbnails?
@@ -60,6 +61,10 @@ export const MediaManager = Service(
 				if (!mediaItem) return
 				shell.showItemInFolder(mediaItem.file)
 			})
+
+			const router = express.Router()
+			router.use(express.static(mediaPath))
+			WebService.getInstance().addRootRouter("/media/default", router)
 		}
 
 		getMedia(path: string) {
