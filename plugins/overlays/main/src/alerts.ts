@@ -9,6 +9,30 @@ export function setupAlerts() {
 		id: "alert",
 		name: "Show Alert",
 		icon: "mdi mdi-alert-box-outline",
+		duration: {
+			propDependencies: ["alert"],
+			async callback(config) {
+				let duration = 1
+				let indefinite = false
+
+				if (config.alert?.overlayId) {
+					const overlay = Overlay.storage.getById(config.alert?.overlayId)
+					const widget = overlay?.getWidgetConfig(config.alert?.widgetId)
+
+					if (widget) {
+						const mediaArray =
+							(widget.config as { media: { weight: number; duration: Duration }[] })?.media ?? []
+						duration = Math.max(...mediaArray.map((m) => m.duration))
+					}
+				}
+
+				return {
+					indefinite,
+					dragType: "fixed",
+					duration: duration,
+				}
+			},
+		},
 		config: {
 			type: Object,
 			properties: {
