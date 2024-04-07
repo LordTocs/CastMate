@@ -144,17 +144,17 @@ export const OverlayWebsocketService = Service(
 		}
 
 		async overlayConfigChanged(id: string) {
-			logger.log(`Overlay Config Updated "${id}"`)
+			//logger.log(`Overlay Config Updated "${id}"`)
 
 			const sockets = this.openOverlays.get(id)
 			if (!sockets) return
 
-			logger.log("Sockets Found", id)
+			//logger.log("Sockets Found", id)
 
 			const overlay = Overlay.storage.getById(id)
 			if (!overlay) return
 
-			logger.log("Triggering", id, sockets.evaluator.effect)
+			//logger.log("Triggering", id, sockets.evaluator.effect)
 
 			sockets.evaluator.effect?.trigger()
 		}
@@ -173,7 +173,7 @@ export const OverlayWebsocketService = Service(
 
 				const calls = openSockets.sockets.map((s) => s.call("overlays_widgetRPC", widgetId, rpcId, ...args))
 
-				logger.log("Calling", widgetId, rpcId, "on", calls.length, "sockets")
+				//logger.log("Calling", widgetId, rpcId, "on", calls.length, "sockets")
 
 				const results = await Promise.allSettled(calls)
 
