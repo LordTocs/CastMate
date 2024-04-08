@@ -16,7 +16,7 @@ import {
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 
 export interface CastMateBridgeImplementation {
-	acquireState<T>(plugin: string, state: string): void
+	acquireState(plugin: string, state: string): void
 	releaseState(plugin: string, state: string): void
 	state: { readonly value: Record<string, Record<string, any>> }
 	config: { readonly value: OverlayWidgetConfig }
@@ -24,6 +24,8 @@ export interface CastMateBridgeImplementation {
 	unregisterRPC(id: string): void
 	registerMessage(id: string, func: (...args: any[]) => any): void
 	unregisterMessage(id: string, func: (...args: any[]) => any): void
+
+	callRPC(id: string, ...args: any[]): Promise<any>
 }
 
 export function useCastMateBridge(): CastMateBridgeImplementation {
@@ -46,6 +48,7 @@ export function useCastMateBridge(): CastMateBridgeImplementation {
 		unregisterRPC(id) {},
 		registerMessage(id, func) {},
 		unregisterMessage(id) {},
+		async callRPC(id, ...args) {},
 	})
 }
 
@@ -104,4 +107,13 @@ export function handleOverlayRPC(id: string, func: (...args: any[]) => any) {
 	onBeforeUnmount(() => {
 		bridge.unregisterRPC(id)
 	})
+}
+
+export function useCallOverlayRPC<T extends (...args: any) => any>(id: string) {
+	const bridge = useCastMateBridge()
+
+	return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+		const result = await bridge.callRPC(id, ...args)
+		return result as ReturnType<T>
+	}
 }

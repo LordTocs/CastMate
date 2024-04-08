@@ -11,6 +11,8 @@ import {
 	useRootHTTPRouter,
 	usePluginLogger,
 	defineWebsocketProxy,
+	onLoad,
+	onUnload,
 } from "castmate-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { Overlay } from "./overlay-resource"
@@ -33,11 +35,15 @@ interface OpenOverlayData {
 	evaluator: OverlayConfigEvaluator
 }
 
+type WidgetRPCHandler = (overlay: Overlay, widgetId: string, ...args: any[]) => any
+
 export const OverlayWebsocketService = Service(
 	class {
 		private stateUpdaters = new Map<ExtendedWebsocket, OverlayStateUpdater[]>()
 		private openOverlays = new Map<string, OpenOverlayData>()
 		private socketToOverlay = new Map<ExtendedWebsocket, string>()
+
+		private widgetRPCs = new Map<string, WidgetRPCHandler>()
 
 		async onConnection(socket: ExtendedWebsocket, url: URL) {
 			const overlayId = url.searchParams.get("overlay")
@@ -62,7 +68,6 @@ export const OverlayWebsocketService = Service(
 				openData = {
 					sockets: [socket],
 					evaluator: await createOverlayEvaluator(overlay.config, async (resolvedConfig) => {
-						logger.log("Updating State!")
 						if (!openData) return
 						for (const socket of openData.sockets) {
 							await socket.call<(config: OverlayConfig) => any>("overlays_setConfig", resolvedConfig)
@@ -194,6 +199,25 @@ export const OverlayWebsocketService = Service(
 
 			await Promise.allSettled(calls)
 		}
+
+		handleWidgetRPC(id: string, func: WidgetRPCHandler) {
+			this.widgetRPCs.set(id, func)
+		}
+
+		unhandleWidgetRPC(id: string) {
+			this.widgetRPCs.delete(id)
+		}
+
+		async handleWidgetRPCRequest(socket: ExtendedWebsocket, id: string, from: string, ...args: any[]) {
+			const overlayId = this.socketToOverlay.get(socket)
+			if (!overlayId) throw new Error("Unknown Overlay")
+			const overlay = Overlay.storage.getById(overlayId)
+			if (!overlay) throw new Error("Unknown Overlay")
+
+			const handler = this.widgetRPCs.get(id)
+			if (!handler) throw new Error("Unbound RPC")
+			return await handler(overlay, from, ...args)
+		}
 	}
 )
 
@@ -214,6 +238,10 @@ export function setupWebsockets() {
 
 	onWebsocketRPC("overlays_freeState", async (socket, plugin: string, state: string) => {
 		await OverlayWebsocketService.getInstance().freeState(socket, plugin, state)
+	})
+
+	onWebsocketRPC("overlays_widgetRPC", async (socket, id: string, from: string, ...args: any[]) => {
+		return await OverlayWebsocketService.getInstance().handleWidgetRPCRequest(socket, id, from, ...args)
 	})
 
 	const router = useRootHTTPRouter("overlays")
@@ -275,4 +303,14 @@ export function setupWebsockets() {
 			})
 		})
 	}
+}
+
+export function handleWidgetRPC<T extends WidgetRPCHandler>(id: string, func: T) {
+	onLoad(() => {
+		OverlayWebsocketService.getInstance().handleWidgetRPC(id, func)
+	})
+
+	onUnload(() => {
+		OverlayWebsocketService.getInstance().unhandleWidgetRPC(id)
+	})
 }

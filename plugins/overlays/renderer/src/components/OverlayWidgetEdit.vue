@@ -97,6 +97,7 @@ provide<CastMateBridgeImplementation>("castmate-bridge", {
 	unregisterRPC(id) {},
 	registerMessage(id, func) {},
 	unregisterMessage(id, func) {},
+	async callRPC(id, ...args) {},
 })
 
 const widgetComponent = computed(

@@ -26,4 +26,4 @@ export default definePlugin(
 	}
 )
 
-export { OverlayWebsocketService } from "./websocket-bridge"
+export { OverlayWebsocketService, handleWidgetRPC } from "./websocket-bridge"

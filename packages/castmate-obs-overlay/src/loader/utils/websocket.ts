@@ -169,6 +169,9 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 					delete widgetBroadcastHandlers[id]
 				}
 			},
+			async callRPC(id, ...args) {
+				return await rpcs.call("overlays_widgetRPC", sender, id, toValue(widget), ...args)
+			},
 		}
 	}
 

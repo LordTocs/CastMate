@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { declareWidgetOptions, handleOverlayMessage, handleOverlayRPC } from "castmate-overlay-core"
+import { declareWidgetOptions, handleOverlayMessage, handleOverlayRPC, useCallOverlayRPC } from "castmate-overlay-core"
 import {
 	OverlayBlockStyle,
 	OverlayTextAlignment,
@@ -386,6 +386,8 @@ const lastTimestamp = ref<number>()
 function requestNewFrame() {
 	window.requestAnimationFrame((ts) => updateWheel(ts))
 }
+const wheelLanded = useCallOverlayRPC<(item: string) => any>("wheelLanded")
+
 function updateWheel(timestamp: number) {
 	if (lastTimestamp.value == null) {
 		lastTimestamp.value = timestamp
@@ -413,7 +415,8 @@ function updateWheel(timestamp: number) {
 	} else {
 		if (lastVelocity > 0) {
 			//Just Stopped
-			//const result = this.items[this.itemIndex]?.text
+			const result = items.value[itemIndex.value]?.text ?? ""
+			wheelLanded(result)
 			//this.callbacks.call("wheelLanded", result)
 		}
 	}

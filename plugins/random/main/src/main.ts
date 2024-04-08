@@ -1,5 +1,13 @@
-import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, defineFlowAction } from "castmate-core"
-import { OverlayWebsocketService } from "castmate-plugin-overlays-main"
+import {
+	defineAction,
+	defineTrigger,
+	onLoad,
+	onUnload,
+	definePlugin,
+	defineFlowAction,
+	usePluginLogger,
+} from "castmate-core"
+import { OverlayWebsocketService, handleWidgetRPC } from "castmate-plugin-overlays-main"
 import { OverlayWidget } from "castmate-plugin-overlays-shared"
 export default definePlugin(
 	{
@@ -10,6 +18,8 @@ export default definePlugin(
 		color: "#EFCC3E",
 	},
 	() => {
+		const logger = usePluginLogger()
+
 		defineFlowAction({
 			id: "random",
 			name: "Random",
@@ -80,6 +90,59 @@ export default definePlugin(
 					config.strength
 				)
 			},
+		})
+
+		const wheelLanded = defineTrigger({
+			id: "wheelLanded",
+			name: "Wheel Stopped",
+			description: "Triggers when an overlay wheel has stopped!",
+			config: {
+				type: Object,
+				properties: {
+					wheel: {
+						type: OverlayWidget,
+						required: true,
+						name: "Wheel",
+						widgetType: { plugin: "random", widget: "wheel" },
+					},
+					item: {
+						type: String,
+						name: "Item Name",
+					},
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					wheel: {
+						type: OverlayWidget,
+						required: true,
+						name: "Wheel",
+						widgetType: { plugin: "random", widget: "wheel" },
+					},
+					item: { type: String, required: true },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (config.wheel.overlayId != context.wheel.overlayId) return false
+				if (config.wheel.widgetId != context.wheel.widgetId) return false
+
+				if (config.item != null) {
+					if (context.item != config.item) {
+						return false
+					}
+				}
+
+				return true
+			},
+		})
+
+		handleWidgetRPC("wheelLanded", (overlay, widgetId, item: string) => {
+			logger.log("wheelLanded", widgetId, item)
+			wheelLanded({
+				wheel: { overlayId: overlay.id, widgetId },
+				item,
+			})
 		})
 	}
 )
