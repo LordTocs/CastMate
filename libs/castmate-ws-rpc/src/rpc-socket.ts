@@ -31,7 +31,7 @@ export class RPCHandler {
 
 	constructor() {}
 
-	async handleMessage(data: RPCMessage, sender: (data: RPCMessage) => any) {
+	async handleMessage(data: RPCMessage, sender: (data: RPCMessage) => any, ...preArgs: any[]) {
 		if ("responseId" in data) {
 			const outstandingCall = this.outstandingCalls[data.responseId]
 			if (!outstandingCall) {
@@ -56,7 +56,7 @@ export class RPCHandler {
 			}
 			const args = data.args || []
 
-			this.handlers[requestName](requestId, sender, ...args)
+			this.handlers[requestName](requestId, sender, ...preArgs, ...args)
 		}
 	}
 

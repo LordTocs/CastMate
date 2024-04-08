@@ -111,7 +111,11 @@ export const WebService = Service(
 						return
 					}
 
-					this.rpcs.handleMessage(data as RPCMessage, (msg) => expandedSocket.send(JSON.stringify(msg)))
+					this.rpcs.handleMessage(
+						data as RPCMessage,
+						(msg) => expandedSocket.send(JSON.stringify(msg)),
+						expandedSocket
+					)
 
 					this.onMessage.run(expandedSocket, data)
 				})
@@ -211,7 +215,7 @@ export const WebService = Service(
 			)) as ReturnType<T>[]
 		}
 
-		registerRPC<T extends (...args: any[]) => any>(name: string, func: T) {
+		registerRPC<T extends (socket: ExtendedWebsocket, ...args: any[]) => any>(name: string, func: T) {
 			this.rpcs.handle(name, func)
 		}
 
