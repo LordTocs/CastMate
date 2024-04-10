@@ -34,7 +34,7 @@ interface VueResolutionContext extends RemoteTemplateResolutionContext {
 }
 
 export function useResolvedWidgetConfig(
-	config: MaybeRefOrGetter<any>,
+	config: MaybeRefOrGetter<object | undefined>,
 	widget: MaybeRefOrGetter<OverlayWidgetComponent | undefined>
 ) {
 	const context: VueResolutionContext = {
@@ -61,11 +61,13 @@ export function useResolvedWidgetConfig(
 	return computed(() => {
 		const remoteConfig = toValue(config)
 
+		if (remoteConfig == undefined) return undefined
+
 		const widgetComp = toValue(widget)
 
 		const schema = widgetComp?.widget?.config
 
-		if (!schema) return {}
+		if (!schema) return undefined
 
 		context.evalCounter.value
 

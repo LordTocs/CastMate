@@ -31,7 +31,7 @@ const updateEdit = useIpcCaller<(id: string, plugin: string, widget: string, new
 interface ActiveRemoteConfig {
 	id: string
 	effect: WatchStopHandle
-	resolved: Ref<object>
+	resolved: Ref<object | undefined>
 }
 
 function getEditUpdate(config: OverlayWidgetConfig) {
@@ -54,7 +54,7 @@ export const useOverlayRemoteConfigStore = defineStore("overlay-remote-config", 
 		})
 	}
 
-	function start(config: MaybeRefOrGetter<OverlayWidgetConfig>, resolved: Ref<Object>) {
+	function start(config: MaybeRefOrGetter<OverlayWidgetConfig>, resolved: Ref<object | undefined>) {
 		const id = nanoid()
 
 		const configValue = toValue(config)
@@ -109,7 +109,7 @@ export function useRemoteOverlayConfig(config: MaybeRefOrGetter<OverlayWidgetCon
 	const widgets = useOverlayWidgets()
 
 	let id = ""
-	const remote = ref<object>({})
+	const remote = ref<object>()
 
 	const resolved = useResolvedWidgetConfig(remote, () => {
 		const configValue = toValue(config)

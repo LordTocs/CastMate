@@ -3421,7 +3421,6 @@ __metadata:
     "@vitejs/plugin-vue": "npm:*"
     "@vueuse/core": "npm:*"
     castmate-overlay-core: "workspace:^"
-    castmate-plugin-twitch-shared: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
     electron: "npm:^29.1.1"

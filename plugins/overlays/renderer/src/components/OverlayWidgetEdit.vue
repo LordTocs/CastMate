@@ -10,7 +10,7 @@
 		@contextmenu="onContext"
 	>
 		<component
-			v-if="widgetComponent && props.modelValue.visible"
+			v-if="widgetComponent && resolvedConfig != null && props.modelValue.visible"
 			:is="widgetComponent"
 			:config="resolvedConfig"
 			:size="model.size"
