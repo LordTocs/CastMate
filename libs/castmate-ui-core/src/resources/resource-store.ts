@@ -210,11 +210,15 @@ export function useResourceArray<TResourceData extends ResourceData = ResourceDa
 
 export function useResource<TResourceData extends ResourceData>(
 	typeName: MaybeRefOrGetter<string>,
-	id: MaybeRefOrGetter<string>
+	id: MaybeRefOrGetter<string | undefined>
 ) {
 	const resourceStore = useResourceStore()
 
-	return computed(() => resourceStore.resourceMap.get(toValue(typeName))?.resources.get(toValue(id)) as TResourceData)
+	return computed(() => {
+		const resourceId = toValue(id)
+		if (!resourceId) return undefined
+		return resourceStore.resourceMap.get(toValue(typeName))?.resources.get(resourceId) as TResourceData
+	})
 }
 
 export function useResourceCreateDialog(resourceType: MaybeRefOrGetter<string | undefined>) {

@@ -24,7 +24,6 @@ import { useDocumentPath, useDocumentSelection, FlexScroller } from "castmate-ui
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
-import PToggleButton from "primevue/togglebutton"
 import { OverlayWidgetInfo, useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { MenuItem } from "primevue/menuitem"
 import { nanoid } from "nanoid/non-secure"
