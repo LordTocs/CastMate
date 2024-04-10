@@ -1,19 +1,36 @@
 <template>
 	<div class="overlay-editor">
 		<div class="overlay-editor-header">
-			<div class="pt-4 flex flex-row w-full">
+			<div class="pt-4 flex flex-row w-full justify-content-center gap-1">
 				<div class="flex-grow-1">
 					<data-input
 						:schema="{ type: ResourceProxyFactory, resourceType: 'OBSConnection', name: `OBS Connection` }"
 						v-model="view.obsId"
 					/>
 				</div>
-				<div class="p-inputgroup var-edit" v-bind="$attrs">
-					<p-check-box binary input-id="showPreview" v-model="view.showPreview" />
-					<label for="showPreview" class="ml-2"> Preview </label>
+				<div ref="previewMenuContainer">
+					<p-button icon="mdi mdi-start" @click="previewMenuToggle" />
+				</div>
+				<drop-down-panel
+					v-model="previewMenuOpen"
+					:container="previewMenuContainer"
+					:style="{
+						minWidth: '25rem',
+						overflowY: 'auto',
+						maxHeight: '15rem',
+					}"
+				>
+					<overlay-preview-menu v-model="model.preview" />
+				</drop-down-panel>
+				<div>
+					<p-button
+						icon="mdi mdi-open-in-app"
+						@click="openOverlayDebug"
+						v-tooltip="'Open in Browser'"
+					></p-button>
 				</div>
 				<div>
-					<p-button icon="mdi-open-in-app" size="small" @click="openOverlayDebug"></p-button>
+					<overlay-add-to-obs-button :obsId="view.obsId" :overlay-config="model" />
 				</div>
 			</div>
 		</div>
@@ -49,10 +66,13 @@ import {
 	DocumentPath,
 	useDocumentId,
 	useSettingValue,
+	DropDownPanel,
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel } from "vue"
 import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
 import OverlayWidgetList from "./OverlayWidgetList.vue"
+import OverlayPreviewMenu from "./OverlayPreviewMenu.vue"
+import OverlayAddToObsButton from "./OverlayAddToObsButton.vue"
 
 import PSplitter from "primevue/splitter"
 import PSplitterPanel from "primevue/splitterpanel"
@@ -87,6 +107,21 @@ onMounted(() => {
 
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
+
+const previewMenuOpen = ref(false)
+const previewMenuContainer = ref<HTMLElement>()
+
+function previewMenuToggle(ev: MouseEvent) {
+	if (!previewMenuOpen.value && model.value.preview == null) {
+		model.value.preview = {
+			offsetX: 0,
+			offsetY: 0,
+			source: undefined,
+		}
+	}
+
+	previewMenuOpen.value = !previewMenuOpen.value
+}
 </script>
 
 <style scoped>

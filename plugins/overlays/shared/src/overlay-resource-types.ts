@@ -22,10 +22,17 @@ export interface OverlayWidgetConfig {
 	visible: boolean
 }
 
+export interface OverlayPreviewConfig {
+	offsetX: number
+	offsetY: number
+	source?: string | "obs"
+}
+
 export interface OverlayConfig {
 	name: string
 	size: { width: number; height: number }
 	widgets: OverlayWidgetConfig[]
+	preview?: OverlayPreviewConfig
 }
 
 export interface OverlayWidgetOptions<PropSchema extends SchemaObj = SchemaObj> {
