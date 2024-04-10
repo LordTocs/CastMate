@@ -227,6 +227,7 @@ watch(
 watch(
 	() => props.config.gravityXScale,
 	() => {
+		if (!engine) return
 		engine.gravity.x = props.config?.gravityXScale ?? 0
 	}
 )
@@ -234,6 +235,7 @@ watch(
 watch(
 	() => props.config.gravityYScale,
 	() => {
+		if (!engine) return
 		engine.gravity.y = props.config?.gravityYScale ?? 1
 	}
 )
