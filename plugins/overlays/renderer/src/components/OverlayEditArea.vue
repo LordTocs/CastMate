@@ -9,8 +9,8 @@
 		}"
 	>
 		<pan-area class="panner grid-paper" v-model:pan-state="view.editView.panState">
-			<div class="overlay-boundary"></div>
 			<overlay-preview :preview="model.preview" :view="view" />
+			<div class="overlay-boundary"></div>
 			<overlay-widget-edit
 				v-for="(widget, i) in model.widgets"
 				v-model="model.widgets[i]"
