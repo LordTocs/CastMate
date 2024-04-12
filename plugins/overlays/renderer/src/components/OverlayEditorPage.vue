@@ -9,7 +9,7 @@
 					/>
 				</div>
 				<div ref="previewMenuContainer">
-					<p-button icon="mdi mdi-start" @click="previewMenuToggle" />
+					<p-button icon="mdi mdi-image-edit" @click="previewMenuToggle" />
 				</div>
 				<drop-down-panel
 					v-model="previewMenuOpen"
