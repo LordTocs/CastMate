@@ -316,7 +316,7 @@ export function useResourceDeleteDialog(resourceType: MaybeRefOrGetter<string | 
 
 export function useResourceIPCCaller<TFunc extends (...args: any) => any>(
 	typeName: MaybeRefOrGetter<string>,
-	id: MaybeRefOrGetter<string>,
+	id: MaybeRefOrGetter<string | undefined>,
 	funcName: MaybeRefOrGetter<string>
 ) {
 	const memberInvoker = useIpcCaller<
@@ -324,6 +324,10 @@ export function useResourceIPCCaller<TFunc extends (...args: any) => any>(
 	>("resources", "callIPCMember")
 
 	return async (...args: Parameters<TFunc>) => {
-		return await memberInvoker(toValue(typeName), toValue(id), toValue(funcName), ...args)
+		const idValue = toValue(id)
+
+		if (!idValue) throw new Error("Missing ID!")
+
+		return await memberInvoker(toValue(typeName), idValue, toValue(funcName), ...args)
 	}
 }

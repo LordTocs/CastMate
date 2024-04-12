@@ -1,4 +1,11 @@
-import { FileResource, definePluginResource, ResourceStorage, usePluginLogger, ResourceRegistry } from "castmate-core"
+import {
+	FileResource,
+	definePluginResource,
+	ResourceStorage,
+	usePluginLogger,
+	ResourceRegistry,
+	onLoad,
+} from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
 import {
 	OBSConnectionConfig,
@@ -10,6 +17,11 @@ import {
 import { nanoid } from "nanoid/non-secure"
 import _flatten from "lodash/flatten"
 import { SceneSource } from "./obs-data"
+
+import ChildProcess from "node:child_process"
+
+import { app } from "electron"
+import regedit from "regedit"
 
 class SceneHistory {
 	private history: string[] = []
@@ -33,6 +45,56 @@ class SceneHistory {
 }
 
 const logger = usePluginLogger("obs")
+
+function getOBSInstallFromRegistry() {
+	return new Promise<string | undefined>((resolve, reject) => {
+		regedit.list(["HKLM\\SOFTWARE\\OBS Studio"], (err, result) => {
+			if (err) return reject(err)
+
+			try {
+				const obsPath = result["HKLM\\SOFTWARE\\OBS Studio"].values[""].value
+				if (Array.isArray(obsPath)) {
+					return resolve(String(obsPath[0]))
+				} else {
+					resolve(String(obsPath))
+				}
+			} catch {
+				resolve(undefined)
+			}
+		})
+	})
+}
+
+function openObs(installDir: string) {
+	return new Promise((resolve, reject) => {
+		const startCmd = `Start-Process "${installDir}\\bin\\64bit\\obs64.exe" -Verb runAs`
+		logger.log(`Opening OBS ${startCmd}`)
+
+		if (!installDir) return resolve(false)
+
+		try {
+			ChildProcess.exec(
+				startCmd,
+				{
+					shell: "powershell.exe",
+					cwd: `${installDir}\\bin\\64bit\\`,
+				},
+				(err, stdout, stderr) => {
+					console.log(stdout)
+					console.error(stderr)
+					if (err) {
+						console.error(err)
+						return resolve(false)
+					}
+					resolve(true)
+				}
+			)
+		} catch (err) {
+			console.error("Error Spawning:", err)
+			return reject(err)
+		}
+	})
+}
 
 export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnectionState> {
 	static resourceDirectory = "./obs/connections"
@@ -241,11 +303,45 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 	static async initialize(): Promise<void> {
 		await super.initialize()
 
-		//@ts-ignore
-		ResourceRegistry.getInstance().exposeIPCFunction(OBSConnection, "getPreview")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getPreview")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "openProcess")
+	}
+
+	/**
+	 * Is true if this OBS is on the same computer
+	 */
+	get isLocal() {
+		return this.config.host == "127.0.0.1" || this.config.host == "localhost"
+	}
+
+	async openProcess() {
+		if (!this.isLocal) return false
+
+		const path = this.config.installPath ?? (await getOBSInstallFromRegistry())
+
+		logger.log("Opening", path)
+
+		if (!path) return false
+
+		try {
+			await openObs(path)
+			return true
+		} catch {
+			return false
+		}
 	}
 }
 
 export function setupConnections() {
+	onLoad(() => {
+		if (app.isPackaged) {
+			const loc = regedit.setExternalVBSLocation("resources/regedit/vbs")
+			logger.log("Setting External VBS Location", loc)
+		} else {
+			const loc = regedit.setExternalVBSLocation("../../node_modules/regedit/vbs")
+			logger.log("Setting External VBS Location", loc)
+		}
+	})
+
 	definePluginResource(OBSConnection)
 }

@@ -3,7 +3,7 @@
 		<div class="p-text-secondary">Connect OBS</div>
 	</div>
 	<div v-else-if="!hasObs">
-		<p-button v-if="isLocalObs">Open</p-button>
+		<p-button v-if="isLocalObs" @click="openObs">Open</p-button>
 		<div
 			class="p-text-secondary"
 			style="font-size: 0.875rem"
@@ -27,11 +27,13 @@ import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { computed, onMounted, ref, watch } from "vue"
 
 import PButton from "primevue/button"
-import { useResource } from "castmate-ui-core"
+import { useResource, useResourceIPCCaller } from "castmate-ui-core"
 import { ResourceData } from "castmate-schema"
 import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
 
 const obs = useResource<ResourceData<OBSConnectionConfig, OBSConnectionState>>("OBSConnection", () => props.obsId)
+
+const openProcess = useResourceIPCCaller<() => any>("OBSConnection", () => props.obsId, "openProcess")
 
 const isLocalObs = computed(() => {
 	if (!obs.value) return
@@ -64,6 +66,11 @@ onMounted(() => {
 function createSourceClick(ev: MouseEvent) {}
 
 function fixErrorsClick(ev: MouseEvent) {}
+
+async function openObs() {
+	if (!props.obsId) return
+	await openProcess()
+}
 </script>
 
 <style scoped></style>
