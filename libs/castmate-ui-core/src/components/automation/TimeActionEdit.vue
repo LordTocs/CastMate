@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useModel, ref, provide, watch } from "vue"
+import { computed, useModel, ref, provide, watch, inject, ComputedRef } from "vue"
 import DurationHandle from "./DurationHandle.vue"
 import {
 	rectangleOverlaps,
@@ -93,7 +93,13 @@ import { IPCDurationState } from "castmate-schema"
 import { useElementBounding } from "@vueuse/core"
 
 const action = useAction(() => props.modelValue)
-const { actionColorStyle } = useActionColors(() => props.modelValue)
+
+const isFloating = inject<ComputedRef<boolean>>(
+	"sequence-floating",
+	computed(() => false)
+)
+
+const { actionColorStyle } = useActionColors(() => props.modelValue, isFloating)
 
 const indefinite = computed(() => false)
 

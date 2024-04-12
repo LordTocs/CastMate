@@ -453,7 +453,32 @@ export function useColors(colorProvider: MaybeRefOrGetter<{ color?: string } | u
 	return { color, darkerColor, darkestColor, lighterColor }
 }
 
-export function useActionColors(selection: MaybeRefOrGetter<ActionSelection | undefined>) {
+export function useColorsModified(
+	colorProvider: MaybeRefOrGetter<{ color?: string } | undefined>,
+	modify: MaybeRefOrGetter<boolean>
+) {
+	const defaultColor = "#3e3e3e"
+
+	const color = computed(() => {
+		const modified = toValue(modify)
+
+		const baseColor = toValue(colorProvider)?.color ?? defaultColor
+
+		const hsl = chromatism.convert(baseColor).hsl
+
+		return !modified ? baseColor : chromatism.saturation(-(hsl.s * 0.5), baseColor).hex
+	})
+	const darkerColor = computed(() => chromatism.shade(-20, color.value).hex)
+	const darkestColor = computed(() => chromatism.shade(-30, color.value).hex)
+	const lighterColor = computed(() => chromatism.brightness(20, color.value).hex)
+
+	return { color, darkerColor, darkestColor, lighterColor }
+}
+
+export function useActionColors(
+	selection: MaybeRefOrGetter<ActionSelection | undefined>,
+	floating: MaybeRefOrGetter<boolean>
+) {
 	const action = useAction(selection)
 
 	const {
@@ -461,7 +486,7 @@ export function useActionColors(selection: MaybeRefOrGetter<ActionSelection | un
 		darkerColor: darkerActionColor,
 		darkestColor: darkestActionColor,
 		lighterColor: lighterActionColor,
-	} = useColors(action)
+	} = useColorsModified(action, floating)
 
 	const style = computed(() => ({
 		"--action-color": actionColor.value,

@@ -26,7 +26,7 @@ const highlightAction = computed(() => {
 })
 
 const action = useAction(highlightAction)
-const { actionColorStyle } = useActionColors(highlightAction)
+const { actionColorStyle } = useActionColors(highlightAction, false)
 </script>
 
 <style scoped>

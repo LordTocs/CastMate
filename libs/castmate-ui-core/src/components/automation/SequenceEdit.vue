@@ -9,22 +9,28 @@
 			ref="sequenceStart"
 			@request-test-run="$emit('requestTestRun')"
 			@request-test-stop="$emit('requestTestStop')"
-		></sequence-start>
-		<automation-drop-zone
-			v-if="!floating && modelObj.actions.length == 0"
-			drop-axis="vertical"
-			drop-location="middle"
-			:drop-key="`trigger-right`"
-			:key="`trigger-right`"
-			style="left: calc(var(--instant-width) / 2); width: var(--instant-width); height: var(--timeline-height)"
-			@automation-drop="onFrontDrop"
-		/>
+		>
+			<automation-drop-zone
+				v-if="!floating && modelObj.actions.length == 0"
+				drop-axis="vertical"
+				drop-location="middle"
+				:drop-key="`trigger-right`"
+				:key="`trigger-right`"
+				style="
+					right: calc(-1 * var(--instant-width) / 2);
+					width: var(--instant-width);
+					height: var(--timeline-height);
+				"
+				@automation-drop="onFrontDrop"
+			/>
+		</sequence-start>
+
 		<sequence-actions-edit v-model="modelObj" @self-destruct="selfDestruct" ref="sequenceEdit" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { useModel, ref, provide } from "vue"
+import { useModel, ref, provide, computed } from "vue"
 import { Sequence, type NonStackActionInfo } from "castmate-schema"
 import { type SelectionPos, type Selection } from "../../main"
 import SequenceActionsEdit from "./SequenceActionsEdit.vue"
@@ -38,6 +44,11 @@ const props = defineProps<{
 }>()
 
 const modelObj = useModel(props, "modelValue")
+
+provide(
+	"sequence-floating",
+	computed(() => props.floating)
+)
 
 const emit = defineEmits(["selfDestruct", "requestTestRun", "requestTestStop"])
 function selfDestruct() {
