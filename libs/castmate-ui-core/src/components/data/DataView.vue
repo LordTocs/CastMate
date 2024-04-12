@@ -6,13 +6,13 @@
 import { useVModel } from "@vueuse/core"
 import { useDataViewComponent } from "../../util/data"
 import { Schema } from "castmate-schema"
-import { SharedDataInputProps } from "./DataInputTypes"
+import { SharedDataViewProps } from "./DataInputTypes"
 
 const props = defineProps<
 	{
 		modelValue: any
 		schema: Schema
-	} & SharedDataInputProps
+	} & SharedDataViewProps
 >()
 
 const emit = defineEmits(["update:modelValue"])
