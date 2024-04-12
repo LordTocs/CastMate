@@ -6,9 +6,9 @@
 			</div>
 			<p-toggle-button
 				v-model="obsToggleModel"
-				on-icon="mdi mdi-eye-outline"
+				on-icon="obsi obsi-obs"
 				on-label=""
-				off-icon="mdi mdi-eye-off-outline"
+				off-icon="obsi obsi-obs"
 				off-label=""
 				class="extra-small-button"
 			/>
@@ -96,7 +96,7 @@ const previewFileSchema = declareSchema({
 	type: FilePath,
 	required: false,
 	name: "Preview Image",
-	extensions: [".png", ".jpg", ".bmp", ".webp"],
+	extensions: ["png", "jpg", "bmp", "webp"],
 })
 </script>
 

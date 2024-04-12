@@ -9,9 +9,8 @@
 		}"
 	>
 		<pan-area class="panner grid-paper" v-model:pan-state="view.editView.panState">
-			<div class="overlay-boundary">
-				<obs-preview class="preview-image" :obs-id="view.obsId" v-if="view.showPreview" />
-			</div>
+			<div class="overlay-boundary"></div>
+			<overlay-preview :preview="model.preview" :view="view" />
 			<overlay-widget-edit
 				v-for="(widget, i) in model.widgets"
 				v-model="model.widgets[i]"
@@ -41,14 +40,15 @@ import {
 	rectangleOverlaps,
 	useDocumentPath,
 	useDocumentSelection,
+	usePanState,
 	useSelectionRect,
 } from "castmate-ui-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
-import { ObsPreview } from "castmate-plugin-obs-renderer"
 import { computed, provide, ref, useModel } from "vue"
 import { useElementSize } from "@vueuse/core"
 import OverlayWidgetEdit from "./OverlayWidgetEdit.vue"
+import OverlayPreview from "./OverlayPreview.vue"
 
 const props = defineProps<{
 	modelValue: OverlayConfig
@@ -164,5 +164,11 @@ provide("overlay-zoom-scale", zoomScale)
 	border-color: white;
 	mix-blend-mode: difference;
 	border-style: dashed;
+}
+
+.preview {
+	position: absolute;
+	top: var(--preview-offset-y);
+	left: var(--preview-offset-x);
 }
 </style>

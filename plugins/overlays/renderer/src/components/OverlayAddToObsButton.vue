@@ -78,8 +78,10 @@ const port = useSettingValue<string>({ plugin: "castmate", setting: "port" })
 onMounted(() => {
 	watch(
 		() => ({ obs: props.obsId, id: props.overlayId, connected: hasObs.value }),
-		() => {
-			findBrowserSource()
+		async () => {
+			try {
+				await findBrowserSource()
+			} catch {}
 		},
 		{ immediate: true, deep: true }
 	)

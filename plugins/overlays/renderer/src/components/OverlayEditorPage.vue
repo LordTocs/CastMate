@@ -68,7 +68,7 @@ import {
 	useSettingValue,
 	DropDownPanel,
 } from "castmate-ui-core"
-import { computed, onMounted, ref, useModel } from "vue"
+import { computed, onMounted, ref, useModel, watch } from "vue"
 import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
 import OverlayWidgetList from "./OverlayWidgetList.vue"
 import OverlayPreviewMenu from "./OverlayPreviewMenu.vue"
@@ -113,6 +113,7 @@ const previewMenuContainer = ref<HTMLElement>()
 
 function previewMenuToggle(ev: MouseEvent) {
 	if (!previewMenuOpen.value && model.value.preview == null) {
+		console.log("Creating Whole Preview")
 		model.value.preview = {
 			offsetX: 0,
 			offsetY: 0,
@@ -122,6 +123,16 @@ function previewMenuToggle(ev: MouseEvent) {
 
 	previewMenuOpen.value = !previewMenuOpen.value
 }
+
+onMounted(() => {
+	watch(
+		() => props.modelValue.preview,
+		() => {
+			console.log("Preview", props.modelValue.preview)
+		},
+		{ immediate: true, deep: true }
+	)
+})
 </script>
 
 <style scoped>
