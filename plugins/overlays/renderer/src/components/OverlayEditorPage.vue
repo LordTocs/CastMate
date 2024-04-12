@@ -30,7 +30,7 @@
 					></p-button>
 				</div>
 				<div>
-					<overlay-add-to-obs-button :obsId="view.obsId" :overlay-config="model" />
+					<overlay-add-to-obs-button :obsId="view.obsId" :overlay-config="model" :overlay-id="overlayId" />
 				</div>
 			</div>
 		</div>

@@ -5,6 +5,7 @@ import {
 	usePluginLogger,
 	ResourceRegistry,
 	onLoad,
+	getLocalIP,
 } from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
 import {
@@ -283,6 +284,28 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		return items.find((i) => i.sceneItemId == itemId)
 	}
 
+	async createNewSource(sourceKind: string, sourceName: string, sceneName: string, settings: any) {
+		if (!this.state.connected) return undefined
+
+		const { sceneItemId } = await this.connection.call("CreateInput", {
+			sceneName,
+			inputName: sourceName,
+			inputKind: sourceKind,
+			inputSettings: settings,
+		})
+
+		return sceneItemId
+	}
+
+	async updateSourceSettings(sourceName: string, settings: any) {
+		if (!this.state.connected) return
+
+		await this.connection.call("SetInputSettings", {
+			inputName: sourceName,
+			inputSettings: settings,
+		})
+	}
+
 	async popScene() {
 		const prevScene = this.sceneHistory.pop()
 
@@ -305,13 +328,17 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getPreview")
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "openProcess")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "findBrowserByUrlPattern")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getRemoteHost")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "createNewSource")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "updateSourceSettings")
 	}
 
 	/**
 	 * Is true if this OBS is on the same computer
 	 */
 	get isLocal() {
-		return this.config.host == "127.0.0.1" || this.config.host == "localhost"
+		return this.config.host == "127.0.0.1" || this.config.host?.toLowerCase() == "localhost"
 	}
 
 	async openProcess() {
@@ -329,6 +356,41 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		} catch {
 			return false
 		}
+	}
+
+	async findBrowserByUrlPattern(urlPattern: string) {
+		if (!this.state.connected) return undefined
+
+		const { inputs } = await this.connection.call("GetInputList", {
+			inputKind: "browser_source",
+		})
+
+		const inputSettingsAndName = await Promise.all(
+			inputs.map(async (i) => {
+				const result = await this.connection.call("GetInputSettings", {
+					inputName: i.inputName as string,
+				})
+				return { inputName: i.inputName, ...result }
+			})
+		)
+
+		const urlRegex = new RegExp(urlPattern)
+
+		console.log("Checking Pattern", urlPattern)
+
+		const input = inputSettingsAndName.find((i) => {
+			return (i.inputSettings.url as string | undefined)?.match?.(urlRegex)
+		})
+
+		return input
+	}
+
+	/**
+	 * Returns the localhost if castmate is on the same computer as OBS, otherwise returns the IP of OBS
+	 */
+	getRemoteHost() {
+		if (this.isLocal) return "localhost"
+		return getLocalIP()
 	}
 }
 
