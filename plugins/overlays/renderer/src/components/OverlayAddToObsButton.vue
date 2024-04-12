@@ -1,11 +1,11 @@
 <template>
-	<div v-if="obsId == null">
+	<div v-if="obsId == null" class="display-box">
 		<div class="p-text-secondary">Connect OBS</div>
 	</div>
 	<div v-else-if="!hasObs">
-		<p-button v-if="isLocalObs" @click="openObs"><i class="obsi obsi-obs"></i>Open</p-button>
+		<p-button v-if="isLocalObs" @click="openObs"><i class="obsi obsi-obs"></i> Open OBS</p-button>
 		<div
-			class="p-text-secondary"
+			class="p-text-secondary display-box"
 			style="font-size: 0.875rem"
 			v-else
 			v-tooltip="`CastMate can't start OBS on remote machines`"
@@ -16,7 +16,8 @@
 	<div v-else-if="!hasSource">
 		<p-button @click="createSourceClick"><i class="obsi obsi-obs"></i>Create Source</p-button>
 	</div>
-	<div v-else>
+	<div class="display-box" v-else>
+		<i class="mdi mdi-web-box"></i>
 		{{ sourceName }}
 		<p-button v-if="hasError" icon="mdi mdi-wrench" v-tooltip="'Fix Issues'" @click="fixErrorsClick"></p-button>
 	</div>
@@ -151,4 +152,18 @@ async function openObs() {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.display-box {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+
+	border-radius: var(--border-radius);
+	background-color: var(--surface-d);
+
+	padding: 0.5rem;
+
+	margin: 0.5rem;
+}
+</style>
