@@ -25,8 +25,10 @@
 				<div class="time-action-custom-wrapper">
 					<component
 						v-model="model.config"
-						:is="action?.actionComponent"
-						v-if="action?.type == 'regular' && action?.actionComponent"
+						:is="action?.actionComponent ?? DefaultActionComponent"
+						:plugin="model.plugin"
+						:action="model.action"
+						v-if="action?.type == 'regular'"
 						class="time-action-custom"
 					/>
 					<div class="play-indicator" v-if="testTime != null" :style="{ '--play-time': playTime }"></div>
@@ -91,6 +93,8 @@ import { getByPath, setByPath } from "castmate-schema"
 import { Duration } from "castmate-schema"
 import { IPCDurationState } from "castmate-schema"
 import { useElementBounding } from "@vueuse/core"
+
+import DefaultActionComponent from "./DefaultActionComponent.vue"
 
 const action = useAction(() => props.modelValue)
 

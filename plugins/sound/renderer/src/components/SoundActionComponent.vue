@@ -1,7 +1,10 @@
 <template>
-	<svg :viewBox="viewBox" preserveAspectRatio="none" class="waveform" ref="waveformContainer">
-		<path :d="waveSvg" fill="currentColor" />
-	</svg>
+	<div class="wave-wrapper">
+		<div class="sound-label">{{ modelValue.sound ? path.basename(modelValue.sound) : "" }}</div>
+		<svg :viewBox="viewBox" preserveAspectRatio="none" class="waveform" ref="waveformContainer">
+			<path :d="waveSvg" fill="currentColor" />
+		</svg>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -12,6 +15,8 @@ import { MediaFile } from "castmate-schema"
 import { useMediaStore } from "castmate-ui-core"
 import { useElementSize } from "@vueuse/core"
 import { Duration } from "castmate-schema"
+import path from "path"
+
 const props = defineProps<{
 	modelValue: { sound: MediaFile; startTime?: Duration; endTime?: Duration }
 }>()
@@ -113,7 +118,21 @@ const waveSvg = computed(() => {
 </script>
 
 <style scoped>
+.wave-wrapper {
+	overflow: hidden;
+}
+
 .waveform {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
 	color: var(--darkest-action-color);
+}
+
+.sound-label {
+	padding: 0 0.25rem;
+	font-size: 0.7rem;
 }
 </style>

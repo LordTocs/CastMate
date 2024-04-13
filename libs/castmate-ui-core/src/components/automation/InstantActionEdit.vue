@@ -9,6 +9,16 @@
 			<i class="mdi flex-none" :class="action?.icon" />
 			{{ action?.name }}
 		</div>
+		<div class="instant-action-custom-wrapper">
+			<component
+				v-model="model.config"
+				:is="action?.actionComponent ?? DefaultActionComponent"
+				:plugin="model.plugin"
+				:action="model.action"
+				v-if="action?.type == 'regular'"
+				class="instant-action-custom"
+			/>
+		</div>
 		<automation-drop-zone
 			:drop-key="`${modelValue.id}-bottom`"
 			:key="`${modelValue.id}-bottom`"
@@ -40,6 +50,7 @@ import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence } from "castmate-schema"
 import { ActionStack } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
+import DefaultActionComponent from "./DefaultActionComponent.vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -55,7 +66,7 @@ const props = withDefaults(
 
 const emit = defineEmits(["update:modelValue", "automationDrop"])
 
-const modelObj = useModel(props, "modelValue")
+const model = useModel(props, "modelValue")
 const instantAction = ref<HTMLElement | null>(null)
 
 const isFloating = inject<ComputedRef<boolean>>(
@@ -128,6 +139,9 @@ defineExpose({
 
 	height: var(--timeline-height);
 	min-width: var(--instant-width);
+
+	display: flex;
+	flex-direction: column;
 }
 
 .instant-action-header {
@@ -159,5 +173,20 @@ defineExpose({
 .is-testing .instant-action-header {
 	/* background-color: var(--darkest-action-color); */
 	transition: background-color 0 !important;
+}
+
+.instant-action-custom-wrapper {
+	flex: 1;
+	background-color: var(--action-color);
+	position: relative;
+	transition: background-color 0.3s;
+}
+
+.isntant-action-custom {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
 }
 </style>
