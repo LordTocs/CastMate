@@ -21,7 +21,7 @@
 				style="gap: 0.25rem"
 			>
 				<template #no-items>
-					<div class="flex flex-column align-items-center p-3">EMPTY GROUP</div>
+					<div class="flex flex-column align-items-center p-3">No Conditions (Always On)</div>
 				</template>
 				<template #item="{ item, index }">
 					<boolean-sub-expression
