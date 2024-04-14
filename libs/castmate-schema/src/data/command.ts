@@ -1,4 +1,5 @@
 import { IPCSchema, Schema, SchemaBase, SchemaObj, getTypeByName, registerType } from "../schema"
+import { escapeRegExp } from "../util/substring-helper"
 
 export type CommandMode = "command" | "string" | "regex"
 
@@ -11,12 +12,26 @@ export interface CommandArgument {
 	}
 }
 
-export interface Command {
+export interface CommandModeCommand {
 	match: string
-	mode: CommandMode
+	mode: "command"
 	arguments: CommandArgument[]
 	hasMessage: boolean
 }
+
+export interface StringModeCommand {
+	match: string
+	mode: "string"
+	leftBoundary: boolean
+	rightBoundary: boolean
+}
+
+export interface RegexModeCommand {
+	match: string
+	mode: "regex"
+}
+
+export type Command = CommandModeCommand | StringModeCommand | RegexModeCommand
 
 const CommandSymbol = Symbol()
 
@@ -72,7 +87,7 @@ export function getCommandInfoString(command: Command | undefined) {
 
 		return result
 	} else if (command.mode == "string") {
-		return `...${command.match}...`
+		return `...${command.leftBoundary ? " " : ""}${command.match}${command.rightBoundary ? " " : ""}...`
 	} else if (command.mode == "regex") {
 		return `RegEx: ${command.match}`
 	}
@@ -107,7 +122,7 @@ function expectWhitespace(str: string, parse: ParseContext) {
 
 export async function parseArgs(
 	argString: string,
-	command: Command,
+	command: CommandModeCommand,
 	parse: ParseContext
 ): Promise<Record<string, any> | undefined> {
 	let result: Record<string, any> = {}
@@ -197,7 +212,11 @@ export async function matchAndParseCommand(
 
 		return argValues
 	} else if (command.mode == "string") {
-		if (message.toLocaleLowerCase().includes(command.match.toLocaleLowerCase())) {
+		const regexp = new RegExp(
+			`${command.leftBoundary ? "\\b" : ""}${escapeRegExp(command.match)}${command.rightBoundary ? "\\b" : ""}`,
+			"g"
+		)
+		if (message.match(regexp)) {
 			return {}
 		}
 		return undefined
@@ -210,6 +229,7 @@ export async function matchAndParseCommand(
 		return undefined
 	}
 
+	//@ts-ignore
 	throw new Error(`Unknown Command Mode ${command.mode}`)
 }
 
@@ -251,5 +271,6 @@ export function getCommandDataSchema(command: Command): SchemaObj {
 		return result
 	}
 
+	//@ts-ignore
 	throw new Error(`Unknown Command Mode: ${command.mode}`)
 }
