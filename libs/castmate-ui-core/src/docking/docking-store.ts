@@ -99,6 +99,20 @@ function findFirstFrame(division: DockedFrame | DockedSplit): DockedFrame | unde
 	}
 }
 
+export function* iterTabs(division: DockedFrame | DockedSplit): Generator<DockedTab> {
+	if (division.type == "frame") {
+		for (const t of division.tabs) {
+			yield t
+		}
+	} else {
+		for (const div of division.divisions) {
+			for (const t of iterTabs(div)) {
+				yield t
+			}
+		}
+	}
+}
+
 export const useDockingStore = defineStore("docking", () => {
 	const documentStore = useDocumentStore()
 
@@ -196,5 +210,15 @@ export const useDockingStore = defineStore("docking", () => {
 		targetFrame.currentTab = id
 	}
 
-	return { rootDockArea: dockedInfo, openDocument, openPage, closeTab, closeDocument, getDocumentTabId }
+	function getActiveTab() {
+		const frame = findFrame(dockedInfo.value, dockedInfo.value.focusedFrame)
+		if (!frame) return
+
+		const tab = frame.tabs.find((t) => t.id == frame.currentTab)
+		if (!tab) return
+
+		return tab
+	}
+
+	return { rootDockArea: dockedInfo, openDocument, openPage, closeTab, closeDocument, getDocumentTabId, getActiveTab }
 })

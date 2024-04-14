@@ -34,12 +34,23 @@ import PButton from "primevue/button"
 import PMenubar from "primevue/menubar"
 import { MenuItem } from "primevue/menuitem"
 //import PMenuItem, { type MenuItem } from "primevue/menuitem" //WTF man
-import { onMounted, ref } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { ipcRenderer } from "electron"
 import { useEventListener } from "@vueuse/core"
-import { useDockingStore, useIpcMessage } from "castmate-ui-core"
+import {
+	useDockingStore,
+	useIpcMessage,
+	isProduction,
+	NameDialog,
+	useResourceStore,
+	useOpenProfileDocument,
+	useOpenAutomationDocument,
+	useSaveActiveTab,
+	useSaveAllTabs,
+} from "castmate-ui-core"
 import { useOpenSettings } from "../settings/SettingsTypes"
 import InputTestPage from "../test/InputTestPage.vue"
+import { useDialog } from "primevue/usedialog"
 
 async function close() {
 	await ipcRenderer.invoke("windowFuncs_close")
@@ -79,36 +90,112 @@ const dockingStore = useDockingStore()
 
 const openSettings = useOpenSettings()
 
-const menuItems = ref<MenuItem[]>([
-	{
+const dialog = useDialog()
+
+const resourceStore = useResourceStore()
+
+const openProfile = useOpenProfileDocument()
+const openAutomation = useOpenAutomationDocument()
+
+const saveActiveTab = useSaveActiveTab()
+const saveAllTabs = useSaveAllTabs()
+
+function tryCreateProfile() {
+	dialog.open(NameDialog, {
+		props: {
+			header: `New Profile`,
+			style: {
+				width: "25vw",
+			},
+			modal: true,
+		},
+		async onClose(options) {
+			if (!options?.data) {
+				return
+			}
+			const id = await resourceStore.createResource("Profile", options.data)
+			openProfile(id)
+		},
+	})
+}
+
+function tryCreateAutomation() {
+	dialog.open(NameDialog, {
+		props: {
+			header: `New Automation`,
+			style: {
+				width: "25vw",
+			},
+			modal: true,
+		},
+		async onClose(options) {
+			if (!options?.data) {
+				return
+			}
+			const id = await resourceStore.createResource("Automation", options.data)
+			openAutomation(id)
+		},
+	})
+}
+
+const menuItems = computed<MenuItem[]>(() => {
+	const result: MenuItem[] = []
+
+	const fileMenu: MenuItem = {
 		label: "File",
-		items: [
-			{
-				label: "New Profile",
-				icon: "mdi mdi-card-text-outline",
-				command(event) {},
+		items: [],
+	}
+
+	result.push(fileMenu)
+
+	fileMenu.items?.push(
+		{
+			label: "New Profile",
+			icon: "mdi mdi-card-text-outline",
+			command() {
+				tryCreateProfile()
 			},
-			{
-				label: "New Automation",
-				icon: "mdi mdi-cogs",
-				command() {},
+		},
+		{
+			label: "New Automation",
+			icon: "mdi mdi-cogs",
+			command() {
+				tryCreateAutomation()
 			},
-			{
-				label: "Save",
-				icon: "mdi mdi-content-save",
-				command() {},
+		},
+		{
+			separator: true,
+		},
+		{
+			label: "Save",
+			icon: "mdi mdi-content-save",
+			command() {
+				saveActiveTab()
 			},
-			{
-				label: "Save All",
-				icon: "mdi mdi-content-save-all",
-				command() {},
+		},
+		{
+			label: "Save All",
+			icon: "mdi mdi-content-save-all",
+			command() {
+				saveAllTabs()
 			},
+		},
+		{
+			separator: true,
+		},
+		{
+			label: "Settings",
+			icon: "mdi mdi-cog",
+			command() {
+				openSettings()
+			},
+		}
+	)
+
+	if (!isProduction()) {
+		fileMenu.items?.push(
 			{
-				label: "Settings",
-				icon: "mdi mdi-cog",
-				command() {
-					openSettings()
-				},
+				separator: true,
 			},
 			{
 				label: "Input Test",
@@ -116,22 +203,26 @@ const menuItems = ref<MenuItem[]>([
 				command() {
 					dockingStore.openPage("input-test", "Input Test", InputTestPage)
 				},
-			},
-		],
-	},
-	{
+			}
+		)
+	}
+
+	const helpMenu: MenuItem = {
 		label: "Help",
-		items: [
-			{
-				label: "Discord",
-				icon: "mdi mdi-discord",
-				command() {
-					window.open("https://discord.gg/txt4DUzYJM")
-				},
-			},
-		],
-	},
-])
+		items: [],
+	}
+	result.push(helpMenu)
+
+	helpMenu.items?.push({
+		label: "Discord",
+		icon: "mdi mdi-discord",
+		command() {
+			window.open("https://discord.gg/txt4DUzYJM")
+		},
+	})
+
+	return result
+})
 </script>
 
 <style scoped>
@@ -158,5 +249,9 @@ const menuItems = ref<MenuItem[]>([
 
 .system-bar :deep(.p-menuitem .p-submenu-icon) {
 	display: none;
+}
+
+.system-bar :deep(.p-submenu-list .p-menuitem-separator) {
+	border-top-color: var(--surface-400);
 }
 </style>

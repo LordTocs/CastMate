@@ -16,7 +16,7 @@ import { App, computed, markRaw } from "vue"
 import NameDialogVue from "../components/dialogs/NameDialog.vue"
 import ProfileActivationToggle from "../components/profiles/ProfileActivationToggle.vue"
 
-function createProfileViewData(resource: ResourceData<ProfileConfig>) {
+export function createProfileViewData(resource: ResourceData<ProfileConfig>) {
 	return {
 		scrollX: 0,
 		scrollY: 0,
@@ -97,6 +97,18 @@ function createProfileGroup(app: App<Element>) {
 	})
 
 	return group
+}
+
+export function useOpenProfileDocument() {
+	const dockingStore = useDockingStore()
+	const resourceStore = useResourceData<ResourceData<ProfileConfig>>("Profile")
+
+	return (id: string) => {
+		const resource = resourceStore.value?.resources?.get(id)
+		if (!resource) return
+
+		dockingStore.openDocument(resource.id, resource.config, createProfileViewData(resource), "profile")
+	}
 }
 
 export async function initializeProfiles(app: App<Element>) {

@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid/non-secure"
 import { inject, type Component } from "vue"
 import { useDocumentStore } from "./document"
+import { useDockingStore, iterTabs } from "../main"
 
 export type DocumentBase = {
 	name: string
@@ -52,8 +53,36 @@ export function useDockingArea() {
 
 export function useSelectTab() {
 	const tabFrame = useTabFrame()
+	const dockingArea = useDockingArea()
 	return function (tabId: string) {
 		tabFrame.currentTab = tabId
+		dockingArea.focusedFrame = tabFrame.id
+	}
+}
+
+export function useSaveActiveTab() {
+	const dockingStore = useDockingStore()
+	const documentStore = useDocumentStore()
+
+	return () => {
+		const tab = dockingStore.getActiveTab()
+
+		if (!tab) return
+		if (!tab.documentId) return
+
+		documentStore.saveDocument(tab.documentId)
+	}
+}
+
+export function useSaveAllTabs() {
+	const dockingStore = useDockingStore()
+	const documentStore = useDocumentStore()
+
+	return () => {
+		for (const t of iterTabs(dockingStore.rootDockArea)) {
+			if (!t.documentId) continue
+			documentStore.saveDocument(t.documentId)
+		}
 	}
 }
 

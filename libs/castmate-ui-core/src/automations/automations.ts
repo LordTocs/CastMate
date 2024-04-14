@@ -110,6 +110,18 @@ function createAutomationGroup(app: App<Element>) {
 	return group
 }
 
+export function useOpenAutomationDocument() {
+	const dockingStore = useDockingStore()
+	const resourceStore = useResourceData<ResourceData<AutomationConfig>>("Profile")
+
+	return (id: string) => {
+		const resource = resourceStore.value?.resources?.get(id)
+		if (!resource) return
+
+		dockingStore.openDocument(resource.id, resource.config, createAutomationViewData(resource), "profile")
+	}
+}
+
 export async function initializeAutomations(app: App<Element>) {
 	const documentStore = useDocumentStore()
 	const resourceStore = useResourceStore()

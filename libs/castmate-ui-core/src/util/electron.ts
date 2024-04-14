@@ -55,3 +55,8 @@ export function useIpcMessage(
 		ipcRenderer.off(channel, handler)
 	})
 }
+
+export function isProduction() {
+	//@ts-ignore
+	return !!import.meta?.env?.PROD
+}
