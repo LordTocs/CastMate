@@ -66,7 +66,7 @@ import {
 	Selection,
 	selectionOverlaps,
 } from "../../main"
-import { ref, useModel } from "vue"
+import { ComputedRef, computed, inject, ref, useModel } from "vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import SequenceActionsEdit from "./SequenceActionsEdit.vue"
 import { Sequence } from "castmate-schema"
@@ -76,7 +76,12 @@ const props = defineProps<{
 	modelValue: FlowAction
 }>()
 
-const { actionColorStyle } = useActionColors(() => props.modelValue)
+const isFloating = inject<ComputedRef<boolean>>(
+	"sequence-floating",
+	computed(() => false)
+)
+
+const { actionColorStyle } = useActionColors(() => props.modelValue, isFloating)
 
 const model = useModel(props, "modelValue")
 const action = useAction(() => props.modelValue)

@@ -12,6 +12,7 @@ import {
 	defineSetting,
 	defineResourceSetting,
 	defineReactiveState,
+	usePluginLogger,
 } from "castmate-core"
 import { Color, Toggle } from "castmate-schema"
 import { OBSConnection, setupConnections } from "./connection"
@@ -30,6 +31,9 @@ export default definePlugin(
 		icon: "obsi obsi-obs",
 	},
 	() => {
+		const logger = usePluginLogger()
+		logger.log("Starting OBS!")
+
 		setupConnections()
 
 		const obsDefault = defineSetting("obsDefault", {

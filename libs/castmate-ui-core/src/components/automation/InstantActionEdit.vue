@@ -35,7 +35,7 @@ import {
 	SelectionPos,
 	Selection,
 } from "../../main"
-import { useModel, ref } from "vue"
+import { useModel, ref, inject, ComputedRef, computed } from "vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
 import { Sequence } from "castmate-schema"
 import { ActionStack } from "castmate-schema"
@@ -57,6 +57,11 @@ const emit = defineEmits(["update:modelValue", "automationDrop"])
 
 const modelObj = useModel(props, "modelValue")
 const instantAction = ref<HTMLElement | null>(null)
+
+const isFloating = inject<ComputedRef<boolean>>(
+	"sequence-floating",
+	computed(() => false)
+)
 
 function onAutomationDrop(sequence: Sequence) {
 	if (props.inStack) {
@@ -84,7 +89,7 @@ function onAutomationDrop(sequence: Sequence) {
 }
 
 const action = useAction(() => props.modelValue)
-const { actionColorStyle } = useActionColors(() => props.modelValue)
+const { actionColorStyle } = useActionColors(() => props.modelValue, isFloating)
 
 const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
 

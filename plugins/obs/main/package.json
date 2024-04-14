@@ -16,6 +16,7 @@
     "castmate-core": "workspace:^",
     "castmate-plugin-obs-shared": "workspace:^",
     "castmate-schema": "workspace:^",
-    "obs-websocket-js": "*"
+    "obs-websocket-js": "*",
+    "regedit": "^5.1.3"
   }
 }

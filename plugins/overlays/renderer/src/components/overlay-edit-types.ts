@@ -11,5 +11,4 @@ export interface OverlayEditView {
 export interface OverlayEditorView {
 	editView: OverlayEditView
 	obsId: string | undefined
-	showPreview: boolean
 }

@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, ref, useModel, onMounted, watch } from "vue"
+import { computed, markRaw, ref, useModel, onMounted, watch, provide } from "vue"
 import PButton from "primevue/button"
 import { type TriggerData, Color } from "castmate-schema"
 import {
@@ -78,6 +78,7 @@ import {
 	ExpanderSlider,
 	DocumentPath,
 	SequenceMiniPreview,
+	TriggerSelection,
 } from "castmate-ui-core"
 import isFunction from "lodash/isFunction"
 import { useVModel, asyncComputed } from "@vueuse/core"
@@ -177,6 +178,14 @@ onMounted(() => {
 })
 
 provideDataContextSchema(context)
+
+provide(
+	"trigger-edit-select",
+	computed<TriggerSelection>(() => ({
+		trigger: props.modelValue?.trigger,
+		plugin: props.modelValue?.plugin,
+	}))
+)
 
 const { triggerColorStyle, triggerColor } = useTriggerColors(() => props.modelValue)
 

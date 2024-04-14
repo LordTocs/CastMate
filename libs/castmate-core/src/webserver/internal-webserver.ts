@@ -10,6 +10,7 @@ import { initingPlugin } from "../plugins/plugin-init"
 import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
 import { filterPromiseAll } from "castmate-schema"
 import HttpProxy from "http-proxy"
+import os from "os"
 
 function closeHttpServer(httpServer: http.Server | undefined) {
 	return new Promise<void>((resolve, reject) => {
@@ -323,4 +324,19 @@ export function resetRouter(router: Router) {
 	router.stack = []
 	//@ts-ignore
 	router.methods = {}
+}
+
+export function getLocalIP() {
+	const interfaces = os.networkInterfaces()
+	for (let interfaceKeys of Object.keys(interfaces)) {
+		const netInterface = interfaces[interfaceKeys]
+		if (!netInterface) continue
+
+		for (let net of netInterface) {
+			const familyV4Value = typeof net.family === "string" ? "IPv4" : 4
+			if (net.family === familyV4Value && !net.internal) {
+				return net.address
+			}
+		}
+	}
 }

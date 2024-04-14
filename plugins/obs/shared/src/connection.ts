@@ -5,6 +5,7 @@ export interface OBSConnectionConfig {
 	host: string
 	port: number
 	password?: string
+	installPath?: string
 }
 
 export interface OBSConnectionState {

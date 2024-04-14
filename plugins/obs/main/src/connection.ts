@@ -1,4 +1,12 @@
-import { FileResource, definePluginResource, ResourceStorage, usePluginLogger, ResourceRegistry } from "castmate-core"
+import {
+	FileResource,
+	definePluginResource,
+	ResourceStorage,
+	usePluginLogger,
+	ResourceRegistry,
+	onLoad,
+	getLocalIP,
+} from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
 import {
 	OBSConnectionConfig,
@@ -10,6 +18,11 @@ import {
 import { nanoid } from "nanoid/non-secure"
 import _flatten from "lodash/flatten"
 import { SceneSource } from "./obs-data"
+
+import ChildProcess from "node:child_process"
+
+import { app } from "electron"
+import regedit from "regedit"
 
 class SceneHistory {
 	private history: string[] = []
@@ -33,6 +46,56 @@ class SceneHistory {
 }
 
 const logger = usePluginLogger("obs")
+
+function getOBSInstallFromRegistry() {
+	return new Promise<string | undefined>((resolve, reject) => {
+		regedit.list(["HKLM\\SOFTWARE\\OBS Studio"], (err, result) => {
+			if (err) return reject(err)
+
+			try {
+				const obsPath = result["HKLM\\SOFTWARE\\OBS Studio"].values[""].value
+				if (Array.isArray(obsPath)) {
+					return resolve(String(obsPath[0]))
+				} else {
+					resolve(String(obsPath))
+				}
+			} catch {
+				resolve(undefined)
+			}
+		})
+	})
+}
+
+function openObs(installDir: string) {
+	return new Promise((resolve, reject) => {
+		const startCmd = `Start-Process "${installDir}\\bin\\64bit\\obs64.exe" -Verb runAs`
+		logger.log(`Opening OBS ${startCmd}`)
+
+		if (!installDir) return resolve(false)
+
+		try {
+			ChildProcess.exec(
+				startCmd,
+				{
+					shell: "powershell.exe",
+					cwd: `${installDir}\\bin\\64bit\\`,
+				},
+				(err, stdout, stderr) => {
+					console.log(stdout)
+					console.error(stderr)
+					if (err) {
+						console.error(err)
+						return resolve(false)
+					}
+					resolve(true)
+				}
+			)
+		} catch (err) {
+			console.error("Error Spawning:", err)
+			return reject(err)
+		}
+	})
+}
 
 export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnectionState> {
 	static resourceDirectory = "./obs/connections"
@@ -221,6 +284,28 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		return items.find((i) => i.sceneItemId == itemId)
 	}
 
+	async createNewSource(sourceKind: string, sourceName: string, sceneName: string, settings: any) {
+		if (!this.state.connected) return undefined
+
+		const { sceneItemId } = await this.connection.call("CreateInput", {
+			sceneName,
+			inputName: sourceName,
+			inputKind: sourceKind,
+			inputSettings: settings,
+		})
+
+		return sceneItemId
+	}
+
+	async updateSourceSettings(sourceName: string, settings: any) {
+		if (!this.state.connected) return
+
+		await this.connection.call("SetInputSettings", {
+			inputName: sourceName,
+			inputSettings: settings,
+		})
+	}
+
 	async popScene() {
 		const prevScene = this.sceneHistory.pop()
 
@@ -241,11 +326,84 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 	static async initialize(): Promise<void> {
 		await super.initialize()
 
-		//@ts-ignore
-		ResourceRegistry.getInstance().exposeIPCFunction(OBSConnection, "getPreview")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getPreview")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "openProcess")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "findBrowserByUrlPattern")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getRemoteHost")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "createNewSource")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "updateSourceSettings")
+	}
+
+	/**
+	 * Is true if this OBS is on the same computer
+	 */
+	get isLocal() {
+		return this.config.host == "127.0.0.1" || this.config.host?.toLowerCase() == "localhost"
+	}
+
+	async openProcess() {
+		if (!this.isLocal) return false
+
+		const path = this.config.installPath ?? (await getOBSInstallFromRegistry())
+
+		logger.log("Opening", path)
+
+		if (!path) return false
+
+		try {
+			await openObs(path)
+			return true
+		} catch {
+			return false
+		}
+	}
+
+	async findBrowserByUrlPattern(urlPattern: string) {
+		if (!this.state.connected) return undefined
+
+		const { inputs } = await this.connection.call("GetInputList", {
+			inputKind: "browser_source",
+		})
+
+		const inputSettingsAndName = await Promise.all(
+			inputs.map(async (i) => {
+				const result = await this.connection.call("GetInputSettings", {
+					inputName: i.inputName as string,
+				})
+				return { inputName: i.inputName, ...result }
+			})
+		)
+
+		const urlRegex = new RegExp(urlPattern)
+
+		console.log("Checking Pattern", urlPattern)
+
+		const input = inputSettingsAndName.find((i) => {
+			return (i.inputSettings.url as string | undefined)?.match?.(urlRegex)
+		})
+
+		return input
+	}
+
+	/**
+	 * Returns the localhost if castmate is on the same computer as OBS, otherwise returns the IP of OBS
+	 */
+	getRemoteHost() {
+		if (this.isLocal) return "localhost"
+		return getLocalIP()
 	}
 }
 
 export function setupConnections() {
+	onLoad(() => {
+		if (app.isPackaged) {
+			const loc = regedit.setExternalVBSLocation("resources/regedit/vbs")
+			logger.log("Setting External VBS Location", loc)
+		} else {
+			const loc = regedit.setExternalVBSLocation("../../node_modules/regedit/vbs")
+			logger.log("Setting External VBS Location", loc)
+		}
+	})
+
 	definePluginResource(OBSConnection)
 }
