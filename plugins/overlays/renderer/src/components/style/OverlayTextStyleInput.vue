@@ -40,6 +40,7 @@ import {
 	LabelFloater,
 	CContextMenu,
 	DropDownPanel,
+	usePropagationStop,
 } from "castmate-ui-core"
 import { MenuItem } from "primevue/menuitem"
 import PMenu from "primevue/menu"
@@ -72,10 +73,12 @@ function clear() {
 	model.value = undefined
 }
 
+const stopPropagation = usePropagationStop()
+
 function openEdit(ev: MouseEvent) {
 	if (ev.button != 0) return
 
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 
 	if (!dropDown.value) {

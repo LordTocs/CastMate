@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { DataView, DataInput } from "castmate-ui-core"
+import { DataView, DataInput, usePropagationStop } from "castmate-ui-core"
 import { ref } from "vue"
 import { useVariableStore, useVariableValue, useVariableDef } from "../variable-store"
 import _cloneDeep from "lodash/cloneDeep"
@@ -30,10 +30,12 @@ const variableValue = useVariableValue(() => props.id)
 const editing = ref(false)
 const editValue = ref<any>(undefined)
 
+const stopPropagation = usePropagationStop()
+
 function startEdit(ev: MouseEvent) {
 	if (ev.button != 0) return
 
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 
 	editing.value = true

@@ -1,12 +1,12 @@
 <template>
 	<div class="docking-frame">
-		<docking-tab-row v-model="modelObj" />
-		<div class="tab-area">
+		<docking-tab-row v-model="model" />
+		<div class="tab-area" @mousedown="onMouseDown">
 			<docking-tab-body
-				v-for="(tab, i) in modelObj.tabs"
+				v-for="(tab, i) in model.tabs"
 				:key="tab.id"
-				v-model="modelObj.tabs[i]"
-				v-show="tab.id == modelObj.currentTab"
+				v-model="model.tabs[i]"
+				v-show="tab.id == model.currentTab"
 			/>
 			<docking-frame-drop-area />
 		</div>
@@ -14,20 +14,25 @@
 </template>
 
 <script setup lang="ts">
-import { useVModel } from "@vueuse/core"
 import { type DockedFrame } from "../../util/docking"
 import DockingTabBody from "./DockingTabBody.vue"
 import DockingTabRow from "./DockingTabRow.vue"
-import { provide, ref, unref } from "vue"
+import { provide, ref, unref, useModel } from "vue"
 import DockingFrameDropArea from "./DockingFrameDropArea.vue"
+import { useDockingStore } from "../../main"
 
 const props = defineProps<{
 	modelValue: DockedFrame
 }>()
 
-const emit = defineEmits(["update:modelValue"])
-const modelObj = useVModel(props, "modelValue", emit)
-provide("docking-frame", modelObj.value)
+const model = useModel(props, "modelValue")
+provide("docking-frame", model.value)
+
+const dockingStore = useDockingStore()
+
+function onMouseDown(ev: MouseEvent) {
+	dockingStore.rootDockArea.focusedFrame = model.value.id
+}
 </script>
 
 <style scoped>

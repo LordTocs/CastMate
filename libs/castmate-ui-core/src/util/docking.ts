@@ -60,6 +60,17 @@ export function useSelectTab() {
 	}
 }
 
+export function useFocusThisTab() {
+	const tabFrame = inject<DockedFrame>("docking-frame")
+	const dockingArea = inject<DockedArea>("docking-area")
+
+	return function () {
+		if (tabFrame && dockingArea) {
+			dockingArea.focusedFrame = tabFrame.id
+		}
+	}
+}
+
 export function useSaveActiveTab() {
 	const dockingStore = useDockingStore()
 	const documentStore = useDocumentStore()

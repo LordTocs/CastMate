@@ -14,7 +14,7 @@
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import FakeCursor from "./FakeCursor.vue"
 import { InputSelection, PartialSelectionResult } from "./FakeInputTypes"
-import { getElementRelativeRect, rectangleOverlaps } from "../../main"
+import { getElementRelativeRect, rectangleOverlaps, usePropagationStop } from "../../main"
 
 const props = defineProps<{
 	text: string
@@ -54,10 +54,12 @@ const localCursorIndex = computed(() => {
 	return localSelEnd.value
 })
 
+const stopPropagation = usePropagationStop()
+
 function onSelect(index: number, ev: MouseEvent) {
 	emit("selectChar", index + props.offset)
 	ev.preventDefault()
-	ev.stopPropagation()
+	stopPropagation(ev)
 }
 
 const charSpans = ref<HTMLElement[]>([])

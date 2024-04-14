@@ -1,6 +1,7 @@
 import { useEventListener } from "@vueuse/core"
 import { DomHandler } from "primevue/utils"
 import { computed, MaybeRefOrGetter, toValue, ref, toRaw, nextTick, provide, inject, ComputedRef } from "vue"
+import { useFocusThisTab } from "./docking"
 
 export function isChildOfClass(element: HTMLElement, clazz: string) {
 	if (element.classList.contains(clazz)) return true
@@ -213,6 +214,20 @@ export function stopPropagation(ev: { stopImmediatePropagation(): any }) {
 export function stopEvent(ev: { stopPropagation(): any; preventDefault(): any }) {
 	ev.stopPropagation()
 	ev.preventDefault()
+}
+
+/**
+ *
+ * @returns A function that stops an event's propagation, but still tells the system a tab has been interacted with
+ */
+export function usePropagationStop() {
+	const focusTab = useFocusThisTab()
+
+	return (ev: { stopPropagation(): any }) => {
+		ev.stopPropagation()
+		console.log("Stopping But Focusing")
+		focusTab()
+	}
 }
 
 export type DOMAttachable = "body" | "self" | string | undefined | HTMLElement

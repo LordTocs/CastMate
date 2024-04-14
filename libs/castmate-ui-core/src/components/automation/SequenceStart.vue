@@ -27,10 +27,12 @@ import {
 	useParentTestSequence,
 	TriggerSelection,
 	useTrigger,
-	stopPropagation,
+	usePropagationStop,
 } from "../../main"
 import { ComputedRef, computed, inject, ref } from "vue"
 import PButton from "primevue/button"
+
+const stopPropagation = usePropagationStop()
 
 const sequenceStartElem = ref<HTMLElement | null>(null)
 

@@ -8,7 +8,7 @@
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { FilePath, SchemaFilePath } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { DocumentPath, InputBox, LabelFloater, stopPropagation, useIpcCaller } from "../../../main"
+import { DocumentPath, InputBox, LabelFloater, useIpcCaller, usePropagationStop } from "../../../main"
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
@@ -28,19 +28,17 @@ const getFileInput = useIpcCaller<(existing: string | undefined, exts: string[] 
 	"getFileInput"
 )
 
+const stopPropagation = usePropagationStop()
+
 async function dirClick(ev: MouseEvent) {
 	if (ev.button != 0) return
 
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 
 	const file = await getFileInput(model.value, props.schema.extensions)
 	if (file != null) {
 		model.value = file
 	}
-}
-
-function clear() {
-	model.value = undefined
 }
 </script>

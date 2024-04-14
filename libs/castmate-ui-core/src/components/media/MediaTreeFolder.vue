@@ -15,6 +15,7 @@
 import { MediaFile } from "castmate-schema"
 import { computed, ref } from "vue"
 import MediaTree from "./MediaTree.vue"
+import { usePropagationStop } from "../../main"
 
 const props = defineProps<{
 	name: string
@@ -26,9 +27,11 @@ const props = defineProps<{
 
 const open = ref(false)
 
+const stopPropagation = usePropagationStop()
+
 function toggleOpen(ev: MouseEvent) {
 	if (ev.button == 0) {
-		ev.stopPropagation()
+		stopPropagation(ev)
 		ev.preventDefault()
 		open.value = !open.value
 	}

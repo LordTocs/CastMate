@@ -20,7 +20,7 @@ import PInputText from "primevue/inputtext"
 import PPassword from "primevue/password"
 import { type SchemaString, type SchemaBase } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { TemplateToggle, stopPropagation } from "../../../main"
+import { TemplateToggle } from "../../../main"
 import EnumInput from "../base-components/EnumInput.vue"
 import { useModel } from "vue"
 

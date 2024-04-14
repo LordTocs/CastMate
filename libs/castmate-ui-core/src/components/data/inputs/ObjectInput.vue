@@ -27,6 +27,7 @@ import DataInput from "../DataInput.vue"
 import DocumentPath from "../../document/DocumentPath.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import { computed } from "vue"
+import { usePropagationStop } from "../../../main"
 
 interface ObjType {
 	[prop: string]: any
@@ -62,8 +63,10 @@ function setModelProp(prop: string, value: any) {
 	return emit("update:modelValue", result)
 }
 
+const stopPropagation = usePropagationStop()
+
 function onMouseDown(ev: MouseEvent) {
-	ev.stopPropagation()
+	stopPropagation(ev)
 }
 
 const showLabel = computed(() => props.schema.name != null)

@@ -1,7 +1,7 @@
 <template>
 	<div
 		class="docked-tab-head"
-		:class="{ selected, unselected: !selected, dragHover }"
+		:class="{ selected, unselected: !selected, dragHover, focused: frameFocused }"
 		ref="tabHead"
 		@mousedown="tabMouseDown"
 		@click="onClicked"
@@ -38,6 +38,7 @@ import {
 	useInsertToFrame,
 	useDockingArea,
 	useCloseTab,
+	useTabFrame,
 } from "../../util/docking"
 import { useDocument } from "../../util/document"
 
@@ -78,7 +79,12 @@ const buttonColor = computed(() => {
 const insertToFrame = useInsertToFrame()
 
 const dockingArea = useDockingArea()
+const tabFrame = useTabFrame()
 const tabHead = ref<HTMLElement | null>(null)
+
+const frameFocused = computed(() => {
+	return dockingArea.focusedFrame == tabFrame.id
+})
 
 const { isOutside } = useMouseInElement(tabHead)
 
@@ -164,8 +170,14 @@ function tabMouseDown(ev: MouseEvent) {
 	flex-shrink: 0;
 }
 
-.selected {
+.selected.focused {
 	border-top: 2px solid var(--primary-color);
+	border-bottom: none;
+	background-color: var(--surface-d);
+}
+
+.selected {
+	border-top: 2px solid var(--surface-border);
 	border-bottom: none;
 	background-color: var(--surface-d);
 }

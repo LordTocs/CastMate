@@ -33,7 +33,7 @@
 import { computed, ref, useModel } from "vue"
 import PInputText from "primevue/inputtext"
 import StateSuggestionPanel from "./state/StateSuggestionPanel.vue"
-import { stopPropagation } from "../../../main"
+import { usePropagationStop } from "../../../main"
 const focused = ref(false)
 
 const props = defineProps<{
@@ -61,8 +61,10 @@ const model = computed<any>({
 	},
 })
 
+const stopPropagation = usePropagationStop()
+
 function suggestionClick(ev: MouseEvent) {
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 	suggestionVisible.value = true
 }

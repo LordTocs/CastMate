@@ -73,7 +73,7 @@ import { computed, onMounted, ref, useModel, watch } from "vue"
 import FakeInputString from "../../fake-input/FakeInputString.vue"
 import FakeInputBackbone from "../../fake-input/FakeInputBackbone.vue"
 import { InputSelection, PartialSelectionResult, useCombinedPartialSelects } from "../../fake-input/FakeInputTypes"
-import { useClickDragRect } from "../../../util/dom"
+import { useClickDragRect, usePropagationStop } from "../../../util/dom"
 import { emit } from "process"
 
 const props = defineProps<{
@@ -123,6 +123,8 @@ const inputHours = computed(() => {
 const focused = ref(false)
 const selection = ref<InputSelection>({ start: null, end: null, direction: null })
 
+const stopPropagation = usePropagationStop()
+
 function onCharSelect(index: number) {
 	hiddenInput.value?.focus()
 	hiddenInput.value?.selectChars(index, index)
@@ -133,7 +135,7 @@ function onFakeClick(ev: MouseEvent) {
 	if (!dragState.value.dragRect) {
 		hiddenInput.value?.selectChars(inputValue.value.length, inputValue.value.length)
 	}
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 }
 

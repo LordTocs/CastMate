@@ -17,7 +17,7 @@
 import { SchemaTwitchViewerGroup, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupEdit from "./TwitchViewerGroupEdit.vue"
 import { useModel, ref, computed } from "vue"
-import { stopPropagation, useResourceStore, DropDownPanel, DataInputBase, InputBox } from "castmate-ui-core"
+import { useResourceStore, DropDownPanel, DataInputBase, InputBox, usePropagationStop } from "castmate-ui-core"
 import { getGroupPhrase } from "../util/group"
 import TwitchViewerGroupSpan from "./groups/TwitchViewerGroupSpan.vue"
 const props = defineProps<{
@@ -42,9 +42,11 @@ function toggle() {
 	}
 }
 
+const stopPropagation = usePropagationStop()
+
 function onClick(ev: MouseEvent) {
 	toggle()
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 }
 </script>

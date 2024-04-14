@@ -22,6 +22,7 @@ import { ref, computed, onBeforeUnmount, useModel } from "vue"
 import { KB, LightColor, LightColorObj, kelvinToCSS } from "castmate-plugin-iot-shared"
 import { Color } from "castmate-schema"
 import { useEventListener } from "@vueuse/core"
+import { usePropagationStop } from "castmate-ui-core"
 
 const props = defineProps<{
 	modelValue: LightColor | undefined
@@ -107,10 +108,12 @@ function posToKelvin(x: number, y: number) {
 }
 const dragging = ref(false)
 
+const stopPropagation = usePropagationStop()
+
 function onMouseDown(ev: MouseEvent) {
 	if (ev.button == 0) {
 		ev.preventDefault()
-		ev.stopPropagation()
+		stopPropagation(ev)
 		dragging.value = true
 	}
 }

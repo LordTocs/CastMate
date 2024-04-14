@@ -66,7 +66,7 @@ import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
 import PChevronDownIcon from "primevue/icons/chevrondown"
 import { useElementSize, useEventListener } from "@vueuse/core"
-import { stopPropagation } from "../../../util/dom"
+import { usePropagationStop } from "../../../util/dom"
 import {
 	useGroupedFilteredItems,
 	getItemText,
@@ -98,6 +98,8 @@ const model = useModel(props, "modelValue")
 const emit = defineEmits(["update:modelValue", "open"])
 
 const dropDown = ref<InstanceType<typeof AutocompleteDropList>>()
+
+const stopPropagation = usePropagationStop()
 
 function clear() {
 	model.value = undefined

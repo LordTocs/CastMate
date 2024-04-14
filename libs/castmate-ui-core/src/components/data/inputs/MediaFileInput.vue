@@ -34,7 +34,7 @@ import DataInputBase from "../base-components/DataInputBase.vue"
 import { SchemaMediaFile, SchemaBase } from "castmate-schema"
 import { computed, ref, useModel } from "vue"
 import { FilterMatchMode } from "primevue/api"
-import { DropDownPanel, stopPropagation, useMediaStore } from "../../../main"
+import { DropDownPanel, useMediaStore, usePropagationStop } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
 
@@ -79,6 +79,8 @@ const selectedMedia = computed({
 	},
 })
 
+const stopPropagation = usePropagationStop()
+
 function onSelect() {
 	dropDown.value = false
 }
@@ -86,7 +88,7 @@ function onSelect() {
 function onClick(ev: MouseEvent) {
 	if (ev.button != 0) return
 
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 	dropDown.value = true
 }

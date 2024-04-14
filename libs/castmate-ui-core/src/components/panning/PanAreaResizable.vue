@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { CSSProperties, computed, ref, useModel } from "vue"
-import { stopPropagation, usePanQuery, usePanState } from "../../main"
+import { usePanQuery, usePanState, usePropagationStop } from "../../main"
 import { useEventListener } from "@vueuse/core"
 
 const props = withDefaults(
@@ -93,6 +93,8 @@ const dragOffsetX = ref(0)
 const dragOffsetY = ref(0)
 const grabbedHandle = ref<string>()
 
+const stopPropagation = usePropagationStop()
+
 function onWidgetMouseDown(ev: MouseEvent) {
 	if (ev.button != 0) return
 	if (!props.showDrag) return
@@ -108,7 +110,7 @@ function onWidgetMouseDown(ev: MouseEvent) {
 
 	grabbedHandle.value = "middle"
 
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 }
 
@@ -135,7 +137,7 @@ function onHandleMouseDown(ev: MouseEvent, handle: DragHandle) {
 	grabbedHandle.value = handle.id
 
 	ev.preventDefault()
-	ev.stopPropagation()
+	stopPropagation(ev)
 }
 
 function stopNextClick() {

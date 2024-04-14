@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { CAutocomplete, SharedDataInputProps, DataInputBase } from "castmate-ui-core"
+import { CAutocomplete, SharedDataInputProps, DataInputBase, usePropagationStop } from "castmate-ui-core"
 import { KeyboardKey, SchemaKeyboardKey, Keys, getKeyboardKey } from "castmate-plugin-input-shared"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
@@ -48,8 +48,10 @@ const keyItems = computed(() => {
 	return Object.keys(Keys).map((k) => ({ id: k, name: k }))
 })
 
+const stopPropagation = usePropagationStop()
+
 function startCapture(ev: MouseEvent) {
-	ev.stopPropagation()
+	stopPropagation(ev)
 	captureMode.value = true
 	//inputRef.value?.$el?.focus()
 }
@@ -58,7 +60,7 @@ function onKeyDown(ev: KeyboardEvent) {
 	if (!captureMode.value) return
 
 	//console.log(ev.key)
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 }
 
@@ -71,7 +73,7 @@ function onKeyUp(ev: KeyboardEvent) {
 		model.value = key
 	}
 
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 }
 </script>

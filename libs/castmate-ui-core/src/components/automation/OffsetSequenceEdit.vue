@@ -19,7 +19,7 @@ import { MaybeRefOrGetter, computed, toValue, useModel, ref, type Ref, inject } 
 import { type OffsetActions } from "castmate-schema"
 import { SequenceActions } from "castmate-schema"
 import { isActionStack } from "castmate-schema"
-import { usePluginStore, useColors, usePanState, Selection, SelectionPos } from "../../main"
+import { usePluginStore, useColors, usePanState, Selection, SelectionPos, usePropagationStop } from "../../main"
 import { useElementSize, useEventListener } from "@vueuse/core"
 import _clamp from "lodash/clamp"
 import { TimeActionInfo } from "castmate-schema"
@@ -80,6 +80,8 @@ const slider = ref<HTMLElement | null>(null)
 const panState = usePanState()
 const timeInfo = inject<Ref<TimeActionInfo>>("timeInfo")
 
+const stopPropagation = usePropagationStop()
+
 function onMouseDown(ev: MouseEvent) {
 	if (ev.button == 0) {
 		dragging.value = true
@@ -89,7 +91,7 @@ function onMouseDown(ev: MouseEvent) {
 
 		//console.log("Offset", offset)
 		ev.preventDefault()
-		ev.stopPropagation()
+		stopPropagation(ev)
 	}
 }
 

@@ -12,6 +12,7 @@
 <script setup lang="ts">
 import { Toggle } from "castmate-schema"
 import { useModel, computed } from "vue"
+import { usePropagationStop } from "../../../main"
 
 const props = withDefaults(
 	defineProps<{
@@ -30,9 +31,11 @@ const props = withDefaults(
 
 const model = useModel(props, "modelValue")
 
+const stopPropagation = usePropagationStop()
+
 function setValue(value: Toggle, ev: MouseEvent) {
 	model.value = value
-	ev.stopPropagation()
+	stopPropagation(ev)
 }
 
 function cycleInput(ev: MouseEvent) {
@@ -44,7 +47,7 @@ function cycleInput(ev: MouseEvent) {
 		model.value = false
 	}
 	ev.preventDefault()
-	ev.stopPropagation()
+	stopPropagation(ev)
 }
 
 const icon = computed(() => {

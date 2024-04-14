@@ -51,6 +51,7 @@ import {
 import { useOpenSettings } from "../settings/SettingsTypes"
 import InputTestPage from "../test/InputTestPage.vue"
 import { useDialog } from "primevue/usedialog"
+import AboutPage from "../about/AboutPage.vue"
 
 async function close() {
 	await ipcRenderer.invoke("windowFuncs_close")
@@ -213,13 +214,22 @@ const menuItems = computed<MenuItem[]>(() => {
 	}
 	result.push(helpMenu)
 
-	helpMenu.items?.push({
-		label: "Discord",
-		icon: "mdi mdi-discord",
-		command() {
-			window.open("https://discord.gg/txt4DUzYJM")
+	helpMenu.items?.push(
+		{
+			label: "About",
+			icon: "mdi mdi-info",
+			command() {
+				dockingStore.openPage("about", "About", AboutPage)
+			},
 		},
-	})
+		{
+			label: "Discord",
+			icon: "mdi mdi-discord",
+			command() {
+				window.open("https://discord.gg/txt4DUzYJM")
+			},
+		}
+	)
 
 	return result
 })

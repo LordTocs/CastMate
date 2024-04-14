@@ -23,7 +23,7 @@
 import { useEventListener, useVModel } from "@vueuse/core"
 import { PanQuery, PanState } from "../../util/panning"
 import { computed, ref, provide, toRaw, markRaw } from "vue"
-import { getInternalMousePos } from "../../main"
+import { getInternalMousePos, usePropagationStop } from "../../main"
 
 const props = withDefaults(
 	defineProps<{
@@ -78,10 +78,12 @@ provide<PanQuery>("panQuery", {
 const panStartPos = ref<{ x: number; y: number } | null>(null)
 const panStart = ref<{ panX: number; panY: number } | null>(null)
 
+const stopPropagation = usePropagationStop()
+
 function onMouseWheel(ev: WheelEvent) {
 	if (panState.value.panning) {
 		ev.preventDefault()
-		ev.stopPropagation()
+		stopPropagation(ev)
 		return
 	}
 	if (ev.ctrlKey) {
@@ -120,7 +122,7 @@ function onMouseWheel(ev: WheelEvent) {
 			panStateObj.value.zoomY += deltaZoom
 		}
 		ev.preventDefault()
-		ev.stopPropagation()
+		stopPropagation(ev)
 	}
 }
 
@@ -133,7 +135,7 @@ function onMouseDown(ev: MouseEvent) {
 		panStart.value = { panX: panState.value.panX, panY: panState.value.panY }
 
 		ev.preventDefault()
-		ev.stopPropagation()
+		stopPropagation(ev)
 	}
 }
 

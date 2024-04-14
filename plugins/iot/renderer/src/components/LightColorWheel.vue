@@ -16,6 +16,7 @@
 import { ref, computed, onBeforeUnmount, useModel } from "vue"
 import { HSB, HSBColor, LightColor, LightColorObj } from "castmate-plugin-iot-shared"
 import { useEventListener, useElementSize } from "@vueuse/core"
+import { usePropagationStop } from "castmate-ui-core"
 const props = defineProps<{
 	modelValue: LightColor | undefined
 }>()
@@ -92,9 +93,11 @@ function posToHueSat(x: number, y: number) {
 
 const dragging = ref(false)
 
+const stopPropagation = usePropagationStop()
+
 function onMouseDown(ev: MouseEvent) {
 	ev.preventDefault()
-	ev.stopPropagation()
+	stopPropagation(ev)
 	dragging.value = true
 }
 

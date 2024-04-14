@@ -57,7 +57,7 @@ import { InlineAutomationView } from "../../automations/automations.ts"
 import { useModel, ref, computed } from "vue"
 import ExpanderSlider from "../util/ExpanderSlider.vue"
 import AutomationEdit from "./AutomationEdit.vue"
-import { ResourceProxyFactory, stopPropagation, DataInput } from "../../main"
+import { ResourceProxyFactory, DataInput, usePropagationStop } from "../../main"
 import SequenceMiniPreview from "./mini/SequenceMiniPreview.vue"
 import PButton from "primevue/button"
 import { DocumentPath, LabelFloater, InputBox } from "../../main"
@@ -80,14 +80,16 @@ const view = useModel(props, "view")
 
 const editBody = ref<HTMLElement>()
 
+const stopPropagation = usePropagationStop()
+
 function doOpen(ev: MouseEvent) {
 	view.value.open = true
-	ev.stopPropagation()
+	stopPropagation(ev)
 }
 
 function doClose(ev: MouseEvent) {
 	view.value.open = false
-	ev.stopPropagation()
+	stopPropagation(ev)
 }
 </script>
 

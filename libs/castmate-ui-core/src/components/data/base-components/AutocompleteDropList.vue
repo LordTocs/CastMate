@@ -50,6 +50,7 @@ import {
 	getPrevItem,
 	findItem,
 } from "../../../util/autocomplete-helpers"
+import { usePropagationStop } from "../../../main"
 
 const props = defineProps<
 	{
@@ -67,6 +68,8 @@ const focusedId = useModel(props, "focusedId")
 
 const containerSize = useElementSize(() => props.container)
 
+const stopPropagation = usePropagationStop()
+
 function isItemFocused(item: ItemType) {
 	return item.id == props.focusedId
 }
@@ -83,7 +86,7 @@ function close() {
 function onItemSelect(ev: Event, item: ItemType) {
 	emit("select", item)
 	close()
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 }
 
@@ -96,7 +99,7 @@ function selectFocusedItem(ev: Event) {
 	console.log("Focused!", item)
 
 	if (item) {
-		ev.stopPropagation()
+		stopPropagation(ev)
 		ev.preventDefault()
 		emit("select", item)
 		close()
@@ -107,18 +110,18 @@ defineExpose({
 	handleKeyEvent(ev: KeyboardEvent) {
 		if (ev.key == "ArrowDown") {
 			focusedId.value = getNextItem(props.groupedItems, focusedId.value)
-			ev.stopPropagation()
+			stopPropagation(ev)
 			ev.preventDefault()
 		} else if (ev.key == "ArrowUp") {
 			focusedId.value = getPrevItem(props.groupedItems, focusedId.value)
-			ev.stopPropagation()
+			stopPropagation(ev)
 			ev.preventDefault()
 		} else if (ev.key == "Enter") {
 			selectFocusedItem(ev)
 		} else if (ev.key == "Escape") {
 			close()
 			ev.preventDefault()
-			ev.stopPropagation()
+			stopPropagation(ev)
 		}
 	},
 })

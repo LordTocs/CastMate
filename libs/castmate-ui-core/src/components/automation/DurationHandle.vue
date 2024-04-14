@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { useEventListener, useVModel, useElementSize } from "@vueuse/core"
-import { type PanState, usePanState, usePanQuery, getInternalMousePos } from "../../main"
+import { type PanState, usePanState, usePanQuery, getInternalMousePos, usePropagationStop } from "../../main"
 import { ref, type Ref, inject, computed } from "vue"
 import { automationTimeScale } from "./automation-shared"
 
@@ -100,6 +100,8 @@ function adjustPos(ev: MouseEvent) {
 	modelObj.value = duration
 }
 
+const stopPropagation = usePropagationStop()
+
 function onMouseDown(ev: MouseEvent) {
 	if (ev.button == 0) {
 		dragging.value = true
@@ -113,7 +115,7 @@ function onMouseDown(ev: MouseEvent) {
 		dragStartDuration.value = modelObj.value || 0
 		//Pull focus
 		handle.value?.focus()
-		ev.stopPropagation()
+		stopPropagation(ev)
 		ev.preventDefault()
 	}
 }

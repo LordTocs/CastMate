@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import PButton from "primevue/button"
 import { computed, ref } from "vue"
+import { usePropagationStop } from "../../main"
 
 const props = defineProps<{
 	file: string
@@ -30,9 +31,11 @@ function onPause() {
 	playing.value = false
 }
 
+const stopPropagation = usePropagationStop()
+
 function onClick(ev: MouseEvent) {
 	if (ev.button != 0) return
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 
 	if (!audioPlayer?.value) return

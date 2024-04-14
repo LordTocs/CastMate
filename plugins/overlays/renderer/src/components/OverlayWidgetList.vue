@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { useDocumentPath, useDocumentSelection, FlexScroller } from "castmate-ui-core"
+import { useDocumentPath, useDocumentSelection, FlexScroller, usePropagationStop } from "castmate-ui-core"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
@@ -98,6 +98,8 @@ function popAddMenu(ev: MouseEvent) {
 	addMenu.value?.toggle(ev)
 }
 
+const stopPropagation = usePropagationStop()
+
 function widgetClick(idx: number, ev: MouseEvent) {
 	if (ev.button != 0) return
 
@@ -112,7 +114,7 @@ function widgetClick(idx: number, ev: MouseEvent) {
 		}
 	} else {
 		selection.value = [id]
-		ev.stopPropagation()
+		stopPropagation(ev)
 	}
 }
 

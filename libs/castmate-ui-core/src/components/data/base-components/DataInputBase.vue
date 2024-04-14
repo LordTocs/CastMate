@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { computed, markRaw, ref, useModel } from "vue"
 import CContextMenu from "../../util/CContextMenu.vue"
-import { LabelFloater, TemplateToggle, DocumentPath } from "../../../main"
+import { LabelFloater, TemplateToggle, DocumentPath, usePropagationStop } from "../../../main"
 import ErrorLabel from "./ErrorLabel.vue"
 import { Schema } from "castmate-schema"
 import { useValidator } from "../../../util/validation"
@@ -120,10 +120,12 @@ const templateMode = ref(false)
 
 const errorMessage = useValidator(model, () => props.schema)
 
+const stopPropagation = usePropagationStop()
+
 function onContext(ev: MouseEvent) {
 	if (hasMenu.value) {
 		contextMenu.value?.show(ev)
-		ev.stopPropagation()
+		stopPropagation(ev)
 		ev.preventDefault()
 	}
 }

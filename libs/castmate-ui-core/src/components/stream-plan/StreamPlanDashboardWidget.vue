@@ -35,7 +35,7 @@
 import { ResourceData, StreamPlanConfig, StreamPlanState, declareSchema } from "castmate-schema"
 import DashboardCard from "../dashboard/DashboardCard.vue"
 import DataInput from "../data/DataInput.vue"
-import { ResourceProxyFactory, useResourceData } from "../../main"
+import { ResourceProxyFactory, usePropagationStop, useResourceData } from "../../main"
 import { computed, onMounted, ref, watch } from "vue"
 import StreamPlanDashboardSegment from "./StreamPlanDashboardSegment.vue"
 import { useStreamPlanStore } from "./stream-plan-types"
@@ -59,6 +59,8 @@ const selectedPlan = computed(() => {
 	return plans.value?.resources?.get?.(planId.value)
 })
 
+const stopPropagation = usePropagationStop()
+
 const segmentList = ref<HTMLElement>()
 function onScroll(ev: WheelEvent) {
 	if (!segmentList.value) return
@@ -71,7 +73,7 @@ function onScroll(ev: WheelEvent) {
 	}
 
 	segmentList.value.scrollLeft += ev.deltaY / 2
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 }
 

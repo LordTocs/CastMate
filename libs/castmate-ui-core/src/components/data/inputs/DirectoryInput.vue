@@ -8,7 +8,7 @@
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { Directory, SchemaDirectory } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { InputBox, useIpcCaller } from "../../../main"
+import { InputBox, useIpcCaller, usePropagationStop } from "../../../main"
 import { useModel } from "vue"
 import { useValidator } from "../../../util/validation"
 
@@ -26,10 +26,12 @@ const getFolderInput = useIpcCaller<(existing: string | undefined) => string | u
 	"getFolderInput"
 )
 
+const stopPropagation = usePropagationStop()
+
 async function dirClick(ev: MouseEvent) {
 	if (ev.button != 0) return
 
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 
 	const folder = await getFolderInput(model.value)

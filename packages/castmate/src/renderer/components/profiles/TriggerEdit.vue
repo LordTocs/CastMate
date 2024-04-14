@@ -27,7 +27,7 @@
 				class="no-focus-highlight"
 				:icon="open ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'"
 				@click.stop="open = !open"
-				@mousedown.stop
+				@mousedown="stopPropagation"
 			/>
 		</div>
 		<div
@@ -72,18 +72,20 @@ import {
 	TriggerView,
 	useTriggerColors,
 	ResourceProxyFactory,
-	stopPropagation,
 	provideDataContextSchema,
 	AutomationEdit,
 	ExpanderSlider,
 	DocumentPath,
 	SequenceMiniPreview,
 	TriggerSelection,
+	usePropagationStop,
 } from "castmate-ui-core"
 import isFunction from "lodash/isFunction"
 import { useVModel, asyncComputed } from "@vueuse/core"
 import { Schema } from "castmate-schema"
 import _debounce from "lodash/debounce"
+
+const stopPropagation = usePropagationStop()
 
 const props = withDefaults(
 	defineProps<{

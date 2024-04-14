@@ -85,3 +85,7 @@ ipcMain.handle("windowFuncs_isMaximized", async (event) => {
 	const win = BrowserWindow.fromWebContents(event.sender)
 	return win?.isMaximized()
 })
+
+ipcMain.handle("windowFuncs_getVersion", async (event) => {
+	return app.getVersion()
+})

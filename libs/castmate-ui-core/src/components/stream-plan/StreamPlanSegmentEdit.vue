@@ -37,7 +37,7 @@
 import { StreamPlanSegment } from "castmate-schema"
 import { StreamPlanSegmentView, useStreamPlanStore } from "./stream-plan-types"
 import { computed, useModel } from "vue"
-import { InlineAutomationEdit, stopPropagation } from "../../main"
+import { InlineAutomationEdit, usePropagationStop } from "../../main"
 import PInputText from "primevue/inputtext"
 
 const props = defineProps<{
@@ -45,6 +45,8 @@ const props = defineProps<{
 	view: StreamPlanSegmentView
 	selectedIds: string[]
 }>()
+
+const stopPropagation = usePropagationStop()
 
 const streamPlanStore = useStreamPlanStore()
 

@@ -1,6 +1,6 @@
 import { Arrayable, useEventListener } from "@vueuse/core"
 import { type MaybeRefOrGetter, toValue, onMounted, watch, onUnmounted, ref, Ref, computed } from "vue"
-import { getElementRelativeRect, getInternalMousePos, isChildOfClass } from "./dom"
+import { getElementRelativeRect, getInternalMousePos, isChildOfClass, usePropagationStop } from "./dom"
 
 export type DragEventWithDataTransfer = DragEvent & { dataTransfer: DataTransfer }
 
@@ -111,10 +111,12 @@ export function useDrop(
 	dragDataTypes: MaybeRefOrGetter<Arrayable<string>>,
 	func: (ev: DragEventWithDataTransfer) => any
 ) {
+	const stopPropagation = usePropagationStop()
+
 	useEventListener(element, "drop", (ev: DragEvent) => {
 		if (!isDragRelevent(ev, dragDataTypes)) return
 
-		ev.stopPropagation()
+		stopPropagation(ev)
 		ev.preventDefault()
 
 		func(ev)
@@ -127,11 +129,12 @@ export function useDragStart(
 	func: (ev: DragEventWithDataTransfer) => any
 ) {
 	const dragTarget = ref<HTMLElement>()
+	const stopPropagation = usePropagationStop()
 
 	useEventListener(element, "mousedown", (ev: MouseEvent) => {
 		dragTarget.value = ev.target as HTMLElement
 		if (isChildOfClass(dragTarget.value, toValue(handleClass))) {
-			ev.stopPropagation()
+			stopPropagation(ev)
 		}
 	})
 

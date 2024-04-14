@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { LightColor, SchemaLightcolor } from "castmate-plugin-iot-shared"
-import { InputBox, SharedDataInputProps, DropDownPanel, DataInputBase } from "castmate-ui-core"
+import { InputBox, SharedDataInputProps, DropDownPanel, DataInputBase, usePropagationStop } from "castmate-ui-core"
 import { ref, useModel } from "vue"
 import LightColorWheel from "./LightColorWheel.vue"
 import LightTemperatureSlider from "./LightTemperatureSlider.vue"
@@ -81,9 +81,11 @@ function toggle() {
 	}
 }
 
+const stopPropagation = usePropagationStop()
+
 function onClick(ev: MouseEvent) {
 	toggle()
-	ev.stopPropagation()
+	stopPropagation(ev)
 	ev.preventDefault()
 }
 </script>

@@ -47,7 +47,7 @@ import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
 import { DragEventWithDataTransfer, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../util/dragging"
 import { useSelectionRect } from "../../util/selection"
-import { getElementRelativeRect, isChildOfClass } from "../../util/dom"
+import { getElementRelativeRect, isChildOfClass, usePropagationStop } from "../../util/dom"
 import { provideDocumentPath } from "../../main"
 import DocumentPath from "../document/DocumentPath.vue"
 import SelectDummy from "../util/SelectDummy.vue"
@@ -263,6 +263,8 @@ function getSelectedData(copy: boolean) {
 	return { modelItems: resultItems, viewItems: resultView }
 }
 
+const stopPropagation = usePropagationStop()
+
 /// DRAG ITEM HANDLERS
 
 //In order to check if the handle class is respected we need to save off the mousedown event's target, since dragevent originates from the draggable div
@@ -271,7 +273,7 @@ function itemMouseDown(i: number, evt: MouseEvent) {
 	console.log("Drag Handling Mouse Down", i)
 	dragTarget = evt.target as HTMLElement
 	if (isChildOfClass(dragTarget, props.handleClass)) {
-		evt.stopPropagation()
+		stopPropagation(evt)
 	}
 }
 
@@ -363,7 +365,7 @@ function onClick(ev: MouseEvent) {
 	if (ev.button == 0) {
 		selectDummy.value?.select()
 		dragArea.value?.focus()
-		ev.stopPropagation()
+		stopPropagation(ev)
 		ev.preventDefault()
 	}
 }
