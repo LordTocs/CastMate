@@ -84,6 +84,26 @@ const menuItems = ref<MenuItem[]>([
 		label: "File",
 		items: [
 			{
+				label: "New Profile",
+				icon: "mdi mdi-card-text-outline",
+				command(event) {},
+			},
+			{
+				label: "New Automation",
+				icon: "mdi mdi-cogs",
+				command() {},
+			},
+			{
+				label: "Save",
+				icon: "mdi mdi-content-save",
+				command() {},
+			},
+			{
+				label: "Save All",
+				icon: "mdi mdi-content-save-all",
+				command() {},
+			},
+			{
 				label: "Settings",
 				icon: "mdi mdi-cog",
 				command() {
@@ -105,7 +125,9 @@ const menuItems = ref<MenuItem[]>([
 			{
 				label: "Discord",
 				icon: "mdi mdi-discord",
-				command() {},
+				command() {
+					window.open("https://discord.gg/txt4DUzYJM")
+				},
 			},
 		],
 	},

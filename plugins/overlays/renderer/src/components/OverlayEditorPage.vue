@@ -1,7 +1,7 @@
 <template>
 	<div class="overlay-editor">
 		<div class="overlay-editor-header">
-			<div class="pt-4 flex flex-row w-full justify-content-center gap-1">
+			<div class="pt-4 px-1 flex flex-row w-full justify-content-center gap-1">
 				<div class="flex-grow-1">
 					<data-input
 						:schema="{ type: ResourceProxyFactory, resourceType: 'OBSConnection', name: `OBS Connection` }"
