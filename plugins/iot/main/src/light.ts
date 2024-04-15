@@ -1,5 +1,13 @@
 import { LightColor, LightConfig, LightState } from "castmate-plugin-iot-shared"
-import { Resource, ResourceStorage, abortableSleep, defineAction, definePluginResource } from "castmate-core"
+import {
+	Resource,
+	ResourceStorage,
+	abortableSleep,
+	defineAction,
+	definePluginResource,
+	registerSchemaTemplate,
+	template,
+} from "castmate-core"
 import { Duration, Toggle } from "castmate-schema"
 
 export class LightResource<
@@ -34,6 +42,10 @@ export class PollingLight<
 	async poll() {}
 }
 
+registerSchemaTemplate(LightColor, async (value, context, schema) => {
+	return (await template(value, context)) as LightColor
+})
+
 export function setupLights() {
 	definePluginResource(LightResource)
 
@@ -63,6 +75,7 @@ export function setupLights() {
 					type: LightColor,
 					name: "Color",
 					resource: "light",
+					template: true,
 				},
 				transition: { type: Duration, name: "Transition Time", required: true, default: 0.5 },
 			},

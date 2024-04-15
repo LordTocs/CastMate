@@ -27,16 +27,6 @@
 			</drop-down-panel>
 		</template>
 	</data-input-base>
-	<!-- <div class="light-color-container flex-grow-1" ref="container">
-		<div class="p-inputgroup" @mousedown="stopPropagation">
-			<label-floater :no-float="noFloat" :label="schema.name" input-id="light-color" v-slot="labelProps">
-				<template-toggle v-model="model" :template-mode="false" v-bind="labelProps" v-slot="templateProps">
-				</template-toggle>
-			</label-floater>
-			<p-button class="flex-none no-focus-highlight" v-if="!schema.required" icon="pi pi-times" @click="clear" />
-		</div>
-		
-	</div> -->
 </template>
 
 <script setup lang="ts">
