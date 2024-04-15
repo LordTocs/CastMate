@@ -26,7 +26,7 @@ export function createProfileViewData(resource: ResourceData<ProfileConfig>) {
 			height: 600,
 			automationView: {
 				panState: {
-					zoomX: 1,
+					zoomX: 4,
 					zoomY: 1,
 					panX: 0,
 					panY: 0,

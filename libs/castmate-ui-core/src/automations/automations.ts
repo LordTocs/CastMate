@@ -28,7 +28,7 @@ export function createInlineAutomationView(): InlineAutomationView {
 		height: 600,
 		automationView: {
 			panState: {
-				zoomX: 1,
+				zoomX: 4,
 				zoomY: 1,
 				panX: 0,
 				panY: 0,
@@ -42,7 +42,7 @@ function createAutomationViewData(resource: ResourceData<AutomationConfig>): Aut
 	return {
 		automationView: {
 			panState: {
-				zoomX: 1,
+				zoomX: 4,
 				zoomY: 1,
 				panX: 0,
 				panY: 0,
