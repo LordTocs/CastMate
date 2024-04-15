@@ -5,14 +5,22 @@
 			<project-view v-if="initStore.inited" />
 			<docking-area style="flex: 1" v-model="dockingStore.rootDockArea" />
 		</div>
-		<p-dynamic-dialog />
+		<!-- <p-dynamic-dialog /> -->
+		<cancellable-dynamic-dialog />
 		<p-confirm-dialog />
 	</div>
 </template>
 
 <script setup lang="ts">
 import SystemBar from "./components/system/SystemBar.vue"
-import { useDocumentStore, useDockingStore, DockingArea, type DockedArea, useIpcCaller } from "castmate-ui-core"
+import {
+	useDocumentStore,
+	useDockingStore,
+	DockingArea,
+	type DockedArea,
+	useIpcCaller,
+	CancellableDynamicDialog,
+} from "castmate-ui-core"
 import ProjectView from "./components/project/ProjectView.vue"
 import { getCurrentInstance, inject, onMounted, ref } from "vue"
 import { nanoid } from "nanoid/non-secure"

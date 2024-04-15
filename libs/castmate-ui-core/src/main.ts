@@ -57,6 +57,8 @@ export { default as DataInputBase } from "./components/data/base-components/Data
 
 export { default as StreamPlanDashboardWidget } from "./components/stream-plan/StreamPlanDashboardWidget.vue"
 
+export { default as CancellableDynamicDialog } from "./components/dialogs/CancellableDynamicDialog.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"

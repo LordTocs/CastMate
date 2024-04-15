@@ -68,6 +68,7 @@ import { initSettingsDocuments } from "./components/settings/SettingsTypes"
 import Tooltip from "primevue/tooltip"
 import { IPCOverlayWidgetDescriptor } from "castmate-plugin-overlays-shared"
 import { sendOverlaysToMain } from "./util/overlay-util"
+import { setupProxyDialogService } from "../../../../libs/castmate-ui-core/src/util/dialog-helper"
 
 /*
 const router = createRouter({
@@ -81,7 +82,9 @@ const app = createApp(App)
 //DialogService.install?.(app)
 console.log("Dialog service inited")
 app.use(PrimeVue)
-app.use(DialogService)
+//app.use(DialogService)
+setupProxyDialogService(app)
+
 app.use(ConfirmationService)
 
 app.directive("tooltip", Tooltip)
