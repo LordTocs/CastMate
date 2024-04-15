@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate">
 		<div class="container w-full" ref="container">
 			<input-box v-bind="inputProps" :model="model" @click="toggle">
 				<div class="color-splash" :style="{ backgroundColor: model }"></div>
@@ -29,9 +29,9 @@ const props = defineProps<
 
 const model = useModel(props, "modelValue")
 
-const isColorString = computed(() => {
-	return !model.value || isHexColor(model.value)
-})
+function isTemplate(value: Color | string | undefined) {
+	return !!(value && isHexColor(value))
+}
 
 const overlayVisible = ref(false)
 

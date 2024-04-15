@@ -36,9 +36,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, ref, useModel } from "vue"
+import { computed, markRaw, onMounted, ref, useModel } from "vue"
 import CContextMenu from "../../util/CContextMenu.vue"
-import { LabelFloater, TemplateToggle, DocumentPath, usePropagationStop } from "../../../main"
+import { LabelFloater, TemplateToggle, DocumentPath, usePropagationStop, defaultStringIsTemplate } from "../../../main"
 import ErrorLabel from "./ErrorLabel.vue"
 import { Schema } from "castmate-schema"
 import { useValidator } from "../../../util/validation"
@@ -56,10 +56,12 @@ const props = withDefaults(
 		menuExtra?: MenuItem[]
 		toggleTemplate?: boolean
 		disabled?: boolean
+		isTemplate?: (value: any) => boolean
 	}>(),
 	{
 		showClear: true,
 		toggleTemplate: true,
+		isTemplate: defaultStringIsTemplate,
 	}
 )
 
@@ -117,6 +119,12 @@ const contextMenu = ref<InstanceType<typeof CContextMenu>>()
 const canTemplate = computed(() => !!props.schema.template)
 
 const templateMode = ref(false)
+
+onMounted(() => {
+	if (canTemplate.value) {
+		templateMode.value = props.isTemplate(props.modelValue)
+	}
+})
 
 const errorMessage = useValidator(model, () => props.schema)
 
