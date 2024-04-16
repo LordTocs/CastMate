@@ -8,6 +8,7 @@ import {
 	removeAllSubResource,
 	getPluginSetting,
 	onSettingChanged,
+	usePluginLogger,
 } from "castmate-core"
 import { LightResource, PlugResource } from "castmate-plugin-iot-main"
 import {
@@ -32,6 +33,8 @@ interface GoveeBulbConfig extends LightConfig {
 }
 
 import * as goveeLan from "@j3lte/govee-lan-controller"
+
+const logger = usePluginLogger("govee")
 
 class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 	private lanDevice: goveeLan.Device | undefined = undefined
@@ -96,7 +99,7 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 		const state = await getDeviceState(apiKey.value, this.config.providerId, device.model)
 		await this.applyConfig({
 			model: device.model,
-			name: state.data.name,
+			name: device.deviceName,
 			hasCloud: true,
 			dimming: {
 				available: device.supportCmds.includes("brightness"),
@@ -210,6 +213,9 @@ class GoveePlug extends PollingPlug<GoveePlugConfig> {
 			hasCloud: false,
 			hasLan: false,
 		}
+
+		//@ts-ignore
+		this.state = {}
 	}
 
 	async setCloudDevice(device: GoveeCloudDevice) {
@@ -220,7 +226,7 @@ class GoveePlug extends PollingPlug<GoveePlugConfig> {
 		const state = await getDeviceState(apiKey.value, this.config.providerId, device.model)
 		await this.applyConfig({
 			model: device.model,
-			name: state.data.name,
+			name: device.deviceName,
 			hasCloud: true,
 		})
 
@@ -280,6 +286,7 @@ export default definePlugin(
 		async function shutdown() {
 			await removeAllSubResource(GoveeBulb)
 			if (poller) {
+				//@ts-ignore
 				clearInterval(poller)
 				poller = undefined
 			}
@@ -294,7 +301,7 @@ export default definePlugin(
 			})
 
 			lan.on(goveeLan.GoveeEventTypes.Error, (err) => {
-				console.error("Govee Lan Error", err)
+				logger.error("Govee Lan Error", err)
 			})
 
 			lan.on(goveeLan.GoveeEventTypes.NewDevice, async (device) => {
@@ -312,6 +319,9 @@ export default definePlugin(
 				await cloudPoll()
 				lanPoll()
 			}, 30 * 1000)
+
+			cloudPoll()
+			lanPoll()
 		}
 
 		onLoad(async () => {

@@ -1,4 +1,5 @@
 import axios from "axios"
+import { usePluginLogger } from "castmate-core"
 import { LightColor } from "castmate-plugin-iot-shared"
 import * as chromatism from "chromatism2"
 
@@ -9,6 +10,7 @@ type GoveeCloudCommands = "turn" | "brightness" | "color" | "colorTem"
 export interface GoveeCloudDevice {
 	device: string //mac
 	model: string
+	deviceName: string
 	controllable: boolean
 	retrievable: boolean
 	supportCmds: GoveeCloudCommands[]
@@ -33,6 +35,8 @@ interface GoveeCloudDevicesResponse extends GoveeCloudResponse {
 		devices: GoveeCloudDevice[]
 	}
 }
+
+const logger = usePluginLogger("govee")
 
 export async function getDevices(apiKey: string) {
 	const respRaw = await axios.get(`https://developer-api.govee.com/v1/devices`, {
