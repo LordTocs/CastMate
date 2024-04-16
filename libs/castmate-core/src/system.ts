@@ -14,6 +14,7 @@ import { WebService } from "./webserver/internal-webserver"
 import { PubSubManager } from "./pubsub/pubsub-service"
 import { SequenceResolvers } from "./queue-system/sequence"
 import { EmoteCache } from "./emotes/emote-service"
+import { GenericLoginService } from "./util/generic-login"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -38,6 +39,7 @@ export async function initializeCastMate() {
 	await ensureDirectory(resolveProjectPath("settings"))
 	await ensureDirectory(resolveProjectPath("secrets"))
 	await initializeFileSystem()
+	GenericLoginService.initialize()
 	WebService.initialize()
 	PluginManager.initialize()
 	setupMedia()

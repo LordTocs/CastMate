@@ -129,6 +129,10 @@ export function onAccountAuth<AccountType extends AccountConstructor>(
 	onLoad(() => {
 		const account = accountType.storage.getById(id)
 		account?.onAuthorized?.register(funcHarness)
+
+		if (account?.isAuthenticated) {
+			funcHarness()
+		}
 	})
 
 	onUnload(() => {

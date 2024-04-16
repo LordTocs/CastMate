@@ -34,7 +34,7 @@ const props = withDefaults(
 const name = ref<string>("")
 
 function create() {
-	dialogRef?.value?.close(name.value)
+	dialogRef.value?.close(name.value)
 }
 
 /*

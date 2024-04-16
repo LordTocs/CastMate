@@ -1,4 +1,12 @@
-import { PubSubManager, defineAction, definePlugin, defineResourceSetting, onLoad, onUnload } from "castmate-core"
+import {
+	PubSubManager,
+	defineAction,
+	definePlugin,
+	definePluginResource,
+	defineResourceSetting,
+	onLoad,
+	onUnload,
+} from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { setupChat } from "./chat"
 import { setupSubscriptions } from "./subscriptions"
@@ -30,9 +38,9 @@ export default definePlugin(
 		color: "#9146FF", //"#5E5172",
 	},
 	() => {
-		onLoad(async () => {
-			await TwitchAccount.initialize()
+		definePluginResource(TwitchAccount)
 
+		onLoad(async () => {
 			await TwitchAPIService.initialize()
 		})
 

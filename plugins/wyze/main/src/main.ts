@@ -15,6 +15,9 @@ import {
 	removeAllSubResource,
 	defineSecret,
 	getPluginSetting,
+	GenericLoginService,
+	defineResourceSetting,
+	usePluginLogger,
 } from "castmate-core"
 import axios from "axios"
 import md5 from "md5"
@@ -25,7 +28,7 @@ import * as chromatism from "chromatism2"
 import _clamp from "lodash/clamp"
 
 const WYZE_AUTH_URL = "https://auth-prod.api.wyze.com/api/user/login"
-const WYZE_API_URL = "https://api.wyzecam.com:8443"
+const WYZE_API_URL = "https://api.wyzecam.com"
 const WYZE_USER_AGENT = "wyze_ios_2.21.35"
 const WYZE_PHONE_ID = "wyze_developer_api"
 const WYZE_APP_VERSION = "wyze_developer_api"
@@ -84,6 +87,8 @@ function formatWyzeRequestBody(moreData: Record<string, any>) {
 	}
 }
 
+const logger = usePluginLogger("wyze")
+
 class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 	static storage = new ResourceStorage<WyzeAccount>("WyzeAccount")
 	static accountDirectory: string = "wyze"
@@ -105,7 +110,18 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 	}
 
 	async checkCachedCreds() {
-		return false
+		if (!this.secrets.accessToken || !this.secrets.refreshToken) return false
+
+		const result = await axios.post(
+			`${WYZE_API_URL}/app/v2/home_page/get_object_list`,
+			formatWyzeRequestBody({
+				access_token: this.secrets.accessToken,
+			})
+		)
+
+		if (result.data.msg === "AccessTokenError") return false
+
+		return true
 	}
 
 	async refreshCreds() {
@@ -119,7 +135,10 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 				})
 			)
 
-			if (!("access_token" in result.data && "refresh_token" in result.data)) return false
+			if (!("access_token" in result.data && "refresh_token" in result.data)) {
+				logger.log("Failed Login to Wyze", result.data)
+				return false
+			}
 
 			const {
 				access_token: accessToken,
@@ -138,6 +157,7 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 	}
 
 	private async tryLogin(email: string, password: string) {
+		logger.log("Attempting Login w/ ", email)
 		try {
 			const keyId = getPluginSetting<string | undefined>("wyze", "keyId")
 			const apiKey = getPluginSetting<string | undefined>("wyze", "apiKey")
@@ -160,7 +180,10 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 				}
 			)
 
-			if (!("access_token" in result.data && "refresh_token" in result.data)) return false
+			if (!("access_token" in result.data && "refresh_token" in result.data)) {
+				logger.log("Failed to login to Wyze", result.data)
+				return false
+			}
 
 			const {
 				access_token: accessToken,
@@ -179,7 +202,23 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 	}
 
 	async login() {
-		return false
+		logger.log("Starting Generic Login")
+
+		const result = await GenericLoginService.getInstance().openLogin("Wyze Login", async (username, password) => {
+			const result = await this.tryLogin(username, password)
+
+			if (result) {
+				this.applyConfig({
+					email: username,
+				})
+			}
+
+			return result
+		})
+
+		logger.log("Generic Login Closed")
+
+		return result
 	}
 
 	private async apiRequest(path: string, data: Record<string, any>) {
@@ -384,6 +423,10 @@ class WyzePlug extends PlugResource<WyzePlugConfig> {
 			providerId: desc.mac,
 			model: desc.product_model,
 		}
+
+		this.state = {
+			on: desc.device_params.switch_state != 0,
+		}
 	}
 
 	private async updateState() {
@@ -431,9 +474,13 @@ export default definePlugin(
 
 		definePluginResource(WyzeAccount)
 
+		defineResourceSetting(WyzeAccount, "WyzeAccount")
+
 		async function queryDevices() {
 			if (!WyzeAccount.main.state.authenticated) return
-			await removeAllSubResource(WyzeAccount)
+			logger.log("Querying Wyze Devices")
+			await removeAllSubResource(WyzeLight)
+			await removeAllSubResource(WyzePlug)
 
 			const devices = await WyzeAccount.main.getDevices()
 

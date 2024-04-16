@@ -70,6 +70,7 @@ export * from "./util/automation"
 export * from "./util/dragging"
 export * from "./util/selection"
 export * from "./util/arrays"
+export * from "./util/generic-login"
 
 export * from "./plugins/plugin-store"
 export * from "./project/project-store"

@@ -41,3 +41,5 @@ export * from "./pubsub/pubsub-service"
 export * from "./profile/profile-system"
 
 export * from "./emotes/emote-service"
+
+export * from "./util/generic-login"

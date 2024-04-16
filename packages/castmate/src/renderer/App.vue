@@ -22,26 +22,16 @@ import {
 	CancellableDynamicDialog,
 } from "castmate-ui-core"
 import ProjectView from "./components/project/ProjectView.vue"
-import { getCurrentInstance, inject, onMounted, ref } from "vue"
-import { nanoid } from "nanoid/non-secure"
-import PDynamicDialog from "primevue/dynamicdialog"
+//import PDynamicDialog from "primevue/dynamicdialog"
 import PConfirmDialog from "primevue/confirmdialog"
 import { useInitStore } from "./store/init-store"
-//@ts-ignore
-//import { useDialog, PrimeVueDialogSymbol } from "primevue/usedialog"
+
+import { setupGenericLoginService } from "castmate-ui-core"
 
 const initStore = useInitStore()
 const dockingStore = useDockingStore()
-/*
-//@ts-ignore
-const instance = getCurrentInstance()
-if (instance?.appContext?.provides) {
-	console.log("AppProvides", instance?.appContext?.provides)
-	console.log("AppProvides[PrimeVueDialogSymbol]", instance?.appContext?.provides?.[PrimeVueDialogSymbol])
-}
 
-const dialog = useDialog()
-*/
+setupGenericLoginService()
 </script>
 
 <style>
