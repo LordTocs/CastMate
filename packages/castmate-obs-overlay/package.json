@@ -15,8 +15,8 @@
 		"castmate-overlay-core": "workspace:^",
 		"castmate-overlay-widget-loader": "workspace:^",
 		"events": "^3.3.0",
-		"pinia": "*",
-		"vue": "^3.2.37"
+		"pinia": "^2.1.7",
+		"vue": "^3.4.23"
 	},
 	"devDependencies": {
 		"castmate-vite": "workspace:^",

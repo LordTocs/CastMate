@@ -10,9 +10,9 @@ import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
 
 const bridge = useWebsocketBridge()
 
-onMounted(() => {
-	loadOverlayWidgets()
+loadOverlayWidgets()
 
+onMounted(() => {
 	bridge.initialize()
 })
 </script>

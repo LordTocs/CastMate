@@ -20,16 +20,16 @@
 		"castmate-schema": "workspace:^",
 		"chromatism2": "*",
 		"electron": "^29.1.1",
-		"nanoid": "*",
-		"pinia": "*",
+		"nanoid": "^5.0.7",
+		"pinia": "^2.1.7",
 		"primevue": "*",
-		"vue": "*"
+		"vue": "^3.4.23"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "*",
 		"ts-toolbelt": "*",
 		"typescript": "*",
-		"vite": "*",
+		"vite": "^5.2.9",
 		"vue-tsc": "*"
 	}
 }

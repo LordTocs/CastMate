@@ -29,7 +29,7 @@
 		"express": "^4.18.2",
 		"fluent-ffmpeg": "^2.1.2",
 		"lodash": "^4.17.21",
-		"nanoid": "*",
+		"nanoid": "^5.0.7",
 		"recursive-readdir-async": "^1.3.0",
 		"winston": "^3.11.0",
 		"ws": "^8.16.0",

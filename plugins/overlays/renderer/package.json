@@ -22,14 +22,14 @@
 		"chromatism2": "*",
 		"electron": "^29.1.1",
 		"font-list": "^1.5.1",
-		"nanoid": "*",
-		"pinia": "*",
-		"vue": "*"
+		"nanoid": "^5.0.7",
+		"pinia": "^2.1.7",
+		"vue": "^3.4.23"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "*",
 		"typescript": "*",
-		"vite": "*",
+		"vite": "^5.2.9",
 		"vue-tsc": "*"
 	}
 }
