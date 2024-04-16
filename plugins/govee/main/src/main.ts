@@ -36,6 +36,8 @@ import * as goveeLan from "@j3lte/govee-lan-controller"
 
 const logger = usePluginLogger("govee")
 
+type GoveeLanState = ReturnType<goveeLan.Device["getState"]>
+
 class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 	private lanDevice: goveeLan.Device | undefined = undefined
 
@@ -68,9 +70,26 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 		this.state = {}
 	}
 
+	private parseLanState(state: GoveeLanState) {
+		this.state.on = state.onOff != 0
+
+		if (state.info.lastChanged == "color") {
+			const hsv = chromatism.convert(state.color).hsv
+			this.state.color = LightColor.serialize({
+				hue: hsv.h,
+				sat: hsv.s,
+				bri: state.brightness,
+			})
+		} else {
+			this.state.color = LightColor.serialize({
+				kelvin: state.colorTemInKelvin,
+				bri: state.brightness,
+			})
+		}
+	}
+
 	async setLanDevice(device: goveeLan.Device) {
 		this.lanDevice = device
-
 		//The lan api doesn't support device capability queries, because Govee sucks.
 		await this.applyConfig({
 			hasLan: true,
@@ -86,7 +105,9 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 			}*/
 		})
 
-		this.lanDevice.on(goveeLan.GoveeDeviceEventTypes.StateChange, (state) => {})
+		this.lanDevice.on(goveeLan.GoveeDeviceEventTypes.StateChange, (state) => {
+			this.parseLanState(state)
+		})
 
 		this.startPolling(30)
 	}
@@ -97,6 +118,7 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 		if (!apiKey?.value) return
 
 		const state = await getDeviceState(apiKey.value, this.config.providerId, device.model)
+		this.parseCloudState(state)
 		await this.applyConfig({
 			model: device.model,
 			name: device.deviceName,
@@ -147,9 +169,15 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 		}
 	}
 
-	async poll() {
+	async poll(force?: boolean) {
 		if (this.config.hasLan && this.lanDevice) {
-			this.lanDevice.triggerUpdate()
+			if (force) {
+				await this.lanDevice.sync()
+				const deviceState = this.lanDevice.getState()
+				this.parseLanState(deviceState)
+			} else {
+				this.lanDevice.triggerUpdate()
+			}
 		} else if (this.config.hasCloud) {
 			const apiKey = getPluginSetting<string | undefined>("govee", "apiKey")
 			if (!apiKey?.value) return
@@ -159,12 +187,14 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 	}
 
 	async setLightState(color: LightColor | undefined, on: Toggle, transition: number) {
+		//logger.log("Setting Govee Light State", color, on)
 		if (on == "toggle") {
-			await this.poll()
+			await this.poll(true)
 			on = !this.state.on
 		}
 
 		if (this.config.hasLan && this.lanDevice) {
+			//logger.log("Updating Lan!", color, on)
 			if (color) {
 				const parsedColor = LightColor.parse(color)
 				if ("hue" in parsedColor) {
@@ -183,6 +213,7 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 				await this.lanDevice.turnOff()
 			}
 		} else if (this.config.hasCloud) {
+			//logger.log("Updating Cloud!", color, on)
 			const apiKey = getPluginSetting<string | undefined>("govee", "apiKey")
 			if (!apiKey?.value) return
 			await Promise.allSettled([
@@ -296,6 +327,7 @@ export default definePlugin(
 			await shutdown()
 
 			lan = new goveeLan.Govee({
+				//listenTo: "192.168.1.25",
 				discover: false,
 				// debug: true,
 			})
