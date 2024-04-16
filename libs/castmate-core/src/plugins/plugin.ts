@@ -230,6 +230,7 @@ interface ResourceSetting {
 
 interface ComponentSetting {
 	type: "component"
+	componentId: string
 }
 
 type SettingDefinition = SettingValue | ResourceSetting | SecretValue | ComponentSetting
@@ -380,6 +381,7 @@ export function defineSettingComponent(id: string) {
 
 	initingPlugin.settings.set(id, {
 		type: "component",
+		componentId: id,
 	})
 }
 

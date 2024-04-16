@@ -1,4 +1,4 @@
-import { TemplateNumber, registerType } from "castmate-schema"
+import { SchemaBase, TemplateNumber, registerType } from "castmate-schema"
 import { OBSBoundsType, OBSAlignment, OBSWSSourceTransform } from "./websocket-models"
 
 export interface OBSSourceTransform {
@@ -77,7 +77,7 @@ export function createEmptyOBSSourceTransform() {
 		},
 	}
 }
-export interface SchemaOBSSourceTransform {
+export interface SchemaOBSSourceTransform extends SchemaBase<OBSSourceTransform> {
 	type: OBSSourceTransformFactory
 	template?: true
 }

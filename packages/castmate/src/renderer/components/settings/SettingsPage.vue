@@ -35,6 +35,9 @@
 								:resource-type="setting.resourceId"
 							/>
 						</div>
+						<div v-else-if="setting.type == 'component'">
+							<component v-if="setting.component" :is="setting.component" />
+						</div>
 					</template>
 				</div>
 			</template>
@@ -93,6 +96,11 @@ const filteredSettings = computed(() => {
 				const settingNameStr = setting.name.toLocaleLowerCase()
 				if (settingNameStr.includes(filterValue)) {
 					pluginSettings.settings[sid] = setting
+				}
+			} else if (setting.type == "component") {
+				const componentId = sid
+				if (componentId.includes(filterValue)) {
+					pluginSettings.settings[componentId] = setting
 				}
 			}
 		}

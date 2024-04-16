@@ -32,6 +32,12 @@ export function abortableSleep(ms: number, signal: AbortSignal, aborted?: () => 
 	})
 }
 
+export function sleep(ms: number) {
+	return new Promise<void>((resolve, reject) => {
+		setTimeout(() => resolve(undefined), ms)
+	})
+}
+
 //Aborting doesn't automatically resolve or reject. Should this happen? Should this exist?
 export function abortablePromise<T>(
 	abortSignal: AbortSignal,

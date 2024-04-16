@@ -1,6 +1,17 @@
 import axios from "axios"
-import { ReactiveRef, RetryTimer, defineRendererCallable, onLoad, onSettingChanged } from "castmate-core"
+import {
+	ReactiveRef,
+	RetryTimer,
+	abortableSleep,
+	defineRendererCallable,
+	onLoad,
+	onSettingChanged,
+	sleep,
+	usePluginLogger,
+} from "castmate-core"
 import os from "os"
+
+const logger = usePluginLogger("philips-hue")
 
 export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: ReactiveRef<string | undefined>) {
 	async function discoverBridge() {
@@ -10,7 +21,7 @@ export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: R
 			return
 		}
 
-		hubIp.value = resp.data[0]?.internalAddress
+		hubIp.value = resp.data[0]?.internalipaddress
 	}
 
 	async function tryCreateKey() {
@@ -23,6 +34,7 @@ export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: R
 		const key = resp.data[0]?.success?.username as string | undefined
 
 		if (key) {
+			logger.log("Key Found", key)
 			hubKey.value = key
 		}
 
@@ -30,17 +42,34 @@ export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: R
 	}
 
 	defineRendererCallable("findHueBridge", async () => {
+		logger.log("Starting Finding a Hue Bridge")
 		hubIp.value = undefined
 		hubKey.value = undefined
 
 		await discoverBridge()
 
+		if (!hubIp.value) {
+			logger.log("Unable to find Bridge Ip")
+			return false
+		}
+
+		logger.log("Found Bridge Ip", hubIp.value)
+
 		for (let i = 0; i < 6; ++i) {
+			logger.log("Attempting Hub Key Creation")
 			const key = await tryCreateKey()
 
 			if (key) {
-				return
+				logger.log("Key Created")
+				return true
+			}
+
+			if (i != 5) {
+				logger.log("Retrying...")
+				await sleep(10 * 1000)
 			}
 		}
+
+		return false
 	})
 }

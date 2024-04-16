@@ -24,6 +24,7 @@ export interface IPCResourceSetting {
 
 export interface IPCComponentSetting {
 	type: "component"
+	componentId: string
 }
 
 export type IPCSettingsDefinition = IPCValueSetting | IPCResourceSetting | IPCSecretSetting | IPCComponentSetting

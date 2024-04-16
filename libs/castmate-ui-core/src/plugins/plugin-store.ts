@@ -349,7 +349,8 @@ export const usePluginStore = defineStore("plugins", () => {
 			return
 		}
 
-		settingDef.component = component
+		console.log("Setting Component", plugin, key, component)
+		settingDef.component = markRaw(component)
 	}
 
 	///
