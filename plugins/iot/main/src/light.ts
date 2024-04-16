@@ -35,6 +35,7 @@ export class PollingLight<
 	}
 
 	stopPolling() {
+		//@ts-expect-error
 		clearInterval(this.poller)
 		this.poller = undefined
 	}
