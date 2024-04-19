@@ -2,7 +2,15 @@ import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
 import { defineTrigger, defineAction, defineTransformTrigger, usePluginLogger, onLoad, EmoteCache } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onBotAuth, onChannelAuth } from "./api-harness"
-import { Color, Command, Range, getCommandDataSchema, matchAndParseCommand, EmoteParsedString } from "castmate-schema"
+import {
+	Color,
+	Command,
+	Range,
+	getCommandDataSchema,
+	matchAndParseCommand,
+	EmoteParsedString,
+	Duration,
+} from "castmate-schema"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
@@ -73,6 +81,8 @@ export function setupChat() {
 		},
 	})
 
+	const chatCommandCooldownMap = new Map<string, number>()
+
 	const chat = defineTransformTrigger({
 		id: "chat",
 		name: "Chat Command",
@@ -87,6 +97,7 @@ export function setupChat() {
 					required: true,
 					default: { mode: "command", match: "", arguments: [], hasMessage: false },
 				},
+				cooldown: { type: Duration, name: "Cooldown" },
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
 			},
 		},
@@ -109,10 +120,22 @@ export function setupChat() {
 				},
 			}
 		},
-		async handle(config, context) {
+		async handle(config, context, mapping) {
 			const matchResult = await matchAndParseCommand(context.message, config.command)
 
 			if (matchResult == null) return undefined
+
+			if (config.cooldown) {
+				const now = Date.now()
+				const slug = `${mapping.profileId}.${mapping.triggerId}`
+				const lastCommandTime = chatCommandCooldownMap.get(slug)
+				if (lastCommandTime != null) {
+					if (now - lastCommandTime < config.cooldown * 1000) {
+						return undefined
+					}
+				}
+				chatCommandCooldownMap.set(slug, now)
+			}
 
 			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return undefined
