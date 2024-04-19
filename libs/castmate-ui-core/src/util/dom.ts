@@ -225,7 +225,6 @@ export function usePropagationStop() {
 
 	return (ev: { stopPropagation(): any }) => {
 		ev.stopPropagation()
-		console.log("Stopping But Focusing")
 		focusTab()
 	}
 }
