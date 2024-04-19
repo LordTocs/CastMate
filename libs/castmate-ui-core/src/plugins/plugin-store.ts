@@ -313,6 +313,14 @@ export const usePluginStore = defineStore("plugins", () => {
 			]
 		}
 
+		if (action.type == "regular" && action.result) {
+			result.resultMapping = {} as Record<string, string>
+
+			for (const prop of Object.keys(action.result.properties)) {
+				result.resultMapping[prop] = prop
+			}
+		}
+
 		// if (action.type == "time" || action.type == "time-indefinite") {
 		// 	result.offsets = []
 		// }
