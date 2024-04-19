@@ -1,4 +1,16 @@
-import { SequenceActions, assignNewIds, isActionStack, isInstantAction } from "castmate-schema"
+import {
+	ActionStack,
+	AnyAction,
+	FloatingSequence,
+	FlowAction,
+	SequenceActions,
+	TimeAction,
+	assignNewIds,
+	isActionStack,
+	isFlowAction,
+	isInstantAction,
+	isTimeAction,
+} from "castmate-schema"
 import { Sequence } from "castmate-schema"
 import {
 	MaybeRefOrGetter,
@@ -31,6 +43,9 @@ import {
 	SelectionPos,
 	Selection,
 } from "../main"
+import { nanoid } from "nanoid/non-secure"
+import _cloneDeep from "lodash/cloneDeep"
+import { automationTimeScale } from "../components/automation/automation-shared"
 
 export interface SelectionGetter {
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection
@@ -327,4 +342,298 @@ export function useSequenceDrag(
 	})
 
 	return { dragging: computed(() => dragging.value), draggingDelayed: computed(() => draggingDelayed.value) }
+}
+
+interface ActionCopyResult {
+	connected: boolean
+	subSeqs: FloatingSequence[]
+}
+
+function cloneAction<T extends AnyAction>(action: T): T {
+	if (isInstantAction(action)) {
+		return _cloneDeep({
+			...action,
+			id: nanoid(),
+		})
+	} else if (isTimeAction(action)) {
+		return _cloneDeep({
+			...action,
+			id: nanoid(),
+			offsets: [],
+		})
+	} else if (isFlowAction(action)) {
+		return _cloneDeep({
+			...action,
+			id: nanoid(),
+			subFlows: action.subFlows.map((s) => _cloneDeep({ ...s, actions: [] })),
+		})
+	}
+
+	throw new Error("Unknown Action Type!")
+}
+
+const automationHeight = 40
+
+export function copyActionData(
+	action: AnyAction | ActionStack,
+	selectedIds: string[],
+	workingPos: SelectionPos
+): ActionCopyResult | undefined {
+	if (isInstantAction(action)) {
+		if (selectedIds.includes(action.id)) {
+			//Copy this one!
+			return {
+				connected: true,
+				subSeqs: [
+					{
+						actions: [cloneAction(action)],
+						x: workingPos.x,
+						y: workingPos.y,
+						id: nanoid(),
+					},
+				],
+			}
+		}
+
+		workingPos.x += 1 / automationTimeScale //TODO: How wide is an action????
+
+		return undefined
+	} else if (isTimeAction(action)) {
+		if (selectedIds.includes(action.id)) {
+			const copyAction: TimeAction = cloneAction(action)
+			const result: ActionCopyResult = {
+				connected: true,
+				subSeqs: [
+					{
+						id: nanoid(),
+						x: workingPos.x,
+						y: workingPos.y,
+						actions: [copyAction],
+					},
+				],
+			}
+
+			for (const offsetSeq of action.offsets) {
+				const offsetWorkingPos: SelectionPos = {
+					x: workingPos.x + offsetSeq.offset / automationTimeScale,
+					y: workingPos.y + automationHeight,
+				}
+
+				const copyData = copySequenceData(offsetSeq, selectedIds, offsetWorkingPos)
+				if (copyData) {
+					if (copyData.connected) {
+						copyAction.offsets.push({
+							id: nanoid(),
+							offset: offsetSeq.offset,
+							actions: copyData.subSeqs[0].actions,
+						})
+
+						copyData.subSeqs.splice(0, 1)
+					}
+
+					result.subSeqs.push(...copyData.subSeqs)
+				}
+			}
+
+			workingPos.x += 1 / automationTimeScale //TODO: What's the duration??
+
+			return result
+		} else {
+			const result: ActionCopyResult = {
+				connected: false,
+				subSeqs: [],
+			}
+
+			for (const offsetSeq of action.offsets) {
+				const offsetWorkingPos: SelectionPos = {
+					x: workingPos.x + offsetSeq.offset / automationTimeScale,
+					y: workingPos.y + automationHeight,
+				}
+
+				const copyData = copySequenceData(offsetSeq, selectedIds, offsetWorkingPos)
+				if (copyData) {
+					result.subSeqs.push(...copyData.subSeqs)
+				}
+			}
+
+			workingPos.x += 1 / automationTimeScale //TODO: What's the duration??
+
+			if (result.subSeqs.length > 0) {
+				return result
+			}
+			return undefined
+		}
+	} else if (isFlowAction(action)) {
+		if (selectedIds.includes(action.id)) {
+			const copyAction: FlowAction = cloneAction(action)
+
+			const result: ActionCopyResult = {
+				connected: true,
+				subSeqs: [
+					{
+						id: nanoid(),
+						x: workingPos.x,
+						y: workingPos.y,
+						actions: [copyAction],
+					},
+				],
+			}
+
+			for (let i = 0; i < action.subFlows.length; ++i) {
+				const subFlow = action.subFlows[i]
+
+				const subFlowPos: SelectionPos = {
+					x: workingPos.x, //Todo: x padding?
+					y: workingPos.y + (i + 1) * automationHeight, //Todo: Calculate depth
+				}
+
+				const copyData = copySequenceData(subFlow, selectedIds, subFlowPos)
+				if (!copyData) continue
+
+				if (copyData.connected) {
+					copyAction.subFlows[i].actions.push(...copyData.subSeqs[0].actions)
+					copyData.subSeqs.splice(0, 1)
+				}
+
+				result.subSeqs.push(...copyData.subSeqs)
+			}
+
+			workingPos.x += 1 / automationTimeScale //TODO: What's the duration??
+			return result
+		} else {
+			const result: ActionCopyResult = {
+				connected: false,
+				subSeqs: [],
+			}
+
+			for (let i = 0; i < action.subFlows.length; ++i) {
+				const subFlow = action.subFlows[i]
+
+				const subFlowPos: SelectionPos = {
+					x: workingPos.x, //Todo: x padding?
+					y: workingPos.y + (i + 1) * automationHeight, //Todo: Calculate depth
+				}
+
+				const copyData = copySequenceData(subFlow, selectedIds, subFlowPos)
+
+				if (copyData) result.subSeqs.push(...copyData.subSeqs)
+			}
+
+			workingPos.x += 1 / automationTimeScale //TODO: What's the duration??
+
+			if (result.subSeqs.length > 0) {
+				return result
+			}
+			return undefined
+		}
+	} else if (isActionStack(action)) {
+		const result: ActionCopyResult = {
+			connected: false,
+			subSeqs: [],
+		}
+
+		let lastSelected: ActionStack | undefined = undefined
+
+		for (let i = 0; i < action.stack.length; ++i) {
+			const stackAction = action.stack[i]
+
+			if (selectedIds.includes(stackAction.id)) {
+				if (!lastSelected) {
+					//Create new sequence
+					lastSelected = {
+						id: nanoid(),
+						stack: [],
+					}
+
+					result.subSeqs.push({
+						id: nanoid(),
+						x: workingPos.x,
+						y: workingPos.y + i * automationHeight,
+						actions: [lastSelected],
+					})
+
+					if (i == 0) {
+						result.connected = true
+					}
+				}
+
+				lastSelected.stack.push(cloneAction(stackAction))
+			} else {
+				lastSelected = undefined
+			}
+		}
+
+		//Convert any single action stacks into just their action
+		for (let i = 0; i < result.subSeqs.length; ++i) {
+			const seq = result.subSeqs[i]
+
+			const stack = seq.actions[0] as ActionStack
+
+			if (stack.stack.length == 1) {
+				result.subSeqs[i].actions[0] = stack.stack[0]
+			}
+		}
+
+		workingPos.x += 1 / automationTimeScale //TODO: What's the duration??
+
+		if (result.subSeqs.length > 0) {
+			return result
+		}
+		return undefined
+	}
+
+	return undefined
+}
+
+export function copySequenceData(
+	sequence: Sequence | FloatingSequence,
+	selectedIds: string[],
+	workingPos: SelectionPos
+): ActionCopyResult | undefined {
+	const result: ActionCopyResult = {
+		connected: false,
+		subSeqs: [],
+	}
+
+	let lastSelected: FloatingSequence | undefined = undefined
+	for (let i = 0; i < sequence.actions.length; ++i) {
+		const action = sequence.actions[i]
+
+		const copyData = copyActionData(action, selectedIds, workingPos)
+
+		if (!copyData) {
+			lastSelected = undefined
+			continue
+		}
+
+		if (copyData.connected) {
+			if (!lastSelected) {
+				result.subSeqs.push({
+					id: nanoid(),
+					x: copyData.subSeqs[0].x,
+					y: copyData.subSeqs[0].y,
+					actions: [],
+				})
+
+				if (i == 0) {
+					result.connected = true
+				}
+			}
+
+			result.subSeqs[result.subSeqs.length - 1].actions.push(...copyData.subSeqs[0].actions)
+
+			copyData.subSeqs.splice(0, 1)
+			lastSelected = result.subSeqs[result.subSeqs.length - 1]
+		} else {
+			lastSelected = undefined
+		}
+
+		result.subSeqs.push(...copyData.subSeqs)
+	}
+
+	if (result.subSeqs.length > 0) {
+		return result
+	}
+
+	return undefined
 }

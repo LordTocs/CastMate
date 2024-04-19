@@ -6,7 +6,13 @@
 		tabindex="-1"
 		@contextmenu="onContextMenu"
 		@keydown="onKeyDown"
+		@copy="onCopy"
+		@cut="onCut"
+		@paste="onPaste"
+		@focus="onFocus"
+		@blur="onBlur"
 	>
+		<select-dummy ref="dummy" />
 		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
 			<sequence-edit
 				v-model="model.sequence"
@@ -56,14 +62,18 @@ import {
 	useActiveTestSequence,
 	useActionQueueStore,
 	useDocumentPath,
+	usePropagationStop,
+	SelectionPos,
 } from "../../main"
 import SequenceEdit from "./SequenceEdit.vue"
-import { provideAutomationEditState } from "../../util/automation-dragdrop"
+import { provideAutomationEditState, copySequenceData } from "../../util/automation-dragdrop"
 import ActionPalette from "./ActionPalette.vue"
 import { FloatingSequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { automationTimeScale } from "./automation-shared"
 import { constructDefault } from "castmate-schema"
+import SelectDummy from "../util/SelectDummy.vue"
+import { assignNewIds } from "castmate-schema"
 
 const props = defineProps<{
 	modelValue: AutomationData
@@ -71,6 +81,8 @@ const props = defineProps<{
 	//localPath?: string
 	trigger?: TriggerSelection
 }>()
+
+const stopPropagation = usePropagationStop()
 
 const editArea = ref<HTMLElement | null>(null)
 
@@ -121,6 +133,8 @@ async function onStopSequence() {
 	actionQueueStore.stopTest(testSequenceId.value)
 }
 
+const lastSelectPos = ref<{ x: number; y: number }>({ x: 0, y: 0 })
+
 const {
 	selecting,
 	from: selectFrom,
@@ -130,6 +144,14 @@ const {
 	(from, to) => {
 		const container = toValue(editArea)
 		if (!container) return []
+
+		const selectX = (to.x - view.value.panState.panX) / automationTimeScale / view.value.panState.zoomX
+		const selectY = (to.y - view.value.panState.panY) / view.value.panState.zoomY
+
+		lastSelectPos.value = {
+			x: selectX,
+			y: selectY,
+		}
 
 		const main = mainSequence.value?.getSelectedItems(container, from, to) ?? []
 		const floats = floatingSequences.value.map((fs) => fs.getSelectedItems(container, from, to))
@@ -187,6 +209,98 @@ function onKeyDown(ev: KeyboardEvent) {
 		ev.preventDefault()
 		ev.stopPropagation()
 	}
+}
+
+function copyToClipboard(ev: ClipboardEvent) {
+	const sequences: FloatingSequence[] = []
+
+	const rootCopyData = copySequenceData(model.value.sequence, selection.value, { x: 0, y: 0 })
+
+	if (rootCopyData) {
+		sequences.push(...rootCopyData.subSeqs)
+	}
+
+	for (const seq of model.value.floatingSequences) {
+		const copyData = copySequenceData(seq, selection.value, { x: seq.x, y: seq.y })
+
+		if (!copyData) continue
+
+		sequences.push(...copyData.subSeqs)
+	}
+
+	const minPos: SelectionPos = { x: Number.POSITIVE_INFINITY, y: Number.POSITIVE_INFINITY }
+
+	for (const seq of sequences) {
+		minPos.x = Math.min(seq.x)
+		minPos.y = Math.min(seq.y)
+	}
+
+	for (const seq of sequences) {
+		seq.x -= minPos.x
+		seq.y -= minPos.y
+	}
+
+	const dataStr = JSON.stringify(sequences)
+
+	ev.clipboardData?.setData("text/plain", dataStr)
+	ev.clipboardData?.setData("automation/sequences", dataStr)
+}
+
+function onCopy(ev: ClipboardEvent) {
+	copyToClipboard(ev)
+
+	stopPropagation(ev)
+	ev.preventDefault()
+}
+
+function onCut(ev: ClipboardEvent) {
+	copyToClipboard(ev)
+
+	if (selection.value.length > 0) {
+		console.log("Deleting Ids", [...selection.value])
+		mainSequence.value?.deleteIds(selection.value)
+		for (const fs of floatingSequences.value) {
+			fs.deleteIds(selection.value)
+		}
+	}
+
+	stopPropagation(ev)
+	ev.preventDefault()
+}
+
+function onPaste(ev: ClipboardEvent) {
+	console.log("Paste!")
+
+	const pasteStr = ev.clipboardData?.getData("automation/sequences")
+
+	if (!pasteStr || pasteStr.length == 0) return
+
+	try {
+		const pasteData = JSON.parse(pasteStr)
+
+		if (!Array.isArray(pasteData)) return
+
+		for (const seq of pasteData as FloatingSequence[]) {
+			seq.x += lastSelectPos.value.x
+			seq.y += lastSelectPos.value.y
+			assignNewIds(seq)
+		}
+
+		model.value.floatingSequences.push(...pasteData)
+
+		stopPropagation(ev)
+		ev.preventDefault()
+	} catch {}
+}
+
+const dummy = ref<InstanceType<typeof SelectDummy>>()
+function onFocus() {
+	console.log("Focus Automation!")
+	dummy.value?.select()
+}
+
+function onBlur() {
+	console.log("Blur Automation!")
 }
 </script>
 
