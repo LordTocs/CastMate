@@ -65,7 +65,7 @@ class ElgatoKeyLight extends PollingLight {
 		const lightState = await this.api.get("lights")
 
 		const state = lightState.data.lights[0]
-		this.state.on = state.on
+		this.state.on = !!state.on
 
 		const bri = state.brightness
 		const kelvin = elgatoToKelvin(state.temperature)
@@ -95,6 +95,9 @@ class ElgatoKeyLight extends PollingLight {
 				},
 			],
 		})
+
+		this.state.on = on
+		this.state.color = finalColor
 	}
 }
 

@@ -70,11 +70,17 @@ export default definePlugin(
 					},
 				},
 			},
+			result: {
+				type: Object,
+				properties: {
+					timerRunning: { type: Boolean, name: "Timer Running", required: true },
+				},
+			},
 			async invoke(config, contextData, abortSignal) {
 				const timer = VariableManager.getInstance().getVariable<Timer>(config.timer)
 				if (!timer) {
 					logger.error("Missing Timer", config.timer)
-					return
+					return { timerRunning: false }
 				}
 
 				let on = config.on
@@ -86,6 +92,10 @@ export default definePlugin(
 					timer.ref.value = startTimer(timer.ref.value)
 				} else {
 					timer.ref.value = pauseTimer(timer.ref.value)
+				}
+
+				return {
+					timerRunning: on,
 				}
 			},
 		})

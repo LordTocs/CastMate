@@ -51,12 +51,22 @@ export function setupAudio(obsDefault: ReactiveRef<OBSConnection>) {
 				},
 			},
 		},
+		result: {
+			type: Object,
+			properties: {
+				audioMuted: { type: Boolean, name: "Audio Muted", required: true },
+			},
+		},
 		async invoke(config, contextData, abortSignal) {
-			if (config.muted == "toggle") {
-				await config.obs.connection.call("ToggleInputMute", { inputName: config.source })
-			} else {
-				await config.obs.connection.call("SetInputMute", { inputName: config.source, inputMuted: config.muted })
+			let muted = config.muted
+			if (muted == "toggle") {
+				const { inputMuted } = await config.obs.connection.call("GetInputMute", { inputName: config.source })
+				muted = !inputMuted
 			}
+
+			await config.obs.connection.call("SetInputMute", { inputName: config.source, inputMuted: muted })
+
+			return { audioMuted: muted }
 		},
 	})
 

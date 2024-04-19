@@ -81,11 +81,21 @@ export function setupLights() {
 				transition: { type: Duration, name: "Transition Time", required: true, default: 0.5 },
 			},
 		},
+		result: {
+			type: Object,
+			properties: {
+				lightOn: { type: Boolean, name: "Light Switch", required: true },
+			},
+		},
 		async invoke(config, contextData, abortSignal) {
 			await Promise.allSettled([
 				config.light?.setLightState(config.lightColor, config.on, config.transition),
 				await abortableSleep(config.transition * 1000, abortSignal),
 			])
+
+			return {
+				lightOn: config.light?.state?.on ?? false,
+			}
 		},
 	})
 }

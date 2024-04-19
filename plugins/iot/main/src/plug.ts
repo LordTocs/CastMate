@@ -27,6 +27,7 @@ export class PollingPlug<
 	}
 
 	stopPolling() {
+		//@ts-expect-error
 		clearInterval(this.poller)
 		this.poller = undefined
 	}
@@ -55,8 +56,18 @@ export function setupPlugs() {
 				},
 			},
 		},
+		result: {
+			type: Object,
+			properties: {
+				plugOn: { type: Boolean, name: "Plug On", required: true },
+			},
+		},
 		async invoke(config, contextData, abortSignal) {
 			await config.plug?.setPlugState(config.switch)
+
+			return {
+				plugOn: config.plug?.state?.on ?? false,
+			}
 		},
 	})
 }

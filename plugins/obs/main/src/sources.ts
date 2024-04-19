@@ -45,11 +45,17 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				},
 			},
 		},
+		result: {
+			type: Object,
+			properties: {
+				sourceEnabled: { type: Boolean, name: "Source Enabled", required: true },
+			},
+		},
 		async invoke(config, contextData, abortSignal) {
 			const sceneName = config.scene
 			const sceneItemId = config.source
 
-			if (!config.obs) return
+			if (!config.obs) return { sourceEnabled: false }
 
 			let enabled = config.enabled
 			if (enabled === "toggle") {
@@ -65,6 +71,8 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				sceneItemId,
 				sceneItemEnabled: enabled,
 			})
+
+			return { sourceEnabled: enabled }
 		},
 	})
 
@@ -125,11 +133,17 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				},
 			},
 		},
+		result: {
+			type: Object,
+			properties: {
+				filterEnabled: { type: Boolean, name: "Filter Enabled", required: true },
+			},
+		},
 		async invoke(config, contextData, abortSignal) {
 			const sourceName = config.sourceName
 			const filterName = config.filterName
 
-			if (!config.obs) return
+			if (!config.obs) return { filterEnabled: false }
 
 			let enabled = config.filterEnabled
 			if (enabled == "toggle") {
@@ -145,6 +159,10 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				filterName,
 				filterEnabled: enabled,
 			})
+
+			return {
+				filterEnabled: enabled,
+			}
 		},
 	})
 

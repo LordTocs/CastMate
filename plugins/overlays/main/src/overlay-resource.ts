@@ -133,11 +133,17 @@ export function setupOverlayResources() {
 				},
 			},
 		},
+		result: {
+			type: Object,
+			properties: {
+				widgetVisible: { type: Boolean, name: "Widget Visible", required: true },
+			},
+		},
 		async invoke(config, contextData, abortSignal) {
 			const overlay = Overlay.storage.getById(config.widget?.overlayId)
 			const widget = overlay?.getWidgetConfig(config.widget.widgetId)
 
-			if (!widget || !overlay) return
+			if (!widget || !overlay) return { widgetVisible: false }
 
 			let visible = config.enabled == "toggle" ? !widget.visible : config.enabled
 
@@ -145,6 +151,10 @@ export function setupOverlayResources() {
 				...widget,
 				visible,
 			})
+
+			return {
+				widgetVisible: visible,
+			}
 		},
 	})
 }
