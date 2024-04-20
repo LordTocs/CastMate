@@ -26,12 +26,12 @@ export function setupRaids() {
 		context: {
 			type: Object,
 			properties: {
-				viewer: { type: TwitchViewer, required: true, default: "27082158" },
+				raider: { type: TwitchViewer, required: true, default: "27082158" },
 				raiders: { type: Number, required: true, default: 15 },
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.raider, config.group))) {
 				return false
 			}
 
@@ -75,7 +75,7 @@ export function setupRaids() {
 	onChannelAuth((channel, service) => {
 		service.eventsub.onChannelRaidTo(channel.twitchId, async (event) => {
 			raid({
-				viewer: event.raidingBroadcasterId,
+				raider: event.raidingBroadcasterId,
 				raiders: event.viewers,
 			})
 		})
