@@ -8,6 +8,7 @@
 			'--zoom-scale': zoomScale,
 		}"
 		tabindex="-1"
+		@mousedown="onMouseDown"
 		@copy="onCopy"
 		@cut="onCut"
 		@paste="onPaste"
@@ -242,6 +243,11 @@ function onPaste(ev: ClipboardEvent) {
 }
 
 const dummy = ref<InstanceType<typeof SelectDummy>>()
+function onMouseDown() {
+	dummy.value?.select()
+	editArea.value?.focus()
+}
+
 function onFocus() {
 	dummy.value?.select()
 }

@@ -47,7 +47,7 @@ import _cloneDeep from "lodash/cloneDeep"
 import { nanoid } from "nanoid/non-secure"
 import { DragEventWithDataTransfer, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../util/dragging"
 import { useSelectionRect } from "../../util/selection"
-import { getElementRelativeRect, isChildOfClass, usePropagationStop } from "../../util/dom"
+import { getElementRelativeRect, isChildOfClass, usePropagationImmediateStop, usePropagationStop } from "../../util/dom"
 import { provideDocumentPath } from "../../main"
 import DocumentPath from "../document/DocumentPath.vue"
 import SelectDummy from "../util/SelectDummy.vue"
@@ -100,6 +100,7 @@ function overlaps(from: { x: number; y: number }, to: { x: number; y: number }, 
 const selectState = useSelectionRect(
 	dragArea,
 	(from, to) => {
+		//console.log("Select", from, to)
 		const dragAreaElem = dragArea.value
 		if (!dragAreaElem) {
 			return []
@@ -264,6 +265,7 @@ function getSelectedData(copy: boolean) {
 }
 
 const stopPropagation = usePropagationStop()
+const stopImmediatePropagation = usePropagationImmediateStop()
 
 /// DRAG ITEM HANDLERS
 
@@ -273,7 +275,8 @@ function itemMouseDown(i: number, evt: MouseEvent) {
 	console.log("Drag Handling Mouse Down", i)
 	dragTarget = evt.target as HTMLElement
 	if (isChildOfClass(dragTarget, props.handleClass)) {
-		stopPropagation(evt)
+		console.log("IMMEDIATE STOP")
+		stopImmediatePropagation(evt)
 	}
 }
 
@@ -363,10 +366,11 @@ function onBlur() {}
 
 function onClick(ev: MouseEvent) {
 	if (ev.button == 0) {
+		console.log("CLICK!")
 		selectDummy.value?.select()
 		dragArea.value?.focus()
-		stopPropagation(ev)
-		ev.preventDefault()
+		// stopImmediatePropagation(ev)
+		// ev.preventDefault()
 	}
 }
 

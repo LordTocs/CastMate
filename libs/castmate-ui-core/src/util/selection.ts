@@ -1,6 +1,12 @@
 import { useEventListener } from "@vueuse/core"
 import { MaybeRefOrGetter, ref, toValue, computed, ComputedRef, Ref, provide, inject } from "vue"
-import { getElementRelativeRect, getInternalMousePos, rectangleOverlaps, usePropagationStop } from "./dom"
+import {
+	getElementRelativeRect,
+	getInternalMousePos,
+	rectangleOverlaps,
+	usePropagationImmediateStop,
+	usePropagationStop,
+} from "./dom"
 import { Selection, useDocumentPath, useDocumentSelection } from "./document"
 import _uniq from "lodash/uniq"
 import _isEqual from "lodash/isEqual"
@@ -52,7 +58,7 @@ export function useSelectionRect(
 	const selectionMode = ref<SelectionMode>("overwrite")
 	const couldSelect = ref(false)
 
-	const stopPropagation = usePropagationStop()
+	const stopPropagation = usePropagationImmediateStop()
 
 	function cancelSelection() {
 		selecting.value = false
@@ -135,6 +141,8 @@ export function useSelectionRect(
 	useEventListener(elem, "mousedown", (ev: MouseEvent) => {
 		const element = toValue(elem)
 
+		console.log("MOUSE DOWN!")
+
 		if (!element) {
 			return
 		}
@@ -156,6 +164,7 @@ export function useSelectionRect(
 
 		//console.log("Select Start", toValue(path))
 		stopPropagation(ev)
+		ev.preventDefault()
 	})
 
 	useEventListener("mousemove", (ev: MouseEvent) => {

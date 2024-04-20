@@ -229,6 +229,15 @@ export function usePropagationStop() {
 	}
 }
 
+export function usePropagationImmediateStop() {
+	const focusTab = useFocusThisTab()
+
+	return (ev: { stopImmediatePropagation(): any }) => {
+		ev.stopImmediatePropagation()
+		focusTab()
+	}
+}
+
 export type DOMAttachable = "body" | "self" | string | undefined | HTMLElement
 
 export function provideScrollAttachable(elem: MaybeRefOrGetter<DOMAttachable>) {
