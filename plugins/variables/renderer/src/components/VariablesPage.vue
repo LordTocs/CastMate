@@ -36,7 +36,7 @@
 				</template>
 			</p-column>
 
-			<p-column header="Current Value">
+			<p-column header="Current Value" class="current-value-column">
 				<template #body="{ data }: { data: RendererVariableDefinition }">
 					<variable-display-edit :id="data.id" />
 				</template>
@@ -145,5 +145,9 @@ async function reset(def: RendererVariableDefinition) {
 <style scoped>
 .container {
 	overflow: hidden;
+}
+
+:deep(.current-value-column) {
+	width: 350px;
 }
 </style>
