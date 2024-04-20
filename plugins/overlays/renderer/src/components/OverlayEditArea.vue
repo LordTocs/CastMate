@@ -7,7 +7,15 @@
 			'--overlay-height': `${modelValue.size.height}px`,
 			'--zoom-scale': zoomScale,
 		}"
+		tabindex="-1"
+		@copy="onCopy"
+		@cut="onCut"
+		@paste="onPaste"
+		@focus="onFocus"
+		@blur="onBlur"
+		@keydown="onKeyDown"
 	>
+		<select-dummy ref="dummy" />
 		<pan-area class="panner grid-paper" v-model:pan-state="view.editView.panState">
 			<overlay-preview :preview="model.preview" :view="view" />
 			<div class="overlay-boundary"></div>
@@ -41,14 +49,18 @@ import {
 	useDocumentPath,
 	useDocumentSelection,
 	usePanState,
+	usePropagationStop,
 	useSelectionRect,
+	SelectDummy,
 } from "castmate-ui-core"
-import { OverlayConfig } from "castmate-plugin-overlays-shared"
+import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
 import { computed, provide, ref, useModel } from "vue"
 import { useElementSize } from "@vueuse/core"
 import OverlayWidgetEdit from "./OverlayWidgetEdit.vue"
 import OverlayPreview from "./OverlayPreview.vue"
+import { nanoid } from "nanoid/non-secure"
+import _cloneDeep from "lodash/cloneDeep"
 
 const props = defineProps<{
 	modelValue: OverlayConfig
@@ -74,6 +86,8 @@ function deleteWidget(idx: number) {
 	model.value.widgets.splice(idx, 1)
 }
 
+const lastSelectPos = ref<{ x: number; y: number }>({ x: 0, y: 0 })
+
 const path = useDocumentPath()
 const selection = useDocumentSelection(path)
 const {
@@ -85,6 +99,16 @@ const {
 	(from, to) => {
 		const areaElem = editArea.value
 		if (!areaElem) return []
+
+		const selectX =
+			(to.x - view.value.editView.panState.panX) / zoomScale.value / view.value.editView.panState.zoomX
+		const selectY =
+			(to.y - view.value.editView.panState.panY) / zoomScale.value / view.value.editView.panState.zoomY
+
+		lastSelectPos.value = {
+			x: selectX,
+			y: selectY,
+		}
 
 		const newSelect: string[] = []
 
@@ -111,6 +135,118 @@ const {
 )
 
 provide("overlay-zoom-scale", zoomScale)
+
+const stopPropagation = usePropagationStop()
+
+function deleteSelection() {
+	for (const id of selection.value) {
+		const idx = model.value.widgets.findIndex((w) => w.id == id)
+
+		if (idx < 0) continue
+
+		model.value.widgets.splice(idx, 1)
+	}
+}
+
+function onKeyDown(ev: KeyboardEvent) {
+	if (ev.key == "Delete") {
+		deleteSelection()
+
+		ev.preventDefault()
+		ev.stopPropagation()
+	}
+}
+
+function copySelection(ev: ClipboardEvent) {
+	const copyData: OverlayWidgetConfig[] = []
+
+	for (const id of selection.value) {
+		const widget = model.value.widgets.find((w) => w.id == id)
+
+		if (!widget) continue
+
+		const clone: OverlayWidgetConfig = _cloneDeep(widget)
+		clone.locked = false
+		clone.visible = true
+
+		copyData.push(clone)
+	}
+
+	if (copyData.length == 0) return
+
+	const minPos = { x: Number.POSITIVE_INFINITY, y: Number.POSITIVE_INFINITY }
+
+	for (const widget of copyData) {
+		minPos.x = Math.min(minPos.x, widget.position.x)
+		minPos.y = Math.min(minPos.y, widget.position.y)
+	}
+
+	for (const widget of copyData) {
+		widget.position.x -= minPos.x
+		widget.position.y -= minPos.y
+	}
+
+	const dataStr = JSON.stringify(copyData)
+
+	ev.clipboardData?.setData("text/plain", dataStr)
+	ev.clipboardData?.setData("overlay/widgets", dataStr)
+}
+
+function onCopy(ev: ClipboardEvent) {
+	copySelection(ev)
+	stopPropagation(ev)
+	ev.preventDefault()
+}
+
+function onCut(ev: ClipboardEvent) {
+	copySelection(ev)
+	deleteSelection()
+	stopPropagation(ev)
+	ev.preventDefault()
+}
+
+function onPaste(ev: ClipboardEvent) {
+	const pasteStr = ev.clipboardData?.getData("overlay/widgets")
+
+	if (!pasteStr || pasteStr.length == 0) return
+
+	try {
+		const pasteData = JSON.parse(pasteStr)
+
+		if (!Array.isArray(pasteData)) return
+
+		for (const widget of pasteData as OverlayWidgetConfig[]) {
+			widget.id = nanoid()
+			widget.position.x += lastSelectPos.value.x
+			widget.position.y += lastSelectPos.value.y
+
+			let name = widget.name
+
+			if (model.value.widgets.find((w) => w.name == name)) {
+				let number = 1
+
+				while (model.value.widgets.find((w) => w.name == name)) {
+					name = `${widget.name} ${number}`
+					number++
+				}
+			}
+
+			widget.name = name
+		}
+
+		model.value.widgets.push(...pasteData)
+
+		stopPropagation(ev)
+		ev.preventDefault()
+	} catch {}
+}
+
+const dummy = ref<InstanceType<typeof SelectDummy>>()
+function onFocus() {
+	dummy.value?.select()
+}
+
+function onBlur() {}
 </script>
 
 <style scoped>

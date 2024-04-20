@@ -196,15 +196,19 @@ function onContextMenu(ev: MouseEvent) {
 	palette.value?.open(ev)
 }
 
+function deleteSelection() {
+	if (selection.value.length > 0) {
+		console.log("Deleting Ids", [...selection.value])
+		mainSequence.value?.deleteIds(selection.value)
+		for (const fs of floatingSequences.value) {
+			fs.deleteIds(selection.value)
+		}
+	}
+}
+
 function onKeyDown(ev: KeyboardEvent) {
 	if (ev.key == "Delete") {
-		if (selection.value.length > 0) {
-			console.log("Deleting Ids", [...selection.value])
-			mainSequence.value?.deleteIds(selection.value)
-			for (const fs of floatingSequences.value) {
-				fs.deleteIds(selection.value)
-			}
-		}
+		deleteSelection()
 
 		ev.preventDefault()
 		ev.stopPropagation()
@@ -212,6 +216,8 @@ function onKeyDown(ev: KeyboardEvent) {
 }
 
 function copyToClipboard(ev: ClipboardEvent) {
+	if (selection.value.length == 0) return
+
 	const sequences: FloatingSequence[] = []
 
 	const rootCopyData = copySequenceData(model.value.sequence, selection.value, { x: 0, y: 0 })
@@ -255,22 +261,13 @@ function onCopy(ev: ClipboardEvent) {
 
 function onCut(ev: ClipboardEvent) {
 	copyToClipboard(ev)
-
-	if (selection.value.length > 0) {
-		console.log("Deleting Ids", [...selection.value])
-		mainSequence.value?.deleteIds(selection.value)
-		for (const fs of floatingSequences.value) {
-			fs.deleteIds(selection.value)
-		}
-	}
+	deleteSelection()
 
 	stopPropagation(ev)
 	ev.preventDefault()
 }
 
 function onPaste(ev: ClipboardEvent) {
-	console.log("Paste!")
-
 	const pasteStr = ev.clipboardData?.getData("automation/sequences")
 
 	if (!pasteStr || pasteStr.length == 0) return
@@ -295,13 +292,10 @@ function onPaste(ev: ClipboardEvent) {
 
 const dummy = ref<InstanceType<typeof SelectDummy>>()
 function onFocus() {
-	console.log("Focus Automation!")
 	dummy.value?.select()
 }
 
-function onBlur() {
-	console.log("Blur Automation!")
-}
+function onBlur() {}
 </script>
 
 <style scoped>
