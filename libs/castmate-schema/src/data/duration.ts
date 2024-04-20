@@ -39,55 +39,71 @@ registerType("Duration", {
 
 const HOUR_DUR = 60 * 60
 const MINUTE_DUR = 60
+
+export interface DurationParts {
+	hours?: number
+	minutes?: number
+	seconds?: number
+}
+
+export function parseDurationParts(duration: Duration | undefined): DurationParts {
+	if (duration == null) {
+		return {}
+	}
+
+	const result: DurationParts = {}
+
+	let remaining = duration
+	if (remaining >= HOUR_DUR) {
+		result.hours = Math.floor(remaining / HOUR_DUR)
+		remaining = remaining % HOUR_DUR
+	}
+	if (remaining >= MINUTE_DUR) {
+		result.minutes = Math.floor(remaining / MINUTE_DUR)
+		remaining = remaining % MINUTE_DUR
+	}
+	result.seconds = remaining
+
+	return result
+}
+
 export function formatDuration(duration: Duration | undefined, decimalPlaces: number = 4) {
 	if (duration == null) {
 		return ""
 	}
 
-	let hours = 0
-	let minutes = 0
-	let seconds = 0
-
-	let remaining = duration as number
-	if (remaining > HOUR_DUR) {
-		hours = Math.floor(remaining / HOUR_DUR)
-		remaining = remaining % HOUR_DUR
-	}
-	if (remaining > MINUTE_DUR) {
-		minutes = Math.floor(remaining / MINUTE_DUR)
-		remaining = remaining % MINUTE_DUR
-	}
-	seconds = remaining
+	const parts = parseDurationParts(duration)
 
 	let result = ""
-	if (hours > 0) {
-		result += hours + "h "
+
+	if (parts.hours != null) {
+		result += parts.hours + "h "
 
 		result +=
-			minutes.toLocaleString("en-Us", {
+			(parts.minutes ?? 0).toLocaleString("en-Us", {
 				minimumIntegerDigits: 2,
 				useGrouping: false,
 			}) + "m "
 
 		result +=
-			seconds.toLocaleString("en-Us", {
+			(parts.seconds ?? 0).toLocaleString("en-Us", {
 				minimumIntegerDigits: 2,
 				maximumFractionDigits: decimalPlaces,
 				useGrouping: false,
 			}) + "s"
-	} else if (minutes > 0) {
-		result += minutes + "m "
+	} else if (parts.minutes != null) {
+		result += parts.minutes + "m "
 
 		result +=
-			seconds.toLocaleString("en-Us", {
+			(parts.seconds ?? 0).toLocaleString("en-Us", {
 				minimumIntegerDigits: 2,
 				maximumFractionDigits: decimalPlaces,
 				useGrouping: false,
 			}) + "s"
-	} else {
+	} else if (parts.seconds != null) {
 		result +=
-			seconds.toLocaleString("en-Us", {
-				maximumFractionDigits: decimalPlaces,
+			parts.seconds.toLocaleString("en-Us", {
+				maximumFractionDigits: 4,
 				useGrouping: false,
 			}) + "s"
 	}

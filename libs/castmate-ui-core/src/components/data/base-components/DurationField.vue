@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { Duration } from "castmate-schema"
+import { Duration, parseDurationParts } from "castmate-schema"
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import FakeInputString from "../../fake-input/FakeInputString.vue"
 import FakeInputBackbone from "../../fake-input/FakeInputBackbone.vue"
@@ -166,37 +166,34 @@ function parseFromModel() {
 		return
 	}
 
-	let hours = 0
-	let minutes = 0
-	let seconds = 0
-
-	let remaining = model.value as number
-	if (remaining > HOUR_DUR) {
-		hours = Math.floor(remaining / HOUR_DUR)
-		remaining = remaining % HOUR_DUR
-	}
-	if (remaining > MINUTE_DUR) {
-		minutes = Math.floor(remaining / MINUTE_DUR)
-		remaining = remaining % MINUTE_DUR
-	}
-	seconds = remaining
+	const parts = parseDurationParts(model.value)
 
 	let result = ""
-	if (hours > 0) {
-		result += hours
+	if (parts.hours != null) {
+		result += parts.hours
 
-		result += minutes.toLocaleString("en-Us", {
+		result += (parts.minutes ?? 0).toLocaleString("en-Us", {
 			minimumIntegerDigits: 2,
 			useGrouping: false,
 		})
 
-		result += seconds
-	} else if (minutes > 0) {
-		result += minutes
+		result += (parts.seconds ?? 0).toLocaleString("en-Us", {
+			minimumIntegerDigits: 2,
+			useGrouping: false,
+		})
+	} else if (parts.minutes != null) {
+		result += parts.minutes
 
-		result += seconds
+		result += (parts.seconds ?? 0).toLocaleString("en-Us", {
+			minimumIntegerDigits: 2,
+			maximumFractionDigits: 4,
+			useGrouping: false,
+		})
 	} else {
-		result += seconds
+		result += (parts.seconds ?? 0).toLocaleString("en-Us", {
+			maximumFractionDigits: 4,
+			useGrouping: false,
+		})
 	}
 
 	inputValue.value = result
