@@ -130,15 +130,16 @@ class SevenTVEmoteProvider implements EmoteProvider {
 	async initialize() {
 		if (!TwitchAccount.channel.isAuthenticated) return
 
-		const globalResp = await axios.get<SevenTVEmoteSet>("https://7tv.io/v3/emote-sets/global")
-		const userResp = await axios.get<SevenTVUserResp>(
-			`https://7tv.io/v3/users/twitch/${TwitchAccount.channel.twitchId}`
-		)
+		try {
+			const globalResp = await axios.get<SevenTVEmoteSet>("https://7tv.io/v3/emote-sets/global")
+			const userResp = await axios.get<SevenTVUserResp>(
+				`https://7tv.io/v3/users/twitch/${TwitchAccount.channel.twitchId}`
+			)
 
-		const globalSet = sevenTVToEmoteSet(globalResp.data)
-		const userSet = sevenTVToEmoteSet(userResp.data.emote_set)
-
-		this.emoteSets = [globalSet, userSet]
+			const globalSet = sevenTVToEmoteSet(globalResp.data)
+			const userSet = sevenTVToEmoteSet(userResp.data.emote_set)
+			this.emoteSets = [globalSet, userSet]
+		} catch (err) {}
 	}
 
 	reset() {
