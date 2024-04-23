@@ -10,7 +10,7 @@ import {
 import { TwitchAccount } from "./twitch-auth"
 import { setupChat } from "./chat"
 import { setupSubscriptions } from "./subscriptions"
-import { setupChannelPointRewards } from "./channelpoints"
+import { setupChannelPointRewards, ChannelPointReward } from "./channelpoints"
 import { setupPolls } from "./poll"
 import { setupPredictions } from "./prediction"
 import { setupAds } from "./ads"
@@ -79,4 +79,4 @@ export default definePlugin(
 	}
 )
 
-export { TwitchAccount, onChannelAuth }
+export { TwitchAccount, onChannelAuth, ChannelPointReward }

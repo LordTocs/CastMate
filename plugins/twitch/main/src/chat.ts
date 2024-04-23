@@ -15,6 +15,7 @@ import { ViewerCache } from "./viewer-cache"
 import { TwitchViewer, TwitchViewerGroup, testViewer } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 import { OverlayWebsocketService } from "castmate-plugin-overlays-main"
+import { HelixChatAnnouncementColor } from "@twurple/api"
 
 function parseEmotesFromMsg(chatMessage: ChatMessage): EmoteParsedString {
 	const result: EmoteParsedString = []
@@ -171,7 +172,7 @@ export function setupChat() {
 	})
 
 	defineAction({
-		id: "sendShoutout",
+		id: "shoutout",
 		name: "Shoutout",
 		description: "Sends a shout out",
 		icon: "mdi mdi-bullhorn",
@@ -211,6 +212,32 @@ export function setupChat() {
 			}
 
 			return true
+		},
+	})
+
+	defineAction({
+		id: "annoucement",
+		name: "Make Annoucement",
+		description: "Sends an annoucement in chat",
+		icon: "mdi mdi-chat-alert",
+		config: {
+			type: Object,
+			properties: {
+				message: { type: String, name: "Message", required: true, template: true, default: "" },
+				color: {
+					type: String,
+					name: "Color",
+					required: true,
+					default: "primary",
+					enum: ["primary", "blue", "green", "orange", "purple"],
+				},
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await TwitchAccount.channel.apiClient.chat.sendAnnouncement(TwitchAccount.channel.twitchId, {
+				message: config.message,
+				color: config.color as HelixChatAnnouncementColor,
+			})
 		},
 	})
 

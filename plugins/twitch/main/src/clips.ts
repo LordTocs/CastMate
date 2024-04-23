@@ -26,4 +26,23 @@ export function setupClips() {
 			return { clipId }
 		},
 	})
+
+	defineAction({
+		id: "streamMarker",
+		name: "Place Stream Marker",
+		description: "Places a marker in the stream for use in the video editor",
+		icon: "mdi mdi-map-marker-star",
+		config: {
+			type: Object,
+			properties: {
+				markerName: { type: String, name: "Marker Name", template: true },
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await TwitchAccount.channel.apiClient.streams.createStreamMarker(
+				TwitchAccount.channel.twitchId,
+				config.markerName
+			)
+		},
+	})
 }
