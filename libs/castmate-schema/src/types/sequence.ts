@@ -66,9 +66,6 @@ export interface TimeActionInfo {
 
 export interface TimeAction extends ActionInfo {
 	offsets: OffsetActions[]
-	config: {
-		duration: number
-	}
 }
 
 export interface ActionStack {
