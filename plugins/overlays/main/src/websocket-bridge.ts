@@ -257,6 +257,9 @@ export function setupWebsockets() {
 	})
 
 	if (app.isPackaged) {
+		onLoad(() => {
+			logger.log("Serving Overlays Statically")
+		})
 		//Serve the static files for the SPA app built by castmate-obs-overlay package
 		router.get("/:id", (req, res, next) => {
 			const overlay = Overlay.storage.getById(req.params.id)
@@ -270,11 +273,15 @@ export function setupWebsockets() {
 
 		router.use(express.static("./obs-overlay"))
 	} else {
+		onLoad(() => {
+			logger.log("Proxying Overlays from http://localhost:5174")
+		})
+
 		//If we're unpackaged that means we've started with yarn run dev.
 		//We can't serve static files, but instead need to forward requests to vite's dev server
 		//That way changes and HMR works through the regular URLs provided to OBS.
 		const devProxy = HttpProxy.createProxyServer({
-			target: "http://localhost:5174", //This address is fixed because we set it in mvite
+			target: "http://localhost:5174/overlays/", //This address is fixed because we set it in mvite
 		})
 
 		defineWebsocketProxy("/overlays/", devProxy)
