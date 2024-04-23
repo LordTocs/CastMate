@@ -104,6 +104,7 @@ interface RegularActionDefinition extends BaseActionDefinition {
 	type: "regular"
 	readonly configSchema: Schema
 	invoke(config: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
+	getDuration(config: any): Promise<number | undefined>
 }
 
 interface FlowActionDefinition extends BaseActionDefinition {
@@ -111,6 +112,7 @@ interface FlowActionDefinition extends BaseActionDefinition {
 	readonly configSchema: Schema
 	readonly flowSchema?: Schema
 	invoke(config: any, flows: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
+	getDuration(config: any): Promise<number | undefined>
 }
 
 export type ActionDefinition = RegularActionDefinition | FlowActionDefinition
@@ -150,6 +152,28 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 
 	get configSchema() {
 		return this.spec.config
+	}
+
+	async getDuration(config: SchemaType<ConfigSchema>) {
+		if (!this.spec.duration) return undefined
+		if ("callback" in this.spec.duration) {
+			const state = await this.spec.duration.callback(config)
+			if (state.dragType == "instant") {
+				return undefined
+			}
+			if (state.dragType == "crop") {
+				const left = state.leftSlider ? config[state.leftSlider.sliderProp] : 0
+				const right = state.rightSlider ? config[state.rightSlider.sliderProp] : 0
+
+				return right - left
+			}
+			if (state.dragType == "fixed") {
+				return state.duration
+			}
+			if (state.dragType == "length") {
+				return config[state.rightSlider.sliderProp] ?? 0
+			}
+		}
 	}
 
 	load() {
@@ -355,6 +379,10 @@ class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends S
 		)
 
 		return await this.spec.invoke(resolveConfig, resolvedFlows, contextData, abortSignal)
+	}
+
+	async getDuration(config: any) {
+		return undefined
 	}
 }
 
