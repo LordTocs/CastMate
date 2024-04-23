@@ -61,12 +61,12 @@ class TwitchNativeEmoteProvider implements EmoteProvider {
 
 	reset() {
 		for (const set of this.emoteSets) {
-			this.onSetRemoved(set.id)
+			this.onSetRemoved?.(set.id)
 		}
 
 		this.initialize().then(() => {
 			for (const set of this.emoteSets) {
-				this.onSetAdded(set)
+				this.onSetAdded?.(set)
 			}
 		})
 	}
@@ -91,9 +91,9 @@ class TwitchNativeEmoteProvider implements EmoteProvider {
 		return this.emoteSets
 	}
 
-	onSetUpdated: (set: EmoteSet) => any
-	onSetRemoved: (id: string) => any
-	onSetAdded: (set: EmoteSet) => any
+	onSetUpdated: ((set: EmoteSet) => any) | undefined
+	onSetRemoved: ((id: string) => any) | undefined
+	onSetAdded: ((set: EmoteSet) => any) | undefined
 }
 
 export function setupEmotes() {

@@ -144,19 +144,19 @@ class SevenTVEmoteProvider implements EmoteProvider {
 
 	reset() {
 		for (const set of this.emoteSets) {
-			this.onSetRemoved(set.id)
+			this.onSetRemoved?.(set.id)
 		}
 
 		this.initialize().then(() => {
 			for (const set of this.emoteSets) {
-				this.onSetAdded(set)
+				this.onSetAdded?.(set)
 			}
 		})
 	}
 
-	onSetUpdated: (set: EmoteSet) => any
-	onSetRemoved: (id: string) => any
-	onSetAdded: (set: EmoteSet) => any
+	onSetUpdated: ((set: EmoteSet) => any) | undefined
+	onSetRemoved: ((id: string) => any) | undefined
+	onSetAdded: ((set: EmoteSet) => any) | undefined
 }
 
 export function setup7tv() {

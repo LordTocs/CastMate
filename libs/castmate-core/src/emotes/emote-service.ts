@@ -6,9 +6,9 @@ export interface EmoteProvider {
 	initialize(): any
 	reset(): any
 	getSets(): Promise<EmoteSet[]>
-	onSetUpdated: (set: EmoteSet) => any
-	onSetRemoved: (id: string) => any
-	onSetAdded: (set: EmoteSet) => any
+	onSetUpdated: ((set: EmoteSet) => any) | undefined
+	onSetRemoved: ((id: string) => any) | undefined
+	onSetAdded: ((set: EmoteSet) => any) | undefined
 }
 
 export const EmoteCache = Service(
