@@ -103,7 +103,7 @@ export function formatDuration(duration: Duration | undefined, decimalPlaces: nu
 	} else if (parts.seconds != null) {
 		result +=
 			parts.seconds.toLocaleString("en-Us", {
-				maximumFractionDigits: 4,
+				maximumFractionDigits: decimalPlaces,
 				useGrouping: false,
 			}) + "s"
 	}
