@@ -41,7 +41,8 @@ export function useResolvedWidgetConfig(
 		evalCounter: ref(0),
 		nextEval: Number.POSITIVE_INFINITY,
 		scheduleReEval(seconds: number) {
-			const evalTime = Date.now() + seconds
+			const now = Date.now()
+			const evalTime = now + seconds * 1000
 
 			if (evalTime < this.nextEval) {
 				if (this.timer) {
@@ -53,7 +54,7 @@ export function useResolvedWidgetConfig(
 					this.timer = undefined
 					this.nextEval = Number.POSITIVE_INFINITY
 					this.evalCounter.value++
-				})
+				}, evalTime - now)
 			}
 		},
 	}
