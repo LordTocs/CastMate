@@ -84,7 +84,7 @@ export function setupToggles(obsDefault: ReactiveRef<OBSConnection>) {
 					required: true,
 					default: () => obsDefault.value,
 				},
-				streaming: {
+				virtualCam: {
 					type: Toggle,
 					name: "Virtual Camera",
 					required: true,
@@ -95,11 +95,11 @@ export function setupToggles(obsDefault: ReactiveRef<OBSConnection>) {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
-			if (config.streaming == "toggle") {
+			if (config.virtualCam == "toggle") {
 				await config.obs.connection.call("ToggleVirtualCam")
-			} else if (config.streaming === true) {
+			} else if (config.virtualCam === true) {
 				await config.obs.connection.call("StartVirtualCam")
-			} else if (config.streaming === false) {
+			} else if (config.virtualCam === false) {
 				await config.obs.connection.call("StopVirtualCam")
 			}
 		},
@@ -118,7 +118,7 @@ export function setupToggles(obsDefault: ReactiveRef<OBSConnection>) {
 					required: true,
 					default: () => obsDefault.value,
 				},
-				streaming: {
+				replayBuffer: {
 					type: Toggle,
 					name: "Replay Buffer",
 					required: true,
@@ -129,12 +129,44 @@ export function setupToggles(obsDefault: ReactiveRef<OBSConnection>) {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
-			if (config.streaming == "toggle") {
+			if (config.replayBuffer == "toggle") {
 				await config.obs.connection.call("ToggleReplayBuffer")
-			} else if (config.streaming === true) {
+			} else if (config.replayBuffer === true) {
 				await config.obs.connection.call("StartReplayBuffer")
-			} else if (config.streaming === false) {
+			} else if (config.replayBuffer === false) {
 				await config.obs.connection.call("StopReplayBuffer")
+			}
+		},
+	})
+
+	defineAction({
+		id: "replaySave",
+		name: "Save Replay Buffer",
+		icon: "mdi mdi-content-save",
+		config: {
+			type: Object,
+			properties: {
+				obs: {
+					type: OBSConnection,
+					name: "OBS Connection",
+					required: true,
+					default: () => obsDefault.value,
+				},
+			},
+		},
+		result: {
+			type: Object,
+			properties: {
+				replayFile: { type: String, required: true },
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await config.obs.connection.call("SaveReplayBuffer")
+
+			const { savedReplayPath } = await config.obs.connection.call("GetLastReplayBufferReplay")
+
+			return {
+				replayFile: savedReplayPath,
 			}
 		},
 	})

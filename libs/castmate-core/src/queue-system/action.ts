@@ -17,7 +17,7 @@ import { SemanticVersion, isArray } from "../util/type-helpers"
 import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
 import { defineIPCFunc } from "../util/electron"
 import { templateSchema } from "../templates/template"
-import { usePluginLogger } from "../logging/logging"
+import { globalLogger, usePluginLogger } from "../logging/logging"
 
 interface ActionMetaData {
 	id: string
@@ -156,23 +156,31 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 
 	async getDuration(config: SchemaType<ConfigSchema>) {
 		if (!this.spec.duration) return undefined
-		if ("callback" in this.spec.duration) {
-			const state = await this.spec.duration.callback(config)
-			if (state.dragType == "instant") {
-				return undefined
-			}
-			if (state.dragType == "crop") {
-				const left = state.leftSlider ? config[state.leftSlider.sliderProp] : 0
-				const right = state.rightSlider ? config[state.rightSlider.sliderProp] : 0
 
-				return right - left
-			}
-			if (state.dragType == "fixed") {
-				return state.duration
-			}
-			if (state.dragType == "length") {
-				return config[state.rightSlider.sliderProp] ?? 0
-			}
+		let durationState: DurationState<ConfigSchema>
+
+		if ("callback" in this.spec.duration) {
+			durationState = await this.spec.duration.callback(config)
+		} else {
+			durationState = this.spec.duration
+		}
+
+		if (durationState.dragType == "instant") {
+			return undefined
+		}
+		if (durationState.dragType == "crop") {
+			const left = durationState.leftSlider ? config[durationState.leftSlider.sliderProp] ?? 0 : 0
+			const right = durationState.rightSlider
+				? config[durationState.rightSlider.sliderProp] ?? durationState.duration
+				: 0
+
+			return right - left
+		}
+		if (durationState.dragType == "fixed") {
+			return durationState.duration
+		}
+		if (durationState.dragType == "length") {
+			return config[durationState.rightSlider.sliderProp] ?? 0
 		}
 	}
 

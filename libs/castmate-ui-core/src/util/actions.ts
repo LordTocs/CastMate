@@ -8,13 +8,19 @@ export function useDuration(
 ) {
 	const action = useAction(actionSel)
 
-	const durationConfig = computed(
-		() =>
-			action.value?.duration ??
-			({
-				dragType: "instant",
-			} as IPCInstantDurationState)
-	)
+	const durationConfig = computed(() => {
+		const instantDefault = {
+			dragType: "instant",
+		} as IPCInstantDurationState
+
+		if (!action.value) return instantDefault
+
+		if (action.value.type == "regular") {
+			return action.value.duration
+		}
+
+		return instantDefault
+	})
 
 	const ipcStateStorage = ref<IPCDurationState>({
 		dragType: "instant",

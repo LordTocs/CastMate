@@ -61,7 +61,7 @@ export function setupVariableActions() {
 	})
 
 	defineAction({
-		id: "inc",
+		id: "offset",
 		name: "Offset Variable",
 		icon: "mdi mdi-variable",
 		config: {

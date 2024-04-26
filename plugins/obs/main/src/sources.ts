@@ -257,4 +257,48 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 			}
 		},
 	})
+
+	defineAction({
+		id: "text",
+		name: "OBS Text",
+		icon: "mdi mdi-form-textbox",
+		config: {
+			type: Object,
+			properties: {
+				obs: {
+					type: OBSConnection,
+					name: "OBS Connection",
+					required: true,
+					default: () => obsDefault.value,
+				},
+				sourceName: {
+					type: String,
+					name: "Source Name",
+					required: true,
+					async enum(context: { obs: OBSConnection }) {
+						const obs = context?.obs?.connection
+						if (!obs) return []
+
+						const textInputs = await context.obs.getInputs("text_gdiplus_v2")
+						return textInputs
+					},
+				},
+				text: {
+					type: String,
+					name: "Text",
+					template: true,
+					required: true,
+					default: "",
+				},
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await config.obs.connection.call("SetInputSettings", {
+				inputName: config.sourceName,
+				inputSettings: {
+					text: config.text,
+				},
+			})
+		},
+	})
 }

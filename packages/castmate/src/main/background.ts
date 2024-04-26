@@ -6,6 +6,7 @@ import { app, BrowserWindow, ipcMain } from "electron"
 import { createWindow } from "./electron/electron-helpers"
 import { initializeCastMate, finializeCastMateSetup } from "castmate-core"
 import { loadPlugins } from "./plugins"
+import { testMigrate } from "./migration/old-migration"
 
 const isDevelopment = !app.isPackaged // true //TODO: import.meta.env.DEV
 
@@ -52,6 +53,8 @@ app.whenReady().then(async () => {
 	await loadPlugins()
 
 	await finializeCastMateSetup()
+
+	//await testMigrate()
 })
 
 // Quit when all windows are closed.

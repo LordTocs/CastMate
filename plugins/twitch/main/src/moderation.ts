@@ -24,7 +24,7 @@ export function setupModeration() {
 			type: Object,
 			properties: {
 				viewer: { type: TwitchViewer, name: "Viewer", required: true, template: true },
-				duration: { type: Duration, name: "Duration", required: true, template: true },
+				duration: { type: Duration, name: "Duration", required: true, template: true, default: 15 },
 				reason: { type: String, name: "Reason", template: true },
 			},
 		},

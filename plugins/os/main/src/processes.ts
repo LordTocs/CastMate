@@ -29,6 +29,12 @@ export function setupProcesses() {
 			properties: {
 				application: { type: String, name: "Application", required: true },
 				dir: { type: Directory, name: "Working Directory" },
+				args: {
+					type: Array,
+					items: { type: String, required: true, template: true },
+					name: "Arguments",
+					required: true,
+				},
 				ignoreIfRunning: {
 					type: Boolean,
 					name: "Ignore If Already Running",
@@ -49,7 +55,7 @@ export function setupProcesses() {
 				cwd = path.dirname(config.application)
 			}
 
-			spawn("cmd", ["/c", "start", "CastMate Launch", config.application], {
+			spawn("cmd", ["/c", "start", "CastMate Launch", config.application, ...config.args], {
 				cwd,
 				detached: true,
 			})
