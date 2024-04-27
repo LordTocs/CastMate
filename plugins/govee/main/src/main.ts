@@ -136,7 +136,8 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 			},
 		})
 
-		this.startPolling(30)
+		//NEVER POLL for cloud info, we'll get rate limited!
+		//this.startPolling(30)
 	}
 
 	private parseCloudState(resp: GoveeCloudDeviceStateResponse) {
@@ -261,7 +262,10 @@ class GoveePlug extends PollingPlug<GoveePlugConfig> {
 			hasCloud: true,
 		})
 
-		this.startPolling(30)
+		await this.poll()
+
+		//NEVER POLL FOR CLOUD INFO WE'll GET RATE LIMITED
+		//this.startPolling(30)
 	}
 
 	async poll() {
@@ -350,9 +354,9 @@ export default definePlugin(
 			poller = setInterval(async () => {
 				await cloudPoll()
 				lanPoll()
-			}, 30 * 1000)
+			}, 5 * 60 * 1000) //Poll every 5 minutes to conserve daily rate limit. (We get 10000 every 24hours! This is 288)
 
-			cloudPoll()
+			await cloudPoll()
 			lanPoll()
 		}
 
@@ -371,28 +375,32 @@ export default definePlugin(
 		async function cloudPoll() {
 			if (!apiKey.value) return
 
-			const devices = await getDevices(apiKey.value)
+			try {
+				const devices = await getDevices(apiKey.value)
 
-			for (const cloudBulb of devices.bulbs) {
-				const existing = LightResource.storage.getById(`govee.${cloudBulb.device}`) as GoveeBulb | undefined
-				if (existing) {
-					await existing.setCloudDevice(cloudBulb)
-				} else {
-					const newBulb = new GoveeBulb(cloudBulb.device)
-					await newBulb.setCloudDevice(cloudBulb)
-					await LightResource.storage.inject(newBulb)
+				for (const cloudBulb of devices.bulbs) {
+					const existing = LightResource.storage.getById(`govee.${cloudBulb.device}`) as GoveeBulb | undefined
+					if (existing) {
+						await existing.setCloudDevice(cloudBulb)
+					} else {
+						const newBulb = new GoveeBulb(cloudBulb.device)
+						await newBulb.setCloudDevice(cloudBulb)
+						await LightResource.storage.inject(newBulb)
+					}
 				}
-			}
 
-			for (const cloudPlug of devices.plugs) {
-				const existing = PlugResource.storage.getById(`govee.${cloudPlug.device}`) as GoveePlug | undefined
-				if (existing) {
-					await existing.setCloudDevice(cloudPlug)
-				} else {
-					const newPlug = new GoveePlug(cloudPlug.device)
-					await newPlug.setCloudDevice(cloudPlug)
-					await PlugResource.storage.inject(newPlug)
+				for (const cloudPlug of devices.plugs) {
+					const existing = PlugResource.storage.getById(`govee.${cloudPlug.device}`) as GoveePlug | undefined
+					if (existing) {
+						await existing.setCloudDevice(cloudPlug)
+					} else {
+						const newPlug = new GoveePlug(cloudPlug.device)
+						await newPlug.setCloudDevice(cloudPlug)
+						await PlugResource.storage.inject(newPlug)
+					}
 				}
+			} catch (err) {
+				logger.error("Error Polling Govee", err)
 			}
 		}
 
