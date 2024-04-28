@@ -8,7 +8,7 @@ import {
 	onCloudPubSubMessage,
 } from "castmate-core"
 import { TwitchViewer } from "castmate-plugin-twitch-shared"
-import { setupSpells } from "./spell"
+import { setupSpells, SpellHook } from "./spell"
 
 export default definePlugin(
 	{
@@ -22,3 +22,5 @@ export default definePlugin(
 		setupSpells()
 	}
 )
+
+export { SpellHook }

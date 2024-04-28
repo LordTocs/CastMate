@@ -1,20 +1,29 @@
 import {
 	AnyAction,
+	Command,
+	CommandModeCommand,
 	InstantAction,
 	MaybePromise,
 	OffsetActions,
+	ProfileConfig,
+	RegexModeCommand,
 	Sequence,
+	StringModeCommand,
 	TimeAction,
 	Toggle,
+	TriggerData,
+	createInlineAutomation,
 	isTimeAction,
 	parseTemplateString,
 } from "castmate-schema"
-import { Automation, PluginManager, ResourceRegistry, usePluginLogger } from "castmate-core"
+import { Automation, PluginManager, Profile, ResourceRegistry, usePluginLogger } from "castmate-core"
 import { nanoid } from "nanoid/non-secure"
 import { LightColor } from "castmate-plugin-iot-shared"
-import { TwitchViewer, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
+import { TwitchViewer, TwitchViewerGroup, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
 import { ChannelPointReward, TwitchAccount } from "castmate-plugin-twitch-main"
 import { OBSBoundsType, OBSSourceTransform } from "castmate-plugin-obs-shared"
+import { SpellHook } from "castmate-plugin-spellcast-main"
+import { OBSConnection } from "castmate-plugin-obs-main"
 
 /**
  * Migrates from 0.4 to 0.5
@@ -36,7 +45,7 @@ interface OldAutomation {
 
 interface OldTrigger {
 	config: any
-	automation: OldAutomation
+	automation: OldAutomation | string
 	id: string
 }
 
@@ -44,6 +53,8 @@ interface OldProfile {
 	version: string
 	triggers: Record<string, Record<string, OldTrigger[]>>
 	activationMode: Toggle
+	onActivate?: OldAutomation | string
+	onDeactivate?: OldAutomation | string
 }
 
 interface ActionMigrator {
@@ -52,7 +63,7 @@ interface ActionMigrator {
 	migrateConfig(oldConfig: any): MaybePromise<any>
 }
 
-function defaultStringIsTemplate(value: any | string) {
+function stringIsTemplate(value: any | string) {
 	if (typeof value != "string") return false
 	return value.includes("{{")
 }
@@ -71,11 +82,24 @@ function registerOldActionMigrator(oldPlugin: string, oldAction: string, migrato
 	actionMigrators[oldPlugin][oldAction] = migrator
 }
 
-const actionOverrides: Record<string, Record<string, { plugin: string; action: string }>> = {
-	castmate: {
-		delay: { plugin: "time", action: "delay" },
-	},
-	twitch: {},
+interface TriggerMigrator {
+	plugin: string
+	trigger: string
+	migrateConfig(oldConfig: any): MaybePromise<any>
+}
+
+const triggerMigrators: Record<string, Record<string, TriggerMigrator>> = {}
+
+function registerOldTriggerMigrator(oldPlugin: string, oldTrigger: string, migrator: TriggerMigrator) {
+	if (!(oldPlugin in triggerMigrators)) {
+		triggerMigrators[oldPlugin] = {}
+	}
+
+	if (oldTrigger in triggerMigrators[oldPlugin]) {
+		throw new Error(`Double migrator registered, ${oldPlugin} ${oldTrigger} `)
+	}
+
+	triggerMigrators[oldPlugin][oldTrigger] = migrator
 }
 
 function migrateTemplateStr<T>(template: T | string | undefined) {
@@ -86,6 +110,28 @@ function migrateResourceId(id: string | undefined) {
 	return id
 }
 
+/////////MIGRATE BUILTIN//////////
+
+function migrateAutomationId(oldAutomationName: string) {
+	for (const auto of Automation.storage) {
+		if (auto.config.name == oldAutomationName) {
+			return auto.id
+		}
+	}
+
+	return undefined
+}
+
+registerOldActionMigrator("castmate", "automation", {
+	plugin: "castmate",
+	action: "runAutomation",
+	migrateConfig(oldConfig: { automation: string }) {
+		return {
+			automation: migrateAutomationId(oldConfig.automation), //TODO
+		}
+	},
+})
+
 ////////MIGRATE TWITCH//////////////
 
 async function migrateTwitchUser(
@@ -94,7 +140,7 @@ async function migrateTwitchUser(
 ): Promise<TwitchViewerUnresolved | undefined> {
 	if (user == null) return undefined
 
-	if (defaultStringIsTemplate(user)) {
+	if (stringIsTemplate(user)) {
 		return renameTemplateVar(user, "user", userVarName ?? "viewer") as TwitchViewerUnresolved
 	}
 
@@ -233,14 +279,309 @@ registerOldActionMigrator("twitch", "ban", {
 	},
 })
 
-/// OBS ACTIONS
+///triggers
 
-function migrateDefaultOBS() {
-	return ""
+function migrateCommand(commandStr: string, matchStr: string): Command {
+	if (matchStr == "Start" || matchStr == null) {
+		const result: CommandModeCommand = {
+			mode: "command",
+			match: commandStr,
+			arguments: [],
+			hasMessage: false,
+		}
+		return result
+	} else if (matchStr == "Anywhere") {
+		const result: StringModeCommand = {
+			mode: "string",
+			match: commandStr,
+			leftBoundary: false,
+			rightBoundary: false,
+		}
+		return result
+	} else if (matchStr == "Regex") {
+		const result: RegexModeCommand = {
+			mode: "regex",
+			match: commandStr,
+		}
+		return result
+	}
+	throw new Error(`Error Migrating Command w/ Match String ${matchStr}`)
 }
 
-async function migrateOBSSource(scene: string, sourceName: string) {
-	return 0
+function migratePermissions(
+	permissions: { viewer: boolean; sub: boolean; vip: boolean; mod: boolean; streamer: boolean } | undefined
+) {
+	if (permissions == null) {
+		return TwitchViewerGroup.factoryCreate()
+	}
+
+	if (permissions.viewer) {
+		return TwitchViewerGroup.factoryCreate()
+	}
+
+	return {
+		rule: {
+			or: [
+				{
+					properties: {
+						subTier1: !!permissions.sub,
+						subTier2: !!permissions.sub,
+						subTier3: !!permissions.sub,
+						vip: !!permissions.vip,
+						mod: !!permissions.mod,
+						broadcaster: !!permissions.streamer,
+					},
+				},
+			],
+		},
+	} satisfies TwitchViewerGroup
+}
+
+registerOldTriggerMigrator("twitch", "chat", {
+	plugin: "twitch",
+	trigger: "chat",
+	migrateConfig(oldConfig: {
+		command: string
+		match: string
+		permissions: { viewer: boolean; sub: boolean; vip: boolean; mod: boolean; streamer: boolean }
+		cooldown: number | undefined
+		users: string[] | undefined
+	}) {
+		return {
+			command: migrateCommand(oldConfig.command, oldConfig.match),
+			cooldown: oldConfig.cooldown,
+			group: migratePermissions(oldConfig.permissions),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "redemption", {
+	plugin: "twitch",
+	trigger: "redemption",
+	migrateConfig(oldConfig: { reward: string }) {
+		return {
+			reward: migrateTwitchChannelPointReward(oldConfig.reward),
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "follow", {
+	plugin: "twitch",
+	trigger: "follow",
+	migrateConfig(oldConfig) {
+		return {
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "firstTimeChat", {
+	plugin: "twitch",
+	trigger: "firstTimeChat",
+	migrateConfig(oldConfig) {
+		return {}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "subscribe", {
+	plugin: "twitch",
+	trigger: "subscription",
+	migrateConfig(oldConfig: { months: Range }) {
+		return {
+			tier1: true,
+			tier2: true,
+			tier3: true,
+			totalMonths: oldConfig.months,
+			streakMonths: { min: 1 },
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "giftedSub", {
+	plugin: "twitch",
+	trigger: "giftedSub",
+	migrateConfig(oldConfig: { subs: Range }) {
+		return {
+			subs: oldConfig.subs,
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "bits", {
+	plugin: "twitch",
+	trigger: "bits",
+	migrateConfig(oldConfig: { bits: Range }) {
+		return {
+			bits: oldConfig.bits,
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "raid", {
+	plugin: "twitch",
+	trigger: "raid",
+	migrateConfig(oldConfig: { raiders: Range }) {
+		return {
+			raiders: oldConfig.raiders,
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "raidOut", {
+	plugin: "twitch",
+	trigger: "raidOut",
+	migrateConfig(oldConfig: { raiders: Range }) {
+		return {
+			raiders: oldConfig.raiders,
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "ban", {
+	plugin: "twitch",
+	trigger: "ban",
+	migrateConfig(oldConfig) {
+		return {
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "timeout", {
+	plugin: "twitch",
+	trigger: "timeout",
+	migrateConfig(oldConfig) {
+		return {
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "hypeTrainStarted", {
+	plugin: "twitch",
+	trigger: "hypeTrainStarted",
+	migrateConfig(oldConfig) {
+		return {}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "hypeTrainLevelUp", {
+	plugin: "twitch",
+	trigger: "hypeTrainLevelUp",
+	migrateConfig(oldConfig: { level: Range }) {
+		return {
+			level: oldConfig.level,
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "hypeTrainEnded", {
+	plugin: "twitch",
+	trigger: "hypeTrainEnded",
+	migrateConfig(oldConfig: { level: Range }) {
+		return {
+			level: oldConfig.level,
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "predictionStarted", {
+	plugin: "twitch",
+	trigger: "predictionStarted",
+	migrateConfig(oldConfig: { title: string; match: "Start" | "Anywhere" | "Regex" }) {
+		return {
+			title: oldConfig.title,
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "predictionLocked", {
+	plugin: "twitch",
+	trigger: "predictionLocked",
+	migrateConfig(oldConfig: { title: string; match: "Start" | "Anywhere" | "Regex" }) {
+		return {
+			title: oldConfig.title,
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "predictionSettled", {
+	plugin: "twitch",
+	trigger: "predictionSettled",
+	migrateConfig(oldConfig: { title: string; match: "Start" | "Anywhere" | "Regex" }) {
+		return {
+			title: oldConfig.title,
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "pollStarted", {
+	plugin: "twitch",
+	trigger: "predictionSettled",
+	migrateConfig(oldConfig: { title: string; match: "Start" | "Anywhere" | "Regex" }) {
+		return {
+			title: oldConfig.title,
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "pollEnded", {
+	plugin: "twitch",
+	trigger: "predictionSettled",
+	migrateConfig(oldConfig: { title: string; match: "Start" | "Anywhere" | "Regex" }) {
+		return {
+			title: oldConfig.title,
+		}
+	},
+})
+
+registerOldTriggerMigrator("twitch", "shoutoutSent", {
+	plugin: "twitch",
+	trigger: "shoutoutSent",
+	migrateConfig(oldConfig) {
+		return {
+			group: TwitchViewerGroup.factoryCreate(),
+		}
+	},
+})
+
+//TODO: Whisper
+/// OBS ACTIONS
+
+function getDefaultOBS() {
+	const obsDefaultSetting = PluginManager.getInstance().getPlugin("obs")?.settings?.get("obsDefault")
+	if (!obsDefaultSetting) return undefined
+	if (obsDefaultSetting.type == "value") {
+		return obsDefaultSetting.ref.value as OBSConnection
+	}
+	return undefined
+}
+
+function migrateDefaultOBS() {
+	return getDefaultOBS()?.id
+}
+
+async function migrateOBSSource(sceneName: string, sourceName: string) {
+	const obs = getDefaultOBS()
+
+	if (!obs) return 0
+
+	try {
+		const result = await obs.connection.call("GetSceneItemId", {
+			sceneName,
+			sourceName,
+		})
+
+		return result.sceneItemId
+	} catch (err) {
+		return 0
+	}
 }
 
 function migrateOldOBSTransform(
@@ -496,6 +837,17 @@ registerOldActionMigrator("http", "request", {
 	},
 })
 
+registerOldTriggerMigrator("http", "endpoint", {
+	plugin: "http",
+	trigger: "endpoint",
+	migrateConfig(oldConfig: { method: string; route: string }) {
+		return {
+			method: oldConfig.method,
+			route: oldConfig.route,
+		}
+	},
+})
+
 ///////MIGRATE INPUT/////////
 
 registerOldActionMigrator("inputs", "pressKey", {
@@ -545,19 +897,19 @@ interface OldHbsk {
 	hue?: number | string
 	sat?: number | string
 	bri?: number | string
-	temp?: number
+	kelvin?: number
 	mode: "color" | "temp"
 }
 
 function migrateOldLightColor(hbsk: OldHbsk | undefined): LightColor | undefined {
 	if (!hbsk) return undefined
 
-	if (hbsk.mode == "color") {
+	if ("hue" in hbsk) {
 		return `hsb(${migrateTemplateStr(hbsk.hue) ?? 0}, ${migrateTemplateStr(hbsk.sat) ?? 0}, ${
 			migrateTemplateStr(hbsk.bri) ?? 0
 		})` as LightColor
 	} else {
-		return `kb(${migrateTemplateStr(hbsk.temp) ?? 0}, ${migrateTemplateStr(hbsk.bri) ?? 0})` as LightColor
+		return `kb(${migrateTemplateStr(hbsk.kelvin) ?? 0}, ${migrateTemplateStr(hbsk.bri) ?? 0})` as LightColor
 	}
 }
 
@@ -658,6 +1010,17 @@ registerOldActionMigrator("overlays", "wheelSpin", {
 	},
 })
 
+registerOldTriggerMigrator("overlays", "wheelLanded", {
+	plugin: "random",
+	trigger: "wheelLanded",
+	migrateConfig(oldConfig: { wheel: string; item: string | undefined }) {
+		return {
+			wheel: migrateOldOverlayWidget(oldConfig.wheel),
+			item: oldConfig.item,
+		}
+	},
+})
+
 ///////MIGRATE SOUNDS///////////////
 
 function migrateOldMediaFile(media: string) {
@@ -702,12 +1065,24 @@ registerOldActionMigrator("sounds", "tts", {
 
 ///////MIGRATE SPELLCAST///////
 
-registerOldActionMigrator("spellcast", "spellHook", {
+function migrateSpellCastId(hookId: string) {
+	//Spells now have local ids
+
+	for (const spell of SpellHook.storage) {
+		if (spell.config.spellId == hookId) {
+			return spell.id
+		}
+	}
+
+	return undefined
+}
+
+registerOldTriggerMigrator("spellcast", "spellHook", {
 	plugin: "spellcast",
-	action: "spellHook",
+	trigger: "spellHook",
 	migrateConfig(oldConfig: { hookId: string }) {
 		return {
-			spell: migrateResourceId(oldConfig.hookId),
+			spell: migrateSpellCastId(oldConfig.hookId),
 		}
 	},
 })
@@ -749,6 +1124,37 @@ registerOldActionMigrator("voicemod", "selectVoice", {
 	},
 })
 
+////MIGRATE TIME////////////
+
+function migrateOldDurationString(duration: string | undefined) {
+	if (duration == undefined) return undefined
+
+	let [hours, minutes, seconds] = duration.split(":")
+
+	if (seconds == undefined) {
+		seconds = minutes
+		minutes = hours
+		hours = "0"
+	}
+	if (seconds == undefined) {
+		seconds = minutes
+		minutes = "0"
+	}
+
+	return Number(hours) * 60 * 60 + Number(minutes) * 60 + Number(seconds)
+}
+
+registerOldTriggerMigrator("time", "timer", {
+	plugin: "time",
+	trigger: "repeat",
+	migrateConfig(oldConfig: { delay: string | undefined; interval: string | undefined }) {
+		return {
+			delay: migrateOldDurationString(oldConfig.delay),
+			interval: migrateOldDurationString(oldConfig.interval),
+		}
+	},
+})
+
 //////////////////////////////////////
 
 const logger = usePluginLogger("migrate")
@@ -756,14 +1162,16 @@ const logger = usePluginLogger("migrate")
 function renameTemplateVar(templateStr: string, oldName: string, newName: string) {
 	const parsed = parseTemplateString(templateStr)
 
+	logger.log("Renaming", oldName, newName)
+
 	let output = ""
 
 	for (const s of parsed.regions) {
 		if (s.type == "string") {
 			output += parsed.fullString.substring(s.startIndex, s.endIndex)
 		} else {
-			const str = parsed.fullString.substring(s.startIndex, s.endIndex)
-			str.replace(`\\b${oldName}\\b`, newName)
+			let str = parsed.fullString.substring(s.startIndex, s.endIndex)
+			str = str.replace(new RegExp(`\\b${oldName}\\b`), newName)
 			output += str
 		}
 	}
@@ -874,7 +1282,7 @@ async function migrateOldAutomation(oldAutomation: OldAutomation): Promise<Seque
 				oldOffsetTime = Math.max(oldOffsetTime, oldAction.data as number)
 				logger.log("Old Time Offset Now", oldOffsetTime)
 				continue
-			} else {
+			} else if (oldAction.action == "delay") {
 				oldOffsetTime += Math.max(0, oldAction.data as number)
 				logger.log("Old Time Offset Now", oldOffsetTime)
 				continue
@@ -932,6 +1340,84 @@ async function migrateOldAutomation(oldAutomation: OldAutomation): Promise<Seque
 
 			pushAction(action, duration)
 		}
+	}
+
+	return result
+}
+
+async function migrateInlineOldAutomation(oldAutomation: OldAutomation | string) {
+	if (typeof oldAutomation == "string") {
+		const migratedAutomationId = "" //TODO MIGRATE
+
+		const result: Sequence = {
+			actions: [],
+		}
+
+		result.actions.push({
+			id: nanoid(),
+			plugin: "castmate",
+			action: "runAutomation",
+			config: {
+				automation: migratedAutomationId,
+			},
+		})
+
+		return result
+	} else {
+		return await migrateOldAutomation(oldAutomation)
+	}
+}
+
+async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<ProfileConfig> {
+	const result: ProfileConfig = {
+		name,
+		triggers: [],
+		activationMode: oldProfile.activationMode,
+		activationCondition: {
+			type: "group",
+			operator: "or",
+			operands: [],
+		},
+		activationAutomation: createInlineAutomation(),
+		deactivationAutomation: createInlineAutomation(),
+	}
+
+	for (const oldPluginKey in oldProfile.triggers) {
+		for (const oldTriggerKey in oldProfile.triggers[oldPluginKey]) {
+			const oldTriggers = oldProfile.triggers[oldPluginKey][oldTriggerKey]
+
+			for (const oldTrigger of oldTriggers) {
+				const triggerMigrator = triggerMigrators[oldPluginKey]?.[oldTriggerKey]
+
+				const newTrigger: TriggerData = {
+					id: nanoid(),
+					config: {},
+					sequence: { actions: [] },
+					floatingSequences: [],
+				}
+
+				if (triggerMigrator) {
+					const newTriggerConfig = await triggerMigrator.migrateConfig(oldTrigger.config)
+					newTrigger.plugin = triggerMigrator.plugin
+					newTrigger.trigger = triggerMigrator.trigger
+					newTrigger.config = newTriggerConfig
+				}
+
+				newTrigger.sequence = await migrateInlineOldAutomation(oldTrigger.automation)
+
+				logger.log("Migrated Trigger", newTrigger)
+
+				result.triggers.push(newTrigger)
+			}
+		}
+	}
+
+	if (oldProfile.onActivate) {
+		result.activationAutomation.sequence = await migrateInlineOldAutomation(oldProfile.onActivate)
+	}
+
+	if (oldProfile.onDeactivate) {
+		result.deactivationAutomation.sequence = await migrateInlineOldAutomation(oldProfile.onDeactivate)
 	}
 
 	return result
@@ -1224,7 +1710,1620 @@ const testOldAutomation = {
 	sync: true,
 }
 
-export async function testMigrate() {
+const testOldProfile = {
+	version: "2.0",
+	triggers: {
+		spellcast: {
+			spellHook: [
+				{
+					config: {
+						hookId: "640e12589fb9c79bdb596676",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "kitchen-nightmare--drama.mp3",
+								},
+								id: "xnUdSpTZ5sUmAxb9FzAqL",
+							},
+							{
+								plugin: "twitch",
+								action: "sendChat",
+								data: "{{ user }} says that's looking like a nightmare.",
+								id: "t6vokUUblGnZe71RvGv-A",
+							},
+						],
+					},
+					id: "4D_aScg3rZqCQrosQvDaN",
+					profile: "Kitchen",
+				},
+			],
+		},
+		http: {
+			endpoint: [
+				{
+					config: {
+						method: "POST",
+						route: "/toggle_oven",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "obs",
+								action: "source",
+								data: {
+									enabled: "toggle",
+									scene: "~Oven View",
+									source: "~Oven View Cam",
+								},
+								id: "bhLwK4HLbtmsbXCvc49cD",
+							},
+							{
+								plugin: "variables",
+								action: "set",
+								data: {
+									name: "OvenView",
+									value: "variables.OvenView == 1 ? 0 : 1",
+								},
+								id: "0aLO0v0E15yadozE7_Rp2",
+							},
+							{
+								plugin: "obs",
+								action: "filter",
+								data: {
+									filterEnabled: "toggle",
+									sourceName: "~Kitchen Oven",
+									filterName: "Oven Recording",
+								},
+								id: "M0NZj9Vvv9X5-nkkCYdgs",
+							},
+						],
+						sync: false,
+					},
+					id: "bGZIqbo0vdFhlPdt6bYE1",
+					profile: "Kitchen",
+				},
+			],
+		},
+		twitch: {
+			raid: [
+				{
+					config: {
+						raiders: {
+							min: 1,
+						},
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "iot",
+								action: "plug",
+								data: {
+									on: false,
+									plug: "hue.f7eea07b-be3c-482e-bacb-bde4491af74e",
+								},
+								id: "I_fUN8TN5bABA6vy93C5x",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: false,
+									duration: 0,
+									light: "hue.c1787ef9-1246-4465-97d2-4e12f5d55632",
+								},
+								id: "7uGyTy-NDUaiuqNjPDLtS",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 0.5,
+								id: "wsscoSrODYloSlGevCe33",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: false,
+									duration: 0,
+									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
+								},
+								id: "4JOLTDzaHYkWqd7-GCoOz",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: false,
+									duration: 0,
+									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
+								},
+								id: "vG54Mi6lpn8RG9TkrOps7",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 0.2,
+								id: "jEh1oe42fQd-Rw_kn8qk-",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 2,
+								id: "ydweoggqWmOhB6oNApp1i",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: true,
+									duration: 0,
+									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
+									lightColor: {
+										hue: 355.81508387488157,
+										sat: 100,
+										bri: 100,
+									},
+								},
+								id: "mq_DtkLpWmmBhz8iwmcdP",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: true,
+									duration: 0,
+									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
+									lightColor: {
+										hue: 355.81508387488157,
+										sat: 100,
+										bri: 100,
+									},
+								},
+								id: "s3-p4Ls5dIl-8lqMb7Swg",
+							},
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 54,
+									sound: "base-alarm.wav",
+								},
+								id: "YRVboTQhWlYgmsAMGCuVe",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 2,
+								id: "mh01ZZfh44YwXy_9OaZ0a",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: false,
+									duration: 0,
+									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
+								},
+								id: "Ouo7sQk-fNToIkJeHFUb5",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: false,
+									duration: 0,
+									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
+								},
+								id: "-X7DEBz7FecRpkUdvMW9t",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 1,
+								id: "kUoZ6NuTUJgWvbQDTz-cp",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: true,
+									duration: 0,
+									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
+									lightColor: {
+										hue: 355.81508387488157,
+										sat: 100,
+										bri: 100,
+									},
+								},
+								id: "qlWhZ4AYFnpULe2FKOgYr",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: true,
+									duration: 0,
+									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
+									lightColor: {
+										hue: 355.81508387488157,
+										sat: 100,
+										bri: 100,
+									},
+								},
+								id: "szMOaZre5GaBqZOjn_ydW",
+							},
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 54,
+									sound: "base-alarm.wav",
+								},
+								id: "vKaZAuGbnzH4vHWvOqYlA",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 2,
+								id: "XS8aeYVASnToT1Eu43yde",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: false,
+									duration: 0,
+									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
+								},
+								id: "0qtSI878yjRonJyPHKHEb",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: false,
+									duration: 0,
+									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
+								},
+								id: "U8qpvXatsFr8Y104uUYeJ",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 1,
+								id: "ldSTVYAsIQAYx0TaP2MJ0",
+							},
+							{
+								plugin: "iot",
+								action: "plug",
+								data: {
+									on: true,
+									plug: "hue.f7eea07b-be3c-482e-bacb-bde4491af74e",
+								},
+								id: "Z2clycP6iRBQz4X_gj6jX",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 0.1,
+								id: "HDuTtMf7jc7BI1Zz2HLMH",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: true,
+									duration: 0.5,
+									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
+									lightColor: {
+										kelvin: 5242.525,
+										bri: 100,
+									},
+								},
+								id: "ILRNn7-1k94xSPfHNpY6Q",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: true,
+									duration: 0.5,
+									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
+									lightColor: {
+										kelvin: 5242.525,
+										bri: 100,
+									},
+								},
+								id: "BQJ_yLiqwJ7IDTTHNZvNj",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 0.1,
+								id: "eWhqkl2I6d3lOB8OW4zbz",
+							},
+							{
+								plugin: "iot",
+								action: "light",
+								data: {
+									on: true,
+									duration: 0.5,
+									light: "hue.c1787ef9-1246-4465-97d2-4e12f5d55632",
+									lightColor: {
+										kelvin: 5242.525,
+										bri: 100,
+									},
+								},
+								id: "vt6m-e9N_l9kSFSdnmcN_",
+							},
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "door-banging.wav",
+								},
+								id: "L6wu181xIroOLR7RODTfQ",
+							},
+							{
+								plugin: "twitch",
+								action: "sendShoutout",
+								data: {
+									user: "{{ user }}",
+								},
+								id: "PgUWZ5t-Ah-bz993zn9GU",
+							},
+						],
+					},
+					id: "JS0L7Usc5s1WnPkSg-x5o",
+					profile: "Kitchen",
+				},
+			],
+		},
+	},
+	conditions: {
+		operator: "any",
+		operands: [
+			{
+				operator: "equal",
+				id: "PrIIYhVCPO563s2jbT_UJ",
+				state: {
+					plugin: "obs",
+					key: "scene",
+					id: "obs.scene",
+				},
+				compare: "Kitchen Hands Exclusive",
+			},
+			{
+				operator: "equal",
+				id: "8tUPVdlc5bjYgoCRIKZHD",
+				state: {
+					plugin: "obs",
+					key: "scene",
+					id: "obs.scene",
+				},
+				compare: "Kitchen Main",
+			},
+			{
+				operator: "equal",
+				id: "_GcLsIx368bT0qL_ROpOL",
+				state: {
+					plugin: "obs",
+					key: "scene",
+					id: "obs.scene",
+				},
+				compare: "Kitchen Hands",
+			},
+			{
+				operator: "equal",
+				id: "6g0gO-f_qCT_N4-DFn2Ng",
+				state: {
+					plugin: "obs",
+					key: "scene",
+					id: "obs.scene",
+				},
+				compare: "Kitchen Oven View",
+			},
+		],
+	},
+	activationMode: "toggle",
+}
+
+const testOldProfile2 = {
+	version: "2.0",
+	triggers: {
+		twitch: {
+			redemption: [
+				{
+					config: {
+						reward: "First",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 30,
+									sound: "The Price Is Right Correct Answer Sound.mp4",
+								},
+								id: "B0omg96epN3h0KM81J1IK",
+							},
+							{
+								plugin: "overlays",
+								action: "alert",
+								data: {
+									alert: {
+										overlay: "XEu5lCHbdind994KNinPW",
+										widget: "xPFpXIBvwlvz_PAiG8WuL",
+									},
+									header: "FIRST!",
+									text: "{{ user }} is first!",
+									color: "{{ userColor }}",
+								},
+								id: "cqPy9Lg1nmdUqGqmNSqGV",
+							},
+							{
+								plugin: "twitch",
+								action: "sendChat",
+								data: "!! {{ user }} is first !!",
+								id: "62xvXbslEf2zwLJjDwesL",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 14,
+								id: "_BYcRxeFzUz2g9Ww4OAaa",
+							},
+						],
+						sync: false,
+					},
+					id: "XGzcXJKOzrSCrPmZI5sPo",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						reward: "Text To Speech",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "tts",
+								data: {
+									volume: 100,
+									message: "{{ filteredMessage }}",
+									voice: "Microsoft David Desktop",
+								},
+								id: "Da-asSoitf5MTwVsw7IpM",
+							},
+						],
+						sync: false,
+					},
+					id: "MVXbI01udY0ZLteoU11Mh",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						reward: "Hydrate",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 80,
+									sound: "water-splash-9.mp3",
+								},
+								id: "lnI7qBWMCtX3Lg0zaxRkn",
+							},
+							{
+								plugin: "twitch",
+								action: "sendChat",
+								data: "{{ user }} is being a hydro homie",
+								id: "nZwG9_gFcSRMi60QQxBGy",
+							},
+						],
+						sync: false,
+					},
+					id: "CxAuPlu643k3nyzPdXWHd",
+					profile: "Main Active",
+				},
+			],
+			chat: [
+				{
+					config: {
+						command: "!sad",
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "sad-violin_ubqUgrT.mp3",
+								},
+								id: "s-qQj8eJ26CTg2TB5xejR",
+							},
+							{
+								plugin: "obs",
+								action: "filter",
+								data: {
+									sourceName: "~Main Cam",
+									filterName: "Black And White",
+									filterEnabled: true,
+								},
+								id: "Nr4h1LRk__v0sp_AMRzgn",
+							},
+							{
+								plugin: "obs",
+								action: "filter",
+								data: {
+									sourceName: "~Main Cam",
+									filterName: "Sad Zoomer",
+									filterEnabled: true,
+								},
+								id: "fhy1QumjOKsvnb1qJye5H",
+							},
+							{
+								plugin: "castmate",
+								action: "delay",
+								data: 10,
+								id: "t50kYImR93In-SVNKP9IZ",
+							},
+							{
+								plugin: "obs",
+								action: "filter",
+								data: {
+									sourceName: "~Main Cam",
+									filterName: "Black And White",
+									filterEnabled: false,
+								},
+								id: "FeSi6Ta_Y4Q9PpLDCdFsa",
+							},
+						],
+						sync: false,
+					},
+					id: "cuW9XE_4TPUKyQPKViQsa",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						command: "!drama",
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 86,
+									sound: "youtube\\Dun Dun Dun.mp3",
+								},
+								id: "RhwxrxRTQcOeohzEili9v",
+							},
+							{
+								plugin: "castmate",
+								action: "timestamp",
+								data: 1.1,
+								beforeDelay: 1.1,
+								id: "-mcJZWYG0nDmmvNAQ8Sn1",
+							},
+							{
+								plugin: "obs",
+								action: "filter",
+								data: {
+									sourceName: "~Main Cam",
+									filterName: "Zoomer",
+									filterEnabled: true,
+								},
+								id: "za2y240vmxCiTpIUhaUum",
+							},
+						],
+						sync: false,
+					},
+					id: "1xhR5hQfXymkjycwFkjQ1",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						command: "!never",
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "never.mp3",
+								},
+								id: "KUIsedLnizKR_3fq5DJQk",
+							},
+						],
+						sync: false,
+					},
+					id: "5pCSkwWlsACLOMfShL3_T",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!suspense",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 86,
+									sound: "youtube\\Dun Dun Dun.mp3",
+								},
+								id: "Rasvi7aHIxXG7nUJ0gGif",
+							},
+							{
+								plugin: "castmate",
+								action: "timestamp",
+								data: 1.1,
+								beforeDelay: 1.1,
+								id: "el5wAa2sjXOH0nkVScjv8",
+							},
+							{
+								plugin: "obs",
+								action: "filter",
+								data: {
+									sourceName: "~Main Cam",
+									filterName: "Zoomer",
+									filterEnabled: true,
+								},
+								id: "geSRDYRpsrKTQJ-OfX-Rg",
+							},
+						],
+					},
+					id: "JI8E249mb-vlyPSMNv8zc",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!ehhghh",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "steve.mp3",
+								},
+								id: "dpVz_lhCB5x1ancRmduwR",
+							},
+						],
+						sync: false,
+					},
+					id: "loZOJ7K8PggpR7v8crMs-",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!english",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "failenglish.mp3",
+								},
+								id: "SI8vaYPqq-NBhoqNlkxlC",
+							},
+						],
+					},
+					id: "AsaWoWWAk3ublidSCEz2Q",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!fart",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "youtube\\Fart 1.mp3",
+								},
+								id: "OZq0rYUAEriNHtYEbkSku",
+							},
+						],
+						sync: false,
+					},
+					id: "aDAfqTrFW_LwM_WK7y0vd",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!figure",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "figureitout.mp3",
+								},
+								id: "f42lviCwAGVQ0Cz2qce2y",
+							},
+						],
+					},
+					id: "8sRJgJhNbBhJ6AYD58AK8",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!fubar",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 56,
+									sound: "fubar.wav",
+								},
+								id: "OzQjvA9BH2HQeGYNNVxpz",
+							},
+						],
+						sync: false,
+					},
+					id: "zqfroJPgM8usH-VTvN2-3",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!geez",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "jeez.mp3",
+								},
+								id: "UOFU5zE1T6i4YU5590LlW",
+							},
+						],
+					},
+					id: "MIwkg_WOVFf4DlUscCX58",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!jeez",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "jeez.mp3",
+								},
+								id: "tr9fo8SjrWDH1iELIZAQy",
+							},
+						],
+					},
+					id: "8WPeH56FB6PEHgD7tyDkH",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!nintendo",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "nintendo.mp3",
+								},
+								id: "-cVLUXuorKLgQH8eFNVr7",
+							},
+						],
+					},
+					id: "B5GCoRyTQ_Z5OhEoNsfNI",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!organic",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "organic.mp3",
+								},
+								id: "Fe_4p_e5zMY_yF4TORQ0U",
+							},
+						],
+					},
+					id: "hmQ7N7J_EZ8tEhsBIaTbj",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!ricktler",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "ricktler.mp3",
+								},
+								id: "SCvaGh0nGbM7cZfTUdqJY",
+							},
+						],
+					},
+					id: "mqXqGdBGXDnL3Yx1XvHmJ",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!rimshot",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "youtube\\Badum Tsss.mp3",
+								},
+								id: "dnRE6vIoYMQLFjBz51Mce",
+							},
+						],
+						sync: false,
+					},
+					id: "MjW6zj5gWq3c3ylHnaYrP",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!scream",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 80,
+									sound: "youtube\\wilhelm.mp3",
+								},
+								id: "fQpvBTDNlhM6RtCWmAvNF",
+							},
+						],
+						sync: false,
+					},
+					id: "x74JgMn-kOIYjguGVc6e-",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!secret",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 81,
+									sound: "secret.mp3",
+								},
+								id: "ODlv66sjLOGMRIh82lk2V",
+							},
+						],
+					},
+					id: "ZnnFcwzziirnvOqybiZz1",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!slap",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "youtube\\Slap.mp3",
+								},
+								id: "SYxbOA59S56hiBNTzlxyU",
+							},
+						],
+					},
+					id: "l0ECU7FR4eithdU2Opl1P",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!yep",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "yep.mp3",
+								},
+								id: "SS3I0Qce4uMxNV-Rqg834",
+							},
+						],
+					},
+					id: "NfTI4d1_VCxn8jHL0Jnsu",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!yes",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "yes.mp3",
+								},
+								id: "51Zx4kAZvooKOgqYlhtio",
+							},
+						],
+					},
+					id: "ug6mIloijdX7SW-7NiGDt",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!opinion",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "thats-my-opinion.mp3",
+								},
+								id: "gmatE0RsZYaVoXv3icCqN",
+							},
+						],
+					},
+					id: "56PRLvyufFjXc8ZDdWroA",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!ohno",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "Ohno.mp3",
+								},
+								id: "n5E_8uytFRDEfLNrXugF3",
+							},
+						],
+						sync: false,
+					},
+					id: "nJRKMpQ2quSTcmP_T5P46",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!commands",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "twitch",
+								action: "sendChat",
+								data: "Commands: https://gist.github.com/LordTocs/f94eddff25a2c0da583eb0a7ec25cfc3",
+								id: "kBCObzl4sVQIqUE2iPXYH",
+							},
+						],
+						sync: false,
+					},
+					id: "vAO74PF1MkKsknlhWMsUR",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!oven",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "twitch",
+								action: "sendChat",
+								data: "It's the Anova Precision Oven. It's got steam injection! https://anovaculinary.com/products/anova-precision-oven",
+								id: "fDS6u6x4nAG_7mlxX_L8j",
+							},
+						],
+						sync: false,
+					},
+					id: "DWeHubXGjMcn3udaTlHJG",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!kofi",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "twitch",
+								action: "sendChat",
+								data: "You can send me muuuney here: https://ko-fi.com/lordtocs But only if you reeeaally want to.",
+								id: "6h17wxVzjNLRjlemmZB5X",
+							},
+						],
+					},
+					id: "ECkvbJtquEpeU94S6oCm8",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!yeah",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 47,
+									sound: "usher-yeah.wav",
+								},
+								id: "dW3-IoFq0Bkjr4TOWwSOz",
+							},
+						],
+						sync: false,
+					},
+					id: "Nw7W41L-zaw-wJTmvnMA_",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!nope",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "engineer_no01.mp3",
+								},
+								id: "Zy80rHiBheci6DMMpYdl1",
+							},
+						],
+						sync: false,
+					},
+					id: "CnBbql-5taz9GZ4zwEtC9",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!wishlist",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "twitch",
+								action: "sendChat",
+								data: "https://www.amazon.com/hz/wishlist/ls/1JYJSNRH3DMDM",
+								id: "lgDt0AWpRDklrpsEbSGDf",
+							},
+						],
+						sync: false,
+					},
+					id: "x3E3NTeDHxDNul_ugMrpb",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!right",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "probablyright.mp3",
+								},
+								id: "vuVPxRciMRJQqXCGGy6bZ",
+							},
+						],
+					},
+					id: "WP6vodivzqaVy7Y3Uwu6M",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!rs",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 100,
+									sound: "youtube\\Badum Tsss.mp3",
+								},
+								id: "FThjiZ6I3x-ZpiQU-Jc9I",
+							},
+						],
+					},
+					id: "nFhDkhPSImLuipzL47v03",
+					profile: "Main Active",
+				},
+				{
+					config: {
+						match: "Start",
+						permissions: {
+							viewer: true,
+							sub: true,
+							vip: true,
+							mod: true,
+							streamer: true,
+						},
+						command: "!huh",
+					},
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "sounds",
+								action: "sound",
+								data: {
+									volume: 78,
+									sound: "huh-cat-meme.mp3",
+								},
+								id: "TOM9B97vABzEx_Jrn1VSY",
+							},
+						],
+						sync: false,
+					},
+					id: "ZVVMyCwmfdnovx4d3wws2",
+					profile: "Main Active",
+				},
+			],
+			follow: [
+				{
+					config: null,
+					automation: {
+						version: "1.0",
+						description: "",
+						actions: [
+							{
+								plugin: "castmate",
+								action: "automation",
+								data: {
+									automation: "Zelda",
+								},
+								id: "I2h_-auinNKIMECpTvIor",
+							},
+							{
+								plugin: "twitch",
+								action: "sendChat",
+								data: "Thanks for the follow @{{user}}!",
+								id: "UGQsLMWIQBpUlh7-8tO75",
+							},
+							{
+								plugin: "overlays",
+								action: "alert",
+								data: {
+									alert: {
+										overlay: "XEu5lCHbdind994KNinPW",
+										widget: "BX2C_yUopXcY8wMZXALz0",
+									},
+									header: "New Follow",
+									text: "{{ user }}",
+									color: "{{ userColor }}",
+								},
+								id: "-ABOwrUcoGsIvjtHaBklM",
+							},
+						],
+						sync: false,
+					},
+					id: "7BJ0PLfrIkOpguBDIZtYZ",
+					profile: "Main Active",
+				},
+			],
+		},
+	},
+	conditions: {
+		operator: "all",
+		operands: [
+			{
+				operator: "notEqual",
+				state: {
+					plugin: "obs",
+					key: "scene",
+				},
+				compare: "Starting",
+			},
+			{
+				operator: "notEqual",
+				id: "amTTjkx-mjZ_ddc1H3Ndu",
+				state: {
+					plugin: "obs",
+					key: "scene",
+					id: "obs.scene",
+				},
+				compare: "Starting New",
+			},
+		],
+	},
+	activationMode: "toggle",
+}
+
+export async function testMigrateAutomation() {
 	let existing: Automation | undefined
 
 	logger.log("Testing Migrate!")
@@ -1255,4 +3354,30 @@ export async function testMigrate() {
 		floatingSequences: [],
 		sequence: await migrateOldAutomation(testOldAutomation),
 	})
+}
+
+export async function testMigrate() {
+	let existing: Profile | undefined
+
+	logger.log("Testing Migrate!")
+
+	const testName = "Migrate Profile"
+
+	for (const auto of Profile.storage) {
+		if (auto.config.name == testName) {
+			existing = auto
+			logger.log("Found Existing Test Automation")
+			break
+		}
+	}
+
+	if (!existing) {
+		logger.log("Creating New Test Automation")
+		existing = await ResourceRegistry.getInstance().create<Profile>("Profile", testName)
+	}
+
+	//@ts-ignore
+	const migratedConfig = await migrateOldProfile(testName, testOldProfile2)
+
+	await existing?.setConfig(migratedConfig)
 }

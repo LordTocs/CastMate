@@ -20,7 +20,7 @@ export function setupRaids() {
 					default: { min: 1 },
 					required: true,
 				},
-				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
+				group: { type: TwitchViewerGroup, name: "Raiding Streamer Group", required: true, default: {} },
 			},
 		},
 		context: {
@@ -53,7 +53,7 @@ export function setupRaids() {
 					default: { min: 1 },
 					required: true,
 				},
-				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
+				group: { type: TwitchViewerGroup, name: "Raided Streamer Group", required: true, default: {} },
 			},
 		},
 		context: {

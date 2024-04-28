@@ -17,6 +17,9 @@ export function setupSubscriptions() {
 		config: {
 			type: Object,
 			properties: {
+				tier1: { type: Boolean, name: "Tier 1", required: true, default: true },
+				tier2: { type: Boolean, name: "Tier 2", required: true, default: true },
+				tier3: { type: Boolean, name: "Tier 3", required: true, default: true },
 				totalMonths: { type: Range, name: "Months", required: true, default: { min: 1 } },
 				streakMonths: { type: Range, name: "Streak Months", required: true, default: { min: 1 } },
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
@@ -25,6 +28,7 @@ export function setupSubscriptions() {
 		context: {
 			type: Object,
 			properties: {
+				tier: { type: Number, required: true, default: 1 },
 				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 				totalMonths: { type: Number, required: true, default: 5 },
 				streakMonths: { type: Number, required: true, default: 3 },
@@ -32,6 +36,10 @@ export function setupSubscriptions() {
 			},
 		},
 		async handle(config, context) {
+			if (context.tier == 1 && !config.tier1) return false
+			if (context.tier == 2 && !config.tier2) return false
+			if (context.tier == 3 && !config.tier3) return false
+
 			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
 				return false
 			}
@@ -105,7 +113,15 @@ export function setupSubscriptions() {
 		})
 
 		service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
+			let tier = 1
+			if (event.tier == "2000") {
+				tier = 2
+			} else if (event.tier == "3000") {
+				tier = 3
+			}
+
 			subscription({
+				tier,
 				viewer: event.userId,
 				totalMonths: event.cumulativeMonths,
 				streakMonths: event.streakMonths ?? 1,
@@ -115,6 +131,13 @@ export function setupSubscriptions() {
 
 		service.eventsub.onChannelSubscriptionGift(channel.twitchId, async (event) => {
 			ViewerCache.getInstance().cacheGiftSubEvent(event)
+
+			let tier = 1
+			if (event.tier == "2000") {
+				tier = 2
+			} else if (event.tier == "3000") {
+				tier = 3
+			}
 
 			giftSub({
 				gifter: event.gifterId,

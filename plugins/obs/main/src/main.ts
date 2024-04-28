@@ -156,3 +156,5 @@ export default definePlugin(
 		})
 	}
 )
+
+export { OBSConnection }
