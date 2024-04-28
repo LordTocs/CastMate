@@ -1,5 +1,8 @@
 import {
 	AnyAction,
+	BooleanExpression,
+	BooleanSubExpressionGroup,
+	BooleanValueExpression,
 	Command,
 	CommandModeCommand,
 	InstantAction,
@@ -13,6 +16,7 @@ import {
 	Toggle,
 	TriggerData,
 	createInlineAutomation,
+	getTypeByConstructor,
 	isTimeAction,
 	parseTemplateString,
 } from "castmate-schema"
@@ -57,6 +61,7 @@ interface OldProfile {
 	activationMode: Toggle
 	onActivate?: OldAutomation | string
 	onDeactivate?: OldAutomation | string
+	conditions?: OldBooleanGroup
 }
 
 interface ActionMigrator {
@@ -1388,6 +1393,65 @@ async function migrateInlineOldAutomation(oldAutomation: OldAutomation | string)
 	}
 }
 
+interface OldBooleanValue {
+	plugin: string
+	key: string
+}
+
+interface OldBooleanStateCompare {
+	operator: "lessThanEq" | "lessThan" | "equal" | "notEqual" | "greaterThan" | "greaterThanEq"
+	state: OldBooleanValue
+	compare: any
+}
+
+interface OldBooleanGroup {
+	operator: "all" | "any"
+	operands: (OldBooleanGroup | OldBooleanStateCompare)[]
+}
+
+function migrateOldCondition(group: OldBooleanGroup) {
+	const result: BooleanExpression = {
+		type: "group",
+		operator: group.operator == "all" ? "and" : "or",
+		operands: [],
+	}
+
+	for (const operand of group.operands) {
+		if ("operands" in operand) {
+			const subExp: BooleanSubExpressionGroup = {
+				id: nanoid(),
+				...migrateOldCondition(operand),
+			}
+			result.operands.push(subExp)
+		} else {
+			const newState = PluginManager.getInstance().getState(operand.state.plugin, operand.state.key)
+
+			const stateTypeName = newState?.schema?.type
+				? getTypeByConstructor(newState.schema.type)?.name ?? "String"
+				: "String"
+
+			const valueExp: BooleanValueExpression = {
+				type: "value",
+				id: nanoid(),
+				operator: operand.operator,
+				lhs: {
+					type: "state",
+					plugin: operand.state.plugin,
+					state: operand.state.key,
+				},
+				rhs: {
+					type: "value",
+					schemaType: stateTypeName,
+					value: operand.compare,
+				},
+			}
+			result.operands.push(valueExp)
+		}
+	}
+
+	return result
+}
+
 async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<ProfileConfig> {
 	const result: ProfileConfig = {
 		name,
@@ -1420,6 +1484,7 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 					user: "viewer",
 					userColor: "viewer.color",
 					userId: "viewer.id",
+					argString: "commandMessage",
 					filteredMessage: "message",
 				}
 
@@ -1453,6 +1518,10 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 
 	if (oldProfile.onDeactivate) {
 		result.deactivationAutomation.sequence = await migrateInlineOldAutomation(oldProfile.onDeactivate)
+	}
+
+	if (oldProfile.conditions) {
+		result.activationCondition = migrateOldCondition(oldProfile.conditions)
 	}
 
 	return result
@@ -3412,7 +3481,7 @@ export async function testMigrate() {
 	}
 
 	//@ts-ignore
-	const migratedConfig = await migrateOldProfile(testName, testOldProfile2)
+	const migratedConfig = await migrateOldProfile(testName, testOldProfile)
 
 	await existing?.setConfig(migratedConfig)
 }
