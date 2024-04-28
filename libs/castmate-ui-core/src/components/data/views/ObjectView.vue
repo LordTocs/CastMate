@@ -1,7 +1,12 @@
 <template>
 	<div class="data-obj">
 		<div class="data-obj-prop" v-for="(prop, i) in Object.keys(schema.properties)" :key="prop">
-			<data-view :model-value="getModelProp(prop)" :schema="schema.properties[prop]" :context="context" />
+			<data-view
+				v-if="getModelProp(prop) != null"
+				:model-value="getModelProp(prop)"
+				:schema="schema.properties[prop]"
+				:context="context"
+			/>
 		</div>
 	</div>
 </template>
