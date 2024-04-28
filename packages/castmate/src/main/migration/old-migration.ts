@@ -25,6 +25,8 @@ import { OBSBoundsType, OBSSourceTransform } from "castmate-plugin-obs-shared"
 import { SpellHook } from "castmate-plugin-spellcast-main"
 import { OBSConnection } from "castmate-plugin-obs-main"
 
+const logger = usePluginLogger("migrate")
+
 /**
  * Migrates from 0.4 to 0.5
  */
@@ -85,6 +87,7 @@ function registerOldActionMigrator(oldPlugin: string, oldAction: string, migrato
 interface TriggerMigrator {
 	plugin: string
 	trigger: string
+	templateOverrides?: Record<string, string>
 	migrateConfig(oldConfig: any): MaybePromise<any>
 }
 
@@ -102,8 +105,51 @@ function registerOldTriggerMigrator(oldPlugin: string, oldTrigger: string, migra
 	triggerMigrators[oldPlugin][oldTrigger] = migrator
 }
 
-function migrateTemplateStr<T>(template: T | string | undefined) {
-	return template
+let templateVarOverrides: Record<string, string> = {}
+
+function renameTemplateVar(templateStr: string, oldName: string, newName: string) {
+	const parsed = parseTemplateString(templateStr)
+
+	logger.log("Renaming", oldName, newName)
+
+	let output = ""
+
+	for (const s of parsed.regions) {
+		if (s.type == "string") {
+			output += parsed.fullString.substring(s.startIndex, s.endIndex)
+		} else {
+			let str = parsed.fullString.substring(s.startIndex, s.endIndex)
+			str = str.replace(new RegExp(`\\b${oldName}\\b`), newName)
+			output += str
+		}
+	}
+
+	return output
+}
+
+function migrateTemplateStr<T>(templateStr: T | string | undefined) {
+	if (typeof templateStr != "string") return templateStr
+
+	const parsed = parseTemplateString(templateStr)
+
+	let output = ""
+
+	for (const s of parsed.regions) {
+		if (s.type == "string") {
+			output += parsed.fullString.substring(s.startIndex, s.endIndex)
+		} else {
+			let str = parsed.fullString.substring(s.startIndex, s.endIndex)
+
+			for (let oldVar in templateVarOverrides) {
+				//logger.log(`  Replacing Template ${oldVar} with ${templateVarOverrides[oldVar]}`)
+				str = str.replace(new RegExp(`\\b${oldVar}\\b`), templateVarOverrides[oldVar])
+			}
+
+			output += str
+		}
+	}
+
+	return output
 }
 
 function migrateResourceId(id: string | undefined) {
@@ -134,18 +180,8 @@ registerOldActionMigrator("castmate", "automation", {
 
 ////////MIGRATE TWITCH//////////////
 
-async function migrateTwitchUser(
-	user: string | undefined,
-	userVarName?: string
-): Promise<TwitchViewerUnresolved | undefined> {
-	if (user == null) return undefined
-
-	if (stringIsTemplate(user)) {
-		return renameTemplateVar(user, "user", userVarName ?? "viewer") as TwitchViewerUnresolved
-	}
-
-	//TODO: LOOKUP ID
-	return undefined
+async function migrateTwitchUser(user: string | undefined): Promise<TwitchViewerUnresolved | undefined> {
+	return migrateTemplateStr(user)
 }
 
 function migrateTwitchChannelPointReward(rewardName: string | undefined) {
@@ -424,6 +460,9 @@ registerOldTriggerMigrator("twitch", "bits", {
 registerOldTriggerMigrator("twitch", "raid", {
 	plugin: "twitch",
 	trigger: "raid",
+	templateOverrides: {
+		user: "raider",
+	},
 	migrateConfig(oldConfig: { raiders: Range }) {
 		return {
 			raiders: oldConfig.raiders,
@@ -435,6 +474,9 @@ registerOldTriggerMigrator("twitch", "raid", {
 registerOldTriggerMigrator("twitch", "raidOut", {
 	plugin: "twitch",
 	trigger: "raidOut",
+	templateOverrides: {
+		user: "raidedStreamer",
+	},
 	migrateConfig(oldConfig: { raiders: Range }) {
 		return {
 			raiders: oldConfig.raiders,
@@ -1157,28 +1199,6 @@ registerOldTriggerMigrator("time", "timer", {
 
 //////////////////////////////////////
 
-const logger = usePluginLogger("migrate")
-
-function renameTemplateVar(templateStr: string, oldName: string, newName: string) {
-	const parsed = parseTemplateString(templateStr)
-
-	logger.log("Renaming", oldName, newName)
-
-	let output = ""
-
-	for (const s of parsed.regions) {
-		if (s.type == "string") {
-			output += parsed.fullString.substring(s.startIndex, s.endIndex)
-		} else {
-			let str = parsed.fullString.substring(s.startIndex, s.endIndex)
-			str = str.replace(new RegExp(`\\b${oldName}\\b`), newName)
-			output += str
-		}
-	}
-
-	return output
-}
-
 interface TimedMigrationStackItem {
 	action: TimeAction
 	offset: number
@@ -1396,8 +1416,23 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 					floatingSequences: [],
 				}
 
+				templateVarOverrides = {
+					user: "viewer",
+					userColor: "viewer.color",
+					userId: "viewer.id",
+					filteredMessage: "message",
+				}
+
 				if (triggerMigrator) {
+					if (triggerMigrator.templateOverrides) {
+						templateVarOverrides = {
+							...templateVarOverrides,
+							...triggerMigrator.templateOverrides,
+						}
+					}
+
 					const newTriggerConfig = await triggerMigrator.migrateConfig(oldTrigger.config)
+
 					newTrigger.plugin = triggerMigrator.plugin
 					newTrigger.trigger = triggerMigrator.trigger
 					newTrigger.config = newTriggerConfig
