@@ -89,6 +89,33 @@ function formatWyzeRequestBody(moreData: Record<string, any>) {
 
 const logger = usePluginLogger("wyze")
 
+export async function tryWyzeLogin(keyId: string, apiKey: string, email: string, password: string ) {
+	const result = await axios.post(
+		WYZE_AUTH_URL,
+		{
+			email,
+			password: md5(md5(md5(password))),
+		},
+		{
+			headers: {
+				Keyid: keyId,
+				Apikey: apiKey,
+				"User-Agent": WYZE_USER_AGENT,
+				"phone-id": WYZE_PHONE_ID,
+			},
+		}
+	)
+
+	if (!("access_token" in result.data && "refresh_token" in result.data)) {
+		return undefined
+	}
+
+	return {
+		accessToken: result.data.access_token,
+		refreshToken: result.data.refresh_token
+	}
+}
+
 class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 	static storage = new ResourceStorage<WyzeAccount>("WyzeAccount")
 	static accountDirectory: string = "wyze"
@@ -164,36 +191,11 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 
 			if (!keyId?.value || !apiKey?.value) return false
 
-			const result = await axios.post(
-				WYZE_AUTH_URL,
-				{
-					email,
-					password: md5(md5(md5(password))),
-				},
-				{
-					headers: {
-						Keyid: keyId?.value,
-						Apikey: apiKey?.value,
-						"User-Agent": WYZE_USER_AGENT,
-						"phone-id": WYZE_PHONE_ID,
-					},
-				}
-			)
+			const tokens = await tryWyzeLogin(keyId.value, apiKey.value, email, password)
 
-			if (!("access_token" in result.data && "refresh_token" in result.data)) {
-				logger.log("Failed to login to Wyze", result.data)
-				return false
-			}
+			if (!tokens) return false
 
-			const {
-				access_token: accessToken,
-				refresh_token: refreshToken,
-			}: { access_token: string; refresh_token: string } = result.data
-
-			await this.applySecrets({
-				accessToken,
-				refreshToken,
-			})
+			await this.applySecrets(tokens)
 
 			return true
 		} catch (err) {
