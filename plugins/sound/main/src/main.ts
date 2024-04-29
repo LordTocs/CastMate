@@ -113,7 +113,14 @@ export default definePlugin(
 			async invoke(config, contextData, abortSignal) {
 				const voiceFile = await config.voice?.generate(config.text)
 				if (!voiceFile) return
-				await config.output.playFile(voiceFile, 0, Number.POSITIVE_INFINITY, config.volume, abortSignal)
+				const globalFactor = globalVolume.value / 100
+				await config.output.playFile(
+					voiceFile,
+					0,
+					Number.POSITIVE_INFINITY,
+					config.volume * globalFactor,
+					abortSignal
+				)
 			},
 		})
 
