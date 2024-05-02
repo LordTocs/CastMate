@@ -1,4 +1,11 @@
-import { ensureDirectory, loadSecretYAML, resolveProjectPath, writeSecretYAML } from "../io/file-system"
+import {
+	ensureDirectory,
+	loadSecretYAML,
+	loadYAML,
+	resolveProjectPath,
+	writeSecretYAML,
+	writeYAML,
+} from "../io/file-system"
 import { onLoad, onUnload } from "../plugins/plugin"
 import { Resource, ResourceBase, ResourceConstructor, ResourceStorage } from "../resources/resource"
 import { ResourceRegistry } from "../resources/resource-registry"
@@ -37,6 +44,13 @@ export class Account<
 		return this._secrets
 	}
 
+	/**
+	 * Used to limit what part of the config is saved to file
+	 */
+	get savedConfig(): object {
+		return this.config
+	}
+
 	protected async saveSecrets() {
 		const accountDir = (this.constructor as AccountConstructor).accountDirectory
 		await writeSecretYAML(this.savedSecrets, "accounts", accountDir, `${this.id}.syaml`)
@@ -51,6 +65,11 @@ export class Account<
 		}
 	}
 
+	protected async save() {
+		const accountDir = (this.constructor as AccountConstructor).accountDirectory
+		await writeYAML(this.savedConfig, "accounts", accountDir, `${this.id}.yaml`)
+	}
+
 	async setSecrets(secrets: Secrets) {
 		this._secrets = secrets
 		this.saveSecrets()
@@ -59,6 +78,25 @@ export class Account<
 	async applySecrets(secrets: Partial<Secrets>) {
 		Object.assign(this._secrets, secrets)
 		this.saveSecrets()
+	}
+
+	async applyConfig(config: Partial<CustomAccountConfig>): Promise<boolean> {
+		await super.applyConfig(config)
+		await this.save()
+		return true
+	}
+
+	async setConfig(config: CustomAccountConfig): Promise<boolean> {
+		await super.setConfig(config)
+		await this.save()
+		return true
+	}
+
+	protected async loadConfig() {
+		const accountDir = (this.constructor as AccountConstructor).accountDirectory
+		try {
+			await super.setConfig(await loadYAML("accounts", accountDir, `${this.id}.yaml`))
+		} catch (err) {}
 	}
 
 	async checkCachedCreds(): Promise<boolean> {
@@ -99,6 +137,7 @@ export class Account<
 
 	async load() {
 		await this.loadSecrets()
+		await this.loadConfig()
 		if (!(await this.checkCachedCreds())) {
 			if (!(await this.refreshCreds())) {
 				this.state.authenticated = false
