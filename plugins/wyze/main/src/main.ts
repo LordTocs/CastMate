@@ -89,7 +89,7 @@ function formatWyzeRequestBody(moreData: Record<string, any>) {
 
 const logger = usePluginLogger("wyze")
 
-export async function tryWyzeLogin(keyId: string, apiKey: string, email: string, password: string ) {
+export async function tryWyzeLogin(keyId: string, apiKey: string, email: string, password: string) {
 	const result = await axios.post(
 		WYZE_AUTH_URL,
 		{
@@ -112,7 +112,7 @@ export async function tryWyzeLogin(keyId: string, apiKey: string, email: string,
 
 	return {
 		accessToken: result.data.access_token,
-		refreshToken: result.data.refresh_token
+		refreshToken: result.data.refresh_token,
 	}
 }
 
@@ -196,6 +196,7 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 			if (!tokens) return false
 
 			await this.applySecrets(tokens)
+			await this.applyConfig({ email })
 
 			return true
 		} catch (err) {

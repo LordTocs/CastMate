@@ -1,5 +1,6 @@
 import {
 	AnyAction,
+	AutomationConfig,
 	BooleanExpression,
 	BooleanSubExpressionGroup,
 	BooleanValueExpression,
@@ -20,14 +21,31 @@ import {
 	isTimeAction,
 	parseTemplateString,
 } from "castmate-schema"
-import { Automation, PluginManager, Profile, ResourceRegistry, usePluginLogger } from "castmate-core"
+import {
+	Automation,
+	PluginManager,
+	Profile,
+	ResourceRegistry,
+	ensureDirectory,
+	loadYAML,
+	resolveProjectPath,
+	usePluginLogger,
+	writeSecretYAML,
+	writeYAML,
+} from "castmate-core"
 import { nanoid } from "nanoid/non-secure"
 import { LightColor } from "castmate-plugin-iot-shared"
 import { TwitchViewer, TwitchViewerGroup, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
 import { ChannelPointReward, TwitchAccount } from "castmate-plugin-twitch-main"
-import { OBSBoundsType, OBSSourceTransform } from "castmate-plugin-obs-shared"
+import { OBSBoundsType, OBSConnectionConfig, OBSSourceTransform } from "castmate-plugin-obs-shared"
 import { SpellHook } from "castmate-plugin-spellcast-main"
 import { OBSConnection } from "castmate-plugin-obs-main"
+import fs from "fs/promises"
+import path from "path"
+import { RCONConnectionConfig } from "castmate-plugin-minecraft-shared"
+import axios from "axios"
+import { tryWyzeLogin } from "castmate-plugin-wyze-main"
+import { WyzeAccountConfig, WyzeAccountSecrets } from "castmate-plugin-wyze-shared"
 
 const logger = usePluginLogger("migrate")
 
@@ -110,30 +128,51 @@ function registerOldTriggerMigrator(oldPlugin: string, oldTrigger: string, migra
 	triggerMigrators[oldPlugin][oldTrigger] = migrator
 }
 
+interface SettingMigrator {
+	plugin: string
+	migrateSettings(
+		oldSettings: any,
+		oldSecrets: any
+	): MaybePromise<{
+		settings: {}
+		secrets: {}
+	}>
+}
+
+const settingsMigrators: Record<string, SettingMigrator> = {}
+
+function registerOldSettingsMigrator(oldPlugin: string, migrator: SettingMigrator) {
+	settingsMigrators[oldPlugin] = migrator
+}
+
 let templateVarOverrides: Record<string, string> = {}
 
-function renameTemplateVar(templateStr: string, oldName: string, newName: string) {
-	const parsed = parseTemplateString(templateStr)
+async function migrateCreateFileResource<T = any>(dir: string, config: T) {
+	const newId = nanoid()
 
-	logger.log("Renaming", oldName, newName)
+	await ensureDirectory(resolveProjectPath(dir))
 
-	let output = ""
+	await writeYAML(config, dir, `${newId}.yaml`)
 
-	for (const s of parsed.regions) {
-		if (s.type == "string") {
-			output += parsed.fullString.substring(s.startIndex, s.endIndex)
-		} else {
-			let str = parsed.fullString.substring(s.startIndex, s.endIndex)
-			str = str.replace(new RegExp(`\\b${oldName}\\b`), newName)
-			output += str
-		}
-	}
+	return newId
+}
 
-	return output
+async function migrateCreateAccountResource<Config = any, Secrets = any>(
+	dir: string,
+	id: string,
+	config: Config,
+	secrets: Secrets
+) {
+	await ensureDirectory(resolveProjectPath("accounts", dir))
+
+	await writeYAML(config, "accounts", dir, `${id}.yaml`)
+	await writeSecretYAML(secrets, "accounts", dir, `${id}.syaml`)
 }
 
 function migrateTemplateStr<T>(templateStr: T | string | undefined) {
 	if (typeof templateStr != "string") return templateStr
+
+	if (!stringIsTemplate(templateStr)) return templateStr
 
 	const parsed = parseTemplateString(templateStr)
 
@@ -180,6 +219,19 @@ registerOldActionMigrator("castmate", "automation", {
 		return {
 			automation: migrateAutomationId(oldConfig.automation), //TODO
 		}
+	},
+})
+
+registerOldSettingsMigrator("castmate", {
+	plugin: "castmate",
+	migrateSettings(oldSettings: { port: number | undefined }, oldSecrets) {
+		const settings: Record<string, any> = {}
+
+		if (oldSettings.port != null) {
+			settings.port = oldSettings.port
+		}
+
+		return { settings, secrets: {} }
 	},
 })
 
@@ -599,7 +651,7 @@ registerOldTriggerMigrator("twitch", "shoutoutSent", {
 })
 
 //TODO: Whisper
-/// OBS ACTIONS
+/// MIGRATE OBS
 
 function getDefaultOBS() {
 	const obsDefaultSetting = PluginManager.getInstance().getPlugin("obs")?.settings?.get("obsDefault")
@@ -671,6 +723,24 @@ function migrateOldOBSTransform(
 		},
 	}
 }
+
+registerOldSettingsMigrator("obs", {
+	plugin: "obs",
+	async migrateSettings(oldSettings: { port: number; hostname: string }, oldSecrets: { password: string }) {
+		const mainObsId = await migrateCreateFileResource<OBSConnectionConfig>("./obs/connections", {
+			name: "Main OBS",
+			host: oldSettings.hostname,
+			port: oldSettings.port,
+			password: oldSecrets.password,
+		})
+		return {
+			settings: {
+				obsDefault: mainObsId,
+			},
+			secrets: {},
+		}
+	},
+})
 
 registerOldActionMigrator("obs", "scene", {
 	plugin: "obs",
@@ -940,6 +1010,73 @@ function migrateIotId(iotId: string | undefined) {
 	return `${providerMap[provider] ?? provider}.${id}`
 }
 
+registerOldSettingsMigrator("tplink", {
+	plugin: "tplink-kasa",
+	migrateSettings(oldSettings: { broadcastMask: string | undefined }, oldSecrets) {
+		return {
+			settings: {
+				subnetMask: oldSettings.broadcastMask ?? "255.255.255.255",
+			},
+			secrets: {},
+		}
+	},
+})
+
+registerOldSettingsMigrator("twinkly", {
+	plugin: "tplink-kasa",
+	migrateSettings(oldSettings: { subnetMask: string | undefined }, oldSecrets) {
+		return {
+			settings: {
+				subnetMask: oldSettings.subnetMask ?? "255.255.255.255",
+			},
+			secrets: {},
+		}
+	},
+})
+
+registerOldSettingsMigrator("wyze", {
+	plugin: "wyze",
+	async migrateSettings(
+		oldSettings: { username: string | undefined },
+		oldSecrets: { password: string | undefined; keyId: string | undefined; apiKey: string | undefined }
+	) {
+		//Migrate wyze account
+		if (oldSecrets.apiKey && oldSecrets.keyId && oldSecrets.password && oldSettings.username) {
+			try {
+				const tokens = await tryWyzeLogin(
+					oldSecrets.keyId,
+					oldSecrets.apiKey,
+					oldSettings.username,
+					oldSecrets.password
+				)
+
+				if (tokens) {
+					await migrateCreateAccountResource<WyzeAccountConfig, WyzeAccountSecrets>(
+						"wyze",
+						"main",
+						{
+							name: "Wyze Account",
+							scopes: [],
+							email: oldSettings.username,
+						},
+						{
+							...tokens,
+						}
+					)
+				}
+			} catch (err) {}
+		}
+
+		return {
+			settings: {},
+			secrets: {
+				keyId: oldSecrets.keyId,
+				apiKey: oldSecrets.apiKey,
+			},
+		}
+	},
+})
+
 interface OldHbsk {
 	hue?: number | string
 	sat?: number | string
@@ -986,8 +1123,26 @@ registerOldActionMigrator("iot", "plug", {
 
 //////MIGRATE MINECRAFT//////
 
+let defaultMinecraftId: string | undefined = undefined
+
+registerOldSettingsMigrator("minecraft", {
+	plugin: "minecraft",
+	async migrateSettings(oldSettings: { host?: string; port?: number }, oldSecrets: { password?: string }) {
+		if (oldSettings.host && oldSettings.port && oldSecrets.password) {
+			defaultMinecraftId = await migrateCreateFileResource<RCONConnectionConfig>("./minecraft/connections", {
+				name: "Main Minecraft Server",
+				host: oldSettings.host,
+				port: oldSettings.port,
+				password: oldSecrets.password,
+			})
+		}
+
+		return { settings: {}, secrets: {} }
+	},
+})
+
 function migrateDefaultMinecraftId() {
-	return ""
+	return defaultMinecraftId
 }
 
 registerOldActionMigrator("minecraft", "mineCmd", {
@@ -1028,6 +1183,15 @@ registerOldActionMigrator("os", "launch", {
 })
 
 //////MIGRATE OVERLAYS//////
+
+registerOldSettingsMigrator("overlays", {
+	plugin: "overlays",
+	async migrateSettings(oldSettings, oldSecrets) {
+		//TODO: await migrate overlay!
+
+		return { settings: {}, secrets: {} }
+	},
+})
 
 function migrateOldOverlayWidget(widget: string) {
 	//TODO:
@@ -1071,7 +1235,6 @@ registerOldTriggerMigrator("overlays", "wheelLanded", {
 ///////MIGRATE SOUNDS///////////////
 
 function migrateOldMediaFile(media: string) {
-	//TODO: Extra /?
 	return `default\\${media}`
 }
 
@@ -1080,9 +1243,15 @@ function migrateDefaultAudioOutput() {
 }
 
 function migrateDefaultTTSVoiceId() {
-	//TODO
-	return ""
+	return undefined
 }
+
+registerOldSettingsMigrator("sounds", {
+	plugin: "sound",
+	migrateSettings(oldSettings: { globalVolume: number }, oldSecrets) {
+		return { settings: { globalVolume: oldSettings.globalVolume ?? 100 }, secrets: {} }
+	},
+})
 
 registerOldActionMigrator("sounds", "sound", {
 	plugin: "sound",
@@ -1135,6 +1304,25 @@ registerOldTriggerMigrator("spellcast", "spellHook", {
 })
 
 //////MIGRATE VARIABLES///////
+
+interface OldVariableDefinition {
+	type: "Number" | "String"
+	default: any
+	serialized: boolean
+}
+
+registerOldSettingsMigrator("variables", {
+	plugin: "variables",
+	async migrateSettings(oldSettings, oldSecrets) {
+		//Migrate variables.yaml
+		const oldVariables = await loadYAML(resolveProjectPath("variables.yaml"))
+
+		return {
+			settings: {},
+			secrets: {},
+		}
+	},
+})
 
 registerOldActionMigrator("variables", "set", {
 	plugin: "variables",
@@ -1526,6 +1714,141 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 
 	return result
 }
+
+interface QueuedAutomationMigration {
+	name: string
+	filepath: string
+}
+
+async function checkOldProfiles() {
+	try {
+		const dir = resolveProjectPath("profiles")
+		const files = await fs.readdir(dir)
+
+		for (const file of files) {
+			const fullPath = path.join(dir, file)
+
+			const data = await loadYAML(fullPath)
+
+			if (data.name == null) {
+				return true
+			}
+		}
+
+		return false
+	} catch (err) {
+		return false
+	}
+}
+
+async function checkOldAutomations() {
+	try {
+		const dir = resolveProjectPath("automations")
+		const files = await fs.readdir(dir)
+
+		for (const file of files) {
+			const fullPath = path.join(dir, file)
+
+			const data = await loadYAML(fullPath)
+
+			if (data.name == null) {
+				return true
+			}
+		}
+
+		return false
+	} catch (err) {
+		return false
+	}
+}
+
+export async function needsOldMigration() {
+	try {
+		if (await checkOldProfiles()) return true
+		if (await checkOldAutomations()) return true
+	} catch (err) {
+		return false
+	}
+}
+
+export async function migrateSettings() {
+	const oldSettings = await loadYAML(resolveProjectPath("settings.yaml"))
+
+	for (const oldPlugin in oldSettings) {
+		const newPluginSettings: Record<string, any> = {}
+
+		for (const oldSetting in oldSettings[oldPlugin]) {
+			const oldValue = oldSettings[oldPlugin][oldSetting]
+		}
+	}
+}
+
+export async function migrateAllOldAutomations() {
+	const dir = resolveProjectPath("automations")
+	const files = await fs.readdir(dir)
+
+	for (const file of files) {
+		const fullPath = path.join(dir, file)
+		const data = await loadYAML(fullPath)
+		const name = path.basename(file, ".yaml")
+
+		const newId = nanoid()
+		const newSeq = await migrateOldAutomation(data)
+
+		const newAutomationData: AutomationConfig = {
+			name,
+			sequence: newSeq,
+			floatingSequences: [],
+		}
+
+		await writeYAML(newAutomationData, path.join(dir, `${newId}.yaml`))
+		await fs.unlink(fullPath)
+	}
+}
+
+export async function migrateAllOldProfiles() {
+	const dir = resolveProjectPath("profiles")
+	const files = await fs.readdir(dir)
+
+	for (const file of files) {
+		const fullPath = path.join(dir, file)
+		const data = await loadYAML(fullPath)
+		const name = path.basename(file, ".yaml")
+
+		const newId = nanoid()
+		const newProfileConfig = await migrateOldProfile(name, data)
+
+		await writeYAML(newProfileConfig, path.join(dir, `${newId}.yaml`))
+		await fs.unlink(fullPath)
+	}
+}
+
+export async function doOldMigration() {
+	//Migrate Settings
+
+	//Migrate Secrets
+
+	//Migrate hue.bridgeCache.yaml
+
+	//Migrate Accounts
+
+	//Migrate Automations
+	await migrateAllOldAutomations()
+
+	//Load the automations so we can use the registry
+	await Automation.initialize()
+
+	//Migrate Profiles
+	await migrateAllOldProfiles()
+
+	//Migrate discord hooks
+
+	//Migrate overlays
+
+	//Migrate stream plans
+}
+
+//////////////////////////////////////
 
 const testOldAutomation = {
 	version: "1.0",

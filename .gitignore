@@ -1,6 +1,7 @@
 user/
 user_old/
 user_test/
+user_premigrate/
 /dist
 /release
 dist-electron/
