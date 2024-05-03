@@ -50,7 +50,6 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 				},
 				source: {
 					type: String,
-					template: true,
 					name: "Source",
 					required: true,
 					async enum(context: { obs: OBSConnection }) {
