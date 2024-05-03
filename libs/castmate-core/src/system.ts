@@ -56,10 +56,13 @@ export async function initializeCastMate() {
 
 const notifyRendererSetupFinished = defineCallableIPC<() => void>("castmate", "setupFinished")
 
+export async function loadAutomations() {
+	await Automation.initialize()
+}
+
 export async function finializeCastMateSetup() {
 	globalLogger.log("Finalizing Init")
 	await setupProfiles()
-	await Automation.initialize()
 	await ActionQueue.initialize()
 	ActionQueueManager.initialize()
 	ProfileManager.initialize()

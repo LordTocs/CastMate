@@ -4,9 +4,9 @@ import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer"
 //import electronUpdater from "electron-updater"
 import { app, BrowserWindow, ipcMain } from "electron"
 import { createWindow } from "./electron/electron-helpers"
-import { initializeCastMate, finializeCastMateSetup } from "castmate-core"
+import { initializeCastMate, finializeCastMateSetup, loadAutomations } from "castmate-core"
 import { loadPlugins } from "./plugins"
-import { testMigrate } from "./migration/old-migration"
+import { checkMigration, finishMigration, migrateAllOldAutomations } from "./migration/old-migration"
 
 const isDevelopment = !app.isPackaged // true //TODO: import.meta.env.DEV
 
@@ -46,11 +46,23 @@ app.whenReady().then(async () => {
 		}
 	}
 
+	//Create the window
 	await createMainWindow()
 
+	//Creat initial systems
 	await initializeCastMate()
 
+	//Check if we need to migrate
+	await checkMigration()
+
+	//Load plugins (migrating settings as we go)
 	await loadPlugins()
+
+	await migrateAllOldAutomations()
+
+	await loadAutomations()
+
+	await finishMigration()
 
 	await finializeCastMateSetup()
 

@@ -4,12 +4,14 @@ import {
 	BooleanExpression,
 	BooleanSubExpressionGroup,
 	BooleanValueExpression,
+	Color,
 	Command,
 	CommandModeCommand,
 	InstantAction,
 	MaybePromise,
 	OffsetActions,
 	ProfileConfig,
+	Range,
 	RegexModeCommand,
 	Sequence,
 	StringModeCommand,
@@ -19,6 +21,7 @@ import {
 	createInlineAutomation,
 	getTypeByConstructor,
 	isTimeAction,
+	isValidJSName,
 	parseTemplateString,
 } from "castmate-schema"
 import {
@@ -40,12 +43,22 @@ import { ChannelPointReward, TwitchAccount } from "castmate-plugin-twitch-main"
 import { OBSBoundsType, OBSConnectionConfig, OBSSourceTransform } from "castmate-plugin-obs-shared"
 import { SpellHook } from "castmate-plugin-spellcast-main"
 import { OBSConnection } from "castmate-plugin-obs-main"
-import fs from "fs/promises"
+import fs, { unlink } from "fs/promises"
 import path from "path"
 import { RCONConnectionConfig } from "castmate-plugin-minecraft-shared"
 import axios from "axios"
 import { tryWyzeLogin } from "castmate-plugin-wyze-main"
 import { WyzeAccountConfig, WyzeAccountSecrets } from "castmate-plugin-wyze-shared"
+import {
+	OverlayBlockStyle,
+	OverlayConfig,
+	OverlayTextAlignment,
+	OverlayTextStyle,
+	OverlayTransitionAnimation,
+	OverlayWidgetConfig,
+	OverlayWidgetPosition,
+	OverlayWidgetSize,
+} from "castmate-plugin-overlays-shared"
 
 const logger = usePluginLogger("migrate")
 
@@ -1115,7 +1128,7 @@ registerOldActionMigrator("iot", "plug", {
 	action: "plug",
 	migrateConfig(oldConfig: { plug: string; on: Toggle }) {
 		return {
-			light: migrateIotId(oldConfig.plug),
+			plug: migrateIotId(oldConfig.plug),
 			switch: oldConfig.on,
 		}
 	},
@@ -1184,10 +1197,305 @@ registerOldActionMigrator("os", "launch", {
 
 //////MIGRATE OVERLAYS//////
 
+interface OldOverlayWidgetConfig {
+	id: string
+	name: string
+	type: string
+	props: object
+	size: OverlayWidgetSize
+	position: OverlayWidgetPosition
+	locked: boolean
+}
+
+interface OldOverlayConfig {
+	name: string
+	width: number
+	height: number
+	widgets: OldOverlayWidgetConfig[]
+}
+
+const widgetMigrators: Record<
+	string,
+	{
+		plugin: string
+		widget: string
+		migrateConfig(oldConfig: any): MaybePromise<any>
+	}
+> = {}
+
+interface OldTextStyle {
+	fontSize: number
+	fontColor: string
+	fontFamily: string
+	fontWeight: number
+	stroke?: {
+		width: number
+		color: string
+	}
+	shadow?: {
+		offsetX: number
+		offsetY: number
+		blur: number
+		color: string
+	}
+	textAlign: "left" | "right" | "center" | "justify"
+}
+
+function migrateOldFontStyle(old: OldTextStyle | undefined): OverlayTextStyle | undefined {
+	if (old == null) return undefined
+
+	function migrateOverlayColor(color: string | object): Color {
+		if (typeof color == "object") {
+			return "#000000"
+		}
+		return color as Color
+	}
+
+	return {
+		fontSize: old.fontSize,
+		fontColor: migrateOverlayColor(old.fontColor),
+		fontFamily: old.fontFamily,
+		fontWeight: old.fontWeight,
+		stroke: old.stroke
+			? {
+					width: old.stroke.width,
+					color: migrateOverlayColor(old.stroke.color),
+			  }
+			: undefined,
+		shadow: old.shadow
+			? {
+					offsetX: old.shadow.offsetX,
+					offsetY: old.shadow.offsetY,
+					blur: old.shadow.blur,
+					color: migrateOverlayColor(old.shadow.color),
+			  }
+			: undefined,
+	}
+}
+
+interface OldOverlayTransition {
+	animation: string
+	duration: number
+}
+
+function migrateOldOverlayTransition(old: OldOverlayTransition | undefined): OverlayTransitionAnimation | undefined {
+	if (old == null) return undefined
+
+	return {
+		duration: old.duration ?? 0,
+		preset: old.animation,
+	}
+}
+
+interface OldOverlayPadding {
+	left?: number
+	right?: number
+	top?: number
+	bottom?: number
+}
+
+function migrateOldOverlayPadding(old: OldOverlayPadding | undefined): OverlayBlockStyle | undefined {
+	if (old == null) return undefined
+
+	return {
+		margin: { left: 0, right: 0, top: 0, bottom: 0 },
+		padding: { left: old.left ?? 0, right: old.right ?? 0, top: old.top ?? 0, bottom: old.bottom ?? 0 },
+		horizontalAlign: "left",
+		verticalAlign: "top",
+	}
+}
+
+interface OldOverlayTransitionTiming {
+	appearDelay?: number
+	vanishAdvance?: number
+}
+
+widgetMigrators["Label"] = {
+	plugin: "overlays",
+	widget: "label",
+	migrateConfig(oldConfig: { message: string; textStyle: OldTextStyle }) {
+		return {
+			message: oldConfig.message ?? "",
+			font: migrateOldFontStyle(oldConfig.textStyle) ?? OverlayTextStyle.factoryCreate(),
+			textAlign: { textAlign: oldConfig.textStyle.textAlign ?? "left" },
+			block: OverlayBlockStyle.factoryCreate(),
+		}
+	},
+}
+
+widgetMigrators["EmoteBouncer"] = {
+	plugin: "overlays",
+	widget: "emote-bounce",
+	migrateConfig(oldConfig: {
+		lifeTime?: number
+		emoteSize?: Range
+		velocityMax?: number
+		shakeTime?: number
+		shakeStrength?: number
+		gravityXScale?: number
+		gravityYScale?: number
+		spamPrevention: { emoteRatio?: number; emoteCap?: number; emoteCapPerMessage?: number }
+	}) {
+		return {
+			lifeTime: { min: oldConfig.lifeTime ?? 7, max: oldConfig.lifeTime ?? 7 },
+			emoteSize: { min: oldConfig.emoteSize?.min ?? 80, max: oldConfig.emoteSize?.max ?? 80 },
+			velocityMax: oldConfig.velocityMax ?? 0.4,
+			shakeTime: oldConfig.shakeTime ?? 5,
+			shakeStrength: oldConfig.shakeStrength ?? 1,
+			gravityXScale: oldConfig.gravityXScale ?? 0,
+			gravityYScale: oldConfig.gravityYScale ?? 1,
+			spamPrevention: {
+				emoteRatio: oldConfig.spamPrevention?.emoteRatio,
+				emoteCap: oldConfig.spamPrevention?.emoteCap,
+				emoteCapPerMessage: oldConfig.spamPrevention?.emoteCapPerMessage,
+			},
+		}
+	},
+}
+
+widgetMigrators["Alert"] = {
+	plugin: "overlays",
+	widget: "alert",
+	migrateConfig(oldConfig: {
+		media: string
+		duration: number
+		transition: OldOverlayTransition
+		textBelowMedia: boolean
+		titleFormat: {
+			style: OldTextStyle
+			padding: OldOverlayPadding
+			transition: OldOverlayTransition
+			timing: OldOverlayTransitionTiming
+		}
+		messageFormat: {
+			style: OldTextStyle
+			padding: OldOverlayPadding
+			transition: OldOverlayTransition
+			timing: OldOverlayTransitionTiming
+		}
+	}) {
+		return {
+			transition: migrateOldOverlayTransition(oldConfig.transition),
+			media: [{ media: migrateOldMediaFile(oldConfig.media), duration: oldConfig.duration, weight: 1 }],
+			textBelowMedia: oldConfig.textBelowMedia,
+			title: {
+				font: migrateOldFontStyle(oldConfig.titleFormat.style),
+				textAlign: { textAlign: oldConfig.titleFormat.style.textAlign ?? "center" },
+				block: migrateOldOverlayPadding(oldConfig.titleFormat.padding),
+				transition: migrateOldOverlayTransition(oldConfig.titleFormat.transition),
+				appearDelay: oldConfig.titleFormat.timing?.appearDelay ?? 0,
+				vanishAdvance: oldConfig.titleFormat.timing?.vanishAdvance ?? 0,
+			},
+			subtitle: {
+				font: migrateOldFontStyle(oldConfig.messageFormat.style),
+				textAlign: { textAlign: oldConfig.messageFormat.style.textAlign ?? "center" },
+				block: migrateOldOverlayPadding(oldConfig.messageFormat.padding),
+				transition: migrateOldOverlayTransition(oldConfig.messageFormat.transition),
+				appearDelay: oldConfig.messageFormat.timing?.appearDelay ?? 0,
+				vanishAdvance: oldConfig.messageFormat.timing?.vanishAdvance ?? 0,
+			},
+		}
+	},
+}
+
+widgetMigrators["Wheel"] = {
+	plugin: "random",
+	widget: "wheel",
+	migrateConfig(oldConfig: {
+		slices?: number
+		items: {
+			text?: string
+			colorOverride?: Color
+			fontOverride?: OldTextStyle
+			clickOverride?: string
+		}[]
+		colors: {
+			color?: Color
+			font?: OldTextStyle
+			click?: string
+		}[]
+		damping: {
+			base?: number
+			coefficient?: number
+		}
+		clicker: {
+			color?: Color
+			height?: number
+			width?: number
+			inset?: number
+		}
+	}) {
+		return {
+			slices: oldConfig.slices ?? 12,
+			items: oldConfig.items.map((i) => ({
+				text: i.text ?? "",
+				colorOverride: i.clickOverride,
+				fontOverride: migrateOldFontStyle(i.fontOverride),
+				textAlignOverride: i.fontOverride?.textAlign,
+			})),
+			style: oldConfig.colors.map((c) => ({
+				color: c.color,
+				font: migrateOldFontStyle(c.font),
+				textAlign: c.font?.textAlign ?? "center",
+				block: OverlayBlockStyle.factoryCreate(),
+			})),
+			damping: {
+				base: oldConfig.damping?.base ?? 6,
+				coefficient: oldConfig.damping?.coefficient ?? 0.1,
+			},
+			clicker: {
+				color: oldConfig.clicker?.color ?? "#A87B0B",
+				height: oldConfig.clicker?.height ?? 40,
+				width: oldConfig.clicker?.width ?? 80,
+				inset: oldConfig.clicker?.inset ?? 40,
+			},
+		}
+	},
+}
+
+async function migrateOldOverlay(file: string) {
+	const oldOverlayConfig: OldOverlayConfig = await loadYAML("overlays", file)
+	const newConfig: OverlayConfig = {
+		name: oldOverlayConfig.name,
+		size: { width: oldOverlayConfig.width, height: oldOverlayConfig.height },
+		widgets: [],
+	}
+
+	for (const oldWidget of oldOverlayConfig.widgets) {
+		const migrator = widgetMigrators[oldWidget.type]
+
+		const newWidgetConfig: OverlayWidgetConfig = {
+			id: oldWidget.id,
+			plugin: migrator.plugin,
+			widget: migrator.widget,
+			name: oldWidget.name,
+			size: oldWidget.size,
+			position: oldWidget.position,
+			config: await migrator.migrateConfig(oldWidget.props),
+			locked: oldWidget.locked,
+			visible: true,
+		}
+
+		newConfig.widgets.push(newWidgetConfig)
+	}
+
+	await writeYAML(newConfig, "overlays", file)
+}
+
 registerOldSettingsMigrator("overlays", {
 	plugin: "overlays",
 	async migrateSettings(oldSettings, oldSecrets) {
 		//TODO: await migrate overlay!
+		const dir = resolveProjectPath("overlays")
+		const files = await fs.readdir(dir)
+
+		for (const id of files) {
+			try {
+				await migrateOldOverlay(id)
+			} catch (err) {
+				logger.error("Error Migrating", id, err)
+			}
+		}
 
 		return { settings: {}, secrets: {} }
 	},
@@ -1311,11 +1619,46 @@ interface OldVariableDefinition {
 	serialized: boolean
 }
 
+interface NewVariableDefinition {
+	type: string
+	serialized: boolean
+	defaultValue: any
+	savedValue?: any
+}
+
 registerOldSettingsMigrator("variables", {
 	plugin: "variables",
 	async migrateSettings(oldSettings, oldSecrets) {
 		//Migrate variables.yaml
-		const oldVariables = await loadYAML(resolveProjectPath("variables.yaml"))
+		const oldVariables: Record<string, OldVariableDefinition> = await loadYAML(resolveProjectPath("variables.yaml"))
+		const oldState: Record<string, Record<string, any>> = await loadYAML(resolveProjectPath("state.yaml"))
+
+		const newVariables: Record<string, NewVariableDefinition> = {}
+
+		for (const varName in oldVariables) {
+			if (!isValidJSName(varName)) {
+				logger.log("INVALID VARIABLE", varName)
+				continue
+			}
+
+			const oldVar = oldVariables[varName]
+
+			const newVar: NewVariableDefinition = {
+				type: oldVar.type,
+				serialized: oldVar.serialized,
+				defaultValue: oldVar.default,
+			}
+
+			if (oldVar.serialized) {
+				newVar.savedValue = oldState["variables"][varName]
+			}
+
+			newVariables[varName] = newVar
+		}
+
+		await ensureDirectory(resolveProjectPath("variables"))
+		await writeYAML(newVariables, "variables", "variables.yaml")
+		await unlink(resolveProjectPath("variables.yaml"))
 
 		return {
 			settings: {},
@@ -1558,9 +1901,17 @@ async function migrateOldAutomation(oldAutomation: OldAutomation): Promise<Seque
 	return result
 }
 
+function getAutomationByName(name: string) {
+	for (const auto of Automation.storage) {
+		if (auto.config.name == name) return auto
+	}
+
+	return undefined
+}
+
 async function migrateInlineOldAutomation(oldAutomation: OldAutomation | string) {
 	if (typeof oldAutomation == "string") {
-		const migratedAutomationId = "" //TODO MIGRATE
+		const migratedAutomation = getAutomationByName(oldAutomation)
 
 		const result: Sequence = {
 			actions: [],
@@ -1571,7 +1922,7 @@ async function migrateInlineOldAutomation(oldAutomation: OldAutomation | string)
 			plugin: "castmate",
 			action: "runAutomation",
 			config: {
-				automation: migratedAutomationId,
+				automation: migratedAutomation?.id,
 			},
 		})
 
@@ -1715,11 +2066,6 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 	return result
 }
 
-interface QueuedAutomationMigration {
-	name: string
-	filepath: string
-}
-
 async function checkOldProfiles() {
 	try {
 		const dir = resolveProjectPath("profiles")
@@ -1762,28 +2108,24 @@ async function checkOldAutomations() {
 	}
 }
 
+let migratingOld = false
+
 export async function needsOldMigration() {
 	try {
 		if (await checkOldProfiles()) return true
 		if (await checkOldAutomations()) return true
+		return false
 	} catch (err) {
 		return false
 	}
 }
 
-export async function migrateSettings() {
-	const oldSettings = await loadYAML(resolveProjectPath("settings.yaml"))
-
-	for (const oldPlugin in oldSettings) {
-		const newPluginSettings: Record<string, any> = {}
-
-		for (const oldSetting in oldSettings[oldPlugin]) {
-			const oldValue = oldSettings[oldPlugin][oldSetting]
-		}
-	}
-}
+let oldSettings: any = {}
+let oldSecrets: any = {}
 
 export async function migrateAllOldAutomations() {
+	if (!migratingOld) return
+
 	const dir = resolveProjectPath("automations")
 	const files = await fs.readdir(dir)
 
@@ -1823,1988 +2165,44 @@ export async function migrateAllOldProfiles() {
 	}
 }
 
-export async function doOldMigration() {
-	//Migrate Settings
+export async function checkMigration() {
+	migratingOld = await needsOldMigration()
 
-	//Migrate Secrets
+	if (migratingOld) {
+		oldSettings = await loadYAML(resolveProjectPath("settings.yaml"))
+		oldSecrets = await loadYAML(resolveProjectPath("secrets", "secrets.yaml"))
+	}
+}
 
-	//Migrate hue.bridgeCache.yaml
+export async function finishMigration() {
+	if (!migratingOld) return
 
-	//Migrate Accounts
-
-	//Migrate Automations
-	await migrateAllOldAutomations()
-
-	//Load the automations so we can use the registry
-	await Automation.initialize()
-
-	//Migrate Profiles
+	//Migrate profiles
 	await migrateAllOldProfiles()
 
-	//Migrate discord hooks
+	migratingOld = false
+}
 
-	//Migrate overlays
+export async function migratePlugin(pluginId: string) {
+	if (!migratingOld) return
 
-	//Migrate stream plans
+	for (const oldPlugin of Object.keys(settingsMigrators)) {
+		const migrator = settingsMigrators[oldPlugin]
+		if (migrator.plugin == pluginId) {
+			try {
+				const { settings, secrets } = await migrator.migrateSettings(
+					oldSettings[oldPlugin],
+					oldSecrets[oldPlugin]
+				)
+
+				await writeYAML(settings, "settings", `${migrator.plugin}.yaml`)
+				await writeSecretYAML(secrets, "secrets", `${migrator.plugin}.yaml`)
+			} catch (err) {
+				logger.error("Error Migrating", pluginId, err)
+			}
+			break
+		}
+	}
 }
 
 //////////////////////////////////////
-
-const testOldAutomation = {
-	version: "1.0",
-	description: "",
-	actions: [
-		{
-			plugin: "iot",
-			action: "plug",
-			data: {
-				on: false,
-				plug: "hue.f7eea07b-be3c-482e-bacb-bde4491af74e",
-			},
-			id: "I_fUN8TN5bABA6vy93C5x",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: false,
-				duration: 0,
-				light: "hue.c1787ef9-1246-4465-97d2-4e12f5d55632",
-			},
-			id: "7uGyTy-NDUaiuqNjPDLtS",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 0.5,
-			id: "wsscoSrODYloSlGevCe33",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: false,
-				duration: 0,
-				light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-			},
-			id: "4JOLTDzaHYkWqd7-GCoOz",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: false,
-				duration: 0,
-				light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-			},
-			id: "vG54Mi6lpn8RG9TkrOps7",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 0.2,
-			id: "jEh1oe42fQd-Rw_kn8qk-",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 2,
-			id: "ydweoggqWmOhB6oNApp1i",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: true,
-				duration: 0,
-				light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-				lightColor: {
-					hue: 355.81508387488157,
-					sat: 100,
-					bri: 100,
-				},
-			},
-			id: "mq_DtkLpWmmBhz8iwmcdP",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: true,
-				duration: 0,
-				light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-				lightColor: {
-					hue: 355.81508387488157,
-					sat: 100,
-					bri: 100,
-				},
-			},
-			id: "s3-p4Ls5dIl-8lqMb7Swg",
-		},
-		{
-			plugin: "sounds",
-			action: "sound",
-			data: {
-				volume: 54,
-				sound: "base-alarm.wav",
-			},
-			id: "YRVboTQhWlYgmsAMGCuVe",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 2,
-			id: "mh01ZZfh44YwXy_9OaZ0a",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: false,
-				duration: 0,
-				light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-			},
-			id: "Ouo7sQk-fNToIkJeHFUb5",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: false,
-				duration: 0,
-				light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-			},
-			id: "-X7DEBz7FecRpkUdvMW9t",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 1,
-			id: "kUoZ6NuTUJgWvbQDTz-cp",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: true,
-				duration: 0,
-				light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-				lightColor: {
-					hue: 355.81508387488157,
-					sat: 100,
-					bri: 100,
-				},
-			},
-			id: "qlWhZ4AYFnpULe2FKOgYr",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: true,
-				duration: 0,
-				light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-				lightColor: {
-					hue: 355.81508387488157,
-					sat: 100,
-					bri: 100,
-				},
-			},
-			id: "szMOaZre5GaBqZOjn_ydW",
-		},
-		{
-			plugin: "sounds",
-			action: "sound",
-			data: {
-				volume: 54,
-				sound: "base-alarm.wav",
-			},
-			id: "vKaZAuGbnzH4vHWvOqYlA",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 2,
-			id: "XS8aeYVASnToT1Eu43yde",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: false,
-				duration: 0,
-				light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-			},
-			id: "0qtSI878yjRonJyPHKHEb",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: false,
-				duration: 0,
-				light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-			},
-			id: "U8qpvXatsFr8Y104uUYeJ",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 1,
-			id: "ldSTVYAsIQAYx0TaP2MJ0",
-		},
-		{
-			plugin: "iot",
-			action: "plug",
-			data: {
-				on: true,
-				plug: "hue.f7eea07b-be3c-482e-bacb-bde4491af74e",
-			},
-			id: "Z2clycP6iRBQz4X_gj6jX",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 0.1,
-			id: "HDuTtMf7jc7BI1Zz2HLMH",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: true,
-				duration: 0.5,
-				light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-				lightColor: {
-					kelvin: 5242.525,
-					bri: 100,
-				},
-			},
-			id: "ILRNn7-1k94xSPfHNpY6Q",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: true,
-				duration: 0.5,
-				light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-				lightColor: {
-					kelvin: 5242.525,
-					bri: 100,
-				},
-			},
-			id: "BQJ_yLiqwJ7IDTTHNZvNj",
-		},
-		{
-			plugin: "castmate",
-			action: "delay",
-			data: 0.1,
-			id: "eWhqkl2I6d3lOB8OW4zbz",
-		},
-		{
-			plugin: "iot",
-			action: "light",
-			data: {
-				on: true,
-				duration: 0.5,
-				light: "hue.c1787ef9-1246-4465-97d2-4e12f5d55632",
-				lightColor: {
-					kelvin: 5242.525,
-					bri: 100,
-				},
-			},
-			id: "vt6m-e9N_l9kSFSdnmcN_",
-		},
-		{
-			plugin: "sounds",
-			action: "sound",
-			data: {
-				volume: 100,
-				sound: "door-banging.wav",
-			},
-			id: "L6wu181xIroOLR7RODTfQ",
-		},
-		{
-			plugin: "twitch",
-			action: "sendShoutout",
-			data: {
-				user: "{{ user }}",
-			},
-			id: "PgUWZ5t-Ah-bz993zn9GU",
-		},
-	],
-	sync: true,
-}
-
-const testOldProfile = {
-	version: "2.0",
-	triggers: {
-		spellcast: {
-			spellHook: [
-				{
-					config: {
-						hookId: "640e12589fb9c79bdb596676",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "kitchen-nightmare--drama.mp3",
-								},
-								id: "xnUdSpTZ5sUmAxb9FzAqL",
-							},
-							{
-								plugin: "twitch",
-								action: "sendChat",
-								data: "{{ user }} says that's looking like a nightmare.",
-								id: "t6vokUUblGnZe71RvGv-A",
-							},
-						],
-					},
-					id: "4D_aScg3rZqCQrosQvDaN",
-					profile: "Kitchen",
-				},
-			],
-		},
-		http: {
-			endpoint: [
-				{
-					config: {
-						method: "POST",
-						route: "/toggle_oven",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "obs",
-								action: "source",
-								data: {
-									enabled: "toggle",
-									scene: "~Oven View",
-									source: "~Oven View Cam",
-								},
-								id: "bhLwK4HLbtmsbXCvc49cD",
-							},
-							{
-								plugin: "variables",
-								action: "set",
-								data: {
-									name: "OvenView",
-									value: "variables.OvenView == 1 ? 0 : 1",
-								},
-								id: "0aLO0v0E15yadozE7_Rp2",
-							},
-							{
-								plugin: "obs",
-								action: "filter",
-								data: {
-									filterEnabled: "toggle",
-									sourceName: "~Kitchen Oven",
-									filterName: "Oven Recording",
-								},
-								id: "M0NZj9Vvv9X5-nkkCYdgs",
-							},
-						],
-						sync: false,
-					},
-					id: "bGZIqbo0vdFhlPdt6bYE1",
-					profile: "Kitchen",
-				},
-			],
-		},
-		twitch: {
-			raid: [
-				{
-					config: {
-						raiders: {
-							min: 1,
-						},
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "iot",
-								action: "plug",
-								data: {
-									on: false,
-									plug: "hue.f7eea07b-be3c-482e-bacb-bde4491af74e",
-								},
-								id: "I_fUN8TN5bABA6vy93C5x",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: false,
-									duration: 0,
-									light: "hue.c1787ef9-1246-4465-97d2-4e12f5d55632",
-								},
-								id: "7uGyTy-NDUaiuqNjPDLtS",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 0.5,
-								id: "wsscoSrODYloSlGevCe33",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: false,
-									duration: 0,
-									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-								},
-								id: "4JOLTDzaHYkWqd7-GCoOz",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: false,
-									duration: 0,
-									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-								},
-								id: "vG54Mi6lpn8RG9TkrOps7",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 0.2,
-								id: "jEh1oe42fQd-Rw_kn8qk-",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 2,
-								id: "ydweoggqWmOhB6oNApp1i",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: true,
-									duration: 0,
-									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-									lightColor: {
-										hue: 355.81508387488157,
-										sat: 100,
-										bri: 100,
-									},
-								},
-								id: "mq_DtkLpWmmBhz8iwmcdP",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: true,
-									duration: 0,
-									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-									lightColor: {
-										hue: 355.81508387488157,
-										sat: 100,
-										bri: 100,
-									},
-								},
-								id: "s3-p4Ls5dIl-8lqMb7Swg",
-							},
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 54,
-									sound: "base-alarm.wav",
-								},
-								id: "YRVboTQhWlYgmsAMGCuVe",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 2,
-								id: "mh01ZZfh44YwXy_9OaZ0a",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: false,
-									duration: 0,
-									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-								},
-								id: "Ouo7sQk-fNToIkJeHFUb5",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: false,
-									duration: 0,
-									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-								},
-								id: "-X7DEBz7FecRpkUdvMW9t",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 1,
-								id: "kUoZ6NuTUJgWvbQDTz-cp",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: true,
-									duration: 0,
-									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-									lightColor: {
-										hue: 355.81508387488157,
-										sat: 100,
-										bri: 100,
-									},
-								},
-								id: "qlWhZ4AYFnpULe2FKOgYr",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: true,
-									duration: 0,
-									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-									lightColor: {
-										hue: 355.81508387488157,
-										sat: 100,
-										bri: 100,
-									},
-								},
-								id: "szMOaZre5GaBqZOjn_ydW",
-							},
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 54,
-									sound: "base-alarm.wav",
-								},
-								id: "vKaZAuGbnzH4vHWvOqYlA",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 2,
-								id: "XS8aeYVASnToT1Eu43yde",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: false,
-									duration: 0,
-									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-								},
-								id: "0qtSI878yjRonJyPHKHEb",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: false,
-									duration: 0,
-									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-								},
-								id: "U8qpvXatsFr8Y104uUYeJ",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 1,
-								id: "ldSTVYAsIQAYx0TaP2MJ0",
-							},
-							{
-								plugin: "iot",
-								action: "plug",
-								data: {
-									on: true,
-									plug: "hue.f7eea07b-be3c-482e-bacb-bde4491af74e",
-								},
-								id: "Z2clycP6iRBQz4X_gj6jX",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 0.1,
-								id: "HDuTtMf7jc7BI1Zz2HLMH",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: true,
-									duration: 0.5,
-									light: "hue.ea0b625e-be0d-49c0-9f3e-78f961d76564",
-									lightColor: {
-										kelvin: 5242.525,
-										bri: 100,
-									},
-								},
-								id: "ILRNn7-1k94xSPfHNpY6Q",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: true,
-									duration: 0.5,
-									light: "hue.d8d1ded1-2d52-4884-81b8-ec6a8f7d307f",
-									lightColor: {
-										kelvin: 5242.525,
-										bri: 100,
-									},
-								},
-								id: "BQJ_yLiqwJ7IDTTHNZvNj",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 0.1,
-								id: "eWhqkl2I6d3lOB8OW4zbz",
-							},
-							{
-								plugin: "iot",
-								action: "light",
-								data: {
-									on: true,
-									duration: 0.5,
-									light: "hue.c1787ef9-1246-4465-97d2-4e12f5d55632",
-									lightColor: {
-										kelvin: 5242.525,
-										bri: 100,
-									},
-								},
-								id: "vt6m-e9N_l9kSFSdnmcN_",
-							},
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "door-banging.wav",
-								},
-								id: "L6wu181xIroOLR7RODTfQ",
-							},
-							{
-								plugin: "twitch",
-								action: "sendShoutout",
-								data: {
-									user: "{{ user }}",
-								},
-								id: "PgUWZ5t-Ah-bz993zn9GU",
-							},
-						],
-					},
-					id: "JS0L7Usc5s1WnPkSg-x5o",
-					profile: "Kitchen",
-				},
-			],
-		},
-	},
-	conditions: {
-		operator: "any",
-		operands: [
-			{
-				operator: "equal",
-				id: "PrIIYhVCPO563s2jbT_UJ",
-				state: {
-					plugin: "obs",
-					key: "scene",
-					id: "obs.scene",
-				},
-				compare: "Kitchen Hands Exclusive",
-			},
-			{
-				operator: "equal",
-				id: "8tUPVdlc5bjYgoCRIKZHD",
-				state: {
-					plugin: "obs",
-					key: "scene",
-					id: "obs.scene",
-				},
-				compare: "Kitchen Main",
-			},
-			{
-				operator: "equal",
-				id: "_GcLsIx368bT0qL_ROpOL",
-				state: {
-					plugin: "obs",
-					key: "scene",
-					id: "obs.scene",
-				},
-				compare: "Kitchen Hands",
-			},
-			{
-				operator: "equal",
-				id: "6g0gO-f_qCT_N4-DFn2Ng",
-				state: {
-					plugin: "obs",
-					key: "scene",
-					id: "obs.scene",
-				},
-				compare: "Kitchen Oven View",
-			},
-		],
-	},
-	activationMode: "toggle",
-}
-
-const testOldProfile2 = {
-	version: "2.0",
-	triggers: {
-		twitch: {
-			redemption: [
-				{
-					config: {
-						reward: "First",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 30,
-									sound: "The Price Is Right Correct Answer Sound.mp4",
-								},
-								id: "B0omg96epN3h0KM81J1IK",
-							},
-							{
-								plugin: "overlays",
-								action: "alert",
-								data: {
-									alert: {
-										overlay: "XEu5lCHbdind994KNinPW",
-										widget: "xPFpXIBvwlvz_PAiG8WuL",
-									},
-									header: "FIRST!",
-									text: "{{ user }} is first!",
-									color: "{{ userColor }}",
-								},
-								id: "cqPy9Lg1nmdUqGqmNSqGV",
-							},
-							{
-								plugin: "twitch",
-								action: "sendChat",
-								data: "!! {{ user }} is first !!",
-								id: "62xvXbslEf2zwLJjDwesL",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 14,
-								id: "_BYcRxeFzUz2g9Ww4OAaa",
-							},
-						],
-						sync: false,
-					},
-					id: "XGzcXJKOzrSCrPmZI5sPo",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						reward: "Text To Speech",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "tts",
-								data: {
-									volume: 100,
-									message: "{{ filteredMessage }}",
-									voice: "Microsoft David Desktop",
-								},
-								id: "Da-asSoitf5MTwVsw7IpM",
-							},
-						],
-						sync: false,
-					},
-					id: "MVXbI01udY0ZLteoU11Mh",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						reward: "Hydrate",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 80,
-									sound: "water-splash-9.mp3",
-								},
-								id: "lnI7qBWMCtX3Lg0zaxRkn",
-							},
-							{
-								plugin: "twitch",
-								action: "sendChat",
-								data: "{{ user }} is being a hydro homie",
-								id: "nZwG9_gFcSRMi60QQxBGy",
-							},
-						],
-						sync: false,
-					},
-					id: "CxAuPlu643k3nyzPdXWHd",
-					profile: "Main Active",
-				},
-			],
-			chat: [
-				{
-					config: {
-						command: "!sad",
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "sad-violin_ubqUgrT.mp3",
-								},
-								id: "s-qQj8eJ26CTg2TB5xejR",
-							},
-							{
-								plugin: "obs",
-								action: "filter",
-								data: {
-									sourceName: "~Main Cam",
-									filterName: "Black And White",
-									filterEnabled: true,
-								},
-								id: "Nr4h1LRk__v0sp_AMRzgn",
-							},
-							{
-								plugin: "obs",
-								action: "filter",
-								data: {
-									sourceName: "~Main Cam",
-									filterName: "Sad Zoomer",
-									filterEnabled: true,
-								},
-								id: "fhy1QumjOKsvnb1qJye5H",
-							},
-							{
-								plugin: "castmate",
-								action: "delay",
-								data: 10,
-								id: "t50kYImR93In-SVNKP9IZ",
-							},
-							{
-								plugin: "obs",
-								action: "filter",
-								data: {
-									sourceName: "~Main Cam",
-									filterName: "Black And White",
-									filterEnabled: false,
-								},
-								id: "FeSi6Ta_Y4Q9PpLDCdFsa",
-							},
-						],
-						sync: false,
-					},
-					id: "cuW9XE_4TPUKyQPKViQsa",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						command: "!drama",
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 86,
-									sound: "youtube\\Dun Dun Dun.mp3",
-								},
-								id: "RhwxrxRTQcOeohzEili9v",
-							},
-							{
-								plugin: "castmate",
-								action: "timestamp",
-								data: 1.1,
-								beforeDelay: 1.1,
-								id: "-mcJZWYG0nDmmvNAQ8Sn1",
-							},
-							{
-								plugin: "obs",
-								action: "filter",
-								data: {
-									sourceName: "~Main Cam",
-									filterName: "Zoomer",
-									filterEnabled: true,
-								},
-								id: "za2y240vmxCiTpIUhaUum",
-							},
-						],
-						sync: false,
-					},
-					id: "1xhR5hQfXymkjycwFkjQ1",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						command: "!never",
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "never.mp3",
-								},
-								id: "KUIsedLnizKR_3fq5DJQk",
-							},
-						],
-						sync: false,
-					},
-					id: "5pCSkwWlsACLOMfShL3_T",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!suspense",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 86,
-									sound: "youtube\\Dun Dun Dun.mp3",
-								},
-								id: "Rasvi7aHIxXG7nUJ0gGif",
-							},
-							{
-								plugin: "castmate",
-								action: "timestamp",
-								data: 1.1,
-								beforeDelay: 1.1,
-								id: "el5wAa2sjXOH0nkVScjv8",
-							},
-							{
-								plugin: "obs",
-								action: "filter",
-								data: {
-									sourceName: "~Main Cam",
-									filterName: "Zoomer",
-									filterEnabled: true,
-								},
-								id: "geSRDYRpsrKTQJ-OfX-Rg",
-							},
-						],
-					},
-					id: "JI8E249mb-vlyPSMNv8zc",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!ehhghh",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "steve.mp3",
-								},
-								id: "dpVz_lhCB5x1ancRmduwR",
-							},
-						],
-						sync: false,
-					},
-					id: "loZOJ7K8PggpR7v8crMs-",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!english",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "failenglish.mp3",
-								},
-								id: "SI8vaYPqq-NBhoqNlkxlC",
-							},
-						],
-					},
-					id: "AsaWoWWAk3ublidSCEz2Q",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!fart",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "youtube\\Fart 1.mp3",
-								},
-								id: "OZq0rYUAEriNHtYEbkSku",
-							},
-						],
-						sync: false,
-					},
-					id: "aDAfqTrFW_LwM_WK7y0vd",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!figure",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "figureitout.mp3",
-								},
-								id: "f42lviCwAGVQ0Cz2qce2y",
-							},
-						],
-					},
-					id: "8sRJgJhNbBhJ6AYD58AK8",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!fubar",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 56,
-									sound: "fubar.wav",
-								},
-								id: "OzQjvA9BH2HQeGYNNVxpz",
-							},
-						],
-						sync: false,
-					},
-					id: "zqfroJPgM8usH-VTvN2-3",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!geez",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "jeez.mp3",
-								},
-								id: "UOFU5zE1T6i4YU5590LlW",
-							},
-						],
-					},
-					id: "MIwkg_WOVFf4DlUscCX58",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!jeez",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "jeez.mp3",
-								},
-								id: "tr9fo8SjrWDH1iELIZAQy",
-							},
-						],
-					},
-					id: "8WPeH56FB6PEHgD7tyDkH",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!nintendo",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "nintendo.mp3",
-								},
-								id: "-cVLUXuorKLgQH8eFNVr7",
-							},
-						],
-					},
-					id: "B5GCoRyTQ_Z5OhEoNsfNI",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!organic",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "organic.mp3",
-								},
-								id: "Fe_4p_e5zMY_yF4TORQ0U",
-							},
-						],
-					},
-					id: "hmQ7N7J_EZ8tEhsBIaTbj",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!ricktler",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "ricktler.mp3",
-								},
-								id: "SCvaGh0nGbM7cZfTUdqJY",
-							},
-						],
-					},
-					id: "mqXqGdBGXDnL3Yx1XvHmJ",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!rimshot",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "youtube\\Badum Tsss.mp3",
-								},
-								id: "dnRE6vIoYMQLFjBz51Mce",
-							},
-						],
-						sync: false,
-					},
-					id: "MjW6zj5gWq3c3ylHnaYrP",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!scream",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 80,
-									sound: "youtube\\wilhelm.mp3",
-								},
-								id: "fQpvBTDNlhM6RtCWmAvNF",
-							},
-						],
-						sync: false,
-					},
-					id: "x74JgMn-kOIYjguGVc6e-",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!secret",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 81,
-									sound: "secret.mp3",
-								},
-								id: "ODlv66sjLOGMRIh82lk2V",
-							},
-						],
-					},
-					id: "ZnnFcwzziirnvOqybiZz1",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!slap",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "youtube\\Slap.mp3",
-								},
-								id: "SYxbOA59S56hiBNTzlxyU",
-							},
-						],
-					},
-					id: "l0ECU7FR4eithdU2Opl1P",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!yep",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "yep.mp3",
-								},
-								id: "SS3I0Qce4uMxNV-Rqg834",
-							},
-						],
-					},
-					id: "NfTI4d1_VCxn8jHL0Jnsu",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!yes",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "yes.mp3",
-								},
-								id: "51Zx4kAZvooKOgqYlhtio",
-							},
-						],
-					},
-					id: "ug6mIloijdX7SW-7NiGDt",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!opinion",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "thats-my-opinion.mp3",
-								},
-								id: "gmatE0RsZYaVoXv3icCqN",
-							},
-						],
-					},
-					id: "56PRLvyufFjXc8ZDdWroA",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!ohno",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "Ohno.mp3",
-								},
-								id: "n5E_8uytFRDEfLNrXugF3",
-							},
-						],
-						sync: false,
-					},
-					id: "nJRKMpQ2quSTcmP_T5P46",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!commands",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "twitch",
-								action: "sendChat",
-								data: "Commands: https://gist.github.com/LordTocs/f94eddff25a2c0da583eb0a7ec25cfc3",
-								id: "kBCObzl4sVQIqUE2iPXYH",
-							},
-						],
-						sync: false,
-					},
-					id: "vAO74PF1MkKsknlhWMsUR",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!oven",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "twitch",
-								action: "sendChat",
-								data: "It's the Anova Precision Oven. It's got steam injection! https://anovaculinary.com/products/anova-precision-oven",
-								id: "fDS6u6x4nAG_7mlxX_L8j",
-							},
-						],
-						sync: false,
-					},
-					id: "DWeHubXGjMcn3udaTlHJG",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!kofi",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "twitch",
-								action: "sendChat",
-								data: "You can send me muuuney here: https://ko-fi.com/lordtocs But only if you reeeaally want to.",
-								id: "6h17wxVzjNLRjlemmZB5X",
-							},
-						],
-					},
-					id: "ECkvbJtquEpeU94S6oCm8",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!yeah",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 47,
-									sound: "usher-yeah.wav",
-								},
-								id: "dW3-IoFq0Bkjr4TOWwSOz",
-							},
-						],
-						sync: false,
-					},
-					id: "Nw7W41L-zaw-wJTmvnMA_",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!nope",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "engineer_no01.mp3",
-								},
-								id: "Zy80rHiBheci6DMMpYdl1",
-							},
-						],
-						sync: false,
-					},
-					id: "CnBbql-5taz9GZ4zwEtC9",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!wishlist",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "twitch",
-								action: "sendChat",
-								data: "https://www.amazon.com/hz/wishlist/ls/1JYJSNRH3DMDM",
-								id: "lgDt0AWpRDklrpsEbSGDf",
-							},
-						],
-						sync: false,
-					},
-					id: "x3E3NTeDHxDNul_ugMrpb",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!right",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "probablyright.mp3",
-								},
-								id: "vuVPxRciMRJQqXCGGy6bZ",
-							},
-						],
-					},
-					id: "WP6vodivzqaVy7Y3Uwu6M",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!rs",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 100,
-									sound: "youtube\\Badum Tsss.mp3",
-								},
-								id: "FThjiZ6I3x-ZpiQU-Jc9I",
-							},
-						],
-					},
-					id: "nFhDkhPSImLuipzL47v03",
-					profile: "Main Active",
-				},
-				{
-					config: {
-						match: "Start",
-						permissions: {
-							viewer: true,
-							sub: true,
-							vip: true,
-							mod: true,
-							streamer: true,
-						},
-						command: "!huh",
-					},
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "sounds",
-								action: "sound",
-								data: {
-									volume: 78,
-									sound: "huh-cat-meme.mp3",
-								},
-								id: "TOM9B97vABzEx_Jrn1VSY",
-							},
-						],
-						sync: false,
-					},
-					id: "ZVVMyCwmfdnovx4d3wws2",
-					profile: "Main Active",
-				},
-			],
-			follow: [
-				{
-					config: null,
-					automation: {
-						version: "1.0",
-						description: "",
-						actions: [
-							{
-								plugin: "castmate",
-								action: "automation",
-								data: {
-									automation: "Zelda",
-								},
-								id: "I2h_-auinNKIMECpTvIor",
-							},
-							{
-								plugin: "twitch",
-								action: "sendChat",
-								data: "Thanks for the follow @{{user}}!",
-								id: "UGQsLMWIQBpUlh7-8tO75",
-							},
-							{
-								plugin: "overlays",
-								action: "alert",
-								data: {
-									alert: {
-										overlay: "XEu5lCHbdind994KNinPW",
-										widget: "BX2C_yUopXcY8wMZXALz0",
-									},
-									header: "New Follow",
-									text: "{{ user }}",
-									color: "{{ userColor }}",
-								},
-								id: "-ABOwrUcoGsIvjtHaBklM",
-							},
-						],
-						sync: false,
-					},
-					id: "7BJ0PLfrIkOpguBDIZtYZ",
-					profile: "Main Active",
-				},
-			],
-		},
-	},
-	conditions: {
-		operator: "all",
-		operands: [
-			{
-				operator: "notEqual",
-				state: {
-					plugin: "obs",
-					key: "scene",
-				},
-				compare: "Starting",
-			},
-			{
-				operator: "notEqual",
-				id: "amTTjkx-mjZ_ddc1H3Ndu",
-				state: {
-					plugin: "obs",
-					key: "scene",
-					id: "obs.scene",
-				},
-				compare: "Starting New",
-			},
-		],
-	},
-	activationMode: "toggle",
-}
-
-export async function testMigrateAutomation() {
-	let existing: Automation | undefined
-
-	logger.log("Testing Migrate!")
-
-	for (const auto of Automation.storage) {
-		if (auto.config.name == "Test Migrate") {
-			existing = auto
-			logger.log("Found Existing Test Automation")
-			break
-		}
-	}
-
-	let needsInject = false
-	if (!existing) {
-		needsInject = true
-		logger.log("Creating New Test Automation")
-		existing = await ResourceRegistry.getInstance().create<Automation>("Automation", "Test Migrate")
-	}
-
-	if (!existing) {
-		logger.error("HELP I DIDN'T FIND ANY AUTOMATION")
-		return
-	}
-
-	logger.log("Do Migrate")
-	await existing.setConfig({
-		name: "Test Migrate",
-		floatingSequences: [],
-		sequence: await migrateOldAutomation(testOldAutomation),
-	})
-}
-
-export async function testMigrate() {
-	let existing: Profile | undefined
-
-	logger.log("Testing Migrate!")
-
-	const testName = "Migrate Profile"
-
-	for (const auto of Profile.storage) {
-		if (auto.config.name == testName) {
-			existing = auto
-			logger.log("Found Existing Test Automation")
-			break
-		}
-	}
-
-	if (!existing) {
-		logger.log("Creating New Test Automation")
-		existing = await ResourceRegistry.getInstance().create<Profile>("Profile", testName)
-	}
-
-	//@ts-ignore
-	const migratedConfig = await migrateOldProfile(testName, testOldProfile)
-
-	await existing?.setConfig(migratedConfig)
-}

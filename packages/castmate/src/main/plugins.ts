@@ -29,41 +29,47 @@ import randomPlugin from "castmate-plugin-random-main"
 import remotePlugin from "castmate-plugin-remote-main"
 
 import castmatePlugin from "./builtin-plugin"
-import { WebService } from "castmate-core"
+import { WebService, Plugin } from "castmate-core"
+import { migratePlugin } from "./migration/old-migration"
+
+export async function loadPlugin(plugin: Plugin) {
+	await migratePlugin(plugin.id)
+	await PluginManager.getInstance().registerPlugin(plugin)
+}
 
 export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
 	const promises = [
-		pluginManager.registerPlugin(castmatePlugin),
-		pluginManager.registerPlugin(randomPlugin),
-		pluginManager.registerPlugin(overlayPlugin),
-		pluginManager.registerPlugin(variablesPlugin),
-		pluginManager.registerPlugin(timePlugin),
-		pluginManager.registerPlugin(twitchPlugin),
-		pluginManager.registerPlugin(discordPlugin),
-		pluginManager.registerPlugin(obsPlugin),
-		pluginManager.registerPlugin(iotPlugin),
-		pluginManager.registerPlugin(soundPlugin),
-		pluginManager.registerPlugin(osPlugin),
-		pluginManager.registerPlugin(httpPlugin),
-		pluginManager.registerPlugin(inputPlugin),
-		pluginManager.registerPlugin(voicemodPlugin),
-		pluginManager.registerPlugin(minecraftPlugin),
-		pluginManager.registerPlugin(remotePlugin),
+		loadPlugin(castmatePlugin),
+		loadPlugin(randomPlugin),
+		loadPlugin(overlayPlugin),
+		loadPlugin(variablesPlugin),
+		loadPlugin(timePlugin),
+		loadPlugin(twitchPlugin),
+		loadPlugin(discordPlugin),
+		loadPlugin(obsPlugin),
+		loadPlugin(iotPlugin),
+		loadPlugin(soundPlugin),
+		loadPlugin(osPlugin),
+		loadPlugin(httpPlugin),
+		loadPlugin(inputPlugin),
+		loadPlugin(voicemodPlugin),
+		loadPlugin(minecraftPlugin),
+		loadPlugin(remotePlugin),
 	]
 	await Promise.allSettled(promises)
 
-	await pluginManager.registerPlugin(spellcastPlugin)
+	await loadPlugin(spellcastPlugin)
 
 	//iot
 	const iotPromises = [
-		pluginManager.registerPlugin(huePlugin),
-		pluginManager.registerPlugin(kasaPlugin),
-		pluginManager.registerPlugin(elgatoPlugin),
-		pluginManager.registerPlugin(lifxPlugin),
-		pluginManager.registerPlugin(wyzePlugin),
-		pluginManager.registerPlugin(goveePlugin),
-		pluginManager.registerPlugin(twinklyPlugin),
+		loadPlugin(huePlugin),
+		loadPlugin(kasaPlugin),
+		loadPlugin(elgatoPlugin),
+		loadPlugin(lifxPlugin),
+		loadPlugin(wyzePlugin),
+		loadPlugin(goveePlugin),
+		loadPlugin(twinklyPlugin),
 	]
 
 	await Promise.allSettled(iotPromises)
