@@ -92,7 +92,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				},
 				sourceName: {
 					type: String,
-					template: true,
+					//template: true,
 					name: "Source Name",
 					required: true,
 					async enum(context: { obs: OBSConnection }) {
@@ -110,7 +110,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				filterName: {
 					type: String,
 					name: "Filter Name",
-					template: true,
+					//template: true,
 					required: true,
 					async enum(context: { obs: OBSConnection; sourceName: string }) {
 						const obs = context.obs?.connection
