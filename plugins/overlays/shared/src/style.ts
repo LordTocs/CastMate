@@ -16,7 +16,7 @@ export interface OverlayTextStyle {
 	fontSize: number
 	fontColor: Color
 	fontFamily: string
-	fontWeight: 300
+	fontWeight: number
 	stroke?: OverlayStrokeStyle
 	shadow?: OverlayShadowStyle
 }
