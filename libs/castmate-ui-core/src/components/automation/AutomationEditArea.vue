@@ -160,6 +160,9 @@ const {
 		for (const f of floats) {
 			result.push(...f)
 		}
+
+		//HACK: Edit Area doesn't get focus back because of preventDefault
+		editArea.value?.focus()
 		return result
 	},
 	documentPath
