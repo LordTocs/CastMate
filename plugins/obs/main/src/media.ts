@@ -1,4 +1,4 @@
-import { ReactiveRef, abortableSleep, defineAction, usePluginLogger } from "castmate-core"
+import { ReactiveRef, abortableSleep, defineAction, sleep, usePluginLogger } from "castmate-core"
 import { OBSConnection } from "./connection"
 import { Toggle } from "castmate-schema"
 import { OBSFFmpegSourceSettings } from "./input-settings"
@@ -26,7 +26,12 @@ export async function forceGetMediaDuration(obs: OBSConnection, sourceName: stri
 		mediaAction: "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART",
 	})
 
-	duration = await getMediaDuration(obs, sourceName)
+	for (let i = 0; i < 10; ++i) {
+		duration = await getMediaDuration(obs, sourceName)
+		if (duration != null) break
+
+		await sleep(16)
+	}
 
 	return duration
 }
@@ -165,9 +170,28 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 				mediaAction: "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART",
 			})
 
-			const duration = (await getMediaDuration(config.obs, sceneItem.sourceName)) ?? 1
+			const startTime = Date.now()
 
-			await abortableSleep(duration * 1000, abortSignal, async () => {})
+			let duration: number | undefined = undefined
+
+			for (let i = 0; i < 30; ++i) {
+				duration = await getMediaDuration(config.obs, sceneItem.sourceName)
+
+				if (duration != null) break
+
+				await abortableSleep(16, abortSignal)
+			}
+
+			if (duration == null) {
+				logger.error("Completely Unable to get Duration!")
+				duration = 1
+			}
+
+			const now = Date.now()
+
+			const remainingMs = startTime + duration * 1000 - now
+
+			await abortableSleep(remainingMs, abortSignal, async () => {})
 
 			await config.obs.connection.call("SetSceneItemEnabled", {
 				sceneName: config.scene,
