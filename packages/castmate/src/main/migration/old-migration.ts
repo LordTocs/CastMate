@@ -1159,7 +1159,7 @@ function migrateDefaultMinecraftId() {
 }
 
 registerOldActionMigrator("minecraft", "mineCmd", {
-	plugin: "iot",
+	plugin: "minecraft",
 	action: "mineCmd",
 	migrateConfig(oldConfig: { command: string }) {
 		return {
