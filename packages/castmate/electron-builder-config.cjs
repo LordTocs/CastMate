@@ -51,8 +51,6 @@ module.exports = {
 			to: "ffmpeg/bin",
 			filter: ["**/*.exe"],
 		},
-	],
-	extraResources: [
 		{
 			from: "../../node_modules/regedit/vbs",
 			to: "regedit/vbs",
