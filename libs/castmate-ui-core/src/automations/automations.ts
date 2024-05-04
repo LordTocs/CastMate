@@ -63,6 +63,8 @@ function createAutomationGroup(app: App<Element>) {
 		if (resources.value) {
 			const resourceItems = [...resources.value.resources.values()]
 
+			resourceItems.sort((a, b) => a.config.name.localeCompare(b.config.name))
+
 			items = resourceItems.map((r) => ({
 				id: r.id,
 				title: r.config.name,
