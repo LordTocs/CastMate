@@ -17,7 +17,7 @@
 			<p-menu ref="menu" :model="menuItems" :popup="true" v-if="hasMenu" />
 		</div>
 		<div class="project-category-content" v-show="expanded">
-			<project-group-or-item :indent="indent + 1" v-for="gi of group.items" :group-or-item="gi" />
+			<project-group-or-item :indent="indent + 1" v-for="gi of group.items" :group-or-item="gi" :key="gi.id" />
 		</div>
 	</div>
 </template>
