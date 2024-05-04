@@ -84,6 +84,7 @@ import isFunction from "lodash/isFunction"
 import { useVModel, asyncComputed } from "@vueuse/core"
 import { Schema } from "castmate-schema"
 import _debounce from "lodash/debounce"
+import { constructDefault } from "castmate-schema"
 
 const stopPropagation = usePropagationStop()
 
@@ -142,6 +143,16 @@ const triggerModel = computed({
 		}
 		emit("update:modelValue", newValue)
 	},
+})
+
+onMounted(() => {
+	watch(trigger, async () => {
+		if (trigger.value) {
+			console.log("TRIGGER CHANGED!")
+			const schemaDefaults = await constructDefault(trigger.value.config)
+			modelObj.value.config = schemaDefaults
+		}
+	})
 })
 
 const trigger = useTrigger(() => props.modelValue)

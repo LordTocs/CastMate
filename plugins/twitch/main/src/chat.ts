@@ -96,7 +96,6 @@ export function setupChat() {
 					type: Command,
 					name: "Command",
 					required: true,
-					default: { mode: "command", match: "", arguments: [], hasMessage: false },
 				},
 				cooldown: { type: Duration, name: "Cooldown" },
 				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },

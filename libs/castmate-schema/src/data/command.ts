@@ -47,7 +47,7 @@ export const Command: CommandFactory = {
 			match: "",
 			arguments: [],
 			hasMessage: false,
-		}
+		} satisfies CommandModeCommand
 	},
 	[CommandSymbol]: true,
 }
