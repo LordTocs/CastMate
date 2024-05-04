@@ -385,6 +385,39 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		return input
 	}
 
+	async refreshBrowsersByUrlPattern(urlPattern: string) {
+		if (!this.state.connected) return undefined
+
+		const { inputs } = await this.connection.call("GetInputList", {
+			inputKind: "browser_source",
+		})
+
+		const inputSettingsAndName = await Promise.all(
+			inputs.map(async (i) => {
+				const result = await this.connection.call("GetInputSettings", {
+					inputName: i.inputName as string,
+				})
+				return { inputName: i.inputName, ...result }
+			})
+		)
+
+		const urlRegex = new RegExp(urlPattern)
+
+		const matchingInputs = inputSettingsAndName.filter((i) => {
+			return (i.inputSettings.url as string | undefined)?.match?.(urlRegex)
+		})
+
+		await Promise.allSettled(
+			matchingInputs.map(async (i) => {
+				logger.log("Refreshing", i.inputName)
+				await this.connection.call("PressInputPropertiesButton", {
+					inputName: i.inputName as string,
+					propertyName: "refreshnocache",
+				})
+			})
+		)
+	}
+
 	/**
 	 * Returns the localhost if castmate is on the same computer as OBS, otherwise returns the IP of OBS
 	 */

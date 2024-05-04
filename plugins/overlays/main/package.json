@@ -15,6 +15,7 @@
 	},
 	"dependencies": {
 		"castmate-core": "workspace:^",
+		"castmate-plugin-obs-main": "workspace:^",
 		"castmate-plugin-overlays-shared": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"castmate-ws-rpc": "workspace:^",

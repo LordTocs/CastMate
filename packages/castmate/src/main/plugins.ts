@@ -39,10 +39,12 @@ export async function loadPlugin(plugin: Plugin) {
 
 export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
+
+	await loadPlugin(castmatePlugin)
+	await loadPlugin(randomPlugin)
+	await loadPlugin(overlayPlugin)
+
 	const promises = [
-		loadPlugin(castmatePlugin),
-		loadPlugin(randomPlugin),
-		loadPlugin(overlayPlugin),
 		loadPlugin(variablesPlugin),
 		loadPlugin(timePlugin),
 		loadPlugin(twitchPlugin),

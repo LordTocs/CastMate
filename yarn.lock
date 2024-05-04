@@ -3212,6 +3212,7 @@ __metadata:
   dependencies:
     "@types/http-proxy": "npm:^1.17.14"
     castmate-core: "workspace:^"
+    castmate-plugin-obs-main: "workspace:^"
     castmate-plugin-overlays-shared: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ws-rpc: "workspace:^"

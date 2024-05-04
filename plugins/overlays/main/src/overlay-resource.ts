@@ -24,6 +24,7 @@ import { Schema, SchemaObj, Toggle, filterPromiseAll } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { setupConfigEval } from "./config-evaluation"
 import { OverlayWebsocketService } from "./websocket-bridge"
+import { OBSConnection } from "castmate-plugin-obs-main"
 
 const logger = usePluginLogger("overlays")
 
@@ -81,6 +82,8 @@ export const OverlayWidgetManager = Service(
 	class {
 		private widgets = new Map<string, OverlayWidgetDescriptor>()
 
+		private initialized = false
+
 		constructor() {
 			defineIPCFunc("overlays", "setWidgets", (widgetList: IPCOverlayWidgetDescriptor[]) => {
 				for (const widget of widgetList) {
@@ -100,7 +103,21 @@ export const OverlayWidgetManager = Service(
 
 					logger.log("Received Overlay Widget", widget.plugin, widget.options.id)
 				}
+
+				this.doInitialSetup()
 			})
+		}
+
+		private async doInitialSetup() {
+			if (this.initialized) {
+				return
+			}
+
+			this.initialized = true
+
+			for (const connection of OBSConnection.storage) {
+				connection.refreshBrowsersByUrlPattern(`http://[\\w]+(:[\\d]+)?[/\\\\]overlays[/\\\\]`)
+			}
 		}
 
 		getWidget(plugin: string, widget: string) {
