@@ -65,6 +65,7 @@ export default definePlugin(
 						name: "Start/Stop",
 						required: true,
 						default: true,
+						template: true,
 						trueIcon: "mdi mdi-timer-play-outline",
 						falseIcon: "mdi mdi-timer-pause-outline",
 					},
@@ -117,7 +118,7 @@ export default definePlugin(
 								.map((v) => v.id)
 						},
 					},
-					duration: { type: Duration, name: "Duration", required: true, default: 5 },
+					duration: { type: Duration, name: "Duration", template: true, required: true, default: 5 },
 				},
 			},
 			async invoke(config, contextData, abortSignal) {
@@ -148,7 +149,7 @@ export default definePlugin(
 								.map((v) => v.id)
 						},
 					},
-					duration: { type: Duration, name: "Duration", required: true, default: 5 },
+					duration: { type: Duration, name: "Duration", template: true, required: true, default: 5 },
 				},
 			},
 			async invoke(config, contextData, abortSignal) {

@@ -93,30 +93,59 @@ const MINUTE_DUR = 60
 const inputValue = ref<string>("")
 const hiddenInput = ref<InstanceType<typeof FakeInputBackbone> | null>(null)
 
+const inputNegative = computed(() => {
+	return inputValue.value.startsWith("-")
+})
+
+const absInput = computed(() => {
+	return inputNegative.value ? inputValue.value.substring(1) : inputValue.value
+})
+
 const inputDecimalIdx = computed(() => {
-	let decimalIdx = inputValue.value.indexOf(".")
+	let decimalIdx = absInput.value.indexOf(".")
 	if (decimalIdx == -1) {
-		decimalIdx = inputValue.value.length
+		decimalIdx = absInput.value.length
 	}
 	return decimalIdx
 })
 
 const inputSeconds = computed(() => {
-	const seconds = inputValue.value.substring(inputDecimalIdx.value - 2)
+	let endIdx = absInput.value.length
+	let startIdx = inputDecimalIdx.value - 2
+
+	const seconds = absInput.value.substring(inputDecimalIdx.value - 2)
+
+	if (inputNegative.value && startIdx <= 0) {
+		return "-" + seconds
+	}
 	return seconds
 })
 
 const secondsOffset = computed(() => inputHours.value.length + inputMins.value.length)
 
 const inputMins = computed(() => {
-	const minutes = inputValue.value.substring(inputDecimalIdx.value - 4, inputDecimalIdx.value - 2)
+	let endIdx = inputDecimalIdx.value - 2
+	let startIdx = inputDecimalIdx.value - 4
+
+	const minutes = absInput.value.substring(inputDecimalIdx.value - 4, inputDecimalIdx.value - 2)
+
+	if (inputNegative.value && startIdx <= 0 && endIdx > 0) {
+		return "-" + minutes
+	}
+
 	return minutes
 })
 
 const minutesOffset = computed(() => inputHours.value.length)
 
 const inputHours = computed(() => {
-	const hours = inputValue.value.substring(0, inputDecimalIdx.value - 4)
+	let endIdx = inputDecimalIdx.value - 4
+	let startIdx = 0
+
+	const hours = absInput.value.substring(0, inputDecimalIdx.value - 4)
+	if (inputNegative.value && endIdx > 0) {
+		return "-" + hours
+	}
 	return hours
 })
 
@@ -169,6 +198,10 @@ function parseFromModel() {
 	const parts = parseDurationParts(model.value)
 
 	let result = ""
+	if (parts.sign != null && parts.sign < 0) {
+		result += "-"
+	}
+
 	if (parts.hours != null) {
 		result += parts.hours
 
@@ -209,15 +242,17 @@ function sendToModel() {
 		}
 	}
 
-	const hours = Number(inputHours.value)
-	const minutes = Number(inputMins.value)
-	const seconds = Number(inputSeconds.value)
+	const sign = inputNegative.value ? -1 : 1
+
+	const hours = Math.abs(Number(inputHours.value))
+	const minutes = Math.abs(Number(inputMins.value))
+	const seconds = Math.abs(Number(inputSeconds.value))
 
 	if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
 		return
 	}
 
-	model.value = hours * HOUR_DUR + minutes * MINUTE_DUR + seconds
+	model.value = sign * (hours * HOUR_DUR + minutes * MINUTE_DUR + seconds)
 }
 
 function onBlur(ev: FocusEvent) {

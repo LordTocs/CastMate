@@ -41,6 +41,7 @@ const HOUR_DUR = 60 * 60
 const MINUTE_DUR = 60
 
 export interface DurationParts {
+	sign?: number
 	hours?: number
 	minutes?: number
 	seconds?: number
@@ -53,7 +54,9 @@ export function parseDurationParts(duration: Duration | undefined): DurationPart
 
 	const result: DurationParts = {}
 
-	let remaining = duration
+	result.sign = Math.sign(duration)
+
+	let remaining = Math.abs(duration)
 	if (remaining >= HOUR_DUR) {
 		result.hours = Math.floor(remaining / HOUR_DUR)
 		remaining = remaining % HOUR_DUR
@@ -75,6 +78,10 @@ export function formatDuration(duration: Duration | undefined, decimalPlaces: nu
 	const parts = parseDurationParts(duration)
 
 	let result = ""
+
+	if (parts.sign != null && parts.sign < 0) {
+		result += "-"
+	}
 
 	if (parts.hours != null) {
 		result += parts.hours + "h "
