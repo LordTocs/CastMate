@@ -31,6 +31,7 @@ export function setupVariableActions() {
 				},
 				value: {
 					type: DynamicType,
+					template: true,
 					async dynamicType(context: { variable: string }) {
 						const variable = VariableManager.getInstance().getVariable(context.variable)
 
@@ -79,6 +80,7 @@ export function setupVariableActions() {
 				},
 				offset: {
 					type: DynamicType,
+					template: true,
 					async dynamicType(context: { variable: string }) {
 						const variable = VariableManager.getInstance().getVariable(context.variable)
 

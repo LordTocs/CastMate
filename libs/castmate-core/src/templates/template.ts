@@ -6,6 +6,7 @@ import {
 	DataConstructorOrFactory,
 	Directory,
 	Duration,
+	DynamicType,
 	FilePath,
 	RemoteSchemaType,
 	RemoteTemplateIntermediateSubstring,
@@ -14,6 +15,7 @@ import {
 	ResolvedSchemaType,
 	ResolvedTypeByConstructor,
 	Schema,
+	SchemaDynamicType,
 	SchemaType,
 	SchemaTypeByConstructor,
 	TemplateTypeByConstructor,
@@ -93,7 +95,8 @@ export async function templateNumber(value: string | number, context: object) {
 export type SchemaTemplater<T extends DataConstructorOrFactory> = (
 	value: TemplateTypeByConstructor<T>,
 	context: object,
-	schema: SchemaTypeByConstructor<T>
+	schema: SchemaTypeByConstructor<T>,
+	rootValue: any
 ) => Promise<ResolvedTypeByConstructor<T> | undefined>
 
 export type SchemaRemoteTemplater<T extends DataConstructorOrFactory> = (
@@ -112,22 +115,25 @@ declare module "castmate-schema" {
 export async function templateSchema<TSchema extends Schema>(
 	obj: SchemaType<TSchema>,
 	schema: TSchema,
-	context: object
+	context: object,
+	rootValue?: any
 ): Promise<ResolvedSchemaType<TSchema>> {
+	if (rootValue == undefined) rootValue = obj
+
 	if (schema.type === Object && "properties" in schema && isObject(obj)) {
 		const result: Record<string, any> = {}
 
 		await Promise.all(
 			Object.keys(schema.properties).map(async (key) => {
 				//@ts-ignore Type system too stupid again.
-				result[key] = await templateSchema(obj[key], schema.properties[key], context)
+				result[key] = await templateSchema(obj[key], schema.properties[key], context, rootValue)
 			})
 		)
 
 		return result as ResolvedSchemaType<TSchema>
 	} else if (schema.type === Array && "items" in schema && isArray(obj)) {
 		return (await Promise.all(
-			obj.map((item: any) => templateSchema(item, schema.items, context))
+			obj.map((item: any) => templateSchema(item, schema.items, context, rootValue))
 		)) as ResolvedSchemaType<TSchema>
 	} else if (isResourceConstructor(schema.type)) {
 		//How to template resources??
@@ -138,7 +144,7 @@ export async function templateSchema<TSchema extends Schema>(
 		if ("template" in schema && schema.template && obj != null) {
 			if (!type) throw new Error("Unknown Schema Type!")
 			if (!type.template) throw new Error("Trying to template a type that doesn't have a templater registered")
-			return await type.template(obj, context, schema)
+			return await type.template(obj, context, schema, rootValue)
 		} else {
 			return obj
 		}
@@ -148,22 +154,25 @@ export async function templateSchema<TSchema extends Schema>(
 export async function remoteTemplateSchema<TSchema extends Schema>(
 	obj: SchemaType<TSchema>,
 	schema: TSchema,
-	context: object
+	context: object,
+	rootValue?: any
 ): Promise<RemoteSchemaType<TSchema>> {
+	if (rootValue == undefined) rootValue = obj
+
 	if (schema.type === Object && "properties" in schema && isObject(obj)) {
 		const result: Record<string, any> = {}
 
 		await Promise.all(
 			Object.keys(schema.properties).map(async (key) => {
 				//@ts-ignore Type system too stupid again.
-				result[key] = await remoteTemplateSchema(obj[key], schema.properties[key], context)
+				result[key] = await remoteTemplateSchema(obj[key], schema.properties[key], context, rootValue)
 			})
 		)
 
 		return result as RemoteSchemaType<TSchema>
 	} else if (schema.type === Array && "items" in schema && isArray(obj)) {
 		return (await Promise.all(
-			obj.map((item: any) => remoteTemplateSchema(item, schema.items, context))
+			obj.map((item: any) => remoteTemplateSchema(item, schema.items, context, rootValue))
 		)) as RemoteSchemaType<TSchema>
 	} else if (isResourceConstructor(schema.type)) {
 		//How to template resources??
@@ -176,7 +185,7 @@ export async function remoteTemplateSchema<TSchema extends Schema>(
 			if (type.remoteTemplate) {
 				return (await type.remoteTemplate(obj, context, schema)) as RemoteSchemaType<TSchema>
 			} else if (type.template) {
-				return await type.template(obj, context, schema)
+				return await type.template(obj, context, schema, rootValue)
 			} else {
 				throw new Error("Trying to remote template a type that doesn't have a templater registered")
 			}
@@ -301,6 +310,14 @@ registerSchemaTemplate(FilePath, async (value, context, schema) => {
 registerSchemaTemplate(Directory, async (value, context, schema) => {
 	let str = await template(value, context)
 	return str
+})
+
+registerSchemaTemplate(DynamicType, async (value, context, schema: SchemaDynamicType, rootValue) => {
+	const dynamicSchema = await schema.dynamicType(rootValue)
+
+	globalLogger.log("Trying to template", value, rootValue, schema)
+
+	return await templateSchema(value, dynamicSchema, context)
 })
 
 ////
