@@ -1,9 +1,18 @@
 <template>
 	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps">
 		<div class="container w-full" ref="container">
-			<input-box :model="model" v-bind="inputProps" @click="onClick">
+			<input-box v-if="!focused" :model="model" v-bind="inputProps" :tab-index="-1" @focus="onFocus">
 				{{ selectedMedia?.name ?? model }}
 			</input-box>
+			<p-input-text
+				v-else
+				@blur="onBlur"
+				class="p-dropdown-label query-input"
+				ref="filterInputElement"
+				v-model="filterValue"
+				@keydown="onFilterKeyDown"
+				v-bind="inputProps"
+			/>
 		</div>
 		<drop-down-panel
 			:container="container"
@@ -15,6 +24,7 @@
 				maxHeight: '15rem',
 			}"
 			@wheel="stopPropagation"
+			@mousedown="onDropdownMouseDown"
 		>
 			<table style="width: 100%">
 				<tr>
@@ -22,7 +32,12 @@
 					<th>Type</th>
 					<th>Duration</th>
 				</tr>
-				<media-tree root="default" :files="mediaItems.map((i) => i.path)" @click="mediaClicked" />
+				<media-tree
+					root="default"
+					:files="mediaItems.map((i) => i.path)"
+					@click="mediaClicked"
+					:filter="filterValue"
+				/>
 			</table>
 		</drop-down-panel>
 	</data-input-base>
@@ -32,7 +47,7 @@
 import DataInputBase from "../base-components/DataInputBase.vue"
 
 import { SchemaMediaFile, SchemaBase } from "castmate-schema"
-import { computed, ref, useModel } from "vue"
+import { computed, nextTick, ref, useModel } from "vue"
 import { FilterMatchMode } from "primevue/api"
 import { DropDownPanel, useMediaStore, usePropagationStop } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
@@ -43,6 +58,7 @@ import LabelFloater from "../base-components/LabelFloater.vue"
 import InputBox from "../base-components/InputBox.vue"
 import { useElementSize } from "@vueuse/core"
 import { MediaFile } from "castmate-schema"
+import PInputText from "primevue/inputtext"
 
 const props = defineProps<
 	{
@@ -67,6 +83,28 @@ const container = ref<HTMLElement>()
 const containerSize = useElementSize(container)
 const dropDown = ref(false)
 
+const focused = ref(false)
+function onFocus(ev: FocusEvent) {
+	focused.value = true
+
+	dropDown.value = true
+	filterValue.value = ""
+
+	nextTick(() => {
+		filterInputElement.value?.$el?.focus()
+	})
+}
+function onBlur(ev: FocusEvent) {
+	focused.value = false
+}
+
+const filterValue = ref<string>("")
+const filterInputElement = ref<{ $el: HTMLElement } | null>(null)
+
+function onFilterKeyDown(ev: KeyboardEvent) {
+	//dropDown.value?.handleKeyEvent(ev)
+}
+
 const model = useModel(props, "modelValue")
 
 const selectedMedia = computed({
@@ -85,6 +123,13 @@ function onSelect() {
 	dropDown.value = false
 }
 
+function onDropdownMouseDown(ev: MouseEvent) {
+	if (ev.button != 0) return
+
+	stopPropagation(ev)
+	ev.preventDefault()
+}
+
 function onClick(ev: MouseEvent) {
 	if (ev.button != 0) return
 
@@ -96,6 +141,7 @@ function onClick(ev: MouseEvent) {
 function mediaClicked(media: MediaFile) {
 	model.value = media
 	dropDown.value = false
+	focused.value = false
 }
 </script>
 

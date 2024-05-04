@@ -53,11 +53,18 @@ interface MediaSubFolderItem {
 type MediaItem = MediaFileItem | MediaSubFolderItem
 
 const items = computed(() => {
+	const filterLower = props.filter?.toLocaleLowerCase()
+
 	const result: MediaItem[] = []
 	for (const file of props.files) {
 		const rel = path.relative(props.root, file)
 
 		const parsed = path.parse(rel)
+
+		if (filterLower && !parsed.name.toLocaleLowerCase().includes(filterLower)) {
+			continue
+		}
+
 		const parts = parsed.dir.split("\\")
 		if (parsed.dir.length > 0) {
 			//Subfolder
