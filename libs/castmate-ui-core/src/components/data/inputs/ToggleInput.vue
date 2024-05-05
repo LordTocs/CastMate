@@ -1,25 +1,45 @@
 <template>
 	<document-path :local-path="localPath">
-		<div class="p-inputgroup" v-bind="$attrs">
-			<toggle-switch
-				input-id="switch"
+		<div class="flex flex-row align-items-center" @contextmenu="onContext" v-bind="$attrs">
+			<template-toggle
+				style="flex-grow: 1; flex-shrink: 1"
+				:template-mode="templateMode"
 				v-model="model"
-				:true-icon="schema.trueIcon"
-				:false-icon="schema.falseIcon"
-				:toggle-icon="schema.toggleIcon"
+				v-slot="templateProps"
+			>
+				<div class="p-inputgroup" v-bind="templateProps">
+					<toggle-switch
+						input-id="switch"
+						v-model="model"
+						:true-icon="schema.trueIcon"
+						:false-icon="schema.falseIcon"
+						:toggle-icon="schema.toggleIcon"
+					/>
+					<label for="switch" class="ml-2 p-text-secondary align-self-center" v-if="schema.name">
+						{{ schema.name }}
+					</label>
+				</div>
+			</template-toggle>
+			<data-input-base-menu
+				ref="inputMenu"
+				v-model="model"
+				v-model:template-mode="templateMode"
+				:can-clear="canClear"
+				:can-template="canTemplate"
 			/>
-			<label for="switch" class="ml-2" v-if="schema.name"> {{ schema.name }} </label>
 		</div>
 	</document-path>
 </template>
 
 <script setup lang="ts">
 import { Toggle } from "castmate-schema"
-import { useModel } from "vue"
+import { computed, onMounted, ref, useModel } from "vue"
 import DocumentPath from "../../document/DocumentPath.vue"
 import ToggleSwitch from "../base-components/ToggleSwitch.vue"
 import { SchemaToggle } from "castmate-schema"
-import { SharedDataInputProps } from "../DataInputTypes"
+import { SharedDataInputProps, defaultStringIsTemplate } from "../DataInputTypes"
+import TemplateToggle from "../base-components/TemplateToggle.vue"
+import DataInputBaseMenu from "../base-components/DataInputBaseMenu.vue"
 
 const props = defineProps<
 	{
@@ -29,6 +49,23 @@ const props = defineProps<
 >()
 
 const model = useModel(props, "modelValue")
+
+const templateMode = ref(false)
+
+const canClear = computed(() => !props.schema.required)
+const canTemplate = computed(() => !!props.schema.template)
+
+const inputMenu = ref<InstanceType<typeof DataInputBaseMenu>>()
+
+onMounted(() => {
+	if (canTemplate.value) {
+		templateMode.value = defaultStringIsTemplate(props.modelValue)
+	}
+})
+
+function onContext(ev: MouseEvent) {
+	inputMenu.value?.openContext(ev)
+}
 </script>
 
 <style scoped>

@@ -19,6 +19,7 @@ import {
 	SchemaType,
 	SchemaTypeByConstructor,
 	TemplateTypeByConstructor,
+	Toggle,
 	getTemplateRegionString,
 	getTypeByConstructor,
 	isTimer,
@@ -295,6 +296,13 @@ registerSchemaTemplate(Duration, async (value, context, schema) => {
 registerSchemaTemplate(Boolean, async (value, context, schema) => {
 	if (isBoolean(value)) return value
 	const strValue = await template(value, context)
+	return strValue !== "false"
+})
+
+registerSchemaTemplate(Toggle, async (value, context, schema) => {
+	if (isBoolean(value)) return value
+	const strValue = await template(value, context)
+	if (strValue == "toggle") return strValue
 	return strValue !== "false"
 })
 
