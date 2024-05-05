@@ -243,7 +243,10 @@ export function setupAds() {
 		await queryAdSchedule()
 
 		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
-			await queryAdSchedule()
+			setTimeout(() => {
+				//Wait a little bit after the stream comes online to query the ad schedule since we don't seem to get info on first startup
+				queryAdSchedule()
+			}, 10 * 1000)
 		})
 
 		service.eventsub.onChannelAdBreakBegin(channel.twitchId, async (event) => {

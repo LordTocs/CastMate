@@ -204,13 +204,10 @@ export function setupInfoManager() {
 		await StreamInfoManager.getInstance().startManagingInfo()
 
 		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
-			//TODO: Check if there's a stream plan active
-			ViewerCache.getInstance().resetPerStreamData()
 			live.value = true
 		})
 
 		service.eventsub.onStreamOffline(channel.twitchId, async (event) => {
-			//TODO: Check if there's a stream plan active
 			live.value = false
 		})
 	})
