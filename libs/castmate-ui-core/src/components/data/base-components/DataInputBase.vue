@@ -16,17 +16,15 @@
 				<slot name="extra" v-if="!(canTemplate && templateMode)"></slot>
 			</div>
 
-			<p-button
-				v-if="hasMenu"
-				class="ml-1"
-				text
-				icon="mdi mdi-dots-vertical"
-				aria-controls="input_menu"
-				@click="menu?.toggle($event)"
+			<data-input-base-menu
+				v-model="model"
+				v-model:template-mode="templateMode"
+				ref="inputMenu"
+				:can-template="canTemplate && toggleTemplate"
+				:can-clear="canClear"
+				:menu-extra="menuExtra"
 				:disabled="disabled"
-			></p-button>
-			<p-menu ref="menu" id="input_menu" :model="menuItems" :popup="true" v-if="hasMenu" />
-			<c-context-menu ref="contextMenu" :items="menuItems" v-if="hasMenu" />
+			/>
 		</div>
 
 		<div class="flex flex-row">
@@ -37,15 +35,14 @@
 
 <script setup lang="ts">
 import { computed, markRaw, onMounted, ref, useModel } from "vue"
-import CContextMenu from "../../util/CContextMenu.vue"
-import { LabelFloater, TemplateToggle, DocumentPath, usePropagationStop, defaultStringIsTemplate } from "../../../main"
+import { LabelFloater, TemplateToggle, defaultStringIsTemplate } from "../../../main"
 import ErrorLabel from "./ErrorLabel.vue"
 import { Schema } from "castmate-schema"
 import { useValidator } from "../../../util/validation"
 
-import PButton from "primevue/button"
-import PMenu from "primevue/menu"
-import { MenuItem, MenuItemCommandEvent } from "primevue/menuitem"
+import { MenuItem } from "primevue/menuitem"
+
+import DataInputBaseMenu from "./DataInputBaseMenu.vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -67,54 +64,9 @@ const props = withDefaults(
 
 const model = useModel(props, "modelValue")
 
-function clear() {
-	model.value = undefined
-}
 const canClear = computed(() => !props.schema.required)
 
-const menuItems = computed<MenuItem[]>(() => {
-	let result: MenuItem[] = []
-
-	if (props.menuExtra) {
-		result.push(...props.menuExtra)
-	}
-
-	if (canTemplate.value && props.toggleTemplate) {
-		if (templateMode.value) {
-			result.push({
-				label: "Disable Templating",
-				command(event) {
-					templateMode.value = false
-				},
-			})
-		} else {
-			result.push({
-				label: "Enabling Templating",
-				command(event) {
-					templateMode.value = true
-				},
-			})
-		}
-	}
-
-	if (canClear.value) {
-		result.push({
-			label: "Clear",
-			command(event) {
-				clear()
-			},
-		})
-	}
-
-	return result
-})
-
-const hasMenu = computed(() => {
-	return menuItems.value.length > 0
-})
-
-const menu = ref<PMenu>()
-const contextMenu = ref<InstanceType<typeof CContextMenu>>()
+const inputMenu = ref<InstanceType<typeof DataInputBaseMenu>>()
 
 const canTemplate = computed(() => !!props.schema.template)
 
@@ -128,13 +80,7 @@ onMounted(() => {
 
 const errorMessage = useValidator(model, () => props.schema)
 
-const stopPropagation = usePropagationStop()
-
 function onContext(ev: MouseEvent) {
-	if (hasMenu.value) {
-		contextMenu.value?.show(ev)
-		stopPropagation(ev)
-		ev.preventDefault()
-	}
+	inputMenu.value?.openContext(ev)
 }
 </script>
