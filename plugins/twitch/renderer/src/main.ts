@@ -1,4 +1,3 @@
-import { useStreamPlanStore } from "./../../../../libs/castmate-ui-core/src/components/stream-plan/stream-plan-types"
 import "./css/icons.css"
 import {
 	ProjectGroup,
@@ -9,6 +8,7 @@ import {
 	usePluginStore,
 	useProjectStore,
 	useResourceStore,
+	useStreamPlanStore,
 } from "castmate-ui-core"
 import {
 	TwitchViewer,

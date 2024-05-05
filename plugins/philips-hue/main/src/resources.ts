@@ -1,4 +1,4 @@
-import { LightResource, PlugResource, defineIoTProvider } from "castmate-plugin-iot-main"
+import { LightResource, PlugResource } from "castmate-plugin-iot-main"
 
 import {
 	ReactiveRef,

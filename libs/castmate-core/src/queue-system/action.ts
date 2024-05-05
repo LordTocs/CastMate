@@ -1,4 +1,3 @@
-import { PluginManager } from "castmate-core/src/plugins/plugin-manager"
 import {
 	IPCActionDefinition,
 	isKey,
@@ -9,6 +8,7 @@ import {
 	MaybePromise,
 	mapKeys,
 } from "castmate-schema"
+import { PluginManager } from "castmate-core"
 import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin-init"

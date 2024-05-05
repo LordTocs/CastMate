@@ -1,5 +1,4 @@
-import { PlugResource } from "castmate-plugin-iot-main"
-import { LightResource, PollingLight } from "castmate-plugin-iot-main/src/light"
+import { PlugResource, LightResource, PollingLight } from "castmate-plugin-iot-main"
 import { WyzeAccountConfig, WyzeAccountSecrets } from "castmate-plugin-wyze-shared"
 import {
 	defineAction,
