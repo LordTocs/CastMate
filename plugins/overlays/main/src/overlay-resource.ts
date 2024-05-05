@@ -145,6 +145,7 @@ export function setupOverlayResources() {
 					name: "Widget Visibility",
 					required: true,
 					default: true,
+					template: true,
 					trueIcon: "mdi mdi-eye-outline",
 					falseIcon: "mdi mdi-eye-off-outline",
 				},

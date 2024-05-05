@@ -69,6 +69,7 @@ export function setupLights() {
 					name: "Light Switch",
 					required: true,
 					default: true,
+					template: true,
 					trueIcon: "mdi mdi-lightbulb-on",
 					falseIcon: "mdi mdi-lightbulb-outline",
 				},

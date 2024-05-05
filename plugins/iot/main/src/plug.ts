@@ -51,6 +51,7 @@ export function setupPlugs() {
 					name: "Switch",
 					required: true,
 					default: true,
+					template: true,
 					trueIcon: "mdi mdi-power-plug",
 					falseIcon: "mdi mdi-power-plug-off",
 				},

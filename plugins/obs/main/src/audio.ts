@@ -46,6 +46,7 @@ export function setupAudio(obsDefault: ReactiveRef<OBSConnection>) {
 					name: "muted",
 					required: true,
 					default: true,
+					template: true,
 					trueIcon: "mdi mdi-volume-off",
 					falseIcon: "mdi mdi-volume-high",
 				},
