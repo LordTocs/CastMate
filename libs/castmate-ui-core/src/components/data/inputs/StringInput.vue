@@ -1,6 +1,17 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" :toggle-template="false" v-slot="inputProps">
-		<template-toggle v-model="model" :template-mode="!!schema.template" v-bind="inputProps" v-slot="templateProps">
+	<data-input-base
+		v-model="model"
+		:schema="schema"
+		:no-float="noFloat"
+		:toggle-template="toggleTemplate"
+		v-slot="inputProps"
+	>
+		<template-toggle
+			v-model="model"
+			:template-mode="!!schema.template && !toggleTemplate"
+			v-bind="inputProps"
+			v-slot="templateProps"
+		>
 			<p-password v-model="model" v-bind="templateProps" v-if="secret" toggle-mask :feedback="false" />
 			<enum-input
 				:schema="schema"
@@ -19,10 +30,10 @@ import DataInputBase from "../base-components/DataInputBase.vue"
 import PInputText from "primevue/inputtext"
 import PPassword from "primevue/password"
 import { type SchemaString, type SchemaBase } from "castmate-schema"
-import { SharedDataInputProps } from "../DataInputTypes"
+import { SharedDataInputProps, defaultStringIsTemplate } from "../DataInputTypes"
 import { TemplateToggle } from "../../../main"
 import EnumInput from "../base-components/EnumInput.vue"
-import { useModel } from "vue"
+import { computed, onMounted, ref, useModel } from "vue"
 
 const props = defineProps<
 	{
@@ -32,4 +43,8 @@ const props = defineProps<
 >()
 
 const model = useModel(props, "modelValue")
+
+const toggleTemplate = computed(() => {
+	return props.schema.enum != null || props.secret
+})
 </script>

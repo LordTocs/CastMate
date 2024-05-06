@@ -21,6 +21,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					type: String,
 					required: true,
 					name: "Scene",
+					template: true,
 					async enum(context: { obs: OBSConnection }) {
 						return (await context?.obs?.getSceneNames()) ?? []
 					},
@@ -29,6 +30,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					type: Number,
 					name: "Source",
 					required: true,
+					template: true,
 					async enum(context: { obs: OBSConnection; scene: string }) {
 						if (!context.obs) return []
 
@@ -96,6 +98,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					//template: true,
 					name: "Source Name",
 					required: true,
+					template: true,
 					async enum(context: { obs: OBSConnection }) {
 						const obs = context?.obs?.connection
 						if (!obs) return []
@@ -113,6 +116,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					name: "Filter Name",
 					//template: true,
 					required: true,
+					template: true,
 					async enum(context: { obs: OBSConnection; sourceName: string }) {
 						const obs = context.obs?.connection
 						if (!obs) return []
@@ -184,6 +188,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				sourceName: {
 					type: String,
 					name: "Source Name",
+					template: true,
 					async enum(context: { obs: OBSConnection }) {
 						const obs = context?.obs?.connection
 						if (!obs) return []
