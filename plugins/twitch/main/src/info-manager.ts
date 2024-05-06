@@ -38,12 +38,13 @@ export const StreamInfoManager = Service(
 			this.activeInfo = {
 				title: undefined,
 				category: undefined,
+				tags: [],
 			}
 		}
 
 		async initialize() {
 			//Load active info
-			await ensureYAML({ title: undefined, category: undefined }, "twitch", "info-manager.yaml")
+			await ensureYAML({ title: undefined, category: undefined, tags: [] }, "twitch", "info-manager.yaml")
 			this.activeInfo = await loadYAML("twitch", "info-manager.yaml")
 			rendererUpdateStreamInfo(this.activeInfo)
 		}
@@ -101,14 +102,31 @@ export const StreamInfoManager = Service(
 			await writeYAML(this.activeInfo, "twitch", "info-manager.yaml")
 		}
 
-		async reconcileTwitchUpdate(title: string, categoryId: string) {
+		async reconcileTwitchUpdate(title: string, categoryId: string, tags: string[] | undefined) {
 			const titleMatches = isProbablyFromTemplate(title, this.activeInfo.title ?? "")
+
+			let tagsMatch = true
+			const activeTags = this.activeInfo.tags ?? []
+			if (tags != null) {
+				tagsMatch = false
+
+				if (tags.length == activeTags.length) {
+					tagsMatch = true
+					for (let i = 0; i < tags.length; ++i) {
+						if (!isProbablyFromTemplate(tags[i], activeTags[i])) {
+							tagsMatch = false
+							break
+						}
+					}
+				}
+			}
 
 			const updateInfo: StreamInfo = {
 				title: titleMatches ? this.activeInfo.title : title,
 				category: categoryId,
+				tags: tags ?? activeTags,
 			}
-			const needsUpdate = !titleMatches || this.activeInfo.category != categoryId
+			const needsUpdate = !titleMatches || !tagsMatch || this.activeInfo.category != categoryId
 
 			if (needsUpdate) {
 				await this.setInfo(updateInfo)
@@ -153,6 +171,7 @@ export function setupInfoManager() {
 			properties: {
 				title: { type: String, name: "Title", template: true },
 				category: { type: TwitchCategory, name: "Category", template: true },
+				tags: { type: Array, items: { type: String, required: true, template: true }, required: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
@@ -187,7 +206,7 @@ export function setupInfoManager() {
 
 			category.value = updateCategory
 
-			await StreamInfoManager.getInstance().reconcileTwitchUpdate(event.streamTitle, event.categoryId)
+			await StreamInfoManager.getInstance().reconcileTwitchUpdate(event.streamTitle, event.categoryId, undefined)
 		})
 
 		const queryResult = await channel.apiClient.channels.getChannelInfoById(channel.twitchId)
@@ -195,7 +214,11 @@ export function setupInfoManager() {
 			title.value = queryResult.title
 			category.value = await CategoryCache.getInstance().getCategoryById(queryResult.gameId)
 
-			await StreamInfoManager.getInstance().reconcileTwitchUpdate(queryResult.title, queryResult.gameId)
+			await StreamInfoManager.getInstance().reconcileTwitchUpdate(
+				queryResult.title,
+				queryResult.gameId,
+				queryResult.tags
+			)
 		}
 
 		const stream = await channel.apiClient.streams.getStreamByUserId(channel.twitchId)

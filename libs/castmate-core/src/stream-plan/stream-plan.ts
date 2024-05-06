@@ -175,7 +175,6 @@ export const StreamPlanManager = Service(
 
 export function setupStreamPlans() {
 	StreamPlanManager.initialize()
-	StreamPlan.initialize()
 
 	StreamPlanManager.getInstance().initialize()
 
@@ -205,4 +204,8 @@ export function setupStreamPlans() {
 			return { type: Object, properties: {} }
 		},
 	})
+}
+
+export async function finishSettingUpStreamPlans() {
+	await StreamPlan.initialize()
 }

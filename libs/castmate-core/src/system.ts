@@ -8,7 +8,7 @@ import { ProfileManager } from "./profile/profile-system"
 import { defineCallableIPC, defineIPCFunc } from "./util/electron"
 import { Automation } from "./automation/automation"
 import util from "util"
-import { setupStreamPlans } from "./stream-plan/stream-plan"
+import { finishSettingUpStreamPlans, setupStreamPlans } from "./stream-plan/stream-plan"
 import { globalLogger, initializeLogging } from "./logging/logging"
 import { WebService } from "./webserver/internal-webserver"
 import { PubSubManager } from "./pubsub/pubsub-service"
@@ -63,6 +63,7 @@ export async function loadAutomations() {
 export async function finializeCastMateSetup() {
 	globalLogger.log("Finalizing Init")
 	await setupProfiles()
+	await finishSettingUpStreamPlans()
 	await ActionQueue.initialize()
 	ActionQueueManager.initialize()
 	ProfileManager.initialize()

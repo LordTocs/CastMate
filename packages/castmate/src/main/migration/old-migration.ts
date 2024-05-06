@@ -14,6 +14,8 @@ import {
 	Range,
 	RegexModeCommand,
 	Sequence,
+	StreamPlanConfig,
+	StreamPlanSegment,
 	StringModeCommand,
 	TimeAction,
 	Toggle,
@@ -2066,6 +2068,71 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 	return result
 }
 
+/////////////
+
+interface OldStreamPlanSegmentConfig {
+	id: string
+	name: string
+	streamInfo?: {
+		title?: string
+		tags?: string[]
+		category?: string
+	}
+	startAutomation?: OldAutomation
+}
+
+interface OldStreamPlanConfig {
+	name: string
+	startAutomation?: OldAutomation
+	endAutomation?: OldAutomation
+	segments: OldStreamPlanSegmentConfig[]
+}
+
+async function migrateStreamPlan(old: OldStreamPlanConfig) {
+	const newConfig: StreamPlanConfig = {
+		name: old.name,
+		activationAutomation: createInlineAutomation(),
+		deactivationAutomation: createInlineAutomation(),
+		segments: [],
+	}
+
+	if (old.startAutomation) {
+		newConfig.activationAutomation.sequence = await migrateOldAutomation(old.startAutomation)
+	}
+
+	if (old.endAutomation) {
+		newConfig.activationAutomation.sequence = await migrateOldAutomation(old.endAutomation)
+	}
+
+	for (const oldSegment of old.segments ?? []) {
+		const newSegment: StreamPlanSegment = {
+			id: oldSegment.id,
+			name: oldSegment.name,
+			components: {},
+			activationAutomation: createInlineAutomation(),
+			deactivationAutomation: createInlineAutomation(),
+		}
+
+		if (oldSegment.startAutomation) {
+			newSegment.activationAutomation.sequence = await migrateOldAutomation(oldSegment.startAutomation)
+		}
+
+		if (oldSegment.streamInfo) {
+			newSegment.components["twitch-stream-info"] = {
+				title: oldSegment.streamInfo.title,
+				category: oldSegment.streamInfo.category,
+				tags: oldSegment.streamInfo.tags,
+			}
+		}
+
+		newConfig.segments.push(newSegment)
+	}
+
+	return newConfig
+}
+
+///////////
+
 async function checkOldProfiles() {
 	try {
 		const dir = resolveProjectPath("profiles")
@@ -2165,6 +2232,26 @@ export async function migrateAllOldProfiles() {
 	}
 }
 
+export async function migrateAllOldStreamPlans() {
+	const dir = resolveProjectPath("streamplans")
+	const newDir = resolveProjectPath("stream-plans")
+	await ensureDirectory(newDir)
+
+	const files = await fs.readdir(dir)
+
+	for (const file of files) {
+		const fullPath = path.join(dir, file)
+		const data = await loadYAML(fullPath)
+
+		const id = path.basename(fullPath, ".yaml")
+
+		const newConfig = await migrateStreamPlan(data)
+
+		await writeYAML(newConfig, path.join(newDir, `${id}.yaml`))
+		await fs.unlink(fullPath)
+	}
+}
+
 export async function checkMigration() {
 	migratingOld = await needsOldMigration()
 
@@ -2179,6 +2266,8 @@ export async function finishMigration() {
 
 	//Migrate profiles
 	await migrateAllOldProfiles()
+
+	await migrateAllOldStreamPlans()
 
 	migratingOld = false
 }
