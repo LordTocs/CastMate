@@ -214,7 +214,7 @@ export async function matchAndParseCommand(
 	} else if (command.mode == "string") {
 		const regexp = new RegExp(
 			`${command.leftBoundary ? "\\b" : ""}${escapeRegExp(command.match)}${command.rightBoundary ? "\\b" : ""}`,
-			"g"
+			"ig"
 		)
 		if (message.match(regexp)) {
 			return {}
