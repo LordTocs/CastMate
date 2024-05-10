@@ -75,6 +75,10 @@ export const StreamInfoManager = Service(
 				update.gameId = resolvedInfo.category
 			}
 
+			if (resolvedInfo.tags != null) {
+				update.tags = resolvedInfo.tags
+			}
+
 			if (update.title == null && update.gameId == null) return
 
 			await TwitchAccount.channel.apiClient.channels.updateChannelInfo(TwitchAccount.channel.twitchId, update)
