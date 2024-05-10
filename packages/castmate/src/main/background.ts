@@ -4,7 +4,7 @@ import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer"
 //import electronUpdater from "electron-updater"
 import { app, BrowserWindow, ipcMain } from "electron"
 import { createWindow } from "./electron/electron-helpers"
-import { initializeCastMate, finializeCastMateSetup, loadAutomations } from "castmate-core"
+import { initializeCastMate, finializeCastMateSetup, loadAutomations, setupCastMateDirectories } from "castmate-core"
 import { loadPlugins } from "./plugins"
 import { checkMigration, finishMigration, migrateAllOldAutomations } from "./migration/old-migration"
 
@@ -36,6 +36,9 @@ function createMainWindow() {
 }
 
 app.whenReady().then(async () => {
+	//Setup our user folder location / session data
+	await setupCastMateDirectories(true) //TODO --portable? unpackaged?
+
 	if (isDevelopment && !process.env.IS_TEST) {
 		// Install Vue Devtools
 		console.log("Trying to install dev tools")

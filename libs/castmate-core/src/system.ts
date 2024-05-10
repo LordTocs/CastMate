@@ -16,6 +16,9 @@ import { SequenceResolvers } from "./queue-system/sequence"
 import { EmoteCache } from "./emotes/emote-service"
 import { GenericLoginService } from "./util/generic-login"
 
+import { app } from "electron"
+import path from "path"
+
 /*
 //This shit is dynamic and vite hates it.
 export async function loadPlugin(name: string) {
@@ -32,9 +35,20 @@ export async function loadPlugin(name: string) {
 */
 let setupComplete = false
 
+export async function setupCastMateDirectories(isPortable: boolean) {
+	if (isPortable) {
+		await setProjectDirectory("../../user")
+		await initializeLogging()
+		const sessionPath = resolveProjectPath("chrome_sessions")
+		globalLogger.log("Setting Session Folder to ", sessionPath)
+		app.setPath("sessionData", sessionPath)
+	} else {
+		await setProjectDirectory(path.join(app.getPath("userData"), "user"))
+		await initializeLogging()
+	}
+}
+
 export async function initializeCastMate() {
-	await setProjectDirectory("../../user")
-	await initializeLogging()
 	globalLogger.log("Initing Castmate")
 	await ensureDirectory(resolveProjectPath("settings"))
 	await ensureDirectory(resolveProjectPath("secrets"))
