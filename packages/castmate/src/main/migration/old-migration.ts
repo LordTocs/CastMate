@@ -1335,6 +1335,22 @@ interface OldOverlayTransitionTiming {
 	vanishAdvance?: number
 }
 
+function migrateOldTextAlign(
+	align: "left" | "center" | "right" | "justify" | undefined,
+	defaultAlign?: "left" | "center" | "right" | "justify"
+): OverlayTextAlignment | undefined {
+	if (align == null) {
+		if (!defaultAlign) return undefined
+		return {
+			textAlign: defaultAlign,
+		}
+	}
+
+	return {
+		textAlign: align,
+	}
+}
+
 widgetMigrators["Label"] = {
 	plugin: "overlays",
 	widget: "label",
@@ -1342,7 +1358,7 @@ widgetMigrators["Label"] = {
 		return {
 			message: oldConfig.message ?? "",
 			font: migrateOldFontStyle(oldConfig.textStyle) ?? OverlayTextStyle.factoryCreate(),
-			textAlign: { textAlign: oldConfig.textStyle.textAlign ?? "left" },
+			textAlign: migrateOldTextAlign(oldConfig.textStyle?.textAlign, "left"),
 			block: OverlayBlockStyle.factoryCreate(),
 		}
 	},
@@ -1405,7 +1421,7 @@ widgetMigrators["Alert"] = {
 			textBelowMedia: oldConfig.textBelowMedia,
 			title: {
 				font: migrateOldFontStyle(oldConfig.titleFormat.style),
-				textAlign: { textAlign: oldConfig.titleFormat.style.textAlign ?? "center" },
+				textAlign: migrateOldTextAlign(oldConfig.titleFormat.style.textAlign, "center"),
 				block: migrateOldOverlayPadding(oldConfig.titleFormat.padding),
 				transition: migrateOldOverlayTransition(oldConfig.titleFormat.transition),
 				appearDelay: oldConfig.titleFormat.timing?.appearDelay ?? 0,
@@ -1413,7 +1429,7 @@ widgetMigrators["Alert"] = {
 			},
 			subtitle: {
 				font: migrateOldFontStyle(oldConfig.messageFormat.style),
-				textAlign: { textAlign: oldConfig.messageFormat.style.textAlign ?? "center" },
+				textAlign: migrateOldTextAlign(oldConfig.messageFormat.style.textAlign, "center"),
 				block: migrateOldOverlayPadding(oldConfig.messageFormat.padding),
 				transition: migrateOldOverlayTransition(oldConfig.messageFormat.transition),
 				appearDelay: oldConfig.messageFormat.timing?.appearDelay ?? 0,
@@ -1456,12 +1472,12 @@ widgetMigrators["Wheel"] = {
 				text: i.text ?? "",
 				colorOverride: i.clickOverride,
 				fontOverride: migrateOldFontStyle(i.fontOverride),
-				textAlignOverride: i.fontOverride?.textAlign,
+				textAlignOverride: migrateOldTextAlign(i.fontOverride?.textAlign),
 			})),
 			style: oldConfig.colors.map((c) => ({
 				color: c.color,
 				font: migrateOldFontStyle(c.font),
-				textAlign: c.font?.textAlign ?? "center",
+				textAlign: migrateOldTextAlign(c.font?.textAlign, "center"),
 				block: OverlayBlockStyle.factoryCreate(),
 			})),
 			damping: {
