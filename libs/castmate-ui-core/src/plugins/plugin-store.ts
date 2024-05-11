@@ -218,11 +218,11 @@ export const usePluginStore = defineStore("plugins", () => {
 	async function initialize() {
 		handleIpcMessage("plugins", "registerPlugin", (event, plugin: IPCPluginDefinition) => {
 			//console.log("Registering Late Plugin", plugin.id)
-			//pluginMap.value.set(plugin.id, ipcParsePluginDefinition(plugin))
+			pluginMap.value.set(plugin.id, ipcParsePluginDefinition(plugin))
 		})
 
 		handleIpcMessage("plugins", "unregisterPlugin", (event, id: string) => {
-			//pluginMap.value.delete(id)
+			pluginMap.value.delete(id)
 		})
 
 		handleIpcMessage("plugins", "updateSettings", (event, id: string, settingId: string, value: any) => {
