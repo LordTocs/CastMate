@@ -1487,7 +1487,7 @@ widgetMigrators["Wheel"] = {
 				color: c.color,
 				font: migrateOldFontStyle(c.font),
 				textAlign: migrateOldTextAlign(c.font?.textAlign, "center"),
-				block: OverlayBlockStyle.factoryCreate(),
+				block: OverlayBlockStyle.factoryCreate({ verticalAlign: "center" }),
 			})),
 			damping: {
 				base: oldConfig.damping?.base ?? 6,
