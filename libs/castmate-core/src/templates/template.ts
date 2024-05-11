@@ -8,6 +8,7 @@ import {
 	Duration,
 	DynamicType,
 	FilePath,
+	Range,
 	RemoteSchemaType,
 	RemoteTemplateIntermediateSubstring,
 	RemoteTemplateString,
@@ -326,6 +327,25 @@ registerSchemaTemplate(DynamicType, async (value, context, schema: SchemaDynamic
 	globalLogger.log("Trying to template", value, rootValue, schema)
 
 	return await templateSchema(value, dynamicSchema, context)
+})
+
+registerSchemaTemplate(Range, async (value, context, schema) => {
+	const result: Range = {}
+
+	async function templateNum(value: number | string) {
+		if (isNumber(value)) return value
+		return Number(await template(value, context))
+	}
+
+	if (value.min != null) {
+		result.min = await templateNum(value.min)
+	}
+
+	if (value.max != null) {
+		result.max = await templateNum(value.max)
+	}
+
+	return result
 })
 
 ////

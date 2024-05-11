@@ -1,6 +1,11 @@
 import { isNumber } from "lodash"
 import { registerType, Schema, SchemaBase } from "../schema"
 
+export interface TemplateRange {
+	min?: number | string
+	max?: number | string
+}
+
 export interface Range {
 	min?: number
 	max?: number
@@ -70,6 +75,10 @@ export interface SchemaRange extends SchemaBase<Range> {
 declare module "../schema" {
 	interface SchemaTypeMap {
 		Range: [SchemaRange, Range]
+	}
+
+	interface TemplateSchemaTypeMap {
+		Range: [SchemaRange, TemplateRange]
 	}
 }
 
