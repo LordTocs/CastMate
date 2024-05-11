@@ -7,6 +7,7 @@ import {
 	Color,
 	Command,
 	CommandModeCommand,
+	DelayedResolver,
 	InstantAction,
 	MaybePromise,
 	OffsetActions,
@@ -17,9 +18,11 @@ import {
 	StreamPlanConfig,
 	StreamPlanSegment,
 	StringModeCommand,
+	TemplateRange,
 	TimeAction,
 	Toggle,
 	TriggerData,
+	createDelayedResolver,
 	createInlineAutomation,
 	getTypeByConstructor,
 	isTimeAction,
@@ -31,6 +34,8 @@ import {
 	PluginManager,
 	Profile,
 	ResourceRegistry,
+	defineCallableIPC,
+	defineIPCFunc,
 	ensureDirectory,
 	loadYAML,
 	resolveProjectPath,
@@ -211,6 +216,12 @@ function migrateTemplateStr<T>(templateStr: T | string | undefined) {
 	return output
 }
 
+function migrateBracketlessNumberTemplate(temp: number | string | undefined) {
+	if (temp == null || typeof temp == "number") return temp
+
+	return `{{ ${migrateTemplateStr(temp)} }}`
+}
+
 function migrateResourceId(id: string | undefined) {
 	return id
 }
@@ -233,6 +244,16 @@ registerOldActionMigrator("castmate", "automation", {
 	migrateConfig(oldConfig: { automation: string }) {
 		return {
 			automation: migrateAutomationId(oldConfig.automation), //TODO
+		}
+	},
+})
+
+registerOldActionMigrator("castmate", "delay", {
+	plugin: "time",
+	action: "delay",
+	migrateConfig(oldConfig) {
+		return {
+			duration: migrateBracketlessNumberTemplate(oldConfig),
 		}
 	},
 })
@@ -342,7 +363,7 @@ registerOldActionMigrator("twitch", "createPrediction", {
 	migrateConfig(oldConfig: { title: string | undefined; duration: number | string | undefined; outcomes: string[] }) {
 		return {
 			title: migrateTemplateStr(oldConfig.title),
-			duration: migrateTemplateStr(oldConfig.duration),
+			duration: migrateBracketlessNumberTemplate(oldConfig.duration),
 			outcomes: oldConfig.outcomes.map((o) => migrateTemplateStr(o)),
 		}
 	},
@@ -370,7 +391,7 @@ registerOldActionMigrator("twitch", "timeout", {
 	}) {
 		return {
 			viewer: await migrateTwitchUser(oldConfig.user),
-			duration: migrateTemplateStr(oldConfig.duration) ?? 15,
+			duration: migrateBracketlessNumberTemplate(oldConfig.duration) ?? 15,
 			reason: migrateTemplateStr(oldConfig.reason),
 		}
 	},
@@ -1104,11 +1125,13 @@ function migrateOldLightColor(hbsk: OldHbsk | undefined): LightColor | undefined
 	if (!hbsk) return undefined
 
 	if ("hue" in hbsk) {
-		return `hsb(${migrateTemplateStr(hbsk.hue) ?? 0}, ${migrateTemplateStr(hbsk.sat) ?? 0}, ${
-			migrateTemplateStr(hbsk.bri) ?? 0
-		})` as LightColor
+		return `hsb(${migrateBracketlessNumberTemplate(hbsk.hue) ?? 0}, ${
+			migrateBracketlessNumberTemplate(hbsk.sat) ?? 0
+		}, ${migrateBracketlessNumberTemplate(hbsk.bri) ?? 0})` as LightColor
 	} else {
-		return `kb(${migrateTemplateStr(hbsk.kelvin) ?? 0}, ${migrateTemplateStr(hbsk.bri) ?? 0})` as LightColor
+		return `kb(${migrateBracketlessNumberTemplate(hbsk.kelvin) ?? 0}, ${
+			migrateBracketlessNumberTemplate(hbsk.bri) ?? 0
+		})` as LightColor
 	}
 }
 
@@ -1120,7 +1143,7 @@ registerOldActionMigrator("iot", "light", {
 			light: migrateIotId(oldConfig.light),
 			on: oldConfig.on,
 			lightColor: migrateOldLightColor(oldConfig.lightColor),
-			transition: migrateTemplateStr(oldConfig.duration),
+			transition: migrateBracketlessNumberTemplate(oldConfig.duration),
 		}
 	},
 })
@@ -1526,7 +1549,7 @@ registerOldActionMigrator("overlays", "wheelSpin", {
 	migrateConfig(oldConfig: { wheel: string; strength: number }) {
 		return {
 			widget: migrateOldOverlayWidget(oldConfig.wheel),
-			strength: migrateTemplateStr(oldConfig.strength),
+			strength: migrateBracketlessNumberTemplate(oldConfig.strength),
 		}
 	},
 })
@@ -1680,14 +1703,23 @@ registerOldActionMigrator("variables", "set", {
 	},
 })
 
+function migrateOldRangeTemplate(oldRange: TemplateRange | undefined): TemplateRange | undefined {
+	if (oldRange == null) return undefined
+
+	return {
+		...(oldRange.min ? { min: migrateBracketlessNumberTemplate(oldRange.min) } : {}),
+		...(oldRange.max ? { max: migrateBracketlessNumberTemplate(oldRange.max) } : {}),
+	}
+}
+
 registerOldActionMigrator("variables", "inc", {
 	plugin: "variables",
 	action: "offset",
-	migrateConfig(oldConfig: { name: string; offset: any; clampRange: Range }) {
+	migrateConfig(oldConfig: { name: string; offset: any; clampRange: TemplateRange }) {
 		return {
 			variable: oldConfig.name,
-			offset: migrateTemplateStr(oldConfig.offset),
-			clamp: oldConfig.clampRange,
+			offset: migrateBracketlessNumberTemplate(oldConfig.offset),
+			clamp: migrateOldRangeTemplate(oldConfig.clampRange),
 		}
 	},
 })
@@ -1840,7 +1872,7 @@ async function migrateOldAutomation(oldAutomation: OldAutomation): Promise<Seque
 				oldOffsetTime = Math.max(oldOffsetTime, oldAction.data as number)
 				logger.log("Old Time Offset Now", oldOffsetTime)
 				continue
-			} else if (oldAction.action == "delay") {
+			} else if (oldAction.action == "delay" && typeof oldAction.data == "number") {
 				oldOffsetTime += Math.max(0, oldAction.data as number)
 				logger.log("Old Time Offset Now", oldOffsetTime)
 				continue
@@ -2193,6 +2225,11 @@ let oldSecrets: any = {}
 export async function migrateAllOldAutomations() {
 	if (!migratingOld) return
 
+	logger.log("Settings Migration Complete")
+	rendererMigrateSettingsComplete()
+
+	await migrationFinishLatch?.promise
+
 	const dir = resolveProjectPath("automations")
 	const files = await fs.readdir(dir)
 
@@ -2252,12 +2289,39 @@ export async function migrateAllOldStreamPlans() {
 	}
 }
 
+const rendererNeedsMigrate = defineCallableIPC<() => any>("oldMigration", "needsMigrate")
+let migrationStartLatch: DelayedResolver<void> | undefined = undefined
+const rendererMigrateSettingsComplete = defineCallableIPC<() => any>("oldMigration", "migrateSettingsComplete")
+let migrationFinishLatch: DelayedResolver<void> | undefined = undefined
+const rendererMigrateProfilesComplete = defineCallableIPC<() => any>("oldMigration", "migrateProfilesComplete")
+
+defineIPCFunc("oldMigration", "needsMigrate", () => {
+	return migratingOld
+})
+
+defineIPCFunc("oldMigration", "beginMigrate", () => {
+	migrationStartLatch?.resolve()
+})
+
+defineIPCFunc("oldMigration", "finishMigrate", () => {
+	migrationFinishLatch?.resolve()
+})
+
 export async function checkMigration() {
 	migratingOld = await needsOldMigration()
 
 	if (migratingOld) {
 		oldSettings = await loadYAML(resolveProjectPath("settings.yaml"))
 		oldSecrets = await loadYAML(resolveProjectPath("secrets", "secrets.yaml"))
+
+		migrationStartLatch = createDelayedResolver()
+		migrationFinishLatch = createDelayedResolver()
+
+		rendererNeedsMigrate()
+
+		await migrationStartLatch.promise
+
+		//Create backup .zip?
 	}
 }
 
@@ -2270,6 +2334,8 @@ export async function finishMigration() {
 	await migrateAllOldStreamPlans()
 
 	migratingOld = false
+
+	rendererMigrateProfilesComplete()
 }
 
 export async function migratePlugin(pluginId: string) {

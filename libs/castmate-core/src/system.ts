@@ -33,6 +33,8 @@ export async function loadPlugin(name: string) {
 	}
 }
 */
+
+let initialSetupComplete = false
 let setupComplete = false
 
 export async function setupCastMateDirectories(isPortable: boolean) {
@@ -47,6 +49,8 @@ export async function setupCastMateDirectories(isPortable: boolean) {
 		await initializeLogging()
 	}
 }
+
+const notifyRendererInitialSetupFinished = defineCallableIPC<() => void>("castmate", "initialSetupFinished")
 
 export async function initializeCastMate() {
 	globalLogger.log("Initing Castmate")
@@ -66,6 +70,10 @@ export async function initializeCastMate() {
 	//How do we load plugins???
 	//await loadPlugin("twitch")
 	defineIPCFunc("castmate", "isSetupFinished", () => setupComplete)
+	defineIPCFunc("castmate", "isInitialSetupFinished", () => initialSetupComplete)
+
+	initialSetupComplete = true
+	notifyRendererInitialSetupFinished()
 }
 
 const notifyRendererSetupFinished = defineCallableIPC<() => void>("castmate", "setupFinished")

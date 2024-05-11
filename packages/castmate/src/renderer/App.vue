@@ -20,6 +20,7 @@ import {
 	type DockedArea,
 	useIpcCaller,
 	CancellableDynamicDialog,
+	useIpcMessage,
 } from "castmate-ui-core"
 import ProjectView from "./components/project/ProjectView.vue"
 //import PDynamicDialog from "primevue/dynamicdialog"
@@ -27,11 +28,44 @@ import PConfirmDialog from "primevue/confirmdialog"
 import { useInitStore } from "./store/init-store"
 
 import { setupGenericLoginService } from "castmate-ui-core"
+import { onMounted } from "vue"
+import { useDialog } from "primevue/usedialog"
+import MigrationDialog from "./components/migration/MigrationDialog.vue"
 
 const initStore = useInitStore()
 const dockingStore = useDockingStore()
 
 setupGenericLoginService()
+
+const dialog = useDialog()
+
+function startMigration() {
+	dialog.open(MigrationDialog, {
+		props: {
+			style: {
+				width: "75vw",
+			},
+			modal: true,
+			closable: false,
+		},
+		onClose(options) {
+			if (!options?.data) {
+			}
+		},
+	})
+}
+
+const needsMigrate = useIpcCaller<() => boolean>("oldMigration", "needsMigrate")
+
+useIpcMessage("oldMigration", "needsMigrate", () => {
+	startMigration()
+})
+
+onMounted(async () => {
+	if (await needsMigrate()) {
+		startMigration()
+	}
+})
 </script>
 
 <style>

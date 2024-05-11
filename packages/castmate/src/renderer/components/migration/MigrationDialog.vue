@@ -7,7 +7,7 @@
 			</h3>
 		</div>
 		<div v-if="!backupCreated" class="flex flex-row justify-content-center align-items-center py-5">
-			<p-button size="large" @click="doBackup">Back Up and Begin Updating</p-button>
+			<p-button :loading="migratingSettings" size="large" @click="doBackup">Back Up and Begin Updating</p-button>
 		</div>
 		<div v-else-if="migratedSettings && !migratedProfiles">
 			<div class="flex flex-row gap-4">
@@ -48,12 +48,14 @@
 					</p>
 					<data-input v-model="obsConfig" :schema="obsConfigSchema"></data-input>
 					<div class="flex flex-row justify-content-center px-2">
-						<p-button> Save </p-button>
+						<p-button @click="updateObsSettings"> Save </p-button>
 					</div>
 				</div>
 			</div>
 			<div class="flex flex-row justify-content-center">
-				<p-button :disabled="!canMigrateProfiles" @click="doMigrate" size="large"> Migrate! </p-button>
+				<p-button :loading="migratingProfiles" :disabled="!canMigrateProfiles" @click="doMigrate" size="large">
+					Migrate!
+				</p-button>
 			</div>
 		</div>
 		<div v-else-if="migratedProfiles">
@@ -68,7 +70,15 @@
 
 <script setup lang="ts">
 import { declareSchema } from "castmate-schema"
-import { AccountWidget, DataInput, useDialogRef, useResourceArray } from "castmate-ui-core"
+import {
+	AccountWidget,
+	DataInput,
+	useDialogRef,
+	useIpcCaller,
+	useIpcMessage,
+	useResourceArray,
+	useResourceStore,
+} from "castmate-ui-core"
 import { computed, ref, watch } from "vue"
 
 import PButton from "primevue/button"
@@ -79,6 +89,19 @@ import { SchemaType } from "castmate-schema"
 import MigrationCheckBox from "./MigrationCheckBox.vue"
 import { TwitchAccountConfig } from "castmate-plugin-twitch-shared"
 import { AccountState } from "castmate-schema"
+
+const beginMigration = useIpcCaller<() => any>("oldMigration", "beginMigrate")
+const finishMigration = useIpcCaller<() => any>("oldMigration", "finishMigrate")
+
+useIpcMessage("oldMigration", "migrateSettingsComplete", () => {
+	console.log("Migration of Settings Complete")
+	migratedSettings.value = true
+})
+
+useIpcMessage("oldMigration", "migrateProfilesComplete", () => {
+	console.log("Migration of Profiles Complete")
+	migratedProfiles.value = true
+})
 
 const creatingBackup = ref(false)
 const backupCreated = ref(false)
@@ -102,10 +125,10 @@ const obsConfig = ref<SchemaType<typeof obsConfigSchema>>({
 	password: undefined,
 })
 
-function doBackup() {
-	//TODO: Actually do backup / migrate settings
+async function doBackup() {
+	await beginMigration()
 	backupCreated.value = true
-	migratedSettings.value = true
+	migratingSettings.value = true
 }
 
 const obsConnections = useResourceArray<ResourceData<OBSConnectionConfig, OBSConnectionState>>("OBSConnection")
@@ -128,6 +151,7 @@ const isObsConnected = computed(() => {
 	return obsConnections.value[0]?.state.connected ?? false
 })
 
+const resourceStore = useResourceStore()
 const twitchAccounts = useResourceArray<ResourceData<TwitchAccountConfig, AccountState>>("TwitchAccount")
 
 const areAccountsConnected = computed(() => {
@@ -141,9 +165,13 @@ const canMigrateProfiles = computed(() => {
 	return isObsConnected.value && areAccountsConnected.value
 })
 
-function doMigrate() {
-	//TODO: Tell main process to migrate profiles!
-	migratedProfiles.value = true
+function updateObsSettings() {
+	resourceStore.applyResourceConfig("OBSConnection", obsConnections.value[0].id, obsConfig.value)
+}
+
+async function doMigrate() {
+	await finishMigration()
+	migratingProfiles.value = true
 }
 
 const dialogRef = useDialogRef()

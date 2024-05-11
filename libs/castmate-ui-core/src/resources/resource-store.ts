@@ -108,12 +108,14 @@ export const useResourceStore = defineStore("resources", () => {
 			storage.resources.set(data.id, data)
 		})
 
-		const typeNames = await getResourceTypeNames()
-		const resourceArrays = await Promise.all(typeNames.map((tn) => getResources(tn)))
+		try {
+			const typeNames = await getResourceTypeNames()
+			const resourceArrays = await Promise.all(typeNames.map((tn) => getResources(tn)))
 
-		for (let i = 0; i < typeNames.length; ++i) {
-			resourceMap.value.set(typeNames[i], convertResourcesToStorage(resourceArrays[i]))
-		}
+			for (let i = 0; i < typeNames.length; ++i) {
+				resourceMap.value.set(typeNames[i], convertResourcesToStorage(resourceArrays[i]))
+			}
+		} catch (err) {}
 	}
 
 	function registerSettingComponent(resourceType: string, component: Component) {

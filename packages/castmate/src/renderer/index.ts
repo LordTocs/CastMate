@@ -108,13 +108,17 @@ const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 async function init() {
 	//Wait for the main process to initialize
 	await initStore.initialize()
-	await initStore.waitForInit()
+
+	await initStore.waitForInitialSetup()
 
 	//Now init all the stores
-
+	await initData()
 	await pluginStore.initialize()
 	await resourceStore.initialize()
 	await projecStore.initialize()
+
+	await initStore.waitForInit()
+
 	await actionQueueStore.initialize()
 	await dashboardStore.initialize()
 	await planStore.initialize()
@@ -131,7 +135,6 @@ async function init() {
 
 	initializeQueues()
 
-	await initData()
 	await initOverlaysPlugin(app)
 
 	await initVariablesPlugin()
