@@ -1,7 +1,7 @@
 <template>
 	<timed-reveal ref="alertReveal" :transition="config.transition" class="frame-sized">
 		<div>
-			<media-container class="alert" :media-file="activeMedia" ref="mediaHolder">
+			<media-container class="alert" :media-file="activeMedia" ref="mediaHolder" :muted="isEditor">
 				<template v-if="!props.config.textBelowMedia">
 					<alert-text-box :box-config="config.title" :text="headerText" ref="titleBox" />
 					<alert-text-box :box-config="config.subtitle" :text="messageText" ref="subtitleBox" />
@@ -27,7 +27,7 @@ import {
 import { Color, MediaFile } from "castmate-schema"
 import { Duration } from "castmate-schema"
 import { clearInterval } from "timers"
-import { onMounted, onUnmounted, ref, watch } from "vue"
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue"
 import AlertTextBox from "../components/AlertTextBox.vue"
 
 const isEditor = useIsEditor()
@@ -216,17 +216,21 @@ function showAlert(header: string, message: string, color: Color, mediaIdx: numb
 	const mediaOption = props.config.media?.[mediaIdx]
 
 	const duration = mediaOption?.duration ?? 4
-
-	console.log("Show Alert!", duration, mediaOption?.media)
+	//console.log("    ")
+	//console.log("    ")
+	//console.log("    ")
+	//console.log("Show Alert!", duration, mediaOption?.media)
 
 	if (mediaOption) {
 		activeMedia.value = mediaOption.media
 	}
 
-	alertReveal.value?.appear?.(duration)
-	titleBox.value?.appear?.(duration)
-	subtitleBox.value?.appear?.(duration)
-	mediaHolder.value?.restart?.()
+	nextTick(() => {
+		alertReveal.value?.appear?.(duration)
+		titleBox.value?.appear?.(duration)
+		subtitleBox.value?.appear?.(duration)
+		mediaHolder.value?.restart?.()
+	})
 
 	return duration
 }
