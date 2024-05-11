@@ -85,6 +85,7 @@ interface OldAction {
 interface OldAutomation {
 	description: string
 	actions: OldAction[]
+	sync?: boolean
 }
 
 interface OldTrigger {
@@ -258,14 +259,22 @@ registerOldActionMigrator("castmate", "delay", {
 	},
 })
 
+let mainQueueId = ""
+
 registerOldSettingsMigrator("castmate", {
 	plugin: "castmate",
-	migrateSettings(oldSettings: { port: number | undefined }, oldSecrets) {
+	async migrateSettings(oldSettings: { port: number | undefined }, oldSecrets) {
 		const settings: Record<string, any> = {}
 
 		if (oldSettings.port != null) {
 			settings.port = oldSettings.port
 		}
+
+		mainQueueId = await migrateCreateFileResource("queues", {
+			name: "Main",
+			paused: false,
+			gap: 0,
+		})
 
 		return { settings, secrets: {} }
 	},
@@ -2093,6 +2102,12 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 				}
 
 				newTrigger.sequence = await migrateInlineOldAutomation(oldTrigger.automation)
+
+				if (typeof oldTrigger.automation == "object") {
+					if (oldTrigger.automation.sync) {
+						newTrigger.queue = mainQueueId
+					}
+				}
 
 				logger.log("Migrated Trigger", newTrigger)
 
