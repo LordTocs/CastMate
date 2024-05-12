@@ -6,6 +6,7 @@ import {
 	ResourceRegistry,
 	onLoad,
 	getLocalIP,
+	sleep,
 } from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
 import {
@@ -23,6 +24,7 @@ import ChildProcess from "node:child_process"
 
 import { app } from "electron"
 import regedit from "regedit"
+import { nextTick } from "node:process"
 
 class SceneHistory {
 	private history: string[] = []
@@ -138,10 +140,19 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		return true
 	}
 
+	async save() {
+		const result = await super.save()
+		this.tryConnect(this.config.host, this.config.port, this.config.password)
+		return result
+	}
+
 	private setupEvents() {
-		this.connection.on("ConnectionClosed", () => {
+		this.connection.on("ConnectionClosed", (err) => {
 			this.state.connected = false
+			//logger.log("Connection Closed", err.code, err.name, err.message)
+
 			if (this.forceStop) {
+				logger.log("Force Stopping OBS Connection Loop")
 				this.forceStop = false
 				return
 			}
@@ -183,10 +194,25 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		})
 
 		this.connection.on("Identified", (ev) => {
-			this.queryInitialState()
+			//logger.log("Identified!")
+			this.state.connected = true
+
+			this.queryInitialStateLoop()
 		})
 
 		//this.connection.on("")
+	}
+
+	private async queryInitialStateLoop() {
+		for (let i = 0; i < 20; ++i) {
+			try {
+				await this.queryInitialState()
+				return
+			} catch (err) {
+				//We probably got a not ready error?
+			}
+			await sleep(1000)
+		}
 	}
 
 	private async queryInitialState() {
@@ -216,12 +242,19 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		}
 
 		try {
+			this.forceStop = true
 			await this.connection.disconnect()
-			await this.connection.connect(`ws://${hostname}:${port}`, password)
-			this.state.connected = true
+			this.forceStop = false
+			//We have to wait for the next tick for the disconnect to completely propagate.
+			nextTick(() => {
+				//logger.log("Trying Connection", `ws://${hostname}:${port}`, password)
+				this.connection.connect(`ws://${hostname}:${port}`, password).catch((err) => {
+					//logger.log("Connect Failed", err)
+				})
+			})
+
 			return true
 		} catch (err) {
-			this.state.connected = false
 			return false
 		}
 	}

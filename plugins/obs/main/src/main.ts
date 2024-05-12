@@ -22,6 +22,8 @@ import { setupMedia } from "./media"
 import { setupToggles } from "./toggles"
 import { setupTransforms } from "./transform"
 
+import { attemptQRReading, setupAutoConnect } from "./auto-connect"
+
 export default definePlugin(
 	{
 		id: "obs",
@@ -35,6 +37,7 @@ export default definePlugin(
 		logger.log("Starting OBS!")
 
 		setupConnections()
+		setupAutoConnect()
 
 		const obsDefault = defineSetting("obsDefault", {
 			type: OBSConnection,
@@ -157,4 +160,4 @@ export default definePlugin(
 	}
 )
 
-export { OBSConnection }
+export { OBSConnection, attemptQRReading }
