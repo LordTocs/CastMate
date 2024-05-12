@@ -88,7 +88,8 @@ const waveSvg = computed(() => {
 		return result
 	}
 
-	const sampleCount = Math.floor(500 * audioMetaData.value.duration) //TODO, make better?
+	//Set a max length to for generating samples incase EXTRA long sounds get loaded.
+	const sampleCount = Math.floor(500 * Math.min(audioMetaData.value.duration, 30)) //TODO, make better?
 
 	//First the top
 	const strideTop = topData.length / sampleCount
