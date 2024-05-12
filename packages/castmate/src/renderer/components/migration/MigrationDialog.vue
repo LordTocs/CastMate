@@ -6,10 +6,18 @@
 				We need to update your existing CastMate data.
 			</h3>
 		</div>
-		<div v-if="!backupCreated" class="flex flex-row justify-content-center align-items-center py-5">
+		<div v-if="!creatingBackup" class="flex flex-row justify-content-center align-items-center py-5">
 			<p-button :loading="migratingSettings" size="large" @click="doBackup">Back Up and Begin Updating</p-button>
 		</div>
-		<div v-else-if="migratedSettings && !migratedProfiles">
+		<div v-else-if="!backupCreated" class="flex flex-column align-items-center">
+			<h1>Creating Backup</h1>
+			<p-progress-spinner />
+		</div>
+		<div v-else-if="!migratedSettings" class="flex flex-column align-items-center">
+			<h1>Migrating Settings</h1>
+			<p-progress-spinner />
+		</div>
+		<div v-else-if="!migratingProfiles">
 			<div class="flex flex-row gap-4">
 				<div class="flex-grow-1 flex flex-column">
 					<h1 class="text-center">
@@ -43,7 +51,7 @@
 					<p class="m-0 text-center">
 						Connect to OBS<br />
 						<span class="p-text-secondary text-sm">
-							CastMate needs OBS open to properly update id values.
+							CastMate needs OBS <b>open</b> and <b>connected</b> to properly update data.
 						</span>
 					</p>
 					<data-input v-model="obsConfig" :schema="obsConfigSchema"></data-input>
@@ -58,11 +66,15 @@
 				</p-button>
 			</div>
 		</div>
+		<div v-else-if="!migratedProfiles" class="flex flex-column align-items-center">
+			<h1>Migrating Automations and Profiles</h1>
+			<p-progress-spinner />
+		</div>
 		<div v-else-if="migratedProfiles">
 			<h2 class="text-center">Your data has been updated to work with version 0.5!</h2>
 			<!--todo: Migration Video Here!-->
 			<div class="flex flex-row justify-content-center">
-				<p-button size="large" @click="doDone">Go To Castmate!</p-button>
+				<p-button size="large" @click="doDone">Let's Go!</p-button>
 			</div>
 		</div>
 	</div>
@@ -81,6 +93,8 @@ import {
 } from "castmate-ui-core"
 import { computed, ref, watch } from "vue"
 
+import PProgressSpinner from "primevue/progressspinner"
+
 import PButton from "primevue/button"
 import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
 import { ResourceData } from "castmate-schema"
@@ -92,6 +106,12 @@ import { AccountState } from "castmate-schema"
 
 const beginMigration = useIpcCaller<() => any>("oldMigration", "beginMigrate")
 const finishMigration = useIpcCaller<() => any>("oldMigration", "finishMigrate")
+
+useIpcMessage("oldMigration", "migrateBackupComplete", () => {
+	console.log("Backup Complete")
+	backupCreated.value = true
+	migratingSettings.value = true
+})
 
 useIpcMessage("oldMigration", "migrateSettingsComplete", () => {
 	console.log("Migration of Settings Complete")
@@ -127,8 +147,7 @@ const obsConfig = ref<SchemaType<typeof obsConfigSchema>>({
 
 async function doBackup() {
 	await beginMigration()
-	backupCreated.value = true
-	migratingSettings.value = true
+	creatingBackup.value = true
 }
 
 const obsConnections = useResourceArray<ResourceData<OBSConnectionConfig, OBSConnectionState>>("OBSConnection")

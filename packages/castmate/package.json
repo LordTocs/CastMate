@@ -16,6 +16,7 @@
 	},
 	"electronVersion": "29.1.1",
 	"dependencies": {
+		"archiver": "^7.0.1",
 		"castmate-core": "workspace:^",
 		"castmate-plugin-discord-main": "workspace:^",
 		"castmate-plugin-elgato-main": "workspace:^",
@@ -46,6 +47,7 @@
 	"devDependencies": {
 		"@mdi/font": "^7.1.96",
 		"@rollup/plugin-node-resolve": "^15.2.1",
+		"@types/archiver": "^6.0.2",
 		"@vitejs/plugin-vue": "*",
 		"@vueuse/core": "*",
 		"castmate-overlay-core": "workspace:^",

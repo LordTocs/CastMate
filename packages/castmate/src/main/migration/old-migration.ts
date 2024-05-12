@@ -51,6 +51,7 @@ import { OBSBoundsType, OBSConnectionConfig, OBSSourceTransform } from "castmate
 import { SpellHook } from "castmate-plugin-spellcast-main"
 import { OBSConnection } from "castmate-plugin-obs-main"
 import fs, { unlink } from "fs/promises"
+import fsSync from "fs"
 import path from "path"
 import { RCONConnectionConfig } from "castmate-plugin-minecraft-shared"
 import axios from "axios"
@@ -66,6 +67,9 @@ import {
 	OverlayWidgetPosition,
 	OverlayWidgetSize,
 } from "castmate-plugin-overlays-shared"
+
+import archiver from "archiver"
+import { DiscordWebhookConfig } from "castmate-plugin-discord-shared"
 
 const logger = usePluginLogger("migrate")
 
@@ -981,6 +985,50 @@ registerOldActionMigrator("discord", "discordMessage", {
 			webhook: migrateResourceId(oldConfig.channel),
 			message: migrateTemplateStr(oldConfig.message),
 			files: [],
+		}
+	},
+})
+
+interface OldDiscordHookConfig {
+	name: string
+	url: string
+}
+
+async function migrateOldDiscordHook(id: string) {
+	const config = (await loadYAML("discordhooks", `${id}.yaml`)) as OldDiscordHookConfig
+
+	const newConfig: DiscordWebhookConfig = {
+		name: config.name,
+		webhookUrl: config.url,
+	}
+
+	await writeYAML(newConfig, "discord", "webhooks")
+
+	await fs.unlink(resolveProjectPath("discordhooks", `${id}.yaml`))
+}
+
+registerOldSettingsMigrator("discord", {
+	plugin: "discord",
+	async migrateSettings(oldSettings, oldSecrets) {
+		const dir = resolveProjectPath("discordhooks")
+		const files = await fs.readdir(dir)
+
+		await ensureDirectory(resolveProjectPath("discord"))
+		await ensureDirectory(resolveProjectPath("discord", "webhooks"))
+
+		for (const id of files) {
+			try {
+				await migrateOldDiscordHook(id)
+			} catch (err) {
+				logger.error("Error Migrating", id, err)
+			}
+		}
+
+		await fs.unlink(dir)
+
+		return {
+			secrets: {},
+			settings: {},
 		}
 	},
 })
@@ -2318,10 +2366,13 @@ export async function migrateAllOldStreamPlans() {
 		await writeYAML(newConfig, path.join(newDir, `${id}.yaml`))
 		await fs.unlink(fullPath)
 	}
+
+	await fs.unlink(dir)
 }
 
 const rendererNeedsMigrate = defineCallableIPC<() => any>("oldMigration", "needsMigrate")
 let migrationStartLatch: DelayedResolver<void> | undefined = undefined
+const rendererMigrateBackupComplete = defineCallableIPC<() => any>("oldMigration", "migrateBackupComplete")
 const rendererMigrateSettingsComplete = defineCallableIPC<() => any>("oldMigration", "migrateSettingsComplete")
 let migrationFinishLatch: DelayedResolver<void> | undefined = undefined
 const rendererMigrateProfilesComplete = defineCallableIPC<() => any>("oldMigration", "migrateProfilesComplete")
@@ -2338,6 +2389,55 @@ defineIPCFunc("oldMigration", "finishMigrate", () => {
 	migrationFinishLatch?.resolve()
 })
 
+async function createBackup() {
+	const backupPath = resolveProjectPath("../backup_04.zip")
+
+	logger.log("Creating Backup")
+
+	const outStream = fsSync.createWriteStream(backupPath)
+
+	const closePromise = new Promise<void>((resolve, reject) => {
+		outStream.once("close", () => {
+			resolve()
+		})
+	})
+
+	const archive = archiver("zip", { zlib: { level: 9 } })
+
+	archive.pipe(outStream)
+
+	function archiveDir(dir: string) {
+		const dirpath = resolveProjectPath(dir)
+		if (fsSync.existsSync(dirpath)) {
+			archive.directory(dirpath, dir)
+		}
+	}
+
+	function archiveFile(file: string) {
+		const filepath = resolveProjectPath(file)
+		if (fsSync.existsSync(filepath)) {
+			archive.file(filepath, { name: file })
+		}
+	}
+
+	archiveDir("automations")
+	archiveDir("cache")
+	archiveDir("discordhooks")
+	archiveDir("overlays")
+	archiveDir("profiles")
+	archiveDir("secrets")
+	archiveDir("streamplans")
+
+	archiveFile("settings.yaml")
+	archiveFile("state.yaml")
+	archiveFile("variables.yaml")
+	archiveFile("firstrun.txt")
+
+	archive.finalize()
+
+	await closePromise
+}
+
 export async function checkMigration() {
 	migratingOld = await needsOldMigration()
 
@@ -2352,7 +2452,16 @@ export async function checkMigration() {
 
 		await migrationStartLatch.promise
 
-		//Create backup .zip?
+		await createBackup()
+
+		rendererMigrateBackupComplete()
+	}
+}
+
+async function safeDelete(...pathparts: string[]) {
+	const fullpath = resolveProjectPath(...pathparts)
+	if (fsSync.existsSync(fullpath)) {
+		await fs.unlink(fullpath)
 	}
 }
 
@@ -2363,6 +2472,10 @@ export async function finishMigration() {
 	await migrateAllOldProfiles()
 
 	await migrateAllOldStreamPlans()
+
+	await safeDelete("combined.log")
+	await safeDelete("error.log")
+	await safeDelete("firstrun.txt")
 
 	migratingOld = false
 
