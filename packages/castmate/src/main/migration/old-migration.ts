@@ -1002,7 +1002,7 @@ async function migrateOldDiscordHook(id: string) {
 		webhookUrl: config.url,
 	}
 
-	await writeYAML(newConfig, "discord", "webhooks")
+	await writeYAML(newConfig, "discord", "webhooks", `${id}.yaml`)
 
 	await fs.unlink(resolveProjectPath("discordhooks", `${id}.yaml`))
 }
@@ -1013,7 +1013,6 @@ registerOldSettingsMigrator("discord", {
 		const dir = resolveProjectPath("discordhooks")
 		const files = await fs.readdir(dir)
 
-		await ensureDirectory(resolveProjectPath("discord"))
 		await ensureDirectory(resolveProjectPath("discord", "webhooks"))
 
 		for (const id of files) {
@@ -1024,7 +1023,7 @@ registerOldSettingsMigrator("discord", {
 			}
 		}
 
-		await fs.unlink(dir)
+		await fs.rm(dir, { recursive: true, force: true })
 
 		return {
 			secrets: {},
@@ -2367,7 +2366,7 @@ export async function migrateAllOldStreamPlans() {
 		await fs.unlink(fullPath)
 	}
 
-	await fs.unlink(dir)
+	await fs.rm(dir, { recursive: true, force: true })
 }
 
 const rendererNeedsMigrate = defineCallableIPC<() => any>("oldMigration", "needsMigrate")
