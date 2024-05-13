@@ -1598,15 +1598,21 @@ registerOldSettingsMigrator("overlays", {
 	},
 })
 
-function migrateOldOverlayWidget(widget: string) {
-	//TODO:
-	return widget
+interface OldWidget {
+	overlay: string
+	widget: string
+}
+
+function migrateOldOverlayWidget(widget: OldWidget | undefined) {
+	if (!widget) return undefined
+
+	return { overlayId: widget.overlay, widgetId: widget.widget }
 }
 
 registerOldActionMigrator("overlays", "alert", {
 	plugin: "overlays",
 	action: "alert",
-	migrateConfig(oldConfig: { alert: string; header: string; text: string }) {
+	migrateConfig(oldConfig: { alert: OldWidget; header: string; text: string }) {
 		return {
 			alert: migrateOldOverlayWidget(oldConfig.alert),
 			title: migrateTemplateStr(oldConfig.header),
@@ -1618,7 +1624,7 @@ registerOldActionMigrator("overlays", "alert", {
 registerOldActionMigrator("overlays", "wheelSpin", {
 	plugin: "random",
 	action: "spinWheel",
-	migrateConfig(oldConfig: { wheel: string; strength: number }) {
+	migrateConfig(oldConfig: { wheel: OldWidget; strength: number }) {
 		return {
 			widget: migrateOldOverlayWidget(oldConfig.wheel),
 			strength: migrateBracketlessNumberTemplate(oldConfig.strength),
@@ -1629,7 +1635,7 @@ registerOldActionMigrator("overlays", "wheelSpin", {
 registerOldTriggerMigrator("overlays", "wheelLanded", {
 	plugin: "random",
 	trigger: "wheelLanded",
-	migrateConfig(oldConfig: { wheel: string; item: string | undefined }) {
+	migrateConfig(oldConfig: { wheel: OldWidget; item: string | undefined }) {
 		return {
 			wheel: migrateOldOverlayWidget(oldConfig.wheel),
 			item: oldConfig.item,
