@@ -29,16 +29,32 @@ import { TwitchAccountConfig } from "castmate-plugin-twitch-shared"
 import { AccountState, ResourceData } from "castmate-schema"
 
 import { AccountWidget, useResourceArray, useResourceStore } from "castmate-ui-core"
-import { computed } from "vue"
+import { computed, onMounted, useModel, watch } from "vue"
 import MigrationCheckBox from "../migration/MigrationCheckBox.vue"
 
 const resourceStore = useResourceStore()
 const twitchAccounts = useResourceArray<ResourceData<TwitchAccountConfig, AccountState>>("TwitchAccount")
 
-const ready = computed(() => {
+const props = defineProps<{
+	ready: boolean
+}>()
+
+const ready = useModel(props, "ready")
+
+const readyComputed = computed(() => {
 	for (const account of twitchAccounts.value) {
 		if (!account.state.authenticated) return false
 	}
 	return true
+})
+
+onMounted(() => {
+	watch(
+		readyComputed,
+		() => {
+			ready.value = readyComputed.value
+		},
+		{ immediate: true }
+	)
 })
 </script>

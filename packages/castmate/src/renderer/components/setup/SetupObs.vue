@@ -32,13 +32,19 @@
 <script setup lang="ts">
 import { SchemaType } from "castmate-schema"
 import { declareSchema } from "castmate-schema"
-import { DataInput, useIpcCaller, useResourceArray, useResourceStore } from "castmate-ui-core"
-import { ref, onMounted, computed } from "vue"
+import { DataInput, useIpcCaller, useResource, useResourceStore, useSettingValue, usePluginStore } from "castmate-ui-core"
+import { ref, onMounted, computed, useModel, watch } from "vue"
 
 import MigrationCheckBox from "../migration/MigrationCheckBox.vue"
 import PButton from "primevue/button"
 import { ResourceData } from "castmate-schema"
 import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
+
+const props = defineProps<{
+	ready: boolean
+}>()
+
+const ready = useModel(props, "ready")
 
 const obsConfigSchema = declareSchema({
 	type: Object,
@@ -62,28 +68,19 @@ const mainObsId = ref<string>()
 const attemptQRReading = useIpcCaller<() => ObsPartialConfig | undefined>("obs", "attemptQRReading")
 
 const resourceStore = useResourceStore()
-const connections = useResourceArray<ResourceData<OBSConnectionConfig, OBSConnectionState>>("OBSConnection")
 
-const mainObs = computed(() => connections.value.find(c => c.id == mainObsId.value))
+const pluginStore = usePluginStore()
+const defaultObsSetting = useSettingValue({ plugin: "obs", setting: "obsDefault" })
+const mainObs = useResource<ResourceData<OBSConnectionConfig, OBSConnectionState>>("OBSConnection", defaultObsSetting)
 
-const ready = computed(() => !!mainObs.value?.state?.connected)
+const readyComputed = computed(() => !!mainObs.value?.state?.connected)
 
-function findMainObs() {
-	if (connections.value.length == 0) {
-		mainObsId.value = undefined
-	}
+onMounted(() => {
+	watch(readyComputed, () => {
+		ready.value = readyComputed.value
+	}, { immediate: true })
+})
 
-	const main = connections.value.find(c => c.config.name == "Main OBS")
-	if (main) {
-		mainObsId.value = main.id
-		console.log("Found OBS Id", mainObsId.value)
-		return
-	}
-
-	mainObsId.value = connections.value[0]?.id
-
-	console.log("Found OBS Id", mainObsId.value)
-}
 
 async function readQR() {
 	const result = await attemptQRReading()
@@ -98,8 +95,6 @@ async function readQR() {
 }
 
 onMounted(() => {
-	findMainObs()
-
 	if (mainObs.value) {
 		obsConfig.value = {
 			host: mainObs.value.config.host,
@@ -111,14 +106,20 @@ onMounted(() => {
 
 async function saveSettings() {
 	console.log("Settings Saved", obsConfig.value)
-	if (mainObsId.value == null) {
+	if (!mainObs.value) {
 		const newId = await resourceStore.createResource("OBSConnection", {
 			name: "Main OBS",
 			...obsConfig.value
 		})
-		mainObsId.value = newId
+		
+		await pluginStore.updateSettings([{
+			pluginId: "obs",
+			settingId: "obsDefault",
+			value: newId
+		}])
+
 	} else {
-		await resourceStore.applyResourceConfig("OBSConnection", mainObsId.value, obsConfig.value)
+		await resourceStore.applyResourceConfig("OBSConnection", mainObs.value.id, obsConfig.value)
 	}
 }
 </script>
