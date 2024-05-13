@@ -41,8 +41,7 @@
 		"castmate-plugin-variables-main": "workspace:^",
 		"castmate-plugin-voicemod-main": "workspace:^",
 		"castmate-plugin-wyze-main": "workspace:^",
-		"castmate-schema": "workspace:^",
-		"electron-updater": "^4.6.1"
+		"castmate-schema": "workspace:^"
 	},
 	"devDependencies": {
 		"@mdi/font": "^7.1.96",

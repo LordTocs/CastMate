@@ -26,6 +26,7 @@
 		"castmate-schema": "workspace:^",
 		"chokidar": "^3.5.3",
 		"electron": "^29.1.1",
+		"electron-updater": "6.1.8",
 		"express": "^4.18.2",
 		"fluent-ffmpeg": "^2.1.2",
 		"lodash": "^4.17.21",

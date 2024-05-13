@@ -38,6 +38,7 @@ import { onMounted } from "vue"
 import { useDialog } from "primevue/usedialog"
 import MigrationDialog from "./components/migration/MigrationDialog.vue"
 import FirstTimeSetupDialog from "./components/setup/FirstTimeSetupDialog.vue"
+import UpdateDialog from "./components/updates/UpdateDialog.vue"
 
 const initStore = useInitStore()
 const dockingStore = useDockingStore()
@@ -70,6 +71,23 @@ function startFirstTimeSetup() {
 			},
 			showHeader: false,
 			modal: true,
+			closable: true,
+		},
+		onClose(options) {
+			if (!options?.data) {
+			}
+		},
+	})
+}
+
+function openUpdateDialog() {
+	dialog.open(UpdateDialog, {
+		props: {
+			style: {
+				width: "75vw",
+			},
+			showHeader: false,
+			modal: true,
 			closable: false,
 		},
 		onClose(options) {
@@ -85,14 +103,23 @@ useIpcMessage("oldMigration", "needsMigrate", () => {
 	startMigration()
 })
 
+const isFirstTimeStartup = useIpcCaller<() => boolean>("info", "isFirstTimeStartup")
+const hasUpdate = useIpcCaller<() => boolean>("info", "hasUpdate")
+
 onMounted(async () => {
+	let migrated = false
 	if (await needsMigrate()) {
+		migrated = true
 		startMigration()
 	}
 
 	await initStore.waitForInit()
-	if (true) {
-		//startFirstTimeSetup()
+	if (!migrated) {
+		if (await isFirstTimeStartup()) {
+			startFirstTimeSetup()
+		} else if (await hasUpdate()) {
+			openUpdateDialog()
+		}
 	}
 })
 </script>

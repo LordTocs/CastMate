@@ -18,6 +18,7 @@ import { GenericLoginService } from "./util/generic-login"
 
 import { app } from "electron"
 import path from "path"
+import { InfoService } from "./info/info-manager"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -36,6 +37,9 @@ export async function loadPlugin(name: string) {
 
 let initialSetupComplete = false
 let setupComplete = false
+
+defineIPCFunc("castmate", "isSetupFinished", () => setupComplete)
+defineIPCFunc("castmate", "isInitialSetupFinished", () => initialSetupComplete)
 
 export async function setupCastMateDirectories(isPortable: boolean) {
 	if (isPortable) {
@@ -58,6 +62,8 @@ export async function initializeCastMate() {
 	await ensureDirectory(resolveProjectPath("secrets"))
 	await ensureDirectory(resolveProjectPath("state"))
 	await initializeFileSystem()
+	InfoService.initialize()
+	await InfoService.getInstance().checkInfo()
 	GenericLoginService.initialize()
 	WebService.initialize()
 	PluginManager.initialize()
@@ -70,8 +76,6 @@ export async function initializeCastMate() {
 
 	//How do we load plugins???
 	//await loadPlugin("twitch")
-	defineIPCFunc("castmate", "isSetupFinished", () => setupComplete)
-	defineIPCFunc("castmate", "isInitialSetupFinished", () => initialSetupComplete)
 
 	initialSetupComplete = true
 	notifyRendererInitialSetupFinished()

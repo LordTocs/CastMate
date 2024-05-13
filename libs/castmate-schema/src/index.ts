@@ -23,6 +23,7 @@ export * from "./types/queues"
 export * from "./types/automations"
 export * from "./types/stream-plan"
 export * from "./types/emotes"
+export * from "./types/info"
 
 export * from "./util/type-helpers"
 export * from "./util/promise-helpers"
