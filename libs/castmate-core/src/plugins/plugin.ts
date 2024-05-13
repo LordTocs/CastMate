@@ -31,6 +31,7 @@ import { ensureYAML, loadSecretYAML, loadYAML, pathExists, writeSecretYAML, writ
 import _debounce from "lodash/debounce"
 import {
 	deserializeSchema,
+	exposeSchema,
 	ipcConvertSchema,
 	ipcRegisterSchema,
 	serializeSchema,
@@ -124,9 +125,10 @@ interface StateDefinition<StateSchema extends Schema = any> {
 	schema: StateSchema
 	ref: ReactiveRef<ExposedSchemaType<StateSchema>>
 	updateEffect?: ReactiveEffect
+	serialized: boolean
 }
 
-export function defineState<T extends Schema>(id: string, schema: T) {
+export function defineState<T extends Schema>(id: string, schema: T, serialized: boolean = false) {
 	if (!initingPlugin) throw new Error()
 
 	const logger = usePluginLogger()
@@ -137,6 +139,7 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 	initingPlugin.state.set(id, {
 		schema,
 		ref: result,
+		serialized,
 	})
 
 	onLoad(async (plugin) => {
@@ -149,6 +152,11 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 		}
 
 		stateDef.ref.value = initial
+
+		if (stateDef.serialized) {
+			await plugin.finishLoadingState(id)
+		}
+
 		aliasReactiveValue(stateDef.ref, "value", plugin.stateContainer, id)
 		PluginManager.getInstance().injectState(plugin)
 
@@ -156,8 +164,12 @@ export function defineState<T extends Schema>(id: string, schema: T) {
 			() => result.value,
 			async () => {
 				const unexposed = await unexposeSchema(schema, result.value)
-				const serialized = await serializeSchema(schema, unexposed)
-				rendererUpdateState(plugin.id, id, serialized)
+				const serializedData = await serializeSchema(schema, unexposed)
+				rendererUpdateState(plugin.id, id, serializedData)
+
+				if (stateDef.serialized) {
+					plugin.triggerStateUpdate()
+				}
 			}
 		)
 	})
@@ -183,6 +195,7 @@ export function defineReactiveState<T extends Schema>(id: string, schema: T, fun
 	initingPlugin.state.set(id, {
 		schema,
 		ref: result,
+		serialized: false,
 	})
 
 	onLoad(async (plugin) => {
@@ -525,10 +538,57 @@ export class Plugin {
 		this.writeSecretsDebounced()
 	}
 
+	////
+
+	private serializedStateData: Record<string, any> = {}
+	private async loadState() {
+		if (!(await pathExists("state", `${this.id}.yaml`))) {
+			await this.writeState()
+		} else {
+			try {
+				this.serializedStateData = await loadYAML("state", `${this.id}.yaml`)
+			} catch (err) {
+				this.logger.error(`Failed to load state for ${this.id}`)
+				this.serializedStateData = {}
+			}
+		}
+	}
+
+	private async writeState() {
+		const data: Record<string, any> = {}
+		for (const [sid, stateDef] of this.state) {
+			if (!stateDef.serialized) continue
+
+			const unexposed = await unexposeSchema(stateDef.schema, stateDef.ref.value)
+			const serialized = await serializeSchema(stateDef.schema, unexposed)
+			data[sid] = serialized
+		}
+
+		if (Object.keys(data).length > 0) {
+			await writeYAML(data, "state", `${this.id}.yaml`)
+		}
+	}
+
+	private writeStateDebounced = _debounce(() => this.writeState(), 100)
+	triggerStateUpdate() {
+		this.writeStateDebounced()
+	}
+
+	async finishLoadingState(id: string) {
+		const state = this.state.get(id)
+		if (!state?.serialized) return
+		if (!(id in this.serializedStateData)) return
+
+		const deserialized = await deserializeSchema(state.schema, this.serializedStateData[id])
+		const exposed = await exposeSchema(state.schema, deserialized)
+		state.ref.value = exposed
+	}
+
 	async load(): Promise<boolean> {
 		try {
 			await this.loadSettings()
 			await this.loadSecrets()
+			await this.loadState()
 
 			await this.loader.run(this)
 
@@ -538,6 +598,7 @@ export class Plugin {
 
 			this.serializedSettingsData = {} //Toss out our serialized data we don't need it anymore
 			this.serializedSecretData = {}
+			this.serializedStateData = {}
 
 			this.registerIPC()
 		} catch (err) {
@@ -603,6 +664,7 @@ export class Plugin {
 		const stateDef: StateDefinition = {
 			schema,
 			ref,
+			serialized: false,
 		}
 		this.state.set(id, stateDef)
 		aliasReactiveValue(ref, "value", this.stateContainer, id)

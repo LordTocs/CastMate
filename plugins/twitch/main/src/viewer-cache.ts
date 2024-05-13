@@ -33,6 +33,7 @@ import {
 	TwitchViewerUnresolved,
 } from "castmate-plugin-twitch-shared"
 import { nextTick } from "process"
+import { HelixChannelFollower, HelixPaginatedResultWithTotal } from "@twurple/api"
 
 const logger = usePluginLogger("twitch")
 
@@ -90,10 +91,6 @@ TODO: DataRaces. If two triggers run for batched users it will query twitch twic
 */
 
 export function setupViewerCache() {
-	onLoad(() => {
-		ViewerCache.initialize()
-	})
-
 	defineRendererCallable("fuzzyGetUsers", async (query: string) => {
 		return await ViewerCache.getInstance().fuzzyGetDisplayDataByName(query, 10)
 	})
@@ -349,6 +346,15 @@ export const ViewerCache = Service(
 			const cached = this.getOrCreate(event.userId)
 			this.updateNameCache(cached, event.userDisplayName)
 			this.markSeen(cached)
+			cached.following = true
+		}
+
+		cacheFollowQuery(resp: HelixPaginatedResultWithTotal<HelixChannelFollower>) {
+			for (const follower of resp.data) {
+				const cached = this.getOrCreate(follower.userId)
+				this.updateNameCache(cached, follower.userDisplayName)
+				cached.following = true
+			}
 		}
 
 		public async userAction(userId: string) {

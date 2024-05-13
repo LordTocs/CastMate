@@ -56,6 +56,7 @@ export async function initializeCastMate() {
 	globalLogger.log("Initing Castmate")
 	await ensureDirectory(resolveProjectPath("settings"))
 	await ensureDirectory(resolveProjectPath("secrets"))
+	await ensureDirectory(resolveProjectPath("state"))
 	await initializeFileSystem()
 	GenericLoginService.initialize()
 	WebService.initialize()

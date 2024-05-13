@@ -96,6 +96,15 @@ export function setupSubscriptions() {
 		name: "Subscriber Points",
 	})
 
+	const lastSubscriber = defineState(
+		"lastSubscriber",
+		{
+			type: TwitchViewer,
+			name: "Last Subscriber",
+		},
+		true
+	)
+
 	async function updateSubscriberCount() {
 		try {
 			const subs = await TwitchAccount.channel.apiClient.subscriptions.getSubscriptions(
@@ -106,7 +115,9 @@ export function setupSubscriptions() {
 		} catch {}
 	}
 
-	onChannelAuth((channel, service) => {
+	onChannelAuth(async (channel, service) => {
+		//lastSubscriber.value = await ViewerCache.getInstance().getResolvedViewer("27082158")
+
 		service.eventsub.onChannelSubscription(channel.twitchId, (event) => {
 			ViewerCache.getInstance().cacheSubEvent(event)
 			updateSubscriberCount()
@@ -119,6 +130,8 @@ export function setupSubscriptions() {
 			} else if (event.tier == "3000") {
 				tier = 3
 			}
+
+			lastSubscriber.value = await ViewerCache.getInstance().getResolvedViewer(event.userId)
 
 			subscription({
 				tier,

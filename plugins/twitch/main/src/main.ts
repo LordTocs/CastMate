@@ -20,7 +20,7 @@ import { setupFollows } from "./follows"
 import { setupRaids } from "./raids"
 import { setupHypeTrains } from "./hype-train"
 import { setupModeration } from "./moderation"
-import { setupViewerCache } from "./viewer-cache"
+import { ViewerCache, setupViewerCache } from "./viewer-cache"
 import { setupViewerGroups } from "./group"
 import { setupUndocumented } from "./undocumented"
 import { setupEmotes } from "./native-emotes"
@@ -39,6 +39,10 @@ export default definePlugin(
 	},
 	() => {
 		definePluginResource(TwitchAccount)
+
+		onLoad(() => {
+			ViewerCache.initialize()
+		})
 
 		onLoad(async () => {
 			await TwitchAPIService.initialize()

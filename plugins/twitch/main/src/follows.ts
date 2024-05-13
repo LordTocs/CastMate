@@ -38,10 +38,20 @@ export function setupFollows() {
 		name: "Followers",
 	})
 
+	const lastFollower = defineState("lastFollower", {
+		type: TwitchViewer,
+		name: "Last Follower",
+	})
+
 	async function updateFollowCount() {
-		followers.value = await TwitchAccount.channel.apiClient.channels.getChannelFollowerCount(
+		const followersResp = await TwitchAccount.channel.apiClient.channels.getChannelFollowers(
 			TwitchAccount.channel.twitchId
 		)
+		ViewerCache.getInstance().cacheFollowQuery(followersResp)
+
+		followers.value = followersResp.total
+
+		lastFollower.value = await ViewerCache.getInstance().getResolvedViewer(followersResp.data[0].userId)
 	}
 
 	onChannelAuth(async (account, service) => {
