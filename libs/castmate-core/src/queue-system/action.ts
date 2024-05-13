@@ -174,13 +174,18 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 				? config[durationState.rightSlider.sliderProp] ?? durationState.duration
 				: 0
 
+			if (typeof left == "string") return undefined
+			if (typeof right == "string") return undefined
+
 			return right - left
 		}
 		if (durationState.dragType == "fixed") {
 			return durationState.duration
 		}
 		if (durationState.dragType == "length") {
-			return config[durationState.rightSlider.sliderProp] ?? 0
+			const duration = config[durationState.rightSlider.sliderProp] ?? 0
+			if (typeof duration == "string") return undefined
+			return duration
 		}
 	}
 
