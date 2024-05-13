@@ -33,6 +33,7 @@ interface AutomationPossiblyTrigger extends AutomationData {
 	plugin?: string
 	trigger?: string
 	config?: any
+	stop?: boolean
 }
 
 interface AutomationPossiblyTriggerView {

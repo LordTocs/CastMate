@@ -7,6 +7,7 @@ export interface TriggerData<Config = any> extends InlineAutomation {
 	plugin?: string
 	trigger?: string
 	config: Config
+	stop?: boolean
 }
 
 export interface ProfileConfig {

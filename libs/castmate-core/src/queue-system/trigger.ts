@@ -218,6 +218,10 @@ class TriggerImplementation<
 
 				if (await this.triggerForData(context, profile, trigger)) {
 					triggered = true
+
+					if (trigger.stop) {
+						break
+					}
 				}
 			}
 		}
