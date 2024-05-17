@@ -41,7 +41,7 @@ declare namespace CastmatePluginSoundNative {
 
 	class OsTTSInterface {
 		getVoices(): OsTTSVoice[]
-		speakToFile(message: string, filename: string, voiceId: string): boolean
+		speakToFile(message: string, filename: string, voiceId: string, callback: (err?: string) => any): boolean
 	}
 }
 

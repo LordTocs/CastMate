@@ -299,8 +299,6 @@ HRESULT audio_device_notifier::OnDefaultDeviceChanged(EDataFlow flow, ERole role
 
     auto js_thread_callback = [=](Napi::Env env, Napi::Function js_callback, IMMDevice* device_ptr)
     {
-
-        HRESULT hr;
         //Use a smart pointer so we get auto-release
         ComPtr<IMMDevice> device;
         (*device.ReleaseAndGetAddressOf()) = device_ptr;
@@ -351,7 +349,6 @@ HRESULT audio_device_notifier::OnDeviceAdded(LPCWSTR pwstrDeviceId)
 
     auto js_thread_callback = [](Napi::Env env, Napi::Function js_callback, IMMDevice* device_ptr)
     {
-        HRESULT hr;
         //Use a smart pointer so we get auto-release
         ComPtr<IMMDevice> device;
         (*device.ReleaseAndGetAddressOf()) = device_ptr;
@@ -378,7 +375,6 @@ HRESULT audio_device_notifier::OnDeviceRemoved(LPCWSTR pwstrDeviceId)
     auto js_thread_callback = [](Napi::Env env, Napi::Function js_callback, std::wstring* id_ptr)
     {
         std::unique_ptr<std::wstring> id(id_ptr);
-        HRESULT hr;
         //env might be null if the tsfn is aborted
         if (env == nullptr || js_callback == nullptr) return;
 
@@ -400,7 +396,6 @@ HRESULT audio_device_notifier::OnDeviceStateChanged(LPCWSTR pwstrDeviceId, DWORD
 
      auto js_thread_callback = [](Napi::Env env, Napi::Function js_callback, IMMDevice* device_ptr)
     {
-        HRESULT hr;
         //Use a smart pointer so we get auto-release
         ComPtr<IMMDevice> device;
         (*device.ReleaseAndGetAddressOf()) = device_ptr;
@@ -432,7 +427,6 @@ HRESULT audio_device_notifier::OnPropertyValueChanged(LPCWSTR pwstrDeviceId, con
 
     auto js_thread_callback = [](Napi::Env env, Napi::Function js_callback, IMMDevice* device_ptr)
     {
-        HRESULT hr;
         //Use a smart pointer so we get auto-release
         ComPtr<IMMDevice> device;
         (*device.ReleaseAndGetAddressOf()) = device_ptr;

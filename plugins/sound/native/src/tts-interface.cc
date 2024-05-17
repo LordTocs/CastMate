@@ -5,6 +5,74 @@
 
 using namespace Microsoft::WRL;
 
+os_tts_worker::os_tts_worker(Microsoft::WRL::ComPtr<ISpObjectToken> voice_token, const std::wstring& message, const std::string& filename, const Napi::Function &callback)
+    : AsyncWorker(callback)
+    , voice_token(voice_token)
+    , message(message)
+    , filename(filename)
+{
+}
+
+void os_tts_worker::Execute()
+{
+    //Ensure COM is inited?
+    ::CoInitialize(NULL);
+
+    HRESULT hr;
+
+    Microsoft::WRL::ComPtr<ISpVoice> sp_voice;
+    hr = ::CoCreateInstance(__uuidof(SpVoice), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(sp_voice.ReleaseAndGetAddressOf()));
+    if (handle_error(hr, "Unable to create voice interface")) {
+        return;
+    }
+
+    hr = sp_voice->SetVoice(voice_token.Get());
+    if (handle_error(hr, "Failed to set voice.")) {
+        return;
+    }
+
+    CSpStreamFormat fmt;
+    hr = fmt.AssignFormat(SPSF_22kHz16BitMono);
+    if (handle_error(hr, "Failed to create format for tts output")) {
+        return;
+    }
+
+    ComPtr<ISpStream> file_stream;
+    hr = SPBindToFile(filename.c_str(), SPFM_CREATE_ALWAYS, file_stream.ReleaseAndGetAddressOf(),  &fmt.FormatId(), fmt.WaveFormatExPtr());
+    if (handle_error(hr, "Failed to create stream for output")){
+        return;
+    }
+
+    hr = sp_voice->SetOutput(file_stream.Get(), true);
+    if (handle_error(hr, "Failed to set voice output")) {
+        return;
+    }
+
+    hr = sp_voice->Speak(message.c_str(), SPF_DEFAULT, NULL);
+    if (handle_error(hr, "Failed to speak")) {
+        return;
+    }
+
+    hr = file_stream->Close();
+    if (handle_error(hr, "Failed to close stream")) {
+        return;
+    }
+}
+
+
+bool os_tts_worker::handle_error(HRESULT hr, const std::string& message)
+{
+    if (SUCCEEDED(hr))
+    {
+        return false;
+    }
+
+    SetError(message);
+    return true;
+}
+
+///////////
+
 os_tts_interface::os_tts_interface(const Napi::CallbackInfo& info)
     : Napi::ObjectWrap<os_tts_interface>(info)
 {
@@ -87,51 +155,19 @@ Napi::Value os_tts_interface::get_voices(const Napi::CallbackInfo& info)
 
 Napi::Value os_tts_interface::speak_to_file(const Napi::CallbackInfo& info) 
 {
-    //TODO: Make async!
-    HRESULT hr;
     Napi::Env env = info.Env();
     Napi::String message = info[0].As<Napi::String>();
     Napi::String filename = info[1].As<Napi::String>();
     Napi::String voice_id = info[2].As<Napi::String>();
 
+    std::u16string u16message = message.Utf16Value();
+    std::wstring wmessage (u16message.begin(), u16message.end());
+
     auto voice_i = voice_tokens.find(voice_id.Utf8Value());
     if (voice_i == voice_tokens.end()) return Napi::Boolean::From(env, false);
 
-    hr = sp_voice->SetVoice(voice_i->second.Get());
-    if (error_handler(hr, "Failed to set voice.", env)) {
-        return Napi::Boolean::From(env, false);
-    }
-
-    CSpStreamFormat fmt;
-    hr = fmt.AssignFormat(SPSF_22kHz16BitMono);
-    if (error_handler(hr, "Failed to create format for tts output", env)) {
-        return Napi::Boolean::From(env, false);
-    }
-
-    std::string filename_str = filename.Utf8Value();
-    ComPtr<ISpStream> file_stream;
-    hr = SPBindToFile(filename_str.c_str(), SPFM_CREATE_ALWAYS, file_stream.ReleaseAndGetAddressOf(),  &fmt.FormatId(), fmt.WaveFormatExPtr());
-    if (error_handler(hr, "Failed to create stream for output", env)){
-        return Napi::Boolean::From(env, false);
-    }
-
-    hr = sp_voice->SetOutput(file_stream.Get(), true);
-    if (error_handler(hr, "Failed to set voice output", env)) {
-        return Napi::Boolean::From(env, false);
-    }
-
-    std::u16string u16message = message.Utf16Value();
-    std::wstring wmessage (u16message.begin(), u16message.end());
-    ULONG stream_number;
-    hr = sp_voice->Speak(wmessage.c_str(), SPF_DEFAULT, NULL);
-    if (error_handler(hr, "Failed to speak", env)) {
-        return Napi::Boolean::From(env, false);
-    }
-
-    hr = file_stream->Close();
-    if (error_handler(hr, "Failed to close stream", env)) {
-        return Napi::Boolean::From(env, false);
-    }
+    os_tts_worker* worker = new os_tts_worker(voice_i->second, wmessage, filename.Utf8Value(), info[3].As<Napi::Function>());
+    worker->Queue();
 
     return Napi::Boolean::From(env, true);
 }

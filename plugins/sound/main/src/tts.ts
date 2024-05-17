@@ -89,6 +89,17 @@ export class OSTTSVoiceProvider extends TTSVoiceProvider {
 		}
 	}
 
+	private speakToFile(text: string, filename: string, id: string) {
+		return new Promise<void>((resolve, reject) => {
+			this.os_interface.speakToFile(text, filename, id, (err) => {
+				if (err) {
+					reject(err)
+				}
+				resolve()
+			})
+		})
+	}
+
 	async generate(text: string, voiceConfig: OSTTSVoiceConfigData, filename: string) {
 		const SAPIXml = `<rate absspeed="${voiceConfig.rate ?? 0}">
 		<pitch absmiddle="${voiceConfig.pitch ?? 0}>
@@ -97,7 +108,7 @@ export class OSTTSVoiceProvider extends TTSVoiceProvider {
 		</rate>
 		`
 
-		this.os_interface.speakToFile(text, filename, this.config.providerId)
+		await this.speakToFile(text, filename, this.config.providerId)
 	}
 
 	getVoiceConfigSchema(): Schema | undefined {
