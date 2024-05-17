@@ -3,10 +3,11 @@
 </template>
 
 <script setup lang="ts">
-import { useEventListener, useVModel, useElementSize } from "@vueuse/core"
+import { useEventListener, useElementSize } from "@vueuse/core"
 import { type PanState, usePanState, usePanQuery, getInternalMousePos, usePropagationStop } from "../../main"
-import { ref, type Ref, inject, computed } from "vue"
+import { ref, type Ref, inject, computed, useModel } from "vue"
 import { automationTimeScale } from "./automation-shared"
+import { TimeActionInfo } from "castmate-schema"
 
 const props = defineProps<{
 	modelValue: number | undefined
@@ -15,8 +16,8 @@ const props = defineProps<{
 	left: boolean
 	otherValue: number
 }>()
-const emit = defineEmits(["update:modelValue"])
-const modelObj = useVModel(props, "modelValue", emit)
+const emit = defineEmits(["update:modelValue", "interacted"])
+const modelObj = useModel(props, "modelValue")
 
 const handle = ref<HTMLElement | null>(null)
 
@@ -30,6 +31,8 @@ const actionElement = inject<Ref<HTMLElement | null>>("actionElement")
 
 const panState = usePanState()
 const panQuery = usePanQuery()
+
+const timeInfo = inject<Ref<TimeActionInfo>>("timeInfo")
 
 function computeOffset(ev: MouseEvent) {
 	if (!actionElement?.value) {
@@ -82,6 +85,14 @@ function adjustPos(ev: MouseEvent) {
 		duration = duration + props.otherValue
 	}
 
+	if (timeInfo?.value?.maxLength) {
+		duration = Math.min(duration, timeInfo?.value?.maxLength)
+	}
+
+	if (timeInfo?.value?.minLength) {
+		duration = Math.max(duration, timeInfo?.value?.minLength)
+	}
+
 	//console.log(newWidth, distFromDragEdge.value, props.otherValue, duration)
 
 	if (props.max != null) {
@@ -117,26 +128,35 @@ function onMouseDown(ev: MouseEvent) {
 		handle.value?.focus()
 		stopPropagation(ev)
 		ev.preventDefault()
+		emit("interacted")
 	}
 }
 
-useEventListener(window, "mousemove", (ev: MouseEvent) => {
-	if (!dragging.value) {
-		return
-	}
+useEventListener(
+	() => (dragging.value ? window : undefined),
+	"mousemove",
+	(ev: MouseEvent) => {
+		if (!dragging.value) {
+			return
+		}
 
-	adjustPos(ev)
-})
-
-useEventListener(window, "mouseup", (ev: MouseEvent) => {
-	if (ev.button == 0 && dragging.value) {
-		dragging.value = false
 		adjustPos(ev)
-
-		ev.preventDefault()
-		ev.stopPropagation()
 	}
-})
+)
+
+useEventListener(
+	() => (dragging.value ? window : undefined),
+	"mouseup",
+	(ev: MouseEvent) => {
+		if (ev.button == 0) {
+			dragging.value = false
+			adjustPos(ev)
+
+			ev.preventDefault()
+			ev.stopPropagation()
+		}
+	}
+)
 </script>
 
 <style scoped>

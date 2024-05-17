@@ -8,6 +8,7 @@
 			class="time-action"
 			:style="{ ...actionColorStyle }"
 			:class="{ 'is-selected': isSelected, 'is-testing': testTime != null }"
+			ref="timeActionContainer"
 		>
 			<duration-handle
 				v-model="leftDurationValue"
@@ -16,6 +17,7 @@
 				:max="leftSliderConfig?.max"
 				:left="true"
 				:other-value="leftReferenceDuration"
+				@interacted="onDurationInteraction"
 			/>
 			<div class="time-action-content" ref="actionElement">
 				<div class="time-action-header action-handle">
@@ -44,6 +46,7 @@
 				:max="rightSliderConfig?.max"
 				:left="false"
 				:other-value="rightReferenceDuration"
+				@interacted="onDurationInteraction"
 			/>
 		</div>
 		<automation-drop-zone
@@ -81,6 +84,7 @@ import {
 	TextHider,
 	useActionTestTime,
 	DurationLabel,
+	useDocumentSelection,
 } from "../../main"
 import OffsetSequenceEdit from "./OffsetSequenceEdit.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
@@ -217,6 +221,7 @@ const length = computed<number>(() => {
 	}
 })
 
+const timeActionContainer = ref<HTMLElement | null>(null)
 const actionElement = ref<HTMLElement | null>(null)
 provide("actionElement", actionElement)
 provide(
@@ -292,7 +297,7 @@ const maxOffsetSize = computed(() => {
 
 defineExpose({
 	getSelectedItems(container: HTMLElement, from: SelectionPos, to: SelectionPos): Selection {
-		if (!actionElement.value) return []
+		if (!timeActionContainer.value) return []
 
 		const result: string[] = []
 
@@ -300,7 +305,7 @@ defineExpose({
 			result.push(...oe.getSelectedItems(container, from, to))
 		}
 
-		const rect = getElementRelativeRect(actionElement.value, container)
+		const rect = getElementRelativeRect(timeActionContainer.value, container)
 		const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
 
 		if (rectangleOverlaps(rect, selrect)) {
@@ -342,6 +347,13 @@ defineExpose({
 		}
 	},
 })
+
+const documentPath = useDocumentPath()
+const selection = useDocumentSelection(documentPath)
+
+function onDurationInteraction() {
+	selection.value = [model.value.id]
+}
 </script>
 
 <style scoped>
@@ -409,6 +421,7 @@ defineExpose({
 	background-color: var(--action-color);
 	width: var(--time-action-width);
 	position: relative;
+	overflow-x: hidden;
 
 	transition: background-color 0.3s;
 }
