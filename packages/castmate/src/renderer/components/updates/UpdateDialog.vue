@@ -1,9 +1,10 @@
 <template>
 	<div v-if="updateData" class="flex flex-column">
 		<div>
-			<h1>{{ updateData.version }} - {{ updateData.name }}</h1>
+			<h4 class="my-2 text-center">New Update</h4>
+			<h2 class="my-2 text-center">{{ updateData.version }} - {{ updateData.name }}</h2>
 		</div>
-		<flex-scroller class="flex-grow-1" style="height: 50vh">
+		<flex-scroller class="flex-grow-1 update-notes mb-3" inner-class="px-4" style="height: 50vh">
 			<div ref="notes" v-html="updateData.notes"></div>
 		</flex-scroller>
 		<div class="flex flex-row">
@@ -53,3 +54,10 @@ async function doUpdate() {
 	await updateCastMate()
 }
 </script>
+
+<style scoped>
+.update-notes {
+	background: var(--surface-b);
+	border-radius: var(--border-radius);
+}
+</style>
