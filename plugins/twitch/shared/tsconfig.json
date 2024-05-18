@@ -1,14 +1,8 @@
 {
+	"extends": ["../../../tsconfig.shared.json"],
 	"compilerOptions": {
-		"module": "CommonJS",
-		"noImplicitAny": true,
-		"removeComments": true,
-		"preserveConstEnums": true,
-		"outDir": "dist",
-		"sourceMap": true,
-		"target": "ES6",
-		"strictNullChecks": true
+		"outDir": "dist"
 	},
-	"include": ["**/*"],
+	"include": ["src/**/*"],
 	"exclude": ["node_modules", "**/*.spec.ts"]
 }

@@ -1,12 +1,12 @@
 {
 	"compilerOptions": {
-		"module": "CommonJS",
+		"module": "ES2022",
 		"noImplicitAny": true,
 		"removeComments": true,
 		"preserveConstEnums": true,
 		"outDir": "dist",
 		"sourceMap": true,
-		"target": "ES6",
+		"target": "ES2022",
 		"strictNullChecks": true
 	},
 	"include": ["src/**/*"],
