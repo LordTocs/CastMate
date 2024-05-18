@@ -265,11 +265,15 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 			authProvider: this,
 		})
 
-		const user = await this.apiClient.users.getAuthenticatedUser(this.config.twitchId)
+		const user = await this.apiClient.users.getAuthenticatedUser(
+			this.config.twitchId,
+			this.config.scopes.includes("user:read:email")
+		)
 
 		await this.applyConfig({
 			name: user.displayName,
 			icon: user.profilePictureUrl,
+			email: user.email,
 		})
 
 		this.state.authenticated = true

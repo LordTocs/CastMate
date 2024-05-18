@@ -8,6 +8,7 @@ import { PluginManager } from "../plugins/plugin-manager"
 import { ResourceStorage } from "../resources/resource"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { usePluginLogger } from "../logging/logging"
+import { AnalyticsService } from "../analytics/analytics-manager"
 
 const logger = usePluginLogger("streamplan")
 
@@ -71,6 +72,11 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 			await this.deactivateSegment(this.state.activeSegment)
 		}
 
+		AnalyticsService.getInstance().track("startStreamSegment", {
+			name: segment.name,
+			hasStreamInfo: !!segment.components["twitch-stream-info"],
+		})
+
 		this.state.activeSegment = segment.id
 
 		logger.log("Activating Segment", id)
@@ -87,6 +93,10 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 	async activate() {
 		if (this.state.active) return
 
+		AnalyticsService.getInstance().track("startStreamPlan", {
+			name: this.config.name,
+		})
+
 		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `activation`, {})
 
 		const segment = this.config.segments[0]
@@ -99,6 +109,10 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 
 	async deactivate() {
 		if (!this.state.active) return
+
+		AnalyticsService.getInstance().track("endStreamPlan", {
+			name: this.config.name,
+		})
 
 		if (this.state.activeSegment) {
 			await this.deactivateSegment(this.state.activeSegment)

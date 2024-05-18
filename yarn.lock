@@ -2675,6 +2675,7 @@ __metadata:
     express: "npm:^4.18.2"
     fluent-ffmpeg: "npm:^2.1.2"
     lodash: "npm:^4.17.21"
+    mixpanel: "npm:^0.18.0"
     nanoid: "npm:^5.0.7"
     recursive-readdir-async: "npm:^1.3.0"
     ts-toolbelt: "npm:*"
@@ -6045,6 +6046,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"https-proxy-agent@npm:5.0.0":
+  version: 5.0.0
+  resolution: "https-proxy-agent@npm:5.0.0"
+  dependencies:
+    agent-base: "npm:6"
+    debug: "npm:4"
+  checksum: 10/517037badcbbe30757a9a88aaf5e8c198d31aa0b1e9c0a49a0053ab8e812809242218cc9ea1929171f74d95ae1ec89782ba471ffc3709b8910e91d1761f5f1a6
+  languageName: node
+  linkType: hard
+
 "https-proxy-agent@npm:^5.0.0, https-proxy-agent@npm:^5.0.1":
   version: 5.0.1
   resolution: "https-proxy-agent@npm:5.0.1"
@@ -7184,6 +7195,15 @@ __metadata:
     minipass: "npm:^3.0.0"
     yallist: "npm:^4.0.0"
   checksum: 10/ae0f45436fb51344dcb87938446a32fbebb540d0e191d63b35e1c773d47512e17307bf54aa88326cc6d176594d00e4423563a091f7266c2f9a6872cdc1e234d1
+  languageName: node
+  linkType: hard
+
+"mixpanel@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "mixpanel@npm:0.18.0"
+  dependencies:
+    https-proxy-agent: "npm:5.0.0"
+  checksum: 10/90cd6be667e75d5a34fc54c2b7947f9d095736f8925d68586143f73ad525503d3951e852b3ae4349df04f21a1fa810325023d20126c145ebaff96b03745b732c
   languageName: node
   linkType: hard
 

@@ -18,6 +18,7 @@ import { SequenceRunner } from "./sequence"
 import { isFunction } from "lodash"
 import { Profile } from "../profile/profile"
 import { globalLogger, usePluginLogger } from "../logging/logging"
+import { AnalyticsService } from "../analytics/analytics-manager"
 
 interface TriggerMetaData {
 	id: string
@@ -179,31 +180,6 @@ class TriggerImplementation<
 		//Get the context our resolved data is using
 		ActionQueueManager.getInstance().queueOrRun("profile", profile.id, trigger.id, resolvedContext)
 
-		// const resolvedContextSchema = await this.getContextSchema(configValue)
-
-		// if (trigger.queue) {
-		// 	const queue = ActionQueue.storage.getById(trigger.queue)
-		// 	if (!queue) {
-		// 		globalLogger.error("Missing Queue!", queue)
-		// 		return false
-		// 	}
-
-		// 	globalLogger.log("Running On Queue", queue.config.name)
-
-		// 	queue.enqueue(
-		// 		{ type: "profile", id: profile.id, subId: trigger.id },
-		// 		serializeSchema(resolvedContextSchema, resolvedContext) as Record<string, any>
-		// 	)
-		// } else {
-		// 	let finalContext = await exposeSchema(resolvedContextSchema, resolvedContext)
-
-		// 	const runner = new SequenceRunner(trigger.sequence, {
-		// 		//@ts-ignore //Todo some sort of schema object restriction?
-		// 		contextState: finalContext,
-		// 	})
-		// 	runner.run()
-		// }
-
 		return true
 	}
 
@@ -229,6 +205,11 @@ class TriggerImplementation<
 		if (triggered) {
 			const logger = usePluginLogger(this.pluginId)
 			logger.log("Triggered", this.id, context)
+			AnalyticsService.getInstance().track("trigger", {
+				plugin: this.pluginId,
+				trigger: this.id,
+				context: context,
+			})
 		}
 
 		return triggered

@@ -6,4 +6,5 @@ export interface TwitchAccountSecrets {
 
 export interface TwitchAccountConfig extends AccountConfig {
 	twitchId: string
+	email?: string
 }

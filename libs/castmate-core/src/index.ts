@@ -43,3 +43,5 @@ export * from "./profile/profile-system"
 export * from "./emotes/emote-service"
 
 export * from "./util/generic-login"
+
+export * from "./analytics/analytics-manager"

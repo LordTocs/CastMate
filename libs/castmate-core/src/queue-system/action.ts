@@ -8,7 +8,7 @@ import {
 	MaybePromise,
 	mapKeys,
 } from "castmate-schema"
-import { PluginManager } from "castmate-core"
+import { AnalyticsService, PluginManager } from "../index"
 import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin-init"
@@ -221,6 +221,12 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 			this.configSchema,
 			templateContext
 		)
+
+		AnalyticsService.getInstance().track("action", {
+			plugin: this.plugin.id,
+			action: this.id,
+			data: resolvedConfig,
+		})
 
 		return await this.spec.invoke(resolvedConfig, contextData, abortSignal)
 	}

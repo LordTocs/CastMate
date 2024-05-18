@@ -7,6 +7,7 @@ import {
 	onLoad,
 	getLocalIP,
 	sleep,
+	AnalyticsService,
 } from "castmate-core"
 import OBSWebSocket from "obs-websocket-js"
 import {
@@ -179,6 +180,12 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 		this.connection.on("StreamStateChanged", ({ outputActive }) => {
 			this.state.streaming = outputActive
+
+			if (outputActive) {
+				AnalyticsService.getInstance().track("goLive")
+			} else {
+				AnalyticsService.getInstance().track("streamEnded")
+			}
 		})
 
 		this.connection.on("RecordStateChanged", ({ outputActive }) => {

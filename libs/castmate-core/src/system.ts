@@ -19,6 +19,7 @@ import { GenericLoginService } from "./util/generic-login"
 import { app } from "electron"
 import path from "path"
 import { InfoService } from "./info/info-manager"
+import { AnalyticsService } from "./analytics/analytics-manager"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -58,6 +59,8 @@ const notifyRendererInitialSetupFinished = defineCallableIPC<() => void>("castma
 
 export async function initializeCastMate() {
 	globalLogger.log("Initing Castmate")
+	AnalyticsService.initialize()
+	await AnalyticsService.getInstance().initialize()
 	await ensureDirectory(resolveProjectPath("settings"))
 	await ensureDirectory(resolveProjectPath("secrets"))
 	await ensureDirectory(resolveProjectPath("state"))

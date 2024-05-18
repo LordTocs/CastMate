@@ -1,4 +1,5 @@
 import {
+	AnalyticsService,
 	PubSubManager,
 	defineAction,
 	definePlugin,
@@ -15,7 +16,7 @@ import { setupPolls } from "./poll"
 import { setupPredictions } from "./prediction"
 import { setupAds } from "./ads"
 import { setupClips } from "./clips"
-import { TwitchAPIService, onChannelAuth } from "./api-harness"
+import { TwitchAPIService, onBotAuth, onChannelAuth } from "./api-harness"
 import { setupFollows } from "./follows"
 import { setupRaids } from "./raids"
 import { setupHypeTrains } from "./hype-train"
@@ -55,6 +56,19 @@ export default definePlugin(
 		onChannelAuth((channel) => {
 			//Pass the auth token to the pubsub so it can auth with the CastMate servers
 			PubSubManager.getInstance().setToken(channel.secrets.accessToken)
+
+			AnalyticsService.getInstance().setUserId(channel.twitchId)
+
+			AnalyticsService.getInstance().set({
+				$first_name: channel.config.name,
+				...(channel.config.email ? { $email: channel.config.email } : {}),
+			})
+		})
+
+		onBotAuth((channel) => {
+			AnalyticsService.getInstance().set({
+				$last_name: channel.config.name,
+			})
 		})
 
 		setupViewerCache()
