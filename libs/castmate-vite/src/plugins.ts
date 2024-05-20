@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 import { UserConfig, PluginOption } from "vite"
-import { aliasPackage } from "./library"
+import { aliasPackage } from "./library.js"
 
 interface PackageJSON {
 	name: string

@@ -9,7 +9,6 @@ import { fileURLToPath } from "node:url"
 import { nodeResolve } from "@rollup/plugin-node-resolve"
 
 import { library, plugins } from "castmate-vite"
-//import { library, subpackage } from "../../vite-util/vite-subpackage-plugin"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const dist = path.join(dirname, "dist")

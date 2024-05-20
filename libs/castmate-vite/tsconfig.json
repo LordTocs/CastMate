@@ -1,14 +1,20 @@
 {
 	"compilerOptions": {
-		"module": "CommonJS",
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"target": "ES6",
 		"noImplicitAny": true,
 		"removeComments": true,
 		"preserveConstEnums": true,
 		"outDir": "dist",
 		"sourceMap": true,
-		"target": "ES6",
+		"composite": true,
+		"declarationMap": true,
 		"strictNullChecks": true,
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"paths": {
+			"rollup/parseAst": ["../../node_modules/rollup/dist/parseAst"]
+		}
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "**/*.spec.ts"]

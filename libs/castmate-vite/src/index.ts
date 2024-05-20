@@ -1,2 +1,2 @@
-export * from "./library"
-export * from "./plugins"
+export * from "./library.js"
+export * from "./plugins.js"

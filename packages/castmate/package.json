@@ -11,9 +11,6 @@
 		"electron:buildpublish": "electron-builder --config electron-builder-config.cjs --publish always"
 	},
 	"main": "dist/dist-electron/background.js",
-	"engines": {
-		"node": "^14.18.0 || >=16.0.0"
-	},
 	"electronVersion": "29.1.1",
 	"dependencies": {
 		"archiver": "^7.0.1",

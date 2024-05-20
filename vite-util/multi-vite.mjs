@@ -1,57 +1,9 @@
-import { build as viteBuild, defineConfig, mergeConfig, loadConfigFromFile, createLogger, createServer } from "vite"
+import { createLogger } from "vite"
 import path from "path"
 import { fileURLToPath } from "node:url"
 import { spawn } from "child_process"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
-
-/*
-Attempts to build and serve packages
-
-async function buildPackage(config, name) {
-    const dir = path.resolve(`./packages/${name}/`);
-    config.logger.info(`Building ${name}: ${dir}`);
-    const viteConfig = await loadConfigFromFile(config.env, null, dir)
-
-    if (!viteConfig)
-    {
-        config.logger.error(`Unable to load config ${name}`)
-        config.logger.error(`   ${dir}`)
-        return;
-    }
-
-    const finalConfig = mergeConfig({
-        root: dir,
-        logger: config.logger
-    }, viteConfig.config)
-
-    await viteBuild(finalConfig);
-}
-
-async function servePackage(config, name) {
-    const dir = path.resolve(`./packages/${name}/`);
-    config.logger.info(`Building ${name}: ${dir}`);
-    const viteConfig = await loadConfigFromFile(config.env, null, dir)
-
-    if (!viteConfig)
-    {
-        config.logger.error(`Unable to load config ${name}`)
-        config.logger.error(`   ${dir}`)
-        return;
-    }
-
-    const finalConfig = mergeConfig({
-        root: dir,
-        logger: config.logger,
-        server: {
-            middlewareMode: true,
-            hmr: {
-
-            }
-        }
-    }, viteConfig.config)
-}
-*/
 
 /**
  * Starts a vite build process in the package's directory.
