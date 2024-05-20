@@ -9,6 +9,8 @@ import { UpdateData } from "castmate-schema"
 import { globalLogger } from "../logging/logging"
 import path from "path"
 
+import semver from "semver"
+
 interface StartInfo {
 	lastVer: string
 }
@@ -17,6 +19,10 @@ export const InfoService = Service(
 	class {
 		startInfo: StartInfo | undefined
 		firstTimeStartup: boolean = false
+
+		get version() {
+			return app.getVersion()
+		}
 
 		updateInfo: UpdateInfo | undefined = undefined
 
@@ -77,9 +83,12 @@ export const InfoService = Service(
 		async checkUpdate() {
 			const result = await autoUpdater.checkForUpdates()
 			if (result != null) {
-				globalLogger.log("Update!", result.updateInfo.releaseName, result.updateInfo.version)
-				this.updateInfo = result.updateInfo
-				return true
+				if (semver.gt(result.updateInfo.version, app.getVersion())) {
+					globalLogger.log("Update!", result.updateInfo.releaseName, result.updateInfo.version)
+					this.updateInfo = result.updateInfo
+					return true
+				}
+				return false
 			} else {
 				globalLogger.log("No Update :(")
 			}
