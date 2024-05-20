@@ -423,7 +423,7 @@ function updateWheel(timestamp: number) {
 }
 
 function spinWheel(spinStrength: number) {
-	spinStrength = spinStrength * 60 ?? 60
+	spinStrength = (spinStrength ?? 1) * 60
 
 	const needsStart = angularVelocity.value == 0
 
