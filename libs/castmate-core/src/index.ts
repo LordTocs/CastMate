@@ -45,3 +45,5 @@ export * from "./emotes/emote-service"
 export * from "./util/generic-login"
 
 export * from "./analytics/analytics-manager"
+
+export * from "./info/info-manager"
