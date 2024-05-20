@@ -40,7 +40,7 @@ import ErrorLabel from "./ErrorLabel.vue"
 import { Schema } from "castmate-schema"
 import { useValidator } from "../../../util/validation"
 
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 
 import DataInputBaseMenu from "./DataInputBaseMenu.vue"
 

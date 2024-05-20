@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import { computed, useModel } from "vue"
 import { getAllCommandArgTypes, CommandArgument } from "castmate-schema"
 import PDropdown from "primevue/dropdown"

@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { ProjectItem, NameDialog, CContextMenu } from "castmate-ui-core"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import { computed, ref } from "vue"
 import { useDialog } from "primevue/usedialog"
 import { useConfirm } from "primevue/useconfirm"

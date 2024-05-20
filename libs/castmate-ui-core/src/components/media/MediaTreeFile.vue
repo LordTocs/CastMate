@@ -38,7 +38,7 @@ import { DurationLabel, useMediaStore } from "../../main"
 import { computed, ref } from "vue"
 import SoundPlayer from "./SoundPlayer.vue"
 import CContextMenu from "../util/CContextMenu.vue"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import { MediaFile } from "castmate-schema"
 
 const props = defineProps<{

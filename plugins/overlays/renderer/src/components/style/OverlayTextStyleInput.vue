@@ -42,7 +42,7 @@ import {
 	DropDownPanel,
 	usePropagationStop,
 } from "castmate-ui-core"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import PMenu from "primevue/menu"
 import PButton from "primevue/button"
 import { CSSProperties, computed, ref, useModel } from "vue"

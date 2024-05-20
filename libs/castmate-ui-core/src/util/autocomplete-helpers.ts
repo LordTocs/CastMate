@@ -1,4 +1,3 @@
-import { MenuItem } from "primevue/menuitem"
 import { MaybeRefOrGetter, computed, toValue } from "vue"
 import { getByPath } from "castmate-schema"
 

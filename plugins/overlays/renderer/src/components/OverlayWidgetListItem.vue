@@ -27,9 +27,7 @@
 
 <script setup lang="ts">
 import { OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
-import PButton from "primevue/button"
-import PMenu from "primevue/menu"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import PToggleButton from "primevue/togglebutton"
 import { computed, ref, useModel } from "vue"
 import { CContextMenu, NameDialog } from "castmate-ui-core"

@@ -29,7 +29,7 @@ import DataInput from "../../DataInput.vue"
 import { computed, useModel, watch } from "vue"
 import { getTypeByName } from "castmate-schema"
 
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import PDropdown from "primevue/dropdown"
 import { getAllVariableTypes } from "castmate-schema"
 import { getTypeByConstructor } from "castmate-schema"

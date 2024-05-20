@@ -32,11 +32,9 @@
 <script setup lang="ts">
 import PButton from "primevue/button"
 import PMenubar from "primevue/menubar"
-import { MenuItem } from "primevue/menuitem"
-//import PMenuItem, { type MenuItem } from "primevue/menuitem" //WTF man
+import type { MenuItem } from "primevue/menuitem"
 import { computed, onMounted, ref } from "vue"
 import { ipcRenderer } from "electron"
-import { useEventListener } from "@vueuse/core"
 import {
 	useDockingStore,
 	useIpcMessage,

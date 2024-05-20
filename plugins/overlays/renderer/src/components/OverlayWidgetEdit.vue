@@ -39,7 +39,7 @@ import { useRemoteOverlayConfig } from "../config/overlay-config"
 import { CastMateBridgeImplementation, provideEditorMediaResolver } from "castmate-overlay-core"
 
 import { useDialog } from "primevue/usedialog"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 
 const documentPath = useDocumentPath()
 const isSelected = useIsSelected(documentPath, () => props.modelValue.id)

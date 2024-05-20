@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import PContextMenu from "primevue/contextmenu"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import { onBeforeUnmount, ref } from "vue"
 import { useContextMenu } from "../../util/context-store"
 

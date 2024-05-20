@@ -16,7 +16,7 @@
 import CContextMenu from "../../util/CContextMenu.vue"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import { computed, ref, useModel } from "vue"
 import { usePropagationStop } from "../../../main"
 

@@ -41,7 +41,7 @@ import {
 } from "../../../main"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import _clamp from "lodash/clamp"
 import _isMatch from "lodash/isMatch"
 import { SharedDataInputProps } from "../DataInputTypes"

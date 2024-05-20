@@ -26,7 +26,7 @@
 import { ProjectGroup, CContextMenu } from "castmate-ui-core"
 import ProjectGroupOrItem from "./ProjectGroupOrItem.vue"
 import { computed, ref, toRaw } from "vue"
-import { type MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
 import { useMouseInElement } from "@vueuse/core"

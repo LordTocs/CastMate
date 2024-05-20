@@ -29,9 +29,7 @@ import { LabelFloater, TemplateToggle, ClearButton, CContextMenu } from "castmat
 import { useModel, ref, computed, onMounted } from "vue"
 import { OBSWSSourceTransform } from "castmate-plugin-obs-shared"
 import PInputNumber from "primevue/inputnumber"
-import PButton from "primevue/button"
-import PMenu from "primevue/menu"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 
 const props = defineProps<{
 	modelValue: TemplateNumber | undefined

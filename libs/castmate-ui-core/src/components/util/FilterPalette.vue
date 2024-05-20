@@ -89,7 +89,7 @@
 import PPortal from "primevue/portal"
 import PInputText from "primevue/inputtext"
 import { ref, toValue, computed, markRaw, nextTick, watch } from "vue"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import { ObjectUtils } from "primevue/utils"
 import _cloneDeep from "lodash/cloneDeep"
 import { useEventListener } from "@vueuse/core"

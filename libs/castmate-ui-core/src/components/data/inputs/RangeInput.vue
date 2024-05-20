@@ -59,7 +59,7 @@ import { computed, useModel, ref } from "vue"
 import DocumentPath from "../../document/DocumentPath.vue"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 
 import { SharedDataInputProps } from "../DataInputTypes"
 import { useValidator } from "../../../util/validation"

@@ -46,7 +46,7 @@ import { getTypeByName } from "castmate-schema"
 
 import PButton from "primevue/button"
 import PCheckBox from "primevue/checkbox"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 import { constructDefault } from "castmate-schema"
 
 const container = ref<HTMLElement>()

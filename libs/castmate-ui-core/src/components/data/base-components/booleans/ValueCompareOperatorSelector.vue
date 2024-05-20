@@ -14,7 +14,7 @@
 import { ValueCompareOperator } from "castmate-schema"
 import { computed, useModel } from "vue"
 import PDropdown from "primevue/dropdown"
-import { MenuItem } from "primevue/menuitem"
+import type { MenuItem } from "primevue/menuitem"
 
 const props = defineProps<{
 	modelValue: ValueCompareOperator
