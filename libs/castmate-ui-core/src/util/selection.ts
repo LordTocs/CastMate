@@ -141,7 +141,7 @@ export function useSelectionRect(
 	useEventListener(elem, "mousedown", (ev: MouseEvent) => {
 		const element = toValue(elem)
 
-		console.log("MOUSE DOWN!")
+		//console.log("MOUSE DOWN!")
 
 		if (!element) {
 			return

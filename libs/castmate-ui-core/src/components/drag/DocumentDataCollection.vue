@@ -19,7 +19,7 @@
 				class="draggable-item"
 				v-for="(data, i) in props.modelValue"
 				:key="data.id"
-				ref="dataComponents"
+				:ref="(el) => setDataCompRef(i, el as HTMLElement)"
 				@mousedown="itemMouseDown(i, $event)"
 				@dragstart="itemDragStart(i, $event)"
 				@dragend="itemDragEnd(i, $event)"
@@ -51,6 +51,8 @@ import { getElementRelativeRect, isChildOfClass, usePropagationImmediateStop, us
 import { provideDocumentPath } from "../../main"
 import DocumentPath from "../document/DocumentPath.vue"
 import SelectDummy from "../util/SelectDummy.vue"
+
+import { useOrderedRefs } from "./OrderedTemplateRefs"
 
 const props = withDefaults(
 	defineProps<{
@@ -87,9 +89,19 @@ const dragHovering = ref(false)
 const dataComponents = ref<VueHTMLElement[]>([])
 const insertionIndex = ref<number>(0)
 
+/*
 const orderedDataComponents = computed(() => {
-	return model.value.map((i) => dataComponents.value.find((c) => c.__vnode.key == i.id))
-})
+	return model.value.map((i) =>
+		dataComponents.value.find((c) => {
+			console.log(Object)
+			return c.__vnode?.key == i.id
+		})
+	)
+})*/
+
+const { orderedElements: orderedDataComponents, setRef: setDataCompRef } = useOrderedRefs<HTMLElement>(
+	() => props.modelValue
+)
 
 function overlaps(from: { x: number; y: number }, to: { x: number; y: number }, elem: DOMRect) {
 	if (to.y < elem.top) return false
@@ -183,7 +195,7 @@ useDrop(
 			//We're moving internal items
 			//Adjust the insertion index and remove the items from the model
 
-			console.log("Internal move")
+			//console.log("Internal move")
 			droppedLocal.value = true
 
 			for (const id of selection.value) {
@@ -197,14 +209,14 @@ useDrop(
 					--insertionIdx
 				}
 
-				console.log("Removing", id, idx)
+				//console.log("Removing", id, idx)
 				newModel.splice(idx, 1)
 				newView.splice(idx, 1)
 			}
 		}
 
 		if (ev.dataTransfer.effectAllowed == "move" || ev.dataTransfer.effectAllowed == "copy") {
-			console.log("Final inserting at", insertionIdx)
+			//console.log("Final inserting at", insertionIdx)
 			newModel.splice(insertionIdx, 0, ...data)
 			newView.splice(insertionIdx, 0, ...viewData)
 		}
@@ -272,10 +284,10 @@ const stopImmediatePropagation = usePropagationImmediateStop()
 //In order to check if the handle class is respected we need to save off the mousedown event's target, since dragevent originates from the draggable div
 let dragTarget: HTMLElement | null = null
 function itemMouseDown(i: number, evt: MouseEvent) {
-	console.log("Drag Handling Mouse Down", i)
+	//console.log("Drag Handling Mouse Down", i)
 	dragTarget = evt.target as HTMLElement
 	if (isChildOfClass(dragTarget, props.handleClass)) {
-		console.log("IMMEDIATE STOP")
+		//console.log("IMMEDIATE STOP")
 		stopImmediatePropagation(evt)
 	}
 }
@@ -366,7 +378,7 @@ function onBlur() {}
 
 function onClick(ev: MouseEvent) {
 	if (ev.button == 0) {
-		console.log("CLICK!")
+		//console.log("CLICK!")
 		selectDummy.value?.select()
 		dragArea.value?.focus()
 		// stopImmediatePropagation(ev)
