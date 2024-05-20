@@ -42,16 +42,26 @@ let setupComplete = false
 defineIPCFunc("castmate", "isSetupFinished", () => setupComplete)
 defineIPCFunc("castmate", "isInitialSetupFinished", () => initialSetupComplete)
 
-export async function setupCastMateDirectories(isPortable: boolean) {
-	if (isPortable) {
-		await setProjectDirectory("../../user")
-		await initializeLogging()
+export async function setupCastMateDirectories() {
+	const unpackaged = !app.isPackaged
+	const portable = true //process.argv.includes("--portable")
+
+	let directory = path.join(app.getPath("userData"), "user")
+	const needsSession = unpackaged || portable
+
+	if (portable) {
+		directory = "./user"
+	} else if (unpackaged) {
+		directory = "../../user"
+	}
+
+	await setProjectDirectory(directory)
+	await initializeLogging()
+
+	if (needsSession) {
 		const sessionPath = resolveProjectPath("chrome_sessions")
 		globalLogger.log("Setting Session Folder to ", sessionPath)
 		app.setPath("sessionData", sessionPath)
-	} else {
-		await setProjectDirectory(path.join(app.getPath("userData"), "user"))
-		await initializeLogging()
 	}
 }
 

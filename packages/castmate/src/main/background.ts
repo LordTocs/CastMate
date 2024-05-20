@@ -37,7 +37,7 @@ function createMainWindow() {
 
 app.whenReady().then(async () => {
 	//Setup our user folder location / session data
-	await setupCastMateDirectories(true) //TODO --portable? unpackaged?
+	await setupCastMateDirectories()
 
 	if (isDevelopment && !process.env.IS_TEST) {
 		// Install Vue Devtools
