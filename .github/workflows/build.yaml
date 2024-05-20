@@ -25,12 +25,10 @@ jobs:
           corepack: true
       - name: "Install Node Packages"
         run: "yarn install"
-      #- name: "Rebuild for Electron"
-      #  run: "npm run rebuild"
+      - name: "Setup Vite Extensions"
+        run: "yarn setup-vite"
       - name: "Build"
         run: "yarn run buildpublish"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_APP_MIXPANEL_PROJECT_TOKEN: ${{ secrets.MIXPANEL_PROJECT_TOKEN }}
-          VITE_SPELLCAST_URL: https://api.spellcast.gg/
-          VITE_SPELLCAST_SOCKET_URL: wss://api.spellcast.gg/
