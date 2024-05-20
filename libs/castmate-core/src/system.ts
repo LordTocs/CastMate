@@ -44,19 +44,23 @@ defineIPCFunc("castmate", "isInitialSetupFinished", () => initialSetupComplete)
 
 export async function setupCastMateDirectories() {
 	const unpackaged = !app.isPackaged
-	const portable = true //process.argv.includes("--portable")
+	const portable = process.env.PORTABLE_EXECUTABLE_FILE != null || process.argv.includes("--portable")
 
 	let directory = path.join(app.getPath("userData"), "user")
 	const needsSession = unpackaged || portable
 
 	if (portable) {
-		directory = "./user"
+		directory = process.env.PORTABLE_EXECUTABLE_DIR
+			? path.resolve(process.env.PORTABLE_EXECUTABLE_DIR, "user")
+			: "./user"
 	} else if (unpackaged) {
 		directory = "../../user"
 	}
 
 	await setProjectDirectory(directory)
 	await initializeLogging()
+
+	globalLogger.log("User Dir", resolveProjectPath("./"))
 
 	if (needsSession) {
 		const sessionPath = resolveProjectPath("chrome_sessions")

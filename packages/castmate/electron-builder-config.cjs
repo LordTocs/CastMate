@@ -32,6 +32,10 @@ module.exports = {
 				target: "nsis",
 				arch: ["x64"],
 			},
+			{
+				target: "portable",
+				arch: ["x64"],
+			},
 		],
 		artifactName: "${productName}_${version}.${ext}",
 	},
@@ -40,6 +44,9 @@ module.exports = {
 		perMachine: false,
 		allowToChangeInstallationDirectory: true,
 		deleteAppDataOnUninstall: true,
+	},
+	portable: {
+		artifactName: "${productName}_${version}-portable.${ext}",
 	},
 	extraResources: [
 		{
