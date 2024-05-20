@@ -15,9 +15,10 @@ export function useOrderedRefs<ElemType>(items: MaybeRefOrGetter<IDHaver[]>) {
 		}
 	)
 
-	function setRef(index: number, elem: UnwrapRef<ElemType>) {
+	function setRef(index: number, elem: UnwrapRef<ElemType> | null) {
 		const itemValues = toValue(items)
 		if (index > itemValues.length) return
+		if (elem == null) return
 		console.log("Set Elem", index, elem)
 		orderedElements.value[index] = elem as any
 	}
