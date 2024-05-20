@@ -12,9 +12,14 @@ import {
 	isBooleanValueExpr,
 	Range,
 	isBooleanRangeExpr,
+	getTypeByName,
 } from "castmate-schema"
 import { PluginManager } from "../plugins/plugin-manager"
 import { unexposeSchema } from "./ipc-schema"
+import { templateSchema } from "../templates/template"
+import { usePluginLogger } from "../logging/logging"
+
+const logger = usePluginLogger("booleans")
 
 function getExpressionValue(expression: ExpressionValue) {
 	if (expression.type == "state") {
@@ -39,6 +44,42 @@ function getExpressionSchema(expression: ExpressionValue): Schema | undefined {
 	}
 }
 
+async function getExpressionValueAndSchema(
+	expression: ExpressionValue,
+	otherSchema?: Schema
+): Promise<{ value: any; schema: Schema } | undefined> {
+	if (expression.type == "state") {
+		if (!expression.plugin) return undefined
+		if (!expression.state) return undefined
+
+		const state = PluginManager.getInstance().getState(expression.plugin, expression.state)
+		if (!state) return undefined
+		const schema = state.schema
+		let value = state.ref.value
+
+		logger.log("State Value", expression.plugin, expression.state, value)
+		value = await unexposeSchema(schema, value)
+		logger.log("Unexposed", value)
+
+		return { value, schema: state.schema }
+	} else if (expression.type == "value") {
+		const type = getTypeByName(expression.schemaType)
+		if (!type) return undefined
+
+		const schema = { type: type.constructor, template: true, required: true }
+
+		logger.log("Value Value", expression.schemaType, expression.value)
+
+		let value = await templateSchema(expression.value, schema, PluginManager.getInstance().state)
+
+		logger.log("Templated", value)
+
+		return { value, schema }
+	}
+
+	return undefined
+}
+
 function baseCompare(left: any, right: any, operator: ValueCompareOperator) {
 	if (operator == "equal") {
 		return left == right
@@ -57,26 +98,22 @@ function baseCompare(left: any, right: any, operator: ValueCompareOperator) {
 }
 
 async function evaluateValueExpression(expression: BooleanValueExpression) {
-	let left = getExpressionValue(expression.lhs)
-	const leftSchema = getExpressionSchema(expression.lhs)
-	let right = getExpressionValue(expression.rhs)
-	const rightSchema = getExpressionSchema(expression.rhs)
+	const left = await getExpressionValueAndSchema(expression.lhs)
+	const right = await getExpressionValueAndSchema(expression.rhs)
 
 	let compareFunc = baseCompare
 
-	if (rightSchema) {
-		right = await unexposeSchema(rightSchema, right)
-	}
+	let leftValue = left?.value
+	let rightValue = right?.value
 
-	if (leftSchema) {
-		left = await unexposeSchema(leftSchema, left)
-		const typeMeta = getTypeByConstructor(leftSchema.type)
-		if (typeMeta?.compare) {
-			compareFunc = typeMeta.compare
+	if (left?.schema) {
+		const meta = getTypeByConstructor(left.schema.type)
+		if (meta?.compare) {
+			compareFunc = meta.compare
 		}
 	}
 
-	return compareFunc(left, right, expression.operator)
+	return compareFunc(leftValue, rightValue, expression.operator)
 }
 
 function inRangeCompare(

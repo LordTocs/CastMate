@@ -80,6 +80,7 @@ const valueSchema = computed<Schema | undefined>(() => {
 		type: type.constructor,
 		required: true,
 		name: undefined,
+		template: true,
 	}
 
 	return result
