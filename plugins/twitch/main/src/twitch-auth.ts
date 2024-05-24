@@ -75,6 +75,8 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 			twitchId: "",
 			name: "",
 			scopes: defaultScopes,
+			isAffiliate: false,
+			isPartner: false,
 		}
 	}
 
@@ -274,6 +276,8 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 			name: user.displayName,
 			icon: user.profilePictureUrl,
 			email: user.email,
+			isAffiliate: user.broadcasterType == "affiliate" || user.broadcasterType == "partner",
+			isPartner: user.broadcasterType == "partner",
 		})
 
 		this.state.authenticated = true

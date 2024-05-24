@@ -6,5 +6,7 @@ export interface TwitchAccountSecrets {
 
 export interface TwitchAccountConfig extends AccountConfig {
 	twitchId: string
+	isAffiliate: boolean
+	isPartner: boolean
 	email?: string
 }

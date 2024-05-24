@@ -396,6 +396,8 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 		if (!this.config.controllable) return
 		if (this.config.transient) return
 
+		if (!TwitchAccount.channel.config.isAffiliate) return
+
 		const helixData = await this.getHelixRewardData()
 		if (this.config.twitchId) {
 			const update = await TwitchAccount.channel.apiClient.channelPoints.updateCustomReward(
@@ -435,6 +437,11 @@ export function setupChannelPointRewards() {
 
 	async function loadRewards() {
 		const channelAccount = TwitchAccount.channel
+
+		if (!channelAccount.config.isAffiliate) {
+			logger.log("Not Affiliate Skipping Rewards")
+			return
+		}
 
 		const channelId = channelAccount.config.twitchId
 
