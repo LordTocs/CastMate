@@ -845,7 +845,7 @@ registerOldActionMigrator("obs", "text", {
 		return {
 			obs: migrateDefaultOBS(),
 			sourceName: migrateTemplateStr(oldConfig.sourceName),
-			text: migrateTemplateStr(oldConfig.text),
+			text: migrateTemplateStr(oldConfig.text) ?? "",
 		}
 	},
 })
