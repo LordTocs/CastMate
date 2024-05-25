@@ -233,7 +233,7 @@ export function setupChat() {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
-			await TwitchAccount.channel.apiClient.chat.sendAnnouncement(TwitchAccount.channel.twitchId, {
+			await TwitchAccount.bot.apiClient.chat.sendAnnouncement(TwitchAccount.channel.twitchId, {
 				message: config.message,
 				color: config.color as HelixChatAnnouncementColor,
 			})
