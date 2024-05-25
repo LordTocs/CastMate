@@ -20,6 +20,8 @@ import { Profile } from "../profile/profile"
 import { globalLogger, usePluginLogger } from "../logging/logging"
 import { AnalyticsService } from "../analytics/analytics-manager"
 
+const logger = usePluginLogger("triggers")
+
 interface TriggerMetaData {
 	id: string
 	name: string
@@ -192,12 +194,17 @@ class TriggerImplementation<
 			for (const trigger of profile.config.triggers) {
 				if (trigger.plugin != this.pluginId || trigger.trigger != this.id) continue
 
-				if (await this.triggerForData(context, profile, trigger)) {
-					triggered = true
+				try {
+					if (await this.triggerForData(context, profile, trigger)) {
+						triggered = true
 
-					if (trigger.stop) {
-						break
+						if (trigger.stop) {
+							break
+						}
 					}
+				} catch (err) {
+					logger.error("Error Checking Trigger: ", this.pluginId, this.id)
+					logger.error(err)
 				}
 			}
 		}
