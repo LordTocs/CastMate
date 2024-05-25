@@ -12,7 +12,7 @@
 			v-bind="inputProps"
 			v-slot="templateProps"
 		>
-			<p-password v-model="model" v-bind="templateProps" v-if="secret" toggle-mask :feedback="false" />
+			<p-password v-model="model" v-bind="templateProps" v-if="isSecret" toggle-mask :feedback="false" />
 			<enum-input
 				:schema="schema"
 				v-model="model"
@@ -43,6 +43,8 @@ const props = defineProps<
 >()
 
 const model = useModel(props, "modelValue")
+
+const isSecret = computed(() => props.secret || props.schema.secret)
 
 const toggleTemplate = computed(() => {
 	return props.schema.enum != null || props.secret

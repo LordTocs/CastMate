@@ -135,7 +135,7 @@ const obsConfigSchema = declareSchema({
 	properties: {
 		host: { type: String, name: "Hostname", required: true, default: "127.0.0.1" },
 		port: { type: Number, name: "Port", required: true, default: 4455 },
-		password: { type: String, name: "Password" },
+		password: { type: String, name: "Password", secret: true },
 	},
 })
 
