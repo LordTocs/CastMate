@@ -1,5 +1,6 @@
 import { EmoteParsedString, EmoteSet, createEmoteRegex, parseEmotesRegex } from "castmate-schema"
 import { Service } from "../util/service"
+import { usePluginLogger } from "../logging/logging"
 
 export interface EmoteProvider {
 	readonly id: string
@@ -11,12 +12,14 @@ export interface EmoteProvider {
 	onSetAdded: ((set: EmoteSet) => any) | undefined
 }
 
+const logger = usePluginLogger("emotes")
+
 export const EmoteCache = Service(
 	class {
 		private providers = new Map<string, EmoteProvider>()
 		private emoteSets = new Map<string, EmoteSet>()
-		private matchingExpression: string = ""
-		private thirdPartyMatching: string = ""
+		private matchingExpression: string | undefined = undefined
+		private thirdPartyMatching: string | undefined = undefined
 		private inited = false
 
 		constructor() {}
@@ -29,11 +32,20 @@ export const EmoteCache = Service(
 		}
 
 		private updateMatcher() {
-			this.matchingExpression = createEmoteRegex([...this.emoteSets.values()])
+			const sets = [...this.emoteSets.values()]
+			const thirdPartySets = sets.filter((s) => s.provider != "twitch")
 
-			this.thirdPartyMatching = createEmoteRegex(
-				[...this.emoteSets.values()].filter((s) => s.provider != "twitch")
-			)
+			if (sets.length > 0) {
+				this.matchingExpression = createEmoteRegex(sets)
+			} else {
+				this.matchingExpression = undefined
+			}
+
+			if (thirdPartySets.length > 0) {
+				this.thirdPartyMatching = createEmoteRegex(thirdPartySets)
+			} else {
+				this.thirdPartyMatching = undefined
+			}
 		}
 
 		async initialize() {
@@ -69,6 +81,10 @@ export const EmoteCache = Service(
 		}
 
 		parseThirdParty(message: EmoteParsedString) {
+			if (!this.thirdPartyMatching) {
+				return message
+			}
+
 			const result: EmoteParsedString = []
 
 			for (let i = 0; i < message.length; ++i) {
@@ -88,7 +104,10 @@ export const EmoteCache = Service(
 			return result
 		}
 
-		parseMessage(message: string) {
+		parseMessage(message: string): EmoteParsedString {
+			if (!this.matchingExpression) {
+				return [{ type: "message", message: message }]
+			}
 			return parseEmotesRegex(message, [...this.emoteSets.values()], this.matchingExpression)
 		}
 	}
