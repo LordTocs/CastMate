@@ -59,7 +59,10 @@ export function getAllEmotes(emoteSets: EmoteSet[]) {
 }
 
 export function createEmoteRegex(emoteSets: EmoteSet[]) {
-	const trieRegex = buildTrieRegex(getAllEmotes(emoteSets).map((e) => `\\b${escapeRegExp(e)}\\b`))
+	const allEmotes = getAllEmotes(emoteSets)
+	if (allEmotes.length == 0) return undefined
+
+	const trieRegex = buildTrieRegex(allEmotes.map((e) => `\\b${escapeRegExp(e)}\\b`))
 	return trieRegex
 }
 
