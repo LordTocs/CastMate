@@ -10,7 +10,7 @@ export default definePlugin(
 		name: "Lights & IoT",
 		description: "UI Description",
 		icon: "mdi mdi-lightbulb-on-outline",
-		color: "#7F743F",
+		color: "#E2C74D",
 	},
 	() => {
 		//Plugin Intiialization
