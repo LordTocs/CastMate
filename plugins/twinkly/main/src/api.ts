@@ -61,7 +61,7 @@ export async function authenticateTwinkly(ip: string, token: TwinklyAuthToken) {
 
 		return true
 	} catch (err) {
-		logger.error("Failed Twinkly Auth", err.response.data)
+		logger.error("Failed Twinkly Auth", err)
 		logger.error(err)
 		return false
 	}
