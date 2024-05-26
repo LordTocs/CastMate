@@ -494,10 +494,10 @@ export function setupChannelPointRewards() {
 		context: {
 			type: Object,
 			properties: {
-				reward: { type: ChannelPointReward, required: true },
-				redemptionId: { type: String, required: true },
 				viewer: { type: TwitchViewer, required: true, default: "27082158" },
-				message: { type: String, required: true, default: "Thanks for using CastMate!" },
+				reward: { type: ChannelPointReward, required: true },
+				redemptionId: { type: String, required: true, view: false },
+				message: { type: String, default: "Thanks for using CastMate!" },
 			},
 		},
 		async handle(config, context) {

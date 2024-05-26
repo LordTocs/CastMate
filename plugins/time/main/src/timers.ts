@@ -136,8 +136,8 @@ export function setupTimers() {
 		context: {
 			type: Object,
 			properties: {
-				triggerId: { type: String, required: true },
-				profileId: { type: String, required: true },
+				triggerId: { type: String, required: true, view: false },
+				profileId: { type: String, required: true, view: false },
 			},
 		},
 		async handle(config, context, mapping) {
@@ -201,8 +201,8 @@ export function setupTimers() {
 		context: {
 			type: Object,
 			properties: {
-				triggerId: { type: String, required: true },
-				profileId: { type: String, required: true },
+				triggerId: { type: String, required: true, view: false },
+				profileId: { type: String, required: true, view: false },
 			},
 		},
 		async handle(config, context, mapping) {

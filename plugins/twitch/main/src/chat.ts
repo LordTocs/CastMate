@@ -106,16 +106,16 @@ export function setupChat() {
 			properties: {
 				viewer: { type: TwitchViewer, required: true, default: "27082158", name: "Viewer" },
 				message: { type: String, required: true, default: "Thanks for using CastMate!" },
-				messageId: { type: String, required: true, default: "1234" },
+				messageId: { type: String, required: true, default: "1234", view: false },
 			},
 		},
 		async context(config) {
 			return {
 				type: Object,
 				properties: {
-					viewer: { type: TwitchViewer, required: true, default: "27082158", name: "Viewer" },
+					viewer: { type: TwitchViewer, required: true, default: "27082158" },
 					message: { type: String, required: true, default: "Thanks for using CastMate!" },
-					messageId: { type: String, required: true, default: "1234" },
+					messageId: { type: String, required: true, default: "1234", view: false },
 					...getCommandDataSchema(config.command).properties,
 				},
 			}
@@ -162,7 +162,7 @@ export function setupChat() {
 			properties: {
 				viewer: { type: TwitchViewer, required: true, default: "27082158", name: "Viewer" },
 				message: { type: String, required: true, default: "Thanks for using CastMate!" },
-				messageId: { type: String, required: true, default: "1234" },
+				messageId: { type: String, required: true, default: "1234", view: false },
 			},
 		},
 		async handle(config, context) {

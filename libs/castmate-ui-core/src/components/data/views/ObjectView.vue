@@ -2,7 +2,7 @@
 	<div class="data-obj">
 		<div class="data-obj-prop" v-for="(prop, i) in Object.keys(schema.properties)" :key="prop">
 			<data-view
-				v-if="getModelProp(prop) != null"
+				v-if="getModelProp(prop) != null && schema.properties[prop].view !== false"
 				:model-value="getModelProp(prop)"
 				:schema="schema.properties[prop]"
 				:context="context"

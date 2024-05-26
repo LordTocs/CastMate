@@ -15,7 +15,7 @@ export function setupClips() {
 		result: {
 			type: Object,
 			properties: {
-				clipId: { type: String },
+				clipId: { type: String, required: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {

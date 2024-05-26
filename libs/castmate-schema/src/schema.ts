@@ -26,6 +26,7 @@ export interface Defaultable<T> {
 export interface SchemaBase<T = any> extends Defaultable<T> {
 	name?: string
 	required?: boolean
+	view?: boolean
 }
 
 //Declare our type registry up here so we can use it
