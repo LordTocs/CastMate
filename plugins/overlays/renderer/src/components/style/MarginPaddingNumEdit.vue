@@ -3,7 +3,7 @@
 		{{ model }}
 	</div>
 	<drop-down-panel v-model="editOpen" :container="labelDiv">
-		<p-input-number v-model="model" show-buttons :min="0" mode="decimal" />
+		<p-input-number v-model="model" show-buttons :min="0" mode="decimal" :allow-empty="false" />
 	</drop-down-panel>
 </template>
 
