@@ -475,7 +475,7 @@ export function useColorsModified(
 
 		const hsl = chromatism.convert(baseColor).hsl
 
-		return !modified ? baseColor : chromatism.saturation(-(hsl.s * 0.5), baseColor).hex
+		return !modified ? baseColor : chromatism.saturation(-(hsl.s * 0.7), baseColor).hex
 	})
 	const darkerColor = computed(() => chromatism.shade(-20, color.value).hex)
 	const darkestColor = computed(() => chromatism.shade(-30, color.value).hex)
