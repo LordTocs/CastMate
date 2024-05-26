@@ -5,22 +5,27 @@
 		v-model="model"
 		@focus="onFocus"
 		@blur="onBlur"
-		:pattern="`\\d*`"
 		class="hidden-input"
+		:inputmode="inputmode"
+		:pattern="pattern"
 	/>
 </template>
 
 <script setup lang="ts">
 import { useEventListener } from "@vueuse/core"
-import { useModel, ref, watch, toValue } from "vue"
+import { useModel, ref, watch, toValue, HTMLAttributes } from "vue"
 import { InputSelection } from "./FakeInputTypes.ts"
 
-const props = defineProps<{
-	modelValue: string
-	selection: InputSelection
-	focused: boolean
-	pattern?: string
-}>()
+const props = withDefaults(
+	defineProps<{
+		modelValue: string
+		selection: InputSelection
+		focused: boolean
+		pattern?: string
+		inputmode?: HTMLAttributes["inputmode"]
+	}>(),
+	{}
+)
 
 const hiddenInput = ref<HTMLInputElement | null>(null)
 

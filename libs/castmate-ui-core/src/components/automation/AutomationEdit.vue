@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-row" @keydown="onKeyDown">
+	<div class="flex flex-row" @keydown="onKeyDown" @copy="onCopy" @cut="onCut" @paste="onPaste">
 		<document-path local-path="sequence">
 			<automation-edit-area v-model="model" v-model:view="view.automationView" style="flex: 1" :trigger="model" />
 		</document-path>
@@ -101,6 +101,18 @@ function onKeyDown(ev: KeyboardEvent) {
 	if (ev.key == "Delete") {
 		ev.stopPropagation()
 	}
+}
+
+function onCopy(ev: ClipboardEvent) {
+	ev.stopPropagation()
+}
+
+function onCut(ev: ClipboardEvent) {
+	ev.stopPropagation()
+}
+
+function onPaste(ev: ClipboardEvent) {
+	ev.stopPropagation()
 }
 </script>
 

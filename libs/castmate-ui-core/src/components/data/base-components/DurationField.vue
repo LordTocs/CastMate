@@ -14,8 +14,10 @@
 			v-model="inputValue"
 			v-model:focused="focused"
 			v-model:selection="selection"
+			inputmode="numeric"
 			@blur="onBlur"
 			@focus="onFocus"
+			@keypress="onKeyPress"
 		/>
 		<div
 			class="p-dropdown-label p-component p-inputtext duration-input"
@@ -284,8 +286,15 @@ watch(
 	}
 )
 
-function clear() {
-	model.value = undefined
+function onKeyPress(ev: KeyboardEvent) {
+	if (!ev.key.match(/[0-9\.]/g)) {
+		ev.preventDefault()
+	}
+	if (ev.key == ".") {
+		if (inputValue.value.includes(".")) {
+			ev.preventDefault()
+		}
+	}
 }
 </script>
 
