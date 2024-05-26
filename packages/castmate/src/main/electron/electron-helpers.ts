@@ -1,9 +1,12 @@
+import { usePluginLogger } from "castmate-core"
 import { BrowserWindow, app, shell, ipcMain } from "electron"
 import path from "path"
 
 const viteDevURL = `http://${process.env["VITE_DEV_SERVER_HOSTNAME"]}:${process.env["VITE_DEV_SERVER_PORT"]}`
 
 const iconPath = app.isPackaged ? path.join(__dirname, "../..", "renderer/assets/icons/") : "src/renderer/assets/icons/"
+
+const logger = usePluginLogger("system")
 
 export function createWindow(
 	htmlFile: string,
@@ -43,6 +46,10 @@ export function createWindow(
 
 	win.addListener("unmaximize", () => {
 		win.webContents.send("windowFuncs_stateChanged", "unmaximized")
+	})
+
+	win.addListener("restore", () => {
+		win.webContents.send("windowFuncs_stateChanged", win.isMaximized() ? "maximized" : "unmaximized")
 	})
 
 	win.webContents.setWindowOpenHandler((details) => {
