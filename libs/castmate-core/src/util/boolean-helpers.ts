@@ -57,9 +57,9 @@ async function getExpressionValueAndSchema(
 		const schema = state.schema
 		let value = state.ref.value
 
-		logger.log("State Value", expression.plugin, expression.state, value)
+		//logger.log("State Value", expression.plugin, expression.state, value)
 		value = await unexposeSchema(schema, value)
-		logger.log("Unexposed", value)
+		//logger.log("Unexposed", value)
 
 		return { value, schema: state.schema }
 	} else if (expression.type == "value") {
@@ -68,11 +68,11 @@ async function getExpressionValueAndSchema(
 
 		const schema = { type: type.constructor, template: true, required: true }
 
-		logger.log("Value Value", expression.schemaType, expression.value)
+		//logger.log("Value Value", expression.schemaType, expression.value)
 
 		let value = await templateSchema(expression.value, schema, PluginManager.getInstance().state)
 
-		logger.log("Templated", value)
+		//logger.log("Templated", value)
 
 		return { value, schema }
 	}

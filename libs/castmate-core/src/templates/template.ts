@@ -324,8 +324,6 @@ registerSchemaTemplate(Directory, async (value, context, schema) => {
 registerSchemaTemplate(DynamicType, async (value, context, schema: SchemaDynamicType, rootValue) => {
 	const dynamicSchema = await schema.dynamicType(rootValue)
 
-	globalLogger.log("Trying to template", value, rootValue, schema)
-
 	return await templateSchema(value, dynamicSchema, context)
 })
 
