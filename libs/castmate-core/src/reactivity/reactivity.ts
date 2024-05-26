@@ -6,6 +6,8 @@ import { isArray, isObject, isString, isSymbol } from "../util/type-helpers"
 import { isResource } from "../resources/resource"
 import { usePluginLogger } from "../logging/logging"
 
+import util from "util"
+
 const activeEffectStorage = new AsyncLocalStorage<ReactiveEffect>()
 
 const logger = usePluginLogger("reactivity")
@@ -131,7 +133,7 @@ interface PendingTrigger {
 }
 
 export class ReactiveEffect<T = any> {
-	private dependencies: ReactiveDependency[] = []
+	private dependencies = new Set<ReactiveDependency>()
 	private pendingRun = false
 	public debug = false
 	public debugName: string | undefined = undefined
@@ -140,11 +142,10 @@ export class ReactiveEffect<T = any> {
 	constructor(private func: () => T, private scheduler?: () => any) {}
 
 	added(dep: ReactiveDependency) {
-		if (this.dependencies.includes(dep)) return
-		this.dependencies.push(dep)
-		if (this.debug) {
+		if (this.debug && !this.dependencies.has(dep)) {
 			logger.log("Added Dep", dep.debugName, "to", this.debugName)
 		}
+		this.dependencies.add(dep)
 	}
 
 	dispose() {
@@ -156,20 +157,23 @@ export class ReactiveEffect<T = any> {
 	}
 
 	async run() {
-		if (this.debug) logger.log("Running", this.debugName)
+		if (this.debug) logger.log("Running Effect", this.debugName)
 		await activeEffectStorage.run(this, this.func)
-		if (this.debug) logger.log("Finished", this.debugName)
+		if (this.debug) logger.log("Finished Effect", this.debugName)
 	}
 
 	trigger() {
 		if (this.debug) {
-			logger.log("Triggered", this.debugName)
+			logger.log("Reactive Triggered", this.debugName)
 		}
 
 		if (this.pendingRun) return
 
 		this.pendingRun = true
 		process.nextTick(async () => {
+			if (this.debug) {
+				logger.log("Reactive Run", this.debugName)
+			}
 			try {
 				if (this.scheduler) {
 					await this.scheduler()
@@ -225,11 +229,29 @@ export function scheduleReactiveTrigger(timestamp: number) {
 	}
 }
 
-const ignoreSymbols = new Set(Object.getOwnPropertySymbols(Symbol))
+export const ReactiveSymbol = Symbol()
+
+const ignoreSymbols = new Set<Symbol>([
+	Symbol.asyncDispose,
+	Symbol.asyncIterator,
+	Symbol.dispose,
+	Symbol.hasInstance,
+	Symbol.isConcatSpreadable,
+	Symbol.iterator,
+	Symbol.replace,
+	Symbol.search,
+	Symbol.species,
+	Symbol.split,
+	Symbol.toPrimitive,
+	Symbol.toStringTag,
+	Symbol.unscopables,
+	ReactiveSymbol,
+])
 export enum ReactivityProps {
 	RAW = "__c_raw",
 }
-const ignoreProps = new Set<string>([ReactivityProps.RAW])
+
+const ignoreProps = new Set<string>([ReactivityProps.RAW, "constructor"])
 
 function shouldTrack(target: object, propKey: PropertyKey) {
 	if (isSymbol(propKey)) {
@@ -249,6 +271,9 @@ class ReactiveProxy<T extends object> implements ProxyHandler<T> {
 	get(target: T, propKey: PropertyKey, receiver: any) {
 		if (propKey === ReactivityProps.RAW) {
 			return target
+		}
+		if (propKey == ReactiveSymbol) {
+			return true
 		}
 
 		const alias = DependencyStorage.getAlias(target, propKey)
@@ -284,6 +309,10 @@ class ReactiveProxy<T extends object> implements ProxyHandler<T> {
 	}
 
 	has(target: T, propKey: PropertyKey) {
+		if (propKey == ReactiveSymbol) {
+			return true
+		}
+
 		const alias = DependencyStorage.getAlias(target, propKey)
 
 		if (alias) {
@@ -325,6 +354,10 @@ interface Target {
 }
 
 export function reactify<T extends object>(obj: T) {
+	if (ReactiveSymbol in obj) {
+		return obj
+	}
+
 	const existing = proxyMap.get(obj)
 	if (existing != null) return existing as T
 
