@@ -6,13 +6,13 @@
 			<i :class="queuedTrigger?.icon" /> {{ queuedTrigger?.name }}
 		</div>
 
-		<div class="data">
+		<flex-scroller class="data" inner-class="data-inner">
 			<data-view
 				:model-value="queueItem.queueContext.contextState"
 				v-if="queuedContextSchema"
 				:schema="queuedContextSchema"
 			/>
-		</div>
+		</flex-scroller>
 
 		<div class="controls">
 			<p-button
@@ -46,6 +46,7 @@ import {
 	useTrigger,
 	useTriggerColors,
 	DataView,
+	FlexScroller,
 } from "castmate-ui-core"
 import PButton from "primevue/button"
 import { computed } from "vue"
@@ -121,5 +122,9 @@ const queuedContextSchema = asyncComputed(async () => {
 
 .data {
 	flex: 1;
+}
+
+:deep(.data-inner) {
+	padding: 0.25rem;
 }
 </style>
