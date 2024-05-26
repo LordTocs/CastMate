@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-row">
+	<div class="flex flex-row" @keydown="onKeyDown">
 		<document-path local-path="sequence">
 			<automation-edit-area v-model="model" v-model:view="view.automationView" style="flex: 1" :trigger="model" />
 		</document-path>
@@ -95,6 +95,13 @@ const selectedTriggerDef = computed(() => {
 
 	return props.modelValue
 })
+
+function onKeyDown(ev: KeyboardEvent) {
+	//Prevent bubbling Delete up any further otherwise it will try to delete the collection selection.
+	if (ev.key == "Delete") {
+		ev.stopPropagation()
+	}
+}
 </script>
 
 <style scoped>

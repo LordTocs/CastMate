@@ -359,9 +359,11 @@ function deleteSelected() {
 
 function onKeyDown(ev: KeyboardEvent) {
 	if (ev.key == "Delete") {
-		ev.preventDefault()
-		ev.stopPropagation()
-		deleteSelected()
+		if (selection.value.length > 0) {
+			ev.preventDefault()
+			ev.stopPropagation()
+			deleteSelected()
+		}
 	}
 }
 
