@@ -34,7 +34,11 @@
 			:disabled="disabled"
 		/>
 		<slot name="append" :disabled="disabled"></slot>
-		<p-button :disabled="disabled" class="no-focus-highlight flex-shrink-0" @click="onDropDownClick"
+		<p-button
+			:disabled="disabled"
+			class="no-focus-highlight flex-shrink-0"
+			@click="onDropDownClick"
+			@mousedown="onMousedown"
 			><p-chevron-down-icon
 		/></p-button>
 	</div>
@@ -101,10 +105,6 @@ const dropDown = ref<InstanceType<typeof AutocompleteDropList>>()
 
 const stopPropagation = usePropagationStop()
 
-function clear() {
-	model.value = undefined
-}
-
 ////////////////////////////
 //Drop Down Opening
 const container = ref<HTMLElement | null>(null)
@@ -122,6 +122,8 @@ function hide() {
 }
 
 function onDropDownClick(ev: MouseEvent) {
+	if (ev.button != 0) return
+
 	if (!overlayVisible.value) {
 		focused.value = true
 		show()
@@ -130,7 +132,16 @@ function onDropDownClick(ev: MouseEvent) {
 		})
 	} else {
 		hide()
+		nextTick(() => {
+			filterInputElement.value?.$el?.blur()
+		})
 	}
+}
+
+function onMousedown(ev: MouseEvent) {
+	if (ev.button != 0) return
+
+	ev.preventDefault()
 }
 //////////////////
 //Filtering

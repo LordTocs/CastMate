@@ -22,7 +22,7 @@
 					:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
 				>
 					<li
-						class="p-dropdown-item"
+						class="p-dropdown-item autocomplete-item"
 						:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
 						:data-p-highlight="isCurrentItem(item)"
 						:data-p-focused="isItemFocused(item)"
@@ -83,7 +83,9 @@ function close() {
 	emit("closed")
 }
 
-function onItemSelect(ev: Event, item: ItemType) {
+function onItemSelect(ev: MouseEvent, item: ItemType) {
+	if (ev.button != 0) return
+
 	emit("select", item)
 	close()
 	stopPropagation(ev)
@@ -127,4 +129,9 @@ defineExpose({
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.autocomplete-item {
+	width: 100%;
+	overflow-x: hidden;
+}
+</style>

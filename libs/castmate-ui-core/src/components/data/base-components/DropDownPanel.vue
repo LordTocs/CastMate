@@ -11,7 +11,7 @@
 				}"
 				v-focus-trap
 				@click="stopPropagation"
-				@mousedown="stopPropagation"
+				@mousedown="mouseDown"
 			>
 				<slot></slot>
 			</div>
@@ -57,6 +57,11 @@ useResizeObserver(overlayDiv, (ev) => {
 	nextTick(fixPosition)
 })
 
+function mouseDown(ev: MouseEvent) {
+	stopPropagation(ev)
+	ev.preventDefault()
+}
+
 watch(model, () => {
 	if (!model.value) {
 		overlayVisibleComplete.value = false
@@ -67,7 +72,6 @@ useEventListener(
 	() => (overlayVisibleComplete.value ? document : undefined),
 	"click",
 	(ev) => {
-		console.log("Outside Click!", ev.target)
 		if (!props.container?.contains(ev.target as Node) && !overlayDiv.value?.contains(ev.target as Node)) {
 			model.value = false
 		}
