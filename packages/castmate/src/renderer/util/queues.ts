@@ -2,6 +2,7 @@ import { computed } from "vue"
 import { ProjectItem } from "./../../../../../libs/castmate-ui-core/src/project/project-store"
 import { ResourceSchemaEdit, useDockingStore, useProjectStore, useResourceStore } from "castmate-ui-core"
 import QueuePage from "../components/queues/QueuePage.vue"
+import { Duration } from "castmate-schema"
 
 export function initializeQueues() {
 	const dockingStore = useDockingStore()
@@ -26,6 +27,7 @@ export function initializeQueues() {
 		properties: {
 			name: { type: String, name: "Name", required: true },
 			paused: { type: Boolean, name: "Paused", required: true, default: false },
+			gap: { type: Duration, name: "Duration", required: true, default: 0 },
 		},
 	})
 	resourceStore.registerEditComponent("ActionQueue", ResourceSchemaEdit)

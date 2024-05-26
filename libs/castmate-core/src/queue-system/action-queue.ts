@@ -19,12 +19,18 @@ import { FileResource } from "../resources/file-resource"
 import { ResourceRegistry } from "../resources/resource-registry"
 import { deserializeSchema, exposeSchema, serializeSchema } from "../util/ipc-schema"
 import { PluginManager } from "../plugins/plugin-manager"
+import { usePluginLogger } from "../logging/logging"
+
+const logger = usePluginLogger("queues")
 
 export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueState> {
 	static resourceDirectory: string = "./queues"
 	static storage = new ResourceStorage<ActionQueue>("ActionQueue")
 
 	private runner: SequenceRunner | null = null
+	private lastCompletion: number | null = null
+	private scheduledId: string | undefined = undefined
+	private scheduler: NodeJS.Timeout | undefined = undefined
 
 	constructor(config?: ActionQueueConfig) {
 		super()
@@ -33,7 +39,7 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 			this._id = nanoid()
 			this._config = config
 		} else {
-			this._config = { name: "", paused: false }
+			this._config = { name: "", paused: false, gap: 0 }
 		}
 
 		this.state = {
@@ -45,6 +51,10 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 
 	get isRunning() {
 		return this.runner != null
+	}
+
+	get isReady() {
+		return !this.isRunning || this.scheduler == null
 	}
 
 	/**
@@ -66,11 +76,15 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		return result
 	}
 
+	get gap() {
+		return this.config.gap ?? 0
+	}
+
 	//Restarts the queue processing if it needs to
 	private checkQueueStart() {
 		if (this.config.paused) return
 
-		if (!this.isRunning) {
+		if (this.isReady) {
 			this.runNext()
 		}
 	}
@@ -93,12 +107,29 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		}
 	}
 
+	private clearScheduled() {
+		if (!this.scheduler) return
+
+		this.scheduledId = undefined
+		clearTimeout(this.scheduler)
+		this.scheduler = undefined
+	}
+
 	skip(id: string) {
 		if (this.state.running?.id == id) {
 			this.runner?.abort()
 		} else {
 			const idx = this.state.queue.findIndex((i) => i.id == id)
 			if (idx < 0) return
+
+			if (id == this.scheduledId) {
+				//Make sure to stop a scheduled
+				this.clearScheduled()
+
+				if (!this.isPaused) {
+					this.runNext() //Start the next one
+				}
+			}
 			this.state.queue.splice(idx, 1)
 		}
 	}
@@ -114,21 +145,16 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		this.enqueue(played.source, played.queueContext.contextState)
 	}
 
-	private async getNextSequence(): Promise<QueuedSequence | undefined> {
-		let queuedSequence: QueuedSequence | undefined
-		while ((queuedSequence = this.state.queue.shift())) {
-			return queuedSequence
-		}
-
-		return undefined
+	private getNextSequence(): QueuedSequence | undefined {
+		return this.state.queue.shift()
 	}
 
-	async runNext() {
+	private async runNext() {
 		if (this.runner || this.state.running) {
 			return
 		}
 
-		const seqItem = await this.getNextSequence()
+		const seqItem = this.getNextSequence()
 
 		if (!seqItem) return
 
@@ -146,12 +172,14 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 		const finalContext = await exposeSchema(contextSchema, deserializedContext)
 
 		this.runner = new SequenceRunner(automation.sequence, { contextState: finalContext })
+		//Sequence Set
 		this.state.running = seqItem
 
 		const doRun = async () => {
 			try {
 				await this.runner?.run()
 			} finally {
+				this.lastCompletion = Date.now()
 				this.runner = null
 				this.state.running = undefined
 				this.pushToHistory(seqItem)
@@ -160,7 +188,18 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 				}
 			}
 		}
-		doRun()
+
+		let remaining = 0
+		if (this.lastCompletion != null) {
+			const now = Date.now()
+			const diff = (now - this.lastCompletion) / 1000
+			remaining = Math.max(0, this.gap - diff)
+		}
+
+		this.scheduler = setTimeout(() => {
+			this.scheduler = undefined
+			doRun()
+		}, remaining * 1000)
 	}
 
 	static async initialize() {
@@ -264,7 +303,7 @@ export const ActionQueueManager = Service(
 
 			if (trigger && trigger.trigger && trigger.plugin) {
 				const triggerDef = PluginManager.getInstance().getTrigger(trigger.plugin, trigger.trigger)
-				if (triggerDef) {
+				if (triggerDef && typeof triggerDef.context != "function") {
 					const defaultRunValues = await constructDefault(triggerDef.context)
 					//console.log("Default for test", defaultRunValues)
 					const exposedDefault = await exposeSchema(triggerDef.context, defaultRunValues)
