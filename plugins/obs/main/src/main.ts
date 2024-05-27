@@ -131,6 +131,7 @@ export default definePlugin(
 		defineAction({
 			id: "hotkey",
 			name: "Hotkey",
+			icon: "mdi mdi-keyboard-variant",
 			config: {
 				type: Object,
 				properties: {

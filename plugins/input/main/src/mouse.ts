@@ -6,6 +6,7 @@ export function setupMouse(inputInterface: InputInterface) {
 	defineAction({
 		id: "mouseButton",
 		name: "Simulate Mouse",
+		icon: "mdi mdi-mouse",
 		config: {
 			type: Object,
 			properties: {
