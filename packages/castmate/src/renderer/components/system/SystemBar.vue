@@ -38,7 +38,7 @@ import { ipcRenderer } from "electron"
 import {
 	useDockingStore,
 	useIpcMessage,
-	isProduction,
+	isDev,
 	NameDialog,
 	useResourceStore,
 	useOpenProfileDocument,
@@ -191,7 +191,7 @@ const menuItems = computed<MenuItem[]>(() => {
 		}
 	)
 
-	if (!isProduction()) {
+	if (isDev()) {
 		fileMenu.items?.push(
 			{
 				separator: true,
@@ -252,6 +252,10 @@ const menuItems = computed<MenuItem[]>(() => {
 }
 
 .system-bar :deep(.p-menubar-root-list) {
+	-webkit-app-region: no-drag;
+}
+
+.system-bar :deep(.p-menubar-button) {
 	-webkit-app-region: no-drag;
 }
 
