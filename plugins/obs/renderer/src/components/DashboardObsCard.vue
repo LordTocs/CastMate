@@ -2,7 +2,7 @@
 	<dashboard-card v-if="obs">
 		<template #header> <i class="obsi obsi-obs" /> {{ obs?.config?.name }} </template>
 		<dashboard-card-item v-if="!obs.state.connected" label="Disconnected">
-			<p-button v-if="isLocal" text>Open</p-button>
+			<p-button v-if="isLocal" text @click="openObs">Open</p-button>
 			<div
 				class="p-text-secondary"
 				style="font-size: 0.875rem"
@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { useResource, DashboardCard, DashboardCardItem } from "castmate-ui-core"
+import { useResource, DashboardCard, DashboardCardItem, useResourceIPCCaller } from "castmate-ui-core"
 import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
 import { ResourceData } from "castmate-schema"
 import { computed } from "vue"
@@ -46,6 +46,13 @@ const isLocal = computed(() => {
 	if (!obs.value) return
 	return obs.value.config.host == "127.0.0.1" || obs.value.config.host == "localhost"
 })
+
+const openProcess = useResourceIPCCaller<() => any>("OBSConnection", () => props.obsId, "openProcess")
+
+async function openObs() {
+	if (!props.obsId) return
+	await openProcess()
+}
 </script>
 
 <style scoped>

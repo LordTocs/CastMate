@@ -63,7 +63,8 @@ function getOBSInstallFromRegistry() {
 				} else {
 					resolve(String(obsPath))
 				}
-			} catch {
+			} catch (err) {
+				logger.error("RegRead Error", err)
 				resolve(undefined)
 			}
 		})
