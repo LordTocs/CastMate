@@ -63,26 +63,34 @@ export namespace DependencyStorage {
 	const dependencyMap = new WeakMap<object, ObjectDependencyMap>()
 
 	interface AliasedDependency {
-		[key: string | number | symbol]: { target: object; key: string | number | symbol }
+		[key: PropertyKey]: { target: object; key: PropertyKey }
 	}
 	const aliasMap = new WeakMap<object, AliasedDependency>()
 
-	export function getAlias(target: object, key: string | number | symbol) {
+	export function getAlias(target: object, key: PropertyKey) {
+		if (key == "constructor") return undefined
 		const alias = aliasMap.get(target)
 		if (!alias) return undefined
+		logger.log("Alias Obj", alias)
 		return alias[key]
 	}
 
-	export function setAlias(
-		target: object,
-		targetKey: string | number | symbol,
-		source: object,
-		sourceKey: string | number | symbol
-	) {
-		let alias: AliasedDependency | undefined = aliasMap.get(target)
+	export function setAlias(target: object, targetKey: PropertyKey, source: object, sourceKey: PropertyKey) {
+		const rawTarget = rawify(target)
+
+		if (typeof rawTarget != "object") {
+			logger.error("=====REACTIVITY ERROR====")
+			logger.error("Aliasing", targetKey, "to", sourceKey, "failed with rawify!")
+		}
+
+		if (isReactive(rawTarget)) {
+			logger.error("RAW TARGET SOMEHOW REACTIVE", targetKey, sourceKey)
+		}
+
+		let alias: AliasedDependency | undefined = aliasMap.get(rawTarget)
 		if (!alias) {
 			alias = {}
-			aliasMap.set(target, alias)
+			aliasMap.set(rawTarget, alias)
 		}
 
 		alias[targetKey] = { target: source, key: sourceKey }
@@ -230,6 +238,7 @@ export function scheduleReactiveTrigger(timestamp: number) {
 }
 
 export const ReactiveSymbol = Symbol()
+export const ReactiveRaw = Symbol()
 
 const ignoreSymbols = new Set<Symbol>([
 	Symbol.asyncDispose,
@@ -246,12 +255,10 @@ const ignoreSymbols = new Set<Symbol>([
 	Symbol.toStringTag,
 	Symbol.unscopables,
 	ReactiveSymbol,
+	ReactiveRaw,
 ])
-export enum ReactivityProps {
-	RAW = "__c_raw",
-}
 
-const ignoreProps = new Set<string>([ReactivityProps.RAW, "constructor"])
+const ignoreProps = new Set<string>([])
 
 function shouldTrack(target: object, propKey: PropertyKey) {
 	if (isSymbol(propKey)) {
@@ -269,7 +276,7 @@ function shouldTrack(target: object, propKey: PropertyKey) {
 
 class ReactiveProxy<T extends object> implements ProxyHandler<T> {
 	get(target: T, propKey: PropertyKey, receiver: any) {
-		if (propKey === ReactivityProps.RAW) {
+		if (propKey === ReactiveRaw) {
 			return target
 		}
 		if (propKey == ReactiveSymbol) {
@@ -280,6 +287,9 @@ class ReactiveProxy<T extends object> implements ProxyHandler<T> {
 
 		if (alias) {
 			target = alias.target as T
+			if (!target) {
+				logger.error("FAILED to alias w/", propKey, alias)
+			}
 			propKey = alias.key
 		}
 
@@ -292,6 +302,10 @@ class ReactiveProxy<T extends object> implements ProxyHandler<T> {
 
 		if (alias) {
 			target = alias.target as T
+
+			if (!target) {
+				logger.error("FAILED to alias w/", propKey, alias.key)
+			}
 			propKey = alias.key
 		}
 
@@ -310,6 +324,9 @@ class ReactiveProxy<T extends object> implements ProxyHandler<T> {
 
 	has(target: T, propKey: PropertyKey) {
 		if (propKey == ReactiveSymbol) {
+			return true
+		}
+		if (propKey == ReactiveRaw) {
 			return true
 		}
 
@@ -350,11 +367,11 @@ class ReactiveProxy<T extends object> implements ProxyHandler<T> {
 const proxyMap = new WeakMap<object, any>()
 
 interface Target {
-	[ReactivityProps.RAW]: any
+	[ReactiveRaw]: any
 }
 
 export function reactify<T extends object>(obj: T) {
-	if (ReactiveSymbol in obj) {
+	if (isReactive(obj)) {
 		return obj
 	}
 
@@ -372,7 +389,7 @@ export function reactify<T extends object>(obj: T) {
 }
 
 export function rawify<T extends object>(obj: T) {
-	const raw = obj && (obj as Target)[ReactivityProps.RAW]
+	const raw = (obj as Target)?.[ReactiveRaw]
 	return raw ?? obj
 }
 
@@ -518,4 +535,11 @@ export function Reactive<This extends object, T>(
 			return result
 		},
 	}
+}
+
+export function isReactive(obj: any) {
+	if (ReactiveSymbol in obj) {
+		return true
+	}
+	return false
 }
