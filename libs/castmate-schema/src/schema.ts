@@ -88,6 +88,7 @@ export interface SchemaString extends Enumable<string>, SchemaBase<string> {
 	template?: boolean
 	maxLength?: number
 	secret?: boolean
+	multiLine?: boolean
 }
 
 registerType("String", {

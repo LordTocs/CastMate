@@ -42,8 +42,15 @@ export function setupAlerts() {
 					required: true,
 					widgetType: { plugin: "overlays", widget: "alert" },
 				},
-				title: { type: String, name: "Title", template: true, required: true, default: "" },
-				subtitle: { type: String, name: "Subtitle", template: true, required: true, default: "" },
+				title: { type: String, name: "Title", template: true, required: true, default: "", multiLine: true },
+				subtitle: {
+					type: String,
+					name: "Subtitle",
+					template: true,
+					required: true,
+					default: "",
+					multiLine: true,
+				},
 			},
 		},
 		async invoke(config, contextData, abortSignal) {

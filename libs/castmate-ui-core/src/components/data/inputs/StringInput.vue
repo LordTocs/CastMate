@@ -11,6 +11,7 @@
 			:template-mode="!!schema.template && !toggleTemplate"
 			v-bind="inputProps"
 			v-slot="templateProps"
+			:multi-line="schema.multiLine"
 		>
 			<p-password v-model="model" v-bind="templateProps" v-if="isSecret" toggle-mask :feedback="false" />
 			<enum-input
@@ -20,6 +21,7 @@
 				v-bind="templateProps"
 				v-else-if="schema.enum"
 			/>
+			<p-text-area v-model="model" v-bind="templateProps" v-else-if="schema.multiLine" autoResize />
 			<p-input-text v-model="model" v-bind="templateProps" v-else />
 		</template-toggle>
 	</data-input-base>
@@ -34,10 +36,11 @@ import { SharedDataInputProps, defaultStringIsTemplate } from "../DataInputTypes
 import { TemplateToggle } from "../../../main"
 import EnumInput from "../base-components/EnumInput.vue"
 import { computed, onMounted, ref, useModel } from "vue"
+import PTextArea from "primevue/textarea"
 
 const props = defineProps<
 	{
-		schema: SchemaString & SchemaBase
+		schema: SchemaString
 		modelValue: string | undefined
 	} & SharedDataInputProps
 >()

@@ -9,6 +9,7 @@
 						v-model="model"
 						:template-mode="canTemplate && templateMode"
 						:disabled
+						:multi-line="schema.multiLine"
 					>
 						<slot v-bind="labelProps"></slot>
 					</template-toggle>
@@ -47,7 +48,7 @@ import DataInputBaseMenu from "./DataInputBaseMenu.vue"
 const props = withDefaults(
 	defineProps<{
 		modelValue: any
-		schema: Schema & { template?: boolean }
+		schema: Schema & { template?: boolean; multiLine?: boolean }
 		noFloat?: boolean
 		showClear?: boolean
 		menuExtra?: MenuItem[]

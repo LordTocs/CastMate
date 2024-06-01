@@ -15,11 +15,21 @@
 			ref="container"
 		>
 			<p-input-text
+				v-if="!props.multiLine"
 				class="flex-grow-1"
 				:class="{ 'no-right-bezel': noRightBezel }"
 				style="padding-right: 2rem"
 				v-model="model"
 				:disabled="disabled"
+			/>
+			<p-text-area
+				class="flex-grow-1"
+				:class="{ 'no-right-bezel': noRightBezel }"
+				style="padding-right: 2rem"
+				v-model="model"
+				:disabled="disabled"
+				autoResize
+				v-else
 			/>
 			<i class="mdi mdi-code-json input-icon" @click="suggestionClick" @mousedown="stopPropagation" />
 			<state-suggestion-panel :container="container" v-model:open="suggestionVisible" @suggest="onSuggest" />
@@ -32,8 +42,10 @@
 <script setup lang="ts" generic="T">
 import { computed, ref, useModel } from "vue"
 import PInputText from "primevue/inputtext"
+import PTextArea from "primevue/textarea"
 import StateSuggestionPanel from "./state/StateSuggestionPanel.vue"
 import { usePropagationStop } from "../../../main"
+
 const focused = ref(false)
 
 const props = defineProps<{
@@ -43,6 +55,7 @@ const props = defineProps<{
 	noRightBezel?: boolean
 	errorMessage?: string
 	disabled?: boolean
+	multiLine?: boolean
 }>()
 
 const container = ref<HTMLElement>()

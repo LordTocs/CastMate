@@ -41,6 +41,7 @@ defineOptions({
 					required: true,
 					default: "Label",
 					template: true,
+					multiLine: true,
 				},
 				font: {
 					name: "Font",
