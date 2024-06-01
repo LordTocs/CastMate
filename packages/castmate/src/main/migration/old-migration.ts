@@ -1015,7 +1015,8 @@ registerOldSettingsMigrator("discord", {
 
 		await ensureDirectory(resolveProjectPath("discord", "webhooks"))
 
-		for (const id of files) {
+		for (const file of files) {
+			const id = path.basename(file, ".yaml")
 			try {
 				await migrateOldDiscordHook(id)
 			} catch (err) {
@@ -1222,7 +1223,7 @@ let defaultMinecraftId: string | undefined = undefined
 registerOldSettingsMigrator("minecraft", {
 	plugin: "minecraft",
 	async migrateSettings(oldSettings: { host?: string; port?: number }, oldSecrets: { password?: string }) {
-		if (oldSettings.host && oldSettings.port && oldSecrets.password) {
+		if (oldSettings?.host && oldSettings?.port && oldSecrets?.password) {
 			defaultMinecraftId = await migrateCreateFileResource<RCONConnectionConfig>("./minecraft/connections", {
 				name: "Main Minecraft Server",
 				host: oldSettings.host,
@@ -2495,8 +2496,8 @@ export async function migratePlugin(pluginId: string) {
 		if (migrator.plugin == pluginId) {
 			try {
 				const { settings, secrets } = await migrator.migrateSettings(
-					oldSettings[oldPlugin],
-					oldSecrets[oldPlugin]
+					oldSettings[oldPlugin] ?? {},
+					oldSecrets[oldPlugin] ?? {}
 				)
 
 				await writeYAML(settings, "settings", `${migrator.plugin}.yaml`)
