@@ -1,6 +1,6 @@
 <template>
 	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
-		<div class="container w-full" ref="container">
+		<div class="container w-full" ref="container" @mousedown="stopPropagation">
 			<input-box
 				:model="model"
 				:focused="focused"
@@ -61,6 +61,7 @@ import {
 	LabelFloater,
 	TemplateToggle,
 	DataInputBase,
+	stopPropagation,
 } from "castmate-ui-core"
 import { TwitchViewerUnresolved, SchemaTwitchViewer, TwitchViewerDisplayData } from "castmate-plugin-twitch-shared"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
