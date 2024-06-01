@@ -2123,63 +2123,79 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 			const oldTriggers = oldProfile.triggers[oldPluginKey][oldTriggerKey]
 
 			for (const oldTrigger of oldTriggers) {
-				const triggerMigrator = triggerMigrators[oldPluginKey]?.[oldTriggerKey]
+				try {
+					const triggerMigrator = triggerMigrators[oldPluginKey]?.[oldTriggerKey]
 
-				const newTrigger: TriggerData = {
-					id: nanoid(),
-					config: {},
-					sequence: { actions: [] },
-					floatingSequences: [],
-				}
+					const newTrigger: TriggerData = {
+						id: nanoid(),
+						config: {},
+						sequence: { actions: [] },
+						floatingSequences: [],
+					}
 
-				templateVarOverrides = {
-					user: "viewer",
-					userColor: "viewer.color",
-					userId: "viewer.id",
-					argString: "commandMessage",
-					filteredMessage: "message",
-				}
+					templateVarOverrides = {
+						user: "viewer",
+						userColor: "viewer.color",
+						userId: "viewer.id",
+						argString: "commandMessage",
+						filteredMessage: "message",
+					}
 
-				if (triggerMigrator) {
-					if (triggerMigrator.templateOverrides) {
-						templateVarOverrides = {
-							...templateVarOverrides,
-							...triggerMigrator.templateOverrides,
+					if (triggerMigrator) {
+						if (triggerMigrator.templateOverrides) {
+							templateVarOverrides = {
+								...templateVarOverrides,
+								...triggerMigrator.templateOverrides,
+							}
+						}
+
+						const newTriggerConfig = await triggerMigrator.migrateConfig(oldTrigger.config)
+
+						newTrigger.plugin = triggerMigrator.plugin
+						newTrigger.trigger = triggerMigrator.trigger
+						newTrigger.config = newTriggerConfig
+					}
+
+					newTrigger.sequence = await migrateInlineOldAutomation(oldTrigger.automation)
+
+					if (typeof oldTrigger.automation == "object") {
+						if (oldTrigger.automation.sync) {
+							newTrigger.queue = mainQueueId
 						}
 					}
 
-					const newTriggerConfig = await triggerMigrator.migrateConfig(oldTrigger.config)
+					logger.log("Migrated Trigger", newTrigger)
 
-					newTrigger.plugin = triggerMigrator.plugin
-					newTrigger.trigger = triggerMigrator.trigger
-					newTrigger.config = newTriggerConfig
+					result.triggers.push(newTrigger)
+				} catch (err) {
+					logger.error("Error Migrating Trigger", oldPluginKey, oldTriggerKey, err)
 				}
-
-				newTrigger.sequence = await migrateInlineOldAutomation(oldTrigger.automation)
-
-				if (typeof oldTrigger.automation == "object") {
-					if (oldTrigger.automation.sync) {
-						newTrigger.queue = mainQueueId
-					}
-				}
-
-				logger.log("Migrated Trigger", newTrigger)
-
-				result.triggers.push(newTrigger)
 			}
 		}
 	}
 
 	if (oldProfile.onActivate) {
-		result.activationAutomation.sequence = await migrateInlineOldAutomation(oldProfile.onActivate)
+		try {
+			result.activationAutomation.sequence = await migrateInlineOldAutomation(oldProfile.onActivate)
+		} catch (err) {
+			logger.error("Error Migrating OnActivate", err)
+		}
 	}
 
 	if (oldProfile.onDeactivate) {
-		result.deactivationAutomation.sequence = await migrateInlineOldAutomation(oldProfile.onDeactivate)
+		try {
+			result.deactivationAutomation.sequence = await migrateInlineOldAutomation(oldProfile.onDeactivate)
+		} catch (err) {
+			logger.error("Error Migrating OnDeactivate")
+		}
 	}
 
 	if (oldProfile.conditions) {
-		result.activationCondition = migrateOldCondition(oldProfile.conditions)
+		try {
+			result.activationCondition = migrateOldCondition(oldProfile.conditions)
+		} catch (err) {
+			logger.error("Error Migrating Conditions")
+		}
 	}
 
 	return result
@@ -2347,10 +2363,14 @@ export async function migrateAllOldProfiles() {
 		const name = path.basename(file, ".yaml")
 
 		const newId = nanoid()
-		const newProfileConfig = await migrateOldProfile(name, data)
+		try {
+			const newProfileConfig = await migrateOldProfile(name, data)
 
-		await writeYAML(newProfileConfig, path.join(dir, `${newId}.yaml`))
-		await fs.unlink(fullPath)
+			await writeYAML(newProfileConfig, path.join(dir, `${newId}.yaml`))
+			await fs.unlink(fullPath)
+		} catch (err) {
+			logger.error("Error Migrating Profile", name)
+		}
 	}
 }
 
@@ -2367,9 +2387,13 @@ export async function migrateAllOldStreamPlans() {
 
 		const id = path.basename(fullPath, ".yaml")
 
-		const newConfig = await migrateStreamPlan(data)
+		try {
+			const newConfig = await migrateStreamPlan(data)
+			await writeYAML(newConfig, path.join(newDir, `${id}.yaml`))
+		} catch (err) {
+			logger.error("Error Migrating Stream Plan", err)
+		}
 
-		await writeYAML(newConfig, path.join(newDir, `${id}.yaml`))
 		await fs.unlink(fullPath)
 	}
 
@@ -2458,7 +2482,11 @@ export async function checkMigration() {
 
 		await migrationStartLatch.promise
 
-		await createBackup()
+		try {
+			await createBackup()
+		} catch (err) {
+			logger.error("Error Creating Backup!", err)
+		}
 
 		rendererMigrateBackupComplete()
 	}
