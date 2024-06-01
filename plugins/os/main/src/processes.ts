@@ -1,5 +1,5 @@
 import { defineAction } from "castmate-core"
-import { Directory } from "castmate-schema"
+import { Directory, FilePath } from "castmate-schema"
 import { ChildProcess, exec, spawn } from "child_process"
 import * as path from "path"
 
@@ -27,7 +27,7 @@ export function setupProcesses() {
 		config: {
 			type: Object,
 			properties: {
-				application: { type: String, name: "Application", required: true },
+				application: { type: FilePath, name: "Application", required: true, extensions: ["exe"] },
 				dir: { type: Directory, name: "Working Directory" },
 				args: {
 					type: Array,
