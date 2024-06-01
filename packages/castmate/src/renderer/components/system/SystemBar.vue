@@ -206,6 +206,13 @@ const menuItems = computed<MenuItem[]>(() => {
 		)
 	}
 
+	fileMenu.items?.push({
+		label: "Exit",
+		command() {
+			close()
+		},
+	})
+
 	const helpMenu: MenuItem = {
 		label: "Help",
 		items: [],
