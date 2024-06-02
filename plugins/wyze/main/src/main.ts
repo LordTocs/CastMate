@@ -89,6 +89,8 @@ function formatWyzeRequestBody(moreData: Record<string, any>) {
 const logger = usePluginLogger("wyze")
 
 export async function tryWyzeLogin(keyId: string, apiKey: string, email: string, password: string) {
+	if (!keyId || !apiKey || !email || !password) return undefined
+
 	const result = await axios.post(
 		WYZE_AUTH_URL,
 		{
