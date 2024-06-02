@@ -23,6 +23,8 @@ import twinklyPlugin from "castmate-plugin-twinkly-main"
 
 import spellcastPlugin from "castmate-plugin-spellcast-main"
 
+import streamPlanPlugin from "castmate-plugin-stream-plans-main"
+
 import overlayPlugin from "castmate-plugin-overlays-main"
 
 import randomPlugin from "castmate-plugin-random-main"
@@ -62,6 +64,8 @@ export async function loadPlugins() {
 	await Promise.allSettled(promises)
 
 	await loadPlugin(spellcastPlugin)
+
+	await loadPlugin(streamPlanPlugin)
 
 	//iot
 	const iotPromises = [

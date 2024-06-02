@@ -142,7 +142,7 @@ export interface SchemaArray extends SchemaBase<Array<any>> {
 ///////////////////////////////Resources////////////////////////////////////////////
 
 interface ResourceType {
-	id: string
+	readonly id: string
 }
 type ResourceTypeConstructor = { new (...args: any[]): ResourceType }
 

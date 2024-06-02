@@ -153,6 +153,44 @@ export const StreamPlanManager = Service(
 			})
 		}
 
+		get activePlan() {
+			return this.activePlanId ? StreamPlan.storage.getById(this.activePlanId) : undefined
+		}
+
+		async startNextSegment() {
+			const plan = this.activePlan
+			if (plan == null) return
+
+			const activeSegmentId = plan.state.activeSegment
+			if (!activeSegmentId) return
+
+			const idx = plan.config.segments.findIndex((s) => s.id == activeSegmentId)
+			if (idx < 0) return
+
+			const nextSegmentId = plan.config.segments[idx + 1]?.id
+
+			if (nextSegmentId == null) return
+
+			await plan.activateSegment(nextSegmentId)
+		}
+
+		async startPrevSegment() {
+			const plan = this.activePlan
+			if (plan == null) return
+
+			const activeSegmentId = plan.state.activeSegment
+			if (!activeSegmentId) return
+
+			const idx = plan.config.segments.findIndex((s) => s.id == activeSegmentId)
+			if (idx < 0) return
+
+			const nextSegmentId = plan.config.segments[idx - 1]?.id
+
+			if (nextSegmentId == null) return
+
+			await plan.activateSegment(nextSegmentId)
+		}
+
 		registerComponentType(factory: StreamPlanComponent) {
 			this.componentTypes.set(factory.id, factory)
 		}
