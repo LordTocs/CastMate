@@ -162,7 +162,7 @@ const {
 		}
 
 		//HACK: Edit Area doesn't get focus back because of preventDefault
-		editArea.value?.focus()
+		editArea.value?.focus({ preventScroll: true })
 		return result
 	},
 	documentPath

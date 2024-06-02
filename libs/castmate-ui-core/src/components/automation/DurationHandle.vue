@@ -125,7 +125,7 @@ function onMouseDown(ev: MouseEvent) {
 		}).x
 		dragStartDuration.value = modelObj.value || 0
 		//Pull focus
-		handle.value?.focus()
+		handle.value?.focus({ preventScroll: true })
 		stopPropagation(ev)
 		ev.preventDefault()
 		emit("interacted")

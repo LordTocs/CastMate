@@ -382,7 +382,7 @@ function onClick(ev: MouseEvent) {
 	if (ev.button == 0) {
 		//console.log("CLICK!")
 		selectDummy.value?.select()
-		dragArea.value?.focus()
+		dragArea.value?.focus({ preventScroll: true })
 		// stopImmediatePropagation(ev)
 		// ev.preventDefault()
 	}
