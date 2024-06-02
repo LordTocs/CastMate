@@ -67,6 +67,7 @@ export const PluginManager = Service(
 			this.plugins.set(plugin.id, plugin)
 			const logger = usePluginLogger(plugin.id)
 			logger.log("Loading Plugin", plugin.id)
+			const startTime = Date.now()
 			try {
 				if (!(await plugin.load())) {
 					logger.error("Load failed for", plugin.id)
@@ -81,6 +82,11 @@ export const PluginManager = Service(
 				//Remove broken plugins
 				this.plugins.delete(plugin.id)
 				delete this.pluginState[plugin.id]
+			} finally {
+				const endTime = Date.now()
+
+				const deltaTime = endTime - startTime
+				logger.log("Finished Loading", plugin.id, "in", deltaTime / 1000, "seconds")
 			}
 		}
 
