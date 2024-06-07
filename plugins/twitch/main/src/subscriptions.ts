@@ -116,8 +116,6 @@ export function setupSubscriptions() {
 	}
 
 	onChannelAuth(async (channel, service) => {
-		//lastSubscriber.value = await ViewerCache.getInstance().getResolvedViewer("27082158")
-
 		service.eventsub.onChannelSubscription(channel.twitchId, (event) => {
 			ViewerCache.getInstance().cacheSubEvent(event)
 			updateSubscriberCount()
