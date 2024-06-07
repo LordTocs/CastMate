@@ -1,0 +1,24 @@
+{
+  "name": "castmate-plugin-obs-main",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.ts",
+  "devMain": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "*"
+  },
+  "dependencies": {
+    "castmate-core": "workspace:^",
+    "castmate-plugin-obs-shared": "workspace:^",
+    "castmate-schema": "workspace:^",
+    "jsqr": "^1.4.0",
+    "node-screenshots": "^0.2.0",
+    "obs-websocket-js": "^5.0.5",
+    "regedit": "^5.1.3"
+  }
+}

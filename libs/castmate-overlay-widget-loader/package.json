@@ -1,0 +1,35 @@
+{
+	"name": "castmate-overlay-widget-loader",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"main": "src/overlay-widget-loader.ts",
+	"devMain": "src/overlay-widget-loader.ts",
+	"types": "./dist/types/overlay-widget-loader.d.ts",
+	"scripts": {
+		"dev": "vite",
+		"build": "vue-tsc && vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@vueuse/core": "*",
+		"castmate-overlay-core": "workspace:^",
+		"castmate-plugin-overlays-overlays": "workspace:^",
+		"castmate-plugin-random-overlays": "workspace:^",
+		"castmate-plugin-twitch-overlays": "workspace:^",
+		"castmate-schema": "workspace:^",
+		"chromatism2": "*",
+		"electron": "^29.1.1",
+		"nanoid": "^5.0.7",
+		"pinia": "^2.1.7",
+		"primevue": "*",
+		"vue": "^3.4.23"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "*",
+		"ts-toolbelt": "*",
+		"typescript": "*",
+		"vite": "^5.2.9",
+		"vue-tsc": "*"
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"name": "castmate-plugin-twitch-overlays",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"types": "./dist/types/main.d.ts",
+	"scripts": {
+		"dev": "vite",
+		"build": "vue-tsc && vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@types/matter-js": "^0.19.6",
+		"@vueuse/core": "*",
+		"castmate-overlay-core": "workspace:^",
+		"castmate-plugin-twitch-shared": "workspace:^",
+		"castmate-schema": "workspace:^",
+		"chromatism2": "*",
+		"electron": "^29.1.1",
+		"matter-js": "^0.19.0",
+		"nanoid": "^5.0.7",
+		"pinia": "^2.1.7",
+		"primevue": "*",
+		"vue": "^3.4.23"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "*",
+		"ts-toolbelt": "*",
+		"typescript": "*",
+		"vite": "^5.2.9",
+		"vue-tsc": "*"
+	}
+}

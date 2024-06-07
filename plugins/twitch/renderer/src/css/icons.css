@@ -1,0 +1,40 @@
+.twi::before {
+	display: inline-block;
+	text-rendering: auto;
+	line-height: inherit;
+	position: relative;
+}
+
+.twi {
+	height: 1em;
+}
+
+.twi.twi-channel-points::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/ChannelReward.svg");
+	-webkit-mask-image: url("../svg/ChannelReward.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+	top: 0.15em;
+}
+
+.twi.twi-bits::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/Bits.svg");
+	-webkit-mask-image: url("../svg/Bits.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+	top: 0.15em;
+}
+
+.twitch-purple {
+	color: #9146ff !important;
+}

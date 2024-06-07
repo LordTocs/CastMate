@@ -1,0 +1,95 @@
+// core
+.p-badge {
+    display: inline-block;
+    border-radius: 10px;
+    text-align: center;
+    padding: 0 .5rem;
+}
+
+.p-overlay-badge {
+    position: relative;
+}
+
+.p-overlay-badge .p-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%,-50%);
+    transform-origin: 100% 0;
+    margin: 0;
+}
+
+.p-badge.p-badge-dot {
+    width: .5rem;
+    min-width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    padding: 0;
+}
+
+.p-badge-no-gutter {
+    padding: 0;
+    border-radius: 50%;
+}
+
+// theme
+.p-badge {
+    background: $badgeBg;
+    color: $badgeTextColor;
+    font-size: $badgeFontSize;
+    font-weight: $badgeFontWeight;
+    min-width: $badgeMinWidth;
+    height: $badgeHeight;
+    line-height: $badgeHeight;
+
+    &.p-badge-secondary {
+        background-color: $secondaryButtonBg;
+        color: $secondaryButtonTextColor;
+    }
+
+    &.p-badge-success {
+        background-color: $successButtonBg;
+        color: $successButtonTextColor;
+    }
+
+    &.p-badge-info {
+        background-color: $infoButtonBg;
+        color: $infoButtonTextColor;
+    }
+
+    &.p-badge-warning {
+        background-color: $warningButtonBg;
+        color: $warningButtonTextColor;
+    }
+
+    &.p-badge-danger {
+        background-color: $dangerButtonBg;
+        color: $dangerButtonTextColor;
+    }
+
+    @if variable-exists(secondaryMessageBg) {
+        &.p-badge-secondary {
+            background-color: $secondaryButtonBg;
+            color: $secondaryButtonTextColor;
+        }
+    
+        &.p-badge-contrast {
+            background-color: $contrastButtonBg;
+            color: $contrastButtonTextColor;
+        }
+    }
+
+    &.p-badge-lg {
+        font-size: 1.5 * $badgeFontSize;
+        min-width: 1.5 * $badgeMinWidth;
+        height: 1.5 * $badgeHeight;
+        line-height: 1.5 * $badgeHeight;
+    }
+
+    &.p-badge-xl {
+        font-size: 2 * $badgeFontSize;
+        min-width: 2 * $badgeMinWidth;
+        height: 2 * $badgeHeight;
+        line-height: 2 * $badgeHeight;
+    }
+}

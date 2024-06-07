@@ -23,10 +23,17 @@ module.exports = {
 		artifactName: "${productName}_${version}.${ext}",
 		target: ["dmg"],
 	},
+	npmRebuild: true,
+	nodeGypRebuild: false,
+	nativeRebuilder: "sequential",
 	win: {
 		target: [
 			{
 				target: "nsis",
+				arch: ["x64"],
+			},
+			{
+				target: "portable",
 				arch: ["x64"],
 			},
 		],
@@ -38,7 +45,20 @@ module.exports = {
 		allowToChangeInstallationDirectory: true,
 		deleteAppDataOnUninstall: true,
 	},
+	portable: {
+		artifactName: "${productName}_${version}-portable.${ext}",
+	},
 	extraResources: [
+		{
+			from: "../../node_modules/@ffmpeg-installer/win32-x64",
+			to: "ffmpeg/bin",
+			filter: ["**/*.exe"],
+		},
+		{
+			from: "../../node_modules/@ffprobe-installer/win32-x64",
+			to: "ffmpeg/bin",
+			filter: ["**/*.exe"],
+		},
 		{
 			from: "../../node_modules/regedit/vbs",
 			to: "regedit/vbs",
@@ -50,10 +70,10 @@ module.exports = {
 			from: "../castmate-obs-overlay/dist/obs-overlay",
 			to: "obs-overlay",
 		},
-		{
-			from: "starter_media",
-			to: "starter_media"
-		}
+		// {
+		// 	from: "starter_media",
+		// 	to: "starter_media"
+		// }
 	],
 	publish: [
 		{

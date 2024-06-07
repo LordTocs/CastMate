@@ -1,0 +1,21 @@
+.di::before {
+	display: inline-block;
+	text-rendering: auto;
+	line-height: inherit;
+}
+
+.di.di-discord::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/discord.svg");
+	-webkit-mask-image: url("../svg/discord.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+}
+
+.de.di-discord {
+	height: 1em;
+}

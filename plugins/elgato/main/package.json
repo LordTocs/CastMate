@@ -1,0 +1,22 @@
+{
+  "name": "castmate-plugin-elgato-main",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.ts",
+  "devMain": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bonjour": "^3.5.12",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "bonjour": "^3.5.0",
+    "castmate-core": "workspace:^",
+    "castmate-plugin-iot-main": "workspace:^",
+    "castmate-schema": "workspace:^"
+  }
+}

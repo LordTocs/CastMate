@@ -1,64 +1,9 @@
-import {
-	build as viteBuild,
-	defineConfig,
-	mergeConfig,
-	loadConfigFromFile,
-	createLogger,
-	createServer,
-} from "vite"
+import { createLogger } from "vite"
 import path from "path"
 import { fileURLToPath } from "node:url"
 import { spawn } from "child_process"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
-
-/*
-Attempts to build and serve packages
-
-async function buildPackage(config, name) {
-    const dir = path.resolve(`./packages/${name}/`);
-    config.logger.info(`Building ${name}: ${dir}`);
-    const viteConfig = await loadConfigFromFile(config.env, null, dir)
-
-    if (!viteConfig)
-    {
-        config.logger.error(`Unable to load config ${name}`)
-        config.logger.error(`   ${dir}`)
-        return;
-    }
-
-    const finalConfig = mergeConfig({
-        root: dir,
-        logger: config.logger
-    }, viteConfig.config)
-
-    await viteBuild(finalConfig);
-}
-
-async function servePackage(config, name) {
-    const dir = path.resolve(`./packages/${name}/`);
-    config.logger.info(`Building ${name}: ${dir}`);
-    const viteConfig = await loadConfigFromFile(config.env, null, dir)
-
-    if (!viteConfig)
-    {
-        config.logger.error(`Unable to load config ${name}`)
-        config.logger.error(`   ${dir}`)
-        return;
-    }
-
-    const finalConfig = mergeConfig({
-        root: dir,
-        logger: config.logger,
-        server: {
-            middlewareMode: true,
-            hmr: {
-
-            }
-        }
-    }, viteConfig.config)
-}
-*/
 
 /**
  * Starts a vite build process in the package's directory.
@@ -72,12 +17,9 @@ function buildPackageSpawn(name) {
 		const viteJs = path.resolve(`./node_modules/vite/bin/vite.js`)
 		const args = [viteJs, "build"]
 		try {
-			spawn("node", args, { cwd: dir, stdio: "inherit" }).once(
-				"exit",
-				() => {
-					resolve()
-				}
-			)
+			spawn("node", args, { cwd: dir, stdio: "inherit" }).once("exit", () => {
+				resolve()
+			})
 		} catch (err) {
 			reject(err)
 		}
@@ -90,7 +32,7 @@ function buildPackageSpawn(name) {
 async function servePackageSpawn(config, name) {
 	const dir = path.resolve(`./packages/${name}/`)
 	const viteJs = path.resolve(`./node_modules/vite/bin/vite.js`)
-	const args = [viteJs]
+	const args = [viteJs] //, "-d", "--force"]
 	if (config.port) {
 		args.push("--port")
 		args.push(config.port)
@@ -113,14 +55,8 @@ async function serve() {
 		},
 	}
 
-	const castmateDev = await servePackageSpawn(
-		{ port: 5173, ...config },
-		"castmate"
-	)
-	const overlayDev = await servePackageSpawn(
-		{ port: 5174, ...config },
-		"castmate-obs-overlay"
-	)
+	const castmateDev = await servePackageSpawn({ port: 5173, ...config }, "castmate")
+	const overlayDev = await servePackageSpawn({ port: 5174, ...config }, "castmate-obs-overlay")
 
 	castmateDev.on("close", () => {
 		overlayDev.kill("SIGTERM")

@@ -1,0 +1,56 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"useDefineForClassFields": true,
+		"module": "ESNext",
+		"lib": ["ES2020", "DOM", "DOM.Iterable"],
+		"skipLibCheck": true,
+
+		/* Bundler mode */
+		"moduleResolution": "Bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "preserve",
+
+		/* Linting */
+		"strict": true,
+		/* "noUnusedLocals": true,*/
+		/* "noUnusedParameters": true, */
+		/* "noFallthroughCasesInSwitch": true */
+		"paths": {
+			"castmate-ui-core": ["../../libs/castmate-ui-core/src/main.ts"],
+			"castmate-overlay-widget-loader": [
+				"../../libs/castmate-overlay-widget-loader/src/overlay-widget-loader.ts"
+			],
+			"castmate-overlay-core": ["../../libs/castmate-overlay-core/src/overlay-core-main.ts"],
+			//TODO: "castmate-plugin-*-renderer": ["../../plugins/*/renderer/src/main.ts"]
+			"castmate-plugin-discord-renderer": ["../../plugins/discord/renderer/src/main.ts"],
+			"castmate-plugin-http-renderer": ["../../plugins/http/renderer/src/main.ts"],
+			"castmate-plugin-input-renderer": ["../../plugins/input/renderer/src/main.ts"],
+			"castmate-plugin-iot-renderer": ["../../plugins/iot/renderer/src/main.ts"],
+			"castmate-plugin-minecraft-renderer": ["../../plugins/minecraft/renderer/src/main.ts"],
+			"castmate-plugin-obs-renderer": ["../../plugins/obs/renderer/src/main.ts"],
+			"castmate-plugin-os-renderer": ["../../plugins/os/renderer/src/main.ts"],
+			"castmate-plugin-sound-renderer": ["../../plugins/sound/renderer/src/main.ts"],
+			"castmate-plugin-random-renderer": ["../../plugins/random/renderer/src/main.ts"],
+			"castmate-plugin-remote-renderer": ["../../plugins/remote/renderer/src/main.ts"],
+			"castmate-plugin-time-renderer": ["../../plugins/time/renderer/src/main.ts"],
+			"castmate-plugin-twitch-renderer": ["../../plugins/twitch/renderer/src/main.ts"],
+			"castmate-plugin-voicemod-renderer": ["../../plugins/voicemod/renderer/src/main.ts"],
+			"castmate-plugin-twinkly-renderer": ["../../plugins/twinkly/renderer/src/main.ts"],
+			"castmate-plugin-philips-hue-renderer": ["../../plugins/philips-hue/renderer/src/main.ts"],
+			"castmate-plugin-wyze-renderer": ["../../plugins/wyze/renderer/src/main.ts"],
+			"castmate-plugin-lifx-renderer": ["../../plugins/lifx/renderer/src/main.ts"],
+			"castmate-plugin-govee-renderer": ["../../plugins/govee/renderer/src/main.ts"],
+			"castmate-plugin-tplink-kasa-renderer": ["../../plugins/tplink-kasa/renderer/src/main.ts"],
+			"castmate-plugin-variables-renderer": ["../../plugins/variables/renderer/src/main.ts"],
+			"castmate-plugin-overlays-renderer": ["../../plugins/overlays/renderer/src/main.ts"],
+			"castmate-plugin-spellcast-renderer": ["../../plugins/spellcast/renderer/src/main.ts"],
+			"castmate-plugin-stream-plans-renderer": ["../../plugins/stream-plans/renderer/src/main.ts"]
+		}
+	},
+	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+	"references": [{ "path": "./tsconfig.node.json" }]
+}

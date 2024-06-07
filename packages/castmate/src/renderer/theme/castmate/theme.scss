@@ -1,0 +1,22 @@
+$primaryColor: #e9aaff !default;
+$primaryLightColor: #e9aaff !default;
+$primaryLighterColor: #e9aaff !default;
+$primaryLightestColor: rgba(96, 165, 250, 0.2) !default;
+$primaryTextColor: #030712 !default;
+
+$highlightBg: rgba(96, 165, 250, 0.16) !default;
+$highlightTextColor: rgba(255, 255, 255, 0.87) !default;
+$highlightFocusBg: rgba($primaryColor, 0.24) !default;
+
+$shade000: rgba(255, 255, 255, 0.87) !default; //text color
+$shade100: rgba(255, 255, 255, 0.6) !default; //text secondary color
+$shade500: #6b7280 !default;
+$shade600: #3c3c3c !default; //input bg, border, divider
+$shade700: #3c3c3c !default; //menu bg
+$shade800: #212121 !default; //elevated surface
+$shade900: #121212 !default; //ground surface
+
+@import "../_variables";
+@import "./_fonts";
+@import "../theme-base/_components";
+@import "../_extensions";

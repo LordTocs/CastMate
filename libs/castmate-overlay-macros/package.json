@@ -1,0 +1,19 @@
+{
+	"name": "castmate-overlay-macros",
+	"version": "0.0.1",
+	"description": "",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsc --build",
+		"clean": "tsc --build --clean"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"vite": "^5.2.9"
+	},
+	"devDependencies": {
+		"@vue-macros/common": "^1.10.1",
+		"typescript": "*"
+	}
+}

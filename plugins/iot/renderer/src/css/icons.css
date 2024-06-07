@@ -1,0 +1,10 @@
+.iot::before {
+	display: inline-block;
+	text-rendering: auto;
+	line-height: inherit;
+	position: relative;
+}
+
+.iot {
+	height: 1em;
+}

@@ -1,0 +1,13 @@
+{
+    "name": "castmate-plugin-sound",
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "workspaces": [
+        "main",
+        "overlay",
+        "renderer",
+        "shared",
+        "native"
+    ]
+}

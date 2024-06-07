@@ -1,0 +1,22 @@
+{
+	"name": "castmate-plugin-spellcast-main",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "*"
+	},
+	"dependencies": {
+		"castmate-core": "workspace:^",
+		"castmate-plugin-spellcast-shared": "workspace:^",
+		"castmate-plugin-twitch-main": "workspace:^",
+		"castmate-plugin-twitch-shared": "workspace:^",
+		"castmate-schema": "workspace:^"
+	}
+}

@@ -1,0 +1,10 @@
+.sci {
+	height: 1em;
+}
+
+.sci.sci-spellcast {
+	text-rendering: auto;
+	line-height: inherit;
+	content: url("../svg/spellcast.svg");
+	display: inline-block;
+}

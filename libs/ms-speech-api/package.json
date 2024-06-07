@@ -1,0 +1,19 @@
+{
+	"name": "ms-speech-api",
+	"version": "0.0.1",
+	"description": "",
+	"main": "src/index.js",
+	"scripts": {
+		"test": "node src/index.js",
+		"install": "node-gyp rebuild",
+		"rebuild": "node-gyp rebuild"
+	},
+	"dependencies": {
+		"bindings": "~1.2.1",
+		"node-addon-api": "^5.0.0",
+		"node-gyp": "*"
+	},
+	"author": "",
+	"license": "ISC",
+	"gypfile": true
+}

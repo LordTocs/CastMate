@@ -1,9 +1,10 @@
 <template>
 	<component
-		:is="dynamicComponent"
-		:size="widgetConfig.size || {}"
-		:position="widgetConfig.size || {}"
-		v-bind="widgetConfig.props ? widgetConfig.props : {}"
+		v-if="widgetComponent && widgetConfig.visible"
+		:is="widgetComponent"
+		:size="widgetConfig.size"
+		:position="widgetConfig.position"
+		:config="resolvedConfig"
 		class="widget"
 		:style="widgetStyle"
 		ref="widget"
@@ -11,68 +12,40 @@
 	</component>
 </template>
 
-<script>
-import loadWidget from "castmate-overlay-components"
-import { defineAsyncComponent } from "vue"
+<script setup lang="ts">
+import { OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
+import { CSSProperties, computed, onMounted, provide } from "vue"
+import { useWebsocketBridge } from "./utils/websocket"
+import { useOverlayWidgets } from "castmate-overlay-widget-loader"
+import { OverlayWidgetComponent, useResolvedWidgetConfig } from "castmate-overlay-core"
 
-export default {
-	props: {
-		widgetConfig: {},
-	},
-	inject: ["bridge"],
-	provide() {
-		return {
-			callbacks: {
-				call: async (event, ...args) => {
-					return await this.bridge?.call(
-						event,
-						this.widgetConfig.id,
-						...args
-					)
-				},
-			},
-		}
-	},
-	computed: {
-		dynamicComponent() {
-			const component = defineAsyncComponent({
-				loader: async () => {
-					const widget = await loadWidget(this.widgetConfig.type)
-					return widget
-				},
-			})
+const props = defineProps<{
+	widgetConfig: OverlayWidgetConfig
+}>()
 
-			return component
-		},
-		widgetStyle() {
-			return {
-				left: `${this.widgetConfig?.position.x}px`,
-				top: `${this.widgetConfig?.position.y}px`,
-				width: `${this.widgetConfig?.size.width}px`,
-				height: `${this.widgetConfig?.size.height}px`,
-			}
-		},
-	},
-	methods: {
-		async callWidgetFunc(funcName, ...args) {
-			if (!this.$refs.widget?.[funcName]) {
-				console.log(
-					"Widget",
-					this.$refs.widget,
-					"Doesn't have",
-					funcName
-				)
-				return
-			}
-			return await this.$refs.widget[funcName](...args)
-		},
-		async callWidgetBroadcast(funcName, ...args) {
-			if (this.$refs.widget?.[funcName]) {
-				await this.$refs.widget[funcName](...args)
-			}
-		},
-	},
-}
+const widgetStyle = computed<CSSProperties>(() => {
+	return {
+		left: `${props.widgetConfig.position.x}px`,
+		top: `${props.widgetConfig.position.y}px`,
+		width: `${props.widgetConfig.size.width}px`,
+		height: `${props.widgetConfig.size.height}px`,
+	}
+})
+
+const widgetStore = useOverlayWidgets()
+
+const widgetComponent = computed<OverlayWidgetComponent | undefined>(
+	() => widgetStore.getWidget(props.widgetConfig.plugin, props.widgetConfig.widget)?.component
+)
+//@ts-ignore
+const resolvedConfig = useResolvedWidgetConfig(() => props.widgetConfig.config, widgetComponent)
+
+const bridge = useWebsocketBridge()
+provide("castmate-bridge", bridge.getBridge(props.widgetConfig.id))
+
+onMounted(() => {
+	console.log(props.widgetConfig, widgetComponent)
+})
 </script>
 
 <style scoped>

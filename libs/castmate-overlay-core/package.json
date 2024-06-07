@@ -1,0 +1,31 @@
+{
+	"name": "castmate-overlay-core",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"main": "src/overlay-core-main.ts",
+	"devMain": "src/overlay-core-main.ts",
+	"types": "./dist/types/overlay-core-main.d.ts",
+	"scripts": {
+		"dev": "vite",
+		"build": "vue-tsc && vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@vueuse/core": "*",
+		"castmate-plugin-overlays-shared": "workspace:^",
+		"castmate-schema": "workspace:^",
+		"chromatism2": "*",
+		"nanoid": "^5.0.7",
+		"pinia": "^2.1.7",
+		"primevue": "*",
+		"vue": "^3.4.23"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "*",
+		"ts-toolbelt": "*",
+		"typescript": "*",
+		"vite": "^5.2.9",
+		"vue-tsc": "*"
+	}
+}
