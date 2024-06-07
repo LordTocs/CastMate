@@ -17,6 +17,7 @@ import {
 	GenericLoginService,
 	defineResourceSetting,
 	usePluginLogger,
+	coreAxios,
 } from "castmate-core"
 import axios from "axios"
 import md5 from "md5"
@@ -91,7 +92,7 @@ const logger = usePluginLogger("wyze")
 export async function tryWyzeLogin(keyId: string, apiKey: string, email: string, password: string) {
 	if (!keyId || !apiKey || !email || !password) return undefined
 
-	const result = await axios.post(
+	const result = await coreAxios.post(
 		WYZE_AUTH_URL,
 		{
 			email,
@@ -140,7 +141,7 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 	async checkCachedCreds() {
 		if (!this.secrets.accessToken || !this.secrets.refreshToken) return false
 
-		const result = await axios.post(
+		const result = await coreAxios.post(
 			`${WYZE_API_URL}/app/v2/home_page/get_object_list`,
 			formatWyzeRequestBody({
 				access_token: this.secrets.accessToken,
@@ -156,7 +157,7 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 		if (!this.secrets.refreshToken) return false
 
 		try {
-			const result = await axios.post(
+			const result = await coreAxios.post(
 				`${WYZE_API_URL}/app/user/refresh_token`,
 				formatWyzeRequestBody({
 					refresh_token: this.secrets.refreshToken,
@@ -227,7 +228,7 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 
 	private async apiRequest(path: string, data: Record<string, any>) {
 		if (!this.secrets.accessToken) throw new Error("Not Authenticated")
-		let result = await axios.post(
+		let result = await coreAxios.post(
 			`${WYZE_API_URL}${path}`,
 			formatWyzeRequestBody({
 				access_token: this.secrets.accessToken,
@@ -240,7 +241,7 @@ class WyzeAccount extends Account<WyzeAccountSecrets, WyzeAccountConfig> {
 				throw new Error("Not Authenticated")
 			}
 
-			result = await axios.post(
+			result = await coreAxios.post(
 				`${WYZE_API_URL}${path}`,
 				formatWyzeRequestBody({
 					access_token: this.secrets.accessToken,

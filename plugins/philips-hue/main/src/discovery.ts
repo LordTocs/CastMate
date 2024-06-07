@@ -3,6 +3,7 @@ import {
 	ReactiveRef,
 	RetryTimer,
 	abortableSleep,
+	coreAxios,
 	defineRendererCallable,
 	onLoad,
 	onSettingChanged,
@@ -15,7 +16,7 @@ const logger = usePluginLogger("philips-hue")
 
 export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: ReactiveRef<string | undefined>) {
 	async function discoverBridge() {
-		const resp = await axios.get("https://discovery.meethue.com/")
+		const resp = await coreAxios.get("https://discovery.meethue.com/")
 
 		if (!Array.isArray(resp.data) || resp.data.length == 0) {
 			return
@@ -27,7 +28,7 @@ export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: R
 	async function tryCreateKey() {
 		if (!hubIp.value) return
 
-		const resp = await axios.post(`http://${hubIp.value}/api`, {
+		const resp = await coreAxios.post(`http://${hubIp.value}/api`, {
 			devicetype: `CastMate#${os.userInfo().username}`,
 		})
 

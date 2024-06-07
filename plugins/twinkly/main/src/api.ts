@@ -1,5 +1,5 @@
 import axios from "axios"
-import { usePluginLogger } from "castmate-core"
+import { coreAxios, usePluginLogger } from "castmate-core"
 import { LightColor } from "castmate-plugin-iot-shared"
 import crypto from "crypto"
 
@@ -31,7 +31,7 @@ export async function authenticateTwinkly(ip: string, token: TwinklyAuthToken) {
 	const randomBuffer = await randomBytes(32)
 	const challenge = randomBuffer.toString("base64")
 	try {
-		const resp = await axios.post(
+		const resp = await coreAxios.post(
 			`login`,
 			{
 				challenge,
@@ -43,7 +43,7 @@ export async function authenticateTwinkly(ip: string, token: TwinklyAuthToken) {
 
 		const authResp = resp.data as TwinklyAuthResponse
 
-		await axios.post(
+		await coreAxios.post(
 			"verify",
 			{
 				"challenge-response": authResp["challenge-response"],
@@ -85,7 +85,7 @@ export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path
 	}
 
 	try {
-		const resp = await axios.get(path, {
+		const resp = await coreAxios.get(path, {
 			baseURL: `http://${ip}/xled/v1/`,
 			headers: {
 				"X-Auth-Token": token.token,
@@ -99,7 +99,7 @@ export async function getTwinklyApi<T>(ip: string, token: TwinklyAuthToken, path
 			//Somebody invalidated our token, try again
 			await authenticateTwinkly(ip, token)
 
-			const resp = await axios.get(path, {
+			const resp = await coreAxios.get(path, {
 				baseURL: `http://${ip}/xled/v1/`,
 				headers: {
 					"X-Auth-Token": token.token,
@@ -120,7 +120,7 @@ export async function postTwinklyApi<T>(ip: string, token: TwinklyAuthToken, pat
 	}
 
 	try {
-		const resp = await axios.post(path, data, {
+		const resp = await coreAxios.post(path, data, {
 			baseURL: `http://${ip}/xled/v1/`,
 			headers: {
 				"X-Auth-Token": token.token,
@@ -134,7 +134,7 @@ export async function postTwinklyApi<T>(ip: string, token: TwinklyAuthToken, pat
 			//Somebody invalidated our token, try again
 			await authenticateTwinkly(ip, token)
 
-			const resp = await axios.post(path, data, {
+			const resp = await coreAxios.post(path, data, {
 				baseURL: `http://${ip}/xled/v1/`,
 				headers: {
 					"X-Auth-Token": token.token,
@@ -161,7 +161,7 @@ export interface TwinklyGestaltResponse {
 }
 
 export async function getTwinklyInfo(ip: string) {
-	const resp = await axios.get(`gestalt`, {
+	const resp = await coreAxios.get(`gestalt`, {
 		baseURL: `http://${ip}/xled/v1/`,
 	})
 

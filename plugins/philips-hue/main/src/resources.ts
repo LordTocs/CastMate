@@ -2,6 +2,7 @@ import { LightResource, PlugResource } from "castmate-plugin-iot-main"
 
 import {
 	ReactiveRef,
+	coreAxios,
 	iterSubResource,
 	onLoad,
 	onSettingChanged,
@@ -22,7 +23,7 @@ interface HubInfo {
 }
 
 async function hubRequest(hubInfo: HubInfo, method: Method, url: string, data?: object) {
-	return await axios.request({
+	return await coreAxios.request({
 		baseURL: `https://${hubInfo.hubIp}/clip/v2`,
 		headers: {
 			"hue-application-key": hubInfo.hubKey,

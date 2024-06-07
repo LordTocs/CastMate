@@ -1,6 +1,6 @@
 import { TwitchAccount } from "./twitch-auth"
 import axios, { AxiosResponse } from "axios"
-import { EmoteCache, EmoteProvider, onLoad } from "castmate-core"
+import { EmoteCache, EmoteProvider, coreAxios, onLoad } from "castmate-core"
 import { onChannelAuth } from "./api-harness"
 import { EmoteImageURLs, EmoteInfo, EmoteSet } from "castmate-schema"
 
@@ -131,8 +131,8 @@ class SevenTVEmoteProvider implements EmoteProvider {
 		if (!TwitchAccount.channel.isAuthenticated) return
 
 		try {
-			const globalResp = await axios.get<SevenTVEmoteSet>("https://7tv.io/v3/emote-sets/global")
-			const userResp = await axios.get<SevenTVUserResp>(
+			const globalResp = await coreAxios.get<SevenTVEmoteSet>("https://7tv.io/v3/emote-sets/global")
+			const userResp = await coreAxios.get<SevenTVUserResp>(
 				`https://7tv.io/v3/users/twitch/${TwitchAccount.channel.twitchId}`
 			)
 

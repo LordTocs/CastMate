@@ -7,6 +7,7 @@ import {
 	useHTTPRouter,
 	onProfilesChanged,
 	resetRouter,
+	coreAxios,
 } from "castmate-core"
 import axios from "axios"
 
@@ -52,7 +53,7 @@ export default definePlugin(
 			},
 			async invoke(config, contextData, abortSignal) {
 				//TODO: Cancel Token
-				const resp = await axios.request({
+				const resp = await coreAxios.request({
 					method: config.method,
 					url: config.url,
 				})

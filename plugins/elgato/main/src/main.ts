@@ -26,6 +26,7 @@ class ElgatoKeyLight extends PollingLight {
 
 		this.api = axios.create({
 			baseURL: `http://${ip}:${port}/elgato`,
+			timeout: 2000,
 		})
 
 		this._id = `elgato.${bonjourService.txt.id}`
@@ -116,6 +117,7 @@ class ElgatoLightStrip extends PollingLight<ElgatoLightStripConfig> {
 
 		this.api = axios.create({
 			baseURL: `http://${ip}:${port}/elgato`,
+			timeout: 2000,
 		})
 
 		this._id = `elgato.${bonjourService.txt.id}`

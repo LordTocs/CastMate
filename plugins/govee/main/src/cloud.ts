@@ -1,5 +1,5 @@
 import axios from "axios"
-import { usePluginLogger } from "castmate-core"
+import { coreAxios, usePluginLogger } from "castmate-core"
 import { LightColor } from "castmate-plugin-iot-shared"
 import * as chromatism from "chromatism2"
 
@@ -39,7 +39,7 @@ interface GoveeCloudDevicesResponse extends GoveeCloudResponse {
 const logger = usePluginLogger("govee")
 
 export async function getDevices(apiKey: string) {
-	const respRaw = await axios.get(`https://developer-api.govee.com/v1/devices`, {
+	const respRaw = await coreAxios.get(`https://developer-api.govee.com/v1/devices`, {
 		headers: {
 			"Govee-API-KEY": apiKey,
 		},
@@ -98,7 +98,7 @@ export interface GoveeCloudDeviceStateResponse extends GoveeCloudResponse {
 }
 
 export async function getDeviceState(apiKey: string, mac: string, model: string) {
-	const respRaw = await axios.get(`https://developer-api.govee.com/v1/devices/state`, {
+	const respRaw = await coreAxios.get(`https://developer-api.govee.com/v1/devices/state`, {
 		params: {
 			device: mac,
 			model,
@@ -113,7 +113,7 @@ export async function getDeviceState(apiKey: string, mac: string, model: string)
 }
 
 export async function setPowerState(apiKey: string, mac: string, model: string, power: boolean) {
-	const respRaw = await axios.put(
+	const respRaw = await coreAxios.put(
 		`https://developer-api.govee.com/v1/devices/control`,
 		{
 			device: mac,
@@ -140,7 +140,7 @@ export async function setColor(apiKey: string, mac: string, model: string, color
 	if ("hue" in parsedColor) {
 		//RGB
 		const rgb = chromatism.convert({ h: parsedColor.hue, s: parsedColor.sat, v: parsedColor.bri }).rgb
-		const respRaw = await axios.put(
+		const respRaw = await coreAxios.put(
 			`https://developer-api.govee.com/v1/devices/control`,
 			{
 				device: mac,
@@ -160,7 +160,7 @@ export async function setColor(apiKey: string, mac: string, model: string, color
 
 		return respRaw.data.code == 200
 	} else {
-		const tempResp = axios.put(
+		const tempResp = coreAxios.put(
 			`https://developer-api.govee.com/v1/devices/control`,
 			{
 				device: mac,
@@ -177,7 +177,7 @@ export async function setColor(apiKey: string, mac: string, model: string, color
 				},
 			}
 		)
-		const briResp = axios.put(
+		const briResp = coreAxios.put(
 			`https://developer-api.govee.com/v1/devices/control`,
 			{
 				device: mac,

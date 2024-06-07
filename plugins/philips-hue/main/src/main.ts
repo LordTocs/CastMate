@@ -11,6 +11,7 @@ import {
 	onSettingChanged,
 	defineSecret,
 	AsyncCache,
+	coreAxios,
 } from "castmate-core"
 import { PhilipsHUEGroup, PhilipsHUELight, setupResources } from "./resources"
 import { setupDiscovery } from "./discovery"
@@ -46,7 +47,7 @@ export default definePlugin(
 		const sceneCache = new AsyncCache<HUEScene[]>(async () => {
 			if (!hubIp.value || !hubKey.value) return []
 
-			const resp = await axios.request({
+			const resp = await coreAxios.request({
 				baseURL: `https://${hubIp.value}/clip/v2`,
 				headers: {
 					"hue-application-key": hubKey.value,
@@ -98,7 +99,7 @@ export default definePlugin(
 
 				if (!hubIp.value || !hubKey.value) return
 
-				await axios.request({
+				await coreAxios.request({
 					baseURL: `https://${hubIp.value}/clip/v2`,
 					headers: {
 						"hue-application-key": hubKey.value,

@@ -64,6 +64,7 @@ class TwinklyLight extends PollingLight<TwinklyLightConfig> {
 
 		this.api = axios.create({
 			baseURL: `http://${this.config.ip}/xled/v1/`,
+			timeout: 2000,
 		})
 
 		//@ts-ignore

@@ -7,6 +7,7 @@ import { EventList } from "../util/events"
 import { onLoad, onUnload } from "../plugins/plugin"
 import { initingPlugin } from "../plugins/plugin-init"
 import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
+import { coreAxios } from "../util/request-utils"
 
 const logger = usePluginLogger("pubsub")
 
@@ -87,7 +88,7 @@ export const PubSubManager = Service(
 			logger.log("Starting Cloud PubSub Connection")
 			this.connecting = true
 
-			const negotiationResp = await axios.get("/pubsub/negotiate", {
+			const negotiationResp = await coreAxios.get("/pubsub/negotiate", {
 				baseURL,
 				headers: {
 					Authorization: `Bearer ${this.token}`,
