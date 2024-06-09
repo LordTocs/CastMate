@@ -1,34 +1,24 @@
 # CastMate
 
-CastMate is an all-in-one Broadcaster Automation Suite for Twitch. It allows you to build compelling interactive stream setups using without writing any code. It features simple click and drag automations and overlays.
+CastMate is an all-in-one Broadcaster Production Suite for Twitch. It lets a streamer create viewer interactions, automate common tasks, display overlays, and plan streams.
 
 ## Triggers
 
-In CastMate you can setup triggers to respond to twitch events like channel point redemptions, bits being cheered, gaining a follower, receiving a sub, chat messages, being raided, hype trains, and more. In response to a trigger you can setup any number of actions using the click and drag UI.
+In CastMate you can setup triggers to respond to twitch events like channel point redemptions, bits being cheered, gaining a follower, receiving a sub, chat messages, being raided, hype trains, and more.
 
-![CastMate UI Automations](docs/images/automation.png?raw=true)
+You can use actions to automatically respond to triggers. Using CastMate's click and drag timeline automation system you can easily setup sounds to play, lights to change, chat to twitch, message to discord, etc. Using triggers lets you easily create an interactive stream for your audience.
+
+![CastMate UI Triggers](docs/images/trigger.png?raw=true)
 
 ## Profiles
 
-A profile is meant to organize triggers together based on context. For example, a Minecraft profile might contain a set of commands which are only available to viewers when the streamer is playing Minecraft, or a "Stream Starting" profile might only be active when a specific scene is active in OBS. Multiple profiles can be active at once.
+A Profile is an organizational tool to group triggers together. They also serve as a way to change what triggers are active. Profiles can be manually turned on and off, or they can be set to automatically turn on and off based custom conditions you choose.
 
 ![CastMate UI Profiles](docs/images/profile.png?raw=true)
 
-Profiles can be activated automatically based on conditions such as the number of viewers, the currently active OBS scene, the value of a custom variable, various states within CastMate itself, and much more. Multiple conditions can be combined together using logical expressions like AND, OR, EQUAL, GREATER THAN, etc. If a channel point reward isn't used by any active profile they are automatically disabled and dissappear from view.
+When a profile is off it will automatically disable the channel point rewards no longer needed, any chat commands in it will become unavailable, and
 
 ![CastMate UI Profiles](docs/images/ChannelPointRewards.gif?raw=true)
-
-The possibilities are endless, so here are some ideas to get you started:
-
--   Create alternate versions of a channel point redemption that costs more to redeem when the number of viewers is higher, to encourage engagement during slow streams and to reduce spam during active streams.
--   Allow text-to-speech with channel points, but only if the stream has less than some number of viewers.
--   A "Stream Ending" profile which automatically starts sending social media links to chat while your "End Stream" scene is active in OBS.
--   Automatically run ads whenever your "Be Right Back" scene is active.
--   Have a jump scare sound effect that automatically costs triple during specific stream segments.
--   Let viewers troll you with a command that plays different sounds based on the game, like enemy footsteps during a shooter or creepers during minecraft.
--   Make a song request channel point redemption that's only available during a Music stream segment.
--   Set up a "First" channel point redemption item that can only be claimed once per stream.
--   Set up a channel point redemption that is only visible when there are exactly 69 viewers. Nice.
 
 ## Overlays
 
