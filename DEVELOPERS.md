@@ -10,13 +10,17 @@ The is repo is a mono repo and we rely on yarn to handle cross package dependenc
 
 Run `yarn install` after cloning the repo
 
+CastMate has a custom vite plugin to handle mono-repo stuff
+
+Run `yarn run setup-vite` to build the custom vite plugin.
+
 To start in development mode, use `yarn run dev`
 
 To build into an installer run `yarn run build`
 
 ## Useful Documentation Links
 
--   [OBS Websocket Protocol (5.1.0)](https://github.com/obsproject/obs-websocket/blob/master/docs/generated/protocol.md)
+-   [OBS Websocket Protocol](https://github.com/obsproject/obs-websocket/blob/master/docs/generated/protocol.md)
 
 -   [Twitch Authentication](https://dev.twitch.tv/docs/authentication)
 
