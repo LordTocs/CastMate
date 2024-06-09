@@ -1,6 +1,6 @@
 <template>
 	<span class="data-label" v-if="schema.name">{{ schema.name }}:</span>
-	<span class="flex flex-row align-items-center" v-if="categoryDisplayData">
+	<span class="inline-flex vertical-align-middle flex-row align-items-center" v-if="categoryDisplayData">
 		<img class="box-art" :src="categoryDisplayData.image" />
 		<span> {{ categoryDisplayData.name }}</span>
 	</span>

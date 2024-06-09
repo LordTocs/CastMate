@@ -1,6 +1,6 @@
 <template>
 	<span class="data-label" v-if="schema.name">{{ schema.name }}:</span>
-	<span class="flex flex-row align-items-center" v-if="viewerDisplayData">
+	<span class="inline-flex vertical-align-middle flex-row align-items-center" v-if="viewerDisplayData">
 		<img class="twitch-avatar" :src="viewerDisplayData.profilePicture" />
 		<span :style="{ color: viewerDisplayData.color }"> {{ viewerDisplayData.displayName }}</span>
 	</span>
