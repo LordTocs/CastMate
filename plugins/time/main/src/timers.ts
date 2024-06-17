@@ -79,7 +79,14 @@ registerSchemaCompare(Timer, compareTimer)
 
 interface RepeatingTimer {
 	delay?: NodeJS.Timeout
+	delayTime?: Duration
+	delayWaited?: boolean
 	timer?: NodeJS.Timeout
+	timerInterval?: Duration
+}
+
+function hasDelayed(timer: RepeatingTimer) {
+	return timer.delayWaited == true
 }
 
 export function setupTimers() {
@@ -95,30 +102,62 @@ export function setupTimers() {
 		}
 	}
 
-	function setRepeatingTimer(
+	function setTimer(timer: RepeatingTimer, profileId: string, triggerId: string, validInterval: Duration) {
+		if (timer.timerInterval != validInterval) {
+			timer.delayWaited = true
+			timer.timerInterval = validInterval
+
+			if (timer.timer) {
+				clearInterval(timer.timer)
+				delete timer.timer
+			}
+
+			timer.timer = setInterval(() => {
+				timer.delayWaited = true
+				repeat({ profileId, triggerId })
+			}, validInterval * 1000)
+		}
+	}
+
+	function setDelay(
+		timer: RepeatingTimer,
+		profileId: string,
+		triggerId: string,
+		delay: Duration,
+		validInterval: Duration
+	) {
+		if (timer.delayTime != delay) {
+			timer.delayTime = delay
+
+			if (timer.delay) {
+				clearTimeout(timer.delay)
+				delete timer.delay
+			}
+
+			timer.delay = setTimeout(() => {
+				delete timer.delay
+				delete timer.delayTime
+				repeat({ profileId, triggerId })
+
+				setTimer(timer, profileId, triggerId, validInterval)
+			}, delay * 1000)
+		}
+	}
+
+	function updateTimer(
+		timer: RepeatingTimer,
 		profileId: string,
 		triggerId: string,
 		interval: Duration,
 		delay?: Duration
-	): RepeatingTimer {
-		const result: RepeatingTimer = {}
+	) {
+		const validInterval = Math.max(interval ?? 1, 0.1)
 
-		if (delay) {
-			result.delay = setTimeout(() => {
-				result.delay = undefined
-				repeat({ profileId, triggerId })
-				result.timer = setInterval(() => {
-					repeat({ profileId, triggerId })
-				}, interval * 1000)
-			}, delay * 1000)
+		if (delay && !hasDelayed(timer)) {
+			setDelay(timer, profileId, triggerId, delay, validInterval)
 		} else {
-			repeat({ profileId, triggerId })
-			result.timer = setInterval(() => {
-				repeat({ profileId, triggerId })
-			}, interval * 1000)
+			setTimer(timer, profileId, triggerId, validInterval)
 		}
-
-		return result
 	}
 
 	const repeat = defineTrigger({
@@ -153,11 +192,13 @@ export function setupTimers() {
 		for (const prof of activeProfiles) {
 			for (const trigger of prof.iterTriggers(repeat)) {
 				const slug = `${prof.id}.${trigger.id}`
-				if (repeatingTimers.has(slug)) continue
-				repeatingTimers.set(
-					slug,
-					setRepeatingTimer(prof.id, trigger.id, trigger.config.interval, trigger.config.delay)
-				)
+				let timer = repeatingTimers.get(slug)
+				if (!timer) {
+					timer = {}
+					repeatingTimers.set(slug, timer)
+				}
+
+				updateTimer(timer, prof.id, trigger.id, trigger.config?.interval, trigger.config?.delay ?? 0)
 			}
 		}
 
