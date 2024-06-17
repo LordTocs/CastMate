@@ -1867,6 +1867,10 @@ async function migrateOldAutomation(oldAutomation: OldAutomation): Promise<Seque
 		actions: [],
 	}
 
+	if (!oldAutomation) {
+		return result
+	}
+
 	const seqStack: SequenceStackItem[] = [{ sequence: result, offset: 0 }]
 
 	function canFit(pushSeq: SequenceStackItem) {
