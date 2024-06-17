@@ -12,9 +12,13 @@ import {
 	registerSchemaTemplate,
 	registerSchemaUnexpose,
 	template,
+	usePluginLogger,
 } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import fuzzysort from "fuzzysort"
+import { HelixGame } from "@twurple/api"
+
+const logger = usePluginLogger("twitch")
 
 export function setupCategoryCache() {
 	onLoad(() => {
@@ -55,6 +59,17 @@ function isDefinitelyNotTwitchId(maybeId: string) {
 	return maybeId.match(nonDigits) != null
 }
 
+function helixToCategory(g: HelixGame): TwitchCategory {
+	return {
+		id: g.id,
+		name: g.name,
+		image: g.boxArtUrl.replace("{width}", "52").replace("{height}", "72"),
+		[Symbol.toPrimitive]() {
+			return this.name
+		},
+	}
+}
+
 export const CategoryCache = Service(
 	class {
 		private categoryCache = new Map<string, TwitchCategory>()
@@ -70,16 +85,7 @@ export const CategoryCache = Service(
 			try {
 				const result = await TwitchAccount.channel.apiClient.search.searchCategories(query)
 
-				const categories = result.data.map(
-					(g): TwitchCategory => ({
-						id: g.id,
-						name: g.name,
-						image: g.boxArtUrl.replace("{width}", "52").replace("{height}", "72"),
-						[Symbol.toPrimitive]() {
-							this.name
-						},
-					})
-				)
+				const categories = result.data.map(helixToCategory)
 
 				for (const c of categories) {
 					this.cacheCategory(c)
@@ -102,14 +108,7 @@ export const CategoryCache = Service(
 			const game = await TwitchAccount.channel.apiClient.games.getGameById(id)
 
 			if (game) {
-				const data: TwitchCategory = {
-					id: game.id,
-					name: game.name,
-					image: game.boxArtUrl.replace("{width}", "52").replace("{height}", "72"),
-					[Symbol.toPrimitive]() {
-						this.name
-					},
-				}
+				const data = helixToCategory(game)
 				this.cacheCategory(data)
 				return data
 			}
@@ -124,14 +123,7 @@ export const CategoryCache = Service(
 			const game = await TwitchAccount.channel.apiClient.games.getGameByName(name)
 
 			if (game) {
-				const data: TwitchCategory = {
-					id: game.id,
-					name: game.name,
-					image: game.boxArtUrl.replace("{width}", "52").replace("{height}", "72"),
-					[Symbol.toPrimitive]() {
-						this.name
-					},
-				}
+				const data = helixToCategory(game)
 				this.cacheCategory(data)
 				return data
 			}
