@@ -158,7 +158,7 @@ export function setupLights(subnetMask: ReactiveRef<string>) {
 			logger.error("TP-Link Kasa Error", err)
 		})
 
-		client.on("discover-invalid", (err) => {
+		client.on("discovery-invalid", (err) => {
 			logger.error("Kasa Discovery Invalid?", err)
 		})
 	}
