@@ -129,6 +129,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@commander-js/extra-typings@npm:~11.1.0":
+  version: 11.1.0
+  resolution: "@commander-js/extra-typings@npm:11.1.0"
+  peerDependencies:
+    commander: 11.1.x
+  checksum: 10/f0d596c1aa68e0f6a896120cd58d29b7088a38a04194fef3eafc7f0b64a5093f5096388292c3295f803aea64d17326082d5bf09acdaa1b3163492410df9f414b
+  languageName: node
+  linkType: hard
+
 "@d-fischer/cache-decorators@npm:^4.0.0":
   version: 4.0.1
   resolution: "@d-fischer/cache-decorators@npm:4.0.1"
@@ -3845,7 +3854,7 @@ __metadata:
     castmate-plugin-iot-main: "workspace:^"
     castmate-plugin-iot-shared: "workspace:^"
     castmate-schema: "workspace:^"
-    tplink-smarthome-api: "npm:^4.2.0"
+    tplink-smarthome-api: "npm:^5.0.0"
     typescript: "npm:*"
   languageName: unknown
   linkType: soft
@@ -4535,10 +4544,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^9.0.0, commander@npm:^9.4.1":
+"commander@npm:^9.4.1":
   version: 9.5.0
   resolution: "commander@npm:9.5.0"
   checksum: 10/41c49b3d0f94a1fbeb0463c85b13f15aa15a9e0b4d5e10a49c0a1d58d4489b549d62262b052ae0aa6cfda53299bee487bfe337825df15e342114dde543f82906
+  languageName: node
+  linkType: hard
+
+"commander@npm:~11.1.0":
+  version: 11.1.0
+  resolution: "commander@npm:11.1.0"
+  checksum: 10/66bd2d8a0547f6cb1d34022efb25f348e433b0e04ad76a65279b1b09da108f59a4d3001ca539c60a7a46ea38bcf399fc17d91adad76a8cf43845d8dcbaf5cda1
   languageName: node
   linkType: hard
 
@@ -6983,7 +6999,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loglevel@npm:^1.8.0":
+"loglevel@npm:^1.8.1":
   version: 1.9.1
   resolution: "loglevel@npm:1.9.1"
   checksum: 10/863cbbcddf850a937482c604e2d11586574a5110b746bb49c7cc04739e01f6035f6db841d25377106dd330bca7142d74995f15a97c5f3ea0af86d9472d4a99f4
@@ -9288,30 +9304,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tplink-smarthome-api@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "tplink-smarthome-api@npm:4.2.0"
+"tplink-smarthome-api@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "tplink-smarthome-api@npm:5.0.0"
   dependencies:
-    commander: "npm:^9.0.0"
+    "@commander-js/extra-typings": "npm:~11.1.0"
+    commander: "npm:~11.1.0"
     lodash.castarray: "npm:^4.4.0"
     lodash.clone: "npm:^4.5.0"
     lodash.defaultto: "npm:^4.14.0"
     lodash.get: "npm:^4.4.2"
     lodash.groupby: "npm:^4.6.0"
     lodash.isequal: "npm:^4.5.0"
-    loglevel: "npm:^1.8.0"
+    loglevel: "npm:^1.8.1"
     promise-queue: "npm:^2.2.5"
-    tplink-smarthome-crypto: "npm:^3.0.0"
+    tplink-smarthome-crypto: "npm:^4.0.0"
   bin:
     tplink-smarthome-api: lib/cli.js
-  checksum: 10/e9ffcb5ac3e845e39ebafe81b093d7aca51911cbdf2eeff2b06981db5e9e8653bc30176c740c281767949192db1c743e94791e80c3b252e472ed0eb832679e23
+  checksum: 10/31421cee1f056d3b9f8e3b476e43567e876b60c90f701d226cd277523ee85b47bd3b05b2d105963a05f0fb05060539981ec8dc1c3bb6adee9cab232781940efd
   languageName: node
   linkType: hard
 
-"tplink-smarthome-crypto@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "tplink-smarthome-crypto@npm:3.0.0"
-  checksum: 10/f14c96d8e85ad556282eb443e86af5d7c993df0843c2a14615f1cd2d4b2a7e4c462f1f3b2d8738739133da15bc71eb639e263d68f6f0d95fdfa3c33f1dd86dc9
+"tplink-smarthome-crypto@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "tplink-smarthome-crypto@npm:4.0.0"
+  checksum: 10/c4cab795dad1472c971ef8896845125b9e966deee889d553126c2a0690e89676de136e70689ce20bc0ddad75722ac68de3e845325eb75cadaa7224059e851c87
   languageName: node
   linkType: hard
 

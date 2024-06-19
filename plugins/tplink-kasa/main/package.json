@@ -17,6 +17,6 @@
     "castmate-plugin-iot-main": "workspace:^",
     "castmate-plugin-iot-shared": "workspace:^",
     "castmate-schema": "workspace:^",
-    "tplink-smarthome-api": "^4.2.0"
+    "tplink-smarthome-api": "^5.0.0"
   }
 }
