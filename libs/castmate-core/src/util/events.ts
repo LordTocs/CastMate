@@ -1,3 +1,5 @@
+import { globalLogger } from "../logging/logging"
+
 export class EventList<TFunc extends (...args: any[]) => any = () => any> {
 	private list: TFunc[] = []
 
@@ -23,7 +25,11 @@ export class EventList<TFunc extends (...args: any[]) => any = () => any> {
 		//const promises = this.list.map((f) => f(...args))
 		//await Promise.all(promises)
 		for (const f of this.list) {
-			await f(...args)
+			try {
+				await f(...args)
+			} catch (err) {
+				globalLogger.error("ERROR w EVENT LIST:", err)
+			}
 		}
 	}
 }
