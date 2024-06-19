@@ -45,11 +45,13 @@ export const PubSubManager = Service(
 		}
 
 		start() {
+			logger.log("Starting PubSub Connection")
 			this.shouldConnect = true
 			this.connect()
 		}
 
 		stop() {
+			logger.log("Stopping PubSub Connection")
 			this.shouldConnect = false
 			this.disconnect()
 		}

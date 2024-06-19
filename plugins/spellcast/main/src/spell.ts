@@ -390,23 +390,27 @@ export function setupSpells() {
 	})
 
 	onChannelAuth(async (channel, service) => {
-		logger.log("Loading Spells from server...")
-		const spells = await getSpells()
+		try {
+			logger.log("Loading Spells from server...")
+			const spells = await getSpells()
 
-		const spellResources = [...SpellHook.storage]
-		for (const apiSpell of spells) {
-			const spell = spellResources.find((s) => s.config.spellId == apiSpell._id)
+			const spellResources = [...SpellHook.storage]
+			for (const apiSpell of spells) {
+				const spell = spellResources.find((s) => s.config.spellId == apiSpell._id)
 
-			if (!spell) {
-				await SpellHook.recoverLocalSpell(apiSpell)
+				if (!spell) {
+					await SpellHook.recoverLocalSpell(apiSpell)
+				}
 			}
-		}
 
-		for (const spell of SpellHook.storage) {
-			const apiSpell = spells.find((s) => s._id == spell.config.spellId)
+			for (const spell of SpellHook.storage) {
+				const apiSpell = spells.find((s) => s._id == spell.config.spellId)
 
-			await spell.initializeFromServer(apiSpell)
-			await spell.initializeReactivity()
+				await spell.initializeFromServer(apiSpell)
+				await spell.initializeReactivity()
+			}
+		} catch (err) {
+			logger.error("ERROR Fetching SpellCast Spells", err)
 		}
 	})
 }
