@@ -107,6 +107,14 @@ const isFirstTimeStartup = useIpcCaller<() => boolean>("info", "isFirstTimeStart
 const hasUpdate = useIpcCaller<() => boolean>("info", "hasUpdate")
 
 onMounted(async () => {
+	const queryString = window.location.search
+	const urlParams = new URLSearchParams(queryString)
+
+	const isPortable = urlParams.get("portable")
+	if (isPortable == "true") {
+		document.title = "CastMate - Portable"
+	}
+
 	let migrated = false
 	if (await needsMigrate()) {
 		migrated = true

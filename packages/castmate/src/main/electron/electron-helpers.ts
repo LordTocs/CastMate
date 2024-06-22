@@ -31,9 +31,13 @@ export function createWindow(
 	if (process.env.VITE_DEV_SERVER_URL) {
 		//get it from vite
 		const url = path.posix.join(process.env.VITE_DEV_SERVER_URL, "html", htmlFile)
-		win.loadURL(url) //TODO: FORMAT URL WITH QUERY
+		const params = new URLSearchParams(urlQuery)
+		win.loadURL(`${url}?${params}`)
 	} else {
-		win.loadFile(path.join(__dirname, `../../dist/html/${htmlFile}`))
+		const url = path.join(__dirname, `../../dist/html/${htmlFile}`)
+		win.loadFile(url, {
+			query: urlQuery,
+		})
 	}
 
 	win.addListener("maximize", () => {
