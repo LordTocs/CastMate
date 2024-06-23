@@ -395,10 +395,16 @@ export function setupSpells() {
 			const spells = await getSpells()
 
 			const spellResources = [...SpellHook.storage]
+
+			for (const spell of spellResources) {
+				logger.log("Loaded Spell ", spell.id, spell.config.name, spell.config.spellId)
+			}
+
 			for (const apiSpell of spells) {
 				const spell = spellResources.find((s) => s.config.spellId == apiSpell._id)
 
 				if (!spell) {
+					logger.log("No resource found for", apiSpell._id, apiSpell.name)
 					await SpellHook.recoverLocalSpell(apiSpell)
 				}
 			}
