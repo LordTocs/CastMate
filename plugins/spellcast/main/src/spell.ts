@@ -20,6 +20,7 @@ import {
 	writeYAML,
 	ProfileManager,
 	onCloudPubSubConnect,
+	onCloudPubSubBeforeDisconnect,
 } from "castmate-core"
 import {
 	SpellConfig,
@@ -409,6 +410,10 @@ export function setupSpells() {
 
 	onCloudPubSubConnect(async () => {
 		await updateActiveSpells()
+	})
+
+	onCloudPubSubBeforeDisconnect(async () => {
+		await setActiveSpells({ spells: [] })
 	})
 
 	onProfilesChanged(async (activeProfiles, inactiveProfiles) => {

@@ -26,6 +26,7 @@ export const PubSubManager = Service(
 		private onMessage = new EventList<(plugin: string, event: string, context: object) => any>()
 
 		private onConnect = new EventList()
+		private onBeforeDisconnect = new EventList()
 
 		constructor() {}
 
@@ -44,22 +45,25 @@ export const PubSubManager = Service(
 		}
 
 		start() {
-			logger.log("Starting PubSub Connection")
 			this.shouldConnect = true
 			this.connect()
 		}
 
 		stop() {
-			logger.log("Stopping PubSub Connection")
 			this.shouldConnect = false
 			this.disconnect()
 		}
 
-		private disconnect() {
+		private async disconnect() {
 			if (this.azSocket) {
+				try {
+					await this.onBeforeDisconnect.run()
+				} catch {}
+
+				const socket = this.azSocket
 				logger.log("Disconnecting from Cloud PubSub")
-				this.azSocket?.stop()
 				this.azSocket = undefined
+				socket?.stop()
 			}
 
 			this.connected = false
@@ -136,12 +140,9 @@ export const PubSubManager = Service(
 			})
 
 			this.azSocket.on("disconnected", (ev) => {
-				logger.error("Lost Connection to CastMate Pubsub", ev.message)
-
-				//ON DISCONNECT
-
 				this.connected = false
 				this.connecting = false
+				logger.error("Lost Connection to CastMate Pubsub", ev.message)
 			})
 
 			await this.azSocket.start()
@@ -161,6 +162,7 @@ export const PubSubManager = Service(
 			}
 
 			try {
+				//logger.log("Sending", eventName, this.connected, this.connecting)
 				await this.azSocket.sendEvent(eventName, data, "json")
 			} catch (err) {
 				logger.error("Cloud PubSub Error", err)
@@ -193,6 +195,14 @@ export const PubSubManager = Service(
 
 		unregisterOnConnect(func: () => any) {
 			this.onConnect.unregister(func)
+		}
+
+		registerOnBeforeDisconnect(func: () => any) {
+			this.onBeforeDisconnect.register(func)
+		}
+
+		unregisterOnBeforeDisconnect(func: () => any) {
+			this.onBeforeDisconnect.unregister(func)
 		}
 	}
 )
@@ -229,11 +239,13 @@ export function onCloudPubSubMessage<T extends object>(
 			if (activeFunc()) {
 				if (!registered) {
 					registered = true
+					//logger.log("Registering", pluginId, eventName)
 					PubSubManager.getInstance().registerOnMessage(handler)
 				}
 			} else {
 				if (registered) {
 					registered = false
+					//logger.log("Unregistering", pluginId, eventName)
 					PubSubManager.getInstance().unregisterOnMessage(handler)
 				}
 			}
@@ -256,6 +268,16 @@ export function onCloudPubSubConnect(func: () => any) {
 
 	onUnload(() => {
 		PubSubManager.getInstance().unregisterOnConnect(func)
+	})
+}
+
+export function onCloudPubSubBeforeDisconnect(func: () => any) {
+	onLoad(() => {
+		PubSubManager.getInstance().registerOnBeforeDisconnect(func)
+	})
+
+	onUnload(() => {
+		PubSubManager.getInstance().unregisterOnBeforeDisconnect(func)
 	})
 }
 
