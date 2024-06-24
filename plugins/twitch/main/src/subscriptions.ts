@@ -33,6 +33,7 @@ export function setupSubscriptions() {
 				totalMonths: { type: Number, required: true, default: 5 },
 				streakMonths: { type: Number, required: true, default: 3 },
 				durationMonths: { type: Number, required: true, default: 1 },
+				message: { type: String, required: true, default: "" },
 			},
 		},
 		async handle(config, context) {
@@ -137,6 +138,7 @@ export function setupSubscriptions() {
 				totalMonths: event.cumulativeMonths,
 				streakMonths: event.streakMonths ?? 1,
 				durationMonths: event.durationMonths,
+				message: event.messageText ?? "",
 			})
 		})
 
