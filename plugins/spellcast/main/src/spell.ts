@@ -144,6 +144,13 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 		await fs.unlink(resource.filepath)
 	}
 
+	static getByApiId(apiId: string) {
+		for (const spell of this.storage) {
+			if (spell.config.spellId == apiId) return spell
+		}
+		return undefined
+	}
+
 	///////////////////////
 
 	static async initialize(): Promise<void> {
@@ -294,8 +301,12 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 
 	async updateServer() {
 		const apiData = await this.getApiData()
-		const updated = await updateSpell(this.config.spellId, apiData)
-		this.updateFromApi(updated)
+		if (this.config.spellId) {
+			const updated = await updateSpell(this.config.spellId, apiData)
+			this.updateFromApi(updated)
+		} else {
+			//await createSpell()
+		}
 	}
 }
 
@@ -320,6 +331,7 @@ export function setupSpells() {
 			properties: {
 				spell: { type: SpellHook, required: true },
 				viewer: { type: TwitchViewer, required: true },
+				bits: { type: Number, required: true },
 			},
 		},
 		async handle(config, context, mapping) {
@@ -331,19 +343,23 @@ export function setupSpells() {
 		buttonId: string
 		user: string
 		userId: string
+		bits: number
 	}
 
 	onCloudPubSubMessage<SpellHookEventConfig>(
 		"spellHook",
 		() => hasActiveSpells.value,
 		async (data) => {
-			const spell = SpellHook.storage.getById(data.buttonId)
+			const spell = SpellHook.getByApiId(data.buttonId)
+
+			logger.log("Activating SpellHook", data.buttonId)
 
 			if (!spell) return false
 
 			spellHook({
 				spell,
 				viewer: data.userId,
+				bits: data.bits,
 			})
 
 			return true
@@ -356,12 +372,18 @@ export function setupSpells() {
 
 		for (const profile of ProfileManager.getInstance().activeProfiles) {
 			for (const trigger of profile.iterTriggers(spellHook)) {
-				const spell = trigger.config.spell
-				if (!spell) continue
+				const localId = trigger.config.spell as unknown as string
+				if (!localId) continue
 
 				//We don't have to obey the enabled flag here, the server does that for us
 				//TODO/HACK: Iter triggers doesn't deserialize from ID to Resource
-				activeSpells.add(spell as unknown as string)
+				const spell = SpellHook.storage.getById(localId)
+
+				if (!spell) continue
+
+				const spellId = spell.config.spellId
+
+				activeSpells.add(spellId)
 			}
 		}
 

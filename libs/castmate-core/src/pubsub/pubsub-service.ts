@@ -122,11 +122,11 @@ export const PubSubManager = Service(
 
 				const messageData = ev.message.data as {
 					plugin: string
-					message: string
+					event: string
 					context: object
 				}
 
-				this.onMessage.run(messageData.plugin, messageData.message, messageData.context)
+				this.onMessage.run(messageData.plugin, messageData.event, messageData.context)
 			})
 
 			this.azSocket.on("connected", async (ev) => {
@@ -261,7 +261,7 @@ export function onCloudPubSubConnect(func: () => any) {
 
 export function useSendCloudPubSubMessage<T extends object>(eventName: string) {
 	if (!initingPlugin) throw new Error()
-	const pluginId = initingPlugin.name
+	const pluginId = initingPlugin.id
 
 	return async (data: T) => {
 		return await PubSubManager.getInstance().send(pluginId, eventName, data)
