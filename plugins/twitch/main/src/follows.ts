@@ -58,6 +58,8 @@ export function setupFollows() {
 		service.eventsub.onChannelFollow(account.twitchId, account.twitchId, async (event) => {
 			ViewerCache.getInstance().cacheFollowEvent(event)
 
+			lastFollower.value = await ViewerCache.getInstance().getResolvedViewer(event.userId)
+
 			follow({
 				viewer: event.userId,
 			})

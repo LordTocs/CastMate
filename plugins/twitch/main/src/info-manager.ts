@@ -230,11 +230,14 @@ export function setupInfoManager() {
 
 		await StreamInfoManager.getInstance().startManagingInfo()
 
+		logger.log("Registering Online Handlers")
 		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
+			logger.log("Stream Going Online")
 			live.value = true
 		})
 
 		service.eventsub.onStreamOffline(channel.twitchId, async (event) => {
+			logger.log("Stream Going Offline")
 			live.value = false
 		})
 	})

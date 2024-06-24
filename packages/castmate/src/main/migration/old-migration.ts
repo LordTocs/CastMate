@@ -1867,6 +1867,10 @@ async function migrateOldAutomation(oldAutomation: OldAutomation): Promise<Seque
 		actions: [],
 	}
 
+	if (!oldAutomation) {
+		return result
+	}
+
 	const seqStack: SequenceStackItem[] = [{ sequence: result, offset: 0 }]
 
 	function canFit(pushSeq: SequenceStackItem) {
@@ -2158,8 +2162,8 @@ async function migrateOldProfile(name: string, oldProfile: OldProfile): Promise<
 
 					newTrigger.sequence = await migrateInlineOldAutomation(oldTrigger.automation)
 
-					if (typeof oldTrigger.automation == "object") {
-						if (oldTrigger.automation.sync) {
+					if (typeof oldTrigger?.automation == "object") {
+						if (oldTrigger?.automation?.sync) {
 							newTrigger.queue = mainQueueId
 						}
 					}

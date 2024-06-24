@@ -43,7 +43,7 @@ class KasaLight extends LightResource {
 			this.parseLightState(lightState)
 		})
 
-		kasaBulb.startPolling(30000)
+		//kasaBulb.(30000)
 	}
 
 	private parseLightState(state: LightState) {
@@ -109,7 +109,7 @@ class KasaPlug extends PlugResource {
 		})
 
 		//TODO: Why is this deprecated?
-		kasaPlug.startPolling(30000)
+		//kasaPlug.startPolling(30000)
 	}
 
 	private async updateState() {
@@ -158,7 +158,7 @@ export function setupLights(subnetMask: ReactiveRef<string>) {
 			logger.error("TP-Link Kasa Error", err)
 		})
 
-		client.on("discover-invalid", (err) => {
+		client.on("discovery-invalid", (err) => {
 			logger.error("Kasa Discovery Invalid?", err)
 		})
 	}

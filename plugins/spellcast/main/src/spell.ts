@@ -20,6 +20,7 @@ import {
 	writeYAML,
 	ProfileManager,
 	onCloudPubSubConnect,
+	onCloudPubSubBeforeDisconnect,
 } from "castmate-core"
 import {
 	SpellConfig,
@@ -142,6 +143,13 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 			await deleteSpell(resource.config.spellId)
 		}
 		await fs.unlink(resource.filepath)
+	}
+
+	static getByApiId(apiId: string) {
+		for (const spell of this.storage) {
+			if (spell.config.spellId == apiId) return spell
+		}
+		return undefined
 	}
 
 	///////////////////////
@@ -294,8 +302,13 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 
 	async updateServer() {
 		const apiData = await this.getApiData()
-		const updated = await updateSpell(this.config.spellId, apiData)
-		this.updateFromApi(updated)
+		if (this.config.spellId) {
+			const updated = await updateSpell(this.config.spellId, apiData)
+			this.updateFromApi(updated)
+		} else {
+			const created = await createSpell(apiData)
+			this.updateFromApi(created)
+		}
 	}
 }
 
@@ -320,6 +333,7 @@ export function setupSpells() {
 			properties: {
 				spell: { type: SpellHook, required: true },
 				viewer: { type: TwitchViewer, required: true },
+				bits: { type: Number, required: true },
 			},
 		},
 		async handle(config, context, mapping) {
@@ -331,19 +345,26 @@ export function setupSpells() {
 		buttonId: string
 		user: string
 		userId: string
+		bits: number
 	}
 
 	onCloudPubSubMessage<SpellHookEventConfig>(
 		"spellHook",
 		() => hasActiveSpells.value,
 		async (data) => {
-			const spell = SpellHook.storage.getById(data.buttonId)
+			const spell = SpellHook.getByApiId(data.buttonId)
 
-			if (!spell) return false
+			if (!spell) {
+				logger.log("Failed to find SpellHook", data.buttonId)
+				return false
+			}
+
+			logger.log("Activating SpellHook", data.buttonId, spell.config.name)
 
 			spellHook({
 				spell,
 				viewer: data.userId,
+				bits: data.bits,
 			})
 
 			return true
@@ -356,12 +377,18 @@ export function setupSpells() {
 
 		for (const profile of ProfileManager.getInstance().activeProfiles) {
 			for (const trigger of profile.iterTriggers(spellHook)) {
-				const spell = trigger.config.spell
-				if (!spell) continue
+				const localId = trigger.config.spell as unknown as string
+				if (!localId) continue
 
 				//We don't have to obey the enabled flag here, the server does that for us
 				//TODO/HACK: Iter triggers doesn't deserialize from ID to Resource
-				activeSpells.add(spell as unknown as string)
+				const spell = SpellHook.storage.getById(localId)
+
+				if (!spell) continue
+
+				const spellId = spell.config.spellId
+
+				activeSpells.add(spellId)
 			}
 		}
 
@@ -385,28 +412,42 @@ export function setupSpells() {
 		await updateActiveSpells()
 	})
 
+	onCloudPubSubBeforeDisconnect(async () => {
+		await setActiveSpells({ spells: [] })
+	})
+
 	onProfilesChanged(async (activeProfiles, inactiveProfiles) => {
 		await updateActiveSpells()
 	})
 
 	onChannelAuth(async (channel, service) => {
-		logger.log("Loading Spells from server...")
-		const spells = await getSpells()
+		try {
+			logger.log("Loading Spells from server...")
+			const spells = await getSpells()
 
-		const spellResources = [...SpellHook.storage]
-		for (const apiSpell of spells) {
-			const spell = spellResources.find((s) => s.config.spellId == apiSpell._id)
+			const spellResources = [...SpellHook.storage]
 
-			if (!spell) {
-				await SpellHook.recoverLocalSpell(apiSpell)
+			for (const spell of spellResources) {
+				logger.log("Loaded Spell ", spell.id, spell.config.name, spell.config.spellId)
 			}
-		}
 
-		for (const spell of SpellHook.storage) {
-			const apiSpell = spells.find((s) => s._id == spell.config.spellId)
+			for (const apiSpell of spells) {
+				const spell = spellResources.find((s) => s.config.spellId == apiSpell._id)
 
-			await spell.initializeFromServer(apiSpell)
-			await spell.initializeReactivity()
+				if (!spell) {
+					logger.log("No resource found for", apiSpell._id, apiSpell.name)
+					await SpellHook.recoverLocalSpell(apiSpell)
+				}
+			}
+
+			for (const spell of SpellHook.storage) {
+				const apiSpell = spells.find((s) => s._id == spell.config.spellId)
+
+				await spell.initializeFromServer(apiSpell)
+				await spell.initializeReactivity()
+			}
+		} catch (err) {
+			logger.error("ERROR Fetching SpellCast Spells", err)
 		}
 	})
 }

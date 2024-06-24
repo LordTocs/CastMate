@@ -7,7 +7,6 @@ import { EventList } from "../util/events"
 import { onLoad, onUnload } from "../plugins/plugin"
 import { initingPlugin } from "../plugins/plugin-init"
 import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
-import { coreAxios } from "../util/request-utils"
 
 const logger = usePluginLogger("pubsub")
 
@@ -27,6 +26,7 @@ export const PubSubManager = Service(
 		private onMessage = new EventList<(plugin: string, event: string, context: object) => any>()
 
 		private onConnect = new EventList()
+		private onBeforeDisconnect = new EventList()
 
 		constructor() {}
 
@@ -54,11 +54,16 @@ export const PubSubManager = Service(
 			this.disconnect()
 		}
 
-		private disconnect() {
+		private async disconnect() {
 			if (this.azSocket) {
+				try {
+					await this.onBeforeDisconnect.run()
+				} catch {}
+
+				const socket = this.azSocket
 				logger.log("Disconnecting from Cloud PubSub")
-				this.azSocket?.stop()
 				this.azSocket = undefined
+				socket?.stop()
 			}
 
 			this.connected = false
@@ -88,7 +93,7 @@ export const PubSubManager = Service(
 			logger.log("Starting Cloud PubSub Connection")
 			this.connecting = true
 
-			const negotiationResp = await coreAxios.get("/pubsub/negotiate", {
+			const negotiationResp = await axios.get("/pubsub/negotiate", {
 				baseURL,
 				headers: {
 					Authorization: `Bearer ${this.token}`,
@@ -121,11 +126,11 @@ export const PubSubManager = Service(
 
 				const messageData = ev.message.data as {
 					plugin: string
-					message: string
+					event: string
 					context: object
 				}
 
-				this.onMessage.run(messageData.plugin, messageData.message, messageData.context)
+				this.onMessage.run(messageData.plugin, messageData.event, messageData.context)
 			})
 
 			this.azSocket.on("connected", async (ev) => {
@@ -135,12 +140,9 @@ export const PubSubManager = Service(
 			})
 
 			this.azSocket.on("disconnected", (ev) => {
-				logger.error("Lost Connection to CastMate Pubsub", ev.message)
-
-				//ON DISCONNECT
-
 				this.connected = false
 				this.connecting = false
+				logger.error("Lost Connection to CastMate Pubsub", ev.message)
 			})
 
 			await this.azSocket.start()
@@ -160,6 +162,7 @@ export const PubSubManager = Service(
 			}
 
 			try {
+				//logger.log("Sending", eventName, this.connected, this.connecting)
 				await this.azSocket.sendEvent(eventName, data, "json")
 			} catch (err) {
 				logger.error("Cloud PubSub Error", err)
@@ -192,6 +195,14 @@ export const PubSubManager = Service(
 
 		unregisterOnConnect(func: () => any) {
 			this.onConnect.unregister(func)
+		}
+
+		registerOnBeforeDisconnect(func: () => any) {
+			this.onBeforeDisconnect.register(func)
+		}
+
+		unregisterOnBeforeDisconnect(func: () => any) {
+			this.onBeforeDisconnect.unregister(func)
 		}
 	}
 )
@@ -228,11 +239,13 @@ export function onCloudPubSubMessage<T extends object>(
 			if (activeFunc()) {
 				if (!registered) {
 					registered = true
+					//logger.log("Registering", pluginId, eventName)
 					PubSubManager.getInstance().registerOnMessage(handler)
 				}
 			} else {
 				if (registered) {
 					registered = false
+					//logger.log("Unregistering", pluginId, eventName)
 					PubSubManager.getInstance().unregisterOnMessage(handler)
 				}
 			}
@@ -258,9 +271,19 @@ export function onCloudPubSubConnect(func: () => any) {
 	})
 }
 
+export function onCloudPubSubBeforeDisconnect(func: () => any) {
+	onLoad(() => {
+		PubSubManager.getInstance().registerOnBeforeDisconnect(func)
+	})
+
+	onUnload(() => {
+		PubSubManager.getInstance().unregisterOnBeforeDisconnect(func)
+	})
+}
+
 export function useSendCloudPubSubMessage<T extends object>(eventName: string) {
 	if (!initingPlugin) throw new Error()
-	const pluginId = initingPlugin.name
+	const pluginId = initingPlugin.id
 
 	return async (data: T) => {
 		return await PubSubManager.getInstance().send(pluginId, eventName, data)

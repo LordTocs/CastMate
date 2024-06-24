@@ -71,7 +71,6 @@ export namespace DependencyStorage {
 		if (key == "constructor") return undefined
 		const alias = aliasMap.get(target)
 		if (!alias) return undefined
-		logger.log("Alias Obj", alias)
 		return alias[key]
 	}
 
