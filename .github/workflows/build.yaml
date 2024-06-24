@@ -21,7 +21,6 @@ jobs:
       - name: "Install Node"
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
           corepack: true
       - name: "Install Node Packages"
         run: "yarn install"
