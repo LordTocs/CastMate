@@ -305,7 +305,8 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 			const updated = await updateSpell(this.config.spellId, apiData)
 			this.updateFromApi(updated)
 		} else {
-			//await createSpell()
+			const created = await createSpell(apiData)
+			this.updateFromApi(created)
 		}
 	}
 }
@@ -352,9 +353,12 @@ export function setupSpells() {
 		async (data) => {
 			const spell = SpellHook.getByApiId(data.buttonId)
 
-			logger.log("Activating SpellHook", data.buttonId)
+			if (!spell) {
+				logger.log("Failed to find SpellHook", data.buttonId)
+				return false
+			}
 
-			if (!spell) return false
+			logger.log("Activating SpellHook", data.buttonId, spell.config.name)
 
 			spellHook({
 				spell,
