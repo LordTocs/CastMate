@@ -48,7 +48,8 @@
 			"castmate-plugin-variables-renderer": ["../../plugins/variables/renderer/src/main.ts"],
 			"castmate-plugin-overlays-renderer": ["../../plugins/overlays/renderer/src/main.ts"],
 			"castmate-plugin-spellcast-renderer": ["../../plugins/spellcast/renderer/src/main.ts"],
-			"castmate-plugin-stream-plans-renderer": ["../../plugins/stream-plans/renderer/src/main.ts"]
+			"castmate-plugin-stream-plans-renderer": ["../../plugins/stream-plans/renderer/src/main.ts"],
+			"castmate-plugin-aoe4-renderer": ["../../plugins/aoe4/renderer/src/main.ts"],
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

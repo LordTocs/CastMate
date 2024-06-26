@@ -16,6 +16,7 @@
 	"dependencies": {
 		"archiver": "^7.0.1",
 		"castmate-core": "workspace:^",
+		"castmate-plugin-aoe4-main": "workspace:^",
 		"castmate-plugin-discord-main": "workspace:^",
 		"castmate-plugin-elgato-main": "workspace:^",
 		"castmate-plugin-govee-main": "workspace:^",
@@ -50,6 +51,7 @@
 		"@vueuse/core": "*",
 		"castmate-overlay-core": "workspace:^",
 		"castmate-overlay-widget-loader": "workspace:^",
+		"castmate-plugin-aoe4-renderer": "workspace:^",
 		"castmate-plugin-discord-renderer": "workspace:^",
 		"castmate-plugin-govee-renderer": "workspace:^",
 		"castmate-plugin-http-renderer": "workspace:^",

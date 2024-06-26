@@ -55,6 +55,7 @@ import { initPlugin as initKasaPlugin } from "castmate-plugin-tplink-kasa-render
 import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
 import { initPlugin as initOverlaysPlugin } from "castmate-plugin-overlays-renderer"
 import { initPlugin as initSpellCastPlugin } from "castmate-plugin-spellcast-renderer"
+import { initPlugin as initAoe4Plugin } from "castmate-plugin-aoe4-renderer"
 
 import { initPlugin as initRandomPlugin } from "castmate-plugin-random-renderer"
 
@@ -158,6 +159,7 @@ async function init() {
 	await initGoveePlugin()
 	await initKasaPlugin()
 	await initRemotePlugin()
+	await initAoe4Plugin()
 
 	await initRandomPlugin()
 

@@ -2912,6 +2912,54 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-aoe4-main@workspace:^, castmate-plugin-aoe4-main@workspace:plugins/aoe4/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-aoe4-main@workspace:plugins/aoe4/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-aoe4-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-aoe4-renderer@workspace:^, castmate-plugin-aoe4-renderer@workspace:plugins/aoe4/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-aoe4-renderer@workspace:plugins/aoe4/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-plugin-aoe4-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:*"
+    nanoid: "npm:*"
+    pinia: "npm:*"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:*"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-aoe4-shared@workspace:^, castmate-plugin-aoe4-shared@workspace:plugins/aoe4/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-aoe4-shared@workspace:plugins/aoe4/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-aoe4@workspace:plugins/aoe4":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-aoe4@workspace:plugins/aoe4"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-discord-main@workspace:^, castmate-plugin-discord-main@workspace:plugins/discord/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-discord-main@workspace:plugins/discord/main"
@@ -4223,6 +4271,8 @@ __metadata:
     castmate-core: "workspace:^"
     castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
+    castmate-plugin-aoe4-main: "workspace:^"
+    castmate-plugin-aoe4-renderer: "workspace:^"
     castmate-plugin-discord-main: "workspace:^"
     castmate-plugin-discord-renderer: "workspace:^"
     castmate-plugin-elgato-main: "workspace:^"

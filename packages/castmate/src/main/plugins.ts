@@ -10,6 +10,7 @@ import soundPlugin from "castmate-plugin-sound-main"
 import timePlugin from "castmate-plugin-time-main"
 import twitchPlugin from "castmate-plugin-twitch-main"
 import voicemodPlugin from "castmate-plugin-voicemod-main"
+import aoe4Plugin from "castmate-plugin-aoe4-main"
 
 import variablesPlugin from "castmate-plugin-variables-main"
 
@@ -60,6 +61,7 @@ export async function loadPlugins() {
 		loadPlugin(voicemodPlugin),
 		loadPlugin(minecraftPlugin),
 		loadPlugin(remotePlugin),
+		loadPlugin(aoe4Plugin),
 	]
 	await Promise.allSettled(promises)
 
