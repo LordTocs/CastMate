@@ -216,8 +216,8 @@ export function setupChat() {
 
 	defineAction({
 		id: "annoucement",
-		name: "Make Annoucement",
-		description: "Sends an annoucement in chat",
+		name: "Make Announcement",
+		description: "Sends an announcement in chat",
 		icon: "mdi mdi-chat-alert",
 		config: {
 			type: Object,
