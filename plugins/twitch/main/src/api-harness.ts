@@ -132,6 +132,20 @@ export const TwitchAPIService = Service(
 			//@ts-ignore Damned type system
 			await this.onChannelReauthList.run(channelAccount, this)
 
+			this.eventsub.onSubscriptionCreateFailure((sub, error) => {
+				logger.error("ERROR WITH EVENTSUB", sub.id)
+				logger.error(error)
+			})
+
+			this.eventsub.onSubscriptionCreateSuccess((event, sub) => {
+				logger.log("Listening to eventsub", event.id, sub.id)
+			})
+
+			this.eventsub.onSubscriptionDeleteFailure((sub, error) => {
+				logger.error("ERROR DELETING EVENTSUB", sub.id)
+				logger.error(error)
+			})
+
 			this.eventsub.start()
 
 			//Restart the bot stuffs since we've changed main channel.
