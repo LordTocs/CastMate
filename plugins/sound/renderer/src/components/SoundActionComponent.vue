@@ -135,5 +135,6 @@ const waveSvg = computed(() => {
 .sound-label {
 	padding: 0 0.25rem;
 	font-size: 0.7rem;
+	white-space: nowrap;
 }
 </style>
