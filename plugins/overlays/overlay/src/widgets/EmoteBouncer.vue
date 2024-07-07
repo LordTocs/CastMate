@@ -13,27 +13,28 @@
 				}rad)`,
 			}"
 		/>
-		<!-- <template v-if="isEditor && useLaunchPosition">
+		<template v-if="isEditor">
 			<div
 				class="launch-indicator"
+				v-for="launcher in config.launchers ?? []"
 				:style="{
-					top: `${launchParameters?.launchY || 0 - 1}px`,
-					left: `${launchParameters?.launchX || 0 - 1}px`,
+					top: `${launcher.y || 0 - 1}px`,
+					left: `${launcher.x || 0 - 1}px`,
 				}"
 			>
 				<div
 					class="launch-cone"
 					:style="{
-						top: `calc(50% - ${launchHeight / 2}px)`,
+						top: `calc(50% - ${getLauncherPreviewHeight(launcher) / 2}px)`,
 						left: `50%`,
-						transform: `rotate(${launchParameters.angle || 0}deg)`,
-						clipPath: `path('${launchClipPath}')`,
-						width: `${launchWidth}px`,
-						height: `${launchHeight}px`,
+						transform: `rotate(${launcher.angle || 0}deg)`,
+						clipPath: `path('${getLauncherPreviewClip(launcher)}')`,
+						width: `${getLauncherPreviewWidth(launcher)}px`,
+						height: `${getLauncherPreviewHeight(launcher)}px`,
 					}"
 				></div>
 			</div>
-		</template> -->
+		</template>
 	</div>
 </template>
 
@@ -45,6 +46,7 @@ import { Duration, EmoteInfo, EmoteParsedString } from "castmate-schema"
 import { OverlayWidgetSize } from "castmate-plugin-overlays-shared"
 import { Range } from "castmate-schema"
 import { onMounted, ref, watch } from "vue"
+import { template } from "castmate-core"
 
 defineOptions({
 	widget: declareWidgetOptions({
@@ -117,10 +119,37 @@ defineOptions({
 						},
 					},
 				},
+				launchers: {
+					type: Array,
+					items: {
+						type: Object,
+						properties: {
+							x: { type: Number, name: "X Position", template: true, default: 0, required: true },
+							y: { type: Number, name: "Y Position", template: true, default: 0, required: true },
+							angle: { type: Number, name: "Angle", template: true, default: 0, required: true },
+							spread: { type: Number, name: "Angle Spread", template: true, default: 20, required: true },
+							velocity: {
+								type: Range,
+								name: "Velocity Range",
+								template: true,
+								default: { min: 0, max: 0.4 },
+								required: true,
+							},
+						},
+					},
+				},
 			},
 		},
 	}),
 })
+
+interface Launcher {
+	x: number
+	y: number
+	angle: number
+	spread: number
+	velocity: Range
+}
 
 const props = defineProps<{
 	size: OverlayWidgetSize
@@ -137,6 +166,7 @@ const props = defineProps<{
 			emoteCap: number | undefined
 			emoteCapPerMessage: number | undefined
 		}
+		launchers: Launcher[]
 	}
 }>()
 
@@ -403,20 +433,82 @@ function getDefaultSpawnInfo() {
 	}
 }
 
-function spawnEmote(emote: EmoteInfo) {
+function generateSpawnInfo(emote: EmoteInfo): SpawnInfo | undefined {
 	const imageUrl = emote.urls.url4x ?? emote.urls.url3x ?? emote.urls.url2x ?? emote.urls.url1x
-
-	if (!imageUrl) return -1
+	if (!imageUrl) return
 
 	const height = Range.random(props.config.emoteSize)
 	const width = height / emote.aspectRatio
 
-	return spawn({
-		imageUrl,
-		width,
-		height,
-		...getDefaultSpawnInfo(),
-	})
+	if (!props.config.launchers?.length) {
+		return {
+			imageUrl,
+			width,
+			height,
+			...getDefaultSpawnInfo(),
+		}
+	} else {
+		const launcherIdx = Math.floor(Math.random() * props.config.launchers.length)
+		const launcher = props.config.launchers[launcherIdx]
+
+		if (!launcher) return
+
+		const angle = launcher.angle + Math.random() * 0.5 * launcher.spread
+		const angleRad = (angle * Math.PI) / 180
+		const vel = Range.random(launcher.velocity)
+		const velX = Math.cos(angleRad) * vel * 0.5 //Divide in half since velocity max elsewhere is divided in half.
+		const velY = Math.cos(angleRad) * vel * 0.5
+
+		const lifetime = Range.random(props.config.lifeTime)
+
+		return {
+			imageUrl,
+			width,
+			height,
+			x: launcher.x,
+			y: launcher.y,
+			velX,
+			velY,
+			angle: 0,
+			angularVel: 0,
+			lifetime,
+		}
+	}
+}
+
+function spawnEmote(emote: EmoteInfo) {
+	const spawnInfo = generateSpawnInfo(emote)
+
+	if (!spawnInfo) return
+
+	return spawn(spawnInfo)
+}
+
+function getLauncherPreviewWidth(launcher: Launcher) {
+	const velmax = launcher.velocity.max ?? launcher.velocity.min ?? 1
+	return velmax * 400
+}
+
+function getLauncherPreviewHeight(launcher: Launcher) {
+	const width = getLauncherPreviewWidth(launcher)
+	const theta = (launcher.spread * Math.PI) / 180 / 2
+	return width * Math.sin(theta) * 2
+}
+
+function getLauncherPreviewClip(launcher: Launcher) {
+	const width = getLauncherPreviewWidth(launcher)
+	const height = getLauncherPreviewHeight(launcher)
+	const radius = width
+	const spread = launcher.spread
+	const theta = (spread * Math.PI) / 180 / 2
+	const cosTheta = Math.cos(theta)
+	const sinTheta = Math.sin(theta)
+
+	const arcPath = `M 0,${height / 2 - 1} L${cosTheta * width},-1 A ${radius},${radius} ${spread} 0, 1, ${
+		cosTheta * width
+	}, ${height + 1} L 0,${height / 2 + 1} Z`
+
+	return arcPath
 }
 
 handleOverlayMessage("twitch_message", (message: EmoteParsedString) => {
