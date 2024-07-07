@@ -50,13 +50,21 @@
 </template>
 
 <script setup lang="ts">
-import { declareWidgetOptions, handleOverlayMessage, handleOverlayRPC, useCallOverlayRPC } from "castmate-overlay-core"
+import {
+	declareWidgetOptions,
+	handleOverlayMessage,
+	handleOverlayRPC,
+	useCallOverlayRPC,
+	useIsEditor,
+	useSoundPlayer,
+} from "castmate-overlay-core"
 import {
 	OverlayBlockStyle,
 	OverlayTextAlignment,
 	OverlayTextStyle,
 	OverlayWidgetSize,
 } from "castmate-plugin-overlays-shared"
+import { MediaFile } from "castmate-schema"
 import { Color } from "castmate-schema"
 import { computed, onMounted, ref, watch } from "vue"
 
@@ -125,6 +133,12 @@ defineOptions({
 								allowMargin: false,
 								allowHorizontalAlign: false,
 							},
+							clickOverride: {
+								type: MediaFile,
+								name: "Click Sound Override",
+								video: false,
+								image: false,
+							},
 						},
 					},
 				},
@@ -144,6 +158,7 @@ defineOptions({
 								allowMargin: false,
 								allowHorizontalAlign: false,
 							},
+							click: { type: MediaFile, name: "Click Sound", video: false, image: false },
 						},
 					},
 					default: [
@@ -248,12 +263,14 @@ const props = withDefaults(
 				fontOverride: OverlayTextStyle | undefined
 				textAlignOverride: OverlayTextAlignment | undefined
 				blockOverride: OverlayBlockStyle | undefined
+				clickOverride: MediaFile | undefined
 			}[]
 			style: {
 				color: Color
 				font: OverlayTextStyle
 				textAlign: OverlayTextAlignment
 				block: OverlayBlockStyle
+				click: MediaFile | undefined
 			}[]
 			damping: {
 				base: number
@@ -288,7 +305,11 @@ const props = withDefaults(
 )
 
 ///Rendering
+const soundPlayer = useSoundPlayer()
+
 const wheelAngle = ref(0)
+
+const isEditor = useIsEditor()
 
 onMounted(() => {
 	watch(
@@ -298,6 +319,16 @@ onMounted(() => {
 		},
 		{ deep: true, immediate: true }
 	)
+
+	watch(globalIndex, () => {
+		if (isEditor) return
+
+		const clickMedia =
+			items.value[itemIndex.value]?.clickOverride ?? style.value[slotIndex.value % style.value.length]?.click
+		if (!clickMedia) return
+
+		soundPlayer.playSound(clickMedia)
+	})
 })
 
 const radius = computed(() => props.size.width / 2)

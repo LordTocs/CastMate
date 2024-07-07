@@ -79,6 +79,7 @@ export default definePlugin(
 						type: Number,
 						required: true,
 						template: true,
+						name: "Strength",
 						default: 1,
 					},
 				},
