@@ -19,7 +19,14 @@
 	<div class="display-box" v-else>
 		<i class="mdi mdi-web-box"></i>
 		{{ sourceName }}
-		<p-button v-if="hasError" icon="mdi mdi-wrench" v-tooltip="'Fix Issues'" @click="fixErrorsClick"></p-button>
+		<p-button
+			v-if="hasError"
+			class="extra-small-button ml-1"
+			size="small"
+			icon="mdi mdi-wrench"
+			v-tooltip="'Fix Issues'"
+			@click="fixErrorsClick"
+		></p-button>
 	</div>
 </template>
 
@@ -28,10 +35,11 @@ import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { computed, onMounted, ref, watch } from "vue"
 
 import PButton from "primevue/button"
-import { useResource, useResourceIPCCaller, useSettingValue } from "castmate-ui-core"
+import { NameDialog, useResource, useResourceIPCCaller, useSettingValue } from "castmate-ui-core"
 import { ResourceData } from "castmate-schema"
 import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
 import { asyncComputed } from "@vueuse/core"
+import { useDialog } from "primevue/usedialog"
 
 const obs = useResource<ResourceData<OBSConnectionConfig, OBSConnectionState>>("OBSConnection", () => props.obsId)
 
@@ -130,22 +138,43 @@ async function getBrowserSourceSettings() {
 	}
 }
 
+const dialog = useDialog()
+
 async function createSourceClick(ev: MouseEvent) {
 	if (!obs.value) return
 
-	const newSourceName = await createNewSource(
-		"browser_source",
-		"CastMate Overlay!",
-		obs.value.state.scene,
-		await getBrowserSourceSettings()
-	)
-	sourceName.value = newSourceName
+	dialog.open(NameDialog, {
+		props: {
+			header: "Create Browser Source",
+			style: {
+				width: "25vw",
+			},
+			modal: true,
+		},
+		async onClose(options) {
+			if (!options?.data) {
+				return
+			}
+
+			if (!obs.value) return
+
+			await createNewSource(
+				"browser_source",
+				options.data,
+				obs.value.state.scene,
+				await getBrowserSourceSettings()
+			)
+			setTimeout(findBrowserSource, 200)
+		},
+	})
 }
 
 async function fixErrorsClick(ev: MouseEvent) {
 	if (!sourceName.value) return
 
 	await updateSourceSettings(sourceName.value, await getBrowserSourceSettings())
+
+	await findBrowserSource()
 }
 
 async function openObs() {
