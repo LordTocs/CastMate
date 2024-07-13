@@ -6,6 +6,7 @@ import {
 	defineAction,
 	definePluginResource,
 	onLoad,
+	usePluginLogger,
 } from "castmate-core"
 import {
 	TwitchViewerGroupConfig,
@@ -16,6 +17,8 @@ import {
 import { nanoid } from "nanoid/non-secure"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchAccount } from "./twitch-auth"
+
+const logger = usePluginLogger("twitch")
 
 interface SerializedConfig {
 	name: string
@@ -158,24 +161,29 @@ async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promi
 			}
 		}
 		return false
-	} else if ("property" in rule) {
+	} else if ("properties" in rule) {
 		//Todo: Make this not silly hardcoded
-		if (rule.property === "following") {
-			return await ViewerCache.getInstance().getIsFollowing(userId)
-		} else if (rule.property === "subscribed") {
-			return await ViewerCache.getInstance().getIsSubbed(userId)
-		} else if (rule.property === "sub-tier-1") {
-			return (await ViewerCache.getInstance().getSubInfo(userId))?.tier == 1
-		} else if (rule.property === "sub-tier-2") {
-			return (await ViewerCache.getInstance().getSubInfo(userId))?.tier == 2
-		} else if (rule.property === "sub-tier-3") {
-			return (await ViewerCache.getInstance().getSubInfo(userId))?.tier == 3
-		} else if (rule.property === "mod") {
-			return await ViewerCache.getInstance().getIsMod(userId)
-		} else if (rule.property === "vip") {
-			return await ViewerCache.getInstance().getIsVIP(userId)
-		} else if (rule.property === "broadcaster") {
-			return userId === TwitchAccount.channel.twitchId
+		if (rule.properties.following) {
+			if (await ViewerCache.getInstance().getIsFollowing(userId)) return true
+		}
+
+		if (rule.properties.subTier1) {
+			if ((await ViewerCache.getInstance().getSubInfo(userId))?.tier == 1) return true
+		}
+		if (rule.properties.subTier2) {
+			if ((await ViewerCache.getInstance().getSubInfo(userId))?.tier == 2) return true
+		}
+		if (rule.properties.subTier3) {
+			if ((await ViewerCache.getInstance().getSubInfo(userId))?.tier == 3) return true
+		}
+		if (rule.properties.mod) {
+			if (await ViewerCache.getInstance().getIsMod(userId)) return true
+		}
+		if (rule.properties.vip) {
+			if (await ViewerCache.getInstance().getIsVIP(userId)) return true
+		}
+		if (rule.properties.broadcaster) {
+			if (userId === TwitchAccount.channel.twitchId) return true
 		}
 		return false
 	} else if ("group" in rule) {
@@ -186,6 +194,7 @@ async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promi
 	} else if ("userIds" in rule) {
 		return rule.userIds.includes(userId)
 	}
+	logger.log("Unknown Group Rule", rule)
 	return false
 }
 
