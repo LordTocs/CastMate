@@ -14,7 +14,7 @@ import util, { InspectOptions } from "util"
 
 import { AccountConfig, AccountSecrets, AccountState } from "castmate-schema"
 
-interface AccountConstructor extends ResourceConstructor {
+export interface AccountConstructor extends ResourceConstructor {
 	new (...args: any[]): any
 	accountDirectory: string
 	storage: ResourceStorage<Account>
