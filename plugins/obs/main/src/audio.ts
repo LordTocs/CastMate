@@ -43,7 +43,7 @@ export function setupAudio(obsDefault: ReactiveRef<OBSConnection>) {
 				},
 				muted: {
 					type: Toggle,
-					name: "muted",
+					name: "Muted",
 					required: true,
 					default: true,
 					template: true,
@@ -74,6 +74,7 @@ export function setupAudio(obsDefault: ReactiveRef<OBSConnection>) {
 	defineAction({
 		id: "changeVolume",
 		name: "Change Volume",
+		icon: "mdi mdi-volume-high",
 		config: {
 			type: Object,
 			properties: {
