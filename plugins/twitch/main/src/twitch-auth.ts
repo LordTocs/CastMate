@@ -300,7 +300,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 
 	private forceLogin(scopes: string[]) {
 		return new Promise<string>((resolve, reject) => {
-			const authUrl = this.getAuthURL(scopes, false)
+			const authUrl = this.getAuthURL(scopes, true)
 
 			const window = new BrowserWindow({
 				width: 600,
