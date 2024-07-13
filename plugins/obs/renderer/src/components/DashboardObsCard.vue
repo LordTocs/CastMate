@@ -1,6 +1,18 @@
 <template>
 	<dashboard-card v-if="obs">
-		<template #header> <i class="obsi obsi-obs" /> {{ obs?.config?.name }} </template>
+		<template #header>
+			<div class="flex flex-row">
+				<i class="obsi obsi-obs" /> {{ obs?.config?.name }}
+				<div class="flex-grow-1" />
+				<p-button
+					icon="mdi mdi-refresh"
+					size="small"
+					class="extra-small-button"
+					v-tooltip="'Refresh All Browsers'"
+					@click="refreshAllBrowsers"
+				/>
+			</div>
+		</template>
 		<dashboard-card-item v-if="!obs.state.connected" label="Disconnected">
 			<p-button v-if="isLocal" text @click="openObs">Open</p-button>
 			<div
@@ -48,6 +60,7 @@ const isLocal = computed(() => {
 })
 
 const openProcess = useResourceIPCCaller<() => any>("OBSConnection", () => props.obsId, "openProcess")
+const refreshAllBrowsers = useResourceIPCCaller<() => any>("OBSConnection", () => props.obsId, "refreshAllBrowsers")
 
 async function openObs() {
 	if (!props.obsId) return
