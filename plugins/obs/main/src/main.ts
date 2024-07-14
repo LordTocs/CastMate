@@ -23,6 +23,7 @@ import { setupToggles } from "./toggles"
 import { setupTransforms } from "./transform"
 
 import { attemptQRReading, setupAutoConnect } from "./auto-connect"
+import { setupAudio } from "./audio"
 
 export default definePlugin(
 	{
@@ -125,6 +126,7 @@ export default definePlugin(
 		setupScenes(obsDefault)
 		setupSources(obsDefault)
 		setupMedia(obsDefault)
+		setupAudio(obsDefault)
 		setupToggles(obsDefault)
 		setupTransforms(obsDefault)
 

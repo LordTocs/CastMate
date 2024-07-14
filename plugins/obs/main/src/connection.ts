@@ -370,6 +370,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getPreview")
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "openProcess")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "refreshAllBrowsers")
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "findBrowserByUrlPattern")
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getRemoteHost")
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "createNewSource")
@@ -425,6 +426,24 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		})
 
 		return input
+	}
+
+	async refreshAllBrowsers() {
+		if (!this.state.connected) return
+
+		const { inputs } = await this.connection.call("GetInputList", {
+			inputKind: "browser_source",
+		})
+
+		await Promise.allSettled(
+			inputs.map(async (i) => {
+				logger.log("Refreshing", i.inputName)
+				await this.connection.call("PressInputPropertiesButton", {
+					inputName: i.inputName as string,
+					propertyName: "refreshnocache",
+				})
+			})
+		)
 	}
 
 	async refreshBrowsersByUrlPattern(urlPattern: string) {

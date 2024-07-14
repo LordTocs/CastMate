@@ -1,5 +1,5 @@
 import { TwitchAccountConfig, TwitchAccountSecrets } from "castmate-plugin-twitch-shared"
-import { Account, ResourceStorage, usePluginLogger } from "castmate-core"
+import { Account, AccountConstructor, ResourceStorage, loadYAML, usePluginLogger } from "castmate-core"
 import { getTokenInfo, AuthProvider, AccessTokenWithUserId, AccessTokenMaybeWithUserId } from "@twurple/auth"
 import { BrowserWindow } from "electron"
 import { ApiClient, UserIdResolvable } from "@twurple/api"
@@ -37,6 +37,7 @@ const defaultScopes = [
 
 	"moderation:read",
 	"channel:manage:moderators",
+	"moderator:manage:banned_users",
 
 	"channel:read:ads", //Get ad schedule
 	"channel:manage:ads", //Snooze ad
@@ -299,7 +300,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 
 	private forceLogin(scopes: string[]) {
 		return new Promise<string>((resolve, reject) => {
-			const authUrl = this.getAuthURL(scopes, false)
+			const authUrl = this.getAuthURL(scopes, true)
 
 			const window = new BrowserWindow({
 				width: 600,
@@ -387,6 +388,16 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 		}
 
 		return false
+	}
+
+	protected async loadConfig() {
+		const accountDir = (this.constructor as AccountConstructor).accountDirectory
+		try {
+			const loadedConfig = await loadYAML("accounts", accountDir, `${this.id}.yaml`)
+			delete loadedConfig.scopes
+
+			await super.applyConfig(loadedConfig)
+		} catch (err) {}
 	}
 
 	static async initialize(): Promise<void> {

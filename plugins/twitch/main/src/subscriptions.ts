@@ -1,7 +1,7 @@
 import { ApiClient } from "@twurple/api"
 import { EventSubWsListener } from "@twurple/eventsub-ws"
 import { TwitchAccount } from "./twitch-auth"
-import { defineState, defineTrigger } from "castmate-core"
+import { defineState, defineTrigger, usePluginLogger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
@@ -9,6 +9,8 @@ import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 
 export function setupSubscriptions() {
+	const logger = usePluginLogger()
+
 	const subscription = defineTrigger({
 		id: "subscription",
 		name: "Subscriber",
@@ -123,6 +125,16 @@ export function setupSubscriptions() {
 		})
 
 		service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
+			logger.log(
+				"Sub Message Received: ",
+				event.userDisplayName,
+				event.userId,
+				event.tier,
+				event.cumulativeMonths,
+				event.durationMonths,
+				event.streakMonths
+			)
+
 			let tier = 1
 			if (event.tier == "2000") {
 				tier = 2
