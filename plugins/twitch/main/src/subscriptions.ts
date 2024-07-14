@@ -3,7 +3,7 @@ import { EventSubWsListener } from "@twurple/eventsub-ws"
 import { TwitchAccount } from "./twitch-auth"
 import { defineState, defineTrigger, usePluginLogger } from "castmate-core"
 import { Range } from "castmate-schema"
-import { TwitchAPIService, onChannelAuth } from "./api-harness"
+import { TwitchAPIService, onBotAuth, onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
@@ -34,7 +34,7 @@ export function setupSubscriptions() {
 				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 				totalMonths: { type: Number, required: true, default: 5 },
 				streakMonths: { type: Number, required: true, default: 3 },
-				durationMonths: { type: Number, required: true, default: 1 },
+				//durationMonths: { type: Number, required: true, default: 1 },
 				message: { type: String, required: true, default: "" },
 			},
 		},
@@ -124,7 +124,7 @@ export function setupSubscriptions() {
 			updateSubscriberCount()
 		})
 
-		service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
+		/*service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
 			logger.log(
 				"Sub Message Received: ",
 				event.userDisplayName,
@@ -152,7 +152,7 @@ export function setupSubscriptions() {
 				durationMonths: event.durationMonths,
 				message: event.messageText ?? "",
 			})
-		})
+		})*/
 
 		service.eventsub.onChannelSubscriptionGift(channel.twitchId, async (event) => {
 			ViewerCache.getInstance().cacheGiftSubEvent(event)
@@ -171,5 +171,32 @@ export function setupSubscriptions() {
 		})
 
 		updateSubscriberCount()
+	})
+
+	onBotAuth((channel, service) => {
+		//Don't trust eventsub subscription messages. They're broken serverside and don't always trigger for first time subs.
+		service.chatClient.onSub(async (channel, user, subInfo, msg) => {
+			let tier = 1
+			if (subInfo.plan == "2000") {
+				tier = 2
+			} else if (subInfo.plan == "3000") {
+				tier = 3
+			}
+
+			ViewerCache.getInstance()
+				.getResolvedViewer(subInfo.userId)
+				.then((viewer) => {
+					lastSubscriber.value = viewer
+				})
+
+			subscription({
+				tier,
+				viewer: subInfo.userId,
+				totalMonths: subInfo.months,
+				streakMonths: subInfo.streak ?? 1,
+				//durationMonths: subInfo..durationMonths,
+				message: subInfo.message ?? "",
+			})
+		})
 	})
 }
