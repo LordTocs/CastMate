@@ -393,25 +393,29 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 	}
 
 	private async updateTwitchServers() {
-		if (!this.config.controllable) return
-		if (this.config.transient) return
+		try {
+			if (!this.config.controllable) return
+			if (this.config.transient) return
 
-		if (!TwitchAccount.channel.config.isAffiliate) return
+			if (!TwitchAccount.channel.config.isAffiliate) return
 
-		const helixData = await this.getHelixRewardData()
-		if (this.config.twitchId) {
-			const update = await TwitchAccount.channel.apiClient.channelPoints.updateCustomReward(
-				TwitchAccount.channel.twitchId,
-				this.config.twitchId,
-				helixData
-			)
-			await this.updateFromTwurple(update)
-		} else {
-			const created = await TwitchAccount.channel.apiClient.channelPoints.createCustomReward(
-				TwitchAccount.channel.twitchId,
-				helixData
-			)
-			await this.updateFromTwurple(created)
+			const helixData = await this.getHelixRewardData()
+			if (this.config.twitchId) {
+				const update = await TwitchAccount.channel.apiClient.channelPoints.updateCustomReward(
+					TwitchAccount.channel.twitchId,
+					this.config.twitchId,
+					helixData
+				)
+				await this.updateFromTwurple(update)
+			} else {
+				const created = await TwitchAccount.channel.apiClient.channelPoints.createCustomReward(
+					TwitchAccount.channel.twitchId,
+					helixData
+				)
+				await this.updateFromTwurple(created)
+			}
+		} catch (err) {
+			logger.error("Error Updating Channel Point Reward", this.config.name, err)
 		}
 	}
 }
@@ -474,8 +478,12 @@ export function setupChannelPointRewards() {
 
 			const twitchReward = castMateRewards.find((r) => r.id == reward.config.twitchId)
 
-			await reward.initializeFromTwurple(twitchReward)
-			await reward.initializeReactivity()
+			try {
+				await reward.initializeFromTwurple(twitchReward)
+				await reward.initializeReactivity()
+			} catch (err) {
+				logger.error("Error Initializing Reward", reward.config.name, err)
+			}
 		}
 	}
 
