@@ -71,7 +71,7 @@ export function setupSubscriptions() {
 			type: Object,
 			properties: {
 				gifter: { type: TwitchViewer, required: true, default: "27082158" },
-				subs: { type: Number, required: true, default: 5 },
+				subs: { type: Number, required: true, default: 2 },
 			},
 		},
 		async handle(config, context) {
