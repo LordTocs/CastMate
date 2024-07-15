@@ -1,10 +1,22 @@
-import { Service, defineAction, defineState, defineTrigger, onProfilesChanged } from "castmate-core"
+import {
+	Service,
+	defineAction,
+	defineState,
+	defineTrigger,
+	measurePerf,
+	measurePerfFunc,
+	onProfilesChanged,
+	startPerfTime,
+	usePluginLogger,
+} from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { CommercialLength } from "@twurple/api"
 import { onChannelAuth } from "./api-harness"
 import { Duration, Timer, getTimeRemaining, isTimerStarted } from "castmate-schema"
 
 export function setupAds() {
+	const logger = usePluginLogger()
+
 	defineAction({
 		id: "runAd",
 		name: "Run Ad",
@@ -77,7 +89,7 @@ export function setupAds() {
 		required: true,
 	})
 
-	async function queryAdSchedule() {
+	const queryAdSchedule = measurePerfFunc(async function () {
 		const schedule = await TwitchAccount.channel.apiClient.channels.getAdSchedule(TwitchAccount.channel.twitchId)
 
 		nextAdDuration.value = schedule.duration
@@ -94,7 +106,7 @@ export function setupAds() {
 
 		//Adjust the schedule if necessary
 		scheduleAdTriggers(scheduledAdTriggers)
-	}
+	}, "queryAdSchedule")
 
 	interface ScheduledAdTrigger {
 		advance: Duration

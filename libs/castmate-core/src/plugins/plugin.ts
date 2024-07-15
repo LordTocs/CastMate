@@ -40,6 +40,7 @@ import {
 import { ResourceBase, ResourceConstructor } from "../resources/resource"
 import { PluginManager } from "./plugin-manager"
 import { Logger, globalLogger, usePluginLogger } from "../logging/logging"
+import { startPerfTime } from "../util/time-utils"
 
 interface PluginSpec {
 	id: string
@@ -97,8 +98,15 @@ export function onUnload(unloadFunc: PluginCallback) {
 }
 
 export function definePluginResource(resourceConstructor: ResourceConstructor) {
+	const logger = usePluginLogger()
+
 	onLoad(async () => {
-		await resourceConstructor.initialize()
+		const perf = startPerfTime(`Initing ${resourceConstructor.storage.name}`)
+		try {
+			await resourceConstructor.initialize()
+		} finally {
+			perf.stop(logger)
+		}
 	})
 
 	onUnload(async () => {

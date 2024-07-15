@@ -49,3 +49,5 @@ export * from "./util/generic-login"
 export * from "./analytics/analytics-manager"
 
 export * from "./info/info-manager"
+
+export * from "./util/time-utils"
