@@ -49,6 +49,9 @@
 					<span :style="{ color: item.color }"> {{ item.displayName }}</span>
 				</li>
 			</template>
+			<template #empty>
+				<div class="text-center p-text-secondary">Type Twitch Name, Hit Enter to Search</div>
+			</template>
 		</autocomplete-drop-list>
 	</data-input-base>
 </template>
@@ -127,7 +130,9 @@ const groupedSuggestions = computed<TwitchViewerDisplayData[][]>(() => {
 	const result: TwitchViewerDisplayData[][] = []
 
 	const suggestions = fuzzySuggestions.value
-	result.push(suggestions)
+	if (fuzzySuggestions.value.length > 0) {
+		result.push(suggestions)
+	}
 
 	return result
 })
