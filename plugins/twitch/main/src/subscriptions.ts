@@ -64,7 +64,7 @@ export function setupSubscriptions() {
 			type: Object,
 			properties: {
 				subs: { type: Range, name: "Subs Gifted", required: true, default: { min: 1 } },
-				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true },
 			},
 		},
 		context: {
@@ -124,9 +124,9 @@ export function setupSubscriptions() {
 			updateSubscriberCount()
 		})
 
-		/*service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
+		service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
 			logger.log(
-				"Sub Message Received: ",
+				"EventSub Sub Message Received: ",
 				event.userDisplayName,
 				event.userId,
 				event.tier,
@@ -135,7 +135,7 @@ export function setupSubscriptions() {
 				event.streakMonths
 			)
 
-			let tier = 1
+			/*let tier = 1
 			if (event.tier == "2000") {
 				tier = 2
 			} else if (event.tier == "3000") {
@@ -151,8 +151,8 @@ export function setupSubscriptions() {
 				streakMonths: event.streakMonths ?? 1,
 				durationMonths: event.durationMonths,
 				message: event.messageText ?? "",
-			})
-		})*/
+			})*/
+		})
 
 		service.eventsub.onChannelSubscriptionGift(channel.twitchId, async (event) => {
 			ViewerCache.getInstance().cacheGiftSubEvent(event)
@@ -182,6 +182,48 @@ export function setupSubscriptions() {
 			} else if (subInfo.plan == "3000") {
 				tier = 3
 			}
+
+			logger.log(
+				"IRC Sub Message Received: ",
+				subInfo.displayName,
+				subInfo.userId,
+				subInfo.plan,
+				subInfo.months,
+				subInfo.streak
+			)
+
+			ViewerCache.getInstance()
+				.getResolvedViewer(subInfo.userId)
+				.then((viewer) => {
+					lastSubscriber.value = viewer
+				})
+
+			subscription({
+				tier,
+				viewer: subInfo.userId,
+				totalMonths: subInfo.months,
+				streakMonths: subInfo.streak ?? 1,
+				//durationMonths: subInfo..durationMonths,
+				message: subInfo.message ?? "",
+			})
+		})
+
+		service.chatClient.onResub(async (channel, user, subInfo, msg) => {
+			let tier = 1
+			if (subInfo.plan == "2000") {
+				tier = 2
+			} else if (subInfo.plan == "3000") {
+				tier = 3
+			}
+
+			logger.log(
+				"IRC ReSub Message Received: ",
+				subInfo.displayName,
+				subInfo.userId,
+				subInfo.plan,
+				subInfo.months,
+				subInfo.streak
+			)
 
 			ViewerCache.getInstance()
 				.getResolvedViewer(subInfo.userId)
