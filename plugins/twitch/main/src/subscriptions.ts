@@ -3,7 +3,7 @@ import { EventSubWsListener } from "@twurple/eventsub-ws"
 import { TwitchAccount } from "./twitch-auth"
 import { defineState, defineTrigger, usePluginLogger } from "castmate-core"
 import { Range } from "castmate-schema"
-import { TwitchAPIService, onChannelAuth } from "./api-harness"
+import { TwitchAPIService, onBotAuth, onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
@@ -34,7 +34,7 @@ export function setupSubscriptions() {
 				viewer: { type: TwitchViewer, required: true, default: "27082158" },
 				totalMonths: { type: Number, required: true, default: 5 },
 				streakMonths: { type: Number, required: true, default: 3 },
-				durationMonths: { type: Number, required: true, default: 1 },
+				//durationMonths: { type: Number, required: true, default: 1 },
 				message: { type: String, required: true, default: "" },
 			},
 		},
@@ -64,14 +64,14 @@ export function setupSubscriptions() {
 			type: Object,
 			properties: {
 				subs: { type: Range, name: "Subs Gifted", required: true, default: { min: 1 } },
-				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true },
 			},
 		},
 		context: {
 			type: Object,
 			properties: {
 				gifter: { type: TwitchViewer, required: true, default: "27082158" },
-				subs: { type: Number, required: true, default: 5 },
+				subs: { type: Number, required: true, default: 2 },
 			},
 		},
 		async handle(config, context) {
@@ -126,7 +126,7 @@ export function setupSubscriptions() {
 
 		service.eventsub.onChannelSubscriptionMessage(channel.twitchId, async (event) => {
 			logger.log(
-				"Sub Message Received: ",
+				"EventSub Sub Message Received: ",
 				event.userDisplayName,
 				event.userId,
 				event.tier,
@@ -135,7 +135,7 @@ export function setupSubscriptions() {
 				event.streakMonths
 			)
 
-			let tier = 1
+			/*let tier = 1
 			if (event.tier == "2000") {
 				tier = 2
 			} else if (event.tier == "3000") {
@@ -151,7 +151,7 @@ export function setupSubscriptions() {
 				streakMonths: event.streakMonths ?? 1,
 				durationMonths: event.durationMonths,
 				message: event.messageText ?? "",
-			})
+			})*/
 		})
 
 		service.eventsub.onChannelSubscriptionGift(channel.twitchId, async (event) => {
@@ -171,5 +171,74 @@ export function setupSubscriptions() {
 		})
 
 		updateSubscriberCount()
+	})
+
+	onBotAuth((channel, service) => {
+		//Don't trust eventsub subscription messages. They're broken serverside and don't always trigger for first time subs.
+		service.chatClient.onSub(async (channel, user, subInfo, msg) => {
+			let tier = 1
+			if (subInfo.plan == "2000") {
+				tier = 2
+			} else if (subInfo.plan == "3000") {
+				tier = 3
+			}
+
+			logger.log(
+				"IRC Sub Message Received: ",
+				subInfo.displayName,
+				subInfo.userId,
+				subInfo.plan,
+				subInfo.months,
+				subInfo.streak
+			)
+
+			ViewerCache.getInstance()
+				.getResolvedViewer(subInfo.userId)
+				.then((viewer) => {
+					lastSubscriber.value = viewer
+				})
+
+			subscription({
+				tier,
+				viewer: subInfo.userId,
+				totalMonths: subInfo.months,
+				streakMonths: subInfo.streak ?? 1,
+				//durationMonths: subInfo..durationMonths,
+				message: subInfo.message ?? "",
+			})
+		})
+
+		service.chatClient.onResub(async (channel, user, subInfo, msg) => {
+			let tier = 1
+			if (subInfo.plan == "2000") {
+				tier = 2
+			} else if (subInfo.plan == "3000") {
+				tier = 3
+			}
+
+			logger.log(
+				"IRC ReSub Message Received: ",
+				subInfo.displayName,
+				subInfo.userId,
+				subInfo.plan,
+				subInfo.months,
+				subInfo.streak
+			)
+
+			ViewerCache.getInstance()
+				.getResolvedViewer(subInfo.userId)
+				.then((viewer) => {
+					lastSubscriber.value = viewer
+				})
+
+			subscription({
+				tier,
+				viewer: subInfo.userId,
+				totalMonths: subInfo.months,
+				streakMonths: subInfo.streak ?? 1,
+				//durationMonths: subInfo..durationMonths,
+				message: subInfo.message ?? "",
+			})
+		})
 	})
 }

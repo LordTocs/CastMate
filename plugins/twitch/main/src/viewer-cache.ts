@@ -4,12 +4,15 @@ import {
 	ReactiveRef,
 	Service,
 	defineRendererCallable,
+	measurePerf,
+	measurePerfFunc,
 	onLoad,
 	onUnload,
 	reactiveRef,
 	registerSchemaExpose,
 	registerSchemaTemplate,
 	registerSchemaUnexpose,
+	startPerfTime,
 	template,
 	usePluginLogger,
 } from "castmate-core"
@@ -110,7 +113,9 @@ export function setupViewerCache() {
 	})
 
 	onChannelAuth(async () => {
+		const perf = startPerfTime("Viewer Cache Init")
 		await ViewerCache.getInstance().resetCache()
+		perf.stop(logger)
 	})
 }
 
@@ -202,22 +207,25 @@ export const ViewerCache = Service(
 			this.chatterQueryTimer = setTimeout(() => this.updateChatterList(), 60000)
 		}
 
+		//@measurePerf
 		private async updateChatterList() {
-			const newChatters = new Map<string, CachedTwitchViewer>()
+			return await measurePerfFunc(async () => {
+				const newChatters = new Map<string, CachedTwitchViewer>()
 
-			//TODO: Check if the bot account is active and has moderator privledges, that would give us a guilt free 800 queries
+				//TODO: Check if the bot account is active and has moderator privledges, that would give us a guilt free 800 queries
 
-			// Each page can be 1000, so theoretically this will break everything if you have close to 800,000 concurrent viewers
-			// So.. for now we won't worry about it, but if we get some sort of huge event using it... Put some work in here?
-			const query = TwitchAccount.channel.apiClient.chat.getChattersPaginated(TwitchAccount.channel.twitchId)
-			for await (const chatter of query) {
-				const cached = this.getOrCreate(chatter.userId)
-				this.updateNameCache(cached, chatter.userDisplayName)
-				cached.lastSeen = Date.now()
-				newChatters.set(chatter.userId, cached)
-			}
+				// Each page can be 1000, so theoretically this will break everything if you have close to 800,000 concurrent viewers
+				// So.. for now we won't worry about it, but if we get some sort of huge event using it... Put some work in here?
+				const query = TwitchAccount.channel.apiClient.chat.getChattersPaginated(TwitchAccount.channel.twitchId)
+				for await (const chatter of query) {
+					const cached = this.getOrCreate(chatter.userId)
+					this.updateNameCache(cached, chatter.userDisplayName)
+					cached.lastSeen = Date.now()
+					newChatters.set(chatter.userId, cached)
+				}
 
-			this.chatters = newChatters
+				this.chatters = newChatters
+			}, "updateChatterList")()
 		}
 
 		private get(userId: string) {
@@ -502,53 +510,58 @@ export const ViewerCache = Service(
 		}
 
 		async getResolvedViewers(userIds: string[]): Promise<TwitchViewer[]> {
-			const neededSubIds: string[] = []
-			const neededColorIds: string[] = []
-			const neededUserInfoIds: string[] = []
-			const neededFollowerIds: string[] = []
+			const perf = startPerfTime("Resolve Viewer")
+			try {
+				const neededSubIds: string[] = []
+				const neededColorIds: string[] = []
+				const neededUserInfoIds: string[] = []
+				const neededFollowerIds: string[] = []
 
-			const cachedUsers = userIds.map((id) => this.getOrCreate(id))
+				const cachedUsers = userIds.map((id) => this.getOrCreate(id))
 
-			for (const cached of cachedUsers) {
-				if (cached.subbed == null || (cached.subbed === true && cached.sub == null)) {
-					neededSubIds.push(cached.id)
+				for (const cached of cachedUsers) {
+					if (cached.subbed == null || (cached.subbed === true && cached.sub == null)) {
+						neededSubIds.push(cached.id)
+					}
+
+					if (cached.color == null) {
+						neededColorIds.push(cached.id)
+					}
+
+					if (cached.profilePicture == null || cached.description == null) {
+						neededUserInfoIds.push(cached.id)
+					}
+
+					if (cached.following == null) {
+						neededFollowerIds.push(cached.id)
+					}
 				}
 
-				if (cached.color == null) {
-					neededColorIds.push(cached.id)
+				const queryPromises: Promise<any>[] = []
+
+				if (neededColorIds.length > 0) {
+					queryPromises.push(this.queryColor(...neededColorIds))
 				}
 
-				if (cached.profilePicture == null || cached.description == null) {
-					neededUserInfoIds.push(cached.id)
+				if (neededFollowerIds.length > 0) {
+					queryPromises.push(this.queryFollowing(...neededFollowerIds))
 				}
 
-				if (cached.following == null) {
-					neededFollowerIds.push(cached.id)
+				if (neededSubIds.length > 0) {
+					queryPromises.push(this.querySubInfo(...neededSubIds))
 				}
+
+				if (neededUserInfoIds.length > 0) {
+					queryPromises.push(this.queryUserInfo(...neededUserInfoIds))
+				}
+
+				await Promise.all(queryPromises)
+
+				//Safe to cast here since we've resolved everything
+				return cachedUsers as TwitchViewer[]
+			} finally {
+				perf.stop(logger)
 			}
-
-			const queryPromises: Promise<any>[] = []
-
-			if (neededColorIds.length > 0) {
-				queryPromises.push(this.queryColor(...neededColorIds))
-			}
-
-			if (neededFollowerIds.length > 0) {
-				queryPromises.push(this.queryFollowing(...neededFollowerIds))
-			}
-
-			if (neededSubIds.length > 0) {
-				queryPromises.push(this.querySubInfo(...neededSubIds))
-			}
-
-			if (neededUserInfoIds.length > 0) {
-				queryPromises.push(this.queryUserInfo(...neededUserInfoIds))
-			}
-
-			await Promise.all(queryPromises)
-
-			//Safe to cast here since we've resolved everything
-			return cachedUsers as TwitchViewer[]
 		}
 
 		async getDisplayDataByName(name: string) {
