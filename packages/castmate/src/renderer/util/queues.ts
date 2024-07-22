@@ -27,7 +27,7 @@ export function initializeQueues() {
 		properties: {
 			name: { type: String, name: "Name", required: true },
 			paused: { type: Boolean, name: "Paused", required: true, default: false },
-			gap: { type: Duration, name: "Duration", required: true, default: 0 },
+			gap: { type: Duration, name: "Gap", required: true, default: 0 },
 		},
 	})
 	resourceStore.registerEditComponent("ActionQueue", ResourceSchemaEdit)
