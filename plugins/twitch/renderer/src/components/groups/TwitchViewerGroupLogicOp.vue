@@ -20,7 +20,7 @@
 				@click="excluded = !excluded"
 				v-if="!root"
 			></p-button>
-			<p-button text icon="mdi mdi-close" @click="emits('delete')"></p-button>
+			<p-button text icon="mdi mdi-delete" @click="emits('delete')"></p-button>
 		</div>
 		<div class="logic-op-contents flex flex-column gap-1 p-2">
 			<twitch-viewer-group-rule-negator

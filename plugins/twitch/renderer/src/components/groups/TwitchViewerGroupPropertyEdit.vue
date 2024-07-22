@@ -4,7 +4,7 @@
 			<p-tree v-model:selection-keys="treeSelectModel" :value="treeNodes" selection-mode="checkbox"></p-tree>
 		</div>
 		<div class="flex flex-column">
-			<p-button text size="small" icon="mdi mdi-close" @click="emit('delete')"></p-button>
+			<p-button text size="small" icon="mdi mdi-delete" @click="emit('delete')"></p-button>
 			<div class="flex-grow-1" />
 			<p-button
 				text
@@ -17,11 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-	SchemaTwitchViewerGroup,
-	TwitchViewerGroupProperties,
-	TwitchViewerGroupRule,
-} from "castmate-plugin-twitch-shared"
+import { SchemaTwitchViewerGroup, TwitchViewerGroupProperties } from "castmate-plugin-twitch-shared"
 
 import PTree from "primevue/tree"
 import PButton from "primevue/button"
