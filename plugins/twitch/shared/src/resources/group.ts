@@ -7,6 +7,7 @@ export interface TwitchViewerGroupConfig {
 
 export interface TwitchViewerGroupProperties {
 	properties: {
+		anonymous?: boolean
 		following?: boolean
 		vip?: boolean
 		subTier1?: boolean
@@ -60,6 +61,7 @@ export const TwitchViewerGroup: TwitchViewerGroupFactory = {
 
 export interface SchemaTwitchViewerGroup extends SchemaBase<TwitchViewerGroup> {
 	type: TwitchViewerGroupFactory
+	anonymous?: boolean
 }
 
 declare module "castmate-schema" {

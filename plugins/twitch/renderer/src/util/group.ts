@@ -29,6 +29,10 @@ export function getGroupPhrase(group: TwitchViewerGroup, resourceStore: ReturnTy
 				words.push("Followers")
 			}
 
+			if (rule.properties.anonymous) {
+				words.push("Anonymous")
+			}
+
 			const subTier1 = rule.properties.subTier1
 			const subTier2 = rule.properties.subTier1
 			const subTier3 = rule.properties.subTier1
@@ -143,6 +147,10 @@ export function getGroupSpanItems(group: TwitchViewerGroup | undefined): GroupSp
 		if (isViewerGroupPropertyRule(rule)) {
 			if (rule.properties.following) {
 				words.push("Followers")
+			}
+
+			if (rule.properties.anonymous) {
+				words.push("Anonymous")
 			}
 
 			const subTier1 = rule.properties.subTier1

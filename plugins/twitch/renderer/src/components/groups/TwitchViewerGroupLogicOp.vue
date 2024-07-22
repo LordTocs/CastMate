@@ -26,6 +26,7 @@
 			<twitch-viewer-group-rule-negator
 				v-for="(rule, i) in rules"
 				v-model="rules[i]"
+				:schema="schema"
 				@delete="rules.splice(i, 1)"
 			/>
 		</div>
@@ -40,6 +41,7 @@
 
 <script setup lang="ts">
 import {
+	SchemaTwitchViewerGroup,
 	TwitchViewer,
 	TwitchViewerGroupAnd,
 	TwitchViewerGroupOr,
@@ -53,6 +55,7 @@ import PButton from "primevue/button"
 
 const props = defineProps<{
 	modelValue: TwitchViewerGroupAnd | TwitchViewerGroupOr
+	schema: SchemaTwitchViewerGroup
 	excluded: boolean
 	root?: boolean
 }>()

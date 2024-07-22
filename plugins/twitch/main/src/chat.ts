@@ -252,7 +252,7 @@ export function setupChat() {
 			type: Object,
 			properties: {
 				bits: { type: Range, name: "Bits Cheered", required: true, default: {} },
-				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {} },
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {}, anonymous: true },
 			},
 		},
 		context: {
@@ -307,7 +307,7 @@ export function setupChat() {
 
 			bits({
 				bits: event.bits,
-				viewer: event.userId ?? "anonymouse",
+				viewer: event.userId ?? "anonymous",
 				message: event.message,
 			})
 		})

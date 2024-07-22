@@ -17,7 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import { TwitchViewerGroupProperties, TwitchViewerGroupRule } from "castmate-plugin-twitch-shared"
+import {
+	SchemaTwitchViewerGroup,
+	TwitchViewerGroupProperties,
+	TwitchViewerGroupRule,
+} from "castmate-plugin-twitch-shared"
 
 import PTree from "primevue/tree"
 import PButton from "primevue/button"
@@ -27,6 +31,7 @@ import { computed, useModel } from "vue"
 const props = defineProps<{
 	modelValue: TwitchViewerGroupProperties
 	excluded: boolean
+	schema: SchemaTwitchViewerGroup
 }>()
 
 const model = useModel(props, "modelValue")
@@ -40,6 +45,7 @@ interface TreeSelectionKey {
 }
 
 interface PropertyKeys {
+	anonymous?: TreeSelectionKey
 	following?: TreeSelectionKey
 	vip?: TreeSelectionKey
 	subscribed?: TreeSelectionKey
@@ -60,6 +66,12 @@ const treeSelectModel = computed<PropertyKeys>({
 
 		if (model.value.properties.vip) {
 			result.vip = { checked: true, partialChecked: false }
+		}
+
+		if (props.schema.anonymous) {
+			if (model.value.properties.anonymous) {
+				result.anonymous = { checked: true, partialChecked: false }
+			}
 		}
 
 		const anySub = !!(
@@ -112,11 +124,9 @@ const treeSelectModel = computed<PropertyKeys>({
 			result.properties.vip = true
 		}
 
-		// if (v.subscribed) {
-		// 	result.properties.subTier1 = true
-		// 	result.properties.subTier2 = true
-		// 	result.properties.subTier3 = true
-		// }
+		if (props.schema.anonymous && v.anonymous) {
+			result.properties.anonymous = true
+		}
 
 		if (v.subTier1) {
 			result.properties.subTier1 = true
@@ -143,7 +153,7 @@ const treeSelectModel = computed<PropertyKeys>({
 })
 
 const treeNodes = computed<TreeNode[]>(() => {
-	return [
+	const result: TreeNode[] = [
 		{
 			key: "following",
 			label: "Followers",
@@ -175,6 +185,16 @@ const treeNodes = computed<TreeNode[]>(() => {
 			data: "broadcaster",
 		},
 	]
+
+	if (props.schema.anonymous) {
+		result.unshift({
+			key: "anonymous",
+			label: "Anonymous",
+			data: "anonymous",
+		})
+	}
+
+	return result
 })
 </script>
 
