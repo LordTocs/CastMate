@@ -159,7 +159,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 
 	async applyConfig(config: Partial<ChannelPointRewardConfig>): Promise<boolean> {
 		await super.applyConfig(config)
-		await this.updateTwitchServers()
+		await this.updateServersSafe()
 		await this.initializeReactivity()
 		await this.save()
 		return true
@@ -167,7 +167,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 
 	async setConfig(config: ChannelPointRewardConfig): Promise<boolean> {
 		await super.setConfig(config)
-		await this.updateTwitchServers()
+		await this.updateServersSafe()
 		await this.initializeReactivity()
 		await this.save()
 		return true
@@ -384,7 +384,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 	}
 
 	private updateServerDebounced = _debounce(async () => {
-		await this.updateTwitchServers()
+		await this.updateServersSafe()
 	}, 300)
 
 	async initializeReactivity() {
@@ -392,30 +392,34 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 		this.reactiveEffect = await runOnChange(async () => await this.getHelixRewardData(), this.updateServerDebounced)
 	}
 
-	private async updateTwitchServers() {
+	private async updateServersSafe() {
 		try {
-			if (!this.config.controllable) return
-			if (this.config.transient) return
-
-			if (!TwitchAccount.channel.config.isAffiliate) return
-
-			const helixData = await this.getHelixRewardData()
-			if (this.config.twitchId) {
-				const update = await TwitchAccount.channel.apiClient.channelPoints.updateCustomReward(
-					TwitchAccount.channel.twitchId,
-					this.config.twitchId,
-					helixData
-				)
-				await this.updateFromTwurple(update)
-			} else {
-				const created = await TwitchAccount.channel.apiClient.channelPoints.createCustomReward(
-					TwitchAccount.channel.twitchId,
-					helixData
-				)
-				await this.updateFromTwurple(created)
-			}
+			await this.updateTwitchServers()
 		} catch (err) {
-			logger.error("Error Updating Channel Point Reward", this.config.name, err)
+			logger.error("Error Updating ChannelPointReward", this.id, err)
+		}
+	}
+
+	private async updateTwitchServers() {
+		if (!this.config.controllable) return
+		if (this.config.transient) return
+
+		if (!TwitchAccount.channel.config.isAffiliate) return
+
+		const helixData = await this.getHelixRewardData()
+		if (this.config.twitchId) {
+			const update = await TwitchAccount.channel.apiClient.channelPoints.updateCustomReward(
+				TwitchAccount.channel.twitchId,
+				this.config.twitchId,
+				helixData
+			)
+			await this.updateFromTwurple(update)
+		} else {
+			const created = await TwitchAccount.channel.apiClient.channelPoints.createCustomReward(
+				TwitchAccount.channel.twitchId,
+				helixData
+			)
+			await this.updateFromTwurple(created)
 		}
 	}
 }
