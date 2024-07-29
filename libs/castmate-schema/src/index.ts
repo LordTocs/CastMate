@@ -24,6 +24,7 @@ export * from "./types/automations"
 export * from "./types/stream-plan"
 export * from "./types/emotes"
 export * from "./types/info"
+export * from "./types/viewer-data"
 
 export * from "./util/type-helpers"
 export * from "./util/promise-helpers"

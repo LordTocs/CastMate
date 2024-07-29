@@ -1,14 +1,17 @@
-import { IPCSchema, Schema, getTypeByConstructor, getTypeByName } from "castmate-schema"
+import {
+	IPCSchema,
+	Schema,
+	constructDefault,
+	filterPromiseAll,
+	getTypeByConstructor,
+	getTypeByName,
+} from "castmate-schema"
 import { Service } from "../util/service"
 import sqlite from "sqlite3"
 import { ensureDirectory, ensureYAML, loadYAML, resolveProjectPath } from "../io/file-system"
-import { deserializeSchema, serializeSchema } from "../util/ipc-schema"
+import { deserializeSchema, exposeSchema, serializeSchema } from "../util/ipc-schema"
 import { usePluginLogger } from "../logging/logging"
-
-interface ViewerVariable {
-	name: string
-	schema: Schema
-}
+import { ViewerVariable } from "castmate-schema"
 
 interface SerializedViewerVariable {
 	name: string
@@ -28,11 +31,24 @@ function escapeSql(sql: string) {
 	return sql.replace(/\'/g, "''")
 }
 
+export interface ViewerProvider {
+	readonly id: string
+	onDataChanged(id: string, column: string, value: any): any
+	onColumnAdded(column: string, defaultValue: any): any
+	onColumnRemoved(column: string): any
+}
+
 export const ViewerData = Service(
 	class {
 		private db: sqlite.Database
 
-		private variables: ViewerVariable[] = []
+		private _variables: ViewerVariable[] = []
+
+		get variables() {
+			return this._variables
+		}
+
+		private providers = new Map<string, ViewerProvider>()
 
 		constructor() {}
 
@@ -66,6 +82,15 @@ export const ViewerData = Service(
 			})
 		}
 
+		private all<T>(sql: string, params?: any) {
+			return new Promise<T[]>((resolve, reject) => {
+				this.db.all(sql, params, (err, row) => {
+					if (err) return reject(err)
+					resolve(row as T[])
+				})
+			})
+		}
+
 		private ensureColumn(variable: ViewerVariable) {
 			try {
 				const schemaType = getTypeByConstructor(variable.schema.type)
@@ -73,7 +98,7 @@ export const ViewerData = Service(
 
 				const sqlType = sqlTypes[schemaType.name] ?? "BLOB"
 
-				this.run(`ALTER TABLE ViewerData ADD COLUMN ${variable.name} ${sqlType}`)
+				this.run("ALTER TABLE ViewerData ADD COLUMN ? ?", [variable.name, sqlType])
 			} catch {}
 		}
 
@@ -100,7 +125,7 @@ export const ViewerData = Service(
 					schema.default = defaultValue
 				}
 
-				this.variables.push({
+				this._variables.push({
 					name: varData.name,
 					schema,
 				})
@@ -120,9 +145,15 @@ export const ViewerData = Service(
 
 			await this.createDb()
 
-			await this.run("create table if not exists ViewerData (id text PRIMARY KEY)")
+			await this.run("CREATE TABLE IF NOT EXISTS ViewerData (twitch TEXT UNIQUE)")
 
 			await this.loadVariables()
+		}
+
+		async registerProvider(provider: ViewerProvider) {
+			//TODO: Ensure a column with the provider id exists and has a unique index
+
+			this.providers.set(provider.id, provider)
 		}
 
 		shutdown() {
@@ -139,8 +170,16 @@ export const ViewerData = Service(
 				name,
 				schema,
 			}
+			const defaultValue = await constructDefault(schema)
+
 			await this.ensureColumn(vari)
 			this.variables.push(vari)
+
+			const exposedDefault = await exposeSchema(schema, defaultValue)
+
+			for (const provider of this.providers.values()) {
+				provider.onColumnAdded(name, exposedDefault)
+			}
 		}
 
 		async removeViewerVariable(name: string) {
@@ -150,24 +189,26 @@ export const ViewerData = Service(
 			await this.run("ALTER TABLE ViewerData DROP COLUMN ?", name)
 
 			this.variables.splice(idx, 1)
+
+			for (const provider of this.providers.values()) {
+				provider.onColumnRemoved(name)
+			}
 		}
 
 		async setViewerValue(provider: string, id: string, name: string, value: any) {
-			const dbId = `${provider}.${id}`
-
 			const vari = this.getVariable(name)
 			if (!vari) return
 
 			const serialized = await serializeSchema(vari.schema, value)
 
-			await this.run(`UPDATE ViewerData SET ? = ? WHERE id = ?`, [name, serialized, dbId])
+			await this.run(`UPDATE ViewerData SET ? = ? WHERE ? = ?`, [name, serialized, provider, id])
+
+			this.providers.get(provider)?.onDataChanged(id, name, value)
 		}
 
 		async getViewerData(provider: string, id: string) {
-			const dbId = `${provider}.${id}`
-
 			try {
-				const data = await this.get<Record<string, any>>("SELECT * FROM ViewerData WHERE id = ?", [dbId])
+				const data = await this.get<Record<string, any>>("SELECT * FROM ViewerData WHERE ? = ?", [provider, id])
 
 				const result: Record<string, any> = {}
 
@@ -178,6 +219,35 @@ export const ViewerData = Service(
 				return result
 			} catch {
 				return undefined
+			}
+		}
+
+		async getMultipleViewerData(provider: string, ids: string[]) {
+			try {
+				const data = await this.all<Record<string, any>>("SELECT * FROM ViewerData WHERE ? = ?", [
+					provider,
+					ids,
+				])
+
+				const result: (Record<string, any> | undefined)[] = []
+
+				await Promise.allSettled(
+					data.map(async (row) => {
+						const idx = ids.findIndex((id) => id == row[provider])
+						if (idx < 0) return
+
+						const viewerData: Record<string, any> = {}
+						for (const vari of this.variables) {
+							viewerData[vari.name] = await deserializeSchema(vari.schema, row[vari.name])
+						}
+
+						result[idx] = viewerData
+					})
+				)
+
+				return result
+			} catch {
+				return []
 			}
 		}
 	}

@@ -82,6 +82,8 @@ export * from "./resources/resource-store"
 export * from "./docking/docking-store"
 export * from "./queue-system/action-queue-store"
 
+export * from "./viewer-data/viewer-data-store"
+
 export * from "./components/stream-plan/stream-plan-types"
 
 export * from "./util/panning"
