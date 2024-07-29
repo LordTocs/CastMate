@@ -3,6 +3,7 @@ import {
 	EventList,
 	ReactiveRef,
 	Service,
+	ViewerData,
 	defineRendererCallable,
 	measurePerf,
 	measurePerfFunc,
@@ -44,6 +45,7 @@ interface CachedTwitchViewer extends Partial<TwitchViewerData> {
 	id: string
 	[Symbol.toPrimitive](hint: "default" | "string" | "number"): any
 	lastSeen?: number
+	[key: string]: any
 }
 
 function getNValues<T>(set: Set<T>, requiredValues: T[], n: number): T[] {
@@ -157,13 +159,14 @@ export const ViewerCache = Service(
 		private vips = new Set<string>()
 		private mods = new Set<string>()
 
-		private _viewerLookup = new Map<string, ReactiveRef<CachedTwitchViewer>>()
-		private _nameLookup = new Map<string, CachedTwitchViewer>()
+		private viewerLookup = new Map<string, ReactiveRef<CachedTwitchViewer>>()
+		private nameLookup = new Map<string, CachedTwitchViewer>()
 
 		//Colors and SubInfo could be too numerous to prime so we'll lazily collect ids to query
 		private unknownColors = new Set<string>()
 		private unknownSubInfo = new Set<string>()
 		private unknownUserInfo = new Set<string>()
+		private unknownViewerData = new Set<string>()
 
 		private chatters = new Map<string, CachedTwitchViewer>()
 		private chatterQueryTimer: NodeJS.Timeout | undefined = undefined
@@ -173,14 +176,33 @@ export const ViewerCache = Service(
 
 		onViewerSeen = new EventList<(viewer: TwitchViewerUnresolved) => any>()
 
-		constructor() {}
+		constructor() {
+			ViewerData.getInstance().registerProvider({
+				id: "twitch",
+				onDataChanged: async (id, column, value) => {
+					const cached = this.getOrCreate(id)
+					cached[column] = value
+				},
+				onColumnAdded: async (column, defaultValue) => {
+					for (const cached of this.viewerLookup.values()) {
+						cached.value[column] = defaultValue
+					}
+				},
+				onColumnRemoved: async (column) => {
+					for (const cached of this.viewerLookup.values()) {
+						delete cached.value[column]
+					}
+				},
+			})
+		}
 
 		async resetCache() {
-			this._nameLookup = new Map()
-			this._viewerLookup = new Map()
+			this.nameLookup = new Map()
+			this.viewerLookup = new Map()
 			this.unknownColors = new Set()
 			this.unknownSubInfo = new Set()
 			this.unknownUserInfo = new Set()
+			this.unknownViewerData = new Set()
 			this.vips = new Set()
 			this.mods = new Set()
 			this.chatters = new Map()
@@ -229,7 +251,7 @@ export const ViewerCache = Service(
 		}
 
 		private get(userId: string) {
-			const cached = this._viewerLookup.get(userId)
+			const cached = this.viewerLookup.get(userId)
 			if (!cached) throw new Error("Tried to get user out of cache that hasn't been cached")
 			return cached.value
 		}
@@ -247,7 +269,7 @@ export const ViewerCache = Service(
 			if (userId == "") throw new Error("No empty IDs!")
 			if (userId == "anonymous") throw new Error("No anonymous!")
 
-			let cached = this._viewerLookup.get(userId)
+			let cached = this.viewerLookup.get(userId)
 			if (!cached) {
 				//Store our users as reactive so if they get used in a condition or overlay template they will update it
 				//when the cache is updated
@@ -258,7 +280,7 @@ export const ViewerCache = Service(
 						return 0
 					},
 				})
-				this._viewerLookup.set(userId, cached)
+				this.viewerLookup.set(userId, cached)
 				this.unknownColors.add(userId)
 				this.unknownSubInfo.add(userId)
 				this.unknownUserInfo.add(userId)
@@ -307,12 +329,12 @@ export const ViewerCache = Service(
 			if (viewer.displayName != name) {
 				const nameLower = name.toLowerCase()
 				if (viewer.displayName != null) {
-					this._nameLookup.delete(nameLower)
+					this.nameLookup.delete(nameLower)
 				}
 
 				viewer.displayName = name
 
-				this._nameLookup.set(nameLower, viewer)
+				this.nameLookup.set(nameLower, viewer)
 			}
 		}
 
@@ -447,6 +469,24 @@ export const ViewerCache = Service(
 			return cached.followDate
 		}*/
 
+		private async queryViewerData(...userIds: string[]) {
+			const data = await ViewerData.getInstance().getMultipleViewerData("twitch", userIds)
+			if (!data) return
+
+			for (let i = 0; i < userIds.length; ++i) {
+				const id = userIds[i]
+				const userData = data[i]
+
+				this.unknownViewerData.delete(id)
+
+				if (userData == null) continue
+
+				const cached = this.getOrCreate(id)
+
+				Object.assign(cached, userData)
+			}
+		}
+
 		async getIsVIP(userId: string): Promise<boolean> {
 			return this.vips.has(userId)
 		}
@@ -562,6 +602,7 @@ export const ViewerCache = Service(
 				const neededColorIds: string[] = []
 				const neededUserInfoIds: string[] = []
 				const neededFollowerIds: string[] = []
+				const neededViewerDataIds: string[] = []
 
 				const cachedUsers = userIds.map((id) => {
 					if (id == "anonymous") return TwitchViewer.anonymous
@@ -606,6 +647,10 @@ export const ViewerCache = Service(
 				if (neededUserInfoIds.length > 0) {
 					logger.log("---Query User Infos:", neededUserInfoIds.length)
 					queryPromises.push(this.queryUserInfo(...neededUserInfoIds))
+				}
+
+				if (neededViewerDataIds.length > 0) {
+					queryPromises.push(this.queryViewerData(...neededViewerDataIds))
 				}
 
 				await Promise.all(queryPromises)
@@ -726,12 +771,12 @@ export const ViewerCache = Service(
 		}
 
 		async validateUserId(userId: string) {
-			const cached = this._viewerLookup.get(userId)
+			const cached = this.viewerLookup.get(userId)
 			if (cached) return true
 
 			await this.queryUserInfo(userId)
 
-			const cached2 = this._viewerLookup.get(userId)
+			const cached2 = this.viewerLookup.get(userId)
 			return cached2 != null
 		}
 
@@ -752,7 +797,7 @@ export const ViewerCache = Service(
 				name = name.substring(1)
 			}
 			const nameLower = name.toLowerCase()
-			let existing = this._nameLookup.get(nameLower)
+			let existing = this.nameLookup.get(nameLower)
 			if (existing) return existing.id
 
 			const user = await TwitchAccount.channel.apiClient.users.getUserByName(name)
@@ -765,7 +810,7 @@ export const ViewerCache = Service(
 		}
 
 		async fuzzyUserCacheQuery(query: string, max: number = 10) {
-			const viewers = [...this._nameLookup.values()].filter((v) => v.displayName != null)
+			const viewers = [...this.nameLookup.values()].filter((v) => v.displayName != null)
 			const fuzzySearch = fuzzysort.go(query, viewers, { key: "displayName", limit: max })
 
 			const result = fuzzySearch.map((r) => r.obj)
