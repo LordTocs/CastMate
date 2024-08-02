@@ -11,6 +11,7 @@
 	"license": "ISC",
 	"type": "module",
 	"devDependencies": {
+		"@types/better-sqlite3": "^7.6.11",
 		"@types/express": "^4.17.21",
 		"@types/http-proxy": "^1.17.14",
 		"@types/lodash": "^4.14.192",
@@ -25,6 +26,7 @@
 		"@colors/colors": "^1.6.0",
 		"@joshyour/ffprobe-client": "^1.1.7",
 		"@types/fluent-ffmpeg": "^2.1.21",
+		"better-sqlite3": "^11.1.2",
 		"castmate-schema": "workspace:^",
 		"chokidar": "^3.5.3",
 		"electron": "29.4.5",

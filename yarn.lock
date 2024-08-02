@@ -1332,6 +1332,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/better-sqlite3@npm:^7.6.11":
+  version: 7.6.11
+  resolution: "@types/better-sqlite3@npm:7.6.11"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/660f29485803e8f1a443b6009c48d172130e5d91f5b2728d8868ed9b39650cf5835b6747fb61141ea4f706dd321fcbf442dac245437ed7f3511901d3578380d3
+  languageName: node
+  linkType: hard
+
 "@types/body-parser@npm:*":
   version: 1.19.5
   resolution: "@types/body-parser@npm:1.19.5"
@@ -2475,6 +2484,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"better-sqlite3@npm:^11.1.2":
+  version: 11.1.2
+  resolution: "better-sqlite3@npm:11.1.2"
+  dependencies:
+    bindings: "npm:^1.5.0"
+    node-gyp: "npm:latest"
+    prebuild-install: "npm:^7.1.1"
+  checksum: 10/0427f596149a8dead90d7e80d948a281292dc1bd88dfa7feaea1277e4673c75a724b70bcd460baf92a067118688d656bc4aa94f1fe977767722ad3e282488f03
+  languageName: node
+  linkType: hard
+
 "binary-extensions@npm:^2.0.0":
   version: 2.2.0
   resolution: "binary-extensions@npm:2.2.0"
@@ -2846,6 +2866,7 @@ __metadata:
     "@azure/web-pubsub-client": "npm:^1.0.0"
     "@colors/colors": "npm:^1.6.0"
     "@joshyour/ffprobe-client": "npm:^1.1.7"
+    "@types/better-sqlite3": "npm:^7.6.11"
     "@types/express": "npm:^4.17.21"
     "@types/fluent-ffmpeg": "npm:^2.1.21"
     "@types/http-proxy": "npm:^1.17.14"
@@ -2853,6 +2874,7 @@ __metadata:
     "@types/node": "npm:*"
     "@types/semver": "npm:^7.5.8"
     "@types/yaml": "npm:^1.9.7"
+    better-sqlite3: "npm:^11.1.2"
     castmate-schema: "workspace:^"
     chokidar: "npm:^3.5.3"
     electron: "npm:29.4.5"
@@ -7720,15 +7742,6 @@ __metadata:
   bin:
     nanoid: bin/nanoid.cjs
   checksum: 10/ac1eb60f615b272bccb0e2b9cd933720dad30bf9708424f691b8113826bb91aca7e9d14ef5d9415a6ba15c266b37817256f58d8ce980c82b0ba3185352565679
-  languageName: node
-  linkType: hard
-
-"nanoid@npm:^5.0.7":
-  version: 5.0.7
-  resolution: "nanoid@npm:5.0.7"
-  bin:
-    nanoid: bin/nanoid.js
-  checksum: 10/25ab0b0cf9082ae6747f0f55cec930e6c1cc5975103aa3a5fda44be5720eff57d9b25a8a9850274bfdde8def964b49bf03def71c6aa7ad1cba32787819b79f60
   languageName: node
   linkType: hard
 
