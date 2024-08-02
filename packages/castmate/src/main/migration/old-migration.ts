@@ -2426,6 +2426,11 @@ defineIPCFunc("oldMigration", "finishMigrate", () => {
 async function createBackup() {
 	const backupPath = resolveProjectPath("../backup_04.zip")
 
+	if (fsSync.existsSync(backupPath)) {
+		//Backup already exists, don't overwrite
+		return
+	}
+
 	logger.log("Creating Backup")
 
 	const outStream = fsSync.createWriteStream(backupPath)
@@ -2438,6 +2443,7 @@ async function createBackup() {
 
 	const archive = archiver("zip", { zlib: { level: 9 } })
 
+	//@ts-ignore
 	archive.pipe(outStream)
 
 	function archiveDir(dir: string) {
