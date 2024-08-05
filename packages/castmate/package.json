@@ -7,6 +7,7 @@
 		"compile": "vue-tsc",
 		"trace": "vue-tsc --traceResolution",
 		"build": "vue-tsc && vite build",
+		"inspect": "electron ./dist/dist-electron/background.js --inspect",
 		"electron:build": "electron-builder --config electron-builder-config.cjs",
 		"electron:buildpublish": "electron-builder --config electron-builder-config.cjs --publish always",
 		"fix-app-deps": "electron-builder install-app-deps"
@@ -76,7 +77,7 @@
 		"castmate-ui-core": "workspace:^",
 		"castmate-vite": "workspace:^",
 		"chromatism2": "*",
-		"electron": "29.1.1",
+		"electron": "29.4.5",
 		"electron-builder": "^25.0.0-alpha.8",
 		"electron-devtools-installer": "^3.2.0",
 		"eslint": "^8.17.0",

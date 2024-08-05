@@ -17,7 +17,7 @@
 		"castmate-schema": "workspace:^",
 		"castmate-ui-core": "workspace:^",
 		"chromatism2": "*",
-		"electron": "*",
+		"electron": "29.4.5",
 		"nanoid": "*",
 		"pinia": "*",
 		"vue": "*"

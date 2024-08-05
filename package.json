@@ -29,7 +29,7 @@
 		"@vue/tsconfig": "^0.4.0",
 		"@vueuse/core": "10.7.2",
 		"chromatism2": "^3.0.2",
-		"electron": "^29.1.1",
+		"electron": "29.4.5",
 		"eslint": "^8.34.0",
 		"eslint-plugin-vue": "^9.9.0",
 		"node-gyp": "^10.0.1",

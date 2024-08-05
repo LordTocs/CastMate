@@ -15,7 +15,7 @@
 		"@vueuse/core": "*",
 		"castmate-schema": "workspace:^",
 		"chromatism2": "*",
-		"electron": "^29.1.1",
+		"electron": "29.4.5",
 		"nanoid": "^5.0.7",
 		"pinia": "^2.1.7",
 		"primevue": "*",
