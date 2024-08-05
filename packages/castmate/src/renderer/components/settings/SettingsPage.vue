@@ -53,8 +53,11 @@ import {
 	DataInput,
 	useResourceStore,
 	SettingDefinition,
+	useSettingWatcher,
+	useDocumentId,
+	useDocument,
 } from "castmate-ui-core"
-import { computed, ref, useModel } from "vue"
+import { computed, ref, useModel, watch } from "vue"
 import { SettingsDocumentData, SettingsViewData } from "./SettingsTypes"
 import PInputText from "primevue/inputtext"
 
@@ -69,11 +72,16 @@ const view = useModel(props, "view")
 const pluginStore = usePluginStore()
 const resourceStore = useResourceStore()
 
-function getPlugin(id: string) {
-	const plugin = pluginStore.pluginMap.get(id)
-	if (!plugin) throw new Error()
-	return plugin
-}
+const documentId = useDocumentId()
+
+const document = useDocument(() => documentId.value)
+
+useSettingWatcher((plugin, setting, value) => {
+	if (!document.value) return
+	if (!document.value.data.settings) return
+	if (!document.value.data.settings[plugin]) return
+	document.value.data.settings[plugin][setting] = value
+})
 
 const filteredSettings = computed(() => {
 	const filterValue = view.value.filter.toLocaleLowerCase()
