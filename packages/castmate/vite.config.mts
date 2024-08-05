@@ -48,6 +48,10 @@ export default defineConfig({
 					},
 				},
 			},
+			onstart(args) {
+				console.log("Vite Electron Start")
+				args.startup([".", "--no-sandbox"])
+			},
 		}),
 		//subpackage("castmate-overlay-components"),
 		library("castmate-ui-core"),
