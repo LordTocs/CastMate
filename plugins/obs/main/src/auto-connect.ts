@@ -32,7 +32,7 @@ export async function attemptQRReading() {
 		const port = Number(portStr)
 
 		return {
-			host: ip,
+			host: "localhost",
 			port,
 			password,
 		}
