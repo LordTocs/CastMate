@@ -175,6 +175,8 @@ export const ViewerData = Service(
 			this.addColumnStatement = createAddColumnStatement(this.db)
 			this.removeTableStatement = createRemoveColumnStatement(this.db)
 			this.createTableStatement = createCreateTableStatement(this.db)
+			this.getColumnValueStatement = createGetColumnValueStatement(this.db)
+			this.setColumnValueStatement = createSetColumnValueStatement(this.db)
 
 			await this.createTableStatement.run()
 
