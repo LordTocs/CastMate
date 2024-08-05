@@ -6,7 +6,7 @@ import { Range } from "castmate-schema"
 import { TwitchAPIService, onBotAuth, onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
-import { inTwitchViewerGroup } from "./group"
+import { inTwitchViewerGroup, isEmptyTwitchViewerGroup } from "./group"
 
 export function setupSubscriptions() {
 	const logger = usePluginLogger()
@@ -63,13 +63,17 @@ export function setupSubscriptions() {
 		config: {
 			type: Object,
 			properties: {
+				tier1: { type: Boolean, name: "Tier 1", required: true, default: true },
+				tier2: { type: Boolean, name: "Tier 2", required: true, default: true },
+				tier3: { type: Boolean, name: "Tier 3", required: true, default: true },
 				subs: { type: Range, name: "Subs Gifted", required: true, default: { min: 1 } },
-				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true },
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, anonymous: true },
 			},
 		},
 		context: {
 			type: Object,
 			properties: {
+				tier: { type: Number, required: true, default: 1 },
 				gifter: { type: TwitchViewer, required: true, default: "27082158" },
 				subs: { type: Number, required: true, default: 2 },
 			},
@@ -165,7 +169,8 @@ export function setupSubscriptions() {
 			}
 
 			giftSub({
-				gifter: event.gifterId,
+				tier,
+				gifter: event.isAnonymous ? "anonymous" : event.gifterId,
 				subs: event.amount,
 			})
 		})

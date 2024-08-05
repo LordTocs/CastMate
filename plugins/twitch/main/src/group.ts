@@ -163,6 +163,10 @@ async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promi
 		return false
 	} else if ("properties" in rule) {
 		//Todo: Make this not silly hardcoded
+		if (rule.properties.anonymous && userId == "anonymous") return true
+
+		if (userId == "anonymous") return false
+
 		if (rule.properties.following) {
 			if (await ViewerCache.getInstance().getIsFollowing(userId)) return true
 		}
@@ -196,6 +200,10 @@ async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promi
 	}
 	logger.log("Unknown Group Rule", rule)
 	return false
+}
+
+export async function isEmptyTwitchViewerGroup(group: TwitchViewerGroup) {
+	return !group?.rule
 }
 
 export async function inTwitchViewerGroup(userId: string, group: TwitchViewerGroup) {

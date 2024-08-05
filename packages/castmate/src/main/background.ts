@@ -2,7 +2,7 @@
 //import { createRequire } from "node:module"
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer"
 //import electronUpdater from "electron-updater"
-import { app, BrowserWindow, ipcMain } from "electron"
+import { app, BrowserWindow, ipcMain, contentTracing } from "electron"
 import { createWindow } from "./electron/electron-helpers"
 import { initializeCastMate, finializeCastMateSetup, loadAutomations, setupCastMateDirectories } from "castmate-core"
 import { loadPlugins } from "./plugins"
@@ -37,6 +37,22 @@ function createMainWindow() {
 }
 
 app.whenReady().then(async () => {
+	/*
+	//Uncomment this block if you want to take a trace to view in chrome://tracing
+	//Keep the time short else it will fail to open
+	setTimeout(async () => {
+		console.log("Starting Trace")
+		await contentTracing.startRecording({
+			included_categories: ["*"],
+		})
+
+		setTimeout(async () => {
+			console.log("Stopping Trace!")
+			const path = await contentTracing.stopRecording("./trace.json")
+			console.log("Stopped Trace", path)
+		}, 2 * 1000)
+	}, 60 * 1000)*/
+
 	//Setup our user folder location / session data
 	await setupCastMateDirectories()
 

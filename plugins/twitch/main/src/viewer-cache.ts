@@ -47,6 +47,8 @@ interface CachedTwitchViewer extends Partial<TwitchViewerData> {
 }
 
 function getNValues<T>(set: Set<T>, requiredValues: T[], n: number): T[] {
+	requiredValues = requiredValues.filter((id) => id != "anonymous")
+
 	const result = [...requiredValues]
 
 	if (result.length >= n) {
@@ -245,6 +247,7 @@ export const ViewerCache = Service(
 
 		private getOrCreate(userId: string) {
 			if (userId == "") throw new Error("No empty IDs!")
+			if (userId == "anonymous") throw new Error("No anonymous!")
 
 			let cached = this._viewerLookup.get(userId)
 			if (!cached) {
@@ -280,6 +283,8 @@ export const ViewerCache = Service(
 		}
 
 		async getChatColor(userId: string): Promise<Color | "default"> {
+			if (userId == "anonymous") return "default"
+
 			const cached = this.getOrCreate(userId)
 			if (cached.color != null) {
 				return cached.color
@@ -345,6 +350,8 @@ export const ViewerCache = Service(
 		}
 
 		cacheGiftSubEvent(event: EventSubChannelSubscriptionGiftEvent) {
+			if (event.isAnonymous) return
+
 			const cached = this.getOrCreate(event.gifterId)
 			this.markSeen(cached)
 			this.updateNameCache(cached, event.gifterDisplayName)
@@ -376,6 +383,8 @@ export const ViewerCache = Service(
 
 		private async queryFollowing(...userIds: string[]) {
 			try {
+				userIds = userIds.filter((id) => id != "anonymous")
+
 				//Annoyingly check each follow independently
 				const followingPromises = userIds.map((id) =>
 					TwitchAccount.channel.apiClient.channels.getChannelFollowers(TwitchAccount.channel.twitchId, id)
@@ -402,6 +411,8 @@ export const ViewerCache = Service(
 		}
 
 		async getIsFollowing(userId: string): Promise<boolean> {
+			if (userId == "anonymous") return false
+
 			const cached = this.getOrCreate(userId)
 			if (cached.following != null) {
 				return cached.following
@@ -517,7 +528,10 @@ export const ViewerCache = Service(
 				const neededUserInfoIds: string[] = []
 				const neededFollowerIds: string[] = []
 
-				const cachedUsers = userIds.map((id) => this.getOrCreate(id))
+				const cachedUsers = userIds.map((id) => {
+					if (id == "anonymous") return TwitchViewer.anonymous
+					return this.getOrCreate(id)
+				})
 
 				for (const cached of cachedUsers) {
 					if (cached.subbed == null || (cached.subbed === true && cached.sub == null)) {
@@ -573,7 +587,10 @@ export const ViewerCache = Service(
 		}
 
 		async getDisplayDatasByIds(userIds: string[]): Promise<TwitchViewerDisplayData[]> {
-			const users = userIds.map((id) => this.getOrCreate(id))
+			const users = userIds.map((id) => {
+				if (id == "anonymous") return TwitchViewer.anonymous
+				return this.getOrCreate(id)
+			})
 
 			const needsColors: string[] = []
 			const needsUserInfo: string[] = []
@@ -611,7 +628,7 @@ export const ViewerCache = Service(
 		async getDisplayDataById(userId: string): Promise<TwitchViewerDisplayData | undefined> {
 			if (!userId) return undefined
 
-			const cached = this.getOrCreate(userId)
+			const cached = userId == "anonymous" ? TwitchViewer.anonymous : this.getOrCreate(userId)
 
 			const queries: Promise<any>[] = []
 

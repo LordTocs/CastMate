@@ -5,6 +5,7 @@
 			<p-button @click="addEither">Customize</p-button>
 		</div>
 		<twitch-viewer-group-logic-op
+			:schema="schema"
 			v-model="model.rule"
 			:excluded="false"
 			v-else
@@ -15,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { SchemaTwitchViewerGroup, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { useModel } from "vue"
 import TwitchViewerGroupLogicOp from "./groups/TwitchViewerGroupLogicOp.vue"
 import PButton from "primevue/button"
@@ -23,6 +24,7 @@ import PCheckBox from "primevue/checkbox"
 import PDropDown from "primevue/dropdown"
 
 const props = defineProps<{
+	schema: SchemaTwitchViewerGroup
 	modelValue?: TwitchViewerGroup
 }>()
 

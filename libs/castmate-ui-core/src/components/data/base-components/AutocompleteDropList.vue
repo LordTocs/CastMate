@@ -34,6 +34,7 @@
 					</li>
 				</slot>
 			</template>
+			<slot name="empty" v-if="groupedItems.length == 0"> </slot>
 		</ul>
 	</drop-down-panel>
 </template>
@@ -49,6 +50,7 @@ import {
 	getNextItem,
 	getPrevItem,
 	findItem,
+	groupItems,
 } from "../../../util/autocomplete-helpers"
 import { usePropagationStop } from "../../../main"
 

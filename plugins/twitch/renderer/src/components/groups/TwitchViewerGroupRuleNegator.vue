@@ -7,24 +7,28 @@
 				v-model="internalModel"
 				v-model:excluded="excluded"
 				@delete="emit('delete')"
+				:schema="schema"
 			/>
 			<twitch-viewer-group-resource-ref
 				v-else-if="isGroupResourceRef(internalModel)"
 				v-model="internalModel"
 				v-model:excluded="excluded"
 				@delete="emit('delete')"
+				:schema="schema"
 			/>
 			<twitch-viewer-group-inline-group
 				v-else-if="isInlineViewerGroup(internalModel)"
 				v-model="internalModel"
 				v-model:excluded="excluded"
 				@delete="emit('delete')"
+				:schema="schema"
 			/>
 			<twitch-viewer-group-property-edit
 				v-else-if="isViewerGroupPropertyRule(internalModel)"
 				v-model="internalModel"
 				v-model:excluded="excluded"
 				@delete="emit('delete')"
+				:schema="schema"
 			/>
 		</div>
 	</div>
@@ -39,6 +43,7 @@ import {
 	isGroupResourceRef,
 	isInlineViewerGroup,
 	isViewerGroupPropertyRule,
+	SchemaTwitchViewerGroup,
 } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupLogicOp from "./TwitchViewerGroupLogicOp.vue"
 import TwitchViewerGroupResourceRef from "./TwitchViewerGroupResourceRef.vue"
@@ -49,6 +54,7 @@ import PButton from "primevue/button"
 
 const props = defineProps<{
 	modelValue: TwitchViewerGroupRule
+	schema: SchemaTwitchViewerGroup
 }>()
 
 const model = useModel(props, "modelValue")

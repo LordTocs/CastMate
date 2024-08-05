@@ -13,7 +13,7 @@ Napi::Object input_interface::init(Napi::Env env, Napi::Object exports)
         InstanceMethod("simulateKeyDown", &input_interface::simulate_key_down),
         InstanceMethod("simulateKeyUp", &input_interface::simulate_key_up),
         InstanceMethod("simulateMouseDown", &input_interface::simulate_mouse_down),
-        InstanceMethod("simulateMouseUp", &input_interface::simulate_mouse_down),
+        InstanceMethod("simulateMouseUp", &input_interface::simulate_mouse_up),
         InstanceMethod("startEvents", &input_interface::start_events),
         InstanceMethod("stopEvents", &input_interface::stop_events),
         InstanceMethod("isKeyDown", &input_interface::is_key_down),

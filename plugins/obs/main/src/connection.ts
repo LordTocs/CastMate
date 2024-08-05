@@ -151,8 +151,11 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 	private setupEvents() {
 		this.connection.on("ConnectionClosed", (err) => {
+			if (this.state.connected) {
+				logger.log("Connection Closed", err.code, err.name, err.message)
+			}
+
 			this.state.connected = false
-			//logger.log("Connection Closed", err.code, err.name, err.message)
 
 			if (this.forceStop) {
 				logger.log("Force Stopping OBS Connection Loop")
@@ -203,13 +206,11 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		})
 
 		this.connection.on("Identified", (ev) => {
-			//logger.log("Identified!")
+			logger.log("OBS Identified Ver:", ev.negotiatedRpcVersion)
 			this.state.connected = true
 
 			this.queryInitialStateLoop()
 		})
-
-		//this.connection.on("")
 	}
 
 	private async queryInitialStateLoop() {
@@ -244,6 +245,32 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		this.sceneHistory.reset(sceneResp.currentProgramSceneName)
 	}
 
+	private nextTickConnect(hostname: string, port: number, password?: string) {
+		return new Promise<boolean>((resolve, reject) => {
+			nextTick(() => {
+				//logger.log("Trying Connection", `ws://${hostname}:${port}`, password)
+				this.connection
+					.connect(`ws://${hostname}:${port}`, password)
+					.then((result) => {
+						logger.log(
+							"Connected to OBS",
+							`ws://${hostname}:${port}`,
+							"ver",
+							result.rpcVersion,
+							"negotiatedVer",
+							result.negotiatedRpcVersion,
+							"socketVer",
+							result.obsWebSocketVersion
+						)
+						resolve(true)
+					})
+					.catch((err) => {
+						reject(err)
+					})
+			})
+		})
+	}
+
 	private async tryConnect(hostname: string, port: number, password?: string) {
 		if (this.retryTimeout) {
 			clearTimeout(this.retryTimeout)
@@ -254,13 +281,13 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 			this.forceStop = true
 			await this.connection.disconnect()
 			this.forceStop = false
+		} catch (err) {
+			logger.error("Unable to Disconnect??", err)
+		}
+
+		try {
 			//We have to wait for the next tick for the disconnect to completely propagate.
-			nextTick(() => {
-				//logger.log("Trying Connection", `ws://${hostname}:${port}`, password)
-				this.connection.connect(`ws://${hostname}:${port}`, password).catch((err) => {
-					//logger.log("Connect Failed", err)
-				})
-			})
+			await this.nextTickConnect(hostname, port, password)
 
 			return true
 		} catch (err) {

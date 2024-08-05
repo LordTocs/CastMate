@@ -43,6 +43,20 @@ export const TwitchViewer = {
 			},
 		}
 	},
+	get anonymous(): TwitchViewer {
+		return {
+			id: "anonymous",
+			displayName: "Anonymous",
+			description: "",
+			profilePicture: "",
+			color: "#000000",
+			following: false,
+			subbed: false,
+			[Symbol.toPrimitive](hint: "default" | "string" | "number") {
+				return this.displayName
+			},
+		}
+	},
 }
 type TwitchViewerFactory = typeof TwitchViewer
 

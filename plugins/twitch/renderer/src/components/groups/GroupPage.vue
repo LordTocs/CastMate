@@ -79,7 +79,7 @@ const memberUsers = ref<TwitchViewerDisplayData[]>([])
 const viewerStore = useViewerStore()
 
 async function queryMembers() {
-	memberUsers.value = await viewerStore.getUsersByIds([...resource.value.config.userIds])
+	memberUsers.value = await viewerStore.getUsersByIds([...(resource.value?.config?.userIds ?? [])])
 }
 
 const removeId = useResourceIPCCaller<(userId: string) => any>(
@@ -123,7 +123,7 @@ onMounted(() => {
 })
 
 watch(
-	() => resource.value.config.userIds,
+	() => resource.value?.config?.userIds,
 	() => {
 		queryMembers()
 	},

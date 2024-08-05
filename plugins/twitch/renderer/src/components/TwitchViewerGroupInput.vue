@@ -8,7 +8,7 @@
 			</input-box>
 		</div>
 		<drop-down-panel :container="container" v-model="overlayVisible">
-			<twitch-viewer-group-edit v-model="model" />
+			<twitch-viewer-group-edit v-model="model" :schema="schema" />
 		</drop-down-panel>
 	</data-input-base>
 </template>

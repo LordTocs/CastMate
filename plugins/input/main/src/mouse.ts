@@ -15,8 +15,15 @@ export function setupMouse(inputInterface: InputInterface) {
 					name: "Button",
 					default: "left",
 					enum: ["left", "right", "middle", "mouse4", "mouse5"],
+					required: true,
 				},
 				duration: { type: Duration, name: "Duration", required: true, default: 0.1 },
+			},
+		},
+		duration: {
+			dragType: "length",
+			rightSlider: {
+				sliderProp: "duration",
 			},
 		},
 		async invoke(config, contextData, abortSignal) {

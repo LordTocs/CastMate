@@ -1,57 +1,64 @@
 <template>
 	<div class="container">
-		<p-data-table
-			v-model:filters="filters"
-			class="flex flex-column"
-			:value="variables"
-			data-key="id"
-			:global-filter-fields="['id']"
-			style="width: 100%; max-height: 100%"
-			scrollable
-			:sort-order="-1"
-			sort-field="id"
-		>
-			<template #header>
-				<div class="flex">
-					<p-button @click="createNew">Create Variable</p-button>
-					<div class="flex-grow-1" />
-					<span class="p-input-icon-left">
-						<i class="pi pi-search" />
-						<p-input-text v-model="filters['global'].value" placeholder="Search" />
-					</span>
-				</div>
-			</template>
-
-			<p-column header="Name" field="id"> </p-column>
-
-			<p-column header="Type">
-				<template #body="{ data }: { data: RendererVariableDefinition }">
-					{{ getTypeByConstructor(data.schema.type)?.name ?? "UNKNOWN TYPE" }}
-				</template>
-			</p-column>
-
-			<p-column header="Default Value">
-				<template #body="{ data }: { data: RendererVariableDefinition }">
-					<data-view :model-value="data.defaultValue" :schema="data.schema" />
-				</template>
-			</p-column>
-
-			<p-column header="Current Value" class="current-value-column">
-				<template #body="{ data }: { data: RendererVariableDefinition }">
-					<variable-display-edit :id="data.id" />
-				</template>
-			</p-column>
-
-			<p-column class="column-fit-width">
-				<template #body="{ data }: { data: RendererVariableDefinition }">
-					<div class="flex flex-row">
-						<p-button icon="mdi mdi-refresh" text @click="reset(data)"></p-button>
-						<p-button icon="mdi mdi-pencil" text @click="editDialog(data)"></p-button>
-						<p-button icon="mdi mdi-delete" severity="error" text @click="deleteDialog(data)"></p-button>
+		<div class="inner-container">
+			<p-data-table
+				v-model:filters="filters"
+				class="flex flex-column"
+				:value="variables"
+				data-key="id"
+				:global-filter-fields="['id']"
+				style="width: 100%; max-height: 100%"
+				scrollable
+				:sort-order="-1"
+				sort-field="id"
+			>
+				<template #header>
+					<div class="flex">
+						<p-button @click="createNew">Create Variable</p-button>
+						<div class="flex-grow-1" />
+						<span class="p-input-icon-left">
+							<i class="pi pi-search" />
+							<p-input-text v-model="filters['global'].value" placeholder="Search" />
+						</span>
 					</div>
 				</template>
-			</p-column>
-		</p-data-table>
+
+				<p-column header="Name" field="id"> </p-column>
+
+				<p-column header="Type">
+					<template #body="{ data }: { data: RendererVariableDefinition }">
+						{{ getTypeByConstructor(data.schema.type)?.name ?? "UNKNOWN TYPE" }}
+					</template>
+				</p-column>
+
+				<p-column header="Default Value">
+					<template #body="{ data }: { data: RendererVariableDefinition }">
+						<data-view :model-value="data.defaultValue" :schema="data.schema" />
+					</template>
+				</p-column>
+
+				<p-column header="Current Value" class="current-value-column">
+					<template #body="{ data }: { data: RendererVariableDefinition }">
+						<variable-display-edit :id="data.id" />
+					</template>
+				</p-column>
+
+				<p-column class="column-fit-width">
+					<template #body="{ data }: { data: RendererVariableDefinition }">
+						<div class="flex flex-row">
+							<p-button icon="mdi mdi-refresh" text @click="reset(data)"></p-button>
+							<p-button icon="mdi mdi-pencil" text @click="editDialog(data)"></p-button>
+							<p-button
+								icon="mdi mdi-delete"
+								severity="error"
+								text
+								@click="deleteDialog(data)"
+							></p-button>
+						</div>
+					</template>
+				</p-column>
+			</p-data-table>
+		</div>
 	</div>
 </template>
 
@@ -144,6 +151,15 @@ async function reset(def: RendererVariableDefinition) {
 
 <style scoped>
 .container {
+	position: relative;
+}
+
+.inner-container {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 	overflow: hidden;
 }
 

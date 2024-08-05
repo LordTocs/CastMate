@@ -19,7 +19,7 @@ import {
 	IPCStateDefinition,
 } from "castmate-schema"
 
-import { computed, ref, unref, type MaybeRefOrGetter, toValue, Component, markRaw } from "vue"
+import { computed, ref, unref, type MaybeRefOrGetter, toValue, Component, markRaw, onMounted, onUnmounted } from "vue"
 
 import * as chromatism from "chromatism2"
 import { handleIpcMessage, useIpcCaller } from "../util/electron"
@@ -208,12 +208,16 @@ export interface SettingsChange {
 	value: any
 }
 
+export type SettingUpdateWatcher = (plugin: string, setting: string, value: any) => any
+
 export const usePluginStore = defineStore("plugins", () => {
 	const pluginMap = ref<Map<string, PluginDefinition>>(new Map())
 
 	const getPluginIds = useIpcCaller<() => string[]>("plugins", "getPluginIds")
 	const getPlugin = useIpcCaller<(id: string) => IPCPluginDefinition>("plugins", "getPlugin")
 	const doSettingsUpdate = useIpcCaller<(changes: SettingsChange[]) => boolean>("plugins", "updateSettings")
+
+	const settingsUpdateWatchers = new Array<SettingUpdateWatcher>()
 
 	async function initialize() {
 		handleIpcMessage("plugins", "registerPlugin", (event, plugin: IPCPluginDefinition) => {
@@ -229,8 +233,11 @@ export const usePluginStore = defineStore("plugins", () => {
 			const plugin = pluginMap.value.get(id)
 			if (plugin) {
 				const setting = plugin.settings[settingId]
-				if (setting?.type == "value") {
+				if (setting?.type == "value" || setting?.type == "secret") {
 					setting.value = value
+					for (const watcher of settingsUpdateWatchers) {
+						watcher(id, settingId, value)
+					}
 				}
 			}
 		})
@@ -367,6 +374,16 @@ export const usePluginStore = defineStore("plugins", () => {
 		await doSettingsUpdate(changes)
 	}
 
+	function registerSettingWatcher(watcher: SettingUpdateWatcher) {
+		settingsUpdateWatchers.push(watcher)
+	}
+
+	function unregisterSettingWatcher(watcher: SettingUpdateWatcher) {
+		const idx = settingsUpdateWatchers.findIndex((w) => w == watcher)
+		if (idx < 0) return
+		settingsUpdateWatchers.splice(idx, 1)
+	}
+
 	return {
 		pluginMap: computed(() => pluginMap.value),
 		initialize,
@@ -375,6 +392,8 @@ export const usePluginStore = defineStore("plugins", () => {
 		setActionComponent,
 		setSettingComponent,
 		updateSettings,
+		registerSettingWatcher,
+		unregisterSettingWatcher,
 	}
 })
 
@@ -563,5 +582,35 @@ export function useFullState() {
 		}
 
 		return fullState
+	})
+}
+
+export function useFullSettings() {
+	const pluginStore = usePluginStore()
+
+	return computed(() => {
+		const fullSettings: Record<string, Record<string, any>> = {}
+
+		for (const plugin of pluginStore.pluginMap.values()) {
+			fullSettings[plugin.id] = {}
+
+			for (const [key, state] of Object.entries(plugin.settings)) {
+				if (state.type == "value" || state.type == "secret") fullSettings[plugin.id][key] = state.value
+			}
+		}
+
+		return fullSettings
+	})
+}
+
+export function useSettingWatcher(watcher: SettingUpdateWatcher) {
+	const pluginStore = usePluginStore()
+
+	onMounted(() => {
+		pluginStore.registerSettingWatcher(watcher)
+	})
+
+	onUnmounted(() => {
+		pluginStore.unregisterSettingWatcher(watcher)
 	})
 }

@@ -9,11 +9,11 @@
 				:icon="excluded ? 'mdi mdi-equal' : 'mdi mdi-not-equal-variant'"
 				@click="excluded = !excluded"
 			></p-button>
-			<p-button text size="small" icon="mdi mdi-close" @click="emit('delete')"></p-button>
+			<p-button text size="small" icon="mdi mdi-delete" @click="emit('delete')"></p-button>
 		</div>
 		<div class="flex flex-row mt-4" v-for="(viewer, i) in model.userIds">
 			<data-input :schema="viewerSchema" v-model="model.userIds[i]" class="flex-grow-1 flex-grow-0 w-0" />
-			<p-button text size="small" icon="mdi mdi-close" @click="model.userIds.splice(i, 1)"></p-button>
+			<p-button text size="small" icon="mdi mdi-delete" @click="model.userIds.splice(i, 1)"></p-button>
 		</div>
 	</div>
 </template>
