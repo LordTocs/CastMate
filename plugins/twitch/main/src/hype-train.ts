@@ -1,8 +1,10 @@
-import { defineState, defineTrigger } from "castmate-core"
+import { defineState, defineTrigger, startPerfTime, usePluginLogger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { onChannelAuth } from "./api-harness"
 
 export function setupHypeTrains() {
+	const logger = usePluginLogger()
+
 	const hypeTrainStarted = defineTrigger({
 		id: "hypeTrainStarted",
 		name: "Hype Train Started",
@@ -118,6 +120,8 @@ export function setupHypeTrains() {
 	})
 
 	onChannelAuth(async (channel, service) => {
+		const perf = startPerfTime(`HypeTrains`)
+
 		service.eventsub.onChannelHypeTrainBegin(channel.twitchId, (event) => {
 			hypeTrainLevel.value = event.level
 			hypeTrainProgress.value = event.progress
@@ -183,5 +187,7 @@ export function setupHypeTrains() {
 				hypeTrainExists.value = true
 			}
 		}
+
+		perf.stop(logger)
 	})
 }

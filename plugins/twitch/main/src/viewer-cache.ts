@@ -521,7 +521,7 @@ export const ViewerCache = Service(
 		}
 
 		async getResolvedViewers(userIds: string[]): Promise<TwitchViewer[]> {
-			const perf = startPerfTime("Resolve Viewer")
+			const perf = startPerfTime(`Resolve Viewers ${userIds.length}`)
 			try {
 				const neededSubIds: string[] = []
 				const neededColorIds: string[] = []
@@ -554,18 +554,22 @@ export const ViewerCache = Service(
 				const queryPromises: Promise<any>[] = []
 
 				if (neededColorIds.length > 0) {
+					logger.log("---Querying Colors:", neededColorIds.length)
 					queryPromises.push(this.queryColor(...neededColorIds))
 				}
 
 				if (neededFollowerIds.length > 0) {
-					queryPromises.push(this.queryFollowing(...neededFollowerIds))
+					logger.log("---Querying Following:", neededFollowerIds.length)
+					//queryPromises.push(this.queryFollowing(...neededFollowerIds))
 				}
 
 				if (neededSubIds.length > 0) {
+					logger.log("---Querying Subs:", neededSubIds.length)
 					queryPromises.push(this.querySubInfo(...neededSubIds))
 				}
 
 				if (neededUserInfoIds.length > 0) {
+					logger.log("---Query User Infos:", neededUserInfoIds.length)
 					queryPromises.push(this.queryUserInfo(...neededUserInfoIds))
 				}
 
