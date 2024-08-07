@@ -6,7 +6,7 @@ import { defineIPCFunc } from "../util/electron"
 
 import electronUpdater, { autoUpdater, UpdateInfo, CancellationToken } from "electron-updater"
 import { UpdateData } from "castmate-schema"
-import { globalLogger } from "../logging/logging"
+import { globalLogger, usePluginLogger } from "../logging/logging"
 import path from "path"
 
 import semver from "semver"
@@ -14,6 +14,8 @@ import semver from "semver"
 interface StartInfo {
 	lastVer: string
 }
+
+const logger = usePluginLogger("info-manager")
 
 export const InfoService = Service(
 	class {
@@ -81,18 +83,23 @@ export const InfoService = Service(
 		}
 
 		async checkUpdate() {
-			const result = await autoUpdater.checkForUpdates()
-			if (result != null) {
-				if (semver.gt(result.updateInfo.version, app.getVersion())) {
-					globalLogger.log("Update!", result.updateInfo.releaseName, result.updateInfo.version)
-					this.updateInfo = result.updateInfo
-					return true
+			try {
+				const result = await autoUpdater.checkForUpdates()
+				if (result != null) {
+					if (semver.gt(result.updateInfo.version, app.getVersion())) {
+						globalLogger.log("Update!", result.updateInfo.releaseName, result.updateInfo.version)
+						this.updateInfo = result.updateInfo
+						return true
+					}
+					return false
+				} else {
+					globalLogger.log("No Update :(")
 				}
 				return false
-			} else {
-				globalLogger.log("No Update :(")
+			} catch (err) {
+				logger.error("Error Checking Update", err)
+				return false
 			}
-			return false
 		}
 
 		async checkInfo() {
