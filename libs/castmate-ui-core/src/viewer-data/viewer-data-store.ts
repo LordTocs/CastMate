@@ -1,7 +1,15 @@
 import { IPCViewerVariable, ViewerVariable } from "castmate-schema"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
-import { handleIpcMessage, ipcParseSchema, ProjectItem, useDockingStore, useIpcCaller, useProjectStore } from "../main"
+import {
+	handleIpcMessage,
+	ipcConvertSchema,
+	ipcParseSchema,
+	ProjectItem,
+	useDockingStore,
+	useIpcCaller,
+	useProjectStore,
+} from "../main"
 import ViewerDataPage from "../components/viewer-data/ViewerDataPage.vue"
 
 function parseDefinition(def: IPCViewerVariable): ViewerVariable {
@@ -104,6 +112,8 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 	) {
 		const data = await queryPagedViewerData(start, end, sortBy, sortOrder)
 
+		console.log("Query Viewers Paged Data", data)
+
 		for (let i = 0; i < data.length; ++i) {
 			const viewerData = data[i]
 			data[i] = subscribeToViewer(provider, viewerData[provider], viewerData)
@@ -112,10 +122,28 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 		return data
 	}
 
+	const createViewerVariableIPC = useIpcCaller<(varDesc: IPCViewerVariable) => void>("viewer-data", "createVariable")
+
+	async function createViewerVariable(variableDesc: ViewerVariable) {
+		const ipcSchema = ipcConvertSchema(variableDesc.schema, "viewer-variable")
+
+		await createViewerVariableIPC({
+			name: variableDesc.name,
+			schema: ipcSchema,
+		})
+	}
+
+	async function editViewerVariable(id: string, desc: ViewerVariable) {}
+
+	async function deleteViewerVariable(id: string) {}
+
 	return {
 		initialize,
 		variables: computed(() => variables.value),
 		queryViewersPaged,
 		unsubscribeToViewer,
+		createViewerVariable,
+		editViewerVariable,
+		deleteViewerVariable,
 	}
 })

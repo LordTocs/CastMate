@@ -9,11 +9,12 @@ import {
 } from "castmate-schema"
 import { Service } from "../util/service"
 import sqlite from "better-sqlite3"
-import { ensureDirectory, ensureYAML, loadYAML, resolveProjectPath } from "../io/file-system"
-import { deserializeSchema, exposeSchema, ipcConvertSchema, serializeSchema } from "../util/ipc-schema"
+import { ensureDirectory, ensureYAML, loadYAML, resolveProjectPath, writeYAML } from "../io/file-system"
+import { deserializeSchema, exposeSchema, ipcConvertSchema, ipcParseSchema, serializeSchema } from "../util/ipc-schema"
 import { usePluginLogger } from "../logging/logging"
 import { ViewerVariable } from "castmate-schema"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
+import { startPerfTime } from "../util/time-utils"
 
 interface SerializedViewerVariableDesc {
 	name: string
@@ -75,7 +76,10 @@ type PagedQueryStatement = ReturnType<typeof createPagedQueryStatement>
 
 function createPagedQueryOrderedStatement(db: sqlite.Database) {
 	return function (args: { start: number; quantity: number; orderBy: string; order: string }) {
-		return `SELECT * FROM ViewerData LIMIT ${args.quantity} OFFSET ${args.start} ORDER BY ${args.orderBy} ${args.order}`
+		const statement = db.prepare(
+			`SELECT * FROM ViewerData LIMIT ${args.quantity} OFFSET ${args.start} ORDER BY ${args.orderBy} ${args.order}`
+		)
+		return statement.all()
 	}
 }
 type PagedQueryOrderedStatement = ReturnType<typeof createPagedQueryOrderedStatement>
@@ -89,13 +93,18 @@ function createSetColumnValueStatement(db: sqlite.Database) {
 		columnValue: any
 	}) {
 		//TODO: ESCAPE!
-		db.exec(
-			`INSERT INTO ViewerData(${args.provider}, ${args.provider}_name, ${args.columnName}) VALUES(${
-				args.id
-			}, "${escapeSql(args.displayName)}", ${args.columnValue}) ON CONFLICT(${args.provider}) DO UPDATE SET ${
-				args.columnName
-			}=${args.columnValue}, ${args.provider}_name="${escapeSql(args.displayName)}"`
-		)
+		logger.log("SetColumnValue!")
+		logger.log(args)
+
+		const query = `INSERT INTO ViewerData (${args.provider}, ${args.provider}_name, ${args.columnName}) VALUES('${
+			args.id
+		}', '${escapeSql(args.displayName)}', ${args.columnValue}) ON CONFLICT(${args.provider}) DO UPDATE SET ${
+			args.columnName
+		}=${args.columnValue}, ${args.provider}_name='${escapeSql(args.displayName)}'`
+
+		logger.log("  ", query)
+
+		db.exec(query)
 	}
 	/*
 	return db.prepare<{
@@ -123,6 +132,13 @@ function createGetColumnValueStatement(db: sqlite.Database) {
 
 type GetColumnValueStatement = ReturnType<typeof createGetColumnValueStatement>
 
+function createQueryNumViewers(db: sqlite.Database) {
+	//TODO: "IS THIS FAST?"
+	return db.prepare<[], { "COUNT(*)": number }>("SELECT COUNT(*) FROM ViewerData")
+}
+
+type QueryNumViewersStatement = ReturnType<typeof createQueryNumViewers>
+
 const rendererViewerDataChanged = defineCallableIPC<
 	(provider: string, id: string, varName: string, value: any) => void
 >("viewer-data", "viewerDataChanged")
@@ -141,6 +157,7 @@ export const ViewerData = Service(
 		private getColumnValueStatement: GetColumnValueStatement
 		private pagedQueryStatement: PagedQueryStatement
 		private pagedQueryOrderedStatement: PagedQueryOrderedStatement
+		private queryNumViewerStatement: QueryNumViewersStatement
 
 		private _variables: ViewerVariable[] = []
 
@@ -169,7 +186,7 @@ export const ViewerData = Service(
 				const defaultValue = await constructDefault(variable.schema)
 				const serializedDefault = await serializeSchema(variable.schema, defaultValue)
 
-				this.addColumnStatement.run({
+				this.addColumnStatement({
 					columnName: variable.name,
 					columnType: sqlType,
 					columnDefault: serializedDefault,
@@ -178,9 +195,9 @@ export const ViewerData = Service(
 		}
 
 		private async loadVariables() {
-			await ensureYAML([], "/viewer-data/variables.yaml")
+			await ensureYAML([], "viewer-data", "variables.yaml")
 
-			const data: SerializedViewerVariableDesc[] = await loadYAML("/viewer-data/variables.yaml")
+			const data: SerializedViewerVariableDesc[] = await loadYAML("viewer-data", "variables.yaml")
 
 			for (const varData of data) {
 				const type = getTypeByName(varData.type)
@@ -211,6 +228,28 @@ export const ViewerData = Service(
 			}
 		}
 
+		private async saveVariables() {
+			const data = new Array<SerializedViewerVariableDesc>()
+
+			for (const vari of this.variables) {
+				const type = getTypeByConstructor(vari.schema.type)
+				if (!type) continue
+
+				const serializedVar: SerializedViewerVariableDesc = {
+					name: vari.name,
+					type: type.name,
+				}
+
+				if (vari.schema.default != null) {
+					serializedVar.defaultValue = await serializeSchema(vari.schema, vari.schema.default)
+				}
+
+				data.push(serializedVar)
+			}
+
+			await writeYAML(data, "viewer-data", "variables.yaml")
+		}
+
 		getVariable(name: string) {
 			return this.variables.find((v) => v.name == name)
 		}
@@ -229,6 +268,7 @@ export const ViewerData = Service(
 			this.setColumnValueStatement = createSetColumnValueStatement(this.db)
 			this.pagedQueryStatement = createPagedQueryStatement(this.db)
 			this.pagedQueryOrderedStatement = createPagedQueryOrderedStatement(this.db)
+			this.queryNumViewerStatement = createQueryNumViewers(this.db)
 
 			await this.loadVariables()
 
@@ -242,10 +282,20 @@ export const ViewerData = Service(
 			defineIPCFunc(
 				"viewer-data",
 				"queryPagedData",
-				(start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => {
-					this.getPagedViewerData(start, end, sortBy, sortOrder)
+				async (start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => {
+					return await this.getPagedViewerData(start, end, sortBy, sortOrder)
 				}
 			)
+
+			defineIPCFunc("viewer-data", "createVariable", async (ipcVarDesc: IPCViewerVariable) => {
+				const schema = ipcParseSchema(ipcVarDesc.schema)
+
+				await this.addViewerVariable(ipcVarDesc.name, schema)
+			})
+
+			defineIPCFunc("viewer-data", "getNumRows", async () => {
+				return await this.getNumRows()
+			})
 		}
 
 		async registerProvider(provider: ViewerProvider) {
@@ -271,6 +321,7 @@ export const ViewerData = Service(
 
 			await this.ensureColumn(vari)
 			this.variables.push(vari)
+			await this.saveVariables()
 
 			const exposedDefault = await exposeSchema(schema, defaultValue)
 
@@ -288,9 +339,11 @@ export const ViewerData = Service(
 			const idx = this.variables.findIndex((v) => v.name == name)
 			if (idx < 0) return
 
-			await this.removeTableStatement.run({ columnName: name })
+			await this.removeTableStatement({ columnName: name })
 
 			this.variables.splice(idx, 1)
+
+			await this.saveVariables()
 
 			for (const provider of this.providers.values()) {
 				provider.onColumnRemoved(name)
@@ -305,16 +358,21 @@ export const ViewerData = Service(
 
 			const serialized = await serializeSchema(vari.schema, value)
 
-			await this.setColumnValueStatement.run({
+			const perf = startPerfTime("Set Column Value")
+			await this.setColumnValueStatement({
 				provider,
-				providerName: `${provider}_name`,
 				columnName: varname,
 				columnValue: serialized,
 				id,
 				displayName,
 			})
+			perf.stop(logger)
 
-			this.providers.get(provider)?.onDataChanged(id, varname, value)
+			try {
+				await this.providers.get(provider)?.onDataChanged(id, varname, value)
+			} catch (err) {
+				logger.error("Error Updating Provider Data", id, varname, value, err)
+			}
 			//Notify the UI
 			rendererViewerDataChanged(provider, id, varname, value)
 		}
@@ -379,6 +437,10 @@ export const ViewerData = Service(
 			}
 		}
 
+		async getNumRows() {
+			return this.queryNumViewerStatement.get()?.["COUNT(*)"] ?? 0
+		}
+
 		async getPagedViewerData(
 			start: number,
 			end: number,
@@ -392,7 +454,7 @@ export const ViewerData = Service(
 				}) as Record<string, any>[]
 				return result
 			} else {
-				const result = this.pagedQueryOrderedStatement.all({
+				const result = this.pagedQueryOrderedStatement({
 					start,
 					quantity: end - start,
 					orderBy: sortBy,
