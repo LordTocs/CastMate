@@ -11,6 +11,7 @@ import {
 	useIpcCaller,
 	initializeStreamPlans,
 	useStreamPlanStore,
+	useViewerDataStore,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -102,6 +103,7 @@ const actionQueueStore = useActionQueueStore()
 const dashboardStore = useDashboardStore()
 const mediaStore = useMediaStore()
 const planStore = useStreamPlanStore()
+const viewerDataStore = useViewerDataStore()
 
 const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
@@ -134,6 +136,8 @@ async function init() {
 	initSettingsDocuments()
 
 	initializeQueues()
+
+	await viewerDataStore.initialize()
 
 	await initOverlaysPlugin(app)
 
