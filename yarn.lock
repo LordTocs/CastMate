@@ -2865,6 +2865,7 @@ __metadata:
   dependencies:
     "@azure/web-pubsub-client": "npm:^1.0.0"
     "@colors/colors": "npm:^1.6.0"
+    "@electron/rebuild": "npm:^3.6.0"
     "@joshyour/ffprobe-client": "npm:^1.1.7"
     "@types/better-sqlite3": "npm:^7.6.11"
     "@types/express": "npm:^4.17.21"

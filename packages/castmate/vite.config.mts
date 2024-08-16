@@ -39,6 +39,7 @@ export default defineConfig({
 							"castmate-plugin-sound-native",
 							"castmate-plugin-input-native",
 							"node-screenshots",
+							"better-sqlite3",
 						],
 					},
 				},
