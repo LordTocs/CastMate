@@ -1,7 +1,7 @@
 <template>
 	<div class="action-preview-container">
 		<div class="cropper">
-			<data-view v-if="actionInfo" :model-value="modelValue" :schema="actionInfo.config" />
+			<data-view v-if="actionInfo" :model-value="modelValue" :schema="actionInfo.config" :context="modelValue" />
 		</div>
 	</div>
 </template>
