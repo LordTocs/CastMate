@@ -77,7 +77,7 @@ type PagedQueryStatement = ReturnType<typeof createPagedQueryStatement>
 function createPagedQueryOrderedStatement(db: sqlite.Database) {
 	return function (args: { start: number; quantity: number; orderBy: string; order: string }) {
 		const statement = db.prepare(
-			`SELECT * FROM ViewerData LIMIT ${args.quantity} OFFSET ${args.start} ORDER BY ${args.orderBy} ${args.order}`
+			`SELECT * FROM ViewerData ORDER BY ${args.orderBy} ${args.order} LIMIT ${args.quantity} OFFSET ${args.start}`
 		)
 		return statement.all()
 	}

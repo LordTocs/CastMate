@@ -24,9 +24,15 @@
 					</div>
 				</template>
 
-				<p-column field="twitch_name" header="Viewer"></p-column>
+				<p-column field="twitch_name" header="Viewer" sortable></p-column>
 
-				<p-column v-for="v in viewerDataStore.variables.values()" :key="v.name" :header="v.name">
+				<p-column
+					v-for="v in viewerDataStore.variables.values()"
+					:key="v.name"
+					:header="v.name"
+					sortable
+					:field="v.name"
+				>
 					<template #body="{ data }">
 						<data-view v-if="data" :schema="v.schema" :model-value="data[v.name]" />
 					</template>
@@ -66,6 +72,8 @@ const sortOrder = ref<number>()
 const { viewers, updateRange, loading } = useLazyViewerQuery(sortField, sortOrder)
 
 effect(() => {
+	console.log(sortField.value, " -> ", sortOrder.value)
+
 	for (const v of viewers.value) {
 		console.log(v)
 	}

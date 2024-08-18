@@ -280,6 +280,15 @@ export function useLazyViewerQuery(
 		viewerDataStore.unobserveViewers(observer)
 	})
 
+	watch(
+		() => ({ sortField: toValue(sortField), sortOrder: toValue(sortOrder) }),
+		() => {
+			console.log("RELOADING FOR SORT", toValue(sortField), toValue(sortOrder))
+			lazyViewers.value = new Array<ViewerData>(totalDataRows.value)
+			loadRange(toValue(first), toValue(last))
+		}
+	)
+
 	/*watch(
 		() => ({
 			first: toValue(first),
