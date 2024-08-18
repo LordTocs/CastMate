@@ -92,10 +92,6 @@ function createSetColumnValueStatement(db: sqlite.Database) {
 		displayName: string
 		columnValue: any
 	}) {
-		//TODO: ESCAPE!
-		logger.log("SetColumnValue!")
-		logger.log(args)
-
 		const query = `INSERT INTO ViewerData (${args.provider}, ${args.provider}_name, ${args.columnName}) VALUES('${
 			args.id
 		}', '${escapeSql(args.displayName)}', ${args.columnValue}) ON CONFLICT(${args.provider}) DO UPDATE SET ${
@@ -104,7 +100,11 @@ function createSetColumnValueStatement(db: sqlite.Database) {
 
 		logger.log("  ", query)
 
-		db.exec(query)
+		const statement = db.prepare(query)
+
+		const result = statement.all()
+
+		logger.log("  ", result)
 	}
 	/*
 	return db.prepare<{
@@ -119,6 +119,36 @@ function createSetColumnValueStatement(db: sqlite.Database) {
 	)*/
 }
 type SetColumnValueStatement = ReturnType<typeof createSetColumnValueStatement>
+
+function createUpdateColumnValue(db: sqlite.Database) {
+	return function (args: { provider: string; id: string; columnName: string; columnValue: any }) {
+		const query = `UPDATE ViewerData SET ${args.columnName}=${args.columnValue} WHERE ${args.provider}='${args.id}'`
+
+		logger.log("Updating w/", query)
+
+		db.exec(query)
+	}
+}
+type UpdateColumnValue = ReturnType<typeof createUpdateColumnValue>
+
+function createInsertWithColumnValue(db: sqlite.Database) {
+	return function (args: {
+		provider: string
+		columnName: string
+		id: string
+		displayName: string
+		columnValue: any
+	}) {
+		const query = `INSERT INTO ViewerData (${args.provider}, ${args.provider}_name, ${args.columnName}) VALUES('${
+			args.id
+		}', '${escapeSql(args.displayName)}', ${args.columnValue})`
+
+		logger.log("Insert w/", query)
+
+		db.exec(query)
+	}
+}
+type InsertColumnValue = ReturnType<typeof createInsertWithColumnValue>
 
 function createGetColumnValueStatement(db: sqlite.Database) {
 	return db.prepare<
@@ -143,6 +173,11 @@ const rendererViewerDataChanged = defineCallableIPC<
 	(provider: string, id: string, varName: string, value: any) => void
 >("viewer-data", "viewerDataChanged")
 
+const rendererViewerDataAdded = defineCallableIPC<(provider: string, id: string, data: any) => void>(
+	"viewer-data",
+	"viewerDataAdded"
+)
+
 const rendererColumnAdded = defineCallableIPC<(ipcDef: IPCViewerVariable) => void>("viewer-data", "columnAdded")
 const rendererColumnRemoved = defineCallableIPC<(name: string) => void>("viewer-data", "columnRemoved")
 
@@ -158,6 +193,9 @@ export const ViewerData = Service(
 		private pagedQueryStatement: PagedQueryStatement
 		private pagedQueryOrderedStatement: PagedQueryOrderedStatement
 		private queryNumViewerStatement: QueryNumViewersStatement
+
+		private updateValue: UpdateColumnValue
+		private insertValue: InsertColumnValue
 
 		private _variables: ViewerVariable[] = []
 
@@ -270,6 +308,9 @@ export const ViewerData = Service(
 			this.pagedQueryOrderedStatement = createPagedQueryOrderedStatement(this.db)
 			this.queryNumViewerStatement = createQueryNumViewers(this.db)
 
+			this.insertValue = createInsertWithColumnValue(this.db)
+			this.updateValue = createUpdateColumnValue(this.db)
+
 			await this.loadVariables()
 
 			defineIPCFunc("viewer-data", "getVariables", () => {
@@ -358,23 +399,46 @@ export const ViewerData = Service(
 
 			const serialized = await serializeSchema(vari.schema, value)
 
-			const perf = startPerfTime("Set Column Value")
-			await this.setColumnValueStatement({
-				provider,
-				columnName: varname,
-				columnValue: serialized,
-				id,
-				displayName,
-			})
-			perf.stop(logger)
-
 			try {
-				await this.providers.get(provider)?.onDataChanged(id, varname, value)
+				this.insertValue({
+					provider,
+					columnName: varname,
+					columnValue: serialized,
+					id,
+					displayName,
+				})
+
+				try {
+					await this.providers.get(provider)?.onDataChanged(id, varname, value)
+				} catch (err) {
+					logger.error("Error Updating Provider Data", id, varname, value, err)
+				}
+
+				const defaultValue = await this.getDefaultViewerData()
+
+				defaultValue[varname] = value
+
+				rendererViewerDataAdded(provider, id, defaultValue)
 			} catch (err) {
-				logger.error("Error Updating Provider Data", id, varname, value, err)
+				try {
+					this.updateValue({
+						provider,
+						id,
+						columnName: varname,
+						columnValue: serialized,
+					})
+
+					try {
+						await this.providers.get(provider)?.onDataChanged(id, varname, value)
+					} catch (err) {
+						logger.error("Error Updating Provider Data", id, varname, value, err)
+					}
+
+					rendererViewerDataChanged(provider, id, varname, value)
+				} catch (err) {
+					logger.error("Error Inserting New Viewer Data", id, varname, value, err)
+				}
 			}
-			//Notify the UI
-			rendererViewerDataChanged(provider, id, varname, value)
 		}
 
 		private async getDefaultViewerData() {

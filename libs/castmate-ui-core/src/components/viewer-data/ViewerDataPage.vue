@@ -3,19 +3,18 @@
 		<div class="inner-container" ref="container">
 			<p-data-table
 				class="flex flex-column"
-				:value="lazyViewers"
+				:value="viewers"
 				data-key="twitch"
 				v-model:sort-field="sortField"
 				v-model:sort-order="sortOrder"
 				scrollable
 				style="width: 100%; height: 100%"
-				v-if="hasLength"
 				:virtual-scroller-options="{
 					lazy: true,
 					itemSize: 46,
 					onLazyLoad,
 					numToleratedItems: 10,
-					loading: lazyLoading,
+					loading,
 				}"
 			>
 				<template #header>
@@ -29,7 +28,7 @@
 
 				<p-column v-for="v in viewerDataStore.variables.values()" :key="v.name" :header="v.name">
 					<template #body="{ data }">
-						<data-view :schema="v.schema" :model-value="data[v.name]" />
+						<data-view v-if="data" :schema="v.schema" :model-value="data[v.name]" />
 					</template>
 				</p-column>
 			</p-data-table>
@@ -38,12 +37,16 @@
 </template>
 
 <script setup lang="ts">
-import { VirtualScrollerLazyEvent } from "primevue/virtualscroller"
+import {
+	VirtualScrollerLazyEvent,
+	VirtualScrollerScrollIndexChangeEvent,
+	VirtualScrollerProps,
+} from "primevue/virtualscroller"
 import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PButton from "primevue/button"
-import { useViewerDataStore, DataView, useIpcCaller } from "../../main"
-import { computed, ref, onMounted } from "vue"
+import { useViewerDataStore, DataView, useIpcCaller, useLazyViewerQuery } from "../../main"
+import { computed, ref, watch, onMounted, effect } from "vue"
 import { useDialog } from "primevue/usedialog"
 import ViewerVariableEditDialog from "./ViewerVariableEditDialog.vue"
 
@@ -53,31 +56,20 @@ const dialog = useDialog()
 
 const viewerDataStore = useViewerDataStore()
 
-interface ViewerData {
-	twitchId: string
-	twitchName: string
-	[varName: string]: any
-}
-
 const container = ref<HTMLElement>()
 
 const { width, height } = useElementSize(container)
 
-const lazyViewers = ref(new Array<ViewerData>())
-
-const getNumRows = useIpcCaller<() => number>("viewer-data", "getNumRows")
-
-onMounted(async () => {
-	lazyViewers.value.length = await getNumRows()
-	hasLength.value = true
-	console.log("Viewer Rows Set", lazyViewers.value.length)
-})
-
-const hasLength = ref(false)
-const lazyLoading = ref(false)
-
 const sortField = ref<string>()
 const sortOrder = ref<number>()
+
+const { viewers, updateRange, loading } = useLazyViewerQuery(sortField, sortOrder)
+
+effect(() => {
+	for (const v of viewers.value) {
+		console.log(v)
+	}
+})
 
 function createNew() {
 	dialog.open(ViewerVariableEditDialog, {
@@ -90,7 +82,7 @@ function createNew() {
 		},
 		async onClose(options) {
 			console.log("Close!", options)
-			if (!options) {
+			if (!options?.data) {
 				return
 			}
 
@@ -103,24 +95,7 @@ function createNew() {
 
 async function onLazyLoad(event: VirtualScrollerLazyEvent) {
 	console.log("On Lazy Load!", event)
-
-	lazyLoading.value = true
-
-	const values = await viewerDataStore.queryViewersPaged(
-		"twitch",
-		event.first,
-		event.last,
-		sortField.value,
-		sortOrder.value
-	)
-
-	for (let i = event.first; i < event.last; ++i) {
-		lazyViewers.value[i] = values[i - event.first] as ViewerData
-	}
-
-	console.log("Viewers", values)
-
-	lazyLoading.value = false
+	updateRange(event.first, event.last)
 }
 </script>
 
