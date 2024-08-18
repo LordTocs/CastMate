@@ -19,7 +19,7 @@
 		"electron": "29.4.5",
 		"nanoid": "^5.0.7",
 		"pinia": "^2.1.7",
-		"primevue": "*",
+		"primevue": "3.53.0",
 		"vue": "^3.4.23"
 	},
 	"devDependencies": {

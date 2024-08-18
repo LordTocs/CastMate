@@ -2918,7 +2918,7 @@ __metadata:
     pinia: "npm:^2.1.7"
     prettier: "npm:^2.8.4"
     primeflex: "npm:3.3.1"
-    primevue: "npm:3.47.2"
+    primevue: "npm:3.53.0"
     ts-toolbelt: "npm:^9.6.0"
     typescript: "npm:^5.1.3"
     vite: "npm:^5.2.9"
@@ -2955,7 +2955,7 @@ __metadata:
     chromatism2: "npm:*"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:*"
+    primevue: "npm:3.53.0"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -2989,7 +2989,7 @@ __metadata:
     electron: "npm:29.4.5"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:*"
+    primevue: "npm:3.53.0"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3509,7 +3509,7 @@ __metadata:
     electron: "npm:29.4.5"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:*"
+    primevue: "npm:3.53.0"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3633,7 +3633,7 @@ __metadata:
     electron: "npm:29.4.5"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:*"
+    primevue: "npm:3.53.0"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -4063,7 +4063,7 @@ __metadata:
     matter-js: "npm:^0.19.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:*"
+    primevue: "npm:3.53.0"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -4265,7 +4265,7 @@ __metadata:
     electron: "npm:29.4.5"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:*"
+    primevue: "npm:3.53.0"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -4368,7 +4368,7 @@ __metadata:
     pinia: "npm:^2.1.7"
     primeflex: "npm:*"
     primeicons: "npm:^6.0.1"
-    primevue: "npm:*"
+    primevue: "npm:3.53.0"
     sass: "npm:^1.71.0"
     ts-toolbelt: "npm:*"
     vite: "npm:^5.2.9"
@@ -8437,12 +8437,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"primevue@npm:*, primevue@npm:3.47.2":
-  version: 3.47.2
-  resolution: "primevue@npm:3.47.2"
+"primevue@npm:3.53.0":
+  version: 3.53.0
+  resolution: "primevue@npm:3.53.0"
   peerDependencies:
     vue: ^3.0.0
-  checksum: 10/9f330b1dffe2a47d6fa9c95bfe3216eae4905a6369d91ab5b51f473d5881f8a9ed3b5b70b2ccf160aa1411ca5b1bd4901397f914fe88171c6d3feb50a7dee9e6
+  checksum: 10/a99e556ac7f2302286fc28d3c9b76f84dc7c69b70516a3e15adf47a2a63ead4dd9a0c893df4c9ab29a1502334e68784c467af0799082f0f8ba97bff8723060d8
   languageName: node
   linkType: hard
 
