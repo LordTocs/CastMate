@@ -200,4 +200,30 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 			})
 		},
 	})
+
+	defineAction({
+		id: "chapterMarker",
+		name: "Chapter Marker",
+		description: "Creates a Chapter Marker in the OBS recording",
+		icon: "mdi mdi-map-marker",
+		config: {
+			type: Object,
+			properties: {
+				obs: {
+					type: OBSConnection,
+					name: "OBS Connection",
+					required: true,
+					default: () => obsDefault.value,
+				},
+				chapterName: {
+					type: String,
+					name: "Chapter Name",
+					template: true,
+				},
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await config.obs?.connection?.call("CreateRecordChapter", { chapterName: config.chapterName })
+		},
+	})
 }
