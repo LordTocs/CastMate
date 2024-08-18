@@ -23,7 +23,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					name: "Scene",
 					template: true,
 					async enum(context: { obs: OBSConnection }) {
-						return (await context?.obs?.getSceneNames()) ?? []
+						return (await context?.obs?.getSceneAndGroupNames()) ?? []
 					},
 				},
 				source: {

@@ -26,7 +26,7 @@ export function setupTransforms(obsDefault: ReactiveRef<OBSConnection>) {
 					required: true,
 					name: "Scene",
 					async enum(context: { obs: OBSConnection }) {
-						return (await context?.obs?.getSceneNames()) ?? []
+						return (await context?.obs?.getSceneAndGroupNames()) ?? []
 					},
 				},
 				source: {

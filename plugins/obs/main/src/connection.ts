@@ -306,6 +306,21 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		}
 	}
 
+	async getSceneAndGroupNames(): Promise<string[]> {
+		try {
+			logger.log("Fetching Scene/Group Names")
+			const [sceneResp, groupResp] = await Promise.all([
+				this.connection.call("GetSceneList"),
+				this.connection.call("GetGroupList"),
+			])
+			const scenes = sceneResp.scenes as unknown as OBSSceneListItem[]
+			const groups = groupResp.groups as unknown as string[]
+			return [...scenes.map((s) => s.sceneName).reverse(), ...groups]
+		} catch (err) {
+			return []
+		}
+	}
+
 	async getInputs(inputKinds?: string | string[]): Promise<string[]> {
 		try {
 			if (Array.isArray(inputKinds)) {
@@ -343,7 +358,21 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 				value: i.sceneItemId,
 			}))
 		} catch (err) {
-			return []
+			try {
+				const resp = await this.connection.call("GetGroupSceneItemList", { sceneName })
+				let items = resp.sceneItems as unknown as OBSWSSceneItem[]
+				if (Array.isArray(inputKinds)) {
+					items = items.filter((i) => inputKinds.includes(i.inputKind))
+				} else if (inputKinds) {
+					items = items.filter((i) => i.inputKind == inputKinds)
+				}
+				return items.map((i) => ({
+					name: i.sourceName,
+					value: i.sceneItemId,
+				}))
+			} catch (err) {
+				return []
+			}
 		}
 	}
 

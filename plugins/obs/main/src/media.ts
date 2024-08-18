@@ -139,7 +139,7 @@ export function setupMedia(obsDefault: ReactiveRef<OBSConnection>) {
 					type: String,
 					required: true,
 					async enum(context: { obs: OBSConnection }) {
-						return (await context?.obs?.getSceneNames()) ?? []
+						return (await context?.obs?.getSceneAndGroupNames()) ?? []
 					},
 				},
 				source: {
