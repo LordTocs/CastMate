@@ -13,7 +13,7 @@
 				class="extra-small-button"
 			/>
 		</div>
-		<div class="flex flex-row pt-3 gap-1">
+		<div class="flex flex-row pt-3 gap-1" @mousedown="stopPropagation">
 			<div style="width: 0; flex: 1">
 				<label-floater label="Offset X" v-slot="labelProps">
 					<p-input-number
@@ -46,7 +46,7 @@
 import { OverlayPreviewConfig } from "castmate-plugin-overlays-shared"
 import { computed, useModel } from "vue"
 
-import { LabelFloater, DataInput } from "castmate-ui-core"
+import { LabelFloater, DataInput, stopPropagation } from "castmate-ui-core"
 import PInputNumber from "primevue/inputnumber"
 import PToggleButton from "primevue/togglebutton"
 import { FilePath, declareSchema } from "castmate-schema"

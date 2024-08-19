@@ -65,7 +65,6 @@ const isLocalObs = computed(() => {
 
 const props = defineProps<{
 	obsId: string | undefined
-	overlayConfig: OverlayConfig
 	overlayId: string
 }>()
 
@@ -80,9 +79,18 @@ const hasObs = computed(() => {
 
 const port = useSettingValue<string>({ plugin: "castmate", setting: "port" })
 
+const overlay = useResource<ResourceData<OverlayConfig>>("Overlay", () => props.overlayId)
+const overlayConfig = computed(() => overlay.value?.config)
+
 onMounted(() => {
 	watch(
-		() => ({ obs: props.obsId, id: props.overlayId, connected: hasObs.value }),
+		() => ({
+			obs: props.obsId,
+			id: props.overlayId,
+			connected: hasObs.value,
+			width: overlayConfig.value?.size?.width,
+			height: overlayConfig.value?.size?.height,
+		}),
 		async () => {
 			try {
 				if (hasObs.value) {
@@ -108,6 +116,8 @@ const urlPattern = computed(() => {
 })
 
 async function findBrowserSource() {
+	if (!overlayConfig.value) return
+
 	const source = await findBrowserByUrlPattern(urlPattern.value)
 
 	console.log("Found Potential Source", source)
@@ -120,8 +130,8 @@ async function findBrowserSource() {
 	if (source) {
 		valid =
 			source.inputSettings.url == expectedUrl &&
-			source.inputSettings.width == props.overlayConfig.size.width &&
-			source.inputSettings.height == props.overlayConfig.size.height
+			source.inputSettings.width == overlayConfig.value?.size?.width &&
+			source.inputSettings.height == overlayConfig.value?.size?.height
 	} else {
 		valid = false
 	}
@@ -132,8 +142,8 @@ async function findBrowserSource() {
 async function getBrowserSourceSettings() {
 	return {
 		url: await getOverlayURL(),
-		width: props.overlayConfig.size.width,
-		height: props.overlayConfig.size.height,
+		width: overlayConfig.value?.size?.width ?? 1920,
+		height: overlayConfig.value?.size?.height ?? 1080,
 	}
 }
 
