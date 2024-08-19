@@ -25,7 +25,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="stroke-edit flex flex-row justify-content-center" v-else>
+	<div class="flex flex-row justify-content-center mb-2 mt-2" v-else>
 		<p-button class="flex-grow-1" size="small" icon="mdi mdi-plus" @click="addStroke"> Add Stroke </p-button>
 	</div>
 </template>

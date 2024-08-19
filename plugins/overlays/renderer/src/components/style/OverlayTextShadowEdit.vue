@@ -56,7 +56,7 @@
 		</div>
 	</div>
 	<div class="stroke-edit flex flex-row justify-content-center" v-else>
-		<p-button class="flex-grow-1" size="small" icon="mdi mdi-plus" @click="addShadow"> Add Stroke </p-button>
+		<p-button class="flex-grow-1" size="small" icon="mdi mdi-plus" @click="addShadow"> Add Shadow </p-button>
 	</div>
 </template>
 
