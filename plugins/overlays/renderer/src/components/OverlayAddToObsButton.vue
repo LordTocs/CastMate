@@ -1,6 +1,6 @@
 <template>
 	<div v-if="obsId == null" class="display-box">
-		<div class="p-text-secondary">Connect OBS</div>
+		<div class="p-text-secondary">Select OBS Connection</div>
 	</div>
 	<div v-else-if="!hasObs">
 		<p-button v-if="isLocalObs" @click="openObs"><i class="obsi obsi-obs"></i> Open OBS</p-button>
@@ -16,17 +16,14 @@
 	<div v-else-if="!hasSource">
 		<p-button @click="createSourceClick"><i class="obsi obsi-obs"></i>Create Source</p-button>
 	</div>
-	<div class="display-box" v-else>
-		<i class="mdi mdi-web-box"></i>
-		{{ sourceName }}
-		<p-button
-			v-if="hasError"
-			class="extra-small-button ml-1"
-			size="small"
-			icon="mdi mdi-wrench"
-			v-tooltip="'Fix Issues'"
-			@click="fixErrorsClick"
-		></p-button>
+	<p-button v-else-if="hasError" severity="danger" v-tooltip.top="'OBS Source Needs Fixing'" @click="fixErrorsClick">
+		<i class="mdi mdi-wrench mr-2" /> Fix OBS Source
+	</p-button>
+	<div class="display-box" v-else v-tooltip.top="'This is the OBS Browser Source set to this overlay.'">
+		<span style="box-sizing: border-box">
+			<i class="mdi mdi-web-box"></i>
+			{{ sourceName }}
+		</span>
 	</div>
 </template>
 
@@ -88,7 +85,9 @@ onMounted(() => {
 		() => ({ obs: props.obsId, id: props.overlayId, connected: hasObs.value }),
 		async () => {
 			try {
-				await findBrowserSource()
+				if (hasObs.value) {
+					await findBrowserSource()
+				}
 			} catch {}
 		},
 		{ immediate: true, deep: true }
@@ -185,16 +184,16 @@ async function openObs() {
 
 <style scoped>
 .display-box {
-	display: flex;
+	display: inline-flex;
 	flex-direction: row;
 	justify-content: center;
 	align-items: center;
+	vertical-align: bottom;
 
 	border-radius: var(--border-radius);
 	background-color: var(--surface-d);
 
-	padding: 0.5rem;
-
-	margin: 0.5rem;
+	padding: 0.75rem 0.5rem;
+	border: var(--surface-d) solid 1px;
 }
 </style>
