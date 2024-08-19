@@ -266,13 +266,16 @@ export function useLazyViewerQuery(
 		},
 	}
 
+	async function forceReload() {
+		lazyViewers.value = new Array<ViewerData>(totalDataRows.value)
+		await loadRange(first, last)
+	}
+
 	onMounted(async () => {
 		viewerDataStore.observeViewers(observer)
 
 		totalDataRows.value = await getNumRows()
 		lazyViewers.value = new Array<ViewerData>(totalDataRows.value)
-
-		//await loadRange(first, last)
 	})
 
 	onBeforeUnmount(() => {
@@ -283,21 +286,9 @@ export function useLazyViewerQuery(
 	watch(
 		() => ({ sortField: toValue(sortField), sortOrder: toValue(sortOrder) }),
 		() => {
-			console.log("RELOADING FOR SORT", toValue(sortField), toValue(sortOrder))
-			lazyViewers.value = new Array<ViewerData>(totalDataRows.value)
-			loadRange(toValue(first), toValue(last))
+			forceReload()
 		}
 	)
-
-	/*watch(
-		() => ({
-			first: toValue(first),
-			last: toValue(last),
-		}),
-		async (newRange, oldRange) => {
-			await updateRange(newRange.first, oldRange.first, newRange.last, oldRange.last)
-		}
-	)*/
 
 	async function updateRange(newFirst: number, newLast: number) {
 		console.log("UpdateRange!", newFirst, newLast)
