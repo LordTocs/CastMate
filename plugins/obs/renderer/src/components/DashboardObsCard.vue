@@ -5,6 +5,7 @@
 				<i class="obsi obsi-obs" /> {{ obs?.config?.name }}
 				<div class="flex-grow-1" />
 				<p-button
+					v-if="obs.state.connected"
 					icon="mdi mdi-refresh"
 					size="small"
 					class="extra-small-button"
