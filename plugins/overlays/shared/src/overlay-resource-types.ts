@@ -28,6 +28,11 @@ export interface OverlayPreviewConfig {
 	source?: string | "obs"
 }
 
+export interface InitialOverlayConfig {
+	name: string
+	size: { width: number; height: number }
+}
+
 export interface OverlayConfig {
 	name: string
 	size: { width: number; height: number }

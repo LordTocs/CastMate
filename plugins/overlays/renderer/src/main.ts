@@ -1,6 +1,7 @@
 import { computed, App } from "vue"
 import {
 	ProjectGroup,
+	ResourceSchemaEdit,
 	getResourceAsProjectGroup,
 	handleIpcMessage,
 	handleIpcRpc,
@@ -67,10 +68,30 @@ export function initPlugin(app: App<Element>) {
 					},
 				},
 				obsId: undefined,
-				showPreview: false,
 			}
 		},
 	})
+
+	resourceStore.registerConfigSchema("Overlay", {
+		type: Object,
+		properties: {
+			name: { type: String, name: "Overlay Name", required: true, default: "Overlay" },
+			size: {
+				name: "Size",
+				type: Object,
+				properties: {
+					width: { type: Number, required: true, name: "Width", default: 1920 },
+					height: { type: Number, required: true, name: "Height", default: 1080 },
+				},
+			},
+		},
+	})
+
+	resourceStore.registerEditComponent("Overlay", ResourceSchemaEdit, async (id, data: any) => {
+		await resourceStore.applyResourceConfig("Overlay", id, data)
+	})
+
+	resourceStore.registerCreateComponent("Overlay", ResourceSchemaEdit)
 
 	projectStore.registerProjectGroupItem(overlayGroup)
 
