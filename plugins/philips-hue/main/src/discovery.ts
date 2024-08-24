@@ -28,18 +28,23 @@ export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: R
 	async function tryCreateKey() {
 		if (!hubIp.value) return
 
-		const resp = await coreAxios.post(`http://${hubIp.value}/api`, {
-			devicetype: `CastMate#${os.userInfo().username}`,
-		})
+		try {
+			const resp = await coreAxios.post(`http://${hubIp.value}/api`, {
+				devicetype: `CastMate#${os.userInfo().username}`,
+			})
 
-		const key = resp.data[0]?.success?.username as string | undefined
+			const key = resp.data[0]?.success?.username as string | undefined
 
-		if (key) {
-			logger.log("Key Found", key)
-			hubKey.value = key
+			if (key) {
+				logger.log("Key Found", key)
+				hubKey.value = key
+			}
+
+			return key
+		} catch (err) {
+			logger.error("Error Creating HUE Key", err)
+			return undefined
 		}
-
-		return key
 	}
 
 	defineRendererCallable("findHueBridge", async () => {
