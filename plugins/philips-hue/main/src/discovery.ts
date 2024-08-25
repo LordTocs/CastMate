@@ -14,15 +14,37 @@ import os from "os"
 
 const logger = usePluginLogger("philips-hue")
 
+async function validateHubIP(hubIp: string | undefined) {
+	try {
+		if (!hubIp) return false
+
+		const resp = await coreAxios.get(`http://${hubIp}/api/0/config`)
+
+		return "name" in resp.data && "bridgeid" in resp.data
+	} catch (err) {
+		logger.error(`Error Querying Possible Hub ${hubIp}`, err)
+		return false
+	}
+}
+
 export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: ReactiveRef<string | undefined>) {
 	async function discoverBridge() {
-		const resp = await coreAxios.get("https://discovery.meethue.com/")
+		try {
+			const resp = await coreAxios.get("https://discovery.meethue.com/")
 
-		if (!Array.isArray(resp.data) || resp.data.length == 0) {
-			return
+			if (!Array.isArray(resp.data) || resp.data.length == 0) {
+				return
+			}
+
+			for (const possibleHub of resp.data) {
+				if (await validateHubIP(possibleHub?.internalipaddress)) {
+					hubIp.value = possibleHub?.internalipaddress
+					return
+				}
+			}
+		} catch (err) {
+			logger.error("Error trying to discover bridge ip", err)
 		}
-
-		hubIp.value = resp.data[0]?.internalipaddress
 	}
 
 	async function tryCreateKey() {
