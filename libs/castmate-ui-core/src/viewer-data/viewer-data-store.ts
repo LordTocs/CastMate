@@ -242,7 +242,6 @@ export function useLazyViewerQuery(
 		onViewerDataChanged(provider, id, varName, value) {
 			console.log("changed", provider, id, varName, value)
 			const existing = loadedViewers.value.get(`${provider}-${id}`)
-			console.log(existing, loadedViewers)
 			if (existing) {
 				existing[varName] = value
 			}

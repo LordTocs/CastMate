@@ -28,6 +28,9 @@ const sqlTypes: Record<string, string> = {
 	String: "TEXT",
 	Number: "REAL",
 	Boolean: "INTEGER",
+	TwitchViewer: "TEXT",
+	Color: "TEXT",
+	LightColor: "TEXT",
 }
 
 function escapeSql(sql: string) {
@@ -84,42 +87,6 @@ function createPagedQueryOrderedStatement(db: sqlite.Database) {
 }
 type PagedQueryOrderedStatement = ReturnType<typeof createPagedQueryOrderedStatement>
 
-function createSetColumnValueStatement(db: sqlite.Database) {
-	return function (args: {
-		provider: string
-		columnName: string
-		id: string
-		displayName: string
-		columnValue: any
-	}) {
-		const query = `INSERT INTO ViewerData (${args.provider}, ${args.provider}_name, ${args.columnName}) VALUES('${
-			args.id
-		}', '${escapeSql(args.displayName)}', ${args.columnValue}) ON CONFLICT(${args.provider}) DO UPDATE SET ${
-			args.columnName
-		}=${args.columnValue}, ${args.provider}_name='${escapeSql(args.displayName)}'`
-
-		logger.log("  ", query)
-
-		const statement = db.prepare(query)
-
-		const result = statement.all()
-
-		logger.log("  ", result)
-	}
-	/*
-	return db.prepare<{
-		provider: string
-		providerName: string
-		columnName: string
-		id: string
-		displayName: string
-		columnValue: any
-	}>(
-		`INSERT INTO ViewerData(:provider, :providerName, :columnName) VALUES(:id, :displayName, :columnValue) ON CONFLICT(:provider) DO UPDATE SET :columnName=:columnValue, :providerName=:displayName`
-	)*/
-}
-type SetColumnValueStatement = ReturnType<typeof createSetColumnValueStatement>
-
 function createUpdateColumnValue(db: sqlite.Database) {
 	return function (args: { provider: string; id: string; columnName: string; columnValue: any }) {
 		const query = `UPDATE ViewerData SET ${args.columnName}=${args.columnValue} WHERE ${args.provider}='${args.id}'`
@@ -130,6 +97,17 @@ function createUpdateColumnValue(db: sqlite.Database) {
 	}
 }
 type UpdateColumnValue = ReturnType<typeof createUpdateColumnValue>
+
+function createOffsetColumnValue(db: sqlite.Database) {
+	return function (args: { provider: string; id: string; columnName: string; columnOffset: number }) {
+		const query = `UPDATE ViewerData SET ${args.columnName}=coalesce(${args.columnName}, 0)+(${args.columnOffset}) WHERE ${args.provider}='${args.id}'`
+
+		logger.log("Updating w/", query)
+
+		db.exec(query)
+	}
+}
+type OffsetColumnValue = ReturnType<typeof createOffsetColumnValue>
 
 function createInsertWithColumnValue(db: sqlite.Database) {
 	return function (args: {
@@ -150,7 +128,7 @@ function createInsertWithColumnValue(db: sqlite.Database) {
 }
 type InsertColumnValue = ReturnType<typeof createInsertWithColumnValue>
 
-function createGetColumnValueStatement(db: sqlite.Database) {
+function createGetAllValuesStatement(db: sqlite.Database) {
 	return db.prepare<
 		{
 			provider: string
@@ -158,6 +136,20 @@ function createGetColumnValueStatement(db: sqlite.Database) {
 		},
 		Record<string, any>
 	>("SELECT * FROM ViewerData WHERE :provider = :ids")
+}
+
+type GetAllValuesStatement = ReturnType<typeof createGetAllValuesStatement>
+
+function createGetColumnValueStatement(db: sqlite.Database) {
+	return function (args: { provider: string; id: string; columnName: string }) {
+		const query = `SELECT ${args.columnName} FROM ViewerData WHERE ${args.provider}='${args.id}'`
+
+		logger.log("Getting Column Value w/", query)
+
+		const statement = db.prepare<unknown[], Record<string, any>>(query)
+
+		return statement.get()
+	}
 }
 
 type GetColumnValueStatement = ReturnType<typeof createGetColumnValueStatement>
@@ -188,13 +180,14 @@ export const ViewerData = Service(
 		private addColumnStatement: AddColumnStatement
 		private createTableStatement: CreateTableStatement
 		private removeTableStatement: RemoveTableStatement
-		private setColumnValueStatement: SetColumnValueStatement
-		private getColumnValueStatement: GetColumnValueStatement
+		private getAllValuesStatement: GetAllValuesStatement
 		private pagedQueryStatement: PagedQueryStatement
 		private pagedQueryOrderedStatement: PagedQueryOrderedStatement
 		private queryNumViewerStatement: QueryNumViewersStatement
 
+		private getValue: GetColumnValueStatement
 		private updateValue: UpdateColumnValue
+		private offsetValue: OffsetColumnValue
 		private insertValue: InsertColumnValue
 
 		private _variables: ViewerVariable[] = []
@@ -302,14 +295,15 @@ export const ViewerData = Service(
 
 			this.addColumnStatement = createAddColumnStatement(this.db)
 			this.removeTableStatement = createRemoveColumnStatement(this.db)
-			this.getColumnValueStatement = createGetColumnValueStatement(this.db)
-			this.setColumnValueStatement = createSetColumnValueStatement(this.db)
+			this.getAllValuesStatement = createGetAllValuesStatement(this.db)
 			this.pagedQueryStatement = createPagedQueryStatement(this.db)
 			this.pagedQueryOrderedStatement = createPagedQueryOrderedStatement(this.db)
 			this.queryNumViewerStatement = createQueryNumViewers(this.db)
 
+			this.getValue = createGetColumnValueStatement(this.db)
 			this.insertValue = createInsertWithColumnValue(this.db)
 			this.updateValue = createUpdateColumnValue(this.db)
+			this.offsetValue = createOffsetColumnValue(this.db)
 
 			await this.loadVariables()
 
@@ -398,12 +392,20 @@ export const ViewerData = Service(
 			if (!vari) return
 
 			const serialized = await serializeSchema(vari.schema, value)
+			let sqlized: string
+			if (typeof serialized == "number") {
+				sqlized = String(serialized)
+			} else if (typeof serialized == "string") {
+				sqlized = `'${escapeSql(serialized)}'`
+			} else {
+				sqlized = `'${escapeSql(JSON.stringify(serialized))}'`
+			}
 
 			try {
 				this.insertValue({
 					provider,
 					columnName: varname,
-					columnValue: serialized,
+					columnValue: sqlized,
 					id,
 					displayName,
 				})
@@ -425,7 +427,7 @@ export const ViewerData = Service(
 						provider,
 						id,
 						columnName: varname,
-						columnValue: serialized,
+						columnValue: sqlized,
 					})
 
 					try {
@@ -436,7 +438,73 @@ export const ViewerData = Service(
 
 					rendererViewerDataChanged(provider, id, varname, value)
 				} catch (err) {
-					logger.error("Error Inserting New Viewer Data", id, varname, value, err)
+					logger.error("Error Updating Viewer Data", id, varname, value, err)
+				}
+			}
+		}
+
+		async offsetViewerValue(provider: string, id: string, displayName: string, varname: string, offset: number) {
+			const vari = this.getVariable(varname)
+			if (!vari) return
+			if (vari.schema.type != Number) {
+				throw new Error("Can't offset a variable that's not a number!")
+			}
+			if (typeof offset != "number") {
+				throw new Error(`Can't use a non number offset (${offset})`)
+			}
+			if (isNaN(offset)) {
+				throw new Error(`Can't use a NaN as offset`)
+			}
+
+			try {
+				const defaultNumber = await constructDefault(vari.schema)
+				const offsetDefault = (defaultNumber ?? 0) + offset
+
+				this.insertValue({
+					provider,
+					columnName: varname,
+					columnValue: offsetDefault,
+					id,
+					displayName,
+				})
+
+				try {
+					await this.providers.get(provider)?.onDataChanged(id, varname, offsetDefault)
+				} catch (err) {
+					logger.error("Error Updating Provider Data", id, varname, offsetDefault, err)
+				}
+
+				const defaultValue = await this.getDefaultViewerData()
+
+				defaultValue[varname] = offsetDefault
+
+				rendererViewerDataAdded(provider, id, defaultValue)
+			} catch (err) {
+				try {
+					const value = this.db.transaction<() => number | undefined>(() => {
+						this.offsetValue({
+							provider,
+							id,
+							columnName: varname,
+							columnOffset: offset,
+						})
+
+						const row = this.getValue({ provider, id, columnName: varname })
+
+						return row?.[varname]
+					})()
+
+					logger.log("Offset Value", value)
+
+					try {
+						await this.providers.get(provider)?.onDataChanged(id, varname, value)
+					} catch (err) {
+						logger.error("Error Updating Provider Data", id, varname, value, err)
+					}
+
+					rendererViewerDataChanged(provider, id, varname, value)
+				} catch (err) {
+					logger.error("Error Offseting Viewer Data", id, varname, offset, err)
 				}
 			}
 		}
@@ -455,7 +523,7 @@ export const ViewerData = Service(
 
 		async getViewerData(provider: string, id: string) {
 			try {
-				const data = await this.getColumnValueStatement.get({ provider, ids: id })
+				const data = await this.getAllValuesStatement.get({ provider, ids: id })
 
 				if (!data) return undefined
 
@@ -475,7 +543,7 @@ export const ViewerData = Service(
 
 		async getMultipleViewerData(provider: string, ids: string[]) {
 			try {
-				const data = await this.getColumnValueStatement.all({ provider, ids })
+				const data = await this.getAllValuesStatement.all({ provider, ids })
 
 				const result: (Record<string, any> | undefined)[] = []
 
@@ -486,7 +554,28 @@ export const ViewerData = Service(
 
 						const viewerData: Record<string, any> = {}
 						for (const vari of this.variables) {
-							const deserialized = await deserializeSchema(vari.schema, row[vari.name])
+							const schemaType = getTypeByConstructor(vari.schema.type)
+							if (!schemaType) continue
+
+							const sqlized = row[vari.name]
+							let desqlized: any
+
+							if (typeof sqlized == "number") {
+								if (vari.schema.type == Boolean) {
+									desqlized = sqlized != 0
+								} else {
+									desqlized = sqlized
+								}
+							} else if (typeof sqlized == "string") {
+								const sqlType = sqlTypes[schemaType.name]
+								if (sqlType == "TEXT") {
+									desqlized = sqlized
+								} else {
+									desqlized = JSON.parse(sqlized)
+								}
+							}
+
+							const deserialized = await deserializeSchema(vari.schema, desqlized)
 							const exposed = await exposeSchema(vari.schema, deserialized)
 							viewerData[vari.name] = exposed
 						}
