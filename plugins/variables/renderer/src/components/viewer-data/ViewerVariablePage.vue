@@ -3,6 +3,7 @@
 		<div class="inner-container" ref="container">
 			<p-data-table
 				class="flex flex-column"
+				table-class="variable-table"
 				:value="viewers"
 				data-key="twitch"
 				v-model:sort-field="sortField"
@@ -24,11 +25,12 @@
 					</div>
 				</template>
 
-				<p-column field="twitch_name" header="Viewer" sortable></p-column>
+				<p-column class="name-column" field="twitch_name" header="Viewer" sortable></p-column>
 
 				<p-column
 					v-for="v in viewerDataStore.variables.values()"
 					:key="v.name"
+					class="data-column"
 					:header="v.name"
 					sortable
 					:field="v.name"
@@ -42,6 +44,8 @@
 						/>
 					</template>
 				</p-column>
+
+				<p-column></p-column>
 			</p-data-table>
 		</div>
 	</div>
@@ -72,7 +76,7 @@ const viewerDataStore = useViewerDataStore()
 
 const container = ref<HTMLElement>()
 
-//const { width, height } = useElementSize(container)
+const { width, height } = useElementSize(container)
 
 const sortField = ref<string>()
 const sortOrder = ref<number>()
@@ -135,5 +139,19 @@ async function onLazyLoad(event: VirtualScrollerLazyEvent) {
 
 .inner-container :deep(.p-virtualscroller) {
 	height: 100%;
+}
+
+:deep(.name-column) {
+	width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+:deep(.data-column) {
+	width: 250px;
+}
+
+:deep(.variable-table) {
+	table-layout: fixed;
 }
 </style>

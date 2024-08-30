@@ -62,5 +62,9 @@ function onKeyDown(ev: KeyboardEvent) {
 <style scoped>
 .var-display-edit {
 	cursor: pointer;
+
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 </style>
