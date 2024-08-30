@@ -4114,6 +4114,8 @@ __metadata:
   resolution: "castmate-plugin-variables-main@workspace:plugins/variables/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-twitch-main: "workspace:^"
+    castmate-plugin-twitch-shared: "workspace:^"
     castmate-plugin-variables-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "npm:*"

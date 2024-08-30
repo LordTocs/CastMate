@@ -1,7 +1,7 @@
 import { defineAction, usePluginLogger, ViewerData } from "castmate-core"
 import { TwitchViewer } from "castmate-plugin-twitch-shared"
 import { DynamicType } from "castmate-schema"
-import { ViewerCache } from "./viewer-cache"
+import { ViewerCache as TwitchViewerCache } from "castmate-plugin-twitch-main"
 
 export function setupViewerVariables() {
 	const logger = usePluginLogger()
@@ -46,7 +46,7 @@ export function setupViewerVariables() {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
-			const viewerDisp = await ViewerCache.getInstance().getDisplayDataById(config.viewer)
+			const viewerDisp = await TwitchViewerCache.getInstance().getDisplayDataById(config.viewer)
 
 			if (!viewerDisp) throw new Error(`Unable to Resolve Twitch Viewer ${config.viewer}`)
 
@@ -104,7 +104,7 @@ export function setupViewerVariables() {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
-			const viewerDisp = await ViewerCache.getInstance().getDisplayDataById(config.viewer)
+			const viewerDisp = await TwitchViewerCache.getInstance().getDisplayDataById(config.viewer)
 
 			if (!viewerDisp) throw new Error(`Unable to Resolve Twitch Viewer ${config.viewer}`)
 

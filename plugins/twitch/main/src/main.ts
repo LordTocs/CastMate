@@ -29,7 +29,6 @@ import { setup7tv } from "./seventv"
 import { setupCategoryCache } from "./category-cache"
 import { setupInfoManager } from "./info-manager"
 import { setupWalkOns } from "./walk-on"
-import { setupViewerVariables } from "./viewer-variables"
 
 export default definePlugin(
 	{
@@ -91,7 +90,6 @@ export default definePlugin(
 		setupEmotes()
 		setup7tv()
 		setupWalkOns()
-		setupViewerVariables()
 
 		onLoad(async () => {
 			await TwitchAPIService.getInstance().finalize()
@@ -99,4 +97,4 @@ export default definePlugin(
 	}
 )
 
-export { TwitchAccount, onChannelAuth, ChannelPointReward }
+export { TwitchAccount, onChannelAuth, ChannelPointReward, ViewerCache }
