@@ -2,10 +2,12 @@ import { ProjectGroupItem, useDockingStore, useProjectStore } from "castmate-ui-
 import { computed } from "vue"
 import VariablesPageVue from "./components/VariablesPage.vue"
 import { useVariableStore } from "./variable-store"
+import { useViewerDataStore } from "./viewer-data-store"
 
 export async function initPlugin() {
 	//Init Renderer Module
 	const variableStore = useVariableStore()
+	const viewerVariableStore = useViewerDataStore()
 
 	await variableStore.initialize()
 
@@ -24,4 +26,6 @@ export async function initPlugin() {
 			}
 		})
 	)
+
+	await viewerVariableStore.initialize()
 }

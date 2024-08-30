@@ -316,6 +316,27 @@ export const ViewerData = Service(
 
 			defineIPCFunc(
 				"viewer-data",
+				"setVariable",
+				async (provider: string, id: string, varname: string, value: any) => {
+					const vari = this.getVariable(varname)
+					if (!vari) return
+
+					const serialized = await serializeSchema(vari.schema, value)
+					let sqlized: string
+					if (typeof serialized == "number") {
+						sqlized = String(serialized)
+					} else if (typeof serialized == "string") {
+						sqlized = `'${escapeSql(serialized)}'`
+					} else {
+						sqlized = `'${escapeSql(JSON.stringify(serialized))}'`
+					}
+
+					await this.updateViewerValue(provider, id, varname, value, sqlized)
+				}
+			)
+
+			defineIPCFunc(
+				"viewer-data",
 				"queryPagedData",
 				async (start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => {
 					return await this.getPagedViewerData(start, end, sortBy, sortOrder)
@@ -387,6 +408,27 @@ export const ViewerData = Service(
 			rendererColumnRemoved(name)
 		}
 
+		private async updateViewerValue(provider: string, id: string, varname: string, value: any, sqlized: any) {
+			try {
+				this.updateValue({
+					provider,
+					id,
+					columnName: varname,
+					columnValue: sqlized,
+				})
+
+				try {
+					await this.providers.get(provider)?.onDataChanged(id, varname, value)
+				} catch (err) {
+					logger.error("Error Updating Provider Data", id, varname, value, err)
+				}
+
+				rendererViewerDataChanged(provider, id, varname, value)
+			} catch (err) {
+				logger.error("Error Updating Viewer Data", id, varname, value, err)
+			}
+		}
+
 		async setViewerValue(provider: string, id: string, displayName: string, varname: string, value: any) {
 			const vari = this.getVariable(varname)
 			if (!vari) return
@@ -422,24 +464,7 @@ export const ViewerData = Service(
 
 				rendererViewerDataAdded(provider, id, defaultValue)
 			} catch (err) {
-				try {
-					this.updateValue({
-						provider,
-						id,
-						columnName: varname,
-						columnValue: sqlized,
-					})
-
-					try {
-						await this.providers.get(provider)?.onDataChanged(id, varname, value)
-					} catch (err) {
-						logger.error("Error Updating Provider Data", id, varname, value, err)
-					}
-
-					rendererViewerDataChanged(provider, id, varname, value)
-				} catch (err) {
-					logger.error("Error Updating Viewer Data", id, varname, value, err)
-				}
+				this.updateViewerValue(provider, id, varname, value, sqlized)
 			}
 		}
 

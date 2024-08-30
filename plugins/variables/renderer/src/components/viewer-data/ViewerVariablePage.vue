@@ -34,7 +34,12 @@
 					:field="v.name"
 				>
 					<template #body="{ data }">
-						<data-view v-if="data" :schema="v.schema" :model-value="data[v.name]" />
+						<value-display-edit
+							v-if="data"
+							:schema="v.schema"
+							:model-value="data[v.name]"
+							@update:modelValue="viewerDataStore.setViewerVariable(data.twitch, v.name, $event)"
+						/>
 					</template>
 				</p-column>
 			</p-data-table>
@@ -51,10 +56,13 @@ import {
 import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PButton from "primevue/button"
-import { useViewerDataStore, DataView, useIpcCaller, useLazyViewerQuery } from "../../main"
+import { DataView, useIpcCaller } from "castmate-ui-core"
 import { computed, ref, watch, onMounted, effect } from "vue"
 import { useDialog } from "primevue/usedialog"
 import ViewerVariableEditDialog from "./ViewerVariableEditDialog.vue"
+import ValueDisplayEdit from "../util/ValueDisplayEdit.vue"
+
+import { useLazyViewerQuery, useViewerDataStore } from "../../viewer-data-store"
 
 import { useElementSize } from "@vueuse/core"
 
@@ -64,7 +72,7 @@ const viewerDataStore = useViewerDataStore()
 
 const container = ref<HTMLElement>()
 
-const { width, height } = useElementSize(container)
+//const { width, height } = useElementSize(container)
 
 const sortField = ref<string>()
 const sortOrder = ref<number>()

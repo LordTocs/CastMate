@@ -9,8 +9,8 @@ import {
 	useDockingStore,
 	useIpcCaller,
 	useProjectStore,
-} from "../main"
-import ViewerDataPage from "../components/viewer-data/ViewerDataPage.vue"
+} from "castmate-ui-core"
+import ViewerVariablePage from "./components/viewer-data/ViewerVariablePage.vue"
 
 function parseDefinition(def: IPCViewerVariable): ViewerVariable {
 	return {
@@ -39,6 +39,10 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 	const projectStore = useProjectStore()
 
 	const getVariables = useIpcCaller<() => IPCViewerVariable[]>("viewer-data", "getVariables")
+	const setVariable = useIpcCaller<(provider: string, id: string, varname: string, value: any) => void>(
+		"viewer-data",
+		"setVariable"
+	)
 
 	const queryPagedViewerData = useIpcCaller<
 		(start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => Record<string, any>[]
@@ -57,6 +61,19 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 	}
 
 	async function initialize() {
+		const projectItem = computed<ProjectItem>(() => {
+			return {
+				id: "viewer-variables",
+				title: "Viewer Variables",
+				icon: "mdi mdi-table-account",
+				open() {
+					dockingStore.openPage("viewer-data", "Viewer Variables", ViewerVariablePage)
+				},
+			}
+		})
+
+		projectStore.registerProjectGroupItem(projectItem)
+
 		const vars = await getVariables()
 
 		for (const column of vars) {
@@ -90,19 +107,6 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 				}
 			}
 		)
-
-		const projectItem = computed<ProjectItem>(() => {
-			return {
-				id: "viewer-data",
-				title: "Viewer Data",
-				icon: "mdi mdi-table-account",
-				open() {
-					dockingStore.openPage("viewer-data", "Viewer Data", ViewerDataPage)
-				},
-			}
-		})
-
-		projectStore.registerProjectGroupItem(projectItem)
 	}
 
 	async function queryViewersPaged(
@@ -130,6 +134,10 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 
 	async function deleteViewerVariable(id: string) {}
 
+	async function setViewerVariable(id: string, varname: string, value: any) {
+		await setVariable("twitch", id, varname, value)
+	}
+
 	return {
 		initialize,
 		variables: computed(() => variables.value),
@@ -139,6 +147,7 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 		createViewerVariable,
 		editViewerVariable,
 		deleteViewerVariable,
+		setViewerVariable,
 	}
 })
 

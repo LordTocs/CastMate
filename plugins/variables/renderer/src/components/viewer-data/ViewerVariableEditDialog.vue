@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, markRaw } from "vue"
 import { getAllVariableTypes, ViewerVariable, getTypeByConstructor, getTypeByName, Schema } from "castmate-schema"
-import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput } from "../../main"
+import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput } from "castmate-ui-core"
 
 import PButton from "primevue/button"
 import PDropdown from "primevue/dropdown"

@@ -83,8 +83,6 @@ const variables = useVariableList()
 const dialog = useDialog()
 const confirm = useConfirm()
 
-const pluginStore = usePluginStore()
-
 function createNew() {
 	dialog.open(VariableEditDialog, {
 		props: {
