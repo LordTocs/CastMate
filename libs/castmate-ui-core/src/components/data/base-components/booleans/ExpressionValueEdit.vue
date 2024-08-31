@@ -181,4 +181,12 @@ watch(valueSchemaTypes, (value, oldValues) => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.boolean-expression :deep(.p-tabview .p-tabview-nav li .p-tabview-nav-link) {
+	padding: 0.25rem 0.5rem;
+}
+
+.boolean-expression :deep(.p-tabview .p-tabview-panels) {
+	padding: 0.75rem;
+}
+</style>
