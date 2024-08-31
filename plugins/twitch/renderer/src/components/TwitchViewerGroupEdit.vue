@@ -41,7 +41,7 @@ function addEither() {
 
 <style scoped>
 .group-edit {
-	min-width: 40rem;
+	min-width: 45rem;
 	max-height: 30rem;
 	overflow-y: auto;
 	min-height: 10rem;

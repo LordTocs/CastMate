@@ -35,6 +35,7 @@
 			<p-button text size="small" @click="addInlineGroup"><i class="mdi mdi-plus" />Viewers</p-button>
 			<p-button text size="small" @click="addProperties"><i class="mdi mdi-plus" /> Properties</p-button>
 			<p-button text size="small" @click="addCategory"><i class="mdi mdi-plus" /> Category</p-button>
+			<p-button text size="small" @click="addCondition"><i class="mdi mdi-plus" /> Condition</p-button>
 		</div>
 	</div>
 </template>
@@ -122,6 +123,14 @@ function addProperties() {
 
 function addCategory() {
 	rules.value.push({ or: [{ properties: {} }] })
+}
+
+function addCondition() {
+	rules.value.push({
+		varname: undefined,
+		operator: "equal",
+		operand: { type: "state", plugin: undefined, state: undefined },
+	})
 }
 </script>
 

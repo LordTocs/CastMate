@@ -60,6 +60,11 @@ export { default as StreamPlanDashboardWidget } from "./components/stream-plan/S
 
 export { default as CancellableDynamicDialog } from "./components/dialogs/CancellableDynamicDialog.vue"
 
+export { default as ValueCompareOperatorSelector } from "./components/data/base-components/booleans/ValueCompareOperatorSelector.vue"
+export { default as BooleanExpressionValueEdit } from "./components/data/base-components/booleans/ExpressionValueEdit.vue"
+
+export { default as ViewerVariableSelector } from "./components/viewer-data/ViewerVariableSelector.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"
@@ -83,6 +88,8 @@ export * from "./docking/docking-store"
 export * from "./queue-system/action-queue-store"
 
 export * from "./components/stream-plan/stream-plan-types"
+
+export * from "./viewer-data/viewer-data-store"
 
 export * from "./util/panning"
 

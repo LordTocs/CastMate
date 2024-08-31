@@ -284,6 +284,7 @@ export const ViewerCache = Service(
 				this.unknownColors.add(userId)
 				this.unknownSubInfo.add(userId)
 				this.unknownUserInfo.add(userId)
+				this.unknownViewerData.add(userId)
 			}
 			return cached.value
 		}
@@ -493,6 +494,18 @@ export const ViewerCache = Service(
 
 		async getIsMod(userId: string): Promise<boolean> {
 			return this.mods.has(userId)
+		}
+
+		async getViewerData(userId: string): Promise<Record<string, any>> {
+			if (userId == "anonymous") return await ViewerData.getInstance().getDefaultViewerData()
+
+			const cached = this.getOrCreate(userId)
+
+			if (this.unknownViewerData.has(userId)) {
+				await this.queryViewerData(userId)
+			}
+
+			return cached
 		}
 
 		setIsMod(userId: string, isMod: boolean) {
