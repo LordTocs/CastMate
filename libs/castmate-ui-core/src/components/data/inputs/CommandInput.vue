@@ -1,5 +1,5 @@
 <template>
-	<div class="">
+	<div class="command-input">
 		<p-tab-view v-model:active-index="tabModel">
 			<p-tab-panel header="Command">
 				<template v-if="model?.mode == 'command'">
@@ -171,5 +171,13 @@ const previewString = computed(() => {
 
 .command-preview {
 	text-align: center;
+}
+
+.command-input :deep(.p-tabview .p-tabview-nav li .p-tabview-nav-link) {
+	padding: 0.25rem 0.5rem;
+}
+
+.command-input :deep(.p-tabview .p-tabview-panels) {
+	padding: 0.75rem;
 }
 </style>
