@@ -9,8 +9,7 @@ import {
 	useDockingStore,
 	useIpcCaller,
 	useProjectStore,
-} from "castmate-ui-core"
-import ViewerVariablePage from "./components/viewer-data/ViewerVariablePage.vue"
+} from "../main"
 
 function parseDefinition(def: IPCViewerVariable): ViewerVariable {
 	return {
@@ -61,19 +60,6 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 	}
 
 	async function initialize() {
-		const projectItem = computed<ProjectItem>(() => {
-			return {
-				id: "viewer-variables",
-				title: "Viewer Variables",
-				icon: "mdi mdi-table-account",
-				open() {
-					dockingStore.openPage("viewer-data", "Viewer Variables", ViewerVariablePage)
-				},
-			}
-		})
-
-		projectStore.registerProjectGroupItem(projectItem)
-
 		const vars = await getVariables()
 
 		for (const column of vars) {

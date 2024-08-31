@@ -60,13 +60,11 @@ import {
 import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PButton from "primevue/button"
-import { DataView, useIpcCaller } from "castmate-ui-core"
+import { DataView, useIpcCaller, useLazyViewerQuery, useViewerDataStore } from "castmate-ui-core"
 import { computed, ref, watch, onMounted, effect } from "vue"
 import { useDialog } from "primevue/usedialog"
 import ViewerVariableEditDialog from "./ViewerVariableEditDialog.vue"
 import ValueDisplayEdit from "../util/ValueDisplayEdit.vue"
-
-import { useLazyViewerQuery, useViewerDataStore } from "../../viewer-data-store"
 
 import { useElementSize } from "@vueuse/core"
 
