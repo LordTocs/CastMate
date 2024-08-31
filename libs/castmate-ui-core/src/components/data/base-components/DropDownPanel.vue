@@ -59,7 +59,6 @@ useResizeObserver(overlayDiv, (ev) => {
 
 function mouseDown(ev: MouseEvent) {
 	stopPropagation(ev)
-	ev.preventDefault()
 }
 
 watch(model, () => {
