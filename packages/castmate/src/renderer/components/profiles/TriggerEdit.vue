@@ -9,6 +9,10 @@
 					<i :class="[trigger?.icon]" />
 					{{ trigger?.name }}
 				</span>
+				<template v-if="trigger?.headerComponent">
+					&nbsp;&nbsp;-&nbsp;&nbsp;
+					<component :is="trigger.headerComponent" :config="modelValue.config" />
+				</template>
 			</div>
 			<div class="flex flex-row flex-grow-1 align-items-center mt-1 mb-1 gap-1" v-else>
 				<div class="flex-grow-1">

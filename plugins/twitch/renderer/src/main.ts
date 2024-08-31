@@ -30,6 +30,7 @@ import TwitchCategoryViewVue from "./components/category/TwitchCategoryView.vue"
 import TwitchViewerViewVue from "./components/viewer/TwitchViewerView.vue"
 import ChannelPointGroupHeaderVue from "./components/channel-points/ChannelPointGroupHeader.vue"
 import TwitchViewerGroupViewVue from "./components/TwitchViewerGroupView.vue"
+import ChatCommandHeader from "./components/triggers/ChatCommandHeader.vue"
 
 export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
 
@@ -125,4 +126,7 @@ export async function initPlugin(app: App<Element>) {
 
 	const streamPlanStore = useStreamPlanStore()
 	streamPlanStore.registerStreamPlanComponent("twitch-stream-info", StreamInfoPlanComponentVue)
+
+	const pluginStore = usePluginStore()
+	pluginStore.setTriggerHeaderComponent("twitch", "chat", ChatCommandHeader)
 }
