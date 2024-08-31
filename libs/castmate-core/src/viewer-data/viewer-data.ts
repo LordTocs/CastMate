@@ -534,7 +534,7 @@ export const ViewerData = Service(
 			}
 		}
 
-		private async getDefaultViewerData() {
+		async getDefaultViewerData() {
 			let result: Record<string, any> = {}
 
 			for (const vari of this.variables) {
