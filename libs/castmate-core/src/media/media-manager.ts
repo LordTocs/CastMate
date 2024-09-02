@@ -1,6 +1,7 @@
 import { Service } from "../util/service"
 import { ImageFormats, MediaMetadata, stillImageFormats } from "castmate-schema"
 import * as fs from "fs/promises"
+import * as fsSync from "fs"
 import path, * as pathTools from "path"
 import * as rra from "recursive-readdir-async"
 import * as ffmpeg from "fluent-ffmpeg"
@@ -10,11 +11,15 @@ import { ensureDirectory, resolveProjectPath } from "../io/file-system"
 import { shell, app } from "electron"
 import { globalLogger, usePluginLogger } from "../logging/logging"
 import { WebService } from "../webserver/internal-webserver"
-import express, { Application, Router } from "express"
+import express, { Application, response, Router } from "express"
+import { coreAxios } from "../util/request-utils"
 //require("@ffmpeg-installer/win32-x64")
 //require("@ffprobe-installer/win32-x64")
 //Thumbnails?
 //Durations?
+
+import http from "http"
+
 const logger = usePluginLogger("media")
 
 function probeMedia(file: string) {
@@ -36,6 +41,69 @@ export interface MediaFolder {
 	id: string
 	path: string
 	watcher: chokidar.FSWatcher
+}
+/*
+function downloadFile(url: string, dest: string) {
+	return new Promise<void>((resolve, reject) => {
+		const writeStream = fsSync.createWriteStream(dest)
+
+		const request = http.get(url, (resp) => {
+			if (resp.statusCode !== 200) {
+				reject(`Failed to download ${url} with ${resp.statusCode}`)
+			}
+
+			resp.pipe(writeStream)
+		})
+
+		writeStream.on("finish", () => {
+			writeStream.close((err) => {
+				if (err) return reject(err)
+				resolve()
+			})
+		})
+
+		request.on("error", (err) => {
+			fsSync.unlink(dest, (unlinkErr) => {
+				if (unlinkErr) return reject(unlinkErr)
+				reject(err)
+			})
+		})
+
+		writeStream.on("error", (err) => {
+			fsSync.unlink(dest, (unlinkErr) => {
+				if (unlinkErr) return reject(unlinkErr)
+				reject(err)
+			})
+		})
+	})
+}*/
+
+async function downloadFile(url: string, dest: string) {
+	const writeStream = fsSync.createWriteStream(dest)
+	//https://stackoverflow.com/questions/55374755/node-js-axios-download-file-stream-and-writefile
+	await coreAxios
+		.get(url, {
+			responseType: "stream",
+		})
+		.then((response) => {
+			return new Promise<boolean>((resolve, reject) => {
+				response.data.pipe(writeStream)
+
+				let error: any = undefined
+				writeStream.on("error", (err) => {
+					error = err
+					writeStream.close()
+					reject(err)
+				})
+				writeStream.on("close", () => {
+					if (!error) {
+						resolve(true)
+					}
+					//no need to call the reject here, as it will have been called in the
+					//'error' stream;
+				})
+			})
+		})
 }
 
 export const MediaManager = Service(
@@ -62,9 +130,53 @@ export const MediaManager = Service(
 				shell.showItemInFolder(mediaItem.file)
 			})
 
+			defineIPCFunc("media", "downloadMedia", async (url: string, mediaPath: string) => {
+				await this.downloadMedia(url, mediaPath)
+			})
+
+			defineIPCFunc("media", "copyMedia", async (localPath: string, mediaPath: string) => {
+				await this.copyMedia(localPath, mediaPath)
+			})
+
 			const router = express.Router()
 			router.use(express.static(mediaPath))
 			WebService.getInstance().addRootRouter("/media/default", router)
+		}
+
+		getLocalPath(mediaPath: string) {
+			const baseMediaPath = resolveProjectPath("./media")
+
+			if (!mediaPath.startsWith("/default")) throw new Error("not a media path")
+
+			const defaultPath = path.relative("/default", mediaPath)
+
+			const localPath = path.join(baseMediaPath, defaultPath)
+
+			return localPath
+		}
+
+		async downloadMedia(url: string, mediaPath: string) {
+			try {
+				const localPath = this.getLocalPath(mediaPath)
+
+				logger.log("Downloading Media", url, "to", localPath)
+
+				await downloadFile(url, localPath)
+			} catch (err) {
+				logger.error("ERROR DOWNLOADING MEDIA", err)
+			}
+		}
+
+		async copyMedia(localPath: string, mediaPath: string) {
+			try {
+				const destPath = this.getLocalPath(mediaPath)
+
+				logger.log("Copying Media", localPath, "to", destPath)
+
+				await fs.copyFile(localPath, destPath)
+			} catch (err) {
+				logger.error("ERROR COPYING MEDIA", err)
+			}
 		}
 
 		getMedia(path: string) {
