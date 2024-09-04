@@ -10,7 +10,7 @@ import {
 	AnalyticsService,
 	InfoService,
 } from "castmate-core"
-import OBSWebSocket from "obs-websocket-js"
+import OBSWebSocket, { OBSWebSocketError } from "obs-websocket-js"
 import {
 	OBSConnectionConfig,
 	OBSConnectionState,
@@ -207,21 +207,25 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 		this.connection.on("Identified", (ev) => {
 			logger.log("OBS Identified Ver:", ev.negotiatedRpcVersion)
-			this.state.connected = true
 
 			this.queryInitialStateLoop()
 		})
 	}
 
 	private async queryInitialStateLoop() {
-		for (let i = 0; i < 20; ++i) {
+		for (let i = 0; i < 40; ++i) {
 			try {
 				await this.queryInitialState()
 				return
 			} catch (err) {
-				//We probably got a not ready error?
+				if (err.code == 207) {
+					logger.log(err.message)
+				} else {
+					logger.error("Error Trying Initial State Check", err)
+				}
 			}
 			await sleep(1000)
+			logger.log("Retrying...")
 		}
 	}
 
@@ -243,6 +247,9 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		const sceneResp = await this.connection.call("GetCurrentProgramScene")
 		this.state.scene = sceneResp.currentProgramSceneName
 		this.sceneHistory.reset(sceneResp.currentProgramSceneName)
+
+		this.state.connected = true
+		logger.log("Initial OBS State Queried, Connected Successfully")
 	}
 
 	private nextTickConnect(hostname: string, port: number, password?: string) {
@@ -306,6 +313,21 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		}
 	}
 
+	async getSceneAndGroupNames(): Promise<string[]> {
+		try {
+			logger.log("Fetching Scene/Group Names")
+			const [sceneResp, groupResp] = await Promise.all([
+				this.connection.call("GetSceneList"),
+				this.connection.call("GetGroupList"),
+			])
+			const scenes = sceneResp.scenes as unknown as OBSSceneListItem[]
+			const groups = groupResp.groups as unknown as string[]
+			return [...scenes.map((s) => s.sceneName).reverse(), ...groups]
+		} catch (err) {
+			return []
+		}
+	}
+
 	async getInputs(inputKinds?: string | string[]): Promise<string[]> {
 		try {
 			if (Array.isArray(inputKinds)) {
@@ -343,7 +365,21 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 				value: i.sceneItemId,
 			}))
 		} catch (err) {
-			return []
+			try {
+				const resp = await this.connection.call("GetGroupSceneItemList", { sceneName })
+				let items = resp.sceneItems as unknown as OBSWSSceneItem[]
+				if (Array.isArray(inputKinds)) {
+					items = items.filter((i) => inputKinds.includes(i.inputKind))
+				} else if (inputKinds) {
+					items = items.filter((i) => i.inputKind == inputKinds)
+				}
+				return items.map((i) => ({
+					name: i.sourceName,
+					value: i.sceneItemId,
+				}))
+			} catch (err) {
+				return []
+			}
 		}
 	}
 
@@ -430,6 +466,8 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 	async findBrowserByUrlPattern(urlPattern: string) {
 		if (!this.state.connected) return undefined
+
+		console.log("Attempting Browser Find")
 
 		const { inputs } = await this.connection.call("GetInputList", {
 			inputKind: "browser_source",

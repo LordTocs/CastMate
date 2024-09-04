@@ -56,14 +56,12 @@ function getNValues<T>(set: Set<T>, requiredValues: T[], n: number): T[] {
 		return result
 	}
 
-	let count = 0
 	for (const v of set) {
 		if (requiredValues.includes(v)) {
 			continue
 		}
 		result.push(v)
-		count++
-		if (count >= n) {
+		if (result.length >= n) {
 			break
 		}
 	}
@@ -269,17 +267,27 @@ export const ViewerCache = Service(
 		}
 
 		private async queryColor(...userIds: string[]) {
+			const perf1 = startPerfTime("Query Color User Gather")
 			const ids = getNValues(this.unknownColors, userIds, 100)
-			try {
-				const colors = await TwitchAccount.channel.apiClient.chat.getColorsForUsers(ids)
+			perf1.stop(logger)
 
+			try {
+				const perf2 = startPerfTime(`Run Query Color ${ids.length}`)
+				const colors = await TwitchAccount.channel.apiClient.chat.getColorsForUsers(ids)
+				perf2.stop(logger)
+
+				const perf3 = startPerfTime("Update Colors")
 				for (const [id, color] of colors) {
 					//TODO: Default color for the unchosen
 					this.get(id).color = (color as Color) ?? "default"
 				}
 
 				removeValues(this.unknownColors, ids)
-			} catch (err) {}
+				perf3.stop(logger)
+			} catch (err) {
+				logger.error("Error Querying Colors!", err)
+				logger.error("IDS", ids)
+			}
 		}
 
 		async getChatColor(userId: string): Promise<Color | "default"> {
@@ -385,12 +393,17 @@ export const ViewerCache = Service(
 			try {
 				userIds = userIds.filter((id) => id != "anonymous")
 
+				const perf1 = startPerfTime("Running Follow Queries")
+
 				//Annoyingly check each follow independently
 				const followingPromises = userIds.map((id) =>
 					TwitchAccount.channel.apiClient.channels.getChannelFollowers(TwitchAccount.channel.twitchId, id)
 				)
 
 				const followingResults = await Promise.all(followingPromises)
+				perf1.stop(logger)
+
+				const perf2 = startPerfTime("Updating Follows")
 
 				for (let i = 0; i < userIds.length; ++i) {
 					const cached = this.get(userIds[i])
@@ -407,7 +420,11 @@ export const ViewerCache = Service(
 					cached.following = true
 					//cached.followDate = following.data[0].followDate
 				}
-			} catch (err) {}
+				perf2.stop(logger)
+			} catch (err) {
+				logger.error("Error Querying Follows", err)
+				logger.error("IDS", userIds)
+			}
 		}
 
 		async getIsFollowing(userId: string): Promise<boolean> {
@@ -443,14 +460,19 @@ export const ViewerCache = Service(
 		}
 
 		private async querySubInfo(...userIds: string[]) {
+			const perf1 = startPerfTime("Query Subs Gather Users")
 			const ids = getNValues(this.unknownSubInfo, userIds, 100)
+			perf1.stop(logger)
 
 			try {
+				const perf2 = startPerfTime(`Run Query Subs ${ids.length}`)
 				const subs = await TwitchAccount.channel.apiClient.subscriptions.getSubscriptionsForUsers(
 					TwitchAccount.channel.twitchId,
 					ids
 				)
+				perf2.stop(logger)
 
+				const perf3 = startPerfTime("Update Subs")
 				const leftOvers = new Set(ids)
 
 				for (const sub of subs) {
@@ -473,7 +495,11 @@ export const ViewerCache = Service(
 				}
 
 				removeValues(this.unknownSubInfo, ids)
-			} catch (err) {}
+				perf3.stop(logger)
+			} catch (err) {
+				logger.error("Error Querying Subs!", err)
+				logger.error("IDS", ids)
+			}
 		}
 
 		async getIsSubbed(userId: string) {
@@ -499,10 +525,15 @@ export const ViewerCache = Service(
 		}
 
 		private async queryUserInfo(...userIds: string[]) {
+			const perf1 = startPerfTime("Query User Gather")
 			const ids = getNValues(this.unknownUserInfo, userIds, 100)
+			perf1.stop(logger)
 			try {
+				const perf2 = startPerfTime(`Run Get Users Query ${ids.length}`)
 				const users = await TwitchAccount.channel.apiClient.users.getUsersByIds(ids)
+				perf2.stop(logger)
 
+				const perf3 = startPerfTime(`Update User Info`)
 				for (const user of users) {
 					const cached = this.getOrCreate(user.id)
 
@@ -513,7 +544,11 @@ export const ViewerCache = Service(
 
 					this.unknownUserInfo.delete(user.id)
 				}
-			} catch (err) {}
+				perf3.stop(logger)
+			} catch (err) {
+				logger.error("Error Updating Users!", err)
+				logger.error("IDS", ids)
+			}
 		}
 
 		async getResolvedViewer(userId: string) {
@@ -521,7 +556,7 @@ export const ViewerCache = Service(
 		}
 
 		async getResolvedViewers(userIds: string[]): Promise<TwitchViewer[]> {
-			const perf = startPerfTime("Resolve Viewer")
+			const perf = startPerfTime(`Resolve Viewers ${userIds.length}`)
 			try {
 				const neededSubIds: string[] = []
 				const neededColorIds: string[] = []
@@ -554,18 +589,22 @@ export const ViewerCache = Service(
 				const queryPromises: Promise<any>[] = []
 
 				if (neededColorIds.length > 0) {
+					logger.log("---Querying Colors:", neededColorIds.length)
 					queryPromises.push(this.queryColor(...neededColorIds))
 				}
 
 				if (neededFollowerIds.length > 0) {
+					logger.log("---Querying Following:", neededFollowerIds.length)
 					queryPromises.push(this.queryFollowing(...neededFollowerIds))
 				}
 
 				if (neededSubIds.length > 0) {
+					logger.log("---Querying Subs:", neededSubIds.length)
 					queryPromises.push(this.querySubInfo(...neededSubIds))
 				}
 
 				if (neededUserInfoIds.length > 0) {
+					logger.log("---Query User Infos:", neededUserInfoIds.length)
 					queryPromises.push(this.queryUserInfo(...neededUserInfoIds))
 				}
 

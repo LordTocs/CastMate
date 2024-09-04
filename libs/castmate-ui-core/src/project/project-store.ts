@@ -1,8 +1,9 @@
 import { defineStore } from "pinia"
 import { shallowRef, ComputedRef, computed, ref, App, VueElementConstructor, Component, toValue } from "vue"
-import { NamedData, useDockingStore, useResourceData, useResourceStore } from "../main"
+import { NamedData, useDockingStore, useResourceCreateDialog, useResourceData, useResourceStore } from "../main"
 import NameDialogVue from "../components/dialogs/NameDialog.vue"
 import { ResourceData } from "castmate-schema"
+import ResourceEditDialog from "../components/resources/ResourceEditDialog.vue"
 
 export interface ProjectItem {
 	id: string
@@ -99,31 +100,15 @@ export function getResourceAsDirectProjectGroup<TData extends ResourceData>(
 
 		const title = config.resourceName ?? config.resourceType
 
+		const createDialog = useResourceCreateDialog(config.resourceType, app.config.globalProperties.$dialog)
+
 		return {
 			id: config.resourceType,
 			title,
 			icon: config.groupIcon,
 			items,
 			create() {
-				const dialog = app.config.globalProperties.$dialog
-				if (!resources.value) return
-				dialog.open(config.creationDialog ?? NameDialogVue, {
-					props: {
-						header: `New ${title}`,
-						style: {
-							width: "25vw",
-						},
-						modal: true,
-					},
-					onClose(options) {
-						if (!options?.data) {
-							return
-						}
-
-						console.log("Creating", config.resourceType, options.data)
-						resourceStore.createResource(config.resourceType, options.data)
-					},
-				})
+				createDialog()
 			},
 		}
 	})
@@ -139,7 +124,7 @@ export function getResourceAsProjectGroup<TData extends ResourceData>(
 	const resourceStore = useResourceStore()
 	const dockingStore = useDockingStore()
 
-	const group = computed<ProjectGroup>(() => {
+	const group = computed<ProjectGroup>((): ProjectGroup => {
 		let items: ProjectItem[] = []
 		if (resources.value) {
 			const resourceItems = [...resources.value.resources.values()]
@@ -168,31 +153,15 @@ export function getResourceAsProjectGroup<TData extends ResourceData>(
 
 		const title = config.resourceName ?? config.resourceType
 
+		const createDialog = useResourceCreateDialog(config.resourceType, app.config.globalProperties.$dialog)
+
 		return {
 			id: config.resourceType,
-			title: config.resourceName,
+			title,
 			icon: config.groupIcon,
 			items,
 			create() {
-				const dialog = app.config.globalProperties.$dialog
-				if (!resources.value) return
-				dialog.open(config.creationDialog ?? NameDialogVue, {
-					props: {
-						header: `New ${title}`,
-						style: {
-							width: "25vw",
-						},
-						modal: true,
-					},
-					onClose(options) {
-						if (!options?.data) {
-							return
-						}
-
-						console.log("Creating", config.resourceType, options.data)
-						resourceStore.createResource(config.resourceType, options.data)
-					},
-				})
+				createDialog()
 			},
 		}
 	})

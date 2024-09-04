@@ -1,5 +1,5 @@
 <template>
-	<div class="app">
+	<div class="app" @keydown="onKeyDown" tabindex="-1">
 		<system-bar title="Hello World"></system-bar>
 		<div class="app-row" v-if="initStore.inited">
 			<project-view />
@@ -25,6 +25,8 @@ import {
 	useIpcCaller,
 	CancellableDynamicDialog,
 	useIpcMessage,
+	useSaveActiveTab,
+	useSaveAllTabs,
 } from "castmate-ui-core"
 import ProjectView from "./components/project/ProjectView.vue"
 
@@ -130,6 +132,19 @@ onMounted(async () => {
 		}
 	}
 })
+
+const saveActiveTab = useSaveActiveTab()
+const saveAllTabs = useSaveAllTabs()
+
+function onKeyDown(ev: KeyboardEvent) {
+	if (ev.ctrlKey && ev.code == "KeyS") {
+		if (ev.shiftKey) {
+			saveAllTabs()
+		} else {
+			saveActiveTab()
+		}
+	}
+}
 </script>
 
 <style>

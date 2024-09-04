@@ -7,6 +7,7 @@ import {
 	onLoad,
 	onProfilesChanged,
 	runOnChange,
+	startPerfTime,
 	template,
 	templateSchema,
 	usePluginLogger,
@@ -444,50 +445,55 @@ export function setupChannelPointRewards() {
 	}
 
 	async function loadRewards() {
-		const channelAccount = TwitchAccount.channel
+		const perf = startPerfTime(`Load Rewards`)
+		try {
+			const channelAccount = TwitchAccount.channel
 
-		if (!channelAccount.config.isAffiliate) {
-			logger.log("Not Affiliate Skipping Rewards")
-			return
-		}
-
-		const channelId = channelAccount.config.twitchId
-
-		await clearNonCastMateRewards()
-
-		//Unforunately there's no way to query for rewards not controlled by this client id
-		//We can only query for all rewards and rewards we control
-		//Query both.
-		const rewards = await channelAccount.apiClient.channelPoints.getCustomRewards(channelId)
-		const castMateRewards = await channelAccount.apiClient.channelPoints.getCustomRewards(channelId, true)
-
-		//Filter for non-castmate controllable rewards
-		const nonCastMateRewards = rewards.filter((r) => castMateRewards.find((o) => o.id == r.id) == null)
-
-		//Load all the non-castmate rewards into resources
-		await Promise.all(nonCastMateRewards.map((r) => ChannelPointReward.createNonCastmateReward(r)))
-
-		for (const reward of castMateRewards) {
-			const cpr = ChannelPointReward.getByTwitchId(reward.id)
-
-			//This reward is controllable but doesn't have a locally stored resource, create it now
-			if (!cpr) {
-				await ChannelPointReward.recoverLocalReward(reward)
-				//Add this to the reward list so we handle it properly in the next step
+			if (!channelAccount.config.isAffiliate) {
+				logger.log("Not Affiliate Skipping Rewards")
+				return
 			}
-		}
 
-		for (const reward of ChannelPointReward.storage) {
-			if (!reward.config.controllable) continue
+			const channelId = channelAccount.config.twitchId
 
-			const twitchReward = castMateRewards.find((r) => r.id == reward.config.twitchId)
+			await clearNonCastMateRewards()
 
-			try {
-				await reward.initializeFromTwurple(twitchReward)
-				await reward.initializeReactivity()
-			} catch (err) {
-				logger.error("Error Initializing Reward", reward.config.name, err)
+			//Unforunately there's no way to query for rewards not controlled by this client id
+			//We can only query for all rewards and rewards we control
+			//Query both.
+			const rewards = await channelAccount.apiClient.channelPoints.getCustomRewards(channelId)
+			const castMateRewards = await channelAccount.apiClient.channelPoints.getCustomRewards(channelId, true)
+
+			//Filter for non-castmate controllable rewards
+			const nonCastMateRewards = rewards.filter((r) => castMateRewards.find((o) => o.id == r.id) == null)
+
+			//Load all the non-castmate rewards into resources
+			await Promise.all(nonCastMateRewards.map((r) => ChannelPointReward.createNonCastmateReward(r)))
+
+			for (const reward of castMateRewards) {
+				const cpr = ChannelPointReward.getByTwitchId(reward.id)
+
+				//This reward is controllable but doesn't have a locally stored resource, create it now
+				if (!cpr) {
+					await ChannelPointReward.recoverLocalReward(reward)
+					//Add this to the reward list so we handle it properly in the next step
+				}
 			}
+
+			for (const reward of ChannelPointReward.storage) {
+				if (!reward.config.controllable) continue
+
+				const twitchReward = castMateRewards.find((r) => r.id == reward.config.twitchId)
+
+				try {
+					await reward.initializeFromTwurple(twitchReward)
+					await reward.initializeReactivity()
+				} catch (err) {
+					logger.error("Error Initializing Reward", reward.config.name, err)
+				}
+			}
+		} finally {
+			perf.stop(logger)
 		}
 	}
 

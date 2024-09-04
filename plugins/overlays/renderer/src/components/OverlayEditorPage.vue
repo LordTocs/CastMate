@@ -2,11 +2,54 @@
 	<div class="overlay-editor">
 		<div class="overlay-editor-header">
 			<div class="pt-4 px-1 flex flex-row w-full justify-content-center gap-1">
+				<div ref="settingsMenuContainer">
+					<p-button icon="mdi mdi-cog" @click="settingsMenuToggle"></p-button>
+				</div>
+				<drop-down-panel
+					v-model="settingsMenuOpen"
+					:container="settingsMenuContainer"
+					:style="{
+						minWidth: '25rem',
+						overflowY: 'auto',
+					}"
+				>
+					<div class="p-1 pt-3 flex flex-column gap-4" @mousedown="stopPropagation">
+						<div class="flex flex-row pt-3 gap-1">
+							<div style="width: 0; flex: 1">
+								<label-floater label="Width" v-slot="labelProps">
+									<p-input-number
+										class="number-fix"
+										v-model="model.size.width"
+										v-bind="labelProps"
+										show-buttons
+										mode="decimal"
+										suffix="px"
+									/>
+								</label-floater>
+							</div>
+							<div style="width: 0; flex: 1">
+								<label-floater label="Height" v-slot="labelProps">
+									<p-input-number
+										class="number-fix"
+										v-model="model.size.height"
+										v-bind="labelProps"
+										show-buttons
+										mode="decimal"
+										suffix="px"
+									/>
+								</label-floater>
+							</div>
+						</div>
+					</div>
+				</drop-down-panel>
 				<div class="flex-grow-1">
 					<data-input
 						:schema="{ type: ResourceProxyFactory, resourceType: 'OBSConnection', name: `OBS Connection` }"
 						v-model="view.obsId"
 					/>
+				</div>
+				<div>
+					<overlay-add-to-obs-button :obsId="view.obsId" :overlay-config="model" :overlay-id="overlayId" />
 				</div>
 				<div ref="previewMenuContainer">
 					<p-button icon="mdi mdi-image-edit" @click="previewMenuToggle" />
@@ -28,9 +71,6 @@
 						@click="openOverlayDebug"
 						v-tooltip="'Open in Browser'"
 					></p-button>
-				</div>
-				<div>
-					<overlay-add-to-obs-button :obsId="view.obsId" :overlay-config="model" :overlay-id="overlayId" />
 				</div>
 			</div>
 		</div>
@@ -67,6 +107,8 @@ import {
 	useDocumentId,
 	useSettingValue,
 	DropDownPanel,
+	LabelFloater,
+	stopPropagation,
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
@@ -77,6 +119,7 @@ import OverlayAddToObsButton from "./OverlayAddToObsButton.vue"
 import PSplitter from "primevue/splitter"
 import PSplitterPanel from "primevue/splitterpanel"
 import PCheckBox from "primevue/checkbox"
+import PInputNumber from "primevue/inputnumber"
 import PButton from "primevue/button"
 import OverlayEditArea from "./OverlayEditArea.vue"
 
@@ -124,6 +167,12 @@ function previewMenuToggle(ev: MouseEvent) {
 	previewMenuOpen.value = !previewMenuOpen.value
 }
 
+const settingsMenuContainer = ref<HTMLElement>()
+const settingsMenuOpen = ref(false)
+function settingsMenuToggle(ev: MouseEvent) {
+	settingsMenuOpen.value = !settingsMenuOpen.value
+}
+
 onMounted(() => {
 	watch(
 		() => props.modelValue.preview,
@@ -152,5 +201,9 @@ onMounted(() => {
 	background-color: var(--surface-b);
 	user-select: none;
 	width: 350px;
+}
+
+.number-fix :deep(.p-inputtext) {
+	width: 100% !important;
 }
 </style>

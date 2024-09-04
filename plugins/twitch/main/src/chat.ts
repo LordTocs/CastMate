@@ -125,6 +125,10 @@ export function setupChat() {
 
 			if (matchResult == null) return undefined
 
+			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+				return undefined
+			}
+
 			if (config.cooldown) {
 				const now = Date.now()
 				const slug = `${mapping.profileId}.${mapping.triggerId}`
@@ -135,10 +139,6 @@ export function setupChat() {
 					}
 				}
 				chatCommandCooldownMap.set(slug, now)
-			}
-
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
-				return undefined
 			}
 
 			return {

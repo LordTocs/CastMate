@@ -56,7 +56,7 @@ import DurationInputVue from "../components/data/inputs/DurationInput.vue"
 import DynamicTypeInputVue from "../components/data/inputs/DynamicTypeInput.vue"
 import DirectoryInputVue from "../components/data/inputs/DirectoryInput.vue"
 
-import GenericDataViewVue from "../components/data/views/GenericDataView.vue"
+import EnumableDataView from "../components/data/views/EnumableDataView.vue"
 import BooleanViewVue from "../components/data/views/BooleanView.vue"
 import ColorViewVue from "../components/data/views/ColorView.vue"
 import DurationViewVue from "../components/data/views/DurationView.vue"
@@ -342,8 +342,8 @@ export function initData() {
 	inputStore.registerInputComponent(FilePath, FilePathInputVue)
 	inputStore.registerInputComponent(Command, CommandInputVue)
 
-	inputStore.registerViewComponent(String, GenericDataViewVue)
-	inputStore.registerViewComponent(Number, GenericDataViewVue)
+	inputStore.registerViewComponent(String, EnumableDataView)
+	inputStore.registerViewComponent(Number, EnumableDataView)
 	inputStore.registerViewComponent(Boolean, BooleanViewVue)
 	inputStore.registerViewComponent(Object, ObjectViewVue)
 	inputStore.registerViewComponent(Range, RangeViewVue)

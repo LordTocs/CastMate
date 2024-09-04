@@ -7,6 +7,7 @@ import { ResourceData, Schema } from "castmate-schema"
 import { useDialog } from "primevue/usedialog"
 import { useConfirm } from "primevue/useconfirm"
 import ResourceEditDialogVue from "../components/resources/ResourceEditDialog.vue"
+import { DialogServiceMethods } from "primevue/dialogservice"
 
 interface ResourceStorage<TResourceData extends ResourceData = ResourceData> {
 	resources: Map<string, TResourceData>
@@ -223,9 +224,12 @@ export function useResource<TResourceData extends ResourceData>(
 	})
 }
 
-export function useResourceCreateDialog(resourceType: MaybeRefOrGetter<string | undefined>) {
+export function useResourceCreateDialog(
+	resourceType: MaybeRefOrGetter<string | undefined>,
+	dialogService?: DialogServiceMethods
+) {
 	const resourceStore = useResourceStore()
-	const dialog = useDialog()
+	const dialog = dialogService ?? useDialog()
 
 	function open() {
 		const resourceName = toValue(resourceType)

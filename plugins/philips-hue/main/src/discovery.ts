@@ -14,32 +14,59 @@ import os from "os"
 
 const logger = usePluginLogger("philips-hue")
 
+async function validateHubIP(hubIp: string | undefined) {
+	try {
+		if (!hubIp) return false
+
+		const resp = await coreAxios.get(`http://${hubIp}/api/0/config`)
+
+		return "name" in resp.data && "bridgeid" in resp.data
+	} catch (err) {
+		logger.error(`Error Querying Possible Hub ${hubIp}`, err)
+		return false
+	}
+}
+
 export function setupDiscovery(hubIp: ReactiveRef<string | undefined>, hubKey: ReactiveRef<string | undefined>) {
 	async function discoverBridge() {
-		const resp = await coreAxios.get("https://discovery.meethue.com/")
+		try {
+			const resp = await coreAxios.get("https://discovery.meethue.com/")
 
-		if (!Array.isArray(resp.data) || resp.data.length == 0) {
-			return
+			if (!Array.isArray(resp.data) || resp.data.length == 0) {
+				return
+			}
+
+			for (const possibleHub of resp.data) {
+				if (await validateHubIP(possibleHub?.internalipaddress)) {
+					hubIp.value = possibleHub?.internalipaddress
+					return
+				}
+			}
+		} catch (err) {
+			logger.error("Error trying to discover bridge ip", err)
 		}
-
-		hubIp.value = resp.data[0]?.internalipaddress
 	}
 
 	async function tryCreateKey() {
 		if (!hubIp.value) return
 
-		const resp = await coreAxios.post(`http://${hubIp.value}/api`, {
-			devicetype: `CastMate#${os.userInfo().username}`,
-		})
+		try {
+			const resp = await coreAxios.post(`http://${hubIp.value}/api`, {
+				devicetype: `CastMate#${os.userInfo().username}`,
+			})
 
-		const key = resp.data[0]?.success?.username as string | undefined
+			const key = resp.data[0]?.success?.username as string | undefined
 
-		if (key) {
-			logger.log("Key Found", key)
-			hubKey.value = key
+			if (key) {
+				logger.log("Key Found", key)
+				hubKey.value = key
+			}
+
+			return key
+		} catch (err) {
+			logger.error("Error Creating HUE Key", err)
+			return undefined
 		}
-
-		return key
 	}
 
 	defineRendererCallable("findHueBridge", async () => {

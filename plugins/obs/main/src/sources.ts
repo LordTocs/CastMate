@@ -23,7 +23,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					name: "Scene",
 					template: true,
 					async enum(context: { obs: OBSConnection }) {
-						return (await context?.obs?.getSceneNames()) ?? []
+						return (await context?.obs?.getSceneAndGroupNames()) ?? []
 					},
 				},
 				source: {
@@ -286,7 +286,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 						const obs = context?.obs?.connection
 						if (!obs) return []
 
-						const textInputs = await context.obs.getInputs("text_gdiplus_v2")
+						const textInputs = await context.obs.getInputs(["text_gdiplus_v2", "text_gdiplus_v3"])
 						return textInputs
 					},
 				},
@@ -295,6 +295,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					name: "Text",
 					template: true,
 					required: true,
+					multiLine: true,
 					default: "",
 				},
 			},

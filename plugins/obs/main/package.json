@@ -18,7 +18,7 @@
     "castmate-schema": "workspace:^",
     "jsqr": "^1.4.0",
     "node-screenshots": "^0.2.0",
-    "obs-websocket-js": "^5.0.5",
+    "obs-websocket-js": "^5.0.6",
     "regedit": "^5.1.3"
   }
 }

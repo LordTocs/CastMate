@@ -13,25 +13,26 @@
 				sort-field="config.controllable"
 				:sort-order="-1"
 			>
-				<!-- <template #header>
+				<template #header>
 					<div class="flex justify-content-end">
-						<span class="p-input-icon-left">
+						<!--<span class="p-input-icon-left">
 							<i class="pi pi-search" />
 							<p-input-text v-model="filters['global'].value" placeholder="Search" />
-						</span>
+						</span>-->
+						<p-button @click="createDialog()"> Create CastMate Reward</p-button>
 					</div>
-				</template> -->
+				</template>
+				<!--<template #empty> ... </template> -->
 				<template #groupheader="{ data }">
-					<div>
-						<template v-if="(data as ChannelPointResource).config.controllable">
+					<!--template v-if="(data as ChannelPointResource).config.controllable">
 							<div class="flex flex-row">
 								<div class="flex-1">
 									<h3 class="my-0">CastMate Channel Point Rewards</h3>
 								</div>
-								<p-button @click="createDialog()"> Create Reward</p-button>
 							</div>
-						</template>
-						<template v-else>
+						</template-->
+					<template v-if="!(data as ChannelPointResource).config.controllable">
+						<div>
 							<div class="flex flex-row">
 								<div class="flex-1">
 									<h3 class="my-0">Other Channel Point Rewards</h3>
@@ -48,8 +49,8 @@
 									Open Dashboard
 								</a>
 							</div>
-						</template>
-					</div>
+						</div>
+					</template>
 				</template>
 				<!-- Required because groupby assumes there's a column that it's grouping by -->
 				<p-column field="config.controllable"> </p-column>

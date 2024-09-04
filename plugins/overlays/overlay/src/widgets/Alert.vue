@@ -42,12 +42,9 @@ defineOptions({
 		config: {
 			type: Object,
 			properties: {
-				transition: {
-					type: OverlayTransitionAnimation,
-					name: "Transition",
-				},
 				media: {
 					type: Array,
+					name: "Alert Media",
 					items: {
 						type: Object,
 						properties: {
@@ -56,6 +53,10 @@ defineOptions({
 							weight: { type: Number, name: "Random Weight", required: true, default: 1 },
 						},
 					},
+				},
+				transition: {
+					type: OverlayTransitionAnimation,
+					name: "Transition",
 				},
 				textBelowMedia: {
 					type: Boolean,

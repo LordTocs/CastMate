@@ -1,4 +1,4 @@
-import { defineState, defineTrigger } from "castmate-core"
+import { defineState, defineTrigger, startPerfTime, usePluginLogger } from "castmate-core"
 import { onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
@@ -6,6 +6,8 @@ import { inTwitchViewerGroup } from "./group"
 import { TwitchAccount } from "./twitch-auth"
 
 export function setupFollows() {
+	const logger = usePluginLogger()
+
 	const follow = defineTrigger({
 		id: "follow",
 		name: "Followed",
@@ -44,6 +46,8 @@ export function setupFollows() {
 	})
 
 	async function updateFollowCount() {
+		const perf = startPerfTime(`Follow Count Update`)
+
 		const followersResp = await TwitchAccount.channel.apiClient.channels.getChannelFollowers(
 			TwitchAccount.channel.twitchId
 		)
@@ -52,6 +56,8 @@ export function setupFollows() {
 		followers.value = followersResp.total
 
 		lastFollower.value = await ViewerCache.getInstance().getResolvedViewer(followersResp.data[0].userId)
+
+		perf.stop(logger)
 	}
 
 	onChannelAuth(async (account, service) => {

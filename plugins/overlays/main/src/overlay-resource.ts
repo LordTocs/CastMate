@@ -14,6 +14,7 @@ import {
 	usePluginLogger,
 } from "castmate-core"
 import {
+	InitialOverlayConfig,
 	IPCOverlayWidgetDescriptor,
 	OverlayConfig,
 	OverlayWidget,
@@ -32,16 +33,16 @@ export class Overlay extends FileResource<OverlayConfig> {
 	static resourceDirectory: string = "./overlays"
 	static storage = new ResourceStorage<Overlay>("Overlay")
 
-	constructor(name?: string) {
+	constructor(initialConfig?: InitialOverlayConfig) {
 		super()
 
-		if (name) {
+		if (initialConfig) {
 			this._id = nanoid()
 		}
 
 		this._config = {
-			name: name ?? "",
-			size: { width: 1920, height: 1080 },
+			name: initialConfig?.name ?? "",
+			size: initialConfig?.size ?? { width: 1920, height: 1080 },
 			widgets: [],
 		}
 	}

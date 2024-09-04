@@ -4,7 +4,6 @@
 		v-if="documentComponent && document"
 		v-model="documentData"
 		v-model:view="documentView"
-		@keydown="onKeyDown"
 		tabindex="-1"
 	/>
 </template>
@@ -57,12 +56,6 @@ const documentView = computed({
 		document.value.viewData = data
 	},
 })
-
-function onKeyDown(ev: KeyboardEvent) {
-	if (ev.ctrlKey && ev.code == "KeyS") {
-		documentStore.saveDocument(props.documentId)
-	}
-}
 </script>
 
 <style scoped></style>

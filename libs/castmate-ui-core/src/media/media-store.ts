@@ -1,8 +1,10 @@
 import { defineStore } from "pinia"
-import { computed, ref } from "vue"
+import { computed, MaybeRefOrGetter, Ref, ref, toValue } from "vue"
 import { MediaMetadata } from "castmate-schema"
 import { ProjectItem, handleIpcMessage, useDockingStore, useIpcCaller, useIpcMessage, useProjectStore } from "../main"
 import MediaBrowserPage from "../components/media/MediaBrowserPage.vue"
+import { useFileDragDrop } from "../util/file-drop"
+import path from "path"
 
 export const useMediaStore = defineStore("media", () => {
 	const mediaMap = ref<Record<string, MediaMetadata>>({})
@@ -10,6 +12,9 @@ export const useMediaStore = defineStore("media", () => {
 	const getMedia = useIpcCaller<() => MediaMetadata[]>("media", "getMedia")
 	const openMediaFolder = useIpcCaller<() => any>("media", "openMediaFolder")
 	const exploreMediaItem = useIpcCaller<(path: string) => any>("media", "exploreMediaItem")
+
+	const downloadMediaMain = useIpcCaller<(url: string, mediaPath: string) => any>("media", "downloadMedia")
+	const copyMediaMain = useIpcCaller<(localPath: string, mediaPath: string) => any>("media", "copyMedia")
 
 	const projectStore = useProjectStore()
 	const dockingStore = useDockingStore()
@@ -45,5 +50,59 @@ export const useMediaStore = defineStore("media", () => {
 		projectStore.registerProjectGroupItem(projectItem)
 	}
 
-	return { initialize, media: computed(() => mediaMap.value), openMediaFolder, exploreMediaItem }
+	async function downloadMedia(path: string, mediaPath: string) {
+		await downloadMediaMain(path, mediaPath)
+	}
+
+	async function copyMedia(localPath: string, mediaPath: string) {
+		await copyMediaMain(localPath, mediaPath)
+	}
+
+	return {
+		initialize,
+		media: computed(() => mediaMap.value),
+		openMediaFolder,
+		exploreMediaItem,
+		downloadMedia,
+		copyMedia,
+	}
 })
+
+export function useMediaDrop(element: Ref<HTMLElement | undefined>, subPath: MaybeRefOrGetter<string>) {
+	const mediaStore = useMediaStore()
+
+	return useFileDragDrop(element, (files) => {
+		const basepath = toValue(subPath)
+
+		for (const file of files) {
+			console.log("DROP", file)
+			if (
+				!(
+					file.mimetype.startsWith("image") ||
+					file.mimetype.startsWith("audio") ||
+					file.mimetype.startsWith("video")
+				)
+			)
+				continue
+
+			const pathParse = path.parse(file.path)
+
+			const mediaName = pathParse.base
+
+			const proposedMediaPath = path.join(basepath, mediaName).replaceAll("\\", "/")
+
+			if (mediaStore.media[proposedMediaPath]) {
+				console.log("ALREADY HAS PATH", proposedMediaPath)
+				continue
+			}
+
+			if (file.remote) {
+				console.log("DOWNLOAD", file.path, "to", proposedMediaPath)
+				mediaStore.downloadMedia(file.path, proposedMediaPath)
+			} else {
+				console.log("COPY", file.path, "to", proposedMediaPath)
+				mediaStore.copyMedia(file.path, proposedMediaPath)
+			}
+		}
+	})
+}

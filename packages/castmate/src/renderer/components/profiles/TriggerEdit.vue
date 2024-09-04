@@ -4,7 +4,7 @@
 			<div class="drag-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
 			</div>
-			<div class="flex flex-row flex-grow-1 align-items-center" v-if="!open">
+			<div class="flex flex-row flex-grow-1 align-items-center" v-if="!open" @dblclick="open = !open">
 				<span class="trigger-name">
 					<i :class="[trigger?.icon]" />
 					{{ trigger?.name }}
@@ -51,7 +51,7 @@
 				:container="cardBody"
 			></expander-slider>
 		</div>
-		<div class="closed-body" v-else>
+		<div class="closed-body" v-else @dblclick="open = !open">
 			<div style="width: 50%">
 				<data-view v-if="trigger" :model-value="modelValue.config" :schema="trigger.config" />
 			</div>

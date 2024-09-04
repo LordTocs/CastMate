@@ -1,6 +1,18 @@
 <template>
 	<div ref="container" class="dialog-container">
-		<component :is="resource?.editDialog" :resourceType="resourceType" :resourceId="resourceId" v-model="config" />
+		<component
+			v-if="resource?.editDialog"
+			:is="resource.editDialog"
+			:resourceType="resourceType"
+			:resourceId="resourceId"
+			v-model="config"
+		/>
+		<div class="p-inputgroup mt-5" v-else>
+			<span class="p-float-label">
+				<p-input-text id="l" v-model="config" ref="nameInput" autofocus />
+				<label for="l"> Name </label>
+			</span>
+		</div>
 		<div class="flex justify-content-end mt-1">
 			<p-button :label="isCreate ? 'Create' : 'Save'" @click="submit"></p-button>
 		</div>
@@ -11,6 +23,7 @@
 import { computed, onMounted, ref } from "vue"
 import { provideScrollAttachable, useDialogRef, useResourceData } from "../../main"
 import PButton from "primevue/button"
+import PInputText from "primevue/inputtext"
 import { constructDefault } from "castmate-schema"
 
 const props = defineProps<{}>()
