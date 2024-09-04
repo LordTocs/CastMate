@@ -295,6 +295,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					name: "Text",
 					template: true,
 					required: true,
+					multiLine: true,
 					default: "",
 				},
 			},
