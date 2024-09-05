@@ -1,5 +1,5 @@
 import { useEventListener } from "@vueuse/core"
-import { computed, ref, Ref, toValue } from "vue"
+import { computed, MaybeRefOrGetter, ref, Ref, toValue } from "vue"
 
 interface FromTo {
 	fromElement?: HTMLElement
@@ -22,7 +22,7 @@ async function getMimeType(url: string) {
 	return response.headers.get("Content-Type") ?? undefined
 }
 
-export function useFileDragDrop(element: Ref<HTMLElement | undefined>, onDrop: FileDropEvent) {
+export function useFileDragDrop(element: MaybeRefOrGetter<HTMLElement | undefined>, onDrop: FileDropEvent) {
 	const hoveringFiles = ref(false)
 
 	useEventListener(element, "dragenter", (ev: DragEvent) => {

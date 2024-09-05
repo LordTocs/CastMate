@@ -68,7 +68,7 @@ export const useMediaStore = defineStore("media", () => {
 	}
 })
 
-export function useMediaDrop(element: Ref<HTMLElement | undefined>, subPath: MaybeRefOrGetter<string>) {
+export function useMediaDrop(element: MaybeRefOrGetter<HTMLElement | undefined>, subPath: MaybeRefOrGetter<string>) {
 	const mediaStore = useMediaStore()
 
 	return useFileDragDrop(element, (files) => {
