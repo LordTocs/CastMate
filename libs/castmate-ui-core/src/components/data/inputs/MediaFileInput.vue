@@ -26,19 +26,14 @@
 			@wheel="stopPropagation"
 			@mousedown="onDropdownMouseDown"
 		>
-			<table style="width: 100%">
-				<tr>
-					<th>Media</th>
-					<th>Type</th>
-					<th>Duration</th>
-				</tr>
+			<div class="media-folder-tree">
 				<media-tree
 					root="default"
 					:files="mediaItems.map((i) => i.path)"
 					@click="mediaClicked"
 					:filter="filterValue"
 				/>
-			</table>
+			</div>
 		</drop-down-panel>
 	</data-input-base>
 </template>
@@ -153,5 +148,12 @@ function mediaClicked(media: MediaFile) {
 
 	display: flex;
 	flex-direction: row;
+}
+
+.media-folder-tree {
+	width: 100%;
+	display: grid;
+	grid-template-columns: 1fr fit-content(100px) fit-content(150px);
+	gap: 0 2px;
 }
 </style>

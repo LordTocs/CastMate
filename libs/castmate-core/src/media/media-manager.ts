@@ -42,41 +42,6 @@ export interface MediaFolder {
 	path: string
 	watcher: chokidar.FSWatcher
 }
-/*
-function downloadFile(url: string, dest: string) {
-	return new Promise<void>((resolve, reject) => {
-		const writeStream = fsSync.createWriteStream(dest)
-
-		const request = http.get(url, (resp) => {
-			if (resp.statusCode !== 200) {
-				reject(`Failed to download ${url} with ${resp.statusCode}`)
-			}
-
-			resp.pipe(writeStream)
-		})
-
-		writeStream.on("finish", () => {
-			writeStream.close((err) => {
-				if (err) return reject(err)
-				resolve()
-			})
-		})
-
-		request.on("error", (err) => {
-			fsSync.unlink(dest, (unlinkErr) => {
-				if (unlinkErr) return reject(unlinkErr)
-				reject(err)
-			})
-		})
-
-		writeStream.on("error", (err) => {
-			fsSync.unlink(dest, (unlinkErr) => {
-				if (unlinkErr) return reject(unlinkErr)
-				reject(err)
-			})
-		})
-	})
-}*/
 
 async function downloadFile(url: string, dest: string) {
 	const writeStream = fsSync.createWriteStream(dest)
@@ -146,7 +111,7 @@ export const MediaManager = Service(
 		getLocalPath(mediaPath: string) {
 			const baseMediaPath = resolveProjectPath("./media")
 
-			if (!mediaPath.startsWith("/default")) throw new Error("not a media path")
+			if (!mediaPath.startsWith("/default")) throw new Error(`"${mediaPath}" not a media path`)
 
 			const defaultPath = path.relative("/default", mediaPath)
 

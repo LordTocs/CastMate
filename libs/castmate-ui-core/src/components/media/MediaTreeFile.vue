@@ -1,33 +1,32 @@
 <template>
-	<tr
-		class="media-tree-item"
+	<div
+		class="media-tree-cell media-tree-file"
 		:class="{ 'clickable-media-tree-item': hasClick }"
 		:style="{ '--media-indent': indent ?? 0 }"
 		@contextmenu="menu?.show($event)"
 		@click="handleClick"
 	>
-		<td class="media-tree-file">
-			<div class="media-preview">
-				<img v-if="isImagePreview" :src="media.file" class="thumbnail" />
-				<sound-player v-else-if="media.audio && !media.video" :file="media.file" />
-			</div>
-			{{ name }}
-		</td>
-		<td class="column-fit-width px-2">
-			<div style="color: var(--text-color-secondary); font-size: small">
-				<i class="mdi mdi-image" v-if="media.image"></i>
-				<i class="mdi mdi-volume-high" v-if="media.audio"></i>
-				<i class="mdi mdi-filmstrip" v-if="media.video"></i>
-			</div>
-		</td>
-		<td class="column-fit-width">
-			<duration-label
-				style="color: var(--text-color-secondary); font-size: small"
-				:model-value="media.duration"
-				v-if="media.duration"
-			/>
-		</td>
-	</tr>
+		<div class="media-preview">
+			<img v-if="isImagePreview" :src="media.file" class="thumbnail" />
+			<sound-player v-else-if="media.audio && !media.video" :file="media.file" />
+		</div>
+		{{ name }}
+	</div>
+	<div class="media-tree-cell px-4" @contextmenu="menu?.show($event)" @click="handleClick">
+		<div style="color: var(--text-color-secondary); font-size: small">
+			<i class="mdi mdi-image" v-if="media.image"></i>
+			<i class="mdi mdi-volume-high" v-if="media.audio"></i>
+			<i class="mdi mdi-filmstrip" v-if="media.video"></i>
+		</div>
+	</div>
+	<div class="media-tree-cell px-4" @contextmenu="menu?.show($event)" @click="handleClick">
+		<duration-label
+			style="color: var(--text-color-secondary); font-size: small"
+			:model-value="media.duration"
+			v-if="media.duration"
+			:decimal-places="1"
+		/>
+	</div>
 	<c-context-menu :items="contextOptions" ref="menu" />
 </template>
 
@@ -87,17 +86,22 @@ function handleClick(ev: MouseEvent) {
 </script>
 
 <style scoped>
-.media-tree-file {
+.media-tree-cell {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+	border-top: solid 1px #2a2a2a;
+	border-right: solid 1px #2a2a2a;
+}
+
+.media-tree-file {
 	padding-left: calc(0.5rem + var(--media-indent) * var(--media-preview-size));
 }
 
 .media-preview {
 	width: var(--media-preview-size);
 	height: var(--media-preview-size);
-	display: flex;
+	display: inline-flex;
 	justify-content: center;
 	align-items: center;
 }

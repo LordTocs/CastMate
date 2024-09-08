@@ -1,5 +1,5 @@
 <template>
-	<scrolling-tab-body class="media-browser">
+	<scrolling-tab-body class="media-browser" inner-class="media-folder flex flex-column" ref="tabBody">
 		<div class="flex align-items-center p-3">
 			<p-button @click="openMediaFolder">Open Media Folder</p-button>
 			<div class="flex-grow-1" />
@@ -8,14 +8,18 @@
 				<p-input-text v-model="filters['global'].value" placeholder="Search" />
 			</span> -->
 		</div>
-		<table style="width: 100%">
+		<!-- <table style="width: 100%">
 			<tr>
 				<th>Media</th>
 				<th>Type</th>
 				<th>Duration</th>
-			</tr>
-			<media-tree root="default" :files="mediaItems.map((i) => i.path)" />
-		</table>
+			</tr> -->
+		<div class="flex-grow-1" :class="{ 'file-hover': hoveringFiles }">
+			<div class="media-folder-tree">
+				<media-tree root="default" :files="mediaItems.map((i) => i.path)" allow-drop />
+			</div>
+		</div>
+		<!-- </table> -->
 	</scrolling-tab-body>
 </template>
 
@@ -34,6 +38,8 @@ import PButton from "primevue/button"
 
 import SoundPlayer from "./SoundPlayer.vue"
 import { ScrollingTabBody } from "../../main"
+
+import { useMediaDrop } from "../../media/media-store"
 
 const filters = ref({
 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -56,6 +62,10 @@ function isImagePreview(media: MediaMetadata) {
 	const ext = path.extname(media.path)
 	return [".gif", ".webp", ".apng"].includes(ext)
 }
+
+const tabBody = ref<InstanceType<typeof ScrollingTabBody>>()
+
+const { hoveringFiles } = useMediaDrop(() => tabBody.value?.scrollDiv, "/default", "media-folder")
 </script>
 
 <style scoped>
@@ -79,5 +89,15 @@ function isImagePreview(media: MediaMetadata) {
 
 .media-browser {
 	--media-preview-size: 50px;
+}
+
+.media-folder-tree {
+	display: grid;
+	grid-template-columns: 1fr fit-content(100px) fit-content(150px);
+	gap: 0 2px;
+}
+
+.file-hover {
+	border: solid 2px var(--primary-color);
 }
 </style>

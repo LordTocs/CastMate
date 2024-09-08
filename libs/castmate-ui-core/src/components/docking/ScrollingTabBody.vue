@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { StyleValue, ref, useModel } from "vue"
+import { StyleValue, ref, useModel, computed } from "vue"
 import FlexScroller from "../util/FlexScroller.vue"
 import { provideScrollAttachable } from "../../main"
 
@@ -29,6 +29,10 @@ const scrollX = useModel(props, "scrollX")
 const scrollY = useModel(props, "scrollY")
 
 const scroller = ref<InstanceType<typeof FlexScroller>>()
+
+defineExpose({
+	scrollDiv: computed(() => scroller.value?.scroller),
+})
 
 provideScrollAttachable(() => scroller.value?.scroller ?? undefined)
 </script>
