@@ -31,10 +31,13 @@
 					v-for="v in viewerDataStore.variables.values()"
 					:key="v.name"
 					class="data-column"
-					:header="v.name"
 					sortable
 					:field="v.name"
 				>
+					<template #header="{ column }">
+						<viewer-variable-column-header :variable="v" />
+					</template>
+
 					<template #body="{ data }">
 						<value-display-edit
 							v-if="data"
@@ -60,11 +63,12 @@ import {
 import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PButton from "primevue/button"
-import { DataView, useIpcCaller, useLazyViewerQuery, useViewerDataStore } from "castmate-ui-core"
+import { DataView, useIpcCaller, useLazyViewerQuery, useViewerDataStore, CContextMenu } from "castmate-ui-core"
 import { computed, ref, watch, onMounted, effect } from "vue"
 import { useDialog } from "primevue/usedialog"
 import ViewerVariableEditDialog from "./ViewerVariableEditDialog.vue"
 import ValueDisplayEdit from "../util/ValueDisplayEdit.vue"
+import ViewerVariableColumnHeader from "./ViewerVariableColumnHeader.vue"
 
 import { useElementSize } from "@vueuse/core"
 

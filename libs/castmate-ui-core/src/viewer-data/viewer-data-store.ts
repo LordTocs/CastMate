@@ -1,4 +1,4 @@
-import { IPCViewerVariable, ViewerVariable } from "castmate-schema"
+import { constructDefault, IPCViewerVariable, ViewerVariable } from "castmate-schema"
 import { defineStore } from "pinia"
 import { computed, MaybeRefOrGetter, onBeforeUnmount, onMounted, ref, toValue, watch } from "vue"
 import {
@@ -10,6 +10,7 @@ import {
 	useIpcCaller,
 	useProjectStore,
 } from "../main"
+import _cloneDeep from "lodash/cloneDeep"
 
 function parseDefinition(def: IPCViewerVariable): ViewerVariable {
 	return {
@@ -29,6 +30,8 @@ interface ViewerObserver {
 	onNewViewerData(provider: string, id: string, viewer: ViewerData): any
 	onViewerDataChanged(provider: string, id: string, varName: string, value: any): any
 	onViewerDataRemoved(provider: string, id: string): any
+	onNewViewerVariable(variable: ViewerVariable): any
+	onViewerVariableDeleted(variable: string): any
 }
 
 export const useViewerDataStore = defineStore("viewer-data", () => {
@@ -42,6 +45,7 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 		"viewer-data",
 		"setVariable"
 	)
+	const deleteVariable = useIpcCaller<(name: string) => any>("viewer-data", "deleteVariable")
 
 	const queryPagedViewerData = useIpcCaller<
 		(start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => Record<string, any>[]
@@ -67,11 +71,21 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 		}
 
 		handleIpcMessage("viewer-data", "columnAdded", (event, ipcDef: IPCViewerVariable) => {
-			variables.value.set(ipcDef.name, parseDefinition(ipcDef))
+			const newDef = parseDefinition(ipcDef)
+
+			variables.value.set(ipcDef.name, newDef)
+
+			for (const o of observers) {
+				o.onNewViewerVariable(newDef)
+			}
 		})
 
 		handleIpcMessage("viewer-data", "columnRemoved", (event, name: string) => {
 			variables.value.delete(name)
+
+			for (const o of observers) {
+				o.onViewerVariableDeleted(name)
+			}
 		})
 
 		handleIpcMessage(
@@ -118,7 +132,9 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 
 	async function editViewerVariable(id: string, desc: ViewerVariable) {}
 
-	async function deleteViewerVariable(id: string) {}
+	async function deleteViewerVariable(id: string) {
+		deleteVariable(id)
+	}
 
 	async function setViewerVariable(id: string, varname: string, value: any) {
 		await setVariable("twitch", id, varname, value)
@@ -257,6 +273,26 @@ export function useLazyViewerQuery(
 				loadRange(toValue(last), toValue(last))
 			}
 			lazyViewers.value.length = totalDataRows.value
+		},
+		async onNewViewerVariable(variable) {
+			const defaultValue = await constructDefault(variable.schema)
+
+			for (let i = first; i < last; ++i) {
+				const viewer = lazyViewers.value[i]
+
+				if (!viewer) continue
+
+				viewer[variable.name] = _cloneDeep(defaultValue)
+			}
+		},
+		onViewerVariableDeleted(variableName) {
+			for (let i = first; i < last; ++i) {
+				const viewer = lazyViewers.value[i]
+
+				if (!viewer) continue
+
+				delete viewer[variableName]
+			}
 		},
 	}
 

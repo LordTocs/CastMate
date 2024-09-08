@@ -65,6 +65,7 @@ type CreateTableStatement = ReturnType<typeof createCreateTableStatement>
 
 function createRemoveColumnStatement(db: sqlite.Database) {
 	return function (args: { columnName: string }) {
+		logger.log("Running", `ALTER TABLE ViewerData DROP COLUMN ${args.columnName}`)
 		db.exec(`ALTER TABLE ViewerData DROP COLUMN ${args.columnName}`)
 	}
 
@@ -349,6 +350,10 @@ export const ViewerData = Service(
 				await this.addViewerVariable(ipcVarDesc.name, schema)
 			})
 
+			defineIPCFunc("viewer-data", "deleteVariable", async (variableName: string) => {
+				return await this.removeViewerVariable(variableName)
+			})
+
 			defineIPCFunc("viewer-data", "getNumRows", async () => {
 				return await this.getNumRows()
 			})
@@ -392,6 +397,7 @@ export const ViewerData = Service(
 		}
 
 		async removeViewerVariable(name: string) {
+			logger.log("Deleting Viewer Variable", name)
 			const idx = this.variables.findIndex((v) => v.name == name)
 			if (idx < 0) return
 
@@ -405,6 +411,7 @@ export const ViewerData = Service(
 				provider.onColumnRemoved(name)
 			}
 
+			logger.log("Notifying Renderer")
 			rendererColumnRemoved(name)
 		}
 
