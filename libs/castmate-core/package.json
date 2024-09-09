@@ -6,7 +6,8 @@
 	"devMain": "src/index.ts",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"rebuild": "electron-rebuild -f -w better-sqlite3"
+		"rebuild": "electron-rebuild -f -w better-sqlite3",
+		"postinstall": "electron-rebuild -f -w better-sqlite3"
 	},
 	"author": "",
 	"license": "ISC",
