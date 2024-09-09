@@ -21,5 +21,4 @@ declare module "../schema" {
 
 registerType("DynamicType", {
 	constructor: DynamicType,
-	canBeVariable: false,
 })

@@ -81,6 +81,8 @@ registerType("Number", {
 		return num
 	},
 	canBeCommandArg: true,
+	canBeVariable: true,
+	canBeViewerVariable: true,
 })
 
 export interface SchemaString extends Enumable<string>, SchemaBase<string> {
@@ -127,6 +129,8 @@ export interface SchemaBoolean extends SchemaBase<boolean> {
 
 registerType("Boolean", {
 	constructor: Boolean,
+	canBeVariable: true,
+	canBeViewerVariable: true,
 })
 
 export interface SchemaObj extends SchemaBase<object> {
@@ -531,6 +535,7 @@ export interface DataTypeMetaData<T extends DataConstructorOrFactory> {
 	constructor: T
 	canBeVariable?: boolean
 	canBeCommandArg?: boolean
+	canBeViewerVariable?: boolean
 	expose?: (value: ResolvedTypeByConstructor<T>, schema: Schema) => ExposedTypeByConstructor<T>
 	unexpose?: (value: ExposedTypeByConstructor<T>, schema: Schema) => ResolvedTypeByConstructor<T>
 	/**
@@ -556,13 +561,15 @@ interface FullDataTypeMetaData<T extends DataConstructorOrFactory = any> extends
 	name: string
 	canBeVariable: boolean
 	canBeCommandArg: boolean
+	canBeViewerVariable: boolean
 	comparisonTypes: DataTypeComparisonInfo[]
 }
 
 export function registerType<T extends DataConstructorOrFactory>(name: string, metaData: DataTypeMetaData<T>) {
 	const fullMetaData: FullDataTypeMetaData<T> = {
-		canBeVariable: true,
+		canBeVariable: false,
 		canBeCommandArg: false,
+		canBeViewerVariable: false,
 		comparisonTypes: [{ otherType: metaData.constructor as SchemaTypeConstructorFactories, inequalities: false }],
 		...metaData,
 		name,
@@ -577,6 +584,10 @@ export function getAllTypes() {
 
 export function getAllVariableTypes() {
 	return [...dataNameLookup.values()].filter((d) => d.canBeVariable)
+}
+
+export function getAllViewerVariableTypes() {
+	return [...dataNameLookup.values()].filter((d) => d.canBeViewerVariable)
 }
 
 export function getAllCommandArgTypes() {

@@ -27,6 +27,8 @@ declare module "../schema" {
 
 registerType("Color", {
 	constructor: Color,
+	canBeVariable: true,
+	canBeViewerVariable: true,
 })
 
 export function isHexColor(str: string): str is Color {

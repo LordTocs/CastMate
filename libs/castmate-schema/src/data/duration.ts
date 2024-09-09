@@ -35,6 +35,8 @@ registerType("Duration", {
 			inequalities: true,
 		},
 	],
+	canBeVariable: true,
+	canBeViewerVariable: true,
 })
 
 const HOUR_DUR = 60 * 60

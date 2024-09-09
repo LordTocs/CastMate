@@ -77,6 +77,7 @@ declare module "castmate-schema" {
 
 registerType("TwitchViewer", {
 	constructor: TwitchViewer,
+	canBeVariable: true,
 })
 
 export const testViewer = TwitchViewer.fromData({
