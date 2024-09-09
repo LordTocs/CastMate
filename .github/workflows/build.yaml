@@ -26,6 +26,8 @@ jobs:
         run: "yarn install"
       - name: "Setup Vite Extensions"
         run: "yarn setup-vite"
+      - name: "Recompile Native Deps for Electron"
+        run: "yarn workspace castmate-core run rebuild"  
       - name: "Build"
         run: "yarn run buildpublish"
         env:
