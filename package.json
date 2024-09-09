@@ -1,6 +1,6 @@
 {
 	"name": "castmate-monorepo",
-	"version": "0.5.3-beta",
+	"version": "0.5.3",
 	"description": "",
 	"private": true,
 	"type": "module",
