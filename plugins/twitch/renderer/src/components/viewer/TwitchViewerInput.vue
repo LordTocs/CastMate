@@ -65,6 +65,7 @@ import {
 	TemplateToggle,
 	DataInputBase,
 	stopPropagation,
+	defaultStringIsTemplate,
 } from "castmate-ui-core"
 import { TwitchViewerUnresolved, SchemaTwitchViewer, TwitchViewerDisplayData } from "castmate-plugin-twitch-shared"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
@@ -97,8 +98,10 @@ const viewerStore = useViewerStore()
 async function queryDisplay() {
 	if (!props.modelValue) {
 		selectedDisplayData.value = undefined
-	} else {
+	} else if (!defaultStringIsTemplate(props.modelValue)) {
 		selectedDisplayData.value = await viewerStore.getUserById(props.modelValue)
+	} else {
+		selectedDisplayData.value = undefined
 	}
 }
 

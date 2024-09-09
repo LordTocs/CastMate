@@ -93,6 +93,7 @@ interface TriggerDefinition {
 	readonly version: string
 	config: Schema
 	context: Schema | ((config: any) => Promise<Schema>)
+	headerComponent?: Component
 }
 
 function ipcParseTriggerDefinition(def: IPCTriggerDefinition): TriggerDefinition {
@@ -351,6 +352,20 @@ export const usePluginStore = defineStore("plugins", () => {
 		console.log("Set Action Component", plugin, action, component)
 	}
 
+	function setTriggerHeaderComponent(plugin: string, trigger: string, component: Component) {
+		const pluginDef = pluginMap.value.get(plugin)
+		if (!pluginDef) {
+			console.error(`Unknown plugin ${plugin}`)
+			return
+		}
+		const triggerDef = pluginDef.triggers[trigger]
+		if (!triggerDef) {
+			console.error(`Unknown trigger ${plugin}:${trigger}`)
+			return
+		}
+		triggerDef.headerComponent = markRaw(component)
+	}
+
 	function setSettingComponent(plugin: string, key: string, component: Component) {
 		const pluginDef = pluginMap.value.get(plugin)
 		if (!pluginDef) {
@@ -391,6 +406,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		getAction,
 		setActionComponent,
 		setSettingComponent,
+		setTriggerHeaderComponent,
 		updateSettings,
 		registerSettingWatcher,
 		unregisterSettingWatcher,

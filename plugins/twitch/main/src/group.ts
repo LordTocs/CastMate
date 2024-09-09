@@ -3,6 +3,7 @@ import {
 	Resource,
 	ResourceRegistry,
 	ResourceStorage,
+	ViewerData,
 	defineAction,
 	definePluginResource,
 	onLoad,
@@ -13,10 +14,15 @@ import {
 	TwitchViewerGroup,
 	TwitchViewerGroupRule,
 	TwitchViewer,
+	isViewerGroupPropertyRule,
+	isGroupResourceRef,
+	isInlineViewerGroup,
+	isGroupCondition,
 } from "castmate-plugin-twitch-shared"
 import { nanoid } from "nanoid/non-secure"
 import { ViewerCache } from "./viewer-cache"
 import { TwitchAccount } from "./twitch-auth"
+import { evaluateHalfBooleanExpression } from "castmate-core/src/util/boolean-helpers"
 
 const logger = usePluginLogger("twitch")
 
@@ -161,7 +167,7 @@ async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promi
 			}
 		}
 		return false
-	} else if ("properties" in rule) {
+	} else if (isViewerGroupPropertyRule(rule)) {
 		//Todo: Make this not silly hardcoded
 		if (rule.properties.anonymous && userId == "anonymous") return true
 
@@ -190,13 +196,21 @@ async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promi
 			if (userId === TwitchAccount.channel.twitchId) return true
 		}
 		return false
-	} else if ("group" in rule) {
+	} else if (isGroupResourceRef(rule)) {
 		if (!rule.group) return false
 		const group = CustomTwitchViewerGroup.storage.getById(rule.group)
 		if (!group) return false
 		return group.contains(userId)
-	} else if ("userIds" in rule) {
+	} else if (isInlineViewerGroup(rule)) {
 		return rule.userIds.includes(userId)
+	} else if (isGroupCondition(rule)) {
+		const vari = ViewerData.getInstance().getVariable(rule.varname)
+		if (!vari) return false
+
+		const data = await ViewerCache.getInstance().getViewerData(userId)
+		const value = data[vari.name]
+
+		return await evaluateHalfBooleanExpression({ value, schema: vari.schema }, rule.operand, rule.operator)
 	}
 	logger.log("Unknown Group Rule", rule)
 	return false

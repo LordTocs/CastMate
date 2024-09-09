@@ -20,6 +20,7 @@ import { app } from "electron"
 import path from "path"
 import { InfoService } from "./info/info-manager"
 import { AnalyticsService } from "./analytics/analytics-manager"
+import { ViewerData } from "./viewer-data/viewer-data"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -90,6 +91,8 @@ export async function initializeCastMate() {
 	SequenceResolvers.initialize()
 	EmoteCache.initialize()
 	setupStreamPlans()
+	ViewerData.initialize()
+	await ViewerData.getInstance().initialize()
 
 	//How do we load plugins???
 	//await loadPlugin("twitch")

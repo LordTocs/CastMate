@@ -68,41 +68,49 @@ export const useMediaStore = defineStore("media", () => {
 	}
 })
 
-export function useMediaDrop(element: Ref<HTMLElement | undefined>, subPath: MaybeRefOrGetter<string>) {
+export function useMediaDrop(
+	element: MaybeRefOrGetter<HTMLElement | undefined>,
+	subPath: MaybeRefOrGetter<string>,
+	nestingClass?: string
+) {
 	const mediaStore = useMediaStore()
 
-	return useFileDragDrop(element, (files) => {
-		const basepath = toValue(subPath)
+	return useFileDragDrop(
+		element,
+		(files) => {
+			const basepath = toValue(subPath)
 
-		for (const file of files) {
-			console.log("DROP", file)
-			if (
-				!(
-					file.mimetype.startsWith("image") ||
-					file.mimetype.startsWith("audio") ||
-					file.mimetype.startsWith("video")
+			for (const file of files) {
+				console.log("DROP", file)
+				if (
+					!(
+						file.mimetype.startsWith("image") ||
+						file.mimetype.startsWith("audio") ||
+						file.mimetype.startsWith("video")
+					)
 				)
-			)
-				continue
+					continue
 
-			const pathParse = path.parse(file.path)
+				const pathParse = path.parse(file.path)
 
-			const mediaName = pathParse.base
+				const mediaName = pathParse.base
 
-			const proposedMediaPath = path.join(basepath, mediaName).replaceAll("\\", "/")
+				const proposedMediaPath = path.join(basepath, mediaName).replaceAll("\\", "/")
 
-			if (mediaStore.media[proposedMediaPath]) {
-				console.log("ALREADY HAS PATH", proposedMediaPath)
-				continue
+				if (mediaStore.media[proposedMediaPath]) {
+					console.log("ALREADY HAS PATH", proposedMediaPath)
+					continue
+				}
+
+				if (file.remote) {
+					console.log("DOWNLOAD", file.path, "to", proposedMediaPath)
+					mediaStore.downloadMedia(file.path, proposedMediaPath)
+				} else {
+					console.log("COPY", file.path, "to", proposedMediaPath)
+					mediaStore.copyMedia(file.path, proposedMediaPath)
+				}
 			}
-
-			if (file.remote) {
-				console.log("DOWNLOAD", file.path, "to", proposedMediaPath)
-				mediaStore.downloadMedia(file.path, proposedMediaPath)
-			} else {
-				console.log("COPY", file.path, "to", proposedMediaPath)
-				mediaStore.copyMedia(file.path, proposedMediaPath)
-			}
-		}
-	})
+		},
+		nestingClass
+	)
 }

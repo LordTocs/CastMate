@@ -25,4 +25,5 @@ declare module "../schema" {
 
 registerType("Toggle", {
 	constructor: Toggle,
+	canBeVariable: true,
 })

@@ -1,6 +1,6 @@
 {
 	"name": "castmate",
-	"version": "0.5.3-beta",
+	"version": "0.5.3",
 	"description": "CastMate",
 	"author": "LordTocs",
 	"scripts": {
@@ -85,7 +85,7 @@
 		"pinia": "^2.1.7",
 		"primeflex": "*",
 		"primeicons": "^6.0.1",
-		"primevue": "*",
+		"primevue": "3.53.0",
 		"sass": "^1.71.0",
 		"ts-toolbelt": "*",
 		"vite": "^5.2.9",

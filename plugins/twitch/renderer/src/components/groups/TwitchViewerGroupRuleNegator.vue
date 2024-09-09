@@ -30,6 +30,13 @@
 				@delete="emit('delete')"
 				:schema="schema"
 			/>
+			<twitch-viewer-group-condition-edit
+				v-else-if="isGroupCondition(internalModel)"
+				v-model="internalModel"
+				v-model:excluded="excluded"
+				@delete="emit('delete')"
+				:schema="schema"
+			/>
 		</div>
 	</div>
 </template>
@@ -43,12 +50,14 @@ import {
 	isGroupResourceRef,
 	isInlineViewerGroup,
 	isViewerGroupPropertyRule,
+	isGroupCondition,
 	SchemaTwitchViewerGroup,
 } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupLogicOp from "./TwitchViewerGroupLogicOp.vue"
 import TwitchViewerGroupResourceRef from "./TwitchViewerGroupResourceRef.vue"
 import TwitchViewerGroupInlineGroup from "./TwitchViewerGroupInlineGroup.vue"
 import TwitchViewerGroupPropertyEdit from "./TwitchViewerGroupPropertyEdit.vue"
+import TwitchViewerGroupConditionEdit from "./TwitchViewerGroupConditionEdit.vue"
 import { computed, useModel } from "vue"
 import PButton from "primevue/button"
 

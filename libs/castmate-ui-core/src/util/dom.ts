@@ -15,6 +15,23 @@ export function isChildOfClass(element: HTMLElement, clazz: string) {
 	return false
 }
 
+export function isUnnestedChild(parent: HTMLElement, element: HTMLElement | undefined | null, clazz?: string) {
+	if (!element) return false
+	if (!parent.contains(element)) return false
+
+	let currentElement: HTMLElement | null = element
+	while (currentElement) {
+		if (parent === currentElement) return true
+
+		if (clazz && currentElement.classList.contains(clazz)) {
+			return false
+		}
+		currentElement = currentElement.parentElement
+	}
+
+	return false
+}
+
 export function getElementScroll(elem: HTMLElement) {
 	return { x: elem.scrollLeft ?? 0, y: elem.scrollTop ?? 0 }
 }

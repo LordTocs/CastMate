@@ -1,5 +1,6 @@
 import { useEventListener } from "@vueuse/core"
-import { computed, ref, Ref, toValue } from "vue"
+import { computed, MaybeRefOrGetter, ref, Ref, toValue } from "vue"
+import { isUnnestedChild } from "./dom"
 
 interface FromTo {
 	fromElement?: HTMLElement
@@ -22,7 +23,11 @@ async function getMimeType(url: string) {
 	return response.headers.get("Content-Type") ?? undefined
 }
 
-export function useFileDragDrop(element: Ref<HTMLElement | undefined>, onDrop: FileDropEvent) {
+export function useFileDragDrop(
+	element: MaybeRefOrGetter<HTMLElement | undefined>,
+	onDrop: FileDropEvent,
+	nestingClass?: string
+) {
 	const hoveringFiles = ref(false)
 
 	useEventListener(element, "dragenter", (ev: DragEvent) => {
@@ -32,17 +37,24 @@ export function useFileDragDrop(element: Ref<HTMLElement | undefined>, onDrop: F
 		if (!elem) return
 
 		const ft = ev as FromTo
-		const fromIn = ft.fromElement != null && elem.contains(ft.fromElement)
+		const toIn = isUnnestedChild(elem, ft.toElement, nestingClass)
+		const fromIn = isUnnestedChild(elem, ft.fromElement, nestingClass)
 
-		if (fromIn) {
+		console.log("File Enter", ft, fromIn, toIn)
+
+		if (fromIn && !toIn) {
+			hoveringFiles.value = false
+		} else if (!fromIn && toIn) {
+			hoveringFiles.value = true
+		} else {
 			return
 		}
 
 		ev.preventDefault()
-		ev.stopPropagation()
+		//ev.stopPropagation()
 
-		console.log("FileEnter", ev, ev.dataTransfer.files)
-		hoveringFiles.value = true
+		//console.log("FileEnter", ev, ev.dataTransfer.files)
+		//hoveringFiles.value = true
 	})
 
 	useEventListener(element, "dragleave", (ev: DragEvent) => {
@@ -52,17 +64,23 @@ export function useFileDragDrop(element: Ref<HTMLElement | undefined>, onDrop: F
 		if (!elem) return
 
 		const ft = ev as FromTo
-		const fromIn = ft.fromElement != null && elem.contains(ft.fromElement)
+		const toIn = isUnnestedChild(elem, ft.toElement, nestingClass)
+		const fromIn = isUnnestedChild(elem, ft.fromElement, nestingClass)
 
-		if (fromIn) {
+		console.log("File Leave", ft, fromIn, toIn)
+
+		if (fromIn && !toIn) {
+			hoveringFiles.value = true
+		} else if (!fromIn && toIn) {
+			hoveringFiles.value = false
+		} else {
 			return
 		}
 
-		ev.preventDefault()
-		ev.stopPropagation()
+		ev.preventDefault
 
-		console.log("FileLeave", ev, ev.dataTransfer.files)
-		hoveringFiles.value = false
+		//console.log("FileLeave", ev, ev.dataTransfer.files)
+		//hoveringFiles.value = false
 	})
 
 	useEventListener(element, "dragover", (ev: DragEvent) => {

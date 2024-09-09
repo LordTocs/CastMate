@@ -107,6 +107,8 @@ declare module "castmate-schema" {
 
 registerType("LightColor", {
 	constructor: LightColor,
+	canBeVariable: true,
+	canBeViewerVariable: true,
 })
 
 function clamp(value: number, min: number, max: number) {

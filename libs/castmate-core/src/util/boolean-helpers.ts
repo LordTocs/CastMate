@@ -99,7 +99,15 @@ function baseCompare(left: any, right: any, operator: ValueCompareOperator) {
 
 async function evaluateValueExpression(expression: BooleanValueExpression) {
 	const left = await getExpressionValueAndSchema(expression.lhs)
-	const right = await getExpressionValueAndSchema(expression.rhs)
+	return await evaluateHalfBooleanExpression(left, expression.rhs, expression.operator)
+}
+
+export async function evaluateHalfBooleanExpression(
+	left: { value: any; schema: Schema } | undefined,
+	rhs: ExpressionValue,
+	operator: ValueCompareOperator
+) {
+	const right = await getExpressionValueAndSchema(rhs)
 
 	let compareFunc = baseCompare
 
@@ -113,7 +121,7 @@ async function evaluateValueExpression(expression: BooleanValueExpression) {
 		}
 	}
 
-	return compareFunc(leftValue, rightValue, expression.operator)
+	return compareFunc(leftValue, rightValue, operator)
 }
 
 function inRangeCompare(

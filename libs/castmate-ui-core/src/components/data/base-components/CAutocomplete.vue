@@ -194,6 +194,7 @@ function onFilterKeyDown(ev: KeyboardEvent) {
 }
 
 .query-input {
-	min-width: 150px;
+	/*min-width: 150px;*/
+	width: 0;
 }
 </style>

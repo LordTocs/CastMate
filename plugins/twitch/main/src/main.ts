@@ -97,4 +97,4 @@ export default definePlugin(
 	}
 )
 
-export { TwitchAccount, onChannelAuth, ChannelPointReward }
+export { TwitchAccount, onChannelAuth, ChannelPointReward, ViewerCache }

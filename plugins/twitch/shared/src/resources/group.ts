@@ -1,4 +1,4 @@
-import { SchemaBase, registerType } from "castmate-schema"
+import { ExpressionValue, SchemaBase, ValueCompareOperator, registerType } from "castmate-schema"
 
 export interface TwitchViewerGroupConfig {
 	name: string
@@ -26,6 +26,12 @@ export interface TwitchViewerGroupInlineList {
 	userIds: string[]
 }
 
+export interface TwitchViewerGroupCondition {
+	varname: string | undefined
+	operator: ValueCompareOperator
+	operand: ExpressionValue
+}
+
 export interface TwitchViewerGroupExclusion {
 	exclude: Exclude<TwitchViewerGroupRule, TwitchViewerGroupExclusion>
 }
@@ -34,6 +40,7 @@ export type TwitchViewerGroupBaseRule =
 	| TwitchViewerGroupProperties
 	| TwitchViewerGroupResourceRef
 	| TwitchViewerGroupInlineList
+	| TwitchViewerGroupCondition
 
 export type TwitchViewerGroupRule =
 	| TwitchViewerGroupAnd
@@ -87,6 +94,11 @@ export function isGroupResourceRef(rule: TwitchViewerGroupRule | undefined): rul
 export function isExclusionRule(rule: TwitchViewerGroupRule | undefined): rule is TwitchViewerGroupExclusion {
 	if (!rule) return false
 	return "exclude" in rule
+}
+
+export function isGroupCondition(rule: TwitchViewerGroupRule | undefined): rule is TwitchViewerGroupCondition {
+	if (!rule) return false
+	return "operator" in rule
 }
 
 export function isLogicGroup(

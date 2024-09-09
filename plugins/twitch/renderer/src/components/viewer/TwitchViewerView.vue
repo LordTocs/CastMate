@@ -4,11 +4,12 @@
 		<img class="twitch-avatar" :src="viewerDisplayData.profilePicture" />
 		<span :style="{ color: viewerDisplayData.color }"> {{ viewerDisplayData.displayName }}</span>
 	</span>
+	<span class="inline-flex vertical-align-middle flex-row align-items-center" v-else> {{ modelValue }}</span>
 </template>
 
 <script setup lang="ts">
 import { SchemaTwitchViewer, TwitchViewer, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
-import { SharedDataViewProps } from "castmate-ui-core"
+import { defaultStringIsTemplate, SharedDataViewProps } from "castmate-ui-core"
 import { useViewerStore } from "../../util/viewer"
 import { computedAsync } from "@vueuse/core"
 
@@ -23,6 +24,7 @@ const viewerStore = useViewerStore()
 
 const viewerDisplayData = computedAsync(async () => {
 	if (!props.modelValue) return undefined
+	if (defaultStringIsTemplate(props.modelValue)) return undefined
 	return await viewerStore.getUserById(props.modelValue)
 })
 </script>

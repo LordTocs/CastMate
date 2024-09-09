@@ -1,5 +1,6 @@
 import { definePlugin, usePluginLogger } from "castmate-core"
 import { setupVariableActions } from "./actions"
+import { setupViewerVariables } from "./viewer-variables"
 
 export default definePlugin(
 	{
@@ -10,5 +11,6 @@ export default definePlugin(
 	},
 	() => {
 		setupVariableActions()
+		setupViewerVariables()
 	}
 )
