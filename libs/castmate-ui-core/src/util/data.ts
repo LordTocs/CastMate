@@ -66,6 +66,7 @@ import RangeViewVue from "../components/data/views/RangeView.vue"
 import ResourceViewVue from "../components/data/views/ResourceView.vue"
 import ToggleViewVue from "../components/data/views/ToggleView.vue"
 import TimerViewVue from "../components/data/views/TimerView.vue"
+import DynamicTypeView from "../components/data/views/DynamicTypeView.vue"
 
 import CommandInputVue from "../components/data/inputs/CommandInput.vue"
 import CommandViewVue from "../components/data/views/CommandView.vue"
@@ -354,6 +355,7 @@ export function initData() {
 	inputStore.registerViewComponent(Duration, DurationViewVue)
 	inputStore.registerViewComponent(Command, CommandViewVue)
 	inputStore.registerViewComponent(Timer, TimerViewVue)
+	inputStore.registerViewComponent(DynamicType, DynamicTypeView)
 }
 
 export function provideDataContextSchema(schema: MaybeRefOrGetter<Schema>) {
