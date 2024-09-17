@@ -16,6 +16,7 @@ export const SpellConfigSchema = declareSchema({
 				950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350, 1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750,
 				1800, 1850, 1900, 1950, 2000,
 			],
+			template: true,
 		},
 		color: {
 			type: Color,
