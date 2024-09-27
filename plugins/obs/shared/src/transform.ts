@@ -119,6 +119,14 @@ export function transformToOBSWS(value: ResolvedOBSSourceTransform): Partial<OBS
 		result.positionY = value.position.y
 	}
 
+	if (value.scale.x != null) {
+		result.scaleX = value.scale.x
+	}
+
+	if (value.scale.y != null) {
+		result.scaleY = value.scale.y
+	}
+
 	if (value.rotation != null) {
 		result.rotation = value.rotation
 	}
