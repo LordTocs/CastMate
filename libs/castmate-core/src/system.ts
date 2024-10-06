@@ -122,3 +122,46 @@ export async function finializeCastMateSetup() {
 	setupComplete = true
 	notifyRendererSetupFinished()
 }
+
+export async function initializeCastMateSatellite() {
+	globalLogger.log("Initing Castmate Satellite")
+	AnalyticsService.initialize()
+	await AnalyticsService.getInstance().initialize()
+	await ensureDirectory(resolveProjectPath("settings"))
+	await ensureDirectory(resolveProjectPath("secrets"))
+	await ensureDirectory(resolveProjectPath("state"))
+	await initializeFileSystem()
+	//InfoService.initialize()
+	//await InfoService.getInstance().checkInfo()
+	GenericLoginService.initialize()
+	//WebService.initialize()
+	PluginManager.initialize()
+	//setupMedia()
+	ResourceRegistry.initialize()
+	//PubSubManager.initialize()
+	//SequenceResolvers.initialize()
+	//EmoteCache.initialize()
+	//setupStreamPlans()
+	//ViewerData.initialize()
+	//await ViewerData.getInstance().initialize()
+
+	//How do we load plugins???
+	//await loadPlugin("twitch")
+
+	initialSetupComplete = true
+	notifyRendererInitialSetupFinished()
+}
+
+export async function finializeCastMateSatelliteSetup() {
+	globalLogger.log("Finalizing Init")
+	//await setupProfiles()
+	//await finishSettingUpStreamPlans()
+	//await ActionQueue.initialize()
+	//ActionQueueManager.initialize()
+	//ProfileManager.initialize()
+	//await ProfileManager.getInstance().finishSetup()
+	//await EmoteCache.getInstance().initialize()
+	globalLogger.log("CastMate Init Complete")
+	setupComplete = true
+	notifyRendererSetupFinished()
+}

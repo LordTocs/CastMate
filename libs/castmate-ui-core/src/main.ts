@@ -77,6 +77,7 @@ export * from "./util/dragging"
 export * from "./util/selection"
 export * from "./util/arrays"
 export * from "./util/generic-login"
+export * from "./util/init-store"
 
 export * from "./plugins/plugin-store"
 export * from "./project/project-store"

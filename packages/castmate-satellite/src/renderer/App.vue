@@ -1,7 +1,12 @@
 <template>
 	<div class="app" @keydown="onKeyDown" tabindex="-1">
 		<system-bar title="CastMate Satellite"></system-bar>
-		<div class="app-row" v-if="true">SATELLITE!</div>
+		<div class="app-row" v-if="initStore.inited">
+			<div>SATELLITE!</div>
+			<div>
+				<account-widget account-type="TwitchAccount" account-id="channel" />
+			</div>
+		</div>
 		<div class="load-row" v-else>
 			<h3>Loading CastMate Satellite</h3>
 			<p-progress-spinner />
@@ -15,8 +20,12 @@
 <script setup lang="ts">
 import SystemBar from "./components/system/SystemBar.vue"
 
+import { AccountWidget, useInitStore } from "castmate-ui-core"
+
 import PProgressSpinner from "primevue/progressspinner"
 import PConfirmDialog from "primevue/confirmdialog"
+
+const initStore = useInitStore()
 
 function onKeyDown(ev: KeyboardEvent) {
 	if (ev.ctrlKey && ev.code == "KeyS") {
@@ -51,7 +60,7 @@ body {
 .app-row {
 	flex: 1;
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 }
 
 .load-row {

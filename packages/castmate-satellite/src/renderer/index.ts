@@ -5,6 +5,8 @@ import PrimeVue from "primevue/config"
 import DialogService from "primevue/dialogservice"
 import ConfirmationService from "primevue/confirmationservice"
 
+import { useInitStore, usePluginStore, useResourceStore } from "castmate-ui-core"
+
 import "./theme/castmate/theme.scss"
 import "./css/theme-ext.css"
 import "./css/spellcast.css"
@@ -37,5 +39,22 @@ app.directive("tooltip", Tooltip)
 
 //app.use(router)
 app.use(pinia)
+
+const initStore = useInitStore()
+const pluginStore = usePluginStore()
+const resourceStore = useResourceStore()
+
+async function init() {
+	await initStore.initialize()
+
+	await initStore.waitForInitialSetup()
+
+	await pluginStore.initialize()
+	await resourceStore.initialize()
+
+	await initStore.waitForInit()
+}
+
+init()
 
 app.mount("#app")

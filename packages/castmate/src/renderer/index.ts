@@ -1,4 +1,3 @@
-import { useInitStore } from "./store/init-store"
 import {
 	initializeProfiles,
 	initializeAutomations,
@@ -11,6 +10,7 @@ import {
 	useIpcCaller,
 	initializeStreamPlans,
 	useStreamPlanStore,
+	useInitStore,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"

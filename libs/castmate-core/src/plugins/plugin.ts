@@ -63,6 +63,27 @@ export function definePlugin(spec: PluginSpec, initter: () => void) {
 	)
 }
 
+interface SatellitePluginSpec {
+	id: string
+	name: string
+	description?: string
+	icon?: string
+	color?: Color
+	version?: SemanticVersion
+}
+
+export function defineSatellitePlugin(spec: SatellitePluginSpec, initter: () => void) {
+	return new Plugin(
+		{
+			icon: "mdi mdi-puzzle",
+			color: "#fefefe",
+			version: "0.0.0",
+			...spec,
+		},
+		initter
+	)
+}
+
 export function defineRendererCallable<T extends (...args: any[]) => any>(name: string, func: T) {
 	if (!initingPlugin) throw new Error()
 

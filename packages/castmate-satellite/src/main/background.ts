@@ -4,7 +4,15 @@ import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer"
 //import electronUpdater from "electron-updater"
 import { app, BrowserWindow, ipcMain, contentTracing } from "electron"
 import { createWindow } from "./electron/electron-helpers"
-import { initializeCastMate, finializeCastMateSetup, loadAutomations, setupCastMateDirectories } from "castmate-core"
+import {
+	initializeCastMate,
+	finializeCastMateSetup,
+	loadAutomations,
+	setupCastMateDirectories,
+	initializeCastMateSatellite,
+	finializeCastMateSatelliteSetup,
+} from "castmate-core"
+import { loadPlugins } from "./plugins"
 
 const isDevelopment = !app.isPackaged // true //TODO: import.meta.env.DEV
 
@@ -50,6 +58,12 @@ app.whenReady().then(async () => {
 
 	//Create the window
 	await createMainWindow()
+
+	await initializeCastMateSatellite()
+
+	await loadPlugins()
+
+	await finializeCastMateSatelliteSetup()
 })
 
 // Quit when all windows are closed.
