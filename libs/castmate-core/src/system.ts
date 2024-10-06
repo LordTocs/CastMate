@@ -43,19 +43,21 @@ let setupComplete = false
 defineIPCFunc("castmate", "isSetupFinished", () => setupComplete)
 defineIPCFunc("castmate", "isInitialSetupFinished", () => initialSetupComplete)
 
-export async function setupCastMateDirectories() {
+export async function setupCastMateDirectories(userOverride?: string) {
 	const unpackaged = !app.isPackaged
 	const portable = process.env.PORTABLE_EXECUTABLE_FILE != null || process.argv.includes("--portable")
 
-	let directory = path.join(app.getPath("userData"), "user")
+	const userFolderName = userOverride ?? "user"
+
+	let directory = path.join(app.getPath("userData"), userFolderName)
 	const needsSession = unpackaged || portable
 
 	if (portable) {
 		directory = process.env.PORTABLE_EXECUTABLE_DIR
-			? path.resolve(process.env.PORTABLE_EXECUTABLE_DIR, "user")
-			: "./user"
+			? path.resolve(process.env.PORTABLE_EXECUTABLE_DIR, userFolderName)
+			: `./${userFolderName}`
 	} else if (unpackaged) {
-		directory = "../../user"
+		directory = `../../${userFolderName}`
 	}
 
 	await setProjectDirectory(directory)
