@@ -1,0 +1,73 @@
+@use "sass:math";
+
+// core
+.p-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p-tag-icon,
+.p-tag-value,
+.p-tag-icon.pi {
+    line-height: 1.5;
+}
+
+.p-tag.p-tag-rounded {
+    border-radius: 10rem;
+}
+
+// theme
+.p-tag {
+    background: $badgeBg;
+    color: $badgeTextColor;
+    font-size: $badgeFontSize;
+    font-weight: $badgeFontWeight;
+    padding: $tagPadding;
+    border-radius: $borderRadius;
+
+    &.p-tag-success {
+        background-color: $successButtonBg;
+        color: $successButtonTextColor;
+    }
+
+    &.p-tag-info {
+        background-color: $infoButtonBg;
+        color: $infoButtonTextColor;
+    }
+
+    &.p-tag-warning {
+        background-color: $warningButtonBg;
+        color: $warningButtonTextColor;
+    }
+
+    &.p-tag-danger {
+        background-color: $dangerButtonBg;
+        color: $dangerButtonTextColor;
+    }
+
+    @if variable-exists(secondaryMessageBg) {
+        &.p-tag-secondary {
+            background-color: $secondaryButtonBg;
+            color: $secondaryButtonTextColor;
+        }
+    
+        &.p-tag-contrast {
+            background-color: $contrastButtonBg;
+            color: $contrastButtonTextColor;
+        }
+    }
+
+    .p-tag-icon {
+        font-size: $badgeFontSize;
+
+        &:not(:last-child) {
+            margin-right: math.div($inlineSpacing, 2);
+        }
+
+        &.p-icon {
+            width: $badgeFontSize;
+            height: $badgeFontSize;
+        }
+    }
+}

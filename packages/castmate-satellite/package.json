@@ -1,0 +1,56 @@
+{
+	"name": "castmate-satellite",
+	"version": "0.0.1",
+	"description": "CastMate",
+	"author": "LordTocs",
+	"scripts": {
+		"compile": "vue-tsc",
+		"trace": "vue-tsc --traceResolution",
+		"build": "vue-tsc && vite build",
+		"dev": "vite serve --port 5175",
+		"inspect": "electron ./dist/dist-electron/background.js --inspect",
+		"electron:build": "electron-builder --config electron-builder-config.cjs",
+		"electron:buildpublish": "electron-builder --config electron-builder-config.cjs --publish always",
+		"fix-app-deps": "electron-builder install-app-deps"
+	},
+	"main": "dist/dist-electron/background.js",
+	"electronVersion": "29.1.1",
+	"dependencies": {
+		"archiver": "^7.0.1",
+		"castmate-core": "workspace:^",
+		"castmate-schema": "workspace:^"
+	},
+	"devDependencies": {
+		"@mdi/font": "^7.1.96",
+		"@rollup/plugin-node-resolve": "^15.2.1",
+		"@types/archiver": "^6.0.2",
+		"@vitejs/plugin-vue": "*",
+		"@vueuse/core": "*",
+		"castmate-overlay-core": "workspace:^",
+		"castmate-ui-core": "workspace:^",
+		"castmate-vite": "workspace:^",
+		"chromatism2": "*",
+		"electron": "29.4.5",
+		"electron-builder": "^25.0.0-alpha.8",
+		"electron-devtools-installer": "^3.2.0",
+		"eslint": "^8.17.0",
+		"nanoid": "^5.0.7",
+		"pinia": "^2.1.7",
+		"primeflex": "*",
+		"primeicons": "^6.0.1",
+		"primevue": "3.53.0",
+		"sass": "^1.71.0",
+		"ts-toolbelt": "*",
+		"vite": "^5.2.9",
+		"vite-plugin-electron": "^0.12.0",
+		"vite-plugin-electron-renderer": "^0.14.5",
+		"vue": "^3.4.23",
+		"vue-tsc": "*"
+	},
+	"browserslist": [
+		"> 1%",
+		"last 2 versions",
+		"not dead"
+	],
+	"packageManager": "yarn@3.2.4"
+}

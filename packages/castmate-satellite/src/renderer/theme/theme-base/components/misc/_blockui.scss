@@ -1,0 +1,17 @@
+// core
+.p-blockui-container {
+    position: relative;
+}
+
+.p-blockui.p-component-overlay {
+    position: absolute;
+}
+
+.p-blockui-document.p-component-overlay {
+    position: fixed;
+}
+
+// theme
+.p-blockui {
+    border-radius: $borderRadius;
+}

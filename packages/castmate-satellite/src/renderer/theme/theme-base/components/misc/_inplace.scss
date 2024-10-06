@@ -1,0 +1,38 @@
+// core
+.p-inplace .p-inplace-display {
+    display: inline;
+    cursor: pointer;
+}
+
+.p-inplace .p-inplace-content {
+    display: inline;
+}
+
+.p-fluid .p-inplace.p-inplace-closable .p-inplace-content {
+    display: flex;
+}
+
+.p-fluid .p-inplace.p-inplace-closable .p-inplace-content > .p-inputtext {
+    flex: 1 1 auto;
+    width: 1%;
+}
+
+// theme
+.p-inplace {
+    .p-inplace-display {
+        padding: $inplacePadding;
+        border-radius: $borderRadius;
+        transition: $formElementTransition;
+        outline-color: transparent;
+
+        &:not(.p-disabled):hover {
+            background: $inplaceHoverBg;
+            color: $inplaceTextHoverColor;
+        }
+
+        &:focus {
+            @include focused();
+        }
+    }
+}
+

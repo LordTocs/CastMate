@@ -1,0 +1,112 @@
+// core
+.p-inline-message {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: top;
+}
+
+.p-inline-message-icon {
+    flex-shrink: 0;
+}
+
+.p-inline-message-icon-only .p-inline-message-text {
+    visibility: hidden;
+    width: 0;
+}
+
+.p-fluid .p-inline-message {
+    display: flex;
+}
+
+// theme
+.p-inline-message {
+    padding: $inlineMessagePadding;
+    margin: $inlineMessageMargin;
+    border-radius: $borderRadius;
+
+    &.p-inline-message-info {
+        background: $infoMessageBg;
+        border: $infoMessageBorder;
+        border-width: $inlineMessageBorderWidth;
+        color: $infoMessageTextColor;
+
+        .p-inline-message-icon {
+            color: $infoMessageIconColor;
+        }
+    }
+
+    &.p-inline-message-success {
+        background: $successMessageBg;
+        border: $successMessageBorder;
+        border-width: $inlineMessageBorderWidth;
+        color: $successMessageTextColor;
+
+        .p-inline-message-icon {
+            color: $successMessageIconColor;
+        }
+    }
+
+    &.p-inline-message-warn {
+        background: $warningMessageBg;
+        border: $warningMessageBorder;
+        border-width: $inlineMessageBorderWidth;
+        color: $warningMessageTextColor;
+
+        .p-inline-message-icon {
+            color: $warningMessageIconColor;
+        }
+    }
+
+    &.p-inline-message-error {
+        background: $errorMessageBg;
+        border: $errorMessageBorder;
+        border-width: $inlineMessageBorderWidth;
+        color: $errorMessageTextColor;
+
+        .p-inline-message-icon {
+            color: $errorMessageIconColor;
+        }
+    }
+
+    @if variable-exists(secondaryMessageBg) {
+        &.p-inline-message-secondary {
+            background: $secondaryMessageBg;
+            border: $secondaryMessageBorder;
+            border-width: $inlineMessageBorderWidth;
+            color: $secondaryMessageTextColor;
+
+            .p-inline-message-icon {
+                color: $secondaryMessageIconColor;
+            }
+        }
+    }
+
+    @if variable-exists(contrastMessageBg) {
+        &.p-inline-message-contrast {
+            background: $contrastMessageBg;
+            border: $contrastMessageBorder;
+            border-width: $inlineMessageBorderWidth;
+            color: $contrastMessageTextColor;
+
+            .p-inline-message-icon {
+                color: $contrastMessageIconColor;
+            }
+        }
+    }
+
+    .p-inline-message-icon {
+        font-size: $inlineMessageIconFontSize;
+        margin-right: $inlineSpacing;
+    }
+
+    .p-inline-message-text {
+        font-size: $inlineMessageTextFontSize;
+    }
+
+    &.p-inline-message-icon-only {
+        .p-inline-message-icon {
+            margin-right: 0;
+        }
+    }
+}
