@@ -2998,6 +2998,54 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-dashboards-main@workspace:plugins/dashboards/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-dashboards-main@workspace:plugins/dashboards/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-dashboards-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-dashboards-renderer@workspace:plugins/dashboards/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-dashboards-renderer@workspace:plugins/dashboards/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-plugin-dashboards-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:29.4.5"
+    nanoid: "npm:^5.0.7"
+    pinia: "npm:^2.1.7"
+    typescript: "npm:*"
+    vite: "npm:^5.2.9"
+    vue: "npm:^3.4.23"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-dashboards-shared@workspace:^, castmate-plugin-dashboards-shared@workspace:plugins/dashboards/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-dashboards-shared@workspace:plugins/dashboards/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-dashboards@workspace:plugins/dashboards":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-dashboards@workspace:plugins/dashboards"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-discord-main@workspace:^, castmate-plugin-discord-main@workspace:plugins/discord/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-discord-main@workspace:plugins/discord/main"
