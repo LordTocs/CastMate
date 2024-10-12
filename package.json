@@ -26,7 +26,7 @@
 	"devDependencies": {
 		"@electron/rebuild": "^3.6.0",
 		"@types/node": "^20.4.8",
-		"@vitejs/plugin-vue": "^4.3.4",
+		"@vitejs/plugin-vue": "4.6.2",
 		"@vue/tsconfig": "^0.4.0",
 		"@vueuse/core": "10.7.2",
 		"chromatism2": "^3.0.2",

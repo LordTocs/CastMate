@@ -23,7 +23,7 @@
 		"vue": "^3.4.23"
 	},
 	"devDependencies": {
-		"@vitejs/plugin-vue": "*",
+		"@vitejs/plugin-vue": "4.6.2",
 		"ts-toolbelt": "*",
 		"typescript": "*",
 		"vite": "^5.2.9",

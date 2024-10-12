@@ -1679,17 +1679,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:*":
-  version: 5.0.3
-  resolution: "@vitejs/plugin-vue@npm:5.0.3"
-  peerDependencies:
-    vite: ^5.0.0
-    vue: ^3.2.25
-  checksum: 10/fc744003c48841c8ace5f462cba23576df3a362e3c492c0396f7d0047db3bb6320dd401f805432e1d4344bcfebe9d0770330cbff39990b387ab15a2c86e34cf9
-  languageName: node
-  linkType: hard
-
-"@vitejs/plugin-vue@npm:^4.3.4":
+"@vitejs/plugin-vue@npm:4.6.2":
   version: 4.6.2
   resolution: "@vitejs/plugin-vue@npm:4.6.2"
   peerDependencies:
@@ -2904,7 +2894,7 @@ __metadata:
     "@ffmpeg-installer/win32-x64": "npm:^4.1.0"
     "@ffprobe-installer/win32-x64": "npm:^5.1.0"
     "@types/node": "npm:^20.4.8"
-    "@vitejs/plugin-vue": "npm:^4.3.4"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vue/tsconfig": "npm:^0.4.0"
     "@vueuse/core": "npm:10.7.2"
     axios: "npm:^1.5.1"
@@ -2948,7 +2938,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-overlay-core@workspace:libs/castmate-overlay-core"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-overlays-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -2978,7 +2968,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-overlay-widget-loader@workspace:libs/castmate-overlay-widget-loader"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-overlay-core: "workspace:^"
     castmate-plugin-overlays-overlays: "workspace:^"
@@ -3013,7 +3003,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-dashboards-renderer@workspace:plugins/dashboards/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-dashboards-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3062,7 +3052,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-discord-renderer@workspace:plugins/discord/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
@@ -3110,7 +3100,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-elgato-renderer@workspace:plugins/elgato/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -3160,7 +3150,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-govee-renderer@workspace:plugins/govee/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -3207,7 +3197,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-http-renderer@workspace:plugins/http/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
@@ -3253,7 +3243,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-input-renderer@workspace:plugins/input/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-input-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3301,7 +3291,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-iot-renderer@workspace:plugins/iot/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-iot-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3351,7 +3341,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -3399,7 +3389,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-minecraft-renderer@workspace:plugins/minecraft/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
@@ -3449,7 +3439,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-obs-renderer@workspace:plugins/obs/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -3496,7 +3486,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-os-renderer@workspace:plugins/os/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-os-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3549,7 +3539,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-overlays-overlays@workspace:plugins/overlays/overlay"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-overlay-core: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3570,7 +3560,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-overlays-renderer@workspace:plugins/overlays/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
@@ -3625,7 +3615,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-philips-hue-renderer@workspace:plugins/philips-hue/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -3673,7 +3663,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-random-overlays@workspace:plugins/random/overlay"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-overlay-core: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3694,7 +3684,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-random-renderer@workspace:plugins/random/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-random-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3742,7 +3732,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-remote-renderer@workspace:plugins/remote/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-remote-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3801,7 +3791,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-sound-renderer@workspace:plugins/sound/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -3851,7 +3841,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-spellcast-renderer@workspace:plugins/spellcast/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-spellcast-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3899,7 +3889,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-stream-plans-renderer@workspace:plugins/stream-plans/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-stream-plans-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3948,7 +3938,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-time-renderer@workspace:plugins/time/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-time-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -3997,7 +3987,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-tplink-kasa-renderer@workspace:plugins/tplink-kasa/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -4043,7 +4033,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -4101,7 +4091,7 @@ __metadata:
   resolution: "castmate-plugin-twitch-overlays@workspace:plugins/twitch/overlay"
   dependencies:
     "@types/matter-js": "npm:^0.19.6"
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-overlay-core: "workspace:^"
     castmate-plugin-twitch-shared: "workspace:^"
@@ -4124,7 +4114,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twitch-renderer@workspace:plugins/twitch/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-twitch-shared: "workspace:^"
     castmate-schema: "workspace:^"
@@ -4174,7 +4164,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-variables-renderer@workspace:plugins/variables/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -4222,7 +4212,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-voicemod-renderer@workspace:plugins/voicemod/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
@@ -4261,7 +4251,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -4300,7 +4290,7 @@ __metadata:
     "@mdi/font": "npm:^7.1.96"
     "@rollup/plugin-node-resolve": "npm:^15.2.1"
     "@types/archiver": "npm:^6.0.2"
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     archiver: "npm:^7.0.1"
     castmate-core: "workspace:^"
@@ -4343,7 +4333,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-ui-core@workspace:libs/castmate-ui-core"
   dependencies:
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
@@ -4388,7 +4378,7 @@ __metadata:
     "@mdi/font": "npm:^7.1.96"
     "@rollup/plugin-node-resolve": "npm:^15.2.1"
     "@types/archiver": "npm:^6.0.2"
-    "@vitejs/plugin-vue": "npm:*"
+    "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     archiver: "npm:^7.0.1"
     castmate-core: "workspace:^"
