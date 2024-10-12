@@ -92,6 +92,8 @@ export * from "./components/stream-plan/stream-plan-types"
 
 export * from "./viewer-data/viewer-data-store"
 
+export * from "./satellite/satellite-connection"
+
 export * from "./util/panning"
 
 export * from "./util/electron"
