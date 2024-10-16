@@ -56,6 +56,8 @@ import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
 import { initPlugin as initOverlaysPlugin } from "castmate-plugin-overlays-renderer"
 import { initPlugin as initSpellCastPlugin } from "castmate-plugin-spellcast-renderer"
 
+import { initPlugin as initDashboardPlugin } from "castmate-plugin-dashboards-renderer"
+
 import { initPlugin as initRandomPlugin } from "castmate-plugin-random-renderer"
 
 import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
@@ -136,6 +138,8 @@ async function init() {
 	initializeQueues()
 
 	await initOverlaysPlugin(app)
+
+	await initDashboardPlugin(app)
 
 	await initVariablesPlugin()
 	await initTwitchPlugin(app)

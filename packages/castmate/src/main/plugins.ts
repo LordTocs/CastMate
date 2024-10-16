@@ -27,6 +27,8 @@ import streamPlanPlugin from "castmate-plugin-stream-plans-main"
 
 import overlayPlugin from "castmate-plugin-overlays-main"
 
+import dashboardPlugin from "castmate-plugin-dashboards-main"
+
 import randomPlugin from "castmate-plugin-random-main"
 import remotePlugin from "castmate-plugin-remote-main"
 
@@ -45,6 +47,7 @@ export async function loadPlugins() {
 	await loadPlugin(castmatePlugin)
 	await loadPlugin(randomPlugin)
 	await loadPlugin(overlayPlugin)
+	await loadPlugin(dashboardPlugin)
 
 	const promises = [
 		loadPlugin(variablesPlugin),
