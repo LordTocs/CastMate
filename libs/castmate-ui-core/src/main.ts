@@ -6,6 +6,7 @@ export { default as DataView } from "./components/data/DataView.vue"
 export { default as ToggleInput } from "./components/data/inputs/ToggleInput.vue"
 export { default as ToggleSwitch } from "./components/data/base-components/ToggleSwitch.vue"
 export { default as DocumentDataCollection } from "./components/drag/DocumentDataCollection.vue"
+export { default as GridDocumentDataCollection } from "./components/drag/GridDocumentDataCollection.vue"
 export { default as DraggableCollection } from "./components/drag/DraggableCollection.vue"
 
 export { default as ScrollingTabBody } from "./components/docking/ScrollingTabBody.vue"
