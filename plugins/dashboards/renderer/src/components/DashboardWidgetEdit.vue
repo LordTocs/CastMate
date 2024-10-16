@@ -1,19 +1,52 @@
 <template>
 	<div class="widget-edit widget-handle" :style="widgetStyle" :class="{ selected: isSelected }">
-		{{ modelValue.config }}
+		<component
+			v-if="widgetComponent && resolvedConfig != null"
+			:is="widgetComponent"
+			:config="resolvedConfig"
+			:size="model.size"
+		/>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { DashboardWidget } from "castmate-plugin-dashboards-shared"
 import { DashboardWidgetView } from "../dashboard-types"
-import { computed, CSSProperties } from "vue"
+import { computed, CSSProperties, provide, useModel } from "vue"
+import { useDashboardWidgets } from "castmate-dashboard-widget-loader"
+import { CastMateBridgeImplementation } from "castmate-dashboard-core"
+import { useFullState } from "castmate-ui-core"
 
 const props = defineProps<{
 	modelValue: DashboardWidget
 	view: DashboardWidgetView
 	selectedIds: string[]
 }>()
+
+const model = useModel(props, "modelValue")
+
+const dashboardWidgets = useDashboardWidgets()
+
+//TODO: Use Remote Config
+const resolvedConfig = computed(() => props.modelValue.config)
+
+const state = useFullState()
+
+provide<CastMateBridgeImplementation>("castmate-bridge", {
+	acquireState(plugin, state) {},
+	releaseState(plugin, state) {},
+	config: computed(() => props.modelValue),
+	state,
+	registerRPC(id, func) {},
+	unregisterRPC(id) {},
+	registerMessage(id, func) {},
+	unregisterMessage(id, func) {},
+	async callRPC(id, ...args) {},
+})
+
+const widgetComponent = computed(
+	() => dashboardWidgets.getWidget(props.modelValue.plugin, props.modelValue.widget)?.component
+)
 
 const widgetStyle = computed<CSSProperties>(() => {
 	return {
@@ -40,6 +73,8 @@ const isSelected = computed(() => {
 	border: 2px solid var(--surface-b);
 
 	border-radius: var(--border-radius);
+
+	overflow: hidden;
 }
 
 .selected {

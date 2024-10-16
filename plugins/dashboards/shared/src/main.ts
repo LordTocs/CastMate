@@ -1,10 +1,15 @@
 import { IPCSchema, SchemaObj } from "castmate-schema"
 
+export interface DashboardWidgetSize {
+	width: number
+	height: number
+}
+
 export interface DashboardWidget {
 	id: string
 	plugin: string
 	widget: string
-	size: { width: number; height: number }
+	size: DashboardWidgetSize
 	config: Object
 }
 

@@ -59,6 +59,7 @@ class SatelliteConnection {
 			}
 
 			//SEND(candidateMsg)
+			//Here's a candidate
 		}
 
 		connection.onconnectionstatechange = (ev) => {
@@ -110,6 +111,8 @@ class SatelliteConnection {
 			}
 
 			const connectionJSON = JSON.stringify(connectionObj)
+
+			//Request Other Peer Start Connecting
 			///??? sendToServer(connectionJSON)
 		}
 

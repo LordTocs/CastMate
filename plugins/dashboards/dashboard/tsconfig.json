@@ -20,10 +20,6 @@
 		// "noUnusedParameters": true,
 		// "noFallthroughCasesInSwitch": true
 		"paths": {
-			"castmate-ui-core": ["../../../libs/castmate-ui-core/src/main.ts"],
-			"castmate-dashboard-widget-loader": [
-				"../../../libs/castmate-dashboard-widget-loader/src/dashboard-widget-loader.ts"
-			],
 			"castmate-dashboard-core": ["../../../libs/castmate-dashboard-core/src/dashboard-core-main.ts"]
 		}
 	},

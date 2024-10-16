@@ -63,6 +63,7 @@ import { initPlugin as initRandomPlugin } from "castmate-plugin-random-renderer"
 import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
 
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
+import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
 
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
@@ -168,6 +169,7 @@ async function init() {
 	await mediaStore.initialize()
 
 	loadOverlayWidgets()
+	loadDashboardWidgets()
 
 	sendOverlaysToMain()
 

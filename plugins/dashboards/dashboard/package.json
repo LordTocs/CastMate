@@ -1,5 +1,5 @@
 {
-	"name": "castmate-plugin-dashboards-renderer",
+	"name": "castmate-plugin-dashboards-dashboard",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -13,18 +13,18 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "*",
-		"castmate-plugin-dashboards-shared": "workspace:^",
-		"castmate-dashboard-widget-loader": "workspace:^",
+		"castmate-dashboard-core": "workspace:^",
 		"castmate-schema": "workspace:^",
-		"castmate-ui-core": "workspace:^",
 		"chromatism2": "*",
 		"electron": "29.4.5",
 		"nanoid": "^5.0.7",
 		"pinia": "^2.1.7",
+		"primevue": "3.53.0",
 		"vue": "^3.4.23"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "4.6.2",
+		"ts-toolbelt": "*",
 		"typescript": "*",
 		"vite": "^5.2.9",
 		"vue-tsc": "*"
