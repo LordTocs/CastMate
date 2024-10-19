@@ -160,11 +160,11 @@ export function transformToOBSWS(value: ResolvedOBSSourceTransform): Partial<OBS
 	}
 
 	if (value.boundingBox.width != null) {
-		result.boundsWidth = value.boundingBox.width
+		result.boundsWidth = Math.max(value.boundingBox.width, 1)
 	}
 
 	if (value.boundingBox.height != null) {
-		result.boundsHeight = value.boundingBox.height
+		result.boundsHeight = Math.max(value.boundingBox.height, 1)
 	}
 
 	return result

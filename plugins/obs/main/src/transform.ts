@@ -52,6 +52,8 @@ export function setupTransforms(obsDefault: ReactiveRef<OBSConnection>) {
 		},
 		async invoke(config, contextData, abortSignal) {
 			const obsTransform = transformToOBSWS(config.transform)
+			logger.log("Sending Transform", obsTransform)
+
 			await config.obs.connection.call("SetSceneItemTransform", {
 				sceneName: config.scene,
 				sceneItemId: config.source,
