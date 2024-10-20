@@ -349,6 +349,7 @@ function itemMouseDown(i: number, evt: MouseEvent) {
 	if (isChildOfClass(dragTarget, props.handleClass)) {
 		//console.log("IMMEDIATE STOP")
 		stopImmediatePropagation(evt)
+		selectState.externalClickSelect(evt)
 	}
 }
 

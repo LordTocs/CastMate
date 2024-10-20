@@ -23,6 +23,7 @@ export interface SelectionState {
 	from: ComputedRef<SelectionPos | null>
 	to: ComputedRef<SelectionPos | null>
 	cancelSelection: () => void
+	externalClickSelect: (ev: MouseEvent) => void
 }
 
 export function selectionOverlaps(
@@ -44,6 +45,7 @@ export function injectSelectionState(): SelectionState {
 		from: computed(() => null),
 		to: computed(() => null),
 		cancelSelection() {},
+		externalClickSelect(ev) {},
 	})
 }
 
@@ -138,6 +140,35 @@ export function useSelectionRect(
 		selection.value = newSelection
 	}
 
+	function externalClickSelect(ev: MouseEvent) {
+		const element = toValue(elem)
+		if (!element) return
+
+		const pos = getInternalMousePos(element, ev)
+		const ids = collectSelection(pos, pos)
+
+		let mode: SelectionMode
+		if (ev.shiftKey) {
+			mode = "add"
+		} else if (ev.ctrlKey) {
+			mode = "remove"
+		} else {
+			mode = "overwrite"
+		}
+
+		let newSelection: Selection
+
+		if (mode == "add") {
+			newSelection = _uniq([...oldSelection.value, ...ids])
+		} else if (mode == "remove") {
+			newSelection = oldSelection.value.filter((id) => !ids.includes(id))
+		} else {
+			newSelection = ids
+		}
+
+		selection.value = newSelection
+	}
+
 	useEventListener(elem, "mousedown", (ev: MouseEvent) => {
 		const element = toValue(elem)
 
@@ -162,7 +193,7 @@ export function useSelectionRect(
 		}
 		oldSelection.value = [...selection.value]
 
-		//console.log("Select Start", toValue(path))
+		console.log("Select Start", toValue(path))
 		stopPropagation(ev)
 		ev.preventDefault()
 	})
@@ -217,6 +248,7 @@ export function useSelectionRect(
 		from,
 		to,
 		cancelSelection,
+		externalClickSelect,
 	}
 
 	provide("selectionState", state)
