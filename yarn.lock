@@ -2906,7 +2906,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-dashboard-widget-loader@workspace:libs/castmate-dashboard-widget-loader":
+"castmate-dashboard-widget-loader@workspace:^, castmate-dashboard-widget-loader@workspace:libs/castmate-dashboard-widget-loader":
   version: 0.0.0-use.local
   resolution: "castmate-dashboard-widget-loader@workspace:libs/castmate-dashboard-widget-loader"
   dependencies:
@@ -3067,6 +3067,7 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
+    castmate-dashboard-widget-loader: "workspace:^"
     castmate-plugin-dashboards-shared: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
@@ -4444,6 +4445,7 @@ __metadata:
     "@vueuse/core": "npm:*"
     archiver: "npm:^7.0.1"
     castmate-core: "workspace:^"
+    castmate-dashboard-widget-loader: "workspace:^"
     castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
     castmate-plugin-dashboards-main: "workspace:^"

@@ -6,6 +6,7 @@ import _cloneDeep from "lodash/cloneDeep"
 import { DashboardView } from "./dashboard-types"
 import { ResourceData } from "castmate-schema"
 import { DashboardConfig } from "castmate-plugin-dashboards-shared"
+import { useDashboardRemoteConfigStore } from "./config/dashboard-config"
 
 export function initPlugin(app: App<Element>) {
 	const documentStore = useDocumentStore()
@@ -50,4 +51,7 @@ export function initPlugin(app: App<Element>) {
 	})
 
 	projectStore.registerProjectGroupItem(dashboardGroup)
+
+	const configStore = useDashboardRemoteConfigStore()
+	configStore.initialize()
 }

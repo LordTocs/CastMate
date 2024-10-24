@@ -70,7 +70,7 @@ import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
 import Tooltip from "primevue/tooltip"
 import { IPCOverlayWidgetDescriptor } from "castmate-plugin-overlays-shared"
-import { sendOverlaysToMain } from "./util/overlay-util"
+import { sendDashboardsToMain, sendOverlaysToMain } from "./util/overlay-util"
 import { setupProxyDialogService } from "../../../../libs/castmate-ui-core/src/util/dialog-helper"
 
 /*
@@ -172,6 +172,7 @@ async function init() {
 	loadDashboardWidgets()
 
 	sendOverlaysToMain()
+	sendDashboardsToMain()
 
 	await uiLoadComplete()
 }

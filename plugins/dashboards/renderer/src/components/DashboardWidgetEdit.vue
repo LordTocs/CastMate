@@ -16,6 +16,7 @@ import { computed, CSSProperties, provide, useModel } from "vue"
 import { useDashboardWidgets } from "castmate-dashboard-widget-loader"
 import { CastMateBridgeImplementation } from "castmate-dashboard-core"
 import { useFullState } from "castmate-ui-core"
+import { useRemoteDashboardConfig } from "../config/dashboard-config"
 
 const props = defineProps<{
 	modelValue: DashboardWidget
@@ -27,8 +28,7 @@ const model = useModel(props, "modelValue")
 
 const dashboardWidgets = useDashboardWidgets()
 
-//TODO: Use Remote Config
-const resolvedConfig = computed(() => props.modelValue.config)
+const resolvedConfig = useRemoteDashboardConfig(() => props.modelValue)
 
 const state = useFullState()
 

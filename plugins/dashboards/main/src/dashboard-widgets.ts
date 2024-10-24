@@ -27,7 +27,7 @@ export const DashboardWidgetManager = Service(
 
 					this.widgets.set(`${widget.plugin}.${widget.options.id}`, parsedWidget)
 
-					logger.log("Received Overlay Widget", widget.plugin, widget.options.id)
+					logger.log("Received Dashboard Widget", widget.plugin, widget.options.id)
 				}
 
 				this.doInitialSetup()
@@ -40,6 +40,10 @@ export const DashboardWidgetManager = Service(
 			}
 
 			this.initialized = true
+		}
+
+		getWidget(plugin: string, widget: string) {
+			return this.widgets.get(`${plugin}.${widget}`)
 		}
 	}
 )

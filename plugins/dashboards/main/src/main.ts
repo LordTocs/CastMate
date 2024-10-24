@@ -1,6 +1,7 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
 import { setupDashboardResources } from "./dashboard-resource"
 import { DashboardWidgetManager } from "./dashboard-widgets"
+import { setupConfigEval } from "./dashboard-config-eval"
 
 export default definePlugin(
 	{
@@ -10,8 +11,9 @@ export default definePlugin(
 		icon: "mdi mdi-pencil",
 	},
 	() => {
-		//Plugin Intiialization
 		DashboardWidgetManager.initialize()
+
+		setupConfigEval()
 
 		setupDashboardResources()
 	}
