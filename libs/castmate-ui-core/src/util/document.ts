@@ -156,6 +156,27 @@ export function provideDocument(id: MaybeRefOrGetter<string>) {
 	)
 }
 
+export function useCompleteDocumentSelection() {
+	const selection = inject<WritableComputedRef<DocumentSelection>>(
+		"documentSelection",
+		computed(() => {
+			return {
+				items: [],
+				container: "",
+			}
+		})
+	)
+
+	return computed(() => {
+		return (
+			selection.value ?? {
+				items: [],
+				container: "",
+			}
+		)
+	})
+}
+
 export function useSetDocumentSelection() {
 	const selection = inject<WritableComputedRef<DocumentSelection>>("documentSelection")
 
@@ -166,7 +187,15 @@ export function useSetDocumentSelection() {
 }
 
 export function useIsSelected(path: MaybeRefOrGetter<string | undefined>, id: MaybeRefOrGetter<string>) {
-	const selection = inject<WritableComputedRef<DocumentSelection>>("documentSelection")
+	const selection = inject<WritableComputedRef<DocumentSelection>>(
+		"documentSelection",
+		computed(() => {
+			return {
+				items: [],
+				container: "",
+			}
+		})
+	)
 
 	return computed(() => {
 		const selectionPath = toValue(path)
