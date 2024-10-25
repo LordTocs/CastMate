@@ -12,12 +12,20 @@
 			<p-button @click="addSection"> Add Section </p-button>
 		</div>
 		<div class="page-content">
-			<dashboard-section-edit
-				v-for="(section, i) of model.sections"
-				:key="section.id"
-				v-model="model.sections[i]"
-				v-model:view="view.sections[i]"
-			/>
+			<row-wrap-document-data-collection
+				v-model="model.sections"
+				v-model:view="view.sections"
+				local-path="sections"
+				:data-component="DashboardSectionEdit"
+				handle-class="section-handle"
+				data-type="dashboard-section"
+			>
+				<template #no-items>
+					<div class="flex flex-column align-items-center p-3">
+						<p-button @click="addSection">Add Page</p-button>
+					</div>
+				</template>
+			</row-wrap-document-data-collection>
 		</div>
 	</div>
 </template>
@@ -29,7 +37,7 @@ import { computed, useModel } from "vue"
 
 import DashboardSectionEdit from "./DashboardSectionEdit.vue"
 
-import { stopPropagation } from "castmate-ui-core"
+import { stopPropagation, RowWrapDocumentDataCollection } from "castmate-ui-core"
 
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
