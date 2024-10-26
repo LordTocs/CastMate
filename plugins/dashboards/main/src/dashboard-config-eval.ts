@@ -62,8 +62,6 @@ export const DashboardEditorConfigBridge = Service(
 				"dashboards",
 				"startEdit",
 				async (event, id: string, plugin: string, widget: string, initialConfig: object) => {
-					logger.log("Creating Dashboard Edit", id, plugin, widget)
-
 					const evaluator = await createDashboardWidgetEvaluator(
 						plugin,
 						widget,
