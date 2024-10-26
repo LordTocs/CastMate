@@ -31,6 +31,8 @@ const widgetInfo = computed(() => {
 	height: calc(var(--row-size) * var(--row-height) + max(0, var(--row-size) - 1) * var(--grid-gap));
 	grid-row: span var(--row-size);
 	grid-column: span var(--column-size);
+
+	position: relative;
 }
 
 .widget-wrap {

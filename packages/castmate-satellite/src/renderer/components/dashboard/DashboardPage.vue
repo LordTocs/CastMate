@@ -1,5 +1,5 @@
 <template>
-	<div class="dashboard-page">
+	<div class="dashboard-page flex-grow-1">
 		<dashboard-section v-for="section in page.sections" :key="section.id" :section="section" />
 	</div>
 </template>
@@ -18,5 +18,11 @@ const props = defineProps<{
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
+
+	align-items: center;
+	justify-content: center;
+
+	padding: 1rem;
+	gap: 1rem;
 }
 </style>

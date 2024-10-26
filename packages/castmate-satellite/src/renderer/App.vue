@@ -2,10 +2,10 @@
 	<div class="app" @keydown="onKeyDown" tabindex="-1">
 		<system-bar title="CastMate Satellite"></system-bar>
 		<div class="app-row" v-if="initStore.inited">
-			<div>SATELLITE!</div>
 			<div>
 				<account-widget account-type="TwitchAccount" account-id="channel" />
 			</div>
+			<dashboard-display />
 		</div>
 		<div class="load-row" v-else>
 			<h3>Loading CastMate Satellite</h3>
@@ -24,6 +24,8 @@ import { AccountWidget, useInitStore } from "castmate-ui-core"
 
 import PProgressSpinner from "primevue/progressspinner"
 import PConfirmDialog from "primevue/confirmdialog"
+
+import DashboardDisplay from "./components/dashboard/DashboardDisplay.vue"
 
 const initStore = useInitStore()
 

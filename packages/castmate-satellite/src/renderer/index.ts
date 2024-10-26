@@ -24,6 +24,8 @@ import { createPinia } from "pinia"
 
 import { setupProxyDialogService } from "castmate-ui-core"
 
+import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
+
 const pinia = createPinia()
 const app = createApp(App)
 
@@ -53,6 +55,8 @@ async function init() {
 	await resourceStore.initialize()
 
 	await initStore.waitForInit()
+
+	loadDashboardWidgets()
 }
 
 init()

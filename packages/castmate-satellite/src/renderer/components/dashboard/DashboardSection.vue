@@ -1,5 +1,5 @@
 <template>
-	<div class="dashboard-section">
+	<div class="dashboard-section" :style="{ '--column-count': section.columns ?? 4 }">
 		<div class="section-header">
 			{{ section.name }}
 		</div>
@@ -20,13 +20,15 @@ const props = defineProps<{
 
 <style scoped>
 .section-grid {
-	--column-count: 4;
-
 	display: grid;
-	--row-height: 56px;
+	--row-height: 100px;
 	--grid-gap: 0.25rem;
+	--column-width: 100px;
 
 	padding: 0.25rem;
+
+	width: calc(var(--column-count) * var(--column-width));
+
 	gap: var(--grid-gap);
 	grid-template-columns: repeat(var(--column-count), 1fr);
 	grid-template-rows: repeat(auto-fill, var(--row-height));
@@ -36,5 +38,9 @@ const props = defineProps<{
 }
 
 .dashboard-section {
+	padding: 0.5rem;
+	border-radius: var(--border-radius);
+
+	border: solid white 1px;
 }
 </style>
