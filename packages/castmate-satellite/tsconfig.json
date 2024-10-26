@@ -24,7 +24,11 @@
 			// "castmate-overlay-widget-loader": [
 			// 	"../../libs/castmate-overlay-widget-loader/src/overlay-widget-loader.ts"
 			// ],
-			"castmate-overlay-core": ["../../libs/castmate-overlay-core/src/overlay-core-main.ts"]
+			"castmate-overlay-core": ["../../libs/castmate-overlay-core/src/overlay-core-main.ts"],
+			"castmate-dashboard-core": ["../../libs/castmate-dashboard-core/src/dashboard-core-main.ts"],
+			"castmate-dashboard-widget-loader": [
+				"../../libs/castmate-dashboard-widget-loader/src/dashboard-widget-loader.ts"
+			]
 			//TODO: "castmate-plugin-*-renderer": ["../../plugins/*/renderer/src/main.ts"]
 			// "castmate-plugin-discord-renderer": ["../../plugins/discord/renderer/src/main.ts"],
 			// "castmate-plugin-http-renderer": ["../../plugins/http/renderer/src/main.ts"],
