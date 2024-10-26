@@ -1,5 +1,5 @@
 <template>
-	<div class="section-edit">
+	<div class="section-edit" :class="{ selected: isSelected }">
 		<div class="section-header">
 			<div class="section-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
@@ -52,6 +52,7 @@ import { constructDefault } from "castmate-schema"
 const props = defineProps<{
 	modelValue: DashboardSection
 	view: DashboardSectionView
+	selectedIds: string[]
 }>()
 
 const view = useModel(props, "view")
@@ -104,6 +105,10 @@ async function addWidget(widget: DashboardWidgetInfo) {
 function popAddMenu(ev: MouseEvent) {
 	addMenu.value?.toggle(ev)
 }
+
+const isSelected = computed(() => {
+	return props.selectedIds.includes(props.modelValue.id)
+})
 </script>
 
 <style scoped>
@@ -115,7 +120,7 @@ function popAddMenu(ev: MouseEvent) {
 	border-radius: var(--border-radius);
 	background-color: var(--surface-a);
 
-	width: 33%;
+	height: 100%;
 
 	display: flex;
 	flex-direction: column;
@@ -135,5 +140,9 @@ function popAddMenu(ev: MouseEvent) {
 }
 
 .section-body {
+}
+
+.selected {
+	border: 2px solid white;
 }
 </style>

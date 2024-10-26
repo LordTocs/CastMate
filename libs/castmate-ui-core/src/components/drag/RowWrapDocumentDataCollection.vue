@@ -493,6 +493,10 @@ function onPaste(ev: ClipboardEvent) {
 	flex-direction: column;
 }
 
+.drag-area:focus {
+	outline: none !important;
+}
+
 .flex-div {
 	flex: 1;
 	display: flex;

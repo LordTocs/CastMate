@@ -439,6 +439,10 @@ function onPaste(ev: ClipboardEvent) {
 	padding-bottom: 1rem;
 }
 
+.drag-area:focus {
+	outline: none !important;
+}
+
 .draggable-item:not(:last-of-type) {
 	margin-bottom: 0.5rem;
 }

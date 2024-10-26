@@ -500,6 +500,10 @@ function onPaste(ev: ClipboardEvent) {
 	flex-direction: column;
 }
 
+.drag-area:focus {
+	outline: none !important;
+}
+
 .grid-div {
 	flex: 1;
 
