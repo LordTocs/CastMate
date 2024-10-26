@@ -4,6 +4,9 @@
 			<data-input v-model="widgetModel.config" :schema="selectedWidgetInfo.component?.widget.config" />
 			<dashboard-widget-size-edit v-model="widgetModel.size" />
 		</template>
+		<template v-else-if="sectionModel != null">
+			<dashboard-section-prop-edit v-model="sectionModel" />
+		</template>
 	</flex-scroller>
 </template>
 
@@ -15,6 +18,7 @@ import { computed, useModel } from "vue"
 import { DataInput, FlexScroller } from "castmate-ui-core"
 
 import DashboardWidgetSizeEdit from "./DashboardWidgetSizeEdit.vue"
+import DashboardSectionPropEdit from "./DashboardSectionPropEdit.vue"
 
 const props = defineProps<{
 	modelValue: DashboardConfig
@@ -24,10 +28,12 @@ const selection = useCompleteDocumentSelection()
 
 const model = useModel(props, "modelValue")
 
-function parseSelectionPath(path: string) {
+const widgetSelection = computed(() => {
+	if (!selection.value?.container) return undefined
+
 	const parseRegex = /pages\[([a-zA-Z0-9_\-]+)\].sections\[([a-zA-Z0-9_\-]+)\].widgets/g
 
-	const result = parseRegex.exec(path)
+	const result = parseRegex.exec(selection.value.container)
 
 	if (!result) return undefined
 
@@ -35,12 +41,48 @@ function parseSelectionPath(path: string) {
 		page: result[1],
 		section: result[2],
 	}
-}
+})
 
-const widgetSelection = computed(() => {
+const sectionSelection = computed(() => {
 	if (!selection.value?.container) return undefined
 
-	return parseSelectionPath(selection.value.container)
+	const parseRegex = /pages\[([a-zA-Z0-9_\-]+)\].sections$/g
+
+	const result = parseRegex.exec(selection.value.container)
+
+	if (!result) return undefined
+
+	return {
+		page: result[1],
+	}
+})
+
+const sectionModel = computed({
+	get() {
+		if (selection.value.items.length == 0 || selection.value.items.length > 1) return undefined
+		if (!sectionSelection.value) return undefined
+
+		const page = model.value.pages.find((p) => p.id == sectionSelection.value?.page)
+		if (!page) return undefined
+
+		const section = page.sections.find((s) => s.id == selection.value.items[0])
+		if (!section) return undefined
+
+		return section
+	},
+	set(v) {
+		if (!v) return
+		if (selection.value.items.length == 0 || selection.value.items.length > 1) return undefined
+		if (!sectionSelection.value) return undefined
+
+		const page = model.value.pages.find((p) => p.id == sectionSelection.value?.page)
+		if (!page) return undefined
+
+		const sectionIdx = page.sections.findIndex((s) => s.id == selection.value.items[0])
+		if (sectionIdx < 0) return
+
+		page.sections[sectionIdx] = v
+	},
 })
 
 const widgetModel = computed({

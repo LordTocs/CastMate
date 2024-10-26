@@ -1,5 +1,9 @@
 <template>
-	<div class="section-edit" :class="{ selected: isSelected }">
+	<div
+		class="section-edit"
+		:class="{ selected: isSelected }"
+		:style="{ '--column-count': model.columns ?? 4, '--column-width': `${56}px` }"
+	>
 		<div class="section-header">
 			<div class="section-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
@@ -21,11 +25,11 @@
 			v-model:view="view.widgets"
 			local-path="widgets"
 			data-type="dashboard-widget"
-			:column-count="4"
+			:column-count="model.columns ?? 4"
 			:row-height="56"
 			handle-class="widget-handle"
 			:data-component="DashboardWidgetEdit"
-			class="flex-grow-1"
+			class="flex-grow-1 section-grid"
 		>
 		</grid-document-data-collection>
 	</div>
@@ -34,7 +38,7 @@
 <script setup lang="ts">
 import { DashboardSection, DashboardWidget } from "castmate-plugin-dashboards-shared"
 import { DashboardSectionView, DashboardWidgetView } from "../dashboard-types"
-import { computed, ref, useModel } from "vue"
+import { computed, ComputedRef, inject, ref, useModel } from "vue"
 
 import PMenu from "primevue/menu"
 import type { MenuItem } from "primevue/menuitem"
@@ -48,12 +52,18 @@ import DashboardWidgetEdit from "./DashboardWidgetEdit.vue"
 
 import { nanoid } from "nanoid/non-secure"
 import { constructDefault } from "castmate-schema"
+import { config } from "process"
 
 const props = defineProps<{
 	modelValue: DashboardSection
 	view: DashboardSectionView
 	selectedIds: string[]
 }>()
+
+const pageSize = inject<ComputedRef<{ width: number; height: number }>>(
+	"pageSize",
+	computed(() => ({ width: 0, height: 0 }))
+)
 
 const view = useModel(props, "view")
 const model = useModel(props, "modelValue")
@@ -139,7 +149,8 @@ const isSelected = computed(() => {
 	border-top-right-radius: var(--border-radius);
 }
 
-.section-body {
+.section-grid {
+	width: calc(var(--column-count) * var(--column-width));
 }
 
 .selected {

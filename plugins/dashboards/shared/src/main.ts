@@ -48,6 +48,7 @@ export interface DashboardWidgetDescriptor {
 export interface DashboardSection {
 	id: string
 	name: string
+	columns: number
 	widgets: DashboardWidget[]
 }
 

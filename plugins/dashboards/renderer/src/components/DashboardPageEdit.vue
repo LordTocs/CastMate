@@ -11,7 +11,7 @@
 			</div>
 			<p-button @click="addSection"> Add Section </p-button>
 		</div>
-		<div class="page-content">
+		<div class="page-content" ref="pageDiv">
 			<row-wrap-document-data-collection
 				v-model="model.sections"
 				v-model:view="view.sections"
@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { DashboardPage, DashboardSection } from "castmate-plugin-dashboards-shared"
 import { DashboardPageView, DashboardSectionView } from "../dashboard-types"
-import { computed, useModel } from "vue"
+import { computed, provide, ref, useModel } from "vue"
 
 import DashboardSectionEdit from "./DashboardSectionEdit.vue"
 
@@ -43,6 +43,7 @@ import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
 
 import { nanoid } from "nanoid/non-secure"
+import { useElementSize } from "@vueuse/core"
 
 const props = defineProps<{
 	modelValue: DashboardPage
@@ -56,6 +57,19 @@ const view = useModel(props, "view")
 const isSelected = computed(() => {
 	return props.selectedIds.includes(model.value.id)
 })
+
+const pageDiv = ref<HTMLElement>()
+const pageSize = useElementSize(pageDiv)
+
+provide(
+	"pageSize",
+	computed(() => {
+		return {
+			width: pageSize.width.value,
+			height: pageSize.height.value,
+		}
+	})
+)
 
 function createNewSection(): [DashboardSection, DashboardSectionView] {
 	const id = nanoid()
