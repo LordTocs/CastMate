@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import PButton from "primevue/button"
-import { DashboardConnectionOption } from "../../util/connection-types"
+import { DashboardConnectionOption } from "castmate-plugin-dashboards-shared"
 
 const props = defineProps<{
 	option: DashboardConnectionOption

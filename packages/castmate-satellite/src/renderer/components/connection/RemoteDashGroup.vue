@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { DashboardConnectionOption } from "../../util/connection-types"
+import { DashboardConnectionOption } from "castmate-plugin-dashboards-shared"
 import RemoteDashButton from "./RemoteDashButton.vue"
 
 import PAvatar from "primevue/avatar"
