@@ -6,6 +6,13 @@ import { computed, markRaw, ref } from "vue"
 import _groupBy from "lodash/groupBy"
 
 import { DashboardConnectionOption } from "castmate-plugin-dashboards-shared"
+import {
+	SatelliteConnectionICECandidate,
+	SatelliteConnectionRequest,
+	SatelliteConnectionRequestConfig,
+	SatelliteConnectionResponse,
+	SatelliteConnectionService,
+} from "castmate-schema"
 
 //Look Here!: https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#signaling_transaction_flow
 
@@ -21,37 +28,6 @@ const googleStunServers = [
 	{ urls: "stun:stun4.l.google.com:19302" },
 	{ urls: "stun:stun4.l.google.com:5349" },
 ]
-
-interface SatelliteConnectionRequestConfig {
-	satelliteService: "twitch"
-	satelliteId: string
-	castmateService: "twitch"
-	castmateId: string
-	dashId: string
-}
-
-interface SatelliteConnectionRequest extends SatelliteConnectionRequestConfig {
-	sdp: RTCSessionDescriptionInit
-}
-
-interface SatelliteConnectionResponse {
-	satelliteService: "twitch"
-	satelliteId: string
-	castmateService: "twitch"
-	castmateId: string
-	dashId: string
-	sdp: RTCSessionDescriptionInit
-}
-
-interface SatelliteConnectionICECandidate {
-	satelliteService: "twitch"
-	satelliteId: string
-	castmateService: "twitch"
-	castmateId: string
-	dashId: string
-	side: "castmate" | "satellite"
-	candidate: RTCIceCandidateInit
-}
 
 const satelliteConnectionRequest = useIpcCaller<(request: SatelliteConnectionRequest) => any>(
 	"satellite",
@@ -69,7 +45,8 @@ const satelliteConnectionIceCandidate = useIpcCaller<(candidate: SatelliteConnec
 class SatelliteConnection {
 	connection: RTCPeerConnection
 	id: string
-	constructor() {
+
+	constructor(public remoteService: SatelliteConnectionService, public remoteId: string, public dashId: string) {
 		this.id = nanoid()
 		this.connection = SatelliteConnection.createConnection()
 	}
@@ -108,7 +85,7 @@ class SatelliteConnection {
 
 	//Used by satellite app to request connection to dashboard
 	static startDashboardConnection(config: SatelliteConnectionRequestConfig) {
-		const self = new SatelliteConnection()
+		const self = new SatelliteConnection(config.castmateService, config.castmateId, config.dashId)
 
 		self.connection.createDataChannel("controlData")
 
@@ -145,7 +122,7 @@ class SatelliteConnection {
 
 	//Handle incoming satellite connection request (As main CastMate, sent by satellite)
 	static async handleClientConnection(desc: SatelliteConnectionRequest) {
-		const self = new SatelliteConnection()
+		const self = new SatelliteConnection(desc.satelliteService, desc.satelliteId, desc.dashId)
 
 		const sessionDesc = new RTCSessionDescription(desc.sdp)
 
@@ -188,24 +165,68 @@ class SatelliteConnection {
 
 		return self
 	}
+
+	async handleIceCandidate(candidate: SatelliteConnectionICECandidate) {
+		const candidateObj = new RTCIceCandidate(candidate.candidate)
+
+		await this.connection.addIceCandidate(candidateObj)
+	}
+
+	async handleResponse(response: SatelliteConnectionResponse) {
+		const desc = new RTCSessionDescription(response.sdp)
+
+		await this.connection.setRemoteDescription(desc)
+	}
 }
 
 export const useSatelliteConnection = defineStore("satellite-connection", () => {
-	const connections = ref(new Map<string, SatelliteConnection>())
+	const connections = ref(new Array<SatelliteConnection>())
 
 	const rtcConnectionOptions = ref(new Array<DashboardConnectionOption>())
 
 	const mode = ref<"satellite" | "castmate">("castmate")
 
+	function getConnection(request: SatelliteConnectionRequestConfig) {
+		const service = mode.value == "castmate" ? request.satelliteService : request.castmateService
+		const id = mode.value == "castmate" ? request.satelliteId : request.castmateId
+
+		return connections.value.find(
+			(c) => c.remoteId == id && c.remoteService == service && request.dashId == c.dashId
+		)
+	}
+
 	async function initialize(initMode: "satellite" | "castmate") {
 		mode.value = initMode
 
-		handleIpcMessage("satellite", "connectionRequest", async (event, request: SatelliteConnectionRequest) => {
-			const connection = await SatelliteConnection.handleClientConnection(request)
-			if (!connection) return
+		handleIpcMessage(
+			"satellite",
+			"satelliteConnectionRequest",
+			async (event, request: SatelliteConnectionRequest) => {
+				const connection = await SatelliteConnection.handleClientConnection(request)
+				if (!connection) return
 
-			connections.value.set(connection.id, markRaw(connection))
-		})
+				connections.value.push(markRaw(connection))
+			}
+		)
+
+		handleIpcMessage(
+			"satellite",
+			"satelliteConnectionResponse",
+			async (event, request: SatelliteConnectionResponse) => {
+				const connection = getConnection(request)
+
+				if (!connection) return
+			}
+		)
+
+		handleIpcMessage(
+			"satellite",
+			"satelliteConnectionIceCandidate",
+			async (event, candidate: SatelliteConnectionICECandidate) => {
+				const connection = getConnection(candidate)
+				connection?.handleIceCandidate(candidate)
+			}
+		)
 
 		handleIpcMessage("satellite", "newRTCConnectionOption", async (event, option: DashboardConnectionOption) => {
 			rtcConnectionOptions.value.push(option)
@@ -221,7 +242,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 	async function connectToCastMate(request: SatelliteConnectionRequestConfig) {
 		const connection = SatelliteConnection.startDashboardConnection(request)
 
-		connections.value.set(connection.id, markRaw(connection))
+		connections.value.push(connection)
 	}
 
 	return { initialize, connectToCastMate, connections, rtcConnectionOptions }

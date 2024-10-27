@@ -33,3 +33,5 @@ export * from "./util/object-helpers"
 
 export * from "./template/template-utils"
 export * from "./template/remote-templates"
+
+export * from "./satellite/satellite-types"
