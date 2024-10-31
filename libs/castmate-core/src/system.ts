@@ -21,6 +21,7 @@ import path from "path"
 import { InfoService } from "./info/info-manager"
 import { AnalyticsService } from "./analytics/analytics-manager"
 import { ViewerData } from "./viewer-data/viewer-data"
+import { SatelliteService } from "./satellite/satellite-service"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -89,7 +90,7 @@ export async function initializeCastMate() {
 	PluginManager.initialize()
 	setupMedia()
 	ResourceRegistry.initialize()
-	PubSubManager.initialize()
+	PubSubManager.initialize("castmate")
 	SequenceResolvers.initialize()
 	EmoteCache.initialize()
 	setupStreamPlans()
@@ -138,7 +139,9 @@ export async function initializeCastMateSatellite() {
 	PluginManager.initialize()
 	//setupMedia()
 	ResourceRegistry.initialize()
-	//PubSubManager.initialize()
+	PubSubManager.initialize("satellite")
+	SatelliteService.initialize("satellite")
+	SatelliteService.getInstance().startListening()
 	//SequenceResolvers.initialize()
 	//EmoteCache.initialize()
 	//setupStreamPlans()

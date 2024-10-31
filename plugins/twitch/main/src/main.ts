@@ -113,6 +113,11 @@ const twitchSatellite = defineSatellitePlugin(
 			await TwitchAPIService.initialize()
 		})
 
+		onChannelAuth((channel) => {
+			//Pass the auth token to the pubsub so it can auth with the CastMate servers
+			PubSubManager.getInstance().setToken(channel.secrets.accessToken)
+		})
+
 		onLoad(async () => {
 			await TwitchAPIService.getInstance().finalize()
 		})

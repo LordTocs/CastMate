@@ -6,6 +6,7 @@ import {
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Service } from "../util/service"
 import { PubSubManager } from "../pubsub/pubsub-service"
+import { usePluginLogger } from "../logging/logging"
 
 //WebRTC connections are maintained out of the renderer process since no good node-webrtc libs exist
 
@@ -21,7 +22,7 @@ const rendererSatelliteConnectionResponse = defineCallableIPC<(response: Satelli
 	"satellite",
 	"satelliteConnectionResponse"
 )
-
+const logger = usePluginLogger("satellite")
 export const SatelliteService = Service(
 	class {
 		private pubsubListening = false
@@ -30,6 +31,7 @@ export const SatelliteService = Service(
 
 		startListening() {
 			if (this.pubsubListening) return
+			logger.log("Starting Satellite Listening")
 			this.pubsubListening = true
 
 			PubSubManager.getInstance().registerOnMessage(this.pubsubMessageHandler)
