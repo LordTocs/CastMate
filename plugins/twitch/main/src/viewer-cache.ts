@@ -177,7 +177,7 @@ export const ViewerCache = Service(
 		onViewerSeen = new EventList<(viewer: TwitchViewerUnresolved) => any>()
 
 		constructor() {
-			ViewerData.getInstance().registerProvider({
+			ViewerData.getInstance()?.registerProvider({
 				id: "twitch",
 				onDataChanged: async (id, column, value) => {
 					const cached = this.getOrCreate(id)
