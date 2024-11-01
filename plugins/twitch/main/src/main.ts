@@ -109,6 +109,10 @@ const twitchSatellite = defineSatellitePlugin(
 	() => {
 		definePluginResource(TwitchAccount)
 
+		onLoad(() => {
+			ViewerCache.initialize()
+		})
+
 		onLoad(async () => {
 			await TwitchAPIService.initialize()
 		})
