@@ -10,8 +10,7 @@ import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 
 const logger = usePluginLogger("pubsub")
 
-//const baseURL = "https://api.spellcast.gg/"
-const baseURL = "https://dev1.tocstavern.xyz/"
+const baseURL = import.meta.env.VITE_CASTMATE_URL
 /**
  * PubSubManager connects to the azure-pubsub allowing realtime events from the cloud.
  */
