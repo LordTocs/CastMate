@@ -1,6 +1,6 @@
 <template>
 	<div class="dashboard-page flex-grow-1">
-		<dashboard-section v-for="section in page.sections" :key="section.id" :section="section" />
+		<dashboard-section v-for="section in page.sections" :key="section.id" :section="section" :page="page.id" />
 	</div>
 </template>
 

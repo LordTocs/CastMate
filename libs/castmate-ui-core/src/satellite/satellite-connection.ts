@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { handleIpcMessage, useIpcCaller, usePluginStore } from "../main"
 import { nanoid } from "nanoid/non-secure"
-import { computed, markRaw, ref } from "vue"
+import { computed, markRaw, ref, reactive } from "vue"
 
 import _groupBy from "lodash/groupBy"
 
@@ -44,9 +44,13 @@ const satelliteConnectionIceCandidate = useIpcCaller<(candidate: SatelliteConnec
 
 const triggerRefreshConnections = useIpcCaller<() => any>("dashboards", "refreshConnections")
 
+type ConnectionState = "connected" | "connecting" | "disconnected"
+
 class SatelliteConnection {
 	connection: RTCPeerConnection
 	id: string
+	state: ConnectionState = "connecting"
+	controlChannel?: RTCDataChannel
 
 	constructor(public remoteService: SatelliteConnectionService, public remoteId: string, public dashId: string) {
 		this.id = nanoid()
@@ -54,27 +58,90 @@ class SatelliteConnection {
 	}
 
 	private static createConnection() {
-		const connection = new RTCPeerConnection({
-			iceServers: googleStunServers,
-		})
+		const connection = markRaw(
+			new RTCPeerConnection({
+				iceServers: googleStunServers,
+			})
+		)
 
-		connection.onconnectionstatechange = (ev) => {
-			switch (connection.connectionState) {
+		return connection
+	}
+
+	async handleIceCandidate(candidate: SatelliteConnectionICECandidate) {
+		const candidateObj = new RTCIceCandidate(candidate.candidate)
+
+		console.log("Receieved Ice Candidate", candidate)
+		await this.connection.addIceCandidate(candidateObj)
+	}
+
+	async handleResponse(response: SatelliteConnectionResponse) {
+		const desc = new RTCSessionDescription(response.sdp)
+
+		console.log("Receieved Connection Response", response)
+		await this.connection.setRemoteDescription(desc)
+	}
+}
+
+export const useSatelliteConnection = defineStore("satellite-connection", () => {
+	const connections = ref(new Array<SatelliteConnection>())
+
+	const rtcConnectionOptions = ref(new Array<SatelliteConnectionOption>())
+
+	const mode = ref<"satellite" | "castmate">("castmate")
+
+	function getConnection(request: SatelliteConnectionRequestConfig) {
+		const service = mode.value == "castmate" ? request.satelliteService : request.castmateService
+		const id = mode.value == "castmate" ? request.satelliteId : request.castmateId
+
+		return connections.value.find(
+			(c) => c.remoteId == id && c.remoteService == service && request.dashId == c.dashId
+		)
+	}
+
+	async function refreshConnections() {
+		await triggerRefreshConnections()
+	}
+
+	function createConnection(service: SatelliteConnectionService, remoteId: string, dashId: string) {
+		const self = reactive(new SatelliteConnection(service, remoteId, dashId))
+
+		const removeSelf = () => {
+			const idx = connections.value.findIndex(
+				(c) => c.remoteId == remoteId && c.remoteService == service && dashId == c.dashId
+			)
+
+			if (idx >= 0) connections.value.splice(idx, 1)
+		}
+
+		self.connection.ondatachannel = (ev) => {
+			self.controlChannel = markRaw(ev.channel)
+		}
+
+		self.connection.onconnectionstatechange = (ev) => {
+			switch (self.connection.connectionState) {
 				case "new":
 				case "connecting":
 					console.log("RTC Connection Connecting...")
 					break
 				case "connected":
 					console.log("RTC Connection Connected")
+					self.state = "connected"
 					break
 				case "disconnected":
 					console.log("RTC Connection Disconnecting...")
+					self.state = "disconnected"
 					break
 				case "closed":
 					console.log("RTC Connection Closed")
+					removeSelf()
+
 					break
 				case "failed":
 					console.log("Error Connection State")
+
+					self.state = "disconnected"
+					removeSelf()
+
 					break
 				default:
 					console.log("Unknown Connection State")
@@ -82,14 +149,16 @@ class SatelliteConnection {
 			}
 		}
 
-		return connection
+		return self
 	}
 
 	//Used by satellite app to request connection to dashboard
-	static startDashboardConnection(config: SatelliteConnectionRequestConfig) {
-		const self = new SatelliteConnection(config.castmateService, config.castmateId, config.dashId)
+	function startDashboardConnection(config: SatelliteConnectionRequestConfig) {
+		const self = createConnection(config.castmateService, config.castmateId, config.dashId)
 
-		self.connection.createDataChannel("controlData")
+		const dataChannel = markRaw(self.connection.createDataChannel("controlData"))
+
+		self.controlChannel = dataChannel
 
 		self.connection.onicecandidate = async (ev) => {
 			if (!ev.candidate) return
@@ -126,8 +195,8 @@ class SatelliteConnection {
 	}
 
 	//Handle incoming satellite connection request (As main CastMate, sent by satellite)
-	static async handleClientConnection(desc: SatelliteConnectionRequest) {
-		const self = new SatelliteConnection(desc.satelliteService, desc.satelliteId, desc.dashId)
+	async function handleClientConnection(desc: SatelliteConnectionRequest) {
+		const self = createConnection(desc.satelliteService, desc.satelliteId, desc.dashId)
 
 		const sessionDesc = new RTCSessionDescription(desc.sdp)
 
@@ -173,41 +242,6 @@ class SatelliteConnection {
 		return self
 	}
 
-	async handleIceCandidate(candidate: SatelliteConnectionICECandidate) {
-		const candidateObj = new RTCIceCandidate(candidate.candidate)
-
-		console.log("Receieved Ice Candidate", candidate)
-		await this.connection.addIceCandidate(candidateObj)
-	}
-
-	async handleResponse(response: SatelliteConnectionResponse) {
-		const desc = new RTCSessionDescription(response.sdp)
-
-		console.log("Receieved Connection Response", response)
-		await this.connection.setRemoteDescription(desc)
-	}
-}
-
-export const useSatelliteConnection = defineStore("satellite-connection", () => {
-	const connections = ref(new Array<SatelliteConnection>())
-
-	const rtcConnectionOptions = ref(new Array<SatelliteConnectionOption>())
-
-	const mode = ref<"satellite" | "castmate">("castmate")
-
-	function getConnection(request: SatelliteConnectionRequestConfig) {
-		const service = mode.value == "castmate" ? request.satelliteService : request.castmateService
-		const id = mode.value == "castmate" ? request.satelliteId : request.castmateId
-
-		return connections.value.find(
-			(c) => c.remoteId == id && c.remoteService == service && request.dashId == c.dashId
-		)
-	}
-
-	async function refreshConnections() {
-		await triggerRefreshConnections()
-	}
-
 	async function initialize(initMode: "satellite" | "castmate") {
 		mode.value = initMode
 
@@ -215,10 +249,10 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 			"satellite",
 			"satelliteConnectionRequest",
 			async (event, request: SatelliteConnectionRequest) => {
-				const connection = await SatelliteConnection.handleClientConnection(request)
+				const connection = await handleClientConnection(request)
 				if (!connection) return
 
-				connections.value.push(markRaw(connection))
+				connections.value.push(connection)
 			}
 		)
 
@@ -262,7 +296,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 	}
 
 	async function connectToCastMate(request: SatelliteConnectionRequestConfig) {
-		const connection = SatelliteConnection.startDashboardConnection(request)
+		const connection = startDashboardConnection(request)
 
 		connections.value.push(connection)
 	}
@@ -277,5 +311,13 @@ export function useGroupedDashboardRTCConnectionOptions() {
 		const groups = _groupBy(satelliteStore.rtcConnectionOptions, "remoteUserId")
 
 		return Object.values(groups)
+	})
+}
+
+export function usePrimarySatelliteConnection() {
+	const satelliteStore = useSatelliteConnection()
+
+	return computed(() => {
+		return satelliteStore.connections[0]
 	})
 }

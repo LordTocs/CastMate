@@ -4,7 +4,13 @@
 			{{ section.name }}
 		</div>
 		<div class="section-grid">
-			<dashboard-widget v-for="widget in section.widgets" :widget="widget" :key="widget.id" />
+			<dashboard-widget
+				v-for="widget in section.widgets"
+				:widget="widget"
+				:key="widget.id"
+				:page="page"
+				:section="section.id"
+			/>
 		</div>
 	</div>
 </template>
@@ -14,6 +20,7 @@ import { DashboardSection } from "castmate-plugin-dashboards-shared"
 import DashboardWidget from "./DashboardWidget.vue"
 
 const props = defineProps<{
+	page: string
 	section: DashboardSection
 }>()
 </script>

@@ -6,7 +6,12 @@
 				<account-widget account-type="TwitchAccount" account-id="channel" />
 			</div>
 			<dashboard-display /> -->
-			<connection-page class="flex-grow-1" />
+			<connection-page v-if="!connection" class="flex-grow-1" />
+			<template v-else-if="connection.state == 'connecting'">
+				<h3>Connecting to CastMate</h3>
+				<p-progress-spinner />
+			</template>
+			<dashboard-page v-else-if="connection.state == 'connected'" />
 		</div>
 		<div class="load-row" v-else>
 			<h3>Loading CastMate Satellite</h3>
@@ -21,7 +26,7 @@
 <script setup lang="ts">
 import SystemBar from "./components/system/SystemBar.vue"
 
-import { AccountWidget, useInitStore } from "castmate-ui-core"
+import { AccountWidget, useInitStore, usePrimarySatelliteConnection } from "castmate-ui-core"
 
 import PProgressSpinner from "primevue/progressspinner"
 import PConfirmDialog from "primevue/confirmdialog"
@@ -30,6 +35,8 @@ import ConnectionPage from "./components/pages/ConnectionPage.vue"
 import DashboardPage from "./components/pages/DashboardPage.vue"
 
 const initStore = useInitStore()
+
+const connection = usePrimarySatelliteConnection()
 
 function onKeyDown(ev: KeyboardEvent) {
 	if (ev.ctrlKey && ev.code == "KeyS") {

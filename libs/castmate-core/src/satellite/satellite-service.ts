@@ -73,7 +73,6 @@ export const SatelliteService = Service(
 			)
 
 			this.pubsubMessageHandler = async (plugin, event, data) => {
-				logger.log("Satellite Message?", plugin, event, data)
 				if (plugin != "satellite") return
 
 				if (event == "satelliteConnectionIceCandidate") {

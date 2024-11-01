@@ -18,7 +18,6 @@ export const DashboardAccessService = Service(
 	class {
 		constructor() {
 			defineIPCFunc("dashboards", "refreshConnections", async () => {
-				logger.log("CONNECTIONSSSSSS")
 				await this.refreshConnections()
 			})
 		}

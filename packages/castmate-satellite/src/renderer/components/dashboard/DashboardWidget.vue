@@ -13,13 +13,28 @@
 import { DashboardWidget } from "castmate-plugin-dashboards-shared"
 
 import { useDashboardWidgets } from "castmate-dashboard-widget-loader"
-import { computed } from "vue"
+import { computed, provide } from "vue"
+import { CastMateBridgeImplementation } from "castmate-dashboard-core"
+import { useDashboardRTCBridge } from "../../util/dashboard-rtc-bridge"
 
 const props = defineProps<{
+	page: string
+	section: string
 	widget: DashboardWidget
 }>()
 
 const dashboardWidgets = useDashboardWidgets()
+
+const bridge = useDashboardRTCBridge()
+
+provide<CastMateBridgeImplementation>(
+	"castmate-bridge",
+	bridge.getBridge(
+		() => props.page,
+		() => props.section,
+		() => props.widget.id
+	)
+)
 
 const widgetInfo = computed(() => {
 	return dashboardWidgets.getWidget(props.widget.plugin, props.widget.widget)
