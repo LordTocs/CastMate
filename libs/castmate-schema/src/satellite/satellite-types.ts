@@ -20,3 +20,17 @@ export interface SatelliteConnectionICECandidate extends SatelliteConnectionRequ
 	side: "castmate" | "satellite"
 	candidate: RTCIceCandidateInit
 }
+
+export interface SatelliteConnectionOption {
+	id: string
+
+	remoteService: "twitch"
+	remoteUserId: string
+	remoteDisplayName: string
+	remoteDisplayIcon: string
+
+	type: string
+	typeId: string
+
+	name: string
+}

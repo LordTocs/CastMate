@@ -5,13 +5,13 @@ import { computed, markRaw, ref } from "vue"
 
 import _groupBy from "lodash/groupBy"
 
-import { DashboardConnectionOption } from "castmate-plugin-dashboards-shared"
 import {
 	SatelliteConnectionICECandidate,
 	SatelliteConnectionRequest,
 	SatelliteConnectionRequestConfig,
 	SatelliteConnectionResponse,
 	SatelliteConnectionService,
+	SatelliteConnectionOption,
 } from "castmate-schema"
 
 //Look Here!: https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#signaling_transaction_flow
@@ -41,6 +41,8 @@ const satelliteConnectionIceCandidate = useIpcCaller<(candidate: SatelliteConnec
 	"satellite",
 	"satelliteConnectionIceCandidate"
 )
+
+const triggerRefreshConnections = useIpcCaller<() => any>("dashboards", "refreshConnections")
 
 class SatelliteConnection {
 	connection: RTCPeerConnection
@@ -95,9 +97,10 @@ class SatelliteConnection {
 			const candidateMsg: SatelliteConnectionICECandidate = {
 				...config,
 				side: "satellite",
-				candidate: ev.candidate,
+				candidate: ev.candidate.toJSON(),
 			}
 
+			console.log("Sending Ice Candidate to CastMate")
 			await satelliteConnectionIceCandidate(candidateMsg)
 		}
 
@@ -110,8 +113,10 @@ class SatelliteConnection {
 
 			const connectionObj: SatelliteConnectionRequest = {
 				...config,
-				sdp: self.connection.localDescription,
+				sdp: self.connection.localDescription.toJSON(),
 			}
+
+			console.log("Sending Connection Request to CastMate", connectionObj)
 
 			//Request Connection from satellite to CastMate
 			satelliteConnectionRequest(connectionObj)
@@ -138,9 +143,10 @@ class SatelliteConnection {
 				castmateId: desc.castmateId,
 				dashId: desc.dashId,
 				side: "castmate",
-				candidate: ev.candidate,
+				candidate: ev.candidate.toJSON(),
 			}
 
+			console.log("Sending Ice Candidate to Satellite")
 			await satelliteConnectionIceCandidate(candidateMsg)
 		}
 
@@ -158,9 +164,10 @@ class SatelliteConnection {
 			castmateService: desc.castmateService,
 			castmateId: desc.castmateId,
 			dashId: desc.dashId,
-			sdp: self.connection.localDescription,
+			sdp: self.connection.localDescription.toJSON(),
 		}
 
+		console.log("Sending Connection Response to Satellite", resp)
 		await satelliteConnectionResponse(resp)
 
 		return self
@@ -169,12 +176,14 @@ class SatelliteConnection {
 	async handleIceCandidate(candidate: SatelliteConnectionICECandidate) {
 		const candidateObj = new RTCIceCandidate(candidate.candidate)
 
+		console.log("Receieved Ice Candidate", candidate)
 		await this.connection.addIceCandidate(candidateObj)
 	}
 
 	async handleResponse(response: SatelliteConnectionResponse) {
 		const desc = new RTCSessionDescription(response.sdp)
 
+		console.log("Receieved Connection Response", response)
 		await this.connection.setRemoteDescription(desc)
 	}
 }
@@ -182,7 +191,7 @@ class SatelliteConnection {
 export const useSatelliteConnection = defineStore("satellite-connection", () => {
 	const connections = ref(new Array<SatelliteConnection>())
 
-	const rtcConnectionOptions = ref(new Array<DashboardConnectionOption>())
+	const rtcConnectionOptions = ref(new Array<SatelliteConnectionOption>())
 
 	const mode = ref<"satellite" | "castmate">("castmate")
 
@@ -193,6 +202,10 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 		return connections.value.find(
 			(c) => c.remoteId == id && c.remoteService == service && request.dashId == c.dashId
 		)
+	}
+
+	async function refreshConnections() {
+		await triggerRefreshConnections()
 	}
 
 	async function initialize(initMode: "satellite" | "castmate") {
@@ -212,10 +225,11 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 		handleIpcMessage(
 			"satellite",
 			"satelliteConnectionResponse",
-			async (event, request: SatelliteConnectionResponse) => {
-				const connection = getConnection(request)
+			async (event, response: SatelliteConnectionResponse) => {
+				const connection = getConnection(response)
 
 				if (!connection) return
+				connection.handleResponse(response)
 			}
 		)
 
@@ -228,7 +242,15 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 			}
 		)
 
-		handleIpcMessage("satellite", "newRTCConnectionOption", async (event, option: DashboardConnectionOption) => {
+		handleIpcMessage(
+			"satellite",
+			"setRTCConnectionOptions",
+			async (event, options: SatelliteConnectionOption[]) => {
+				rtcConnectionOptions.value = options
+			}
+		)
+
+		handleIpcMessage("satellite", "newRTCConnectionOption", async (event, option: SatelliteConnectionOption) => {
 			rtcConnectionOptions.value.push(option)
 		})
 
@@ -245,7 +267,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 		connections.value.push(connection)
 	}
 
-	return { initialize, connectToCastMate, connections, rtcConnectionOptions }
+	return { initialize, connectToCastMate, connections, rtcConnectionOptions, refreshConnections }
 })
 
 export function useGroupedDashboardRTCConnectionOptions() {

@@ -53,3 +53,5 @@ export * from "./info/info-manager"
 export * from "./util/time-utils"
 
 export * from "./viewer-data/viewer-data"
+
+export * from "./satellite/satellite-service"

@@ -19,13 +19,13 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { DashboardConnectionOption } from "castmate-plugin-dashboards-shared"
+import { SatelliteConnectionOption } from "castmate-schema"
 import RemoteDashButton from "./RemoteDashButton.vue"
 
 import PAvatar from "primevue/avatar"
 
 const props = defineProps<{
-	options: DashboardConnectionOption[]
+	options: SatelliteConnectionOption[]
 }>()
 
 const remoteName = computed(() => props.options[0]?.remoteDisplayName ?? "UNKNOWN USER")

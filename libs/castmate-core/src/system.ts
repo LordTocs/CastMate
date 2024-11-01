@@ -91,6 +91,7 @@ export async function initializeCastMate() {
 	setupMedia()
 	ResourceRegistry.initialize()
 	PubSubManager.initialize("castmate")
+	SatelliteService.initialize("castmate")
 	SequenceResolvers.initialize()
 	EmoteCache.initialize()
 	setupStreamPlans()

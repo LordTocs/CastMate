@@ -25,6 +25,7 @@
 			// 	"../../libs/castmate-overlay-widget-loader/src/overlay-widget-loader.ts"
 			// ],
 			"castmate-overlay-core": ["../../libs/castmate-overlay-core/src/overlay-core-main.ts"],
+			"castmate-plugin-twitch-renderer": ["../../plugins/twitch/renderer/src/main.ts"],
 			"castmate-dashboard-core": ["../../libs/castmate-dashboard-core/src/dashboard-core-main.ts"],
 			"castmate-dashboard-widget-loader": [
 				"../../libs/castmate-dashboard-widget-loader/src/dashboard-widget-loader.ts"
@@ -41,7 +42,7 @@
 			// "castmate-plugin-random-renderer": ["../../plugins/random/renderer/src/main.ts"],
 			// "castmate-plugin-remote-renderer": ["../../plugins/remote/renderer/src/main.ts"],
 			// "castmate-plugin-time-renderer": ["../../plugins/time/renderer/src/main.ts"],
-			// "castmate-plugin-twitch-renderer": ["../../plugins/twitch/renderer/src/main.ts"],
+
 			// "castmate-plugin-voicemod-renderer": ["../../plugins/voicemod/renderer/src/main.ts"],
 			// "castmate-plugin-twinkly-renderer": ["../../plugins/twinkly/renderer/src/main.ts"],
 			// "castmate-plugin-philips-hue-renderer": ["../../plugins/philips-hue/renderer/src/main.ts"],

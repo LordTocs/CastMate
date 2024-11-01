@@ -29,6 +29,7 @@
 		"@vueuse/core": "*",
 		"castmate-dashboard-widget-loader": "workspace:^",
 		"castmate-overlay-core": "workspace:^",
+		"castmate-plugin-twitch-renderer": "workspace:^",
 		"castmate-ui-core": "workspace:^",
 		"castmate-vite": "workspace:^",
 		"chromatism2": "*",

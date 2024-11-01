@@ -62,20 +62,9 @@ export interface DashboardConfig {
 	name: string
 	pages: DashboardPage[]
 	remoteTwitchIds: string[]
+	cloudId?: string
 }
 
 export interface InitialDashboardConfig {
 	name: string
-}
-
-export interface DashboardConnectionOption {
-	id: string
-
-	remoteService: "twitch"
-	remoteUserId: string
-	remoteDisplayName: string
-	remoteDisplayIcon: string
-
-	dashId: string
-	dashName: string
 }

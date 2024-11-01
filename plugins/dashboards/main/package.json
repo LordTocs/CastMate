@@ -15,6 +15,7 @@
 	"dependencies": {
 		"castmate-core": "workspace:^",
 		"castmate-plugin-dashboards-shared": "workspace:^",
+		"castmate-plugin-twitch-main": "workspace:^",
 		"castmate-schema": "workspace:^"
 	}
 }

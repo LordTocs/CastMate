@@ -1,6 +1,10 @@
 <template>
 	<div class="dashboard-editor">
-		<div class="dashboard-header"></div>
+		<!-- <div class="dashboard-header flex flex-row align-items-center px-2 py-2">
+			<div>
+				<p-button @click="openShareDialog">Edit Share</p-button>
+			</div>
+		</div> -->
 		<div class="dashboard-body flex flex-row flex-grow-1">
 			<scrolling-tab-body
 				v-model:scroll-x="view.scrollX"
@@ -30,6 +34,9 @@
 						</div>
 					</template>
 				</document-data-collection>
+
+				<dashboard-permissions-edit v-model="model.remoteTwitchIds" />
+				<div style="height: 15rem"></div>
 			</scrolling-tab-body>
 			<div class="dashboard-properties">
 				<dashboard-properties-edit v-model="model" />
@@ -49,6 +56,8 @@ import PButton from "primevue/button"
 
 import DashboardPageEdit from "./DashboardPageEdit.vue"
 import { nanoid } from "nanoid/non-secure"
+import { useDialog } from "primevue/usedialog"
+import DashboardPermissionsEdit from "./DashboardPermissionsEdit.vue"
 
 const props = defineProps<{
 	modelValue: DashboardConfig
@@ -96,7 +105,6 @@ function addNewSegmentStart() {
 .dashboard-header {
 	display: flex;
 	flex-direction: row;
-	min-height: 5rem;
 	background-color: var(--surface-b);
 }
 

@@ -1,5 +1,6 @@
 import {
 	SatelliteConnectionICECandidate,
+	SatelliteConnectionOption,
 	SatelliteConnectionRequest,
 	SatelliteConnectionResponse,
 } from "castmate-schema"
@@ -22,6 +23,12 @@ const rendererSatelliteConnectionResponse = defineCallableIPC<(response: Satelli
 	"satellite",
 	"satelliteConnectionResponse"
 )
+
+const rendereSatelliteSetRTCOptions = defineCallableIPC<(response: SatelliteConnectionOption[]) => any>(
+	"satellite",
+	"setRTCConnectionOptions"
+)
+
 const logger = usePluginLogger("satellite")
 export const SatelliteService = Service(
 	class {
@@ -44,6 +51,10 @@ export const SatelliteService = Service(
 			PubSubManager.getInstance().unregisterOnMessage(this.pubsubMessageHandler)
 		}
 
+		async setRTCConnectionOptions(options: SatelliteConnectionOption[]) {
+			rendereSatelliteSetRTCOptions(options)
+		}
+
 		constructor(private mode: "satellite" | "castmate") {
 			defineIPCFunc("satellite", "satelliteConnectionRequest", async (request: SatelliteConnectionRequest) => {
 				await PubSubManager.getInstance().send("satellite", "satelliteConnectionRequest", request)
@@ -62,6 +73,7 @@ export const SatelliteService = Service(
 			)
 
 			this.pubsubMessageHandler = async (plugin, event, data) => {
+				logger.log("Satellite Message?", plugin, event, data)
 				if (plugin != "satellite") return
 
 				if (event == "satelliteConnectionIceCandidate") {
