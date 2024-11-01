@@ -32,6 +32,8 @@ import ChannelPointGroupHeaderVue from "./components/channel-points/ChannelPoint
 import TwitchViewerGroupViewVue from "./components/TwitchViewerGroupView.vue"
 import ChatCommandHeader from "./components/triggers/ChatCommandHeader.vue"
 
+export * from "./util/twitch-accounts"
+
 export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
 
 export async function initPlugin(app: App<Element>) {
