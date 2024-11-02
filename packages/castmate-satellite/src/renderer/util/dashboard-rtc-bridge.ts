@@ -171,6 +171,7 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 				}
 			},
 			async callRPC(id, ...args) {
+				console.log("CALLING RPC", id, args)
 				return await rpcs.call("dashboard_widgetRPC", sender, id, toValue(widgetId), ...args)
 			},
 		}

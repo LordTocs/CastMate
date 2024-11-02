@@ -1,5 +1,6 @@
 import { DashboardPluginOptions, DashboardWidgetComponent } from "castmate-dashboard-core"
 import dashboardPlugin from "castmate-plugin-dashboards-dashboard"
+import remotePlugin from "castmate-plugin-remote-dashboard"
 
 import { defineStore } from "pinia"
 import { ref, computed, markRaw } from "vue"
@@ -31,4 +32,5 @@ export function loadDashboardWidgets() {
 	const widgets = useDashboardWidgets()
 
 	widgets.loadPluginWidgets(dashboardPlugin)
+	widgets.loadPluginWidgets(remotePlugin)
 }

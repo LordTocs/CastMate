@@ -20,11 +20,7 @@
 		// "noUnusedParameters": true,
 		// "noFallthroughCasesInSwitch": true
 		"paths": {
-			"castmate-dashboard-core": ["../castmate-dashboard-core/src/dashboard-core-main.ts"],
-			"castmate-plugin-dashboards-dashboard": ["../../plugins/dashboards/dashboard/src/main.ts"],
-			"castmate-plugin-remote-dashboard": ["../../plugins/dashboards/dashboard/src/main.ts"]
-			// "castmate-plugin-random-overlays": ["../../plugins/random/overlay/src/main.ts"],
-			// "castmate-plugin-twitch-overlays": ["../../plugins/twitch/overlay/src/main.ts"]
+			"castmate-dashboard-core": ["../../../libs/castmate-dashboard-core/src/dashboard-core-main.ts"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

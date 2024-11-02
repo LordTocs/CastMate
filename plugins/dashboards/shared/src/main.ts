@@ -10,7 +10,7 @@ export interface DashboardWidget {
 	plugin: string
 	widget: string
 	size: DashboardWidgetSize
-	config: Object
+	config: object
 }
 
 export interface DashboardWidgetOptions<PropSchema extends SchemaObj = SchemaObj> {

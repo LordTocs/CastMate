@@ -22,7 +22,7 @@ function quit() {
 
 function createMainWindow() {
 	const portable = process.env.PORTABLE_EXECUTABLE_FILE != null || process.argv.includes("--portable")
-	const win = createWindow("index.html", 1600, 900, { portable: String(portable) })
+	const win = createWindow("index.html", 1600, 900, { portable: String(portable), dev: String(isDevelopment) })
 
 	win.on("close", () => {
 		//Workaround for electron bug.

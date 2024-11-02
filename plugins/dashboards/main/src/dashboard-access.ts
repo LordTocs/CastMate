@@ -6,6 +6,7 @@ import {
 	onSatelliteConnection,
 	onSatelliteDisconnect,
 	onSatelliteRPC,
+	onUnload,
 	PluginManager,
 	ReactiveEffect,
 	Service,
@@ -42,7 +43,7 @@ interface OpenDashboard {
 	evaluator: DashboardConfigEvaluator
 }
 
-type DashboardWidgetRPCHandler = (overlay: Dashboard, widgetId: string, ...args: any[]) => any
+export type DashboardWidgetRPCHandler = (dashboard: Dashboard, widgetId: string, ...args: any[]) => any
 
 export const DashboardAccessService = Service(
 	class {
@@ -212,17 +213,17 @@ export const DashboardAccessService = Service(
 		}
 
 		async dashboardConfigChanged(id: string) {
-			logger.log(`Dashboard Config Updated "${id}"`)
+			//logger.log(`Dashboard Config Updated "${id}"`)
 
 			const connections = this.openDashboards.get(id)
 			if (!connections) return
 
-			logger.log("Dashboards Found", id)
+			//logger.log("Dashboards Found", id)
 
 			const dashboard = Dashboard.storage.getById(id)
 			if (!dashboard) return
 
-			logger.log("Triggering", id, connections.evaluator.effect)
+			//logger.log("Triggering", id, connections.evaluator.effect)
 
 			connections.evaluator.effect?.trigger()
 		}
@@ -245,6 +246,7 @@ export const DashboardAccessService = Service(
 
 			const handler = this.widgetRPCs.get(id)
 			if (!handler) throw new Error("Unbound RPC")
+
 			return await handler(dashboard, from, ...args)
 		}
 	}
@@ -274,5 +276,15 @@ export function setupDashboardSatellite() {
 
 	onSatelliteRPC("dashboard_widgetRPC", async (socket, id: string, from: string, ...args: any[]) => {
 		return await DashboardAccessService.getInstance().handleWidgetRPCRequest(socket, id, from, ...args)
+	})
+}
+
+export function handleDashboardWidgetRPC<T extends DashboardWidgetRPCHandler>(id: string, func: T) {
+	onLoad(() => {
+		DashboardAccessService.getInstance().handleWidgetRPC(id, func)
+	})
+
+	onUnload(() => {
+		DashboardAccessService.getInstance().unhandleWidgetRPC(id)
 	})
 }

@@ -28,6 +28,16 @@ export class Dashboard extends FileResource<DashboardConfig> {
 		}
 	}
 
+	getWidget(widgetId: string) {
+		for (const page of this.config.pages) {
+			for (const section of page.sections) {
+				for (const widget of section.widgets) {
+					if (widget.id == widgetId) return widget
+				}
+			}
+		}
+	}
+
 	async updateDashCloud() {
 		if (this.config.remoteTwitchIds.length > 0) {
 			const cloudData = {

@@ -3781,11 +3781,33 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-remote-dashboard@workspace:plugins/remote/dashboard":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-remote-dashboard@workspace:plugins/remote/dashboard"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:4.6.2"
+    "@vueuse/core": "npm:*"
+    castmate-dashboard-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:29.4.5"
+    nanoid: "npm:^5.0.7"
+    pinia: "npm:^2.1.7"
+    primevue: "npm:3.53.0"
+    ts-toolbelt: "npm:*"
+    typescript: "npm:*"
+    vite: "npm:^5.2.9"
+    vue: "npm:^3.4.23"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-remote-main@workspace:^, castmate-plugin-remote-main@workspace:plugins/remote/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-remote-main@workspace:plugins/remote/main"
   dependencies:
     castmate-core: "workspace:^"
+    castmate-plugin-dashboards-main: "workspace:^"
     castmate-plugin-remote-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "npm:*"

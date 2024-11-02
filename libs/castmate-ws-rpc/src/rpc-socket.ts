@@ -73,6 +73,7 @@ export class RPCHandler {
 			try {
 				result = await func(...args)
 			} catch (err) {
+				console.error(err)
 				await sender({
 					responseId: requestId,
 					failed: true,
