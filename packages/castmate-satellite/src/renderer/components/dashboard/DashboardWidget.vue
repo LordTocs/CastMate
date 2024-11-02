@@ -4,7 +4,12 @@
 		:style="{ '--row-size': widget.size.height, '--column-size': widget.size.width }"
 	>
 		<div class="widget-wrap">
-			<component v-if="widgetInfo" :is="widgetInfo.component" :config="widget.config" :size="widget.size" />
+			<component
+				v-if="widgetInfo && resolvedConfig"
+				:is="widgetInfo.component"
+				:config="resolvedConfig"
+				:size="widget.size"
+			/>
 		</div>
 	</div>
 </template>
@@ -14,7 +19,7 @@ import { DashboardWidget } from "castmate-plugin-dashboards-shared"
 
 import { useDashboardWidgets } from "castmate-dashboard-widget-loader"
 import { computed, provide } from "vue"
-import { CastMateBridgeImplementation } from "castmate-dashboard-core"
+import { CastMateBridgeImplementation, useResolvedWidgetConfig } from "castmate-dashboard-core"
 import { useDashboardRTCBridge } from "../../util/dashboard-rtc-bridge"
 
 const props = defineProps<{
@@ -39,6 +44,8 @@ provide<CastMateBridgeImplementation>(
 const widgetInfo = computed(() => {
 	return dashboardWidgets.getWidget(props.widget.plugin, props.widget.widget)
 })
+
+const resolvedConfig = useResolvedWidgetConfig(() => props.widget.config, widgetInfo.value?.component)
 </script>
 
 <style scoped>
