@@ -69,7 +69,6 @@ const isSelected = computed(() => {
 	top: 0;
 	bottom: 0;
 	right: 0;
-	background-color: green;
 	box-sizing: border-box;
 
 	border: 2px solid var(--surface-b);
