@@ -10,8 +10,80 @@ import {
 	usePluginLogger,
 } from "castmate-core"
 import { DashboardWidgetManager } from "./dashboard-widgets"
+import { DashboardConfig } from "castmate-plugin-dashboards-shared"
+import { filterPromiseAll } from "castmate-schema"
 
 const logger = usePluginLogger("dashboards")
+
+export interface DashboardConfigEvaluator {
+	config: DashboardConfig
+	effect?: ReactiveEffect
+	remoteConfig: DashboardConfig
+	sender: (config: DashboardConfig) => any
+}
+
+export async function createDashboardConfigEvaluator(
+	initialConfig: DashboardConfig,
+	sender: (config: DashboardConfig) => any
+) {
+	const evaluator: DashboardConfigEvaluator = {
+		config: initialConfig,
+		remoteConfig: initialConfig,
+		sender,
+	}
+
+	evaluator.effect = await autoRerun(async () => {
+		evaluator.remoteConfig = {
+			name: evaluator.config.name,
+			pages: await filterPromiseAll(
+				evaluator.config.pages.map(async (p) => {
+					return {
+						id: p.id,
+						name: p.name,
+						sections: await filterPromiseAll(
+							p.sections.map(async (s) => {
+								return {
+									id: s.id,
+									name: s.name,
+									columns: s.columns,
+									widgets: await filterPromiseAll(
+										s.widgets.map(async (w) => {
+											const widgetType = DashboardWidgetManager.getInstance().getWidget(
+												w.plugin,
+												w.widget
+											)
+											if (!widgetType) throw new Error(`Missing Widget ${w.plugin}.${w.widget}`)
+											return {
+												id: w.id,
+												size: w.size,
+												plugin: w.plugin,
+												widget: w.widget,
+												config: await remoteTemplateSchema(
+													w.config,
+													widgetType.options.config,
+													PluginManager.getInstance().state
+												),
+											}
+										})
+									),
+								}
+							})
+						),
+					}
+				})
+			),
+			remoteTwitchIds: evaluator.config.remoteTwitchIds,
+		}
+
+		ignoreReactivity(() => sender(evaluator.remoteConfig))
+	})
+
+	return evaluator
+}
+
+export function disposeDashboardEvaluator(evaluator?: DashboardConfigEvaluator) {
+	evaluator?.effect?.dispose()
+}
 
 interface DashboardWidgetEvaluator {
 	plugin: string

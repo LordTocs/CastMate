@@ -1,13 +1,18 @@
 import {
 	SatelliteConnectionICECandidate,
+	SatelliteConnectionInfo,
 	SatelliteConnectionOption,
 	SatelliteConnectionRequest,
 	SatelliteConnectionResponse,
+	SatelliteConnectionService,
 } from "castmate-schema"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Service } from "../util/service"
 import { PubSubManager } from "../pubsub/pubsub-service"
 import { usePluginLogger } from "../logging/logging"
+import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
+import { onLoad, onUnload } from "../plugins/plugin"
+import { EventList } from "../util/events"
 
 //WebRTC connections are maintained out of the renderer process since no good node-webrtc libs exist
 
@@ -24,17 +29,41 @@ const rendererSatelliteConnectionResponse = defineCallableIPC<(response: Satelli
 	"satelliteConnectionResponse"
 )
 
-const rendereSatelliteSetRTCOptions = defineCallableIPC<(response: SatelliteConnectionOption[]) => any>(
+const rendererSatelliteSetRTCOptions = defineCallableIPC<(response: SatelliteConnectionOption[]) => any>(
 	"satellite",
 	"setRTCConnectionOptions"
 )
 
+const rendererSendRTCMessage = defineCallableIPC<(id: string, data: string) => any>("satellite", "sendRTCMessage")
+
+interface RendererRTCConnection {
+	id: string
+
+	remoteService: SatelliteConnectionService
+	remoteId: string
+	type: string
+	typeId: string
+
+	state: "connecting" | "connected" | "disconnected"
+}
+
 const logger = usePluginLogger("satellite")
 export const SatelliteService = Service(
 	class {
+		onConnection = new EventList<(satelliteId: string) => any>()
+		onDisconnected = new EventList<(satelliteId: string) => any>()
+
 		private pubsubListening = false
 
 		private pubsubMessageHandler: (plugin: string, event: string, data: object) => any
+
+		private rtcConnections = new Map<string, RendererRTCConnection>()
+
+		getConnection(id: string) {
+			return this.rtcConnections.get(id)
+		}
+
+		private rpcHandler = new RPCHandler()
 
 		startListening() {
 			if (this.pubsubListening) return
@@ -52,7 +81,7 @@ export const SatelliteService = Service(
 		}
 
 		async setRTCConnectionOptions(options: SatelliteConnectionOption[]) {
-			rendereSatelliteSetRTCOptions(options)
+			rendererSatelliteSetRTCOptions(options)
 		}
 
 		constructor(private mode: "satellite" | "castmate") {
@@ -85,6 +114,95 @@ export const SatelliteService = Service(
 					rendererSatelliteConnectionResponse(data as SatelliteConnectionResponse)
 				}
 			}
+
+			defineIPCFunc("satellite", "onConnectionCreated", (connectionInfo: SatelliteConnectionInfo) => {
+				this.rtcConnections.set(connectionInfo.id, { ...connectionInfo, state: "connecting" })
+			})
+
+			defineIPCFunc(
+				"satellite",
+				"onConnectionStateChange",
+				async (id: string, state: "connected" | "connecting" | "disconnected") => {
+					const connection = this.rtcConnections.get(id)
+					if (!connection) return
+
+					const newlyConnected = state == "connected" && connection.state == "connecting"
+					connection.state = state
+
+					if (newlyConnected) {
+						await this.onConnection.run(connection.id)
+					}
+				}
+			)
+
+			defineIPCFunc("satellite", "onConnectionDeleted", async (id: string) => {
+				if (this.rtcConnections.has(id)) {
+					await this.onDisconnected.run(id)
+					this.rtcConnections.delete(id)
+				}
+			})
+
+			defineIPCFunc("satellite", "onControlMessage", (id: string, dataStr: string) => {
+				//TODO
+				try {
+					const connection = this.rtcConnections.get(id)
+					if (!connection) return
+
+					const data = JSON.parse(dataStr) as RPCMessage
+
+					this.rpcHandler.handleMessage(data, (msg) => rendererSendRTCMessage(id, JSON.stringify(msg)), id)
+				} catch (err) {}
+			})
+		}
+
+		async callSatelliteRPC<T extends (...args: any[]) => any>(id: string, name: string, ...args: Parameters<T>) {
+			const connection = this.rtcConnections.get(id)
+
+			if (!connection) return
+
+			return (await this.rpcHandler.call(
+				name,
+				(msg) => rendererSendRTCMessage(id, JSON.stringify(msg)),
+				...args
+			)) as ReturnType<T>
+		}
+
+		registerRPC<T extends (id: string, ...args: any[]) => any>(name: string, func: T) {
+			this.rpcHandler.handle(name, func)
+		}
+
+		unregisterRPC(name: string) {
+			this.rpcHandler.unhandle(name)
 		}
 	}
 )
+
+export function onSatelliteConnection(func: (satelliteId: string) => any) {
+	onLoad(() => {
+		SatelliteService.getInstance().onConnection.register(func)
+	})
+
+	onUnload(() => {
+		SatelliteService.getInstance().onConnection.unregister(func)
+	})
+}
+
+export function onSatelliteDisconnect(func: (satelliteId: string) => any) {
+	onLoad(() => {
+		SatelliteService.getInstance().onDisconnected.register(func)
+	})
+
+	onUnload(() => {
+		SatelliteService.getInstance().onDisconnected.unregister(func)
+	})
+}
+
+export function onSatelliteRPC<T extends (satelliteId: string, ...args: any[]) => any>(name: string, func: T) {
+	onLoad(() => {
+		SatelliteService.getInstance().registerRPC(name, func)
+	})
+
+	onUnload(() => {
+		SatelliteService.getInstance().unregisterRPC(name)
+	})
+}

@@ -23,21 +23,32 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 
 	const rpcs = new RPCHandler()
 
-	const sender = (data: RPCMessage) => connection.value.controlChannel?.send(JSON.stringify(data))
+	const sender = (data: RPCMessage) => connection.value?.controlChannel?.send(JSON.stringify(data))
 
 	watch(
-		() => connection.value.controlChannel,
+		connection,
 		(value, oldValue) => {
+			console.log("WHY NO CALLBACK???")
 			if (!value) return
 
-			value.onmessage = (ev) => {
+			if (connection.value?.state != "connected") return
+
+			console.log("REGISTER DASHBOARD RTC HOOK")
+
+			if (!connection.value?.controlChannel) {
+				console.log("MISSING CONTROL CHANNEL!")
+				return
+			}
+
+			connection.value.controlChannel.onmessage = (ev) => {
 				try {
 					const data = JSON.parse(ev.data)
 
 					rpcs.handleMessage(data as RPCMessage, sender)
 				} catch (err) {}
 			}
-		}
+		},
+		{ deep: true, immediate: true }
 	)
 
 	rpcs.handle("dashboard_setConfig", (configData: DashboardConfig) => {

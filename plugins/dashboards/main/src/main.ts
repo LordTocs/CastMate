@@ -2,7 +2,7 @@ import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, defineSate
 import { setupDashboardResources } from "./dashboard-resource"
 import { DashboardWidgetManager } from "./dashboard-widgets"
 import { setupConfigEval } from "./dashboard-config-eval"
-import { DashboardAccessService } from "./dashboard-access"
+import { DashboardAccessService, setupDashboardSatellite } from "./dashboard-access"
 
 export default definePlugin(
 	{
@@ -12,7 +12,7 @@ export default definePlugin(
 		icon: "mdi mdi-pencil",
 	},
 	() => {
-		DashboardWidgetManager.initialize()
+		setupDashboardSatellite()
 
 		setupConfigEval()
 
@@ -28,6 +28,9 @@ export const dashboardSatellite = defineSatellitePlugin(
 		icon: "mdi mdi-pencil",
 	},
 	() => {
-		DashboardAccessService.initialize()
+		onLoad(() => {
+			DashboardWidgetManager.initialize()
+			DashboardAccessService.initialize()
+		})
 	}
 )

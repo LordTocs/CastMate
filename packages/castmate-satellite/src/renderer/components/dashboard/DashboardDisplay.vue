@@ -1,7 +1,7 @@
 <template>
 	<div class="flex-grow-1 flex flex-column">
 		<div class="page-header"></div>
-		<dashboard-page :page="currentPage"> </dashboard-page>
+		<dashboard-page :page="currentPage" v-if="currentPage"> </dashboard-page>
 	</div>
 </template>
 

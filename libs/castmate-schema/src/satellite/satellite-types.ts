@@ -34,3 +34,12 @@ export interface SatelliteConnectionOption {
 
 	name: string
 }
+
+export interface SatelliteConnectionInfo {
+	id: string
+
+	remoteService: SatelliteConnectionService
+	remoteId: string
+	type: string
+	typeId: string
+}

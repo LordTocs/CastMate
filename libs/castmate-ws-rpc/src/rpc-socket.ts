@@ -56,7 +56,13 @@ export class RPCHandler {
 			}
 			const args = data.args || []
 
-			this.handlers[requestName](requestId, sender, ...preArgs, ...args)
+			const handler = this.handlers[requestName]
+
+			if (handler) {
+				handler(requestId, sender, ...preArgs, ...args)
+			} else {
+				console.log("MISSING HANDLER", requestName)
+			}
 		}
 	}
 

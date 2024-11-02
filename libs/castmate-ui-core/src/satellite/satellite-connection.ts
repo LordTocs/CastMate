@@ -12,6 +12,7 @@ import {
 	SatelliteConnectionResponse,
 	SatelliteConnectionService,
 	SatelliteConnectionOption,
+	SatelliteConnectionInfo,
 } from "castmate-schema"
 
 //Look Here!: https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#signaling_transaction_flow
@@ -42,9 +43,20 @@ const satelliteConnectionIceCandidate = useIpcCaller<(candidate: SatelliteConnec
 	"satelliteConnectionIceCandidate"
 )
 
-const triggerRefreshConnections = useIpcCaller<() => any>("dashboards", "refreshConnections")
-
 type ConnectionState = "connected" | "connecting" | "disconnected"
+
+const satelliteOnCreated = useIpcCaller<(connectionInfo: SatelliteConnectionInfo) => any>(
+	"satellite",
+	"onConnectionCreated"
+)
+const satelliteOnStateChange = useIpcCaller<(id: string, state: ConnectionState) => any>(
+	"satellite",
+	"onConnectionStateChange"
+)
+const satelliteOnDeleted = useIpcCaller<(id: string) => any>("satellite", "onConnectionDeleted")
+const satelliteOnControlMessage = useIpcCaller<(id: string, data: object) => any>("satellite", "onControlMessage")
+
+const triggerRefreshConnections = useIpcCaller<() => any>("dashboards", "refreshConnections")
 
 class SatelliteConnection {
 	connection: RTCPeerConnection
@@ -111,11 +123,37 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 			)
 
 			if (idx >= 0) connections.value.splice(idx, 1)
+
+			satelliteOnDeleted(self.id)
+		}
+
+		const sendState = () => {
+			satelliteOnStateChange(self.id, self.state)
 		}
 
 		self.connection.ondatachannel = (ev) => {
+			console.log("Received Data Channel!")
 			self.controlChannel = markRaw(ev.channel)
+
+			self.controlChannel.onmessage = (ev) => {
+				console.log("RECEIVE DATA", ev.data)
+				satelliteOnControlMessage(self.id, JSON.parse(ev.data))
+			}
+
+			//NOTE: We wait until here to set connected since the connected event can arrive before the data channel
+			self.state = "connected"
+			sendState()
 		}
+
+		connections.value.push(self)
+
+		satelliteOnCreated({
+			id: self.id,
+			remoteService: self.remoteService,
+			remoteId: self.remoteId,
+			type: "dashboard",
+			typeId: self.dashId,
+		})
 
 		self.connection.onconnectionstatechange = (ev) => {
 			switch (self.connection.connectionState) {
@@ -125,11 +163,15 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 					break
 				case "connected":
 					console.log("RTC Connection Connected")
-					self.state = "connected"
+					if (self.controlChannel) {
+						self.state = "connected"
+						sendState()
+					}
 					break
 				case "disconnected":
 					console.log("RTC Connection Disconnecting...")
 					self.state = "disconnected"
+					sendState()
 					break
 				case "closed":
 					console.log("RTC Connection Closed")
@@ -155,10 +197,14 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 	//Used by satellite app to request connection to dashboard
 	function startDashboardConnection(config: SatelliteConnectionRequestConfig) {
 		const self = createConnection(config.castmateService, config.castmateId, config.dashId)
-
 		const dataChannel = markRaw(self.connection.createDataChannel("controlData"))
 
 		self.controlChannel = dataChannel
+
+		// self.controlChannel.onmessage = (ev) => {
+		// 	console.log("RECEIVE DATA", ev.data)
+		// 	satelliteOnControlMessage(self.id, JSON.parse(ev.data))
+		// }
 
 		self.connection.onicecandidate = async (ev) => {
 			if (!ev.candidate) return
@@ -293,12 +339,18 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 			if (idx < 0) return
 			rtcConnectionOptions.value.splice(idx, 1)
 		})
+
+		///
+
+		handleIpcMessage("satellite", "sendRTCMessage", async (event, id: string, data: string) => {
+			const connection = connections.value.find((c) => c.id == id)
+			console.log("SEND RTC", connection?.controlChannel, id, data)
+			connection?.controlChannel?.send(data)
+		})
 	}
 
 	async function connectToCastMate(request: SatelliteConnectionRequestConfig) {
 		const connection = startDashboardConnection(request)
-
-		connections.value.push(connection)
 	}
 
 	return { initialize, connectToCastMate, connections, rtcConnectionOptions, refreshConnections }
@@ -318,6 +370,7 @@ export function usePrimarySatelliteConnection() {
 	const satelliteStore = useSatelliteConnection()
 
 	return computed(() => {
+		if (satelliteStore.connections.length == 0) return undefined
 		return satelliteStore.connections[0]
 	})
 }
