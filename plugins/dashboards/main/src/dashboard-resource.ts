@@ -4,6 +4,7 @@ import { nanoid } from "nanoid/non-secure"
 import { coreAxios } from "castmate-core"
 import _isEqual from "lodash/isEqual"
 import { TwitchAccount } from "castmate-plugin-twitch-main"
+import { DashboardAccessService } from "./dashboard-access"
 
 const API_BASE_URL = import.meta.env.VITE_CASTMATE_URL
 
@@ -72,6 +73,8 @@ export class Dashboard extends FileResource<DashboardConfig> {
 			Dashboard.updateSatelliteListening()
 		}
 
+		DashboardAccessService.getInstance().dashboardConfigChanged(this.id)
+
 		return result
 	}
 
@@ -87,7 +90,7 @@ export class Dashboard extends FileResource<DashboardConfig> {
 			Dashboard.updateSatelliteListening()
 		}
 
-		//OverlayWebsocketService.getInstance().overlayConfigChanged(this.id)
+		DashboardAccessService.getInstance().dashboardConfigChanged(this.id)
 
 		return result
 	}

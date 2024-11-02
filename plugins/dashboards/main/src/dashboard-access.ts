@@ -211,6 +211,22 @@ export const DashboardAccessService = Service(
 			updaters.splice(idx, 1)
 		}
 
+		async dashboardConfigChanged(id: string) {
+			logger.log(`Dashboard Config Updated "${id}"`)
+
+			const connections = this.openDashboards.get(id)
+			if (!connections) return
+
+			logger.log("Dashboards Found", id)
+
+			const dashboard = Dashboard.storage.getById(id)
+			if (!dashboard) return
+
+			logger.log("Triggering", id, connections.evaluator.effect)
+
+			connections.evaluator.effect?.trigger()
+		}
+
 		handleWidgetRPC(id: string, func: DashboardWidgetRPCHandler) {
 			this.widgetRPCs.set(id, func)
 		}

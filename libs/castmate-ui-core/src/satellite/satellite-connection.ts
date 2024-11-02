@@ -137,7 +137,11 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 
 			self.controlChannel.onmessage = (ev) => {
 				console.log("RECEIVE DATA", ev.data)
-				satelliteOnControlMessage(self.id, JSON.parse(ev.data))
+				try {
+					satelliteOnControlMessage(self.id, JSON.parse(ev.data))
+				} catch (err) {
+					console.error("ERROR", err)
+				}
 			}
 
 			//NOTE: We wait until here to set connected since the connected event can arrive before the data channel

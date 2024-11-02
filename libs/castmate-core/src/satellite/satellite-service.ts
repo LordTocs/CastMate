@@ -142,16 +142,20 @@ export const SatelliteService = Service(
 				}
 			})
 
-			defineIPCFunc("satellite", "onControlMessage", (id: string, dataStr: string) => {
+			defineIPCFunc("satellite", "onControlMessage", (id: string, data: object) => {
 				//TODO
 				try {
 					const connection = this.rtcConnections.get(id)
 					if (!connection) return
 
-					const data = JSON.parse(dataStr) as RPCMessage
-
-					this.rpcHandler.handleMessage(data, (msg) => rendererSendRTCMessage(id, JSON.stringify(msg)), id)
-				} catch (err) {}
+					this.rpcHandler.handleMessage(
+						data as RPCMessage,
+						(msg) => rendererSendRTCMessage(id, JSON.stringify(msg)),
+						id
+					)
+				} catch (err) {
+					logger.error("CONTROL MESSAGE ERROR", err)
+				}
 			})
 		}
 
