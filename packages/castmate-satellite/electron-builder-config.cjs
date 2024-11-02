@@ -3,7 +3,7 @@ module.exports = {
 	productName: "CastMateSatellite",
 	asar: true,
 	directories: {
-		output: "../../release",
+		output: "../../release-satellite",
 	},
 	files: [
 		"dist/**/*",
@@ -66,10 +66,10 @@ module.exports = {
 		},
 	],
 	extraFiles: [
-		{
-			from: "../castmate-obs-overlay/dist/obs-overlay",
-			to: "obs-overlay",
-		},
+		// {
+		// 	from: "../castmate-obs-overlay/dist/obs-overlay",
+		// 	to: "obs-overlay",
+		// },
 		// {
 		// 	from: "starter_media",
 		// 	to: "starter_media"

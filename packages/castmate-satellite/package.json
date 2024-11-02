@@ -19,6 +19,7 @@
 		"archiver": "^7.0.1",
 		"castmate-core": "workspace:^",
 		"castmate-plugin-dashboards-shared": "workspace:^",
+		"castmate-plugin-twitch-main": "workspace:^",
 		"castmate-schema": "workspace:^"
 	},
 	"devDependencies": {
