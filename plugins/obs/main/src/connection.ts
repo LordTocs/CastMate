@@ -132,6 +132,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 			recording: false,
 			virtualCamming: false,
 			replayBuffering: false,
+			studioModeEnabled: false,
 		}
 
 		this.setupEvents()
@@ -207,6 +208,10 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 			})
 		} catch (err) {}
 
+		this.connection.on("StudioModeStateChanged", ({ studioModeEnabled }) => {
+			this.state.studioModeEnabled = studioModeEnabled
+		})
+
 		this.connection.on("Identified", (ev) => {
 			logger.log("OBS Identified Ver:", ev.negotiatedRpcVersion)
 
@@ -252,6 +257,9 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		const sceneResp = await this.connection.call("GetCurrentProgramScene")
 		this.state.scene = sceneResp.currentProgramSceneName
 		this.sceneHistory.reset(sceneResp.currentProgramSceneName)
+
+		const studioMode = await this.connection.call("GetStudioModeEnabled")
+		this.state.studioModeEnabled = studioMode.studioModeEnabled
 
 		this.state.connected = true
 		logger.log("Initial OBS State Queried, Connected Successfully")

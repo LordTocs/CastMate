@@ -174,4 +174,39 @@ export function setupToggles(obsDefault: ReactiveRef<OBSConnection>) {
 			}
 		},
 	})
+
+	defineAction({
+		id: "toggleStudioMode",
+		name: "Toggle Studio Mode",
+		icon: "mdi mdi-dock-window",
+		config: {
+			type: Object,
+			properties: {
+				obs: {
+					type: OBSConnection,
+					name: "OBS Connection",
+					required: true,
+					default: () => obsDefault.value,
+				},
+				studioMode: {
+					type: Toggle,
+					name: "Studio Mode",
+					required: true,
+					default: true,
+					template: true,
+					trueIcon: "mdi mdi-dock-window",
+					falseIcon: "mdi mdi-rectangle-outline",
+				},
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			let studioModeEnabled = config.studioMode
+
+			if (studioModeEnabled == "toggle") {
+				studioModeEnabled = !config.obs.state.studioModeEnabled
+			}
+
+			await config.obs.connection.call("SetStudioModeEnabled", { studioModeEnabled })
+		},
+	})
 }
