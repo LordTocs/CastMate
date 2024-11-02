@@ -209,4 +209,24 @@ export function setupToggles(obsDefault: ReactiveRef<OBSConnection>) {
 			await config.obs.connection.call("SetStudioModeEnabled", { studioModeEnabled })
 		},
 	})
+
+	defineAction({
+		id: "triggerStudioModeTransition",
+		name: "Trigger Studio Mode Transition",
+		icon: "mdi mdi-transition",
+		config: {
+			type: Object,
+			properties: {
+				obs: {
+					type: OBSConnection,
+					name: "OBS Connection",
+					required: true,
+					default: () => obsDefault.value,
+				},
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			await config.obs.connection.call("TriggerStudioModeTransition")
+		},
+	})
 }
