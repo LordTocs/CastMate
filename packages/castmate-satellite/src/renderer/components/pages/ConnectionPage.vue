@@ -5,7 +5,7 @@
 			<hr />
 			<account-widget account-type="TwitchAccount" account-id="channel" />
 		</div>
-		<p-button @click="refresh"> Refresh </p-button>
+		<p-button @click="refresh"> Refresh Available Dashboards </p-button>
 		<remote-dash-group v-for="group of rtcConnectionGroups" :options="group" />
 	</div>
 </template>
@@ -19,14 +19,18 @@ import {
 } from "castmate-ui-core"
 import PButton from "primevue/button"
 import RemoteDashGroup from "../connection/RemoteDashGroup.vue"
+import { onMounted } from "vue"
 
 const satelliteStore = useSatelliteConnection()
 const rtcConnectionGroups = useGroupedDashboardRTCConnectionOptions()
 
 function refresh(ev: MouseEvent) {
-	console.log("TRY REFRESH")
 	satelliteStore.refreshConnections()
 }
+
+onMounted(() => {
+	satelliteStore.refreshConnections()
+})
 </script>
 
 <style scoped>
