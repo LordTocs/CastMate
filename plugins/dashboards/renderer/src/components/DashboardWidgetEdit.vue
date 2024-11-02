@@ -32,6 +32,8 @@ const resolvedConfig = useRemoteDashboardConfig(() => props.modelValue)
 
 const state = useFullState()
 
+provide("isEditor", true)
+
 provide<CastMateBridgeImplementation>("castmate-bridge", {
 	acquireState(plugin, state) {},
 	releaseState(plugin, state) {},
