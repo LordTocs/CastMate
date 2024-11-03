@@ -6,7 +6,7 @@
 		<div class="px-3">
 			{{ model.slotType }}
 		</div>
-		<div class="flex flex-row flex-grow-1 align-items-center" @mousedown="stopPropagation">
+		<div class="flex flex-row align-items-center" @mousedown="stopPropagation">
 			<span class="segment-name">
 				<p-input-text v-model="model.name" />
 			</span>

@@ -4,7 +4,13 @@
 			<p-button @click="slotMenuOpen"> <i class="mdi mdi-plus" /> Create Slot</p-button>
 			<p-menu :model="addMenuItems" ref="addMenu" :popup="true" />
 		</div>
-		<document-data-collection :data-component="DashboardResourceSlotEdit" v-model="model" v-model:view="view">
+		<document-data-collection
+			:data-component="DashboardResourceSlotEdit"
+			v-model="model"
+			v-model:view="view"
+			local-path="resourceSlots"
+			handle-class="slot-handle"
+		>
 		</document-data-collection>
 	</div>
 </template>

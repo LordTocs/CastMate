@@ -19,10 +19,11 @@
 				:data-component="DashboardSectionEdit"
 				handle-class="section-handle"
 				data-type="dashboard-section"
+				class="flex-grow-1"
 			>
 				<template #no-items>
 					<div class="flex flex-column align-items-center p-3">
-						<p-button @click="addSection">Add Page</p-button>
+						<p-button @click="addSection">Add Section</p-button>
 					</div>
 				</template>
 			</row-wrap-document-data-collection>
@@ -124,7 +125,7 @@ function addSection(ev: MouseEvent) {
 
 .page-content {
 	display: flex;
-	flex-wrap: wrap;
+	flex-direction: row;
 	gap: 1rem;
 	aspect-ratio: 1.77777;
 	background-color: var(--surface-a);
