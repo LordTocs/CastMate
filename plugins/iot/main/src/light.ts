@@ -91,7 +91,7 @@ export function setupLights(mode: "castmate" | "satellite") {
 	defineSatelliteResourceSlotHandler(LightResource, {
 		satelliteConstructor: SatelliteLight,
 		rpcs: {
-			async setPlugState(resource, color: LightColor | undefined, on: Toggle, transition: Duration) {
+			async setLightState(resource, color: LightColor | undefined, on: Toggle, transition: Duration) {
 				await resource.setLightState(color, on, transition)
 			},
 		},
