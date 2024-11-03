@@ -11,6 +11,7 @@ import {
 	usePluginStore,
 	useResourceStore,
 	useSatelliteConnection,
+	useSatelliteMedia,
 	useSatelliteResourceStore,
 } from "castmate-ui-core"
 
@@ -33,6 +34,9 @@ import { setupProxyDialogService } from "castmate-ui-core"
 
 import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
 
+import { initSatellitePlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
+//import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
+
 const pinia = createPinia()
 const app = createApp(App)
 
@@ -54,8 +58,8 @@ const pluginStore = usePluginStore()
 const resourceStore = useResourceStore()
 
 const satelliteStore = useSatelliteConnection()
-
 const satelliteResources = useSatelliteResourceStore()
+const satelliteMedia = useSatelliteMedia()
 
 async function init() {
 	await initStore.initialize()
@@ -69,9 +73,11 @@ async function init() {
 
 	await initStore.waitForInit()
 
-	await satelliteStore.initialize("satellite")
+	await initSoundPlugin()
 
+	await satelliteStore.initialize("satellite")
 	await satelliteResources.initialize()
+	await satelliteMedia.initialize("satellite")
 
 	loadDashboardWidgets()
 }

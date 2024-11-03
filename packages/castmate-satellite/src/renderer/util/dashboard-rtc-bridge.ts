@@ -1,5 +1,10 @@
 import { DashboardConfig } from "castmate-plugin-dashboards-shared"
-import { useOnSatelliteMessage, usePrimarySatelliteConnection, useSatelliteResourceStore } from "castmate-ui-core"
+import {
+	useOnSatelliteMessage,
+	usePrimarySatelliteConnection,
+	useSatelliteConnection,
+	useSatelliteResourceStore,
+} from "castmate-ui-core"
 import { defineStore } from "pinia"
 import { computed, MaybeRefOrGetter, ref, toValue, watch } from "vue"
 
@@ -7,6 +12,7 @@ import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
 import { CastMateBridgeImplementation } from "castmate-dashboard-core"
 
 export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
+	const satelliteStore = useSatelliteConnection()
 	const connection = usePrimarySatelliteConnection()
 
 	const config = ref<DashboardConfig>({
@@ -22,75 +28,82 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 	const widgetRpcs: Record<string, (...args: any) => any> = {}
 	const widgetBroadcastHandlers: Record<string, ((...args: any) => any)[]> = {}
 
-	const rpcs = new RPCHandler()
-
 	const sender = (data: RPCMessage) => connection.value?.controlChannel?.send(JSON.stringify(data))
 
 	const satelliteResources = useSatelliteResourceStore()
 
-	useOnSatelliteMessage(async (satelliteId: string, data: object) => {
-		rpcs.handleMessage(data as RPCMessage, sender)
-	})
+	// useOnSatelliteMessage(async (satelliteId: string, data: object) => {
+	// 	rpcs.handleMessage(data as RPCMessage, sender)
+	// })
 
-	rpcs.handle("dashboard_setConfig", async (configData: DashboardConfig) => {
-		console.log("Dashboard Config Set", configData)
+	satelliteStore.registerRPCHandler(
+		"dashboard_setConfig",
+		async (connectionId: string, configData: DashboardConfig) => {
+			console.log("Dashboard Config Set", configData)
 
-		//Find new and deleted resource slots
-		const existingSlots = config.value.resourceSlots ?? []
-		const updatedSlots = configData.resourceSlots ?? []
+			//Find new and deleted resource slots
+			const existingSlots = config.value.resourceSlots ?? []
+			const updatedSlots = configData.resourceSlots ?? []
 
-		const deleteSlots = new Array<string>()
-		const createSlots = new Array<{ id: string; type: string; name: string }>()
+			const deleteSlots = new Array<string>()
+			const createSlots = new Array<{ id: string; type: string; name: string }>()
 
-		for (const existingSlot of existingSlots) {
-			const updated = updatedSlots.find((s) => s.id == existingSlot.id)
+			for (const existingSlot of existingSlots) {
+				const updated = updatedSlots.find((s) => s.id == existingSlot.id)
 
-			if (!updated || existingSlot.slotType != updated.slotType) {
-				deleteSlots.push(existingSlot.id)
+				if (!updated || existingSlot.slotType != updated.slotType) {
+					deleteSlots.push(existingSlot.id)
+				}
+			}
+
+			//TODO: how to update name???
+
+			for (const updatedSlot of updatedSlots) {
+				const existing = existingSlots.find((s) => s.id == updatedSlot.id)
+
+				if (!existing || existing.slotType != updatedSlot.slotType) {
+					createSlots.push({ id: updatedSlot.id, type: updatedSlot.slotType, name: updatedSlot.name })
+				}
+			}
+
+			for (const deleteSlot of deleteSlots) {
+				await satelliteResources.deleteSlotBinding(deleteSlot)
+			}
+
+			for (const createSlot of createSlots) {
+				await satelliteResources.createSlotBinding(createSlot.id, createSlot.type, createSlot.name)
+			}
+
+			config.value = configData
+		}
+	)
+
+	satelliteStore.registerRPCHandler(
+		"dashboard_widgetRPC",
+		(connectionId: string, widgetId: string, rpcId: string, ...args: any[]) => {
+			const widgetRpc = widgetRpcs[`${widgetId}.${rpcId}`]
+
+			if (widgetRpc) return widgetRpc(...args)
+
+			return undefined
+		}
+	)
+
+	satelliteStore.registerRPCHandler(
+		"dashboard_broadcast",
+		(connectionId: string, broadcastId: string, ...args: any[]) => {
+			const handlers = widgetBroadcastHandlers[`${broadcastId}`]
+			if (!handlers) return
+
+			for (const handler of handlers) {
+				try {
+					handler(...args)
+				} catch (err) {
+					console.error(err)
+				}
 			}
 		}
-
-		//TODO: how to update name???
-
-		for (const updatedSlot of updatedSlots) {
-			const existing = existingSlots.find((s) => s.id == updatedSlot.id)
-
-			if (!existing || existing.slotType != updatedSlot.slotType) {
-				createSlots.push({ id: updatedSlot.id, type: updatedSlot.slotType, name: updatedSlot.name })
-			}
-		}
-
-		for (const deleteSlot of deleteSlots) {
-			await satelliteResources.deleteSlotBinding(deleteSlot)
-		}
-
-		for (const createSlot of createSlots) {
-			await satelliteResources.createSlotBinding(createSlot.id, createSlot.type, createSlot.name)
-		}
-
-		config.value = configData
-	})
-
-	rpcs.handle("dashboard_widgetRPC", (widgetId: string, rpcId: string, ...args: any[]) => {
-		const widgetRpc = widgetRpcs[`${widgetId}.${rpcId}`]
-
-		if (widgetRpc) return widgetRpc(...args)
-
-		return undefined
-	})
-
-	rpcs.handle("dashboard_broadcast", (broadcastId: string, ...args: any[]) => {
-		const handlers = widgetBroadcastHandlers[`${broadcastId}`]
-		if (!handlers) return
-
-		for (const handler of handlers) {
-			try {
-				handler(...args)
-			} catch (err) {
-				console.error(err)
-			}
-		}
-	})
+	)
 
 	function acquireState(plugin: string, state: string) {
 		const meta = stateMeta[plugin]?.[state]
@@ -108,7 +121,8 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 
 			stateMeta[plugin][state] = { refCount: 1 }
 
-			rpcs.call("dashboard_acquireState", sender, plugin, state)
+			if (!connection.value?.id) throw new Error("No RPC CONNECTION")
+			satelliteStore.callRPC(connection.value.id, "dashboard_acquireState", sender, plugin, state)
 		} else {
 			meta.refCount += 1
 		}
@@ -125,7 +139,8 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 		meta.refCount -= 1
 
 		if (meta.refCount == 0) {
-			rpcs.call("dashboard_freeState", sender, plugin, state)
+			if (!connection.value?.id) throw new Error("No RPC CONNECTION")
+			satelliteStore.callRPC(connection.value.id, "dashboard_freeState", sender, plugin, state)
 
 			delete stateMeta[plugin][state]
 			delete stateStore.value[plugin][state]
@@ -187,7 +202,15 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 			},
 			async callRPC(id, ...args) {
 				console.log("CALLING RPC", id, args)
-				return await rpcs.call("dashboard_widgetRPC", sender, id, toValue(widgetId), ...args)
+				if (!connection.value?.id) throw new Error("No RPC CONNECTION")
+				return await satelliteStore.callRPC(
+					connection.value.id,
+					"dashboard_widgetRPC",
+					sender,
+					id,
+					toValue(widgetId),
+					...args
+				)
 			},
 		}
 	}

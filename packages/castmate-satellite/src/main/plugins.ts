@@ -12,6 +12,8 @@ import wyzePlugin from "castmate-plugin-wyze-main"
 import goveePlugin from "castmate-plugin-govee-main"
 import twinklyPlugin from "castmate-plugin-twinkly-main"
 
+import soundPlugin from "castmate-plugin-sound-main"
+
 export async function loadPlugin(plugin: Plugin) {
 	await PluginManager.getInstance().registerPlugin(plugin)
 }
@@ -22,6 +24,8 @@ export async function loadPlugins() {
 	await loadPlugin(dashboardSatellite)
 
 	await loadPlugin(satelliteIoTPlugin)
+
+	await loadPlugin(soundPlugin)
 	//iot
 	const iotPromises: Promise<any>[] = [
 		loadPlugin(huePlugin),

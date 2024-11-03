@@ -99,6 +99,7 @@ export * from "./viewer-data/viewer-data-store"
 
 export * from "./satellite/satellite-connection"
 export * from "./satellite/satellite-resources"
+export * from "./satellite/satellite-media"
 
 export * from "./util/panning"
 

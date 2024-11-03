@@ -61,7 +61,7 @@ export class RPCHandler {
 			if (handler) {
 				handler(requestId, sender, ...preArgs, ...args)
 			} else {
-				console.log("MISSING HANDLER", requestName)
+				//console.log("MISSING HANDLER", requestName)
 			}
 		}
 	}

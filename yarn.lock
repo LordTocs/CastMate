@@ -4399,6 +4399,8 @@ __metadata:
     castmate-plugin-iot-main: "workspace:^"
     castmate-plugin-lifx-main: "workspace:^"
     castmate-plugin-philips-hue-main: "workspace:^"
+    castmate-plugin-sound-main: "workspace:^"
+    castmate-plugin-sound-renderer: "workspace:^"
     castmate-plugin-tplink-kasa-main: "workspace:^"
     castmate-plugin-twinkly-main: "workspace:^"
     castmate-plugin-twitch-main: "workspace:^"

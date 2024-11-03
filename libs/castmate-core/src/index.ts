@@ -56,3 +56,4 @@ export * from "./viewer-data/viewer-data"
 
 export * from "./satellite/satellite-service"
 export * from "./satellite/satellite-resource"
+export * from "./satellite/satellite-media"

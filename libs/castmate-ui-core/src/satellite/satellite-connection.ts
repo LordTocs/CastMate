@@ -3,8 +3,11 @@ import { handleIpcMessage, useIpcCaller, usePluginStore } from "../main"
 import { nanoid } from "nanoid/non-secure"
 import { computed, markRaw, ref, reactive } from "vue"
 import { EventList } from "../main"
+import fs from "node:fs"
 
 import _groupBy from "lodash/groupBy"
+
+import { RPCHandler } from "castmate-ws-rpc"
 
 import {
 	SatelliteConnectionICECandidate,
@@ -59,11 +62,20 @@ const satelliteOnControlMessage = useIpcCaller<(id: string, data: object) => any
 
 const triggerRefreshConnections = useIpcCaller<() => any>("dashboards", "refreshConnections")
 
+interface PendingMediaRequest {
+	channel?: RTCDataChannel
+	filename: string
+	cachename: string
+	fileStream: fs.WriteStream
+	onDone: (state: "success" | "error") => any
+}
+
 class SatelliteConnection {
 	connection: RTCPeerConnection
 	id: string
 	state: ConnectionState = "connecting"
 	controlChannel?: RTCDataChannel
+	mediaRequests = new Map<string, PendingMediaRequest>()
 
 	constructor(public remoteService: SatelliteConnectionService, public remoteId: string, public dashId: string) {
 		this.id = nanoid()
@@ -104,6 +116,8 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 	const onDisconnection = new EventList<(satelliteId: string) => any>()
 	const onMessage = new EventList<(satelliteId: string, data: object) => any>()
 
+	const rpcs = new RPCHandler()
+
 	const mode = ref<"satellite" | "castmate">("castmate")
 
 	function getConnection(request: SatelliteConnectionRequestConfig) {
@@ -113,6 +127,10 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 		return connections.value.find(
 			(c) => c.remoteId == id && c.remoteService == service && request.dashId == c.dashId
 		)
+	}
+
+	function getConnectionById(connectionId: string) {
+		return connections.value.find((c) => c.id == connectionId)
 	}
 
 	async function refreshConnections() {
@@ -137,24 +155,52 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 			satelliteOnStateChange(self.id, self.state)
 		}
 
-		self.connection.ondatachannel = (ev) => {
-			console.log("Received Data Channel!")
-			self.controlChannel = markRaw(ev.channel)
+		function checkIfFullyConnected() {
+			if (self.controlChannel && self.state != "connected") {
+				self.state = "connected"
+				onConnection.run(self.id)
+				sendState()
+			}
+		}
 
-			self.controlChannel.onmessage = (ev) => {
-				try {
-					const data = JSON.parse(ev.data)
-					satelliteOnControlMessage(self.id, data)
-					onMessage.run(self.id, data)
-				} catch (err) {
-					console.error("ERROR", err)
+		self.connection.ondatachannel = (ev) => {
+			if (ev.channel.label == "controlChannel") {
+				self.controlChannel = markRaw(ev.channel)
+				self.controlChannel.onmessage = (ev) => {
+					try {
+						const data = JSON.parse(ev.data)
+						rpcs.handleMessage(data, (data) => self.controlChannel?.send(JSON.stringify(data)), self.id)
+						satelliteOnControlMessage(self.id, data)
+						onMessage.run(self.id, data)
+					} catch (err) {
+						console.error("ERROR", err)
+					}
+				}
+
+				checkIfFullyConnected()
+			} else if (ev.channel.label.startsWith("media:")) {
+				//Media requests
+				const filename = ev.channel.label.substring(6)
+
+				const request = self.mediaRequests.get(filename)
+				if (request) {
+					request.channel = ev.channel
+
+					ev.channel.onmessage = (ev) => {
+						request.fileStream.write(new Uint8Array(ev.data as ArrayBuffer), (err) => {})
+					}
+
+					ev.channel.onerror = (ev) => {
+						request.onDone("error")
+					}
+
+					ev.channel.onclose = (ev) => {
+						request.onDone("success")
+					}
+				} else {
+					ev.channel.close()
 				}
 			}
-
-			//NOTE: We wait until here to set connected since the connected event can arrive before the data channel
-			self.state = "connected"
-			onConnection.run(self.id)
-			sendState()
 		}
 
 		connections.value.push(self)
@@ -175,10 +221,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 					break
 				case "connected":
 					console.log("RTC Connection Connected")
-					if (self.controlChannel) {
-						self.state = "connected"
-						sendState()
-					}
+					checkIfFullyConnected()
 					break
 				case "disconnected":
 					console.log("RTC Connection Disconnecting...")
@@ -209,14 +252,14 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 	//Used by satellite app to request connection to dashboard
 	function startDashboardConnection(config: SatelliteConnectionRequestConfig) {
 		const self = createConnection(config.castmateService, config.castmateId, config.dashId)
-		const dataChannel = markRaw(self.connection.createDataChannel("controlData"))
 
-		self.controlChannel = dataChannel
-
+		self.controlChannel = markRaw(self.connection.createDataChannel("controlChannel"))
 		self.controlChannel.onmessage = (ev) => {
 			try {
 				const data = JSON.parse(ev.data)
+				console.log("INC MSG", data)
 				satelliteOnControlMessage(self.id, data)
+				rpcs.handleMessage(data, (data) => self.controlChannel?.send(JSON.stringify(data)), self.id)
 				onMessage.run(self.id, data)
 			} catch (err) {
 				console.error("ERROR", err)
@@ -371,15 +414,36 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 		const connection = startDashboardConnection(request)
 	}
 
+	function registerRPCHandler<T extends (connectionId: string, ...args: any[]) => any>(name: string, func: T) {
+		console.log("handling", name)
+		rpcs.handle(name, func)
+	}
+
+	function unregisterRPCHandler(name: string) {
+		rpcs.unhandle(name)
+	}
+
+	function callRPC(connectionId: string, name: string, ...args: any[]) {
+		return rpcs.call(
+			name,
+			(data) => getConnectionById(connectionId)?.controlChannel?.send(JSON.stringify(data)),
+			...args
+		)
+	}
+
 	return {
 		initialize,
 		connectToCastMate,
 		connections,
+		getConnectionById,
 		rtcConnectionOptions,
 		refreshConnections,
 		onMessage,
 		onConnection,
 		onDisconnection,
+		registerRPCHandler,
+		unregisterRPCHandler,
+		callRPC,
 	}
 })
 
@@ -388,7 +452,6 @@ export function useGroupedDashboardRTCConnectionOptions() {
 
 	return computed(() => {
 		const groups = _groupBy(satelliteStore.rtcConnectionOptions, "remoteUserId")
-
 		return Object.values(groups)
 	})
 }
@@ -405,4 +468,9 @@ export function usePrimarySatelliteConnection() {
 export function useOnSatelliteMessage(func: (satelliteId: string, data: object) => any) {
 	const satelliteStore = useSatelliteConnection()
 	satelliteStore.onMessage.register(func)
+}
+
+export function useSatelliteRPC(name: string, func: (satelliteId: string, ...args: any[]) => any) {
+	const satelliteStore = useSatelliteConnection()
+	satelliteStore.registerRPCHandler(name, func)
 }

@@ -12,6 +12,7 @@ import {
 	useStreamPlanStore,
 	useInitStore,
 	useSatelliteConnection,
+	useSatelliteMedia,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -109,6 +110,7 @@ const planStore = useStreamPlanStore()
 
 const satelliteStore = useSatelliteConnection()
 const satelliteResources = useSatelliteResourceStore()
+const satelliteMedia = useSatelliteMedia()
 
 const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
@@ -174,6 +176,7 @@ async function init() {
 
 	await satelliteStore.initialize("castmate")
 	await satelliteResources.initialize()
+	await satelliteMedia.initialize("castmate")
 
 	loadOverlayWidgets()
 	loadDashboardWidgets()

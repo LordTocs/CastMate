@@ -103,6 +103,26 @@ export const MediaManager = Service(
 				await this.copyMedia(localPath, mediaPath)
 			})
 
+			defineIPCFunc("media", "validateRemoteMediaPath", async (mediaPath: string) => {
+				try {
+					const realFile = await fs.realpath(mediaPath)
+
+					const tempFolder = await fs.realpath(app.getPath("temp"))
+					const mediaFolder = await fs.realpath(resolveProjectPath("./media"))
+
+					if (realFile.indexOf(tempFolder) == 0) {
+						return realFile
+					}
+					if (realFile.indexOf(mediaFolder) == 0) {
+						return realFile
+					}
+					return undefined
+				} catch (err) {
+					//Special case, could be TTS generated file in the temp path
+					return undefined
+				}
+			})
+
 			const router = express.Router()
 			router.use(express.static(mediaPath))
 			WebService.getInstance().addRootRouter("/media/default", router)
