@@ -106,6 +106,8 @@ export function resolveRemoteTemplate(
 			const deserializer = remoteDataDeserializers?.[segment.type]
 			if (deserializer) {
 				result += deserializer(segment, context)
+			} else {
+				console.error("MISSING REMOTE DESERIALIZER", segment.type)
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-import { globalLogger } from "../logging/logging"
+import { globalLogger, usePluginLogger } from "../logging/logging"
 import { isResourceConstructor } from "../resources/resource"
 import { isArray, isBoolean, isNumber, isObject, isString } from "../util/type-helpers"
 import {
@@ -22,6 +22,7 @@ import {
 	TemplateTypeByConstructor,
 	Toggle,
 	getTemplateRegionString,
+	getTimeRemaining,
 	getTypeByConstructor,
 	isTimer,
 	isTimerStarted,
@@ -31,6 +32,8 @@ import {
 import escapeRegExp from "lodash/escapeRegExp"
 
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
+
+const logger = usePluginLogger("template")
 
 export async function evaluateTemplate(template: string, data: object) {
 	let contextObjs = { ...data }
@@ -371,6 +374,8 @@ async function getRemoteTemplateIntermediate(data: any) {
 		return undefined
 	}
 
+	logger.log("")
+
 	return successfulSerializers[0].value
 }
 
@@ -387,7 +392,7 @@ registerRemoteDataSerializer(async (data) => {
 			return {
 				type: "Timer",
 				data: {
-					remainingTime: data.remainingTime,
+					remainingTime: getTimeRemaining(data),
 				},
 			}
 		}
