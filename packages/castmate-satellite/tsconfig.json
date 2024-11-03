@@ -29,7 +29,15 @@
 			"castmate-dashboard-core": ["../../libs/castmate-dashboard-core/src/dashboard-core-main.ts"],
 			"castmate-dashboard-widget-loader": [
 				"../../libs/castmate-dashboard-widget-loader/src/dashboard-widget-loader.ts"
-			]
+			],
+			"castmate-plugin-iot-renderer": ["../../plugins/iot/renderer/src/main.ts"],
+			"castmate-plugin-tplink-kasa-renderer": ["../../plugins/tplink-kasa/renderer/src/main.ts"],
+			"castmate-plugin-lifx-renderer": ["../../plugins/lifx/renderer/src/main.ts"],
+			"castmate-plugin-philips-hue-renderer": ["../../plugins/philips-hue/renderer/src/main.ts"],
+			"castmate-plugin-govee-renderer": ["../../plugins/govee/renderer/src/main.ts"],
+			"castmate-plugin-wyze-renderer": ["../../plugins/wyze/renderer/src/main.ts"],
+			"castmate-plugin-twinkly-renderer": ["../../plugins/twinkly/renderer/src/main.ts"]
+
 			//TODO: "castmate-plugin-*-renderer": ["../../plugins/*/renderer/src/main.ts"]
 			// "castmate-plugin-discord-renderer": ["../../plugins/discord/renderer/src/main.ts"],
 			// "castmate-plugin-http-renderer": ["../../plugins/http/renderer/src/main.ts"],

@@ -2,6 +2,7 @@ import { defineStore } from "pinia"
 import { handleIpcMessage, useIpcCaller, usePluginStore } from "../main"
 import { nanoid } from "nanoid/non-secure"
 import { computed, markRaw, ref, reactive } from "vue"
+import { EventList } from "../main"
 
 import _groupBy from "lodash/groupBy"
 
@@ -99,6 +100,10 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 
 	const rtcConnectionOptions = ref(new Array<SatelliteConnectionOption>())
 
+	const onConnection = new EventList<(satelliteId: string) => any>()
+	const onDisconnection = new EventList<(satelliteId: string) => any>()
+	const onMessage = new EventList<(satelliteId: string, data: object) => any>()
+
 	const mode = ref<"satellite" | "castmate">("castmate")
 
 	function getConnection(request: SatelliteConnectionRequestConfig) {
@@ -125,6 +130,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 			if (idx >= 0) connections.value.splice(idx, 1)
 
 			satelliteOnDeleted(self.id)
+			onDisconnection.run(self.id)
 		}
 
 		const sendState = () => {
@@ -136,9 +142,10 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 			self.controlChannel = markRaw(ev.channel)
 
 			self.controlChannel.onmessage = (ev) => {
-				console.log("RECEIVE DATA", ev.data)
 				try {
-					satelliteOnControlMessage(self.id, JSON.parse(ev.data))
+					const data = JSON.parse(ev.data)
+					satelliteOnControlMessage(self.id, data)
+					onMessage.run(self.id, data)
 				} catch (err) {
 					console.error("ERROR", err)
 				}
@@ -146,6 +153,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 
 			//NOTE: We wait until here to set connected since the connected event can arrive before the data channel
 			self.state = "connected"
+			onConnection.run(self.id)
 			sendState()
 		}
 
@@ -205,10 +213,15 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 
 		self.controlChannel = dataChannel
 
-		// self.controlChannel.onmessage = (ev) => {
-		// 	console.log("RECEIVE DATA", ev.data)
-		// 	satelliteOnControlMessage(self.id, JSON.parse(ev.data))
-		// }
+		self.controlChannel.onmessage = (ev) => {
+			try {
+				const data = JSON.parse(ev.data)
+				satelliteOnControlMessage(self.id, data)
+				onMessage.run(self.id, data)
+			} catch (err) {
+				console.error("ERROR", err)
+			}
+		}
 
 		self.connection.onicecandidate = async (ev) => {
 			if (!ev.candidate) return
@@ -348,6 +361,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 
 		handleIpcMessage("satellite", "sendRTCMessage", async (event, id: string, data: string) => {
 			const connection = connections.value.find((c) => c.id == id)
+			if (!connection?.controlChannel) throw new Error("Tried to Send without Control Channel")
 			console.log("SEND RTC", connection?.controlChannel, id, data)
 			connection?.controlChannel?.send(data)
 		})
@@ -357,7 +371,16 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 		const connection = startDashboardConnection(request)
 	}
 
-	return { initialize, connectToCastMate, connections, rtcConnectionOptions, refreshConnections }
+	return {
+		initialize,
+		connectToCastMate,
+		connections,
+		rtcConnectionOptions,
+		refreshConnections,
+		onMessage,
+		onConnection,
+		onDisconnection,
+	}
 })
 
 export function useGroupedDashboardRTCConnectionOptions() {
@@ -377,4 +400,9 @@ export function usePrimarySatelliteConnection() {
 		if (satelliteStore.connections.length == 0) return undefined
 		return satelliteStore.connections[0]
 	})
+}
+
+export function useOnSatelliteMessage(func: (satelliteId: string, data: object) => any) {
+	const satelliteStore = useSatelliteConnection()
+	satelliteStore.onMessage.register(func)
 }

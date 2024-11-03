@@ -12,8 +12,13 @@ export interface DashboardPageView {
 	sections: DashboardSectionView[]
 }
 
+export interface DashboardResourceSlotView {
+	id: string
+}
+
 export interface DashboardView {
 	scrollX: number
 	scrollY: number
 	pages: DashboardPageView[]
+	slots: DashboardResourceSlotView[]
 }

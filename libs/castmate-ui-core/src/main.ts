@@ -67,6 +67,8 @@ export { default as BooleanExpressionValueEdit } from "./components/data/base-co
 
 export { default as ViewerVariableSelector } from "./components/viewer-data/ViewerVariableSelector.vue"
 
+export { default as SatelliteResourceSlotBindingEdit } from "./components/satellite/SatelliteResourceSlotBindingEdit.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"
@@ -80,6 +82,7 @@ export * from "./util/selection"
 export * from "./util/arrays"
 export * from "./util/generic-login"
 export * from "./util/init-store"
+export * from "./util/events"
 
 export * from "./plugins/plugin-store"
 export * from "./project/project-store"
@@ -95,6 +98,7 @@ export * from "./components/stream-plan/stream-plan-types"
 export * from "./viewer-data/viewer-data-store"
 
 export * from "./satellite/satellite-connection"
+export * from "./satellite/satellite-resources"
 
 export * from "./util/panning"
 

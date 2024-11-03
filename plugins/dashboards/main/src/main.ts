@@ -1,5 +1,5 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, defineSatellitePlugin } from "castmate-core"
-import { setupDashboardResources } from "./dashboard-resource"
+import { Dashboard, setupDashboardResources } from "./dashboard-resource"
 import { DashboardWidgetManager } from "./dashboard-widgets"
 import { setupConfigEval } from "./dashboard-config-eval"
 import { DashboardAccessService, setupDashboardSatellite } from "./dashboard-access"
@@ -19,6 +19,10 @@ export default definePlugin(
 		setupDashboardResources()
 	}
 )
+
+export async function finishInitDashboards() {
+	await Dashboard.finishInitResourceSlots()
+}
 
 export const dashboardSatellite = defineSatellitePlugin(
 	{

@@ -5,6 +5,7 @@ import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer"
 import { app, BrowserWindow, ipcMain, contentTracing } from "electron"
 import { createWindow } from "./electron/electron-helpers"
 import { initializeCastMate, finializeCastMateSetup, loadAutomations, setupCastMateDirectories } from "castmate-core"
+import { finishInitDashboards } from "castmate-plugin-dashboards-main"
 import { loadPlugins } from "./plugins"
 import { checkMigration, finishMigration, migrateAllOldAutomations } from "./migration/old-migration"
 
@@ -85,6 +86,9 @@ app.whenReady().then(async () => {
 	await finishMigration()
 
 	await finializeCastMateSetup()
+
+	//HACK HACK HACK HACK HACK
+	await finishInitDashboards()
 
 	//await testMigrate()
 })

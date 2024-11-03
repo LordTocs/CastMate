@@ -35,6 +35,7 @@
 					</template>
 				</document-data-collection>
 
+				<dashboard-slots-edit v-model="model.resourceSlots" v-model:view="view.slots" />
 				<dashboard-permissions-edit v-model="model.remoteTwitchIds" />
 				<div style="height: 15rem"></div>
 			</scrolling-tab-body>
@@ -58,7 +59,7 @@ import DashboardPageEdit from "./DashboardPageEdit.vue"
 import { nanoid } from "nanoid/non-secure"
 import { useDialog } from "primevue/usedialog"
 import DashboardPermissionsEdit from "./DashboardPermissionsEdit.vue"
-
+import DashboardSlotsEdit from "./DashboardSlotsEdit.vue"
 const props = defineProps<{
 	modelValue: DashboardConfig
 	view: DashboardView

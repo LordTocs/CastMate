@@ -1,5 +1,14 @@
 import { PlugConfig, PlugState } from "castmate-plugin-iot-shared"
-import { Resource, ResourceStorage, defineAction, definePluginResource } from "castmate-core"
+import {
+	Resource,
+	ResourceStorage,
+	SatelliteResourceSymbol,
+	SatelliteResources,
+	defineAction,
+	definePluginResource,
+	defineSatelliteResourceSlotHandler,
+	usePluginLogger,
+} from "castmate-core"
 import { Toggle } from "castmate-schema"
 
 export class PlugResource<Config extends PlugConfig = PlugConfig, State extends PlugState = PlugState> extends Resource<
@@ -9,6 +18,25 @@ export class PlugResource<Config extends PlugConfig = PlugConfig, State extends 
 	static storage = new ResourceStorage<PlugResource>("Plug")
 
 	async setPlugState(on: Toggle) {}
+}
+
+export class SatellitePlug extends PlugResource {
+	static [SatelliteResourceSymbol] = true
+
+	constructor() {
+		super()
+		this._config = {
+			name: "",
+			provider: "satellite",
+			providerId: "",
+		}
+
+		this.state = { on: true }
+	}
+
+	async setPlugState(on: Toggle): Promise<void> {
+		await SatelliteResources.getInstance().callResourceRPC(this.id, "setPlugState", on)
+	}
 }
 
 export class PollingPlug<
@@ -35,8 +63,22 @@ export class PollingPlug<
 	async poll() {}
 }
 
-export function setupPlugs() {
+export function setupPlugs(mode: "castmate" | "satellite") {
+	const logger = usePluginLogger()
+
 	definePluginResource(PlugResource)
+
+	defineSatelliteResourceSlotHandler(PlugResource, {
+		satelliteConstructor: SatellitePlug,
+		rpcs: {
+			async setPlugState(resource, on: Toggle) {
+				logger.log("Satellite Plug Toggle", on)
+				await resource.setPlugState(on)
+			},
+		},
+	})
+
+	if (mode == "satellite") return
 
 	defineAction({
 		id: "plug",

@@ -1,8 +1,18 @@
 import { SoundOutputConfig, WebAudioDeviceInfo } from "castmate-plugin-sound-shared"
-import { Resource, ResourceStorage, PluginManager, definePluginResource, onUILoad, onLoad } from "castmate-core"
+import {
+	Resource,
+	ResourceStorage,
+	PluginManager,
+	definePluginResource,
+	onUILoad,
+	onLoad,
+	SatelliteResourceSymbol,
+	SatelliteResources,
+} from "castmate-core"
 import { AudioDevice, AudioDeviceInterface } from "castmate-plugin-sound-native"
 import { defineCallableIPC, defineIPCRPC } from "castmate-core/src/util/electron"
 import { RendererSoundPlayer } from "./renderer-sound-player"
+import { nanoid } from "nanoid/non-secure"
 
 export class SoundOutput<
 	ExtendedSoundConfig extends SoundOutputConfig = SoundOutputConfig
@@ -12,6 +22,24 @@ export class SoundOutput<
 	async playFile(file: string, startSec: number, endSec: number, volume: number, abortSignal: AbortSignal) {
 		console.error("Don't enter here!")
 		return false
+	}
+}
+
+export class SatelliteSoundOutput extends SoundOutput {
+	static [SatelliteResourceSymbol] = true
+
+	async playFile(
+		file: string,
+		startSec: number,
+		endSec: number,
+		volume: number,
+		abortSignal: AbortSignal
+	): Promise<boolean> {
+		const playId = nanoid()
+
+		SatelliteResources.getInstance().callResourceRPC(this.id, "playFile", playId, file, startSec, endSec, volume)
+
+		return true
 	}
 }
 

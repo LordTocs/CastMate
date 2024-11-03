@@ -46,6 +46,7 @@ export function initPlugin(app: App<Element>) {
 						}),
 					}
 				}),
+				slots: resource.config.resourceSlots.map((s) => ({ id: s.id })),
 			}
 		},
 	})

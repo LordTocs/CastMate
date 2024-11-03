@@ -13,6 +13,9 @@ import { usePluginLogger } from "../logging/logging"
 import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
 import { onLoad, onUnload } from "../plugins/plugin"
 import { EventList } from "../util/events"
+import { SatelliteResourceConstructor } from "./satellite-resource"
+import { nanoid } from "nanoid/non-secure"
+import { Resource } from "../resources/resource"
 
 //WebRTC connections are maintained out of the renderer process since no good node-webrtc libs exist
 
@@ -61,6 +64,12 @@ export const SatelliteService = Service(
 
 		getConnection(id: string) {
 			return this.rtcConnections.get(id)
+		}
+
+		getCastMateConnection() {
+			if (this.mode == "castmate") throw new Error("This is for satellite only")
+			const connection = this.rtcConnections.keys().next()
+			return connection.done ? undefined : connection.value
 		}
 
 		private rpcHandler = new RPCHandler()

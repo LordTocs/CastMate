@@ -1,5 +1,12 @@
-import { definePluginResource, FileResource, ResourceStorage, SatelliteService, usePluginLogger } from "castmate-core"
-import { DashboardConfig, InitialDashboardConfig } from "castmate-plugin-dashboards-shared"
+import {
+	definePluginResource,
+	FileResource,
+	ResourceStorage,
+	SatelliteResources,
+	SatelliteService,
+	usePluginLogger,
+} from "castmate-core"
+import { DashboardConfig, DashboardResourceSlot, InitialDashboardConfig } from "castmate-plugin-dashboards-shared"
 import { nanoid } from "nanoid/non-secure"
 import { coreAxios } from "castmate-core"
 import _isEqual from "lodash/isEqual"
@@ -25,6 +32,7 @@ export class Dashboard extends FileResource<DashboardConfig> {
 			name: initialName ?? "",
 			pages: [],
 			remoteTwitchIds: [],
+			resourceSlots: [],
 		}
 	}
 
@@ -73,8 +81,63 @@ export class Dashboard extends FileResource<DashboardConfig> {
 		}
 	}
 
+	private async updateResourceSlots(updatedSlots: DashboardResourceSlot[]) {
+		const existingSlots = this.config.resourceSlots
+
+		const deleteSlots = new Array<string>()
+		const createSlots = new Array<{ id: string; type: string; name: string }>()
+
+		for (const existingSlot of existingSlots) {
+			const updated = updatedSlots.find((s) => s.id == existingSlot.id)
+
+			if (!updated || existingSlot.slotType != updated.slotType) {
+				deleteSlots.push(existingSlot.id)
+			}
+		}
+
+		for (const updatedSlot of updatedSlots) {
+			const existing = existingSlots.find((s) => s.id == updatedSlot.id)
+
+			if (!existing || existing.slotType != updatedSlot.slotType) {
+				createSlots.push({ id: updatedSlot.id, type: updatedSlot.slotType, name: updatedSlot.name })
+			}
+		}
+
+		for (const deleteSlot of deleteSlots) {
+			await SatelliteResources.getInstance().deleteRemoteResourceSlot(deleteSlot)
+		}
+
+		for (const createSlot of createSlots) {
+			await SatelliteResources.getInstance().createRemoteResourceSlot(
+				createSlot.id,
+				createSlot.type,
+				createSlot.name
+			)
+		}
+
+		for (const slot of updatedSlots) {
+			await SatelliteResources.getInstance().enforceRemoteSlotName(slot.id, slot.name)
+		}
+	}
+
+	async load(savedConfig: DashboardConfig): Promise<boolean> {
+		//this.updateResourceSlots(savedConfig.resourceSlots)
+		return await super.load(savedConfig)
+	}
+
+	static async finishInitResourceSlots() {
+		for (const dashboard of this.storage) {
+			for (const slot of dashboard.config.resourceSlots) {
+				await SatelliteResources.getInstance().createRemoteResourceSlot(slot.id, slot.slotType, slot.name)
+			}
+		}
+	}
+
 	async setConfig(config: DashboardConfig): Promise<boolean> {
 		let needsCloudUpdate = !_isEqual(config.remoteTwitchIds, this.config?.remoteTwitchIds)
+
+		await this.updateResourceSlots(config.resourceSlots)
+
 		const result = await super.setConfig(config)
 
 		if (needsCloudUpdate) {
@@ -91,6 +154,10 @@ export class Dashboard extends FileResource<DashboardConfig> {
 	async applyConfig(config: Partial<DashboardConfig>): Promise<boolean> {
 		let needsCloudUpdate =
 			"remoteTwitchIds" in config && !_isEqual(config.remoteTwitchIds, this.config.remoteTwitchIds)
+
+		if (config.resourceSlots) {
+			await this.updateResourceSlots(config.resourceSlots)
+		}
 
 		const result = await super.applyConfig(config)
 
@@ -118,6 +185,10 @@ export class Dashboard extends FileResource<DashboardConfig> {
 					Authorization: `Bearer ${TwitchAccount.channel.secrets.accessToken}`,
 				},
 			})
+		}
+
+		for (const slot of resource.config.resourceSlots) {
+			await SatelliteResources.getInstance().deleteRemoteResourceSlot(slot.id)
 		}
 
 		await super.onDelete(resource)

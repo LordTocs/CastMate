@@ -36,7 +36,7 @@ import "@mdi/font/css/materialdesignicons.css"
 import { createPinia } from "pinia"
 import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import AutomationEditPageVue from "./components/automation/AutomationEditPage.vue"
-import { initData, StreamPlanEditorPage } from "castmate-ui-core"
+import { initData, StreamPlanEditorPage, useSatelliteResourceStore } from "castmate-ui-core"
 
 import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
 import { initPlugin as initVariablesPlugin } from "castmate-plugin-variables-renderer"
@@ -108,6 +108,7 @@ const mediaStore = useMediaStore()
 const planStore = useStreamPlanStore()
 
 const satelliteStore = useSatelliteConnection()
+const satelliteResources = useSatelliteResourceStore()
 
 const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
@@ -172,6 +173,7 @@ async function init() {
 	await mediaStore.initialize()
 
 	await satelliteStore.initialize("castmate")
+	await satelliteResources.initialize()
 
 	loadOverlayWidgets()
 	loadDashboardWidgets()

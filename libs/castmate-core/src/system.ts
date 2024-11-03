@@ -22,6 +22,7 @@ import { InfoService } from "./info/info-manager"
 import { AnalyticsService } from "./analytics/analytics-manager"
 import { ViewerData } from "./viewer-data/viewer-data"
 import { SatelliteService } from "./satellite/satellite-service"
+import { SatelliteResources } from "./satellite/satellite-resource"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -92,6 +93,7 @@ export async function initializeCastMate() {
 	ResourceRegistry.initialize()
 	PubSubManager.initialize("castmate")
 	SatelliteService.initialize("castmate")
+	SatelliteResources.initialize("castmate")
 	SequenceResolvers.initialize()
 	EmoteCache.initialize()
 	setupStreamPlans()
@@ -142,6 +144,7 @@ export async function initializeCastMateSatellite() {
 	ResourceRegistry.initialize()
 	PubSubManager.initialize("satellite")
 	SatelliteService.initialize("satellite")
+	SatelliteResources.initialize("satellite")
 	SatelliteService.getInstance().startListening()
 	//SequenceResolvers.initialize()
 	//EmoteCache.initialize()

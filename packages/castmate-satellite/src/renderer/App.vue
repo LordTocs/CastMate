@@ -11,7 +11,10 @@
 				<h3>Connecting to CastMate</h3>
 				<p-progress-spinner />
 			</template>
-			<dashboard-page v-else-if="connection.state == 'connected'" />
+			<template v-else-if="connection.state == 'connected'">
+				<dashboard-page v-if="pageStore.page == 'dashboard'" />
+				<slots-page v-else-if="pageStore.page == 'slots'" />
+			</template>
 		</div>
 		<div class="load-row" v-else>
 			<h3>Loading CastMate Satellite</h3>
@@ -33,8 +36,12 @@ import PConfirmDialog from "primevue/confirmdialog"
 
 import ConnectionPage from "./components/pages/ConnectionPage.vue"
 import DashboardPage from "./components/pages/DashboardPage.vue"
+import SlotsPage from "./components/pages/SlotsPage.vue"
+import { usePageStore } from "./util/page-store"
 
 const initStore = useInitStore()
+
+const pageStore = usePageStore()
 
 const connection = usePrimarySatelliteConnection()
 

@@ -8,6 +8,7 @@ interface ResourceEntry<T extends ResourceBase = any> {
 	constructor: ResourceConstructor<T>
 	storage: ResourceStorage<T>
 	ipcFuncs: string[]
+	satelliteFuncs: string[]
 }
 
 export async function createResource<T extends ResourceBase>(constructor: ResourceConstructor<T>, ...args: any[]) {
@@ -128,6 +129,7 @@ export const ResourceRegistry = Service(
 				constructor,
 				storage: constructor.storage,
 				ipcFuncs: [],
+				satelliteFuncs: []
 			})
 
 			rendererAddResourceType(constructor.storage.name)
@@ -153,6 +155,12 @@ export const ResourceRegistry = Service(
 			const resourceType = this.getResourceType(constructor.storage.name)
 			if (!resourceType) return
 			resourceType.ipcFuncs.push(name as string)
+		}
+
+		exposeSatelliteFunction<T extends ResourceBase>(constructor: ResourceConstructor<T>, name: keyof T) {
+			const resourceType = this.getResourceType(constructor.storage.name)
+			if (!resourceType) return
+			resourceType.satelliteFuncs.push(name as string)
 		}
 
 		getResourceType<T extends ResourceBase>(typeName: string) {

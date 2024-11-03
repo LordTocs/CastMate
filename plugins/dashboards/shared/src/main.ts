@@ -58,11 +58,19 @@ export interface DashboardPage {
 	sections: DashboardSection[]
 }
 
+export interface DashboardResourceSlot {
+	id: string
+	name: string
+	slotType: string
+	config: object
+}
+
 export interface DashboardConfig {
 	name: string
 	pages: DashboardPage[]
 	remoteTwitchIds: string[]
 	cloudId?: string
+	resourceSlots: DashboardResourceSlot[]
 }
 
 export interface InitialDashboardConfig {

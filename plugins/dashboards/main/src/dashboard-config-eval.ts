@@ -73,6 +73,7 @@ export async function createDashboardConfigEvaluator(
 				})
 			),
 			remoteTwitchIds: evaluator.config.remoteTwitchIds,
+			resourceSlots: evaluator.config.resourceSlots,
 		}
 
 		ignoreReactivity(() => sender(evaluator.remoteConfig))

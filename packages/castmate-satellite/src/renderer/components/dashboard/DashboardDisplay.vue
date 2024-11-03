@@ -5,6 +5,9 @@
 			<div class="flex-grow-1 text-center">
 				{{ currentPage?.name }}
 			</div>
+			<p-button @click="pageStore.page = 'slots'" size="small" class="mx-3">
+				<i class="mdi mdi-cog"></i> Slots
+			</p-button>
 			<p-button icon="mdi mdi-arrow-right-bold" :disabled="!hasRight" @click="pageRight"></p-button>
 		</div>
 		<dashboard-page :page="currentPage" v-if="currentPage"> </dashboard-page>
@@ -18,8 +21,11 @@ import { DashboardConfig } from "castmate-plugin-dashboards-shared"
 import { computed, ref } from "vue"
 import { useDashboardRTCBridge } from "../../util/dashboard-rtc-bridge"
 import PButton from "primevue/button"
+import { usePageStore } from "../../util/page-store"
 
 const currentPageIndex = ref(0)
+
+const pageStore = usePageStore()
 
 const clampedPageIndex = computed(() => {
 	return Math.min(Math.max(currentPageIndex.value, 0), bridge.config.pages.length - 1)

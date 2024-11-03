@@ -78,6 +78,7 @@ function createNewSection(): [DashboardSection, DashboardSectionView] {
 			id,
 			name: "",
 			widgets: [],
+			columns: 4,
 		},
 		{
 			id,

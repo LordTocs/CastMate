@@ -1,5 +1,5 @@
 import { DashboardConfig } from "castmate-plugin-dashboards-shared"
-import { usePrimarySatelliteConnection } from "castmate-ui-core"
+import { useOnSatelliteMessage, usePrimarySatelliteConnection, useSatelliteResourceStore } from "castmate-ui-core"
 import { defineStore } from "pinia"
 import { computed, MaybeRefOrGetter, ref, toValue, watch } from "vue"
 
@@ -13,6 +13,7 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 		name: "Loading Dashboard",
 		remoteTwitchIds: [],
 		pages: [],
+		resourceSlots: [],
 	})
 
 	const stateStore = ref<Record<string, Record<string, any>>>({})
@@ -25,34 +26,48 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 
 	const sender = (data: RPCMessage) => connection.value?.controlChannel?.send(JSON.stringify(data))
 
-	watch(
-		connection,
-		(value, oldValue) => {
-			console.log("WHY NO CALLBACK???")
-			if (!value) return
+	const satelliteResources = useSatelliteResourceStore()
 
-			if (connection.value?.state != "connected") return
+	useOnSatelliteMessage(async (satelliteId: string, data: object) => {
+		rpcs.handleMessage(data as RPCMessage, sender)
+	})
 
-			console.log("REGISTER DASHBOARD RTC HOOK")
-
-			if (!connection.value?.controlChannel) {
-				console.log("MISSING CONTROL CHANNEL!")
-				return
-			}
-
-			connection.value.controlChannel.onmessage = (ev) => {
-				try {
-					const data = JSON.parse(ev.data)
-
-					rpcs.handleMessage(data as RPCMessage, sender)
-				} catch (err) {}
-			}
-		},
-		{ deep: true, immediate: true }
-	)
-
-	rpcs.handle("dashboard_setConfig", (configData: DashboardConfig) => {
+	rpcs.handle("dashboard_setConfig", async (configData: DashboardConfig) => {
 		console.log("Dashboard Config Set", configData)
+
+		//Find new and deleted resource slots
+		const existingSlots = config.value.resourceSlots ?? []
+		const updatedSlots = configData.resourceSlots ?? []
+
+		const deleteSlots = new Array<string>()
+		const createSlots = new Array<{ id: string; type: string; name: string }>()
+
+		for (const existingSlot of existingSlots) {
+			const updated = updatedSlots.find((s) => s.id == existingSlot.id)
+
+			if (!updated || existingSlot.slotType != updated.slotType) {
+				deleteSlots.push(existingSlot.id)
+			}
+		}
+
+		//TODO: how to update name???
+
+		for (const updatedSlot of updatedSlots) {
+			const existing = existingSlots.find((s) => s.id == updatedSlot.id)
+
+			if (!existing || existing.slotType != updatedSlot.slotType) {
+				createSlots.push({ id: updatedSlot.id, type: updatedSlot.slotType, name: updatedSlot.name })
+			}
+		}
+
+		for (const deleteSlot of deleteSlots) {
+			await satelliteResources.deleteSlotBinding(deleteSlot)
+		}
+
+		for (const createSlot of createSlots) {
+			await satelliteResources.createSlotBinding(createSlot.id, createSlot.type, createSlot.name)
+		}
+
 		config.value = configData
 	})
 

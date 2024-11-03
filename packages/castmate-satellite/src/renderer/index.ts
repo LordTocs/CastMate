@@ -5,7 +5,14 @@ import PrimeVue from "primevue/config"
 import DialogService from "primevue/dialogservice"
 import ConfirmationService from "primevue/confirmationservice"
 
-import { useInitStore, usePluginStore, useResourceStore, useSatelliteConnection } from "castmate-ui-core"
+import {
+	initData,
+	useInitStore,
+	usePluginStore,
+	useResourceStore,
+	useSatelliteConnection,
+	useSatelliteResourceStore,
+} from "castmate-ui-core"
 
 import "./theme/castmate/theme.scss"
 import "./css/theme-ext.css"
@@ -48,10 +55,14 @@ const resourceStore = useResourceStore()
 
 const satelliteStore = useSatelliteConnection()
 
+const satelliteResources = useSatelliteResourceStore()
+
 async function init() {
 	await initStore.initialize()
 
 	await initStore.waitForInitialSetup()
+
+	await initData()
 
 	await pluginStore.initialize()
 	await resourceStore.initialize()
@@ -59,6 +70,8 @@ async function init() {
 	await initStore.waitForInit()
 
 	await satelliteStore.initialize("satellite")
+
+	await satelliteResources.initialize()
 
 	loadDashboardWidgets()
 }

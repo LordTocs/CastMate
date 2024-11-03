@@ -19,7 +19,15 @@
 		"archiver": "^7.0.1",
 		"castmate-core": "workspace:^",
 		"castmate-plugin-dashboards-shared": "workspace:^",
+		"castmate-plugin-elgato-main": "workspace:^",
+		"castmate-plugin-govee-main": "workspace:^",
+		"castmate-plugin-iot-main": "workspace:^",
+		"castmate-plugin-lifx-main": "workspace:^",
+		"castmate-plugin-philips-hue-main": "workspace:^",
+		"castmate-plugin-tplink-kasa-main": "workspace:^",
+		"castmate-plugin-twinkly-main": "workspace:^",
 		"castmate-plugin-twitch-main": "workspace:^",
+		"castmate-plugin-wyze-main": "workspace:^",
 		"castmate-schema": "workspace:^"
 	},
 	"devDependencies": {
