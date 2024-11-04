@@ -21,7 +21,7 @@ import { createDashboardConfigEvaluator, DashboardConfigEvaluator } from "./dash
 import { DashboardConfig } from "castmate-plugin-dashboards-shared"
 import { DashboardWidgetManager } from "./dashboard-widgets"
 
-const API_BASE_URL = import.meta.env.VITE_CASTMATE_URL
+const API_BASE_URL = "https://api.castmate.io"
 
 interface RemoteDashboardInfo {
 	ownerId: string
