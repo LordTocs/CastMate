@@ -202,8 +202,14 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 			this.state.replayBuffering = outputActive
 		})
 
-		this.connection.on("VirtualcamStateChanged", ({ outputActive }) => {
-			this.state.virtualCamming = outputActive
+		try {
+			this.connection.on("VirtualcamStateChanged", ({ outputActive }) => {
+				this.state.virtualCamming = outputActive
+			})
+		} catch (err) {}
+
+		this.connection.on("StudioModeStateChanged", ({ studioModeEnabled }) => {
+			this.state.studioModeEnabled = studioModeEnabled
 		})
 
 		this.connection.on("StudioModeStateChanged", ({ studioModeEnabled }) => {
@@ -242,12 +248,15 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 			this.state.replayBuffering = replayStatus.outputActive
 		} catch {}
 
-		const virtualCamStatus = await this.connection.call("GetVirtualCamStatus")
-
 		this.state.streaming = streamStatus.outputActive
 		this.state.recording = recordStatus.outputActive
 
-		this.state.virtualCamming = virtualCamStatus.outputActive
+		try {
+			const virtualCamStatus = await this.connection.call("GetVirtualCamStatus")
+			this.state.virtualCamming = virtualCamStatus.outputActive
+		} catch (err) {
+			this.state.virtualCamming = false
+		}
 
 		const sceneResp = await this.connection.call("GetCurrentProgramScene")
 		this.state.scene = sceneResp.currentProgramSceneName

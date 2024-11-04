@@ -1,4 +1,4 @@
-import { ReactiveRef, defineAction, registerSchemaTemplate, templateNumber } from "castmate-core"
+import { ReactiveRef, defineAction, registerSchemaTemplate, templateNumber, usePluginLogger } from "castmate-core"
 import {
 	OBSSourceTransform,
 	ResolvedOBSSourceTransform,
@@ -8,6 +8,8 @@ import {
 import { OBSConnection } from "./connection"
 
 export function setupTransforms(obsDefault: ReactiveRef<OBSConnection>) {
+	const logger = usePluginLogger()
+
 	defineAction({
 		id: "transform",
 		name: "Source Transform",
@@ -49,10 +51,13 @@ export function setupTransforms(obsDefault: ReactiveRef<OBSConnection>) {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
+			const obsTransform = transformToOBSWS(config.transform)
+			logger.log("Sending Transform", obsTransform)
+
 			await config.obs.connection.call("SetSceneItemTransform", {
 				sceneName: config.scene,
 				sceneItemId: config.source,
-				sceneItemTransform: transformToOBSWS(config.transform),
+				sceneItemTransform: obsTransform,
 			})
 		},
 	})
