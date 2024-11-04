@@ -122,7 +122,7 @@ export const DashboardAccessService = Service(
 					connections: [satelliteId],
 					evaluator: await createDashboardConfigEvaluator(dashboard.config, async (resolvedConfig) => {
 						if (!openData) return
-						logger.log("Dashboard Config Update", resolvedConfig)
+						//logger.log("Dashboard Config Update", resolvedConfig)
 
 						for (const connectionId of openData.connections) {
 							await SatelliteService.getInstance().callSatelliteRPC<(config: DashboardConfig) => any>(
@@ -236,7 +236,7 @@ export const DashboardAccessService = Service(
 			this.widgetRPCs.delete(id)
 		}
 
-		async handleWidgetRPCRequest(satelliteId: string, id: string, from: string, ...args: any[]) {
+		async handleWidgetRPCRequest(satelliteId: string, rpcId: string, widgetId: string, ...args: any[]) {
 			const connection = SatelliteService.getInstance().getConnection(satelliteId)
 
 			const dashboardId = connection?.typeId
@@ -244,10 +244,10 @@ export const DashboardAccessService = Service(
 			const dashboard = Dashboard.storage.getById(dashboardId)
 			if (!dashboard) throw new Error("Unknown Dashboard")
 
-			const handler = this.widgetRPCs.get(id)
-			if (!handler) throw new Error("Unbound RPC")
+			const handler = this.widgetRPCs.get(rpcId)
+			if (!handler) throw new Error(`Unbound RPC "${rpcId}"`)
 
-			return await handler(dashboard, from, ...args)
+			return await handler(dashboard, widgetId, ...args)
 		}
 	}
 )
@@ -274,13 +274,14 @@ export function setupDashboardSatellite() {
 		await DashboardAccessService.getInstance().freeState(socket, plugin, state)
 	})
 
-	onSatelliteRPC("dashboard_widgetRPC", async (socket, id: string, from: string, ...args: any[]) => {
-		return await DashboardAccessService.getInstance().handleWidgetRPCRequest(socket, id, from, ...args)
+	onSatelliteRPC("dashboard_widgetRPC", async (satelliteId, id: string, widgetId: string, ...args: any[]) => {
+		return await DashboardAccessService.getInstance().handleWidgetRPCRequest(satelliteId, id, widgetId, ...args)
 	})
 }
 
 export function handleDashboardWidgetRPC<T extends DashboardWidgetRPCHandler>(id: string, func: T) {
 	onLoad(() => {
+		//logger.log("Registering Widget RPC", id)
 		DashboardAccessService.getInstance().handleWidgetRPC(id, func)
 	})
 

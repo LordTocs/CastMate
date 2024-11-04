@@ -169,6 +169,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 				self.controlChannel.onmessage = (ev) => {
 					try {
 						const data = JSON.parse(ev.data)
+						//console.log("REC RTC", data)
 						rpcs.handleMessage(data, (data) => self.controlChannel?.send(JSON.stringify(data)), self.id)
 						satelliteOnControlMessage(self.id, data)
 						onMessage.run(self.id, data)
@@ -415,7 +416,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 	}
 
 	function registerRPCHandler<T extends (connectionId: string, ...args: any[]) => any>(name: string, func: T) {
-		console.log("handling", name)
+		//console.log("Registering UI RPC", name)
 		rpcs.handle(name, func)
 	}
 

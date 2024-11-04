@@ -28,8 +28,6 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 	const widgetRpcs: Record<string, (...args: any) => any> = {}
 	const widgetBroadcastHandlers: Record<string, ((...args: any) => any)[]> = {}
 
-	const sender = (data: RPCMessage) => connection.value?.controlChannel?.send(JSON.stringify(data))
-
 	const satelliteResources = useSatelliteResourceStore()
 
 	// useOnSatelliteMessage(async (satelliteId: string, data: object) => {
@@ -122,7 +120,7 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 			stateMeta[plugin][state] = { refCount: 1 }
 
 			if (!connection.value?.id) throw new Error("No RPC CONNECTION")
-			satelliteStore.callRPC(connection.value.id, "dashboard_acquireState", sender, plugin, state)
+			satelliteStore.callRPC(connection.value.id, "dashboard_acquireState", plugin, state)
 		} else {
 			meta.refCount += 1
 		}
@@ -140,7 +138,7 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 
 		if (meta.refCount == 0) {
 			if (!connection.value?.id) throw new Error("No RPC CONNECTION")
-			satelliteStore.callRPC(connection.value.id, "dashboard_freeState", sender, plugin, state)
+			satelliteStore.callRPC(connection.value.id, "dashboard_freeState", plugin, state)
 
 			delete stateMeta[plugin][state]
 			delete stateStore.value[plugin][state]
@@ -206,7 +204,6 @@ export const useDashboardRTCBridge = defineStore("dashboard-rtc-bridge", () => {
 				return await satelliteStore.callRPC(
 					connection.value.id,
 					"dashboard_widgetRPC",
-					sender,
 					id,
 					toValue(widgetId),
 					...args
