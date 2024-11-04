@@ -10,7 +10,7 @@ import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 
 const logger = usePluginLogger("pubsub")
 
-const baseURL = import.meta.env.VITE_CASTMATE_URL
+const baseURL = "https://api.castmate.io/"
 /**
  * PubSubManager connects to the azure-pubsub allowing realtime events from the cloud.
  */

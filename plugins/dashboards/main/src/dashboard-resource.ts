@@ -13,7 +13,7 @@ import _isEqual from "lodash/isEqual"
 import { TwitchAccount } from "castmate-plugin-twitch-main"
 import { DashboardAccessService } from "./dashboard-access"
 
-const API_BASE_URL = import.meta.env.VITE_CASTMATE_URL
+const API_BASE_URL = "https://api.castmate.io"
 
 const logger = usePluginLogger("dashboards")
 
