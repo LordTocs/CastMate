@@ -34,6 +34,32 @@ const googleStunServers = [
 	{ urls: "stun:stun4.l.google.com:5349" },
 ]
 
+const meteredSTUN = [
+	{
+		urls: "stun:stun.relay.metered.ca:80",
+	},
+	{
+		urls: "turn:global.relay.metered.ca:80",
+		username: "f264fb62658e24373813a648",
+		credential: "LQL8adYy2okPQr46",
+	},
+	{
+		urls: "turn:global.relay.metered.ca:80?transport=tcp",
+		username: "f264fb62658e24373813a648",
+		credential: "LQL8adYy2okPQr46",
+	},
+	{
+		urls: "turn:global.relay.metered.ca:443",
+		username: "f264fb62658e24373813a648",
+		credential: "LQL8adYy2okPQr46",
+	},
+	{
+		urls: "turns:global.relay.metered.ca:443?transport=tcp",
+		username: "f264fb62658e24373813a648",
+		credential: "LQL8adYy2okPQr46",
+	},
+]
+
 const satelliteConnectionRequest = useIpcCaller<(request: SatelliteConnectionRequest) => any>(
 	"satellite",
 	"satelliteConnectionRequest"
@@ -85,7 +111,7 @@ class SatelliteConnection {
 	private static createConnection() {
 		const connection = markRaw(
 			new RTCPeerConnection({
-				iceServers: googleStunServers,
+				iceServers: meteredSTUN,
 			})
 		)
 
