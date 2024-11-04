@@ -28,7 +28,7 @@ defineOptions({
 			type: Object,
 			properties: {
 				triggerName: { type: String, required: true, name: "Remote Button Trigger Name", template: true },
-				color: { type: Color, required: true, name: "Color", default: "#FF0000" },
+				color: { type: Color, required: true, name: "Color", default: "#FF0000", template: true },
 				displayName: { type: String, required: true, name: "Display Name", template: true },
 			},
 		},
