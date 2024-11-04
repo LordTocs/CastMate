@@ -75,11 +75,12 @@ module.exports = {
 		// 	to: "starter_media"
 		// }
 	],
-	// publish: [
-	// 	{
-	// 		provider: "github",
-	// 		owner: "LordTocs",
-	// 		repo: "CastMate",
-	// 	},
-	// ],
+	publish: [
+		{
+			provider: "github",
+			owner: "LordTocs",
+			repo: "CastMate",
+			channel: "satellite-latest",
+		},
+	],
 }
