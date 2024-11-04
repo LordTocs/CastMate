@@ -111,7 +111,7 @@ class SatelliteConnection {
 	private static createConnection() {
 		const connection = markRaw(
 			new RTCPeerConnection({
-				iceServers: meteredSTUN,
+				iceServers: [...googleStunServers, ...meteredSTUN],
 			})
 		)
 
