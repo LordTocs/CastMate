@@ -8,8 +8,10 @@
 			<dashboard-display /> -->
 			<connection-page v-if="!connection" class="flex-grow-1" />
 			<template v-else-if="connection.state == 'connecting'">
-				<h3>Connecting to CastMate</h3>
-				<p-progress-spinner />
+				<div class="load-row">
+					<h3>Connecting to CastMate</h3>
+					<p-progress-spinner />
+				</div>
 			</template>
 			<template v-else-if="connection.state == 'connected'">
 				<dashboard-page v-if="pageStore.page == 'dashboard'" />
