@@ -112,7 +112,7 @@
 				/>
 				<obs-transform-number-input
 					label="Height"
-					v-model="model.boundingBox.width"
+					v-model="model.boundingBox.height"
 					input-id="boundsHeight"
 					ws-prop="boundsHeight"
 					:can-template="canTemplate"

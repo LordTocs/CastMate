@@ -10,8 +10,7 @@ import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 
 const logger = usePluginLogger("pubsub")
 
-const baseURL = "https://api.spellcast.gg/"
-
+const baseURL = import.meta.env.VITE_CASTMATE_URL
 /**
  * PubSubManager connects to the azure-pubsub allowing realtime events from the cloud.
  */
@@ -28,7 +27,7 @@ export const PubSubManager = Service(
 		private onConnect = new EventList()
 		private onBeforeDisconnect = new EventList()
 
-		constructor() {}
+		constructor(private mode: "satellite" | "castmate") {}
 
 		setToken(token: string | undefined) {
 			logger.log("Cloud PubSub Received Auth Token")
@@ -93,7 +92,9 @@ export const PubSubManager = Service(
 			logger.log("Starting Cloud PubSub Connection")
 			this.connecting = true
 
-			const negotiationResp = await axios.get("/pubsub/negotiate", {
+			const negotiationUrl = this.mode == "castmate" ? "/pubsub/negotiate" : "/pubsub/satellite/negotiate"
+
+			const negotiationResp = await axios.get(negotiationUrl, {
 				baseURL,
 				headers: {
 					Authorization: `Bearer ${this.token}`,
@@ -170,6 +171,7 @@ export const PubSubManager = Service(
 		}
 
 		private checkEvents() {
+			logger.log("Checking Pubsbu Events")
 			if (this.onMessage.handlerCount == 0) {
 				this.stop()
 			} else {

@@ -10,6 +10,7 @@ import {
 	Profile,
 	usePluginLogger,
 } from "castmate-core"
+import { handleDashboardWidgetRPC } from "castmate-plugin-dashboards-main/src/dashboard-access"
 import { isString } from "castmate-schema"
 
 export default definePlugin(
@@ -44,6 +45,17 @@ export default definePlugin(
 			async handle(config, context, mapping) {
 				return config.name == context.name
 			},
+		})
+
+		handleDashboardWidgetRPC("pressbutton", (dashboard, widgetId, triggerName: string) => {
+			const widget = dashboard.getWidget(widgetId)
+			if (!widget) return
+
+			const remoteName = "triggerName" in widget.config ? (widget.config.triggerName as string) : undefined
+
+			if (!remoteName) return
+
+			remoteButton({ name: remoteName })
 		})
 
 		onLoad(() => {

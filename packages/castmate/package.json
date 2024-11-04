@@ -1,6 +1,6 @@
 {
 	"name": "castmate",
-	"version": "0.5.3",
+	"version": "0.5.4-beta",
 	"description": "CastMate",
 	"author": "LordTocs",
 	"scripts": {
@@ -17,6 +17,7 @@
 	"dependencies": {
 		"archiver": "^7.0.1",
 		"castmate-core": "workspace:^",
+		"castmate-plugin-dashboards-main": "workspace:^",
 		"castmate-plugin-discord-main": "workspace:^",
 		"castmate-plugin-elgato-main": "workspace:^",
 		"castmate-plugin-govee-main": "workspace:^",
@@ -47,10 +48,12 @@
 		"@mdi/font": "^7.1.96",
 		"@rollup/plugin-node-resolve": "^15.2.1",
 		"@types/archiver": "^6.0.2",
-		"@vitejs/plugin-vue": "*",
+		"@vitejs/plugin-vue": "4.6.2",
 		"@vueuse/core": "*",
+		"castmate-dashboard-widget-loader": "workspace:^",
 		"castmate-overlay-core": "workspace:^",
 		"castmate-overlay-widget-loader": "workspace:^",
+		"castmate-plugin-dashboards-renderer": "workspace:^",
 		"castmate-plugin-discord-renderer": "workspace:^",
 		"castmate-plugin-govee-renderer": "workspace:^",
 		"castmate-plugin-http-renderer": "workspace:^",
@@ -78,7 +81,7 @@
 		"castmate-vite": "workspace:^",
 		"chromatism2": "*",
 		"electron": "29.4.5",
-		"electron-builder": "^25.0.0-alpha.8",
+		"electron-builder": "^25.1.8",
 		"electron-devtools-installer": "^3.2.0",
 		"eslint": "^8.17.0",
 		"nanoid": "^5.0.7",

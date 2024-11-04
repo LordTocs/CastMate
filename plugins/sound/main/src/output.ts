@@ -1,8 +1,20 @@
 import { SoundOutputConfig, WebAudioDeviceInfo } from "castmate-plugin-sound-shared"
-import { Resource, ResourceStorage, PluginManager, definePluginResource, onUILoad, onLoad } from "castmate-core"
+import {
+	Resource,
+	ResourceStorage,
+	PluginManager,
+	definePluginResource,
+	onUILoad,
+	onLoad,
+	SatelliteResourceSymbol,
+	SatelliteResources,
+	defineSatelliteResourceSlotHandler,
+	SatelliteMedia,
+} from "castmate-core"
 import { AudioDevice, AudioDeviceInterface } from "castmate-plugin-sound-native"
 import { defineCallableIPC, defineIPCRPC } from "castmate-core/src/util/electron"
 import { RendererSoundPlayer } from "./renderer-sound-player"
+import { nanoid } from "nanoid/non-secure"
 
 export class SoundOutput<
 	ExtendedSoundConfig extends SoundOutputConfig = SoundOutputConfig
@@ -93,8 +105,82 @@ export class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
 
 const getOutputWebId = defineIPCRPC<(name: string) => string | undefined>("sound", "getOutputWebId")
 
+export class SatelliteSoundOutput extends SoundOutput {
+	static [SatelliteResourceSymbol] = true
+
+	constructor() {
+		super()
+		this._config = {
+			name: "",
+		}
+		this.state = {}
+	}
+
+	async playFile(
+		file: string,
+		startSec: number,
+		endSec: number,
+		volume: number,
+		abortSignal: AbortSignal
+	): Promise<boolean> {
+		const playId = nanoid()
+
+		abortSignal.onabort = () => SatelliteResources.getInstance().callResourceRPC(this.id, "abortPlay", playId)
+		await SatelliteResources.getInstance().callResourceRPC(
+			this.id,
+			"playFile",
+			playId,
+			file,
+			startSec,
+			endSec,
+			volume
+		)
+
+		return true
+	}
+}
+
 export function setupOutput() {
 	definePluginResource(SoundOutput)
+
+	const satelliteAbortMap = new Map<string, AbortController>()
+
+	defineSatelliteResourceSlotHandler(SoundOutput, {
+		satelliteConstructor: SatelliteSoundOutput,
+		rpcs: {
+			playFile: async (
+				resource,
+				playId: string,
+				file: string,
+				startSec: number,
+				endSec: number,
+				volume: number
+			) => {
+				try {
+					const mediaFile = await SatelliteMedia.getInstance().getMediaFile(file)
+
+					const abortController = new AbortController()
+
+					satelliteAbortMap.set(playId, abortController)
+
+					await resource.playFile(
+						mediaFile,
+						startSec ?? 0,
+						endSec ?? Number.POSITIVE_INFINITY,
+						volume,
+						abortController.signal
+					)
+				} catch (err) {
+				} finally {
+					satelliteAbortMap.delete(playId)
+				}
+			},
+			abortPlay: async (resource, playId: string) => {
+				const aborter = satelliteAbortMap.get(playId)
+				aborter?.abort()
+			},
+		},
+	})
 
 	let audioDeviceInterface: AudioDeviceInterface
 

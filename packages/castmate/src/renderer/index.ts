@@ -1,4 +1,3 @@
-import { useInitStore } from "./store/init-store"
 import {
 	initializeProfiles,
 	initializeAutomations,
@@ -11,6 +10,9 @@ import {
 	useIpcCaller,
 	initializeStreamPlans,
 	useStreamPlanStore,
+	useInitStore,
+	useSatelliteConnection,
+	useSatelliteMedia,
 } from "castmate-ui-core"
 import { createApp } from "vue"
 import App from "./App.vue"
@@ -35,7 +37,7 @@ import "@mdi/font/css/materialdesignicons.css"
 import { createPinia } from "pinia"
 import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
 import AutomationEditPageVue from "./components/automation/AutomationEditPage.vue"
-import { initData, StreamPlanEditorPage } from "castmate-ui-core"
+import { initData, StreamPlanEditorPage, useSatelliteResourceStore } from "castmate-ui-core"
 
 import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
 import { initPlugin as initVariablesPlugin } from "castmate-plugin-variables-renderer"
@@ -56,18 +58,21 @@ import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
 import { initPlugin as initOverlaysPlugin } from "castmate-plugin-overlays-renderer"
 import { initPlugin as initSpellCastPlugin } from "castmate-plugin-spellcast-renderer"
 
+import { initPlugin as initDashboardPlugin } from "castmate-plugin-dashboards-renderer"
+
 import { initPlugin as initRandomPlugin } from "castmate-plugin-random-renderer"
 
 import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
 
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
+import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
 
 import { useDashboardStore } from "./util/dashboard-store"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
 import Tooltip from "primevue/tooltip"
 import { IPCOverlayWidgetDescriptor } from "castmate-plugin-overlays-shared"
-import { sendOverlaysToMain } from "./util/overlay-util"
+import { sendDashboardsToMain, sendOverlaysToMain } from "./util/overlay-util"
 import { setupProxyDialogService } from "../../../../libs/castmate-ui-core/src/util/dialog-helper"
 
 /*
@@ -103,6 +108,10 @@ const dashboardStore = useDashboardStore()
 const mediaStore = useMediaStore()
 const planStore = useStreamPlanStore()
 
+const satelliteStore = useSatelliteConnection()
+const satelliteResources = useSatelliteResourceStore()
+const satelliteMedia = useSatelliteMedia()
+
 const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
 async function init() {
@@ -137,6 +146,8 @@ async function init() {
 
 	await initOverlaysPlugin(app)
 
+	await initDashboardPlugin(app)
+
 	await initVariablesPlugin()
 	await initTwitchPlugin(app)
 	await initSpellCastPlugin(app)
@@ -163,9 +174,15 @@ async function init() {
 
 	await mediaStore.initialize()
 
+	await satelliteStore.initialize("castmate")
+	await satelliteResources.initialize()
+	await satelliteMedia.initialize("castmate")
+
 	loadOverlayWidgets()
+	loadDashboardWidgets()
 
 	sendOverlaysToMain()
+	sendDashboardsToMain()
 
 	await uiLoadComplete()
 }

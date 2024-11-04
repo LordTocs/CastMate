@@ -1,0 +1,201 @@
+// core
+.p-dock {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.p-dock-list-container {
+    display: flex;
+    pointer-events: auto;
+}
+
+.p-dock-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p-dock-item {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.p-dock-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+}
+
+.p-dock-item-second-prev,
+.p-dock-item-second-next {
+    transform: scale(1.2);
+}
+
+.p-dock-item-prev,
+.p-dock-item-next {
+    transform: scale(1.4);
+}
+
+.p-dock-item-current {
+    transform: scale(1.6);
+    z-index: 1;
+}
+
+/* Position */
+/* top */
+.p-dock-top {
+    left: 0;
+    top: 0;
+    width: 100%;
+}
+
+.p-dock-top .p-dock-item {
+    transform-origin: center top;
+}
+
+/* bottom */
+.p-dock-bottom {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.p-dock-bottom .p-dock-item {
+    transform-origin: center bottom;
+}
+
+/* right */
+.p-dock-right {
+    right: 0;
+    top: 0;
+    height: 100%;
+}
+
+.p-dock-right .p-dock-item {
+    transform-origin: center right;
+}
+
+.p-dock-right .p-dock-list {
+    flex-direction: column;
+}
+
+/* left */
+.p-dock-left {
+    left: 0;
+    top: 0;
+    height: 100%;
+}
+
+.p-dock-left .p-dock-item {
+    transform-origin: center left;
+}
+
+.p-dock-left .p-dock-list {
+    flex-direction: column;
+}
+
+// theme
+.p-dock {
+    .p-dock-list-container {
+        background: $dockBg;
+        border: $dockBorder;
+        padding: $dockPadding;
+        border-radius: $dockBorderRadius;
+
+        .p-dock-list {
+            outline: 0 none;
+        }
+    }
+    
+    .p-dock-item {
+        padding: $dockItemPadding;
+        border-radius: $dockItemBorderRadius;
+
+        &.p-focus {
+            @include focused-listitem();
+        }
+    }
+
+    .p-dock-link {
+        width: $dockActionWidth;
+        height: $dockActionHeight;
+    }
+    
+    &.p-dock-top,
+    &.p-dock-bottom {
+        .p-dock-item-second-prev,
+        .p-dock-item-second-next {
+            margin: 0 $dockSecondItemsMargin;
+        }
+
+        .p-dock-item-prev,
+        .p-dock-item-next {
+            margin: 0 $dockFirstItemsMargin;
+        }
+
+        .p-dock-item-current {
+            margin: 0 $dockCurrentItemMargin;
+        }
+    }
+
+    &.p-dock-left,
+    &.p-dock-right {
+        .p-dock-item-second-prev,
+        .p-dock-item-second-next {
+            margin: $dockSecondItemsMargin 0;
+        }
+        
+        .p-dock-item-prev,
+        .p-dock-item-next {
+            margin: $dockFirstItemsMargin 0;
+        }
+
+        .p-dock-item-current {
+            margin: $dockCurrentItemMargin 0;
+        }
+    }
+
+    &.p-dock-mobile {
+        &.p-dock-top,
+        &.p-dock-bottom {
+            .p-dock-list-container {
+                overflow-x: auto;
+                width: 100%;
+
+                .p-dock-list {
+                    margin: 0 auto;
+                }
+            }
+        }
+
+        &.p-dock-left,
+        &.p-dock-right {
+            .p-dock-list-container {
+                overflow-y: auto;
+                height: 100%;
+
+                .p-dock-list {
+                    margin: auto 0;
+                }
+            }
+        }
+
+        .p-dock-list {
+            .p-dock-item {
+                transform: none;
+                margin: 0;
+            }
+        }
+    }
+}

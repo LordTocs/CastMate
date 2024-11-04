@@ -15,6 +15,7 @@ export interface OBSConnectionState {
 	recording: boolean
 	replayBuffering: boolean
 	virtualCamming: boolean
+	studioModeEnabled: boolean
 }
 
 export interface OBSSceneItem {

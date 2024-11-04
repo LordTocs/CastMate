@@ -1,14 +1,15 @@
 {
 	"name": "castmate-monorepo",
-	"version": "0.5.3",
+	"version": "0.5.4-beta",
 	"description": "",
 	"private": true,
 	"type": "module",
 	"scripts": {
 		"setup-vite": "yarn workspace castmate-vite build",
-		"build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build",
-		"buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish",
+		"build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build && yarn workspace castmate-satellite run electron:build",
+		"buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish && yarn workspace castmate-satellite run electron:buildpublish",
 		"dev": "node ./vite-util/multi-vite.mjs",
+		"satdev": "yarn workspace castmate-satellite dev",
 		"format": "prettier . --write",
 		"clearnode": "node ./vite-util/clear-node-modules.mjs",
 		"ebuild": "electron-rebuild -f"
@@ -25,7 +26,7 @@
 	"devDependencies": {
 		"@electron/rebuild": "^3.6.0",
 		"@types/node": "^20.4.8",
-		"@vitejs/plugin-vue": "^4.3.4",
+		"@vitejs/plugin-vue": "4.6.2",
 		"@vue/tsconfig": "^0.4.0",
 		"@vueuse/core": "10.7.2",
 		"chromatism2": "^3.0.2",

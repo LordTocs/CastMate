@@ -11,10 +11,10 @@ export const useDashboardStore = defineStore("dashboard", () => {
 		const projectItem = computed<ProjectItem>(() => {
 			return {
 				id: "dashboard",
-				title: "Dashboard",
-				icon: "mdi mdi-view-dashboard",
+				title: "CastMate",
+				icon: "mdi mdi-square",
 				open() {
-					dockingStore.openPage("dashboard", "Dashboard", DashboardPage)
+					dockingStore.openPage("dashboard", "Main", DashboardPage)
 				},
 			}
 		})

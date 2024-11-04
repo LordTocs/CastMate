@@ -37,6 +37,16 @@ export async function getOutputDeviceWebId(name: string) {
 	return device?.deviceId
 }
 
+export async function initSatellitePlugin() {
+	const playerStore = useSoundPlayerStore()
+
+	playerStore.initialize()
+
+	handleIpcRpc("sound", "getOutputWebId", async (name: string) => {
+		return await getOutputDeviceWebId(name)
+	})
+}
+
 export async function initPlugin(app: App<Element>) {
 	const playerStore = useSoundPlayerStore()
 

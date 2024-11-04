@@ -21,6 +21,9 @@ import path from "path"
 import { InfoService } from "./info/info-manager"
 import { AnalyticsService } from "./analytics/analytics-manager"
 import { ViewerData } from "./viewer-data/viewer-data"
+import { SatelliteService } from "./satellite/satellite-service"
+import { SatelliteResources } from "./satellite/satellite-resource"
+import { SatelliteMedia } from "./satellite/satellite-media"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -43,19 +46,21 @@ let setupComplete = false
 defineIPCFunc("castmate", "isSetupFinished", () => setupComplete)
 defineIPCFunc("castmate", "isInitialSetupFinished", () => initialSetupComplete)
 
-export async function setupCastMateDirectories() {
+export async function setupCastMateDirectories(userOverride?: string) {
 	const unpackaged = !app.isPackaged
 	const portable = process.env.PORTABLE_EXECUTABLE_FILE != null || process.argv.includes("--portable")
 
-	let directory = path.join(app.getPath("userData"), "user")
+	const userFolderName = userOverride ?? "user"
+
+	let directory = path.join(app.getPath("userData"), userFolderName)
 	const needsSession = unpackaged || portable
 
 	if (portable) {
 		directory = process.env.PORTABLE_EXECUTABLE_DIR
-			? path.resolve(process.env.PORTABLE_EXECUTABLE_DIR, "user")
-			: "./user"
+			? path.resolve(process.env.PORTABLE_EXECUTABLE_DIR, userFolderName)
+			: `./${userFolderName}`
 	} else if (unpackaged) {
-		directory = "../../user"
+		directory = `../../${userFolderName}`
 	}
 
 	await setProjectDirectory(directory)
@@ -87,7 +92,9 @@ export async function initializeCastMate() {
 	PluginManager.initialize()
 	setupMedia()
 	ResourceRegistry.initialize()
-	PubSubManager.initialize()
+	PubSubManager.initialize("castmate")
+	SatelliteService.initialize("castmate")
+	SatelliteResources.initialize("castmate")
 	SequenceResolvers.initialize()
 	EmoteCache.initialize()
 	setupStreamPlans()
@@ -116,6 +123,54 @@ export async function finializeCastMateSetup() {
 	ProfileManager.initialize()
 	await ProfileManager.getInstance().finishSetup()
 	await EmoteCache.getInstance().initialize()
+	globalLogger.log("CastMate Init Complete")
+	setupComplete = true
+	notifyRendererSetupFinished()
+}
+
+export async function initializeCastMateSatellite() {
+	globalLogger.log("Initing Castmate Satellite")
+	AnalyticsService.initialize()
+	await AnalyticsService.getInstance().initialize()
+	await ensureDirectory(resolveProjectPath("settings"))
+	await ensureDirectory(resolveProjectPath("secrets"))
+	await ensureDirectory(resolveProjectPath("state"))
+	await initializeFileSystem()
+	//InfoService.initialize()
+	//await InfoService.getInstance().checkInfo()
+	GenericLoginService.initialize()
+	//WebService.initialize()
+	PluginManager.initialize()
+	//setupMedia()
+	ResourceRegistry.initialize()
+	PubSubManager.initialize("satellite")
+	SatelliteService.initialize("satellite")
+	SatelliteResources.initialize("satellite")
+	SatelliteService.getInstance().startListening()
+	SatelliteMedia.initialize()
+	await SatelliteMedia.getInstance().initialize()
+	//SequenceResolvers.initialize()
+	//EmoteCache.initialize()
+	//setupStreamPlans()
+	//ViewerData.initialize()
+	//await ViewerData.getInstance().initialize()
+
+	//How do we load plugins???
+	//await loadPlugin("twitch")
+
+	initialSetupComplete = true
+	notifyRendererInitialSetupFinished()
+}
+
+export async function finializeCastMateSatelliteSetup() {
+	globalLogger.log("Finalizing Init")
+	//await setupProfiles()
+	//await finishSettingUpStreamPlans()
+	//await ActionQueue.initialize()
+	//ActionQueueManager.initialize()
+	//ProfileManager.initialize()
+	//await ProfileManager.getInstance().finishSetup()
+	//await EmoteCache.getInstance().initialize()
 	globalLogger.log("CastMate Init Complete")
 	setupComplete = true
 	notifyRendererSetupFinished()

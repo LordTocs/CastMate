@@ -1,0 +1,32 @@
+{
+	"name": "castmate-dashboard-widget-loader",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"main": "src/dashboard-widget-loader.ts",
+	"devMain": "src/dashboard-widget-loader.ts",
+	"types": "./dist/types/dashboard-widget-loader.d.ts",
+	"scripts": {
+		"dev": "vite",
+		"build": "vue-tsc && vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@vueuse/core": "*",
+		"castmate-overlay-core": "workspace:^",
+		"castmate-schema": "workspace:^",
+		"chromatism2": "*",
+		"electron": "29.4.5",
+		"nanoid": "^5.0.7",
+		"pinia": "^2.1.7",
+		"primevue": "3.53.0",
+		"vue": "^3.4.23"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "4.6.2",
+		"ts-toolbelt": "*",
+		"typescript": "*",
+		"vite": "^5.2.9",
+		"vue-tsc": "*"
+	}
+}

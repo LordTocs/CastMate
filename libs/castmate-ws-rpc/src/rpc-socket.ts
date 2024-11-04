@@ -56,7 +56,13 @@ export class RPCHandler {
 			}
 			const args = data.args || []
 
-			this.handlers[requestName](requestId, sender, ...preArgs, ...args)
+			const handler = this.handlers[requestName]
+
+			if (handler) {
+				handler(requestId, sender, ...preArgs, ...args)
+			} else {
+				//console.log("MISSING HANDLER", requestName)
+			}
 		}
 	}
 
@@ -67,6 +73,7 @@ export class RPCHandler {
 			try {
 				result = await func(...args)
 			} catch (err) {
+				console.error(err)
 				await sender({
 					responseId: requestId,
 					failed: true,

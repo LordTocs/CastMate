@@ -5,6 +5,7 @@ import {
 	definePlugin,
 	definePluginResource,
 	defineResourceSetting,
+	defineSatellitePlugin,
 	onLoad,
 	onUnload,
 } from "castmate-core"
@@ -97,4 +98,34 @@ export default definePlugin(
 	}
 )
 
-export { TwitchAccount, onChannelAuth, ChannelPointReward, ViewerCache }
+const twitchSatellite = defineSatellitePlugin(
+	{
+		id: "twitch",
+		name: "Twitch",
+		description: "Provides Twitch triggers for chat, raids, and more",
+		icon: "mdi mdi-twitch",
+		color: "#9146FF", //"#5E5172",
+	},
+	() => {
+		definePluginResource(TwitchAccount)
+
+		onLoad(() => {
+			ViewerCache.initialize()
+		})
+
+		onLoad(async () => {
+			await TwitchAPIService.initialize()
+		})
+
+		onChannelAuth((channel) => {
+			//Pass the auth token to the pubsub so it can auth with the CastMate servers
+			PubSubManager.getInstance().setToken(channel.secrets.accessToken)
+		})
+
+		onLoad(async () => {
+			await TwitchAPIService.getInstance().finalize()
+		})
+	}
+)
+
+export { TwitchAccount, onChannelAuth, ChannelPointReward, ViewerCache, twitchSatellite }

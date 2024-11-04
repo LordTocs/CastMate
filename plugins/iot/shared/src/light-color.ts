@@ -24,7 +24,7 @@ export type LightColorObj = HSBColor | KelvinColor
 
 export type LightColor = HSB | KB
 export const LightColor = {
-	factoryCreate() {
+	factoryCreate(): LightColor {
 		return "hsb(0, 100, 100)"
 	},
 	isHSB(color: LightColor | undefined): color is HSB {

@@ -2,13 +2,17 @@ import { LightColor, LightConfig, LightState } from "castmate-plugin-iot-shared"
 import {
 	Resource,
 	ResourceStorage,
+	SatelliteResources,
+	SatelliteService,
 	abortableSleep,
 	defineAction,
 	definePluginResource,
+	defineSatelliteResourceSlotHandler,
 	registerSchemaTemplate,
 	template,
 } from "castmate-core"
 import { Duration, Toggle } from "castmate-schema"
+import { SatelliteResourceSymbol } from "castmate-core"
 
 export class LightResource<
 	Config extends LightConfig = LightConfig,
@@ -47,9 +51,55 @@ registerSchemaTemplate(LightColor, async (value, context, schema) => {
 	return (await template(value, context)) as LightColor
 })
 
-export function setupLights() {
+export class SatelliteLight extends LightResource {
+	static [SatelliteResourceSymbol] = true
+
+	constructor() {
+		super()
+		this._config = {
+			name: "",
+			provider: "satellite",
+			providerId: "",
+			rgb: {
+				available: true,
+			},
+			kelvin: {
+				available: true,
+			},
+			dimming: {
+				available: true,
+			},
+			transitions: {
+				available: true,
+			},
+		}
+
+		this.state = {
+			on: true,
+			color: LightColor.factoryCreate(),
+		}
+	}
+
+	async setLightState(color: LightColor | undefined, on: Toggle, transition: Duration): Promise<void> {
+		await SatelliteResources.getInstance().callResourceRPC(this.id, "setLightState", color, on, transition)
+	}
+}
+
+export function setupLights(mode: "castmate" | "satellite") {
 	definePluginResource(LightResource)
 
+	defineSatelliteResourceSlotHandler(LightResource, {
+		satelliteConstructor: SatelliteLight,
+		rpcs: {
+			async setLightState(resource, color: LightColor | undefined, on: Toggle, transition: Duration) {
+				await resource.setLightState(color, on, transition)
+			},
+		},
+	})
+
+	if (mode == "satellite") return
+
+	//TODO: Make satellite ignore this!
 	defineAction({
 		id: "light",
 		name: "Change Light",

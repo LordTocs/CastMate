@@ -6,6 +6,8 @@ export { default as DataView } from "./components/data/DataView.vue"
 export { default as ToggleInput } from "./components/data/inputs/ToggleInput.vue"
 export { default as ToggleSwitch } from "./components/data/base-components/ToggleSwitch.vue"
 export { default as DocumentDataCollection } from "./components/drag/DocumentDataCollection.vue"
+export { default as GridDocumentDataCollection } from "./components/drag/GridDocumentDataCollection.vue"
+export { default as RowWrapDocumentDataCollection } from "./components/drag/RowWrapDocumentDataCollection.vue"
 export { default as DraggableCollection } from "./components/drag/DraggableCollection.vue"
 
 export { default as ScrollingTabBody } from "./components/docking/ScrollingTabBody.vue"
@@ -65,6 +67,8 @@ export { default as BooleanExpressionValueEdit } from "./components/data/base-co
 
 export { default as ViewerVariableSelector } from "./components/viewer-data/ViewerVariableSelector.vue"
 
+export { default as SatelliteResourceSlotBindingEdit } from "./components/satellite/SatelliteResourceSlotBindingEdit.vue"
+
 export * from "./components/data/DataInputTypes"
 
 export * from "./util/diff"
@@ -77,6 +81,8 @@ export * from "./util/dragging"
 export * from "./util/selection"
 export * from "./util/arrays"
 export * from "./util/generic-login"
+export * from "./util/init-store"
+export * from "./util/events"
 
 export * from "./plugins/plugin-store"
 export * from "./project/project-store"
@@ -90,6 +96,10 @@ export * from "./queue-system/action-queue-store"
 export * from "./components/stream-plan/stream-plan-types"
 
 export * from "./viewer-data/viewer-data-store"
+
+export * from "./satellite/satellite-connection"
+export * from "./satellite/satellite-resources"
+export * from "./satellite/satellite-media"
 
 export * from "./util/panning"
 

@@ -1,0 +1,31 @@
+{
+	"name": "castmate-dashboard-core",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"main": "src/dashboard-core-main.ts",
+	"devMain": "src/dashboard-core-main.ts",
+	"types": "./dist/types/dashboard-core-main.d.ts",
+	"scripts": {
+		"dev": "vite",
+		"build": "vue-tsc && vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@vueuse/core": "*",
+		"castmate-plugin-dashboards-shared": "workspace:^",
+		"castmate-schema": "workspace:^",
+		"chromatism2": "*",
+		"nanoid": "^5.0.7",
+		"pinia": "^2.1.7",
+		"primevue": "3.53.0",
+		"vue": "^3.4.23"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "4.6.2",
+		"ts-toolbelt": "*",
+		"typescript": "*",
+		"vite": "^5.2.9",
+		"vue-tsc": "*"
+	}
+}

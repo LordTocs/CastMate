@@ -190,7 +190,7 @@ export async function matchAndParseCommand(
 	command: Command
 ): Promise<Record<string, any> | undefined> {
 	if (command.mode == "command") {
-		const commandLower = command.match.toLocaleLowerCase()
+		const commandLower = command.match.toLocaleLowerCase().trim()
 		if (!message || !message.toLocaleLowerCase().startsWith(commandLower)) return undefined
 
 		let parse: ParseContext = { index: commandLower.length }
@@ -213,7 +213,9 @@ export async function matchAndParseCommand(
 		return argValues
 	} else if (command.mode == "string") {
 		const regexp = new RegExp(
-			`${command.leftBoundary ? "\\b" : ""}${escapeRegExp(command.match)}${command.rightBoundary ? "\\b" : ""}`,
+			`${command.leftBoundary ? "\\b" : ""}${escapeRegExp(command.match.trim())}${
+				command.rightBoundary ? "\\b" : ""
+			}`,
 			"ig"
 		)
 		if (message.match(regexp)) {

@@ -67,6 +67,10 @@ export async function writeSecretYAML<T = any>(data: T, ...paths: string[]) {
 }
 
 export async function initializeFileSystem() {
+	ipcMain.handle(`filesystem_getUserFolder`, () => {
+		return activeProjectDirectory
+	})
+
 	ipcMain.handle(`filesystem_getFolderInput`, async (event: IpcMainInvokeEvent, existing: string | undefined) => {
 		const window = BrowserWindow.fromWebContents(event.sender)
 

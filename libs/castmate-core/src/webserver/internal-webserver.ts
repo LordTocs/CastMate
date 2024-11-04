@@ -11,6 +11,7 @@ import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
 import { filterPromiseAll } from "castmate-schema"
 import HttpProxy from "http-proxy"
 import os from "os"
+import cors from "cors"
 
 function closeHttpServer(httpServer: http.Server | undefined) {
 	return new Promise<void>((resolve, reject) => {
@@ -62,6 +63,7 @@ export const WebService = Service(
 			this.app = express()
 			this.routes = express.Router()
 
+			this.routes.use(cors())
 			this.routes.use(express.urlencoded({ extended: false }))
 			this.routes.use(express.json())
 

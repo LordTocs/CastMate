@@ -10,7 +10,7 @@ export function useOrderedRefs<ElemType>(items: MaybeRefOrGetter<IDHaver[]>) {
 	watch(
 		() => toValue(items).length,
 		(newLength) => {
-			console.log("New ordered length", newLength)
+			//console.log("New ordered length", newLength)
 			orderedElements.value.length = newLength
 		}
 	)
@@ -19,7 +19,7 @@ export function useOrderedRefs<ElemType>(items: MaybeRefOrGetter<IDHaver[]>) {
 		const itemValues = toValue(items)
 		if (index > itemValues.length) return
 		if (elem == null) return
-		console.log("Set Elem", index, elem)
+		//console.log("Set Elem", index, elem)
 		orderedElements.value[index] = elem as any
 	}
 

@@ -1,6 +1,7 @@
 user*/
 /dist
 /release
+/release-satellite
 dist-electron/
 backup_04.zip
 

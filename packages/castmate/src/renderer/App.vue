@@ -33,9 +33,8 @@ import ProjectView from "./components/project/ProjectView.vue"
 import PProgressSpinner from "primevue/progressspinner"
 
 import PConfirmDialog from "primevue/confirmdialog"
-import { useInitStore } from "./store/init-store"
 
-import { setupGenericLoginService } from "castmate-ui-core"
+import { setupGenericLoginService, useInitStore } from "castmate-ui-core"
 import { onMounted } from "vue"
 import { useDialog } from "primevue/usedialog"
 import MigrationDialog from "./components/migration/MigrationDialog.vue"
@@ -113,7 +112,10 @@ onMounted(async () => {
 	const urlParams = new URLSearchParams(queryString)
 
 	const isPortable = urlParams.get("portable")
-	if (isPortable == "true") {
+	const isDev = urlParams.get("dev")
+	if (isDev) {
+		document.title = "CastMate - Dev"
+	} else if (isPortable == "true") {
 		document.title = "CastMate - Portable"
 	}
 

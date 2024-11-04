@@ -1,5 +1,5 @@
 import { createDelayedResolver } from "castmate-schema"
-import { ipcInvoke } from "castmate-ui-core"
+import { ipcInvoke } from "./electron"
 import { ipcRenderer } from "electron"
 import { defineStore } from "pinia"
 import { computed, ref, markRaw } from "vue"
