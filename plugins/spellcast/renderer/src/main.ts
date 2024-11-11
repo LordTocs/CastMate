@@ -22,7 +22,7 @@ export function initPlugin(app: App<Element>) {
 			spellData: {
 				type: Object,
 				properties: {
-					enabled: { type: Boolean, name: "Enabled", required: true },
+					enabled: { type: Boolean, name: "Enabled", required: true, default: true },
 					description: { type: String, name: "Description", template: true },
 					bits: {
 						name: "Bits",
