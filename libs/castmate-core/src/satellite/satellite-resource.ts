@@ -14,6 +14,7 @@ import { onLoad, onUnload } from "../plugins/plugin"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { ResourceRegistry } from "../resources/resource-registry"
 import { usePluginLogger } from "../logging/logging"
+import { isCastMate, isSatellite } from "../util/init-mode"
 
 class TestResource extends Resource<{ blah: string }> {
 	static storage = new ResourceStorage<TestResource>("TestResource")
@@ -68,8 +69,8 @@ export const SatelliteResources = Service(
 		private slotHandlers = new Map<string, SatelliteResourceSlotHandler>()
 		private slotBindings = new Map<string, SatelliteResourceSlotBinding>()
 
-		constructor(private mode: "castmate" | "satellite") {
-			if (mode == "castmate") {
+		constructor() {
+			if (isCastMate()) {
 				SatelliteService.getInstance().registerRPC(
 					"satellite_resourceBind",
 					(connection: string, slotId: string) => {
@@ -159,7 +160,7 @@ export const SatelliteResources = Service(
 		}
 
 		async createRemoteResourceSlot(id: string, resourceType: string, name: string) {
-			if (this.mode != "castmate") throw new Error("This is CastMate side only")
+			if (!isCastMate()) throw new Error("This is CastMate side only")
 			const handler = this.getSlotHandler(resourceType)
 
 			if (!handler) throw new Error("Creating Remote Slot for unknown Remote Resource")
@@ -184,7 +185,7 @@ export const SatelliteResources = Service(
 		}
 
 		async deleteRemoteResourceSlot(id: string) {
-			if (this.mode != "castmate") throw new Error("This is CastMate side only")
+			if (!isCastMate()) throw new Error("This is CastMate side only")
 
 			const slot = this.remoteSlots.get(id)
 			if (!slot) return
@@ -199,7 +200,7 @@ export const SatelliteResources = Service(
 		}
 
 		async callResourceRPC(slotId: string, name: string, ...args: any[]) {
-			if (this.mode != "castmate") throw new Error("This is CastMate side only")
+			if (!isCastMate()) throw new Error("This is CastMate side only")
 
 			const slot = this.remoteSlots.get(slotId)
 			if (!slot) return
@@ -241,7 +242,7 @@ export const SatelliteResources = Service(
 		}
 
 		async bindResourceSlot<T extends ResourceBase>(slotId: string, resource: T) {
-			if (this.mode != "satellite") throw new Error("This is satellite only")
+			if (!isSatellite()) throw new Error("This is satellite only")
 
 			const slot = this.slotBindings.get(slotId)
 
@@ -258,7 +259,7 @@ export const SatelliteResources = Service(
 		}
 
 		async unbindResourceSlot(slotId: string) {
-			if (this.mode != "satellite") throw new Error("This is satellite only")
+			if (!isSatellite()) throw new Error("This is satellite only")
 
 			const slot = this.slotBindings.get(slotId)
 

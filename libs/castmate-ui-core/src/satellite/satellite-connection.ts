@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { handleIpcMessage, useIpcCaller, usePluginStore } from "../main"
+import { handleIpcMessage, useInitStore, useIpcCaller, usePluginStore } from "../main"
 import { nanoid } from "nanoid/non-secure"
 import { computed, markRaw, ref, reactive } from "vue"
 import { EventList } from "../main"
@@ -144,11 +144,11 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 
 	const rpcs = new RPCHandler()
 
-	const mode = ref<"satellite" | "castmate">("castmate")
+	const initStore = useInitStore()
 
 	function getConnection(request: SatelliteConnectionRequestConfig) {
-		const service = mode.value == "castmate" ? request.satelliteService : request.castmateService
-		const id = mode.value == "castmate" ? request.satelliteId : request.castmateId
+		const service = initStore.isCastMate ? request.satelliteService : request.castmateService
+		const id = initStore.isCastMate ? request.satelliteId : request.castmateId
 
 		return connections.value.find(
 			(c) => c.remoteId == id && c.remoteService == service && request.dashId == c.dashId
@@ -375,9 +375,7 @@ export const useSatelliteConnection = defineStore("satellite-connection", () => 
 		return self
 	}
 
-	async function initialize(initMode: "satellite" | "castmate") {
-		mode.value = initMode
-
+	async function initialize() {
 		handleIpcMessage(
 			"satellite",
 			"satelliteConnectionRequest",

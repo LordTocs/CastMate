@@ -62,7 +62,7 @@ const satelliteResources = useSatelliteResourceStore()
 const satelliteMedia = useSatelliteMedia()
 
 async function init() {
-	await initStore.initialize()
+	await initStore.initialize("satellite")
 
 	await initStore.waitForInitialSetup()
 
@@ -75,9 +75,9 @@ async function init() {
 
 	await initSoundPlugin()
 
-	await satelliteStore.initialize("satellite")
+	await satelliteStore.initialize()
 	await satelliteResources.initialize()
-	await satelliteMedia.initialize("satellite")
+	await satelliteMedia.initialize()
 
 	loadDashboardWidgets()
 }

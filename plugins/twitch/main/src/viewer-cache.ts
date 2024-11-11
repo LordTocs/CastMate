@@ -5,6 +5,8 @@ import {
 	Service,
 	ViewerData,
 	defineRendererCallable,
+	isCastMate,
+	isSatellite,
 	measurePerf,
 	measurePerfFunc,
 	onLoad,
@@ -177,23 +179,25 @@ export const ViewerCache = Service(
 		onViewerSeen = new EventList<(viewer: TwitchViewerUnresolved) => any>()
 
 		constructor() {
-			ViewerData.getInstance()?.registerProvider({
-				id: "twitch",
-				onDataChanged: async (id, column, value) => {
-					const cached = this.getOrCreate(id)
-					cached[column] = value
-				},
-				onColumnAdded: async (column, defaultValue) => {
-					for (const cached of this.viewerLookup.values()) {
-						cached.value[column] = defaultValue
-					}
-				},
-				onColumnRemoved: async (column) => {
-					for (const cached of this.viewerLookup.values()) {
-						delete cached.value[column]
-					}
-				},
-			})
+			if (isCastMate()) {
+				ViewerData.getInstance()?.registerProvider({
+					id: "twitch",
+					onDataChanged: async (id, column, value) => {
+						const cached = this.getOrCreate(id)
+						cached[column] = value
+					},
+					onColumnAdded: async (column, defaultValue) => {
+						for (const cached of this.viewerLookup.values()) {
+							cached.value[column] = defaultValue
+						}
+					},
+					onColumnRemoved: async (column) => {
+						for (const cached of this.viewerLookup.values()) {
+							delete cached.value[column]
+						}
+					},
+				})
+			}
 		}
 
 		async resetCache() {
@@ -206,6 +210,8 @@ export const ViewerCache = Service(
 			this.vips = new Set()
 			this.mods = new Set()
 			this.chatters = new Map()
+
+			if (isSatellite()) return
 
 			const [vips, mods] = await Promise.all([
 				TwitchAccount.channel.apiClient.channels.getVipsPaginated(TwitchAccount.channel.twitchId).getAll(),
@@ -231,6 +237,7 @@ export const ViewerCache = Service(
 
 		//@measurePerf
 		private async updateChatterList() {
+			if (isSatellite()) return
 			return await measurePerfFunc(async () => {
 				const newChatters = new Map<string, CachedTwitchViewer>()
 
@@ -513,6 +520,8 @@ export const ViewerCache = Service(
 		}
 
 		private async querySubInfo(...userIds: string[]) {
+			if (!isCastMate()) return
+
 			const perf1 = startPerfTime("Query Subs Gather Users")
 			const ids = getNValues(this.unknownSubInfo, userIds, 100)
 			perf1.stop(logger)

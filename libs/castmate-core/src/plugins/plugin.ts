@@ -41,6 +41,7 @@ import { ResourceBase, ResourceConstructor } from "../resources/resource"
 import { PluginManager } from "./plugin-manager"
 import { Logger, globalLogger, usePluginLogger } from "../logging/logging"
 import { startPerfTime } from "../util/time-utils"
+import { isSatellite } from "../util/init-mode"
 
 interface PluginSpec {
 	id: string
@@ -674,6 +675,24 @@ export class Plugin {
 	}
 
 	async toIPC(): Promise<IPCPluginDefinition> {
+		if (isSatellite()) {
+			const result: IPCPluginDefinition = {
+				id: this.id,
+				name: this.name,
+				description: this.description,
+				icon: this.icon,
+				color: this.color,
+				version: this.version,
+				actions: {},
+				triggers: {},
+				settings: await awaitKeys(
+					mapRecord(this.settings, (k, v) => toIPCSetting(v, `${this.id}_settings_${k}`))
+				),
+				state: await awaitKeys(mapRecord(this.state, (k, v) => toIPCState(v, `${this.id}_state_${k}`))),
+			}
+			return result
+		}
+
 		const result: IPCPluginDefinition = {
 			id: this.id,
 			name: this.name,

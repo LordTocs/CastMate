@@ -7,6 +7,7 @@ import {
 	defineAction,
 	definePluginResource,
 	defineSatelliteResourceSlotHandler,
+	isSatellite,
 	usePluginLogger,
 } from "castmate-core"
 import { Toggle } from "castmate-schema"
@@ -63,7 +64,7 @@ export class PollingPlug<
 	async poll() {}
 }
 
-export function setupPlugs(mode: "castmate" | "satellite") {
+export function setupPlugs() {
 	const logger = usePluginLogger()
 
 	definePluginResource(PlugResource)
@@ -78,7 +79,7 @@ export function setupPlugs(mode: "castmate" | "satellite") {
 		},
 	})
 
-	if (mode == "satellite") return
+	if (isSatellite()) return
 
 	defineAction({
 		id: "plug",
