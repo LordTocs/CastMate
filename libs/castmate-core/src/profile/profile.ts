@@ -172,5 +172,24 @@ export async function setupProfiles() {
 				return triggerDef.context
 			}
 		},
+
+		getRunWrapper(id, subId) {
+			const noWrap = (inner: () => any) => inner()
+
+			if (!subId) return noWrap
+
+			const profile = Profile.storage.getById(id)
+			if (!profile) return noWrap
+
+			const trigger = profile.config.triggers.find((t) => t.id == subId)
+			if (!trigger) return noWrap
+			if (!trigger.trigger) return noWrap
+			if (!trigger.plugin) return noWrap
+
+			const triggerDef = PluginManager.getInstance().getTrigger(trigger.plugin, trigger.trigger)
+			if (!triggerDef) return noWrap
+
+			return triggerDef.runWrapper ?? noWrap
+		},
 	})
 }
