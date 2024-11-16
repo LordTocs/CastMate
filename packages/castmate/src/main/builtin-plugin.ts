@@ -15,7 +15,6 @@ import {
 	onLoad,
 	onProfilesChanged,
 	runOnChange,
-	touchAllSequenceTemplates,
 } from "castmate-core"
 
 export default definePlugin(

@@ -35,6 +35,14 @@ import { setupProxyDialogService } from "castmate-ui-core"
 import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
 
 import { initSatellitePlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
+import { initPlugin as initIoTPlugin } from "castmate-plugin-iot-renderer"
+import { initPlugin as initTwinklyPlugin } from "castmate-plugin-twinkly-renderer"
+import { initPlugin as initHuePlugin } from "castmate-plugin-philips-hue-renderer"
+import { initPlugin as initWyzePlugin } from "castmate-plugin-wyze-renderer"
+import { initPlugin as initLifxPlugin } from "castmate-plugin-lifx-renderer"
+import { initPlugin as initGoveePlugin } from "castmate-plugin-govee-renderer"
+import { initPlugin as initKasaPlugin } from "castmate-plugin-tplink-kasa-renderer"
+
 //import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
 
 const pinia = createPinia()
@@ -74,6 +82,13 @@ async function init() {
 	await initStore.waitForInit()
 
 	await initSoundPlugin()
+	await initIoTPlugin()
+	await initTwinklyPlugin()
+	await initHuePlugin()
+	await initWyzePlugin()
+	await initLifxPlugin()
+	await initGoveePlugin()
+	await initKasaPlugin()
 
 	await satelliteStore.initialize()
 	await satelliteResources.initialize()
