@@ -26,6 +26,7 @@ export { default as NameDialog } from "./components/dialogs/NameDialog.vue"
 
 export { default as AccountWidget } from "./components/account/AccountWidget.vue"
 
+export { default as AccountSettingList } from "./components/account/AccountSettingList.vue"
 export { default as ResourceSettingList } from "./components/resources/ResourceSettingList.vue"
 export { default as ResourceSchemaEdit } from "./components/resources/ResourceSchemaEdit.vue"
 

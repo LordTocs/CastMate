@@ -9,6 +9,7 @@
 		<template v-else>
 			<p-button @click="forceAuth" :loading="doingLogin" size="small"> Sign In </p-button>
 		</template>
+		<slot name="extra"></slot>
 	</div>
 </template>
 

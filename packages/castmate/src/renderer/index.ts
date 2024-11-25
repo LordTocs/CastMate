@@ -64,6 +64,8 @@ import { initPlugin as initRandomPlugin } from "castmate-plugin-random-renderer"
 
 import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
 
+import { initPlugin as initBlueSkyPlugin } from "castmate-plugin-bluesky-renderer"
+
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
 import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
 
@@ -169,6 +171,7 @@ async function init() {
 	await initGoveePlugin()
 	await initKasaPlugin()
 	await initRemotePlugin()
+	await initBlueSkyPlugin()
 
 	await initRandomPlugin()
 

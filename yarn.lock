@@ -19,6 +19,64 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@atproto/api@npm:^0.13.16":
+  version: 0.13.16
+  resolution: "@atproto/api@npm:0.13.16"
+  dependencies:
+    "@atproto/common-web": "npm:^0.3.1"
+    "@atproto/lexicon": "npm:^0.4.3"
+    "@atproto/syntax": "npm:^0.3.1"
+    "@atproto/xrpc": "npm:^0.6.4"
+    await-lock: "npm:^2.2.2"
+    multiformats: "npm:^9.9.0"
+    tlds: "npm:^1.234.0"
+    zod: "npm:^3.23.8"
+  checksum: 10/0b959ba17d7453955442a8aa771951f27d35a0606d1105408f25b9b3829d4e87d0860e6c3f1af35178c2acf0deb7219452fed648847da18b25fa5b6414167127
+  languageName: node
+  linkType: hard
+
+"@atproto/common-web@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@atproto/common-web@npm:0.3.1"
+  dependencies:
+    graphemer: "npm:^1.4.0"
+    multiformats: "npm:^9.9.0"
+    uint8arrays: "npm:3.0.0"
+    zod: "npm:^3.23.8"
+  checksum: 10/185ddf35df2138eb5143380e8b2e3fa2d7517db5297251ef735163e97f710fba19a3e3af99e11d40b825ff5cefa271e1763714574b2ed4a2a5beb8305cf48687
+  languageName: node
+  linkType: hard
+
+"@atproto/lexicon@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "@atproto/lexicon@npm:0.4.3"
+  dependencies:
+    "@atproto/common-web": "npm:^0.3.1"
+    "@atproto/syntax": "npm:^0.3.1"
+    iso-datestring-validator: "npm:^2.2.2"
+    multiformats: "npm:^9.9.0"
+    zod: "npm:^3.23.8"
+  checksum: 10/c7b0616ffcd85eb77315b4a15bf17acfc2c9de6b4112321a8dad5f0723453c8a5464418a332f0e387e999ed863fb954ccb511097e9c733efacc9b3aacc0c611c
+  languageName: node
+  linkType: hard
+
+"@atproto/syntax@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@atproto/syntax@npm:0.3.1"
+  checksum: 10/f5a7509b74d48d0b7be7cee82c8b93861a79671e617864c022147099fa1f87ee91da7c9b2b8688c8ae405fd465eb4e2b012eed04bf5aaadc4233c03f1badb9ed
+  languageName: node
+  linkType: hard
+
+"@atproto/xrpc@npm:^0.6.4":
+  version: 0.6.4
+  resolution: "@atproto/xrpc@npm:0.6.4"
+  dependencies:
+    "@atproto/lexicon": "npm:^0.4.3"
+    zod: "npm:^3.23.8"
+  checksum: 10/de610ce225218722399bb2612085dbbe001dc7531d56a8be9e01151797938b480698c2e790d2a3dbf5ef778dcf0d3452c9ede4963a1d108bf43b0f2f805441cf
+  languageName: node
+  linkType: hard
+
 "@azure/abort-controller@npm:^1.0.0":
   version: 1.1.0
   resolution: "@azure/abort-controller@npm:1.1.0"
@@ -1712,6 +1770,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vitejs/plugin-vue@npm:*":
+  version: 5.2.0
+  resolution: "@vitejs/plugin-vue@npm:5.2.0"
+  peerDependencies:
+    vite: ^5.0.0
+    vue: ^3.2.25
+  checksum: 10/536ba28cca29bdecdc0032a08401699030fa9fa541035a8f409a6f658aa440167928ff9eb99abc2db54e4f449d120d86c0761c1f75aa11df659dc78e03ad9dc4
+  languageName: node
+  linkType: hard
+
 "@vitejs/plugin-vue@npm:4.6.2":
   version: 4.6.2
   resolution: "@vitejs/plugin-vue@npm:4.6.2"
@@ -2461,6 +2529,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"await-lock@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "await-lock@npm:2.2.2"
+  checksum: 10/feb11f36768a8545879ed2d214b46aae484e6564ffa466af9212d5782897203770795cae01f813de04a46f66c0b8ee6bc690a0c435b04e00cad5a18ef0842e25
+  languageName: node
+  linkType: hard
+
 "axios@npm:*, axios@npm:^1.5.1":
   version: 1.6.7
   resolution: "axios@npm:1.6.7"
@@ -3065,6 +3140,55 @@ __metadata:
     vite: "npm:^5.2.9"
     vue: "npm:^3.4.23"
     vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-bluesky-main@workspace:^, castmate-plugin-bluesky-main@workspace:plugins/bluesky/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-bluesky-main@workspace:plugins/bluesky/main"
+  dependencies:
+    "@atproto/api": "npm:^0.13.16"
+    castmate-core: "workspace:^"
+    castmate-plugin-bluesky-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-bluesky-renderer@workspace:^, castmate-plugin-bluesky-renderer@workspace:plugins/bluesky/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-bluesky-renderer@workspace:plugins/bluesky/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-plugin-bluesky-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:*"
+    nanoid: "npm:*"
+    pinia: "npm:*"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:*"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-bluesky-shared@workspace:^, castmate-plugin-bluesky-shared@workspace:plugins/bluesky/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-bluesky-shared@workspace:plugins/bluesky/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-bluesky@workspace:plugins/bluesky":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-bluesky@workspace:plugins/bluesky"
   languageName: unknown
   linkType: soft
 
@@ -4524,6 +4648,8 @@ __metadata:
     castmate-dashboard-widget-loader: "workspace:^"
     castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
+    castmate-plugin-bluesky-main: "workspace:^"
+    castmate-plugin-bluesky-renderer: "workspace:^"
     castmate-plugin-dashboards-main: "workspace:^"
     castmate-plugin-dashboards-renderer: "workspace:^"
     castmate-plugin-discord-main: "workspace:^"
@@ -5420,6 +5546,19 @@ __metadata:
     semver: "npm:^7.3.8"
     tiny-typed-emitter: "npm:^2.1.0"
   checksum: 10/55783c3e787b59d08156399b614814233089eaff7a298bb8488a9b848e4275e3ccedfa6731fc8633ab89a8dc94fafd282a7a23c6dbf7f20ae844aa2519e78a96
+  languageName: node
+  linkType: hard
+
+"electron@npm:*":
+  version: 33.2.0
+  resolution: "electron@npm:33.2.0"
+  dependencies:
+    "@electron/get": "npm:^2.0.0"
+    "@types/node": "npm:^20.9.0"
+    extract-zip: "npm:^2.0.1"
+  bin:
+    electron: cli.js
+  checksum: 10/f7d38228324b9a145513dfd4dc8a22d5d4cb840a557571fa9020a0222aad8493c4281f845681cfcd9bf2e5364680aaba8a46783f20b730c6d07b55e72cec6413
   languageName: node
   linkType: hard
 
@@ -7027,6 +7166,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"iso-datestring-validator@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "iso-datestring-validator@npm:2.2.2"
+  checksum: 10/68afe892e594e4340a9a050b96bc674dc458ba8b0c8bd552d7e7fe689137e1a9c85b82257d74b46310f3464fed9187ed51b3db698bc8ffe01a824776b11cfb44
+  languageName: node
+  linkType: hard
+
 "isomorphic-ws@npm:^5.0.0":
   version: 5.0.0
   resolution: "isomorphic-ws@npm:5.0.0"
@@ -7946,6 +8092,13 @@ __metadata:
   bin:
     multicast-dns: cli.js
   checksum: 10/fb93381726ccc8f2e6d163cf230093f45b3e76c1bb17e7cb1ce539676c938fae1dc8572fcc07f0051dfd66ec27a5c36b716802f1af0050783f4fb25819e8575f
+  languageName: node
+  linkType: hard
+
+"multiformats@npm:^9.4.2, multiformats@npm:^9.9.0":
+  version: 9.9.0
+  resolution: "multiformats@npm:9.9.0"
+  checksum: 10/ad55c7d480d22f4258a68fd88aa2aab744fe0cb1e68d732fc886f67d858b37e3aa6c2cec12b2960ead7730d43be690931485238569952d8a3d7f90fdc726c652
   languageName: node
   linkType: hard
 
@@ -9865,6 +10018,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tlds@npm:^1.234.0":
+  version: 1.255.0
+  resolution: "tlds@npm:1.255.0"
+  bin:
+    tlds: bin.js
+  checksum: 10/ec42c9e913ded4cdce26cc95343be444850ac23ed6193944d7eb5b6e0a2978fb597956aaed1e9e22f1cd5c562aed94a6664c4779048593b8d3170e7a54c62f75
+  languageName: node
+  linkType: hard
+
 "tmp-promise@npm:^3.0.2":
   version: 3.0.3
   resolution: "tmp-promise@npm:3.0.3"
@@ -10088,6 +10250,15 @@ __metadata:
   version: 1.4.0
   resolution: "ufo@npm:1.4.0"
   checksum: 10/b7aea8503878dc5ad797d8fc6fe39fec64d9cc7e89fb147ef86ec676e37bb462d99d67c6aad20b15f7d3e6d275d66666b29214422e268f1d98f6eaf707a207a6
+  languageName: node
+  linkType: hard
+
+"uint8arrays@npm:3.0.0":
+  version: 3.0.0
+  resolution: "uint8arrays@npm:3.0.0"
+  dependencies:
+    multiformats: "npm:^9.4.2"
+  checksum: 10/744777ab7200af3e4559bb342c63d66d78575ff1d1fd2a8161d9b90cc15545ffcb549541880dc45157db5fead70384ba6cca30066f670999941536942c2e77b7
   languageName: node
   linkType: hard
 
@@ -10755,5 +10926,12 @@ __metadata:
     compress-commons: "npm:^6.0.2"
     readable-stream: "npm:^4.0.0"
   checksum: 10/aa5abd6a89590eadeba040afbc375f53337f12637e5e98330012a12d9886cde7a3ccc28bd91aafab50576035bbb1de39a9a316eecf2411c8b9009c9f94f0db27
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.23.8":
+  version: 3.23.8
+  resolution: "zod@npm:3.23.8"
+  checksum: 10/846fd73e1af0def79c19d510ea9e4a795544a67d5b34b7e1c4d0425bf6bfd1c719446d94cdfa1721c1987d891321d61f779e8236fde517dc0e524aa851a6eff1
   languageName: node
   linkType: hard

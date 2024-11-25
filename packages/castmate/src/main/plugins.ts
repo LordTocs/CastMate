@@ -32,6 +32,8 @@ import dashboardPlugin from "castmate-plugin-dashboards-main"
 import randomPlugin from "castmate-plugin-random-main"
 import remotePlugin from "castmate-plugin-remote-main"
 
+import blueskyPlugin from "castmate-plugin-bluesky-main"
+
 import castmatePlugin from "./builtin-plugin"
 import { WebService, Plugin } from "castmate-core"
 import { migratePlugin } from "./migration/old-migration"
@@ -63,6 +65,7 @@ export async function loadPlugins() {
 		loadPlugin(voicemodPlugin),
 		loadPlugin(minecraftPlugin),
 		loadPlugin(remotePlugin),
+		loadPlugin(blueskyPlugin),
 	]
 	await Promise.allSettled(promises)
 

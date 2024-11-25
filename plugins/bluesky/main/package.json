@@ -1,0 +1,21 @@
+{
+	"name": "castmate-plugin-bluesky-main",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "*"
+	},
+	"dependencies": {
+		"@atproto/api": "^0.13.16",
+		"castmate-core": "workspace:^",
+		"castmate-plugin-bluesky-shared": "workspace:^",
+		"castmate-schema": "workspace:^"
+	}
+}
