@@ -439,6 +439,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@electron/node-gyp@git+https://github.com/electron/node-gyp.git#06b29aafb7708acef8b3669835c8a7857ebc92d2":
+  version: 10.2.0-electron.1
+  resolution: "@electron/node-gyp@https://github.com/electron/node-gyp.git#commit=06b29aafb7708acef8b3669835c8a7857ebc92d2"
+  dependencies:
+    env-paths: "npm:^2.2.0"
+    exponential-backoff: "npm:^3.1.1"
+    glob: "npm:^8.1.0"
+    graceful-fs: "npm:^4.2.6"
+    make-fetch-happen: "npm:^10.2.1"
+    nopt: "npm:^6.0.0"
+    proc-log: "npm:^2.0.1"
+    semver: "npm:^7.3.5"
+    tar: "npm:^6.2.1"
+    which: "npm:^2.0.2"
+  bin:
+    node-gyp: ./bin/node-gyp.js
+  checksum: 10/4ee7c77e1a9f581e36b53f393984e40284dcf9ed38ea51265bb5a4fcc51ea7e86e7765a8b8cfac6405506de04f2464c7379ce3f14485ead36dec13eba78c089c
+  languageName: node
+  linkType: hard
+
 "@electron/notarize@npm:2.5.0":
   version: 2.5.0
   resolution: "@electron/notarize@npm:2.5.0"
@@ -491,10 +511,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/rebuild@npm:^3.6.0":
-  version: 3.6.0
-  resolution: "@electron/rebuild@npm:3.6.0"
+"@electron/rebuild@npm:^3.7.1":
+  version: 3.7.1
+  resolution: "@electron/rebuild@npm:3.7.1"
   dependencies:
+    "@electron/node-gyp": "git+https://github.com/electron/node-gyp.git#06b29aafb7708acef8b3669835c8a7857ebc92d2"
     "@malept/cross-spawn-promise": "npm:^2.0.0"
     chalk: "npm:^4.0.0"
     debug: "npm:^4.1.1"
@@ -503,7 +524,7 @@ __metadata:
     got: "npm:^11.7.0"
     node-abi: "npm:^3.45.0"
     node-api-version: "npm:^0.2.0"
-    node-gyp: "npm:^9.0.0"
+    node-gyp: "npm:latest"
     ora: "npm:^5.1.0"
     read-binary-file-arch: "npm:^1.0.6"
     semver: "npm:^7.3.5"
@@ -511,7 +532,7 @@ __metadata:
     yargs: "npm:^17.0.1"
   bin:
     electron-rebuild: lib/cli.js
-  checksum: 10/bbc8f215059746874d194818785b47a96f3687539226c67074a4af5c4abd6e1e2339c5e91673d5b6312b98c37d056733af662bd68aba393a02e8b643035d08c7
+  checksum: 10/57489816d71b7bee9fa79d9456f7d6d20a066bd20afd8b0d0771ec00741d72ac4b1e4d954c16911f5373a428a014b6ebf4bf84589f4c6258ac4e61b782d9d86c
   languageName: node
   linkType: hard
 
@@ -1414,12 +1435,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/better-sqlite3@npm:^7.6.11":
-  version: 7.6.11
-  resolution: "@types/better-sqlite3@npm:7.6.11"
+"@types/better-sqlite3@npm:^7.6.12":
+  version: 7.6.12
+  resolution: "@types/better-sqlite3@npm:7.6.12"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10/660f29485803e8f1a443b6009c48d172130e5d91f5b2728d8868ed9b39650cf5835b6747fb61141ea4f706dd321fcbf442dac245437ed7f3511901d3578380d3
+  checksum: 10/a442231518f1a3e28e0ee6efe2581807e5cfaa88a8af4513da34e6ae303ce82f5666e8a0048a1d2738fa248b1b369ee28e59a75189ae0b43e28e44a243a2f24b
   languageName: node
   linkType: hard
 
@@ -2586,14 +2607,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:^11.1.2":
-  version: 11.1.2
-  resolution: "better-sqlite3@npm:11.1.2"
+"better-sqlite3@npm:^11.5.0":
+  version: 11.5.0
+  resolution: "better-sqlite3@npm:11.5.0"
   dependencies:
     bindings: "npm:^1.5.0"
     node-gyp: "npm:latest"
     prebuild-install: "npm:^7.1.1"
-  checksum: 10/0427f596149a8dead90d7e80d948a281292dc1bd88dfa7feaea1277e4673c75a724b70bcd460baf92a067118688d656bc4aa94f1fe977767722ad3e282488f03
+  checksum: 10/c76f450f6313b47317270dae9a641c41ca95b2be7b08024741298d019f0c453ebb0ac0707a33af558fcb41373026944dc8409871ee010c7ed08cab869a116371
   languageName: node
   linkType: hard
 
@@ -2967,9 +2988,9 @@ __metadata:
   dependencies:
     "@azure/web-pubsub-client": "npm:^1.0.0"
     "@colors/colors": "npm:^1.6.0"
-    "@electron/rebuild": "npm:^3.6.0"
+    "@electron/rebuild": "npm:^3.7.1"
     "@joshyour/ffprobe-client": "npm:^1.1.7"
-    "@types/better-sqlite3": "npm:^7.6.11"
+    "@types/better-sqlite3": "npm:^7.6.12"
     "@types/cors": "npm:^2.8.17"
     "@types/express": "npm:^4.17.21"
     "@types/fluent-ffmpeg": "npm:^2.1.21"
@@ -2978,17 +2999,18 @@ __metadata:
     "@types/node": "npm:*"
     "@types/semver": "npm:^7.5.8"
     "@types/yaml": "npm:^1.9.7"
-    better-sqlite3: "npm:^11.1.2"
+    better-sqlite3: "npm:^11.5.0"
     castmate-schema: "workspace:^"
     chokidar: "npm:^3.5.3"
     cors: "npm:^2.8.5"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     electron-updater: "npm:6.1.8"
     express: "npm:^4.18.2"
     fluent-ffmpeg: "npm:^2.1.2"
     lodash: "npm:^4.17.21"
     mixpanel: "npm:^0.18.0"
     nanoid: "npm:^5.0.7"
+    node-abi: "npm:^3.71.0"
     recursive-readdir-async: "npm:^1.3.0"
     semver: "npm:^7.6.2"
     sqlite3: "npm:^5.1.7"
@@ -3029,7 +3051,7 @@ __metadata:
     castmate-overlay-core: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     primevue: "npm:3.53.0"
@@ -3045,7 +3067,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-monorepo@workspace:."
   dependencies:
-    "@electron/rebuild": "npm:^3.6.0"
+    "@electron/rebuild": "npm:^3.7.1"
     "@ffmpeg-installer/win32-x64": "npm:^4.1.0"
     "@ffprobe-installer/win32-x64": "npm:^5.1.0"
     "@types/node": "npm:^20.4.8"
@@ -3055,11 +3077,11 @@ __metadata:
     axios: "npm:^1.5.1"
     castmate-core: "workspace:^"
     chromatism2: "npm:^3.0.2"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     eslint: "npm:^8.34.0"
     eslint-plugin-vue: "npm:^9.9.0"
     nanoid: "npm:^5.0.7"
-    node-gyp: "npm:^10.0.1"
+    node-gyp: "npm:^10.2.0"
     pinia: "npm:^2.1.7"
     prettier: "npm:^2.8.4"
     primeflex: "npm:3.3.1"
@@ -3131,7 +3153,7 @@ __metadata:
     castmate-plugin-twitch-overlays: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     primevue: "npm:3.53.0"
@@ -3165,7 +3187,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:*"
+    electron: "npm:^33.2.0"
     nanoid: "npm:*"
     pinia: "npm:*"
     typescript: "npm:*"
@@ -3201,7 +3223,7 @@ __metadata:
     castmate-dashboard-core: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     primevue: "npm:3.53.0"
@@ -3236,7 +3258,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3283,7 +3305,7 @@ __metadata:
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3332,7 +3354,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3382,7 +3404,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3428,7 +3450,7 @@ __metadata:
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3462,7 +3484,7 @@ __metadata:
   dependencies:
     bindings: "npm:~1.2.1"
     node-addon-api: "npm:^5.0.0"
-    node-gyp: "npm:*"
+    node-gyp: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
 
@@ -3476,7 +3498,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3524,7 +3546,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3573,7 +3595,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3620,7 +3642,7 @@ __metadata:
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3671,7 +3693,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3719,7 +3741,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3771,7 +3793,7 @@ __metadata:
     castmate-overlay-core: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     primevue: "npm:3.53.0"
@@ -3796,7 +3818,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     font-list: "npm:^1.5.1"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
@@ -3847,7 +3869,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3895,7 +3917,7 @@ __metadata:
     castmate-overlay-core: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     primevue: "npm:3.53.0"
@@ -3917,7 +3939,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -3953,7 +3975,7 @@ __metadata:
     castmate-dashboard-core: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     primevue: "npm:3.53.0"
@@ -3987,7 +4009,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4032,7 +4054,7 @@ __metadata:
   dependencies:
     bindings: "npm:~1.2.1"
     node-addon-api: "npm:^5.0.0"
-    node-gyp: "npm:*"
+    node-gyp: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
 
@@ -4046,7 +4068,7 @@ __metadata:
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4096,7 +4118,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4144,7 +4166,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:*"
     pinia: "npm:*"
     typescript: "npm:*"
@@ -4192,7 +4214,7 @@ __metadata:
     castmate-plugin-time-shared: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4241,7 +4263,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4287,7 +4309,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4329,7 +4351,7 @@ __metadata:
     castmate-plugin-overlays-main: "workspace:^"
     castmate-plugin-twitch-shared: "workspace:^"
     castmate-schema: "workspace:^"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     fuzzysort: "npm:^2.0.4"
     typescript: "npm:*"
   languageName: unknown
@@ -4346,7 +4368,7 @@ __metadata:
     castmate-plugin-twitch-shared: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     matter-js: "npm:^0.19.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
@@ -4369,7 +4391,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4418,7 +4440,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4465,7 +4487,7 @@ __metadata:
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4505,7 +4527,7 @@ __metadata:
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     typescript: "npm:*"
@@ -4562,7 +4584,7 @@ __metadata:
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     electron-builder: "npm:^25.1.8"
     electron-devtools-installer: "npm:^3.2.0"
     eslint: "npm:^8.17.0"
@@ -4600,7 +4622,7 @@ __metadata:
     "@vueuse/core": "npm:*"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
     primevue: "npm:3.53.0"
@@ -4703,7 +4725,7 @@ __metadata:
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
     chromatism2: "npm:*"
-    electron: "npm:29.4.5"
+    electron: "npm:^33.2.0"
     electron-builder: "npm:^25.1.8"
     electron-devtools-installer: "npm:^3.2.0"
     eslint: "npm:^8.17.0"
@@ -5549,7 +5571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:*":
+"electron@npm:^33.2.0":
   version: 33.2.0
   resolution: "electron@npm:33.2.0"
   dependencies:
@@ -5559,19 +5581,6 @@ __metadata:
   bin:
     electron: cli.js
   checksum: 10/f7d38228324b9a145513dfd4dc8a22d5d4cb840a557571fa9020a0222aad8493c4281f845681cfcd9bf2e5364680aaba8a46783f20b730c6d07b55e72cec6413
-  languageName: node
-  linkType: hard
-
-"electron@npm:29.4.5":
-  version: 29.4.5
-  resolution: "electron@npm:29.4.5"
-  dependencies:
-    "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^20.9.0"
-    extract-zip: "npm:^2.0.1"
-  bin:
-    electron: cli.js
-  checksum: 10/2efc817ba599b32351e7dc3d88c577ff9b3dfb6430156879b0feadaaddd326f1653d90cd91e4f9ad8891afe489626cb73bce07aaed07a394c3033e1818da5446
   languageName: node
   linkType: hard
 
@@ -6518,7 +6527,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^8.0.1":
+"glob@npm:^8.0.1, glob@npm:^8.1.0":
   version: 8.1.0
   resolution: "glob@npm:8.1.0"
   dependencies:
@@ -7615,7 +7624,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"make-fetch-happen@npm:^10.0.3":
+"make-fetch-happen@npm:^10.0.3, make-fetch-happen@npm:^10.2.1":
   version: 10.2.1
   resolution: "make-fetch-happen@npm:10.2.1"
   dependencies:
@@ -8159,6 +8168,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-abi@npm:^3.71.0":
+  version: 3.71.0
+  resolution: "node-abi@npm:3.71.0"
+  dependencies:
+    semver: "npm:^7.3.5"
+  checksum: 10/0a1cef5106c43d67f9f8a911b0c9d5ee08971eda002ba466606c8e6164964456f5211f37966717efc3d5d49bae32f0cf9290254b1286bf71f0ba158a4f8a9846
+  languageName: node
+  linkType: hard
+
 "node-addon-api@npm:^1.6.3":
   version: 1.7.2
   resolution: "node-addon-api@npm:1.7.2"
@@ -8209,26 +8227,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp@npm:*, node-gyp@npm:^10.0.1, node-gyp@npm:latest":
-  version: 10.0.1
-  resolution: "node-gyp@npm:10.0.1"
-  dependencies:
-    env-paths: "npm:^2.2.0"
-    exponential-backoff: "npm:^3.1.1"
-    glob: "npm:^10.3.10"
-    graceful-fs: "npm:^4.2.6"
-    make-fetch-happen: "npm:^13.0.0"
-    nopt: "npm:^7.0.0"
-    proc-log: "npm:^3.0.0"
-    semver: "npm:^7.3.5"
-    tar: "npm:^6.1.2"
-    which: "npm:^4.0.0"
-  bin:
-    node-gyp: bin/node-gyp.js
-  checksum: 10/578cf0c821f258ce4b6ebce4461eca4c991a4df2dee163c0624f2fe09c7d6d37240be4942285a0048d307230248ee0b18382d6623b9a0136ce9533486deddfa8
-  languageName: node
-  linkType: hard
-
 "node-gyp@npm:8.x":
   version: 8.4.1
   resolution: "node-gyp@npm:8.4.1"
@@ -8246,6 +8244,26 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 10/5ac19a7f6212c787f33bb72f889fafb1ce9d80b7ecb87b3785aebb0ff94a70cd5dbb3ecb435a308eaeb26d037c6edaf173951a9edacaadf0f4c3ae189f1e5077
+  languageName: node
+  linkType: hard
+
+"node-gyp@npm:^10.2.0":
+  version: 10.2.0
+  resolution: "node-gyp@npm:10.2.0"
+  dependencies:
+    env-paths: "npm:^2.2.0"
+    exponential-backoff: "npm:^3.1.1"
+    glob: "npm:^10.3.10"
+    graceful-fs: "npm:^4.2.6"
+    make-fetch-happen: "npm:^13.0.0"
+    nopt: "npm:^7.0.0"
+    proc-log: "npm:^4.1.0"
+    semver: "npm:^7.3.5"
+    tar: "npm:^6.2.1"
+    which: "npm:^4.0.0"
+  bin:
+    node-gyp: bin/node-gyp.js
+  checksum: 10/41773093b1275751dec942b985982fd4e7a69b88cae719b868babcef3880ee6168aaec8dcaa8cd0b9fa7c84873e36cc549c6cac6a124ee65ba4ce1f1cc108cfe
   languageName: node
   linkType: hard
 
@@ -8267,6 +8285,26 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 10/329b109b138e48cb0416a6bca56e171b0e479d6360a548b80f06eced4bef3cf37652a3d20d171c20023fb18d996bd7446a49d4297ddb59fc48100178a92f432d
+  languageName: node
+  linkType: hard
+
+"node-gyp@npm:latest":
+  version: 10.0.1
+  resolution: "node-gyp@npm:10.0.1"
+  dependencies:
+    env-paths: "npm:^2.2.0"
+    exponential-backoff: "npm:^3.1.1"
+    glob: "npm:^10.3.10"
+    graceful-fs: "npm:^4.2.6"
+    make-fetch-happen: "npm:^13.0.0"
+    nopt: "npm:^7.0.0"
+    proc-log: "npm:^3.0.0"
+    semver: "npm:^7.3.5"
+    tar: "npm:^6.1.2"
+    which: "npm:^4.0.0"
+  bin:
+    node-gyp: bin/node-gyp.js
+  checksum: 10/578cf0c821f258ce4b6ebce4461eca4c991a4df2dee163c0624f2fe09c7d6d37240be4942285a0048d307230248ee0b18382d6623b9a0136ce9533486deddfa8
   languageName: node
   linkType: hard
 
@@ -8834,10 +8872,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"proc-log@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "proc-log@npm:2.0.1"
+  checksum: 10/f6f23564ff759097db37443e6e2765af84979a703d2c52c1b9df506ee9f87caa101ba49d8fdc115c1a313ec78e37e8134704e9069e6a870f3499d98bb24c436f
+  languageName: node
+  linkType: hard
+
 "proc-log@npm:^3.0.0":
   version: 3.0.0
   resolution: "proc-log@npm:3.0.0"
   checksum: 10/02b64e1b3919e63df06f836b98d3af002b5cd92655cab18b5746e37374bfb73e03b84fe305454614b34c25b485cc687a9eebdccf0242cda8fda2475dd2c97e02
+  languageName: node
+  linkType: hard
+
+"proc-log@npm:^4.1.0":
+  version: 4.2.0
+  resolution: "proc-log@npm:4.2.0"
+  checksum: 10/4e1394491b717f6c1ade15c570ecd4c2b681698474d3ae2d303c1e4b6ab9455bd5a81566211e82890d5a5ae9859718cc6954d5150bb18b09b72ecb297beae90a
   languageName: node
   linkType: hard
 
@@ -9942,7 +9994,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^6.0.2":
+"tar@npm:^6.0.2, tar@npm:^6.2.1":
   version: 6.2.1
   resolution: "tar@npm:6.2.1"
   dependencies:

@@ -24,7 +24,7 @@
     "castmate-plugin-overlays-main": "workspace:^",
     "castmate-plugin-twitch-shared": "workspace:^",
     "castmate-schema": "workspace:^",
-    "electron": "29.4.5",
+    "electron": "^33.2.0",
     "fuzzysort": "^2.0.4"
   }
 }

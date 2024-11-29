@@ -6,15 +6,15 @@
 	"devMain": "src/index.ts",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"rebuild": "electron-rebuild -f -w better-sqlite3",
-		"postinstall": "electron-rebuild -f -w better-sqlite3"
+		"rebuild": "electron-rebuild -f -w better-sqlite3 --force-abi 132",
+		"postinstall": "electron-rebuild -f -w better-sqlite3 --force-abi 132"
 	},
 	"author": "",
 	"license": "ISC",
 	"type": "module",
 	"devDependencies": {
-		"@electron/rebuild": "^3.6.0",
-		"@types/better-sqlite3": "^7.6.11",
+		"@electron/rebuild": "^3.7.1",
+		"@types/better-sqlite3": "^7.6.12",
 		"@types/cors": "^2.8.17",
 		"@types/express": "^4.17.21",
 		"@types/http-proxy": "^1.17.14",
@@ -22,6 +22,7 @@
 		"@types/node": "*",
 		"@types/semver": "^7.5.8",
 		"@types/yaml": "^1.9.7",
+		"node-abi": "^3.71.0",
 		"ts-toolbelt": "*",
 		"typescript": "*"
 	},
@@ -30,11 +31,11 @@
 		"@colors/colors": "^1.6.0",
 		"@joshyour/ffprobe-client": "^1.1.7",
 		"@types/fluent-ffmpeg": "^2.1.21",
-		"better-sqlite3": "^11.1.2",
+		"better-sqlite3": "^11.5.0",
 		"castmate-schema": "workspace:^",
 		"chokidar": "^3.5.3",
 		"cors": "^2.8.5",
-		"electron": "29.4.5",
+		"electron": "^33.2.0",
 		"electron-updater": "6.1.8",
 		"express": "^4.18.2",
 		"fluent-ffmpeg": "^2.1.2",
