@@ -174,7 +174,7 @@ const previewString = computed(() => {
 	text-align: center;
 }
 
-.command-input :deep(.p-tabview .p-tabview-nav li .p-tabview-nav-link) {
+.command-input :deep(.p-tabview-tablist li .p-tabview-tab-header) {
 	padding: 0.25rem 0.5rem;
 }
 
