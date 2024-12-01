@@ -7,12 +7,12 @@
 			:resourceId="resourceId"
 			v-model="config"
 		/>
-		<div class="p-inputgroup mt-5" v-else>
+		<p-input-group class="mt-5" v-else>
 			<span class="p-float-label">
 				<p-input-text id="l" v-model="config" ref="nameInput" autofocus />
 				<label for="l"> Name </label>
 			</span>
-		</div>
+		</p-input-group>
 		<div class="flex justify-content-end mt-1">
 			<p-button :label="isCreate ? 'Create' : 'Save'" @click="submit"></p-button>
 		</div>
@@ -25,6 +25,7 @@ import { provideScrollAttachable, useDialogRef, useResourceData } from "../../ma
 import PButton from "primevue/button"
 import PInputText from "primevue/inputtext"
 import { constructDefault } from "castmate-schema"
+import PInputGroup from "primevue/inputgroup"
 
 const props = defineProps<{}>()
 

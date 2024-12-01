@@ -1,46 +1,51 @@
 <template>
-	<div
-		class="autocomplete-container p-inputgroup"
-		:class="{ 'p-inputwrapper-filled': props.modelValue != null }"
-		ref="container"
-		v-bind="$attrs"
-		@mousedown="stopPropagation"
-	>
-		<input-box
-			:focused="focused"
-			:model="model"
-			@focus="onFocus"
-			v-if="!focused"
-			:tab-index="-1"
-			:bezel-right="false"
-			:placeholder="placeholder"
-			class="clickable-input"
-			:disabled="disabled"
+	<div ref="container" class="autocomplete-container" v-bind="$attrs">
+		<p-input-group
+			class=""
+			:class="{ 'p-inputwrapper-filled': props.modelValue != null }"
+			@mousedown="stopPropagation"
 		>
-			<slot name="selectedItem" v-if="props.modelValue != null" :item="selectedItem" :item-id="props.modelValue">
-				<span style="white-space: nowrap">{{
-					selectedItem ? getItemText(selectedItem, props) : props.modelValue
-				}}</span>
-			</slot>
-		</input-box>
-		<p-input-text
-			v-else
-			@blur="onBlur"
-			class="p-dropdown-label query-input"
-			ref="filterInputElement"
-			v-model="filterValue"
-			@keydown="onFilterKeyDown"
-			:placeholder="placeholder"
-			:disabled="disabled"
-		/>
-		<slot name="append" :disabled="disabled"></slot>
-		<p-button
-			:disabled="disabled"
-			class="no-focus-highlight flex-shrink-0"
-			@click="onDropDownClick"
-			@mousedown="onMousedown"
-			><p-chevron-down-icon
-		/></p-button>
+			<input-box
+				:focused="focused"
+				:model="model"
+				@focus="onFocus"
+				v-if="!focused"
+				:tab-index="-1"
+				:bezel-right="false"
+				:placeholder="placeholder"
+				class="clickable-input"
+				:disabled="disabled"
+			>
+				<slot
+					name="selectedItem"
+					v-if="props.modelValue != null"
+					:item="selectedItem"
+					:item-id="props.modelValue"
+				>
+					<span style="white-space: nowrap">{{
+						selectedItem ? getItemText(selectedItem, props) : props.modelValue
+					}}</span>
+				</slot>
+			</input-box>
+			<p-input-text
+				v-else
+				@blur="onBlur"
+				class="p-dropdown-label query-input"
+				ref="filterInputElement"
+				v-model="filterValue"
+				@keydown="onFilterKeyDown"
+				:placeholder="placeholder"
+				:disabled="disabled"
+			/>
+			<slot name="append" :disabled="disabled"></slot>
+			<p-button
+				:disabled="disabled"
+				class="no-focus-highlight flex-shrink-0"
+				@click="onDropDownClick"
+				@mousedown="onMousedown"
+				><p-chevron-down-icon />
+			</p-button>
+		</p-input-group>
 	</div>
 	<autocomplete-drop-list
 		ref="dropDown"
@@ -68,7 +73,8 @@
 import { ref, useModel, nextTick, watch, computed } from "vue"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
-import PChevronDownIcon from "primevue/icons/chevrondown"
+import PInputGroup from "primevue/inputgroup"
+import PChevronDownIcon from "@primevue/icons/chevrondown"
 import { useElementSize, useEventListener } from "@vueuse/core"
 import { usePropagationStop } from "../../../util/dom"
 import {

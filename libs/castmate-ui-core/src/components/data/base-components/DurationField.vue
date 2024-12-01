@@ -1,32 +1,30 @@
 <template>
 	<div
-		class="p-dropdown p-inputwrapper"
+		class="p-inputwrapper duration-input"
 		:class="{
-			'p-filled': inputValue.length > 0 || focused,
+			'p-filled': model != null,
 			'p-focused': focused,
-			'p-inputwrapper-filled': inputValue.length > 0 || focused,
+			'p-inputwrapper-filled': model != null,
 			'p-inputwrapper-focused': focused,
 		}"
-		:input-id="inputId"
 	>
-		<fake-input-backbone
-			ref="hiddenInput"
-			v-model="inputValue"
-			v-model:focused="focused"
-			v-model:selection="selection"
-			inputmode="numeric"
-			@blur="onBlur"
-			@focus="onFocus"
-			@keypress="onKeyPress"
-		/>
 		<div
-			class="p-dropdown-label p-component p-inputtext duration-input"
-			:class="{
-				'forced-focus': focused,
-			}"
-			ref="imposterDiv"
+			class="p-inputtext p-component input-box-internal"
+			:class="{ 'focus-outline': focused }"
+			style="width: unset"
 			@click="onFakeClick"
+			ref="imposterDiv"
 		>
+			<fake-input-backbone
+				ref="hiddenInput"
+				v-model="inputValue"
+				v-model:focused="focused"
+				v-model:selection="selection"
+				inputmode="numeric"
+				@blur="onBlur"
+				@focus="onFocus"
+				@keypress="onKeyPress"
+			/>
 			<span class="prop-up"></span>
 			<fake-input-string
 				:text="inputHours"
@@ -77,6 +75,7 @@ import FakeInputBackbone from "../../fake-input/FakeInputBackbone.vue"
 import { InputSelection, PartialSelectionResult, useCombinedPartialSelects } from "../../fake-input/FakeInputTypes"
 import { useClickDragRect, usePropagationStop } from "../../../util/dom"
 import { emit } from "process"
+import InputBox from "./InputBox.vue"
 
 const props = defineProps<{
 	modelValue: Duration | undefined
@@ -162,6 +161,7 @@ function onCharSelect(index: number) {
 }
 
 function onFakeClick(ev: MouseEvent) {
+	console.log("FakeClick", hiddenInput.value)
 	hiddenInput.value?.focus()
 	if (!dragState.value.dragRect) {
 		hiddenInput.value?.selectChars(inputValue.value.length, inputValue.value.length)
@@ -264,6 +264,7 @@ function onBlur(ev: FocusEvent) {
 }
 
 function onFocus(ev: FocusEvent) {
+	console.log("FOCUS")
 	emits("focus", ev)
 }
 
@@ -299,15 +300,17 @@ function onKeyPress(ev: KeyboardEvent) {
 </script>
 
 <style scoped>
+.duration-input {
+	width: 0;
+	flex: 1;
+	cursor: text;
+}
+
 .forced-focus {
 	outline: 0 none;
 	outline-offset: 0;
 	box-shadow: 0 0 0 1px #e9aaff;
 	border-color: #c9b1cb;
-}
-
-.duration-input {
-	cursor: text;
 }
 
 .prop-up {

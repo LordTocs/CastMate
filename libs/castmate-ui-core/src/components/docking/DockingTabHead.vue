@@ -12,7 +12,9 @@
 
 		<div class="spacer"></div>
 
-		<div class="dirty-dot" v-if="document?.dirty && isOutside"></div>
+		<div class="button-placeholder" v-if="document?.dirty && isOutside">
+			<div class="dirty-dot"></div>
+		</div>
 		<p-button
 			icon="mdi mdi-close"
 			text
@@ -171,7 +173,7 @@ function tabMouseDown(ev: MouseEvent) {
 }
 
 .selected.focused {
-	border-top: 2px solid var(--primary-color);
+	border-top: 2px solid var(--p-primary-color);
 	border-bottom: none;
 	background-color: var(--surface-d);
 }
@@ -183,7 +185,7 @@ function tabMouseDown(ev: MouseEvent) {
 }
 
 .dragHover {
-	background-color: var(--surface-400);
+	background-color: var(--p-surface-600);
 }
 
 .unselected {
@@ -199,7 +201,7 @@ function tabMouseDown(ev: MouseEvent) {
 	height: 10px;
 	border-radius: 100px;
 	background-color: white;
-	margin-right: 0.5rem;
+	margin: 2px 1px;
 }
 
 .docked-tab-head .tiny-button {

@@ -1,9 +1,38 @@
+@font-face {
+	font-family: "Inter var";
+	font-weight: 100 900;
+	font-display: swap;
+	font-style: normal;
+	font-named-instance: "Regular";
+	src: url("../assets/fonts/Inter-roman.var.woff2?v=3.19") format("woff2");
+}
+@font-face {
+	font-family: "Inter var";
+	font-weight: 100 900;
+	font-display: swap;
+	font-style: italic;
+	font-named-instance: "Italic";
+	src: url("../assets/fonts/Inter-italic.var.woff2?v=3.19") format("woff2");
+}
+
+:root {
+	--font-family: Inter var, sans-serif;
+	--border-radius: var(--p-border-radius-md);
+	--surface-a: var(--p-surface-900);
+	--surface-b: var(--p-surface-950);
+	--surface-c: var(--p-surface-800);
+	--surface-d: var(--p-surface-800);
+	--surface-e: var(--p-surface-900);
+	--surface-f: var(--p-surface-900);
+	--surface-border: rgba(255, 255, 255, 0.1);
+}
+
 .mdi {
 	font-family: "primeicons"; /* Without this the icons will all be off center. Fonts are weird. Don't think about this too hard */
 }
 
 .active-profile-icon {
-	color: var(--primary-color);
+	color: var(--p-primary-color);
 }
 
 .no-focus-highlight {

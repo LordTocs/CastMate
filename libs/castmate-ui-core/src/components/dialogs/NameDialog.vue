@@ -1,12 +1,12 @@
 <template>
 	<div>
 		<form @submit.prevent="create">
-			<div class="p-inputgroup">
-				<span class="p-float-label">
+			<p-input-group>
+				<p-float-label>
 					<p-input-text id="l" v-model="name" ref="nameInput" autofocus />
 					<label for="l"> {{ props.label }} </label>
-				</span>
-			</div>
+				</p-float-label>
+			</p-input-group>
 			<div class="flex justify-content-end mt-1">
 				<p-button type="submit" label="Create"></p-button>
 			</div>
@@ -18,6 +18,8 @@
 import { ref, computed, inject, type Ref, onMounted } from "vue"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
+import PInputGroup from "primevue/inputgroup"
+import PFloatLabel from "primevue/floatlabel"
 import { useDialogRef } from "../../util/dialog-helper" //Wtf primevue
 
 const dialogRef = useDialogRef()

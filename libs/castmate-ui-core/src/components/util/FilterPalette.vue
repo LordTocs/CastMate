@@ -7,14 +7,14 @@
 			@mousedown="onMouseDown"
 		>
 			<div class="p-menu-start">
-				<span class="p-inputgroup">
+				<p-input-group>
 					<p-input-text
 						v-model="filter"
 						ref="filterInput"
 						:placeholder="filterPlaceholder"
 						@keydown="onKeyDown"
 					/>
-				</span>
+				</p-input-group>
 			</div>
 			<ul class="p-menu-list" ref="scroller">
 				<template v-for="item of filteredItems">
@@ -88,9 +88,10 @@
 <script setup lang="ts">
 import PPortal from "primevue/portal"
 import PInputText from "primevue/inputtext"
+import PInputGroup from "primevue/inputgroup"
 import { ref, toValue, computed, markRaw, nextTick, watch } from "vue"
 import type { MenuItem } from "primevue/menuitem"
-import { ObjectUtils } from "primevue/utils"
+import { resolveFieldData } from "@primeuix/utils/object"
 import _cloneDeep from "lodash/cloneDeep"
 import { useEventListener } from "@vueuse/core"
 
@@ -187,7 +188,7 @@ function isItemFocused(item: MenuItem) {
 
 function getItemValue(item: MenuItem) {
 	//@ts-ignore prime-vue has mistyped their function
-	return props.optionValue ? ObjectUtils.resolveFieldData(item, props.optionValue) : item
+	return props.optionValue ? resolveFieldData(item, props.optionValue) : item
 }
 
 function isCurrentItem(item: MenuItem) {

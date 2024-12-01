@@ -1,5 +1,5 @@
 import { useEventListener } from "@vueuse/core"
-import { DomHandler } from "primevue/utils"
+//import { DomHandler } from "@primevue/core/api"
 import { computed, MaybeRefOrGetter, toValue, ref, toRaw, nextTick, provide, inject, ComputedRef } from "vue"
 import { useFocusThisTab } from "./docking"
 
@@ -284,10 +284,10 @@ export function positionPortal(
 	if (!element || !target || !attachTo) return
 
 	if (attachTo == "body") {
-		DomHandler.absolutePosition(element, target)
+		//DomHandler.absolutePosition(element, target)
 		return
 	} else if (attachTo == "self") {
-		DomHandler.relativePosition(element, target)
+		//DomHandler.relativePosition(element, target)
 		return
 	} else if (typeof attachTo == "string") {
 		return

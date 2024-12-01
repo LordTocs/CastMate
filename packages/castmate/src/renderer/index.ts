@@ -23,11 +23,12 @@ import ConfirmationService from "primevue/confirmationservice"
 
 //theme
 // import "primevue/resources/themes/lara-dark-blue/theme.css"
-import "./theme/castmate/theme.scss"
+//import "./theme/castmate/theme.scss"
 import "./css/theme-ext.css"
 import "./css/spellcast.css"
 //core
-import "primevue/resources/primevue.min.css"
+//import "primevue/resources/primevue.min.css"
+import Aura from "@primevue/themes/aura"
 
 import "primeicons/primeicons.css"
 import "primeflex/primeflex.css"
@@ -76,7 +77,7 @@ import Tooltip from "primevue/tooltip"
 import { IPCOverlayWidgetDescriptor } from "castmate-plugin-overlays-shared"
 import { sendDashboardsToMain, sendOverlaysToMain } from "./util/overlay-util"
 import { setupProxyDialogService } from "../../../../libs/castmate-ui-core/src/util/dialog-helper"
-
+import { definePreset } from "@primevue/themes"
 /*
 const router = createRouter({
 	history: createWebHistory(),
@@ -86,9 +87,49 @@ const router = createRouter({
 const pinia = createPinia()
 const app = createApp(App)
 
+const castMatePreset = definePreset(Aura, {
+	semantic: {
+		primary: {
+			50: "#fefbff",
+			100: "#faebff",
+			200: "#f6daff",
+			300: "#f1caff",
+			400: "#edbaff",
+			500: "#e9aaff",
+			600: "#c691d9",
+			700: "#a377b3",
+			800: "#805e8c",
+			900: "#5d4466",
+			950: "#3a2b40",
+		},
+		colorScheme: {
+			dark: {
+				surface: {
+					0: "#ffffff",
+					50: "#f8f8f8",
+					100: "#dcdddd",
+					200: "#c1c2c3",
+					300: "#a5a7a8",
+					400: "#8a8c8e",
+					500: "#6e7173",
+					600: "#5e6062",
+					700: "#4d4f51",
+					800: "#3c3c3c",
+					900: "#212121",
+					950: "#121212",
+				},
+			},
+		},
+	},
+})
+
 //DialogService.install?.(app)
 console.log("Dialog service inited")
-app.use(PrimeVue)
+app.use(PrimeVue, {
+	theme: {
+		preset: castMatePreset,
+	},
+})
 //app.use(DialogService)
 setupProxyDialogService(app)
 

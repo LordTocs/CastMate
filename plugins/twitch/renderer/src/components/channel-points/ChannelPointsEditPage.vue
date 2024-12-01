@@ -132,7 +132,7 @@ import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
-import { FilterMatchMode } from "primevue/api"
+//import { FilterMatchMode } from "primevue/api"
 import { computed, ref } from "vue"
 import { useElementSize } from "@vueuse/core"
 import { useResourceArray, useResourceData } from "castmate-ui-core"
@@ -145,9 +145,9 @@ import { useResourceEditDialog, useResourceCreateDialog, useResourceDeleteDialog
 
 const filterValue = ref("")
 
-const filters = ref({
-	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-})
+// const filters = ref({
+// 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+// })
 
 const containerDiv = ref<HTMLElement | null>(null)
 const containerSize = useElementSize(containerDiv)

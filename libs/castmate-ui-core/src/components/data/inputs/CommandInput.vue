@@ -37,14 +37,14 @@
 				<label-floater no-float label="Match Anywhere" input-id="match" v-slot="labelProps">
 					<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
 				</label-floater>
-				<div class="p-inputgroup mt-2" v-if="model?.mode == 'string'">
+				<p-input-group class="mt-2" v-if="model?.mode == 'string'">
 					<p-check-box binary input-id="leftBoundary" v-model="model.leftBoundary" />
 					<label for="leftBoundary" class="ml-2"> Left Break </label>
-				</div>
-				<div class="p-inputgroup mt-2" v-if="model?.mode == 'string'">
+				</p-input-group>
+				<p-input-group class="mt-2" v-if="model?.mode == 'string'">
 					<p-check-box binary input-id="rightBondary" v-model="model.rightBoundary" />
 					<label for="rightBoundary" class="ml-2"> Right Break </label>
-				</div>
+				</p-input-group>
 				<div class="command-preview pt-1">
 					{{ previewString }}
 				</div>
@@ -66,6 +66,7 @@ import PTabView from "primevue/tabview"
 import PTabPanel from "primevue/tabpanel"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
+import PInputGroup from "primevue/inputgroup"
 import { Command, CommandMode, SchemaCommand, getCommandInfoString } from "castmate-schema"
 import { computed, useModel } from "vue"
 import LabelFloater from "../base-components/LabelFloater.vue"

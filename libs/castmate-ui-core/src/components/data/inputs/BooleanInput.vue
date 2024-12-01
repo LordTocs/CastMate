@@ -1,9 +1,9 @@
 <template>
 	<document-path :local-path="localPath">
-		<div class="p-inputgroup" v-bind="$attrs">
+		<p-input-group v-bind="$attrs">
 			<p-check-box binary input-id="check" v-model="model" />
 			<label for="check" class="ml-2" v-if="schema.name"> {{ schema.name }} </label>
-		</div>
+		</p-input-group>
 	</document-path>
 </template>
 
@@ -11,6 +11,7 @@
 import { SchemaBoolean } from "castmate-schema"
 import DocumentPath from "../../document/DocumentPath.vue"
 import PCheckBox from "primevue/checkbox"
+import PInputGroup from "primevue/inputgroup"
 import { useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 

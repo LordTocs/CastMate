@@ -2,7 +2,6 @@
 	<div class="container">
 		<div class="inner-container">
 			<p-data-table
-				v-model:filters="filters"
 				class="flex flex-column"
 				:value="variables"
 				data-key="id"
@@ -18,7 +17,7 @@
 						<div class="flex-grow-1" />
 						<span class="p-input-icon-left">
 							<i class="pi pi-search" />
-							<p-input-text v-model="filters['global'].value" placeholder="Search" />
+							<!-- <p-input-text v-model="filters['global'].value" placeholder="Search" /> -->
 						</span>
 					</div>
 				</template>
@@ -67,7 +66,7 @@ import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
-import { FilterMatchMode } from "primevue/api"
+//import { FilterMatchMode } from "primevue/api"
 import { usePluginStore, DataView } from "castmate-ui-core"
 import { ref } from "vue"
 import { useVariableList, RendererVariableDefinition, useVariableStore } from "../variable-store"
@@ -103,9 +102,9 @@ function createNew() {
 	})
 }
 
-const filters = ref({
-	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-})
+// const filters = ref({
+// 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+// })
 
 function deleteDialog(def: RendererVariableDefinition) {
 	confirm.require({

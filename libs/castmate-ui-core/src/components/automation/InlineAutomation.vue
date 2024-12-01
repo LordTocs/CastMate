@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup" style="margin-top: 1.5rem">
+	<p-input-group style="margin-top: 1.5rem">
 		<label-floater :label="label" :icon="icon" input-id="inline-automation" v-slot="labelProps">
 			<input-box
 				v-if="!view?.open"
@@ -48,7 +48,7 @@
 				<expander-slider color="#3c3c3c" v-model="view.height" :container="editBody" />
 			</div>
 		</label-floater>
-	</div>
+	</p-input-group>
 </template>
 
 <script setup lang="ts">
@@ -60,6 +60,7 @@ import AutomationEdit from "./AutomationEdit.vue"
 import { ResourceProxyFactory, DataInput, usePropagationStop } from "../../main"
 import SequenceMiniPreview from "./mini/SequenceMiniPreview.vue"
 import PButton from "primevue/button"
+import PInputGroup from "primevue/inputgroup"
 import { DocumentPath, LabelFloater, InputBox } from "../../main"
 
 const props = defineProps<{

@@ -191,20 +191,20 @@ const menuItems = computed<MenuItem[]>(() => {
 		}
 	)
 
-	if (isDev()) {
-		fileMenu.items?.push(
-			{
-				separator: true,
+	//if (isDev()) {
+	fileMenu.items?.push(
+		{
+			separator: true,
+		},
+		{
+			label: "Input Test",
+			icon: "mdi mdi-pencil",
+			command() {
+				dockingStore.openPage("input-test", "Input Test", InputTestPage)
 			},
-			{
-				label: "Input Test",
-				icon: "mdi mdi-pencil",
-				command() {
-					dockingStore.openPage("input-test", "Input Test", InputTestPage)
-				},
-			}
-		)
-	}
+		}
+	)
+	//}
 
 	fileMenu.items?.push({
 		label: "Exit",

@@ -29,7 +29,7 @@ import { useMediaStore } from "../../media/media-store.ts"
 import MediaTree from "./MediaTree.vue"
 import PDataTable from "primevue/datatable"
 import PInputText from "primevue/inputtext"
-import { FilterMatchMode } from "primevue/api"
+//import { FilterMatchMode } from "primevue/api"
 import PColumn from "primevue/column"
 import { MediaMetadata } from "castmate-schema"
 import path from "path"
@@ -41,9 +41,9 @@ import { ScrollingTabBody } from "../../main"
 
 import { useMediaDrop } from "../../media/media-store"
 
-const filters = ref({
-	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-})
+// const filters = ref({
+// 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+// })
 
 const mediaStore = useMediaStore()
 const mediaItems = computed(() => {
@@ -98,6 +98,6 @@ const { hoveringFiles } = useMediaDrop(() => tabBody.value?.scrollDiv, "/default
 }
 
 .file-hover {
-	border: solid 2px var(--primary-color);
+	border: solid 2px var(--p-primary-color);
 }
 </style>

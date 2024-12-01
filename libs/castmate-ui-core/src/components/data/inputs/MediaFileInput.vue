@@ -43,7 +43,6 @@ import DataInputBase from "../base-components/DataInputBase.vue"
 
 import { SchemaMediaFile, SchemaBase } from "castmate-schema"
 import { computed, nextTick, ref, useModel } from "vue"
-import { FilterMatchMode } from "primevue/api"
 import { DropDownPanel, useMediaStore, usePropagationStop } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"

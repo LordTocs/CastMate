@@ -7,7 +7,7 @@
 				v-model="model"
 				v-slot="templateProps"
 			>
-				<div class="p-inputgroup" v-bind="templateProps">
+				<p-input-group v-bind="templateProps">
 					<toggle-switch
 						input-id="switch"
 						v-model="model"
@@ -18,7 +18,7 @@
 					<label for="switch" class="ml-2 p-text-secondary align-self-center" v-if="schema.name">
 						{{ schema.name }}
 					</label>
-				</div>
+				</p-input-group>
 			</template-toggle>
 			<data-input-base-menu
 				ref="inputMenu"
@@ -40,6 +40,7 @@ import { SchemaToggle } from "castmate-schema"
 import { SharedDataInputProps, defaultStringIsTemplate } from "../DataInputTypes"
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import DataInputBaseMenu from "../base-components/DataInputBaseMenu.vue"
+import PInputGroup from "primevue/inputgroup"
 
 const props = defineProps<
 	{

@@ -2,7 +2,6 @@
 	<div class="container">
 		<p-data-table
 			:value="memberUsers"
-			v-model:filters="filters"
 			style="width: 100%; max-height: 100%"
 			scrollable
 			data-key="id"
@@ -47,7 +46,7 @@ import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PButton from "primevue/button"
 import PInputText from "primevue/inputtext"
-import { FilterMatchMode } from "primevue/api"
+//import { FilterMatchMode } from "primevue/api"
 import { computed, onMounted, ref, watch, watchEffect } from "vue"
 import { useResource, useResourceIPCCaller } from "castmate-ui-core"
 import { ResourceData } from "castmate-schema"
@@ -65,9 +64,9 @@ const props = defineProps<{
 	pageData: { resourceId: string }
 }>()
 
-const filters = ref({
-	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-})
+// const filters = ref({
+// 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+// })
 
 const resource = useResource<ResourceData<TwitchViewerGroupConfig>>(
 	"CustomTwitchViewerGroup",

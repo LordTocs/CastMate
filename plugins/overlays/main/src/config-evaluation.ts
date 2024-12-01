@@ -118,7 +118,7 @@ export const OverlayEditorConfigBridge = Service(
 				async (event, id: string, plugin: string, widget: string, initialConfig: object) => {
 					if (this.evaluators.has(id)) throw new Error("Already has id")
 
-					logger.log("Creating Overlay Edit", id, plugin, widget, initialConfig)
+					//logger.log("Creating Overlay Edit", id, plugin, widget, initialConfig)
 
 					const evaluator = await createOverlayWidgetEvaluator(
 						plugin,

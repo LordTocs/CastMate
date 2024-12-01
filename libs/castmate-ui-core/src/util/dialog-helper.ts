@@ -2,7 +2,7 @@ import { DialogServiceMethods } from "primevue/dialogservice"
 //@ts-ignore
 import DynamicDialogEventBus from "primevue/dynamicdialogeventbus"
 
-import { type EventBus } from "primevue/utils"
+import { type EventBus } from "@primevue/core/utils"
 
 export const dialogEventBus: ReturnType<typeof EventBus> = DynamicDialogEventBus
 

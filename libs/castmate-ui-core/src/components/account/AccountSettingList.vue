@@ -11,7 +11,7 @@
 			</div>
 		</div>
 		<div class="flex justify-content-end mt-1">
-			<p-button @click="createResourceDlg()" text> Create {{ resourceType }}</p-button>
+			<p-button @click="createResourceDlg()" text> Add {{ resourceType }}</p-button>
 		</div>
 	</div>
 </template>

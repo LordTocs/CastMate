@@ -38,7 +38,7 @@ const clientAxis = computed(() => (props.direction == "horizontal" ? "clientX" :
 }
 
 .grabbed {
-	background-color: var(--primary-color);
+	background-color: var(--p-primary-color);
 }
 
 .vertical {

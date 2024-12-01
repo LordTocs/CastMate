@@ -8,7 +8,7 @@
 			maxHeight: '15rem',
 		}"
 	>
-		<ul class="p-dropdown-items">
+		<ul class="p-select-list">
 			<template v-for="(group, i) in groupedItems">
 				<slot name="groupHeader" :item="group[0]"> </slot>
 
@@ -22,7 +22,7 @@
 					:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
 				>
 					<li
-						class="p-dropdown-item autocomplete-item"
+						class="p-select-option autocomplete-item"
 						:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
 						:data-p-highlight="isCurrentItem(item)"
 						:data-p-focused="isItemFocused(item)"

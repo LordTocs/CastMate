@@ -5,7 +5,7 @@
 				v-if="model"
 				ref="overlayDiv"
 				v-bind="$attrs"
-				class="overlay p-dropdown-panel p-component p-ripple-disabled"
+				class="overlay p-menu p-menu-overlay p-component p-ripple-disabled"
 				:style="{
 					zIndex: primevue.config.zIndex?.overlay,
 				}"

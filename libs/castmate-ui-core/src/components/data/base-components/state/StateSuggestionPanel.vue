@@ -7,10 +7,10 @@
 			maxHeight: '15rem',
 		}"
 	>
-		<ul class="p-dropdown-items">
+		<ul class="p-select-list">
 			<li
 				v-for="suggestion in suggestions"
-				class="p-dropdown-item"
+				class="p-select-option"
 				:class="{ 'p-focus': isFocused(suggestion) }"
 				:data-p-focused="isFocused(suggestion)"
 				:aria-label="suggestion.id"

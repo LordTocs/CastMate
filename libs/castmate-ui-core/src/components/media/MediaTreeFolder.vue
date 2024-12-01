@@ -95,6 +95,6 @@ const { hoveringFiles } = useMediaDrop(() => (true ? folderElement.value : undef
 }
 
 .file-hover {
-	border: solid 2px var(--primary-color);
+	border: solid 2px var(--p-primary-color);
 }
 </style>

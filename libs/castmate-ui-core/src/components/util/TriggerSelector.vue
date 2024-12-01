@@ -31,7 +31,7 @@
 
 			<template #item="{ item, focused, highlighted, onClick }">
 				<li
-					class="p-dropdown-item"
+					class="p-select-option"
 					:class="{ 'p-focus': focused, 'p-highlight': highlighted }"
 					:data-p-highlight="highlighted"
 					:data-p-focused="focused"
