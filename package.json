@@ -37,7 +37,7 @@
 		"pinia": "^2.1.7",
 		"prettier": "^2.8.4",
 		"primeflex": "3.3.1",
-		"primevue": "3.53.0",
+		"primevue": "^4.2.4",
 		"vite": "^5.2.9",
 		"vite-plugin-dts": "^2.3.0",
 		"vue": "^3.4.23"

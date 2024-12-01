@@ -52,7 +52,7 @@
 		"pinia": "^2.1.7",
 		"primeflex": "*",
 		"primeicons": "^6.0.1",
-		"primevue": "3.53.0",
+		"primevue": "^4.2.4",
 		"sass": "^1.71.0",
 		"ts-toolbelt": "*",
 		"vite": "^5.2.9",

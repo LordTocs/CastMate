@@ -47,6 +47,7 @@
 	},
 	"devDependencies": {
 		"@mdi/font": "^7.1.96",
+		"@primevue/themes": "^4.2.4",
 		"@rollup/plugin-node-resolve": "^15.2.1",
 		"@types/archiver": "^6.0.2",
 		"@vitejs/plugin-vue": "4.6.2",
@@ -90,7 +91,7 @@
 		"pinia": "^2.1.7",
 		"primeflex": "*",
 		"primeicons": "^6.0.1",
-		"primevue": "3.53.0",
+		"primevue": "^4.2.4",
 		"sass": "^1.71.0",
 		"ts-toolbelt": "*",
 		"vite": "^5.2.9",

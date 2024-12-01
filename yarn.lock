@@ -1030,6 +1030,53 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@primeuix/styled@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "@primeuix/styled@npm:0.3.2"
+  dependencies:
+    "@primeuix/utils": "npm:^0.3.2"
+  checksum: 10/7febc97eb3aa5c860308b45825e97aef97beb4b9798bc31e6e36839d559ed4a243e1e40bafecdd84b3627ee569c4261608fe295cf953990a2b143f0829f7a78e
+  languageName: node
+  linkType: hard
+
+"@primeuix/utils@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "@primeuix/utils@npm:0.3.2"
+  checksum: 10/31df653f2914e188fe8d5c4db24e36721e743d3f41e672d6a7a5fd275f399949f84e18abb4fca230a3f698f9533ec6092f00166256851fd03f32d27884c75459
+  languageName: node
+  linkType: hard
+
+"@primevue/core@npm:4.2.4":
+  version: 4.2.4
+  resolution: "@primevue/core@npm:4.2.4"
+  dependencies:
+    "@primeuix/styled": "npm:^0.3.2"
+    "@primeuix/utils": "npm:^0.3.2"
+  peerDependencies:
+    vue: ^3.3.0
+  checksum: 10/82e888f3ee63a118149a611e2f31f6ab56fbc4d2c743250e054b5ee0c0343b5af35c6d2ad443f8425a5988835e91bb9555d2e77a888e7aa2087990ee1e3ee1f0
+  languageName: node
+  linkType: hard
+
+"@primevue/icons@npm:4.2.4":
+  version: 4.2.4
+  resolution: "@primevue/icons@npm:4.2.4"
+  dependencies:
+    "@primeuix/utils": "npm:^0.3.2"
+    "@primevue/core": "npm:4.2.4"
+  checksum: 10/9c1b1bc7ecfd466949c8b653ebf4c9afbfee9def89dbfffbdc45a8741cd36fc82d416639c48e470fe7236c9312a1166890a8abc4b0c4f082cc88f79c3bde7b72
+  languageName: node
+  linkType: hard
+
+"@primevue/themes@npm:^4.2.4":
+  version: 4.2.4
+  resolution: "@primevue/themes@npm:4.2.4"
+  dependencies:
+    "@primeuix/styled": "npm:^0.3.2"
+  checksum: 10/1c6f398e7960b7a75f41c914b95107757d535ba2aed8e4020fbe07bf7fc2277b42a85e46ce76795bc4fbc660be196c9d8057f127ed51175c282b004b6883627e
+  languageName: node
+  linkType: hard
+
 "@rollup/plugin-node-resolve@npm:^15.2.1":
   version: 15.2.3
   resolution: "@rollup/plugin-node-resolve@npm:15.2.3"
@@ -3033,7 +3080,7 @@ __metadata:
     chromatism2: "npm:*"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3054,7 +3101,7 @@ __metadata:
     electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3085,7 +3132,7 @@ __metadata:
     pinia: "npm:^2.1.7"
     prettier: "npm:^2.8.4"
     primeflex: "npm:3.3.1"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:^9.6.0"
     typescript: "npm:^5.1.3"
     vite: "npm:^5.2.9"
@@ -3122,7 +3169,7 @@ __metadata:
     chromatism2: "npm:*"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3156,7 +3203,7 @@ __metadata:
     electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3226,7 +3273,7 @@ __metadata:
     electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3796,7 +3843,7 @@ __metadata:
     electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3920,7 +3967,7 @@ __metadata:
     electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -3978,7 +4025,7 @@ __metadata:
     electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -4372,7 +4419,7 @@ __metadata:
     matter-js: "npm:^0.19.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -4592,7 +4639,7 @@ __metadata:
     pinia: "npm:^2.1.7"
     primeflex: "npm:*"
     primeicons: "npm:^6.0.1"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     sass: "npm:^1.71.0"
     ts-toolbelt: "npm:*"
     vite: "npm:^5.2.9"
@@ -4625,7 +4672,7 @@ __metadata:
     electron: "npm:^33.2.0"
     nanoid: "npm:^5.0.7"
     pinia: "npm:^2.1.7"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
     vite: "npm:^5.2.9"
@@ -4661,6 +4708,7 @@ __metadata:
   resolution: "castmate@workspace:packages/castmate"
   dependencies:
     "@mdi/font": "npm:^7.1.96"
+    "@primevue/themes": "npm:^4.2.4"
     "@rollup/plugin-node-resolve": "npm:^15.2.1"
     "@types/archiver": "npm:^6.0.2"
     "@vitejs/plugin-vue": "npm:4.6.2"
@@ -4733,7 +4781,7 @@ __metadata:
     pinia: "npm:^2.1.7"
     primeflex: "npm:*"
     primeicons: "npm:^6.0.1"
-    primevue: "npm:3.53.0"
+    primevue: "npm:^4.2.4"
     sass: "npm:^1.71.0"
     ts-toolbelt: "npm:*"
     vite: "npm:^5.2.9"
@@ -8863,12 +8911,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"primevue@npm:3.53.0":
-  version: 3.53.0
-  resolution: "primevue@npm:3.53.0"
-  peerDependencies:
-    vue: ^3.0.0
-  checksum: 10/a99e556ac7f2302286fc28d3c9b76f84dc7c69b70516a3e15adf47a2a63ead4dd9a0c893df4c9ab29a1502334e68784c467af0799082f0f8ba97bff8723060d8
+"primevue@npm:^4.2.4":
+  version: 4.2.4
+  resolution: "primevue@npm:4.2.4"
+  dependencies:
+    "@primeuix/styled": "npm:^0.3.2"
+    "@primeuix/utils": "npm:^0.3.2"
+    "@primevue/core": "npm:4.2.4"
+    "@primevue/icons": "npm:4.2.4"
+  checksum: 10/a053906c03266e29db83f91c9257eb117f743616da6a3a21854bce526f07cb03713813b744352064d38212629d78630723490f94c1073a7c247653e21fb3fa53
   languageName: node
   linkType: hard
 
