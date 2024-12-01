@@ -3,7 +3,7 @@
 		ref="sliderDiv"
 		class="slider"
 		:class="{ [direction]: true }"
-		:style="{ backgroundColor: sliderColor }"
+		:style="{ backgroundColor: color }"
 		@mousedown="onMouseDown"
 	></div>
 </template>
@@ -17,12 +17,14 @@ import { useEventListener } from "@vueuse/core"
 const props = withDefaults(
 	defineProps<{
 		modelValue: number
-		color: Color
+		color?: Color
 		direction?: "vertical" | "horizontal"
 		container: HTMLElement | undefined | null
+		invert?: boolean
 	}>(),
 	{
 		direction: "horizontal",
+		invert: false,
 	}
 )
 
@@ -33,8 +35,6 @@ const dragging = ref(false)
 const dragOffset = ref<DOMPos>({ x: 0, y: 0 })
 const dragStartPos = ref<DOMPos>({ x: 0, y: 0 })
 const dragStartValue = ref(0)
-
-const sliderColor = computed(() => (dragging.value ? "#ffffff" : props.color))
 
 function onMouseDown(ev: MouseEvent) {
 	if (ev.button != 0) return
@@ -61,10 +61,10 @@ function calcNewValue(ev: ClientPosition) {
 
 	if (props.direction == "horizontal") {
 		const diff = newPos.y - dragStartPos.value.y
-		model.value = dragStartValue.value + diff
+		model.value = dragStartValue.value + diff * (props.invert ? -1 : 1)
 	} else {
 		const diff = newPos.x - dragStartPos.value.x
-		model.value = dragStartValue.value + diff
+		model.value = dragStartValue.value + diff * (props.invert ? -1 : 1)
 	}
 }
 
@@ -95,5 +95,9 @@ useEventListener(
 .slider.vertical {
 	width: 3px;
 	cursor: ew-resize;
+}
+
+.slider {
+	background-color: var(--surface-border);
 }
 </style>
