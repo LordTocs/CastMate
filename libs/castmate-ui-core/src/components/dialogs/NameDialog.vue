@@ -2,7 +2,7 @@
 	<div>
 		<form @submit.prevent="create">
 			<p-input-group>
-				<p-float-label>
+				<p-float-label variant="on">
 					<p-input-text id="l" v-model="name" ref="nameInput" autofocus />
 					<label for="l"> {{ props.label }} </label>
 				</p-float-label>

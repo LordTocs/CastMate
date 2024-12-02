@@ -1,13 +1,13 @@
 <template>
 	<div ref="container" v-if="variableDef" class="variable-edit-dialog">
 		<div class="p-inputgroup var-edit">
-			<span class="p-float-label">
+			<p-float-label>
 				<variable-name-input v-model="variableDef.id" />
 				<label for="name"> Variable Name </label>
-			</span>
+			</p-float-label>
 		</div>
 		<div class="p-inputgroup var-edit">
-			<span class="p-float-label">
+			<p-float-label>
 				<p-dropdown
 					v-model="typeName"
 					:options="variableTypeOptions"
@@ -16,7 +16,7 @@
 					input-id="type"
 				/>
 				<label for="type"> Type </label>
-			</span>
+			</p-float-label>
 		</div>
 		<data-input
 			class="var-edit"
@@ -39,6 +39,7 @@ import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput } f
 import _cloneDeep from "lodash/cloneDeep"
 
 import PDropdown from "primevue/dropdown"
+import PFloatLabel from "primevue/floatlabel"
 
 import { RendererVariableDefinition } from "../variable-store"
 import { getTypeByConstructor, getAllVariableTypes } from "castmate-schema"

@@ -8,10 +8,10 @@
 			v-model="config"
 		/>
 		<p-input-group class="mt-5" v-else>
-			<span class="p-float-label">
+			<p-float-label variant="on">
 				<p-input-text id="l" v-model="config" ref="nameInput" autofocus />
 				<label for="l"> Name </label>
-			</span>
+			</p-float-label>
 		</p-input-group>
 		<div class="flex justify-content-end mt-1">
 			<p-button :label="isCreate ? 'Create' : 'Save'" @click="submit"></p-button>
@@ -26,6 +26,7 @@ import PButton from "primevue/button"
 import PInputText from "primevue/inputtext"
 import { constructDefault } from "castmate-schema"
 import PInputGroup from "primevue/inputgroup"
+import PFloatLabel from "primevue/floatlabel"
 
 const props = defineProps<{}>()
 

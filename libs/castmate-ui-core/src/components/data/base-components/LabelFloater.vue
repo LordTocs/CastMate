@@ -1,5 +1,5 @@
 <template>
-	<float-label v-if="!noFloat">
+	<float-label v-if="!noFloat" variant="on">
 		<slot :placeholder="undefined" :input-id="inputId"> </slot>
 		<label :for="inputId"> <i v-if="icon" :class="icon" /> {{ label }}</label>
 	</float-label>
