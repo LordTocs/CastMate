@@ -2,7 +2,6 @@
 	<div class="account-item-list">
 		<div v-for="account in accountArray" :key="account.id">
 			<div class="account-view">
-				{{ account }}
 				<account-widget :account-type="props.resourceType" :account-id="account.id">
 					<template #extra>
 						<p-button icon="mdi mdi-delete" @click="deleteResourceDlg(account.id)" text></p-button>
