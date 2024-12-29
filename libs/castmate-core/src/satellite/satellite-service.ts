@@ -16,6 +16,7 @@ import { EventList } from "../util/events"
 import { SatelliteResourceConstructor } from "./satellite-resource"
 import { nanoid } from "nanoid/non-secure"
 import { Resource } from "../resources/resource"
+import { isCastMate, isSatellite } from "../util/init-mode"
 
 //WebRTC connections are maintained out of the renderer process since no good node-webrtc libs exist
 
@@ -67,7 +68,7 @@ export const SatelliteService = Service(
 		}
 
 		getCastMateConnection() {
-			if (this.mode == "castmate") throw new Error("This is for satellite only")
+			if (!isSatellite()) throw new Error("This is for satellite only")
 			const connection = this.rtcConnections.keys().next()
 			return connection.done ? undefined : connection.value
 		}
@@ -93,7 +94,7 @@ export const SatelliteService = Service(
 			rendererSatelliteSetRTCOptions(options)
 		}
 
-		constructor(private mode: "satellite" | "castmate") {
+		constructor() {
 			defineIPCFunc("satellite", "satelliteConnectionRequest", async (request: SatelliteConnectionRequest) => {
 				await PubSubManager.getInstance().send("satellite", "satelliteConnectionRequest", request)
 			})
@@ -116,10 +117,10 @@ export const SatelliteService = Service(
 				if (event == "satelliteConnectionIceCandidate") {
 					rendererSatelliteConnectionIceCandidate(data as SatelliteConnectionICECandidate)
 				} else if (event == "satelliteConnectionRequest") {
-					if (this.mode == "satellite") return
+					if (isSatellite()) return
 					rendererSatelliteConnectionRequest(data as SatelliteConnectionRequest)
 				} else if (event == "satelliteConnectionResponse") {
-					if (this.mode == "castmate") return
+					if (isCastMate()) return
 					rendererSatelliteConnectionResponse(data as SatelliteConnectionResponse)
 				}
 			}

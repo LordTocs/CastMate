@@ -52,7 +52,6 @@ export const DashboardAccessService = Service(
 		private widgetRPCs = new Map<string, DashboardWidgetRPCHandler>()
 
 		constructor() {
-			console.log("DASHBOARD ACCESS!!!!")
 			defineIPCFunc("dashboards", "refreshConnections", async () => {
 				await this.refreshConnections()
 			})

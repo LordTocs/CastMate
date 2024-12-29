@@ -1,5 +1,5 @@
 import { TwitchAccountConfig, TwitchAccountSecrets } from "castmate-plugin-twitch-shared"
-import { Account, AccountConstructor, ResourceStorage, loadYAML, usePluginLogger } from "castmate-core"
+import { Account, AccountConstructor, ResourceStorage, isSatellite, loadYAML, usePluginLogger } from "castmate-core"
 import { getTokenInfo, AuthProvider, AccessTokenWithUserId, AccessTokenMaybeWithUserId } from "@twurple/auth"
 import { BrowserWindow } from "electron"
 import { ApiClient, UserIdResolvable } from "@twurple/api"
@@ -57,6 +57,8 @@ const botScopes = [
 	"user:manage:whispers", //Read Whispers
 	"moderator:manage:announcements", //Send Annoucements
 ]
+
+const satelliteScopes = ["user:read:email"]
 
 const CLIENT_ID = "qnybd4aoxlom3u3wjbsstsp5yd2sdl"
 const REDIRECT_URL = `http://localhost/auth/channel/redirect` //Note we don't actually load this redirect URL, the BrowserWindow hooks a redirect to it and pulls the creds before it's loaded.
@@ -405,6 +407,10 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 
 		const channel = new TwitchAccount()
 		channel._id = "channel"
+		if (isSatellite()) {
+			channel._config.scopes = satelliteScopes
+		}
+
 		try {
 			await channel.load()
 		} catch (err) {

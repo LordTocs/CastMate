@@ -6,17 +6,7 @@
 				<account-widget account-type="TwitchAccount" account-id="channel" />
 			</div>
 			<dashboard-display /> -->
-			<connection-page v-if="!connection" class="flex-grow-1" />
-			<template v-else-if="connection.state == 'connecting'">
-				<div class="load-row">
-					<h3>Connecting to CastMate</h3>
-					<p-progress-spinner />
-				</div>
-			</template>
-			<template v-else-if="connection.state == 'connected'">
-				<dashboard-page v-if="pageStore.page == 'dashboard'" />
-				<slots-page v-else-if="pageStore.page == 'slots'" />
-			</template>
+			<component v-if="activePage" :is="activePage" />
 		</div>
 		<div class="load-row" v-else>
 			<h3>Loading CastMate Satellite</h3>
@@ -39,13 +29,36 @@ import PConfirmDialog from "primevue/confirmdialog"
 import ConnectionPage from "./components/pages/ConnectionPage.vue"
 import DashboardPage from "./components/pages/DashboardPage.vue"
 import SlotsPage from "./components/pages/SlotsPage.vue"
-import { usePageStore } from "./util/page-store"
+import { useActivePage, usePageStore } from "./util/page-store"
+import ConnectingPage from "./components/pages/ConnectingPage.vue"
+import SettingsPage from "./components/pages/SettingsPage.vue"
+import { onMounted, watch } from "vue"
 
 const initStore = useInitStore()
 
 const pageStore = usePageStore()
+pageStore.page = "connectionSelection"
+
+pageStore.registerPage("connecting", ConnectingPage)
+pageStore.registerPage("dashboard", DashboardPage)
+pageStore.registerPage("slots", SlotsPage)
+pageStore.registerPage("connectionSelection", ConnectionPage)
+pageStore.registerPage("settings", SettingsPage)
 
 const connection = usePrimarySatelliteConnection()
+
+const activePage = useActivePage()
+
+onMounted(() => {
+	watch(
+		() => connection.value?.state,
+		() => {
+			if (!connection.value || connection.value.state == "disconnected") {
+				pageStore.page = "connectionSelection"
+			}
+		}
+	)
+})
 
 function onKeyDown(ev: KeyboardEvent) {
 	if (ev.ctrlKey && ev.code == "KeyS") {

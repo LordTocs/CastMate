@@ -7,6 +7,7 @@ import { EventList } from "../util/events"
 import { onLoad, onUnload } from "../plugins/plugin"
 import { initingPlugin } from "../plugins/plugin-init"
 import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
+import { isCastMate } from "../util/init-mode"
 
 const logger = usePluginLogger("pubsub")
 
@@ -26,8 +27,6 @@ export const PubSubManager = Service(
 
 		private onConnect = new EventList()
 		private onBeforeDisconnect = new EventList()
-
-		constructor(private mode: "satellite" | "castmate") {}
 
 		setToken(token: string | undefined) {
 			logger.log("Cloud PubSub Received Auth Token")
@@ -92,7 +91,7 @@ export const PubSubManager = Service(
 			logger.log("Starting Cloud PubSub Connection")
 			this.connecting = true
 
-			const negotiationUrl = this.mode == "castmate" ? "/pubsub/negotiate" : "/pubsub/satellite/negotiate"
+			const negotiationUrl = isCastMate() ? "/pubsub/negotiate" : "/pubsub/satellite/negotiate"
 
 			const negotiationResp = await axios.get(negotiationUrl, {
 				baseURL,

@@ -8,6 +8,7 @@ import {
 	defineAction,
 	definePluginResource,
 	defineSatelliteResourceSlotHandler,
+	isSatellite,
 	registerSchemaTemplate,
 	template,
 } from "castmate-core"
@@ -85,7 +86,7 @@ export class SatelliteLight extends LightResource {
 	}
 }
 
-export function setupLights(mode: "castmate" | "satellite") {
+export function setupLights() {
 	definePluginResource(LightResource)
 
 	defineSatelliteResourceSlotHandler(LightResource, {
@@ -97,7 +98,7 @@ export function setupLights(mode: "castmate" | "satellite") {
 		},
 	})
 
-	if (mode == "satellite") return
+	if (isSatellite()) return
 
 	//TODO: Make satellite ignore this!
 	defineAction({

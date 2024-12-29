@@ -3,7 +3,7 @@ import { usePrimarySatelliteConnection, useSatelliteConnection } from "./satelli
 import fs from "node:fs"
 import path from "path"
 import { hashString } from "castmate-schema"
-import { handleIpcMessage, useIpcCaller } from "../main"
+import { handleIpcMessage, useInitStore, useIpcCaller } from "../main"
 import { markRaw, ref } from "vue"
 
 ///https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
@@ -22,11 +22,9 @@ export const useSatelliteMedia = defineStore("satellite-media", () => {
 	const satelliteStore = useSatelliteConnection()
 	const primaryConnection = usePrimarySatelliteConnection()
 
-	const mode = ref<"castmate" | "satellite">("castmate")
+	const initStore = useInitStore()
 
-	async function initialize(initMode: "satellite" | "castmate") {
-		mode.value = initMode
-
+	async function initialize() {
 		handleIpcMessage(
 			"satellite",
 			"startMediaRequest",
@@ -35,7 +33,7 @@ export const useSatelliteMedia = defineStore("satellite-media", () => {
 			}
 		)
 
-		if (initMode == "castmate") {
+		if (initStore.isCastMate) {
 			satelliteStore.registerRPCHandler(
 				"satellite_requestMedia",
 				async (connectionId: string, mediaFile: string) => {
@@ -72,13 +70,6 @@ export const useSatelliteMedia = defineStore("satellite-media", () => {
 				}
 			)
 		}
-	}
-
-	function createCacheName(remoteId: string, mediaFile: string) {
-		const ext = path.extname(mediaFile)
-		const hash = hashString(`${remoteId}${mediaFile}`)
-
-		return `media_${hash}${ext}`
 	}
 
 	async function startMediaRequest(mediaFile: string, cacheName: string, cacheFile: string) {

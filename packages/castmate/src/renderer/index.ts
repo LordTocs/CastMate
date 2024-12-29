@@ -159,7 +159,7 @@ const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
 async function init() {
 	//Wait for the main process to initialize
-	await initStore.initialize()
+	await initStore.initialize("castmate")
 
 	await initStore.waitForInitialSetup()
 
@@ -218,9 +218,9 @@ async function init() {
 
 	await mediaStore.initialize()
 
-	await satelliteStore.initialize("castmate")
+	await satelliteStore.initialize()
 	await satelliteResources.initialize()
-	await satelliteMedia.initialize("castmate")
+	await satelliteMedia.initialize()
 
 	loadOverlayWidgets()
 	loadDashboardWidgets()

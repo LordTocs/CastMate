@@ -99,3 +99,134 @@ export interface OBSWSMediaStatus {
 	/** Milliseconds */
 	mediaCursor: number | null
 }
+
+export interface OBSPropertyBool {
+	type: "Bool"
+	name: string
+	description: string
+}
+
+export interface OBSPropertyInt {
+	type: "Int"
+	name: string
+	description?: string
+	min: number
+	max: number
+	step: number
+}
+
+export interface OBSPropertyFloat {
+	type: "Float"
+	name: string
+	description?: string
+	min: number
+	max: number
+	step: number
+}
+
+export interface OBSPropertyIntSlider {
+	type: "IntSlider"
+	name: string
+	description?: string
+	min: number
+	max: number
+	step: number
+}
+
+export enum OBSPropertyTextType {
+	default,
+	password,
+	multiline,
+	info,
+}
+
+export interface OBSPropertyText {
+	type: "Text"
+	name: string
+	description?: string
+	textType: OBSPropertyTextType
+}
+
+export enum OBSPropertyPathType {
+	file,
+	fileSave,
+	directory,
+}
+
+export interface OBSPropertyPath {
+	type: "Path"
+	name: string
+	description?: string
+	pathType: OBSPropertyPathType
+	filter?: string
+	defaultPath?: string
+}
+
+export enum OBSPropertyListType {
+	editable,
+	list,
+	radio,
+}
+
+export enum OBSPropertyListFormat {
+	int,
+	float,
+	string,
+	bool,
+}
+
+export interface OBSPropertyList {
+	type: "List"
+	name: string
+	description?: string
+	listType: OBSPropertyListType
+	format: OBSPropertyListFormat
+}
+
+export interface OBSPropertyColor {
+	type: "Color"
+	name: string
+	description?: string
+}
+
+export interface OBSPropertyButton {
+	type: "Button"
+	name: string
+	text: string
+}
+
+export interface OBSPropertyFont {
+	type: "Font"
+	name: string
+	description?: string
+}
+
+export enum OBSPropertyGroupType {
+	normal,
+	checkable,
+}
+
+export interface OBSPropertyGroup {
+	type: "Group"
+	name: string
+	description?: string
+	groupType: OBSPropertyGroupType
+	subProps: OBSPropertyFormat
+}
+
+export type OBSProperty =
+	| OBSPropertyBool
+	| OBSPropertyInt
+	| OBSPropertyFloat
+	| OBSPropertyIntSlider
+	| OBSPropertyText
+	| OBSPropertyPath
+	| OBSPropertyList
+	| OBSPropertyColor
+	| OBSPropertyButton
+	| OBSPropertyFont
+	| OBSPropertyGroup
+
+export type OBSPropertyFormat = {
+	[key: string]: OBSProperty
+}
