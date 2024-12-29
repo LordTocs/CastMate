@@ -41,6 +41,8 @@ const overlayVisibleComplete = ref(false)
 const overlayDiv = ref<HTMLElement | null>(null)
 const primevue = usePrimeVue()
 
+const emit = defineEmits(["mousedown"])
+
 const attachTo = injectScrollAttachable()
 
 function onOverlayEnter() {
@@ -58,6 +60,7 @@ useResizeObserver(overlayDiv, (ev) => {
 })
 
 function mouseDown(ev: MouseEvent) {
+	emit("mousedown", ev)
 	stopPropagation(ev)
 }
 

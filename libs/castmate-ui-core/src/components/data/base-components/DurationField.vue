@@ -1,20 +1,6 @@
 <template>
-	<div
-		class="p-inputwrapper duration-input"
-		:class="{
-			'p-filled': model != null,
-			'p-focused': focused,
-			'p-inputwrapper-filled': model != null,
-			'p-inputwrapper-focused': focused,
-		}"
-	>
-		<div
-			class="p-inputtext p-component input-box-internal"
-			:class="{ 'focus-outline': focused }"
-			style="width: unset"
-			@click="onFakeClick"
-			ref="imposterDiv"
-		>
+	<input-box :model="model" :focused="focused" :disabled="disabled" ref="inputBox" @click="onFakeClick">
+		<template #always-render>
 			<fake-input-backbone
 				ref="hiddenInput"
 				v-model="inputValue"
@@ -25,6 +11,9 @@
 				@focus="onFocus"
 				@keypress="onKeyPress"
 			/>
+		</template>
+
+		<template #default="{ inputDiv }">
 			<span class="prop-up"></span>
 			<fake-input-string
 				:text="inputHours"
@@ -35,7 +24,7 @@
 				@select-char="onCharSelect"
 				ref="fakeHours"
 				v-model:partial-select="hoursPartialSel"
-				:selection-container="imposterDiv"
+				:selection-container="inputDiv"
 				:drag-rect="dragState.dragRect"
 			/>
 			<fake-input-string
@@ -47,7 +36,7 @@
 				@select-char="onCharSelect"
 				ref="fakeMinutes"
 				v-model:partial-select="minutesPartialSel"
-				:selection-container="imposterDiv"
+				:selection-container="inputDiv"
 				:drag-rect="dragState.dragRect"
 			/>
 			<fake-input-string
@@ -60,11 +49,11 @@
 				@select-char="onCharSelect"
 				ref="fakeSeconds"
 				v-model:partial-select="secondsPartialSel"
-				:selection-container="imposterDiv"
+				:selection-container="inputDiv"
 				:drag-rect="dragState.dragRect"
 			/>
-		</div>
-	</div>
+		</template>
+	</input-box>
 </template>
 
 <script setup lang="ts">
@@ -76,11 +65,13 @@ import { InputSelection, PartialSelectionResult, useCombinedPartialSelects } fro
 import { useClickDragRect, usePropagationStop } from "../../../util/dom"
 import { emit } from "process"
 import InputBox from "./InputBox.vue"
+import { useEventListener } from "@vueuse/core"
 
 const props = defineProps<{
 	modelValue: Duration | undefined
 	required?: boolean
 	inputId?: string
+	disabled?: boolean
 	placeholder?: string
 }>()
 
@@ -91,6 +82,7 @@ const model = useModel(props, "modelValue")
 const HOUR_DUR = 60 * 60
 const MINUTE_DUR = 60
 
+const inputBox = ref<InstanceType<typeof InputBox>>()
 const inputValue = ref<string>("")
 const hiddenInput = ref<InstanceType<typeof FakeInputBackbone> | null>(null)
 
@@ -171,7 +163,8 @@ function onFakeClick(ev: MouseEvent) {
 }
 
 //Selection Drag
-const imposterDiv = ref<HTMLElement | null>(null)
+const imposterDiv = computed(() => inputBox.value?.inputDiv)
+
 const dragState = useClickDragRect(imposterDiv, () => {
 	hiddenInput.value?.focus()
 })

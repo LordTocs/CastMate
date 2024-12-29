@@ -58,6 +58,8 @@ export { default as StreamPlanEditorPage } from "./components/stream-plan/Stream
 export { default as VariableNameInput } from "./components/data/base-components/VariableNameInput.vue"
 
 export { default as DataInputBase } from "./components/data/base-components/DataInputBase.vue"
+export { default as DropListItem } from "./components/data/base-components/DropListItem.vue"
+export { default as FilterInputBox } from "./components/data/base-components/FilterInputBox.vue"
 
 export { default as StreamPlanDashboardWidget } from "./components/stream-plan/StreamPlanDashboardWidget.vue"
 

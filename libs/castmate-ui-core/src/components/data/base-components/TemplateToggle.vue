@@ -1,7 +1,7 @@
 <template>
 	<template v-if="templateMode">
 		<div
-			class="p-password p-component p-input-wrapper p-input-icon-right flex flex-row flex-grow-1"
+			class="p-input-password p-input-wrapper w-full"
 			:class="{
 				'p-filled': !!model,
 				'p-focused': focused,
@@ -16,16 +16,14 @@
 		>
 			<p-input-text
 				v-if="!props.multiLine"
-				class="flex-grow-1"
+				class="template-input input-icon-spacing w-full"
 				:class="{ 'no-right-bezel': noRightBezel }"
-				style="padding-right: 2rem"
 				v-model="model"
 				:disabled="disabled"
 			/>
 			<p-text-area
-				class="flex-grow-1"
+				class="template-input input-icon-spacing w-full"
 				:class="{ 'no-right-bezel': noRightBezel }"
-				style="padding-right: 2rem"
 				v-model="model"
 				:disabled="disabled"
 				autoResize
@@ -99,12 +97,21 @@ function onSuggest(suggestion: string) {
 </script>
 
 <style scoped>
+.input-icon-spacing {
+	padding-inline-end: calc((var(--p-form-field-padding-x) * 2) + var(--p-icon-size));
+}
+
 .input-icon {
+	inset-inline-end: var(--p-form-field-padding-x);
+	color: #b3b3b3;
 	position: absolute;
 	top: 50%;
-	margin-top: -0.5rem;
-	right: 0.75rem;
-	color: #b3b3b3;
-	cursor: pointer;
+	margin-top: calc(-1 * calc(var(--p-icon-size) / 2));
+	width: var(--p-icon-size);
+	height: var(--p-icon-size);
+}
+
+.template-input {
+	/* width: unset !important; */
 }
 </style>

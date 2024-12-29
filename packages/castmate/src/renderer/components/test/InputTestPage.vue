@@ -1,7 +1,7 @@
 <template>
 	<scrolling-tab-body>
 		<div class="flex flex-row">
-			<div style="width: 350px; flex-shrink: 0">
+			<div style="width: 50%; flex-shrink: 0">
 				<data-input :schema="baseTestSchema" v-model="testData" />
 			</div>
 			<div class="flex-grow-1 flex-shrink-0">

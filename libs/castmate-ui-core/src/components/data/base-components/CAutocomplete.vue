@@ -1,94 +1,67 @@
 <template>
-	<div ref="container" class="autocomplete-container" v-bind="$attrs">
-		<p-input-group
-			class=""
-			:class="{ 'p-inputwrapper-filled': props.modelValue != null }"
-			@mousedown="stopPropagation"
-		>
-			<input-box
-				:focused="focused"
-				:model="model"
-				@focus="onFocus"
-				v-if="!focused"
-				:tab-index="-1"
-				:bezel-right="false"
-				:placeholder="placeholder"
-				class="clickable-input"
-				:disabled="disabled"
-			>
-				<slot
-					name="selectedItem"
-					v-if="props.modelValue != null"
-					:item="selectedItem"
-					:item-id="props.modelValue"
-				>
-					<span style="white-space: nowrap">{{
-						selectedItem ? getItemText(selectedItem, props) : props.modelValue
-					}}</span>
-				</slot>
-			</input-box>
-			<p-input-text
-				v-else
-				@blur="onBlur"
-				class="p-dropdown-label query-input"
-				ref="filterInputElement"
-				v-model="filterValue"
-				@keydown="onFilterKeyDown"
-				:placeholder="placeholder"
-				:disabled="disabled"
-			/>
-			<slot name="append" :disabled="disabled"></slot>
-			<p-button
-				:disabled="disabled"
-				class="no-focus-highlight flex-shrink-0"
-				@click="onDropDownClick"
-				@mousedown="onMousedown"
-				><p-chevron-down-icon />
-			</p-button>
-		</p-input-group>
-	</div>
-	<autocomplete-drop-list
-		ref="dropDown"
-		:container="container"
-		v-model:focused-id="focusedId"
-		v-model="overlayVisible"
-		:grouped-items="filteredItems"
-		:text-prop="textProp"
-		:group-prop="groupProp"
-		:current-id="selectedItem?.id"
-		@select="(item) => (model = item.id)"
-		@closed="onBlur"
+	<p-input-group
+		class="w-full"
+		:class="{ 'p-inputwrapper-filled': props.modelValue != null }"
+		@mousedown="stopPropagation"
 	>
-		<template #groupHeader="scope" v-if="$slots.groupHeader">
-			<slot name="groupHeader" v-bind="scope" />
-		</template>
+		<filter-input-box
+			ref="filterBox"
+			v-bind="$attrs"
+			v-model="model"
+			@focus="onFocus"
+			@blur="onBlur"
+			@filter-key-down="onFilterKeyDown"
+		>
+			<slot name="selectedItem" v-if="props.modelValue != null" :item="selectedItem" :item-id="props.modelValue">
+				<span style="white-space: nowrap">{{
+					selectedItem ? getItemText(selectedItem, props) : props.modelValue
+				}}</span>
+			</slot>
 
-		<template #item="scope" v-if="$slots.item">
-			<slot name="item" v-bind="scope" />
-		</template>
-	</autocomplete-drop-list>
+			<template #append="{ filter, anchor }">
+				<autocomplete-drop-list
+					ref="dropDown"
+					:container="anchor"
+					v-model:focused-id="focusedId"
+					v-model="dropDownOpen"
+					:grouped-items="groupFilteredItems(filter, items, props)"
+					:text-prop="textProp"
+					:group-prop="groupProp"
+					:current-id="selectedItem?.id"
+					@select="onSelect"
+					@closed="onBlur"
+				>
+					<template #groupHeader="scope" v-if="$slots.groupHeader">
+						<slot name="groupHeader" v-bind="scope" />
+					</template>
+
+					<template #item="scope" v-if="$slots.item">
+						<slot name="item" v-bind="scope" />
+					</template>
+				</autocomplete-drop-list>
+				<slot name="append" :disabled="disabled"></slot>
+				<p-button
+					:disabled="disabled"
+					class="no-focus-highlight flex-shrink-0"
+					@click="onDropDownClick"
+					@mousedown="onMousedown"
+					><p-chevron-down-icon />
+				</p-button>
+			</template>
+		</filter-input-box>
+	</p-input-group>
 </template>
 
 <script setup lang="ts">
 import { ref, useModel, nextTick, watch, computed } from "vue"
-import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
 import PInputGroup from "primevue/inputgroup"
 import PChevronDownIcon from "@primevue/icons/chevrondown"
-import { useElementSize, useEventListener } from "@vueuse/core"
 import { usePropagationStop } from "../../../util/dom"
-import {
-	useGroupedFilteredItems,
-	getItemText,
-	ItemType,
-	AutocompleteItemProps,
-	getPrevItem,
-	getNextItem,
-	findItem,
-} from "../../../util/autocomplete-helpers"
-import LabelFloater from "./LabelFloater.vue"
+import { getItemText, ItemType, AutocompleteItemProps, groupFilteredItems } from "../../../util/autocomplete-helpers"
+
 import _clamp from "lodash/clamp"
-import { DropDownPanel, InputBox } from "../../../main"
+import FilterInputBox from "./FilterInputBox.vue"
 import AutocompleteDropList from "./AutocompleteDropList.vue"
 
 const props = withDefaults(
@@ -108,40 +81,41 @@ const model = useModel(props, "modelValue")
 const emit = defineEmits(["update:modelValue", "open"])
 
 const dropDown = ref<InstanceType<typeof AutocompleteDropList>>()
+const filterBox = ref<InstanceType<typeof FilterInputBox>>()
 
 const stopPropagation = usePropagationStop()
 
 ////////////////////////////
 //Drop Down Opening
-const container = ref<HTMLElement | null>(null)
 
-const overlayVisible = ref(false)
+const dropDownOpen = ref(false)
 function show() {
-	if (!overlayVisible.value) {
-		overlayVisible.value = true
+	if (!dropDownOpen.value) {
+		console.log("Opening")
+		dropDownOpen.value = true
 		focusedId.value = model.value
 		emit("open")
 	}
 }
 function hide() {
-	overlayVisible.value = false
+	console.log("Closing")
+	dropDownOpen.value = false
 }
 
 function onDropDownClick(ev: MouseEvent) {
 	if (ev.button != 0) return
 
-	if (!overlayVisible.value) {
-		focused.value = true
+	if (!dropDownOpen.value) {
+		console.log("Open click")
+		filterBox.value?.focus()
 		show()
-		nextTick(() => {
-			filterInputElement.value?.$el?.focus()
-		})
 	} else {
+		console.log("Close Click")
 		hide()
-		nextTick(() => {
-			filterInputElement.value?.$el?.blur()
-		})
+		filterBox.value?.blur()
 	}
+
+	stopPropagation(ev)
 }
 
 function onMousedown(ev: MouseEvent) {
@@ -152,29 +126,23 @@ function onMousedown(ev: MouseEvent) {
 //////////////////
 //Filtering
 
-const filterValue = ref<string>("")
-const filterInputElement = ref<{ $el: HTMLElement } | null>(null)
-const filteredItems = useGroupedFilteredItems(filterValue, () => props.items, props)
-
 const selectedItem = computed(() => props.items.find((item) => item.id == model.value))
 
 //////
 
-const focused = ref(false)
 const focusedId = ref<any | undefined>(undefined)
 
 function onFocus(ev: FocusEvent) {
-	focused.value = true
-	//filterValue.value = itemText.value ?? ""
 	show()
-	nextTick(() => {
-		filterInputElement.value?.$el?.focus()
-	})
 }
-function onBlur() {
-	focused.value = false
-	filterValue.value = ""
+function onBlur(ev: FocusEvent) {
 	hide()
+}
+
+function onSelect(item: any) {
+	model.value = item.id
+	hide()
+	filterBox?.value?.blur()
 }
 
 ////

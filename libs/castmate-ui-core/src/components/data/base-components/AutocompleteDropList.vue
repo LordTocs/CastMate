@@ -7,6 +7,7 @@
 			overflowY: 'auto',
 			maxHeight: '15rem',
 		}"
+		@mousedown="$event.preventDefault()"
 	>
 		<ul class="p-select-list">
 			<template v-for="(group, i) in groupedItems">
@@ -21,20 +22,16 @@
 					:highlighted="isCurrentItem(item)"
 					:onClick="(ev: MouseEvent) => onItemSelect(ev, item)"
 				>
-					<li
-						class="p-select-option autocomplete-item"
-						:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
-						:data-p-highlight="isCurrentItem(item)"
-						:data-p-focused="isItemFocused(item)"
-						:aria-label="getItemText(item, props)"
-						:aria-selected="isCurrentItem(item)"
+					<drop-list-item
 						@click="onItemSelect($event, item)"
+						:focused="isItemFocused(item)"
+						:highlighted="isCurrentItem(item)"
+						:label="getItemText(item, props)"
 					>
-						{{ getItemText(item, props) }}
-					</li>
+					</drop-list-item>
 				</slot>
 			</template>
-			<slot name="empty" v-if="groupedItems.length == 0"> </slot>
+			<slot name="empty" v-if="isEmpty"> </slot>
 		</ul>
 	</drop-down-panel>
 </template>
@@ -42,7 +39,7 @@
 <script setup lang="ts">
 import { useElementSize } from "@vueuse/core"
 import DropDownPanel from "./DropDownPanel.vue"
-import { computed, useModel } from "vue"
+import { computed, onMounted, useModel, watch } from "vue"
 import {
 	AutocompleteItemProps,
 	ItemType,
@@ -53,6 +50,7 @@ import {
 	groupItems,
 } from "../../../util/autocomplete-helpers"
 import { usePropagationStop } from "../../../main"
+import DropListItem from "./DropListItem.vue"
 
 const props = defineProps<
 	{
@@ -70,6 +68,8 @@ const focusedId = useModel(props, "focusedId")
 
 const containerSize = useElementSize(() => props.container)
 
+const isEmpty = computed(() => props.groupedItems.length == 0 || props.groupedItems[0].length == 0)
+
 const stopPropagation = usePropagationStop()
 
 function isItemFocused(item: ItemType) {
@@ -80,6 +80,15 @@ function isCurrentItem(item: ItemType) {
 	return props.currentId == item.id
 }
 
+onMounted(() => {
+	watch(model, (val, oldVal) => {
+		if (val && !oldVal) {
+			//Clear the focused id when the dropdown opens
+			focusedId.value = undefined
+		}
+	})
+})
+
 function close() {
 	model.value = false
 	emit("closed")
@@ -88,6 +97,7 @@ function close() {
 function onItemSelect(ev: MouseEvent, item: ItemType) {
 	if (ev.button != 0) return
 
+	console.log("SELECTING", item)
 	emit("select", item)
 	close()
 	stopPropagation(ev)
@@ -96,11 +106,11 @@ function onItemSelect(ev: MouseEvent, item: ItemType) {
 
 function selectFocusedItem(ev: Event) {
 	let item = findItem(props.groupedItems, props.focusedId)
-	console.log("Focused?", item)
+	//console.log("Focused?", item)
 	if (item == null) {
 		item = props.groupedItems[0]?.[0]
 	}
-	console.log("Focused!", item)
+	//console.log("Focused!", item)
 
 	if (item) {
 		stopPropagation(ev)

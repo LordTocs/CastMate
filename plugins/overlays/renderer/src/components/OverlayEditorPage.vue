@@ -1,5 +1,5 @@
 <template>
-	<div class="overlay-editor">
+	<div class="overlay-editor" ref="editorDiv">
 		<div class="overlay-editor-header">
 			<div class="pt-4 px-1 flex flex-row w-full justify-content-center gap-1">
 				<div ref="settingsMenuContainer">
@@ -109,6 +109,7 @@ import {
 	DropDownPanel,
 	LabelFloater,
 	stopPropagation,
+	provideScrollAttachable,
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
@@ -133,6 +134,10 @@ const overlayId = useDocumentId()
 
 const port = useSettingValue({ plugin: "castmate", setting: "port" })
 const defaultObsSetting = useSettingValue({ plugin: "obs", setting: "obsDefault" })
+
+const editorDiv = ref<HTMLElement>()
+
+provideScrollAttachable(editorDiv)
 
 const overlayUrl = computed(() => {
 	return `http://localhost:${port.value ?? 8181}/overlays/${overlayId.value}`

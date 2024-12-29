@@ -15,12 +15,14 @@
 			class="p-inputtext p-component input-box-internal"
 			:class="{ 'focus-outline': focused, 'no-left-bezel': !bezelLeft, 'no-right-bezel': !bezelRight }"
 			:tabindex="tabIndex"
-			style="width: unset"
+			style="width: unset; max-width: 100%"
 			@focus="$emit('focus', $event)"
 			@blur="$emit('blur', $event)"
+			@click="$emit('click', $event)"
 			ref="inputDiv"
 		>
-			<slot v-if="model != null && model !== '' && inputDiv" :input-div="inputDiv">
+			<slot name="always-render" :inputDiv="inputDiv"></slot>
+			<slot v-if="((model != null && model !== '') || focused) && inputDiv" :input-div="inputDiv">
 				<span class="model-span">{{ model }}</span>
 			</slot>
 			<span v-else-if="placeholder">{{ placeholder }}</span>
@@ -50,6 +52,12 @@ const props = withDefaults(
 )
 
 const inputDiv = ref<HTMLElement>()
+
+defineEmits(["blur", "focus", "click"])
+
+defineExpose({
+	inputDiv,
+})
 </script>
 
 <style scoped>

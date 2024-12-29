@@ -29,7 +29,11 @@ const lightColor = computed(() => {
 	if (props.modelValue.lightColor == null) {
 		return "#000000"
 	}
-	return LightColor.toColor(props.modelValue.lightColor)
+	try {
+		return LightColor.toColor(props.modelValue.lightColor)
+	} catch {
+		return "#000000"
+	}
 })
 
 const offColor = computed(() => "#000000")
