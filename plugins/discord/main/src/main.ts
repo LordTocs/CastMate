@@ -79,7 +79,14 @@ export default definePlugin(
 				type: Object,
 				properties: {
 					webhook: { type: DiscordWebHook, name: "Channel Webhook", required: true },
-					message: { type: String, name: "Message", required: true, default: "", template: true },
+					message: {
+						type: String,
+						name: "Message",
+						required: true,
+						default: "",
+						template: true,
+						multiLine: true,
+					},
 					files: {
 						type: Array,
 						name: "Files",
