@@ -1,6 +1,13 @@
 <template>
 	<div class="stat-block flex flex-row gap-2 p-3" v-if="channelAccount?.state.authenticated">
 		<div class="stat-item">
+			<span class="stat-label">Channel</span>
+			<div class="stat-value">
+				<p-avatar :image="channelAccount.config.icon" shape="circle" />
+			</div>
+		</div>
+		<div class="stat-divider" />
+		<div class="stat-item">
 			<span class="stat-label">Followers</span>
 			<div class="stat-value">
 				<span>{{ followers?.value }} <i class="mdi mdi-heart" /></span>
@@ -32,6 +39,7 @@
 <script setup lang="ts">
 import { useState } from "castmate-ui-core"
 import { useChannelAccountResource } from "../../main"
+import PAvatar from "primevue/avatar"
 
 const channelAccount = useChannelAccountResource()
 

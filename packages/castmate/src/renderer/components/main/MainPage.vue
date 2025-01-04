@@ -1,6 +1,6 @@
 <template>
 	<flex-scroller>
-		<div class="flex flex-row">
+		<div class="flex flex-row gap-2 p-2">
 			<twitch-main-page-card class="flex-grow-1" style="flex-basis: 0" />
 			<div class="flex-grow-1" style="flex-basis: 0"></div>
 		</div>
