@@ -2,6 +2,7 @@ import {
 	SchemaTwitchCategory,
 	TwitchCategory,
 	TwitchCategoryUnresolved,
+	TwitchStreamTags,
 	TwitchViewer,
 } from "castmate-plugin-twitch-shared"
 import {
@@ -52,6 +53,12 @@ registerSchemaTemplate(TwitchCategory, async (value, context, schema) => {
 
 	const category = await CategoryCache.getInstance().getCategoryById(value)
 	return category?.id
+})
+
+registerSchemaTemplate(TwitchStreamTags, async (value, context, schema) => {
+	if (!value) return undefined
+
+	return await Promise.all(value.map((t) => template(t, context)))
 })
 
 function isDefinitelyNotTwitchId(maybeId: string) {

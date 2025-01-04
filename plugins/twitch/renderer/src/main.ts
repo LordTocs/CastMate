@@ -15,6 +15,7 @@ import {
 	TwitchViewerGroup,
 	TwitchCategory,
 	ChannelPointRewardConfig,
+	TwitchStreamTags,
 } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupInput from "./components/TwitchViewerGroupInput.vue"
 import { computed, App } from "vue"
@@ -31,10 +32,12 @@ import TwitchViewerViewVue from "./components/viewer/TwitchViewerView.vue"
 import ChannelPointGroupHeaderVue from "./components/channel-points/ChannelPointGroupHeader.vue"
 import TwitchViewerGroupViewVue from "./components/TwitchViewerGroupView.vue"
 import ChatCommandHeader from "./components/triggers/ChatCommandHeader.vue"
+import TwitchStreamTagsInput from "./components/stream-info/TwitchStreamTagsInput.vue"
 
 export * from "./util/twitch-accounts"
 
 export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
+export { default as TwitchMainPageCard } from "./components/main-page/TwitchMainPageCard.vue"
 
 export async function initPlugin(app: App<Element>) {
 	console.log("Registering", TwitchViewerGroup, "TwitchViewerGroup")
@@ -47,6 +50,8 @@ export async function initPlugin(app: App<Element>) {
 
 	dataStore.registerInputComponent(TwitchCategory, TwitchCategoryInputVue)
 	dataStore.registerViewComponent(TwitchCategory, TwitchCategoryViewVue)
+
+	dataStore.registerInputComponent(TwitchStreamTags, TwitchStreamTagsInput)
 
 	const resourceStore = useResourceStore()
 	resourceStore.registerSettingComponent("TwitchAccount", TwitchAccountSettingsVue)

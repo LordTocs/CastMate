@@ -20,7 +20,13 @@ import {
 	isProbablyFromTemplate,
 	usePluginLogger,
 } from "castmate-core"
-import { StreamInfo, StreamInfoSchema, TwitchCategory, TwitchViewer } from "castmate-plugin-twitch-shared"
+import {
+	StreamInfo,
+	StreamInfoSchema,
+	TwitchCategory,
+	TwitchStreamTags,
+	TwitchViewer,
+} from "castmate-plugin-twitch-shared"
 import { TwitchAccount } from "./twitch-auth"
 import { HelixChannelUpdate } from "@twurple/api"
 import { onChannelAuth } from "./api-harness"
@@ -175,7 +181,7 @@ export function setupInfoManager() {
 			properties: {
 				title: { type: String, name: "Title", template: true },
 				category: { type: TwitchCategory, name: "Category", template: true },
-				tags: { type: Array, items: { type: String, required: true, template: true }, required: true },
+				tags: { type: TwitchStreamTags, template: true, required: true },
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
