@@ -342,3 +342,27 @@ export function getLocalIP() {
 		}
 	}
 }
+
+export function isLocalHost(hostname: string) {
+	if (!hostname) return false
+	if (hostname == "127.0.0.1") return true
+	if (hostname.toLowerCase() == "localhost") return true
+
+	const interfaces = os.networkInterfaces()
+	for (const netInterface of Object.values(interfaces)) {
+		if (!netInterface) continue
+
+		for (const net of netInterface) {
+			const familyV4Value = typeof net.family === "string" ? "IPv4" : 4
+			if (net.family === familyV4Value && !net.internal) {
+				if (net.address == hostname) {
+					return true
+				}
+			}
+		}
+	}
+
+	//TODO: Support local DNS
+
+	return false
+}
