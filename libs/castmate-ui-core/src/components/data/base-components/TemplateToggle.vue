@@ -1,54 +1,46 @@
 <template>
 	<template v-if="templateMode">
-		<div
-			class="p-input-password p-input-wrapper w-full"
-			:class="{
-				'p-filled': !!model,
-				'p-focused': focused,
-				'p-inputwrapper-filled': !!model,
-				'p-inputwrapper-focused': focused,
-				'p-invalid': errorMessage,
-				'p-inputwrapper-invalid': errorMessage,
-			}"
-			v-bind="$attrs"
-			:input-id="inputId"
-			ref="container"
-		>
+		<p-icon-field class="w-full" v-bind="$attrs" ref="container">
 			<p-input-text
 				v-if="!props.multiLine"
-				class="template-input input-icon-spacing w-full"
-				:class="{ 'no-right-bezel': noRightBezel }"
+				class="w-full"
+				style="z-index: inherit"
 				v-model="model"
 				:disabled="disabled"
 			/>
 			<p-text-area
-				class="template-input input-icon-spacing w-full"
-				:class="{ 'no-right-bezel': noRightBezel }"
+				class="w-full"
+				style="z-index: inherit"
 				v-model="model"
 				:disabled="disabled"
 				autoResize
 				v-else
 			/>
-			<i class="mdi mdi-code-json input-icon" @click="suggestionClick" @mousedown="stopPropagation" />
-			<state-suggestion-panel :container="container" v-model:open="suggestionVisible" @suggest="onSuggest" />
-		</div>
+			<p-input-icon class="mdi mdi-code-json" @click="suggestionClick" @mousedown="stopPropagation" />
+		</p-icon-field>
 		<!-- <p-button class="flex-none no-focus-highlight" icon="mdi mdi-code-json" size="small" text /> -->
 	</template>
 	<slot v-else v-bind="$attrs" :input-id="inputId"> </slot>
+	<state-suggestion-panel :container="dropAnchor" v-model:open="suggestionVisible" @suggest="onSuggest" />
 </template>
 
 <script setup lang="ts" generic="T">
 import { computed, ref, useModel } from "vue"
 import PInputText from "primevue/inputtext"
 import PTextArea from "primevue/textarea"
+import PIconField from "primevue/iconfield"
+import PInputIcon from "primevue/inputicon"
+import PBaseComponent from "@primevue/core/basecomponent"
+
 import StateSuggestionPanel from "./state/StateSuggestionPanel.vue"
 import { usePropagationStop } from "../../../main"
+import { VueInstance } from "@vueuse/core"
 
 const focused = ref(false)
 
 const props = defineProps<{
 	modelValue: T | string | undefined
-	templateMode: boolean
+	templateMode?: boolean
 	inputId?: string
 	noRightBezel?: boolean
 	errorMessage?: string
@@ -56,7 +48,12 @@ const props = defineProps<{
 	multiLine?: boolean
 }>()
 
-const container = ref<HTMLElement>()
+const container = ref<InstanceType<typeof PIconField>>()
+const dropAnchor = computed(() => {
+	if (!container.value) return undefined
+	return (container.value as unknown as VueInstance).$el as HTMLElement
+})
+
 const suggestionVisible = ref(false)
 const emit = defineEmits(["update:modelValue"])
 
@@ -112,6 +109,5 @@ function onSuggest(suggestion: string) {
 }
 
 .template-input {
-	/* width: unset !important; */
 }
 </style>

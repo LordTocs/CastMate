@@ -1,5 +1,5 @@
 <template>
-	<dashboard-card v-if="obs">
+	<main-page-card v-if="obs">
 		<template #header>
 			<div class="flex flex-row">
 				<i class="obsi obsi-obs" /> {{ obs?.config?.name }}
@@ -39,11 +39,11 @@
 				/>
 			</dashboard-card-item>
 		</template>
-	</dashboard-card>
+	</main-page-card>
 </template>
 
 <script setup lang="ts">
-import { useResource, DashboardCard, DashboardCardItem, useResourceIPCCaller } from "castmate-ui-core"
+import { useResource, MainPageCard, DashboardCardItem, useResourceIPCCaller } from "castmate-ui-core"
 import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
 import { ResourceData } from "castmate-schema"
 import { computed } from "vue"

@@ -70,7 +70,7 @@ import { initPlugin as initBlueSkyPlugin } from "castmate-plugin-bluesky-rendere
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
 import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
 
-import { useDashboardStore } from "./util/dashboard-store"
+import { useMainPageStore } from "./util/main-page"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
 import Tooltip from "primevue/tooltip"
@@ -147,7 +147,7 @@ const projecStore = useProjectStore()
 const documentStore = useDocumentStore()
 const resourceStore = useResourceStore()
 const actionQueueStore = useActionQueueStore()
-const dashboardStore = useDashboardStore()
+const mainPageStore = useMainPageStore()
 const mediaStore = useMediaStore()
 const planStore = useStreamPlanStore()
 
@@ -172,7 +172,7 @@ async function init() {
 	await initStore.waitForInit()
 
 	await actionQueueStore.initialize()
-	await dashboardStore.initialize()
+	await mainPageStore.initialize()
 	await planStore.initialize()
 
 	await initializeProfiles(app)
@@ -229,6 +229,8 @@ async function init() {
 	sendDashboardsToMain()
 
 	await uiLoadComplete()
+
+	mainPageStore.openMain()
 }
 
 init()

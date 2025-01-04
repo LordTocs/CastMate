@@ -49,15 +49,16 @@ export { default as SequenceMiniPreview } from "./components/automation/mini/Seq
 export { default as ExpanderSlider } from "./components/util/ExpanderSlider.vue"
 export { default as SelectDummy } from "./components/util/SelectDummy.vue"
 
-export { default as DashboardCard } from "./components/dashboard/DashboardCard.vue"
-export { default as DashboardCardItem } from "./components/dashboard/DashboardCardItem.vue"
-export { default as DashboardStat } from "./components/dashboard/DashboardStat.vue"
+export { default as MainPageCard } from "./components/main-page/MainPageCard.vue"
+export { default as DashboardCardItem } from "./components/main-page/DashboardCardItem.vue"
+export { default as DashboardStat } from "./components/main-page/DashboardStat.vue"
 
 export { default as StreamPlanEditorPage } from "./components/stream-plan/StreamPlanEditorPage.vue"
 
 export { default as VariableNameInput } from "./components/data/base-components/VariableNameInput.vue"
 
 export { default as DataInputBase } from "./components/data/base-components/DataInputBase.vue"
+export { default as DataInputBaseMenu } from "./components/data/base-components/DataInputBaseMenu.vue"
 export { default as DropListItem } from "./components/data/base-components/DropListItem.vue"
 export { default as FilterInputBox } from "./components/data/base-components/FilterInputBox.vue"
 

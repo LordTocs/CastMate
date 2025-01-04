@@ -1,20 +1,24 @@
 import { defineStore } from "pinia"
 import { computed } from "vue"
 import { ProjectItem, useDockingStore, useProjectStore } from "castmate-ui-core"
-import DashboardPage from "../components/dashboard/DashboardPage.vue"
+import MainPage from "../components/main/MainPage.vue"
 
-export const useDashboardStore = defineStore("dashboard", () => {
+export const useMainPageStore = defineStore("main-page", () => {
 	const dockingStore = useDockingStore()
 	const projectStore = useProjectStore()
+
+	function openMain() {
+		dockingStore.openPage("dashboard", "CastMate", MainPage)
+	}
 
 	async function initialize() {
 		const projectItem = computed<ProjectItem>(() => {
 			return {
-				id: "dashboard",
+				id: "main-page",
 				title: "CastMate",
 				icon: "mdi mdi-square",
 				open() {
-					dockingStore.openPage("dashboard", "Main", DashboardPage)
+					openMain()
 				},
 			}
 		})
@@ -22,5 +26,5 @@ export const useDashboardStore = defineStore("dashboard", () => {
 		projectStore.registerProjectGroupItem(projectItem)
 	}
 
-	return { initialize }
+	return { initialize, openMain }
 })
