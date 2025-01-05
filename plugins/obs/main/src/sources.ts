@@ -267,7 +267,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 
 	defineAction({
 		id: "text",
-		name: "OBS Text",
+		name: "Set Source Text",
 		icon: "mdi mdi-form-textbox",
 		config: {
 			type: Object,
