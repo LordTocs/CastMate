@@ -1,17 +1,22 @@
 <template>
-	<div class="dashboard-card">
-		<div class="dashboard-card-header">
-			<slot name="header"> &nbsp; </slot>
-		</div>
+	<p-fieldset>
+		<template #legend>
+			<div class="dashboard-card-header">
+				<slot name="header"> &nbsp; </slot>
+			</div>
+		</template>
 		<div class="dashboard-card-row">
 			<slot></slot>
 		</div>
-	</div>
+	</p-fieldset>
 </template>
+
+<script setup lang="ts">
+import PFieldset from "primevue/fieldset"
+</script>
 
 <style scoped>
 .dashboard-card {
-	height: var(--dashboard-height);
 	border-radius: var(--border-radius);
 	border: solid 2px var(--surface-border);
 	padding: 0.25rem;
@@ -20,9 +25,6 @@
 }
 
 .dashboard-card-row {
-	display: flex;
-	flex-direction: row;
-	flex: 1;
 }
 
 .dashboard-card-header {

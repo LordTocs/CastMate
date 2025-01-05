@@ -50,7 +50,7 @@ export { default as ExpanderSlider } from "./components/util/ExpanderSlider.vue"
 export { default as SelectDummy } from "./components/util/SelectDummy.vue"
 
 export { default as MainPageCard } from "./components/main-page/MainPageCard.vue"
-export { default as DashboardCardItem } from "./components/main-page/DashboardCardItem.vue"
+export { default as MainPageCardItem } from "./components/main-page/MainPageCardItem.vue"
 export { default as DashboardStat } from "./components/main-page/DashboardStat.vue"
 
 export { default as StreamPlanEditorPage } from "./components/stream-plan/StreamPlanEditorPage.vue"

@@ -1,43 +1,28 @@
 <template>
-	<div class="stat-block flex flex-row gap-2 p-3" v-if="channelAccount?.state.authenticated">
-		<div class="stat-item">
-			<span class="stat-label">Channel</span>
-			<div class="stat-value">
-				<p-avatar :image="channelAccount.config.icon" shape="circle" />
-			</div>
-		</div>
-		<div class="stat-divider" />
-		<div class="stat-item">
-			<span class="stat-label">Followers</span>
-			<div class="stat-value">
-				<span>{{ followers?.value }} <i class="mdi mdi-heart" /></span>
-			</div>
-		</div>
-		<div class="stat-divider" />
-		<div class="stat-item">
-			<span class="stat-label">Subscribers</span>
-			<div class="stat-value">
-				<span>{{ subscribers?.value }} <i class="mdi mdi-star" /></span>
-			</div>
-		</div>
-		<div class="stat-divider" />
-		<div v-if="live?.value" class="stat-item">
-			<span class="stat-label">Live</span>
-			<div class="stat-value">
-				<span>{{ viewers?.value }} <i class="mdi mdi-account" /></span>
-			</div>
-		</div>
-		<div v-else class="stat-item">
-			<span class="stat-label">Offline</span>
-			<div class="stat-value">
-				<span>-- <i class="mdi mdi-account" /></span>
-			</div>
-		</div>
+	<div class="stat-block flex flex-row p-3" v-if="channelAccount?.state.authenticated">
+		<main-page-card-item label="Channel">
+			<p-avatar :image="channelAccount?.config.icon" shape="circle" />
+		</main-page-card-item>
+		<main-page-card-item label="Followers">
+			<span v-if="channelAccount?.state.authenticated">{{ followers?.value }}</span
+			><span v-else>--</span>
+		</main-page-card-item>
+		<main-page-card-item label="Subscribers">
+			<span v-if="channelAccount?.state.authenticated">{{ subscribers?.value }}</span
+			><span v-else>--</span>
+		</main-page-card-item>
+		<main-page-card-item v-if="live?.value" label="Viewers">
+			<span v-if="channelAccount?.state.authenticated">{{ viewers?.value }}</span
+			><span v-else>--</span>
+		</main-page-card-item>
+		<main-page-card-item v-else label="Offline">
+			<span>--</span>
+		</main-page-card-item>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { useState } from "castmate-ui-core"
+import { useState, MainPageCardItem } from "castmate-ui-core"
 import { useChannelAccountResource } from "../../main"
 import PAvatar from "primevue/avatar"
 

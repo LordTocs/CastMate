@@ -5,8 +5,8 @@
 				{{ authMessage }}
 			</div>
 			<p-button class="flex-shrink-0" @click="forceAuth" :loading="doingLogin" severity="danger">
-				Sign into {{ category }}</p-button
-			>
+				Sign into {{ category }}
+			</p-button>
 		</div>
 	</p-message>
 </template>
