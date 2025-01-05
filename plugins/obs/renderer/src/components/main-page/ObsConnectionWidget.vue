@@ -1,7 +1,7 @@
 <template>
 	<main-page-card>
 		<template #header>
-			{{ connection.config.name }}
+			<i class="obsi obsi-obs obs-color" /> {{ connection.config.name }}
 			<span style="color: var(--p-surface-400)" v-if="!connection.state.connected"> (Not Connected) </span>
 		</template>
 		<div class="flex flex-row">
@@ -120,5 +120,9 @@ const menuItems = computed<MenuItem[]>(() => {
 	border-radius: var(--border-radius);
 	border: solid 2px var(--surface-border);
 	padding: 0.25rem;
+}
+
+.obs-color {
+	color: #256eff;
 }
 </style>

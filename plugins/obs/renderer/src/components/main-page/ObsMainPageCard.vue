@@ -1,13 +1,8 @@
 <template>
-	<main-page-card>
-		<template #header> <i class="obsi obsi-obs obs-color" /> OBS </template>
-		<div class="flex flex-column gap-1">
-			<p-message
-				v-if="noConnections"
-				icon="pi pi-exclamation-triangle"
-				severity="warn"
-				:pt="{ text: 'flex-grow-1' }"
-			>
+	<div class="flex flex-column gap-1">
+		<main-page-card v-if="noConnections">
+			<template #header> <i class="obsi obsi-obs obs-color" /> OBS </template>
+			<p-message icon="pi pi-exclamation-triangle" severity="warn" :pt="{ text: 'flex-grow-1' }">
 				<div class="flex flex-row w-full gap-1">
 					<div class="flex-grow-1 flex flex-column justify-content-center text-center">
 						CastMate can control OBS, but you haven't set up the connection yet.
@@ -15,10 +10,9 @@
 					<p-button severity="warn">Setup OBS</p-button>
 				</div>
 			</p-message>
-
-			<obs-connection-widget v-for="connection in connections" :connection="connection" :key="connection.id" />
-		</div>
-	</main-page-card>
+		</main-page-card>
+		<obs-connection-widget v-for="connection in connections" :connection="connection" :key="connection.id" />
+	</div>
 </template>
 
 <script setup lang="ts">
