@@ -3,7 +3,7 @@ import { Directory, FilePath } from "castmate-schema"
 import { ChildProcess, exec, spawn } from "child_process"
 import * as path from "path"
 
-function isRunning(application: string) {
+export function isProcessRunning(application: string) {
 	return new Promise<boolean>(function (resolve, reject) {
 		const plat = process.platform
 		const cmd: string = "tasklist"
@@ -45,7 +45,7 @@ export function setupProcesses() {
 		},
 		async invoke(config, contextData, abortSignal) {
 			if (config.ignoreIfRunning) {
-				if (await isRunning(path.basename(config.application))) {
+				if (await isProcessRunning(path.basename(config.application))) {
 					return
 				}
 			}
