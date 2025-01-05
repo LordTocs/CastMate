@@ -1,6 +1,13 @@
 <template>
 	<document-path :local-path="localPath">
-		<div class="data-input" tabindex="-1" v-bind="$attrs" @mousedown="onMouseDown" v-if="propKeys.length > 0">
+		<div
+			class="data-input"
+			:class="{ 'data-input-outline': showLabel }"
+			tabindex="-1"
+			v-bind="$attrs"
+			@mousedown="onMouseDown"
+			v-if="propKeys.length > 0"
+		>
 			<div v-if="showLabel" class="flex flex-row">
 				<span class="text-color-secondary text-sm">{{ schema.name }}</span>
 				<div class="flex-grow-1"></div>
@@ -73,14 +80,14 @@ const showLabel = computed(() => props.schema.name != null)
 </script>
 
 <style scoped>
-.data-input {
+.data-input-outline {
 	padding: 0.5rem;
 	margin: 0.5rem;
 	border: solid 1px var(--surface-border);
 	border-radius: var(--border-radius);
 }
 
-.data-input:focus {
+.data-input-outline:focus {
 	border: solid 1px #c9b1cb;
 	box-shadow: 0 0 0 1px #e9aaff;
 }
