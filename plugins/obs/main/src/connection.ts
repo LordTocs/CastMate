@@ -125,6 +125,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 			this._id = nanoid()
 			this._config = {
 				...config,
+				local: isLocalHost(config.host),
 			}
 		} else {
 			//@ts-ignore
