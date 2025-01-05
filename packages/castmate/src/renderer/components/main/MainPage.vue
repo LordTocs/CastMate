@@ -2,7 +2,7 @@
 	<flex-scroller>
 		<div class="flex flex-row gap-2 p-2">
 			<twitch-main-page-card class="flex-grow-1" style="flex-basis: 0" />
-			<div class="flex-grow-1" style="flex-basis: 0"></div>
+			<obs-main-page-card class="flex-grow-1" style="flex-basis: 0" />
 		</div>
 	</flex-scroller>
 </template>
@@ -11,6 +11,7 @@
 import { useResourceArray, FlexScroller } from "castmate-ui-core"
 
 import { TwitchMainPageCard } from "castmate-plugin-twitch-renderer"
+import { ObsMainPageCard } from "castmate-plugin-obs-renderer"
 
 const queues = useResourceArray("ActionQueue")
 const obsConnections = useResourceArray("OBSConnection")

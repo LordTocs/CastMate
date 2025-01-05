@@ -6,9 +6,12 @@ import {
 	ResourceRegistry,
 	onLoad,
 	getLocalIP,
+	isLocalHost,
 	sleep,
 	AnalyticsService,
 	InfoService,
+	defineState,
+	onUnload,
 } from "castmate-core"
 import OBSWebSocket, { OBSWebSocketError } from "obs-websocket-js"
 import {
@@ -18,6 +21,9 @@ import {
 	OBSWSInput,
 	OBSWSSceneItem,
 } from "castmate-plugin-obs-shared"
+
+import { isProcessRunning } from "castmate-plugin-os-main"
+
 import { nanoid } from "nanoid/non-secure"
 import _flatten from "lodash/flatten"
 import { SceneSource } from "./obs-data"
@@ -139,6 +145,9 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 	}
 
 	async load(savedConfig: OBSConnectionConfig) {
+		if (savedConfig.local == null) {
+			savedConfig.local = isLocalHost(savedConfig.host)
+		}
 		if (!(await super.load(savedConfig))) return false
 		this.tryConnect(this.config.host, this.config.port, this.config.password)
 		return true
@@ -148,6 +157,16 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		const result = await super.save()
 		this.tryConnect(this.config.host, this.config.port, this.config.password)
 		return result
+	}
+
+	async setConfig(config: OBSConnectionConfig): Promise<boolean> {
+		config.local = isLocalHost(config.host)
+		return await super.setConfig(config)
+	}
+
+	async applyConfig(config: Partial<OBSConnectionConfig>): Promise<boolean> {
+		if (config.host) config.local = isLocalHost(config.host)
+		return await super.applyConfig(config)
 	}
 
 	private setupEvents() {
@@ -266,6 +285,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		this.state.studioModeEnabled = studioMode.studioModeEnabled
 
 		this.state.connected = true
+
 		logger.log("Initial OBS State Queried, Connected Successfully")
 	}
 
@@ -461,7 +481,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 	 * Is true if this OBS is on the same computer
 	 */
 	get isLocal() {
-		return this.config.host == "127.0.0.1" || this.config.host?.toLowerCase() == "localhost"
+		return this.config.local ?? isLocalHost(this.config.host)
 	}
 
 	async openProcess() {
@@ -570,6 +590,30 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 	}
 }
 
+export function setupRunningPolling() {
+	const localObsRunning = defineState("localObsRunning", {
+		type: Boolean,
+		required: true,
+		view: false,
+		default: false,
+	})
+
+	let poller: NodeJS.Timer | undefined = undefined
+
+	onLoad(() => {
+		poller = setInterval(async () => {
+			localObsRunning.value = await isProcessRunning("obs64.exe")
+		}, 15000)
+	})
+
+	onUnload(() => {
+		if (poller) {
+			//@ts-ignore
+			clearInterval(poller)
+		}
+	})
+}
+
 export function setupConnections() {
 	onLoad(() => {
 		if (app.isPackaged) {
@@ -580,6 +624,8 @@ export function setupConnections() {
 			logger.log("Setting External VBS Location", loc)
 		}
 	})
+
+	setupRunningPolling()
 
 	definePluginResource(OBSConnection)
 }

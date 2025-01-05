@@ -1,17 +1,17 @@
 <template>
-<dashboard-card-item :label="label">
-    <p>{{ state?.value ?? '--'}}</p>
-</dashboard-card-item>
+	<dashboard-card-item :label="label">
+		<p>{{ state?.value ?? "--" }}</p>
+	</dashboard-card-item>
 </template>
 
 <script setup lang="ts">
-import { useState } from '../../main';
-import DashboardCardItem from './DashboardCardItem.vue';
+import { useState } from "../../main"
+import DashboardCardItem from "./MainPageCardItem.vue"
 
 const props = defineProps<{
-    plugin: string,
-    state: string,
-    label?: string
+	plugin: string
+	state: string
+	label?: string
 }>()
 
 const state = useState(() => props)

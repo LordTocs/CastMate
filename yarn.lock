@@ -3722,6 +3722,7 @@ __metadata:
   dependencies:
     castmate-core: "workspace:^"
     castmate-plugin-obs-shared: "workspace:^"
+    castmate-plugin-os-main: "workspace:^"
     castmate-schema: "workspace:^"
     jsqr: "npm:^1.4.0"
     node-screenshots: "npm:^0.2.0"

@@ -3,6 +3,7 @@ import "./css/icons.css"
 import { OBSSourceTransform } from "castmate-plugin-obs-shared"
 
 export { default as DashboardObsCard } from "./components/DashboardObsCard.vue"
+export { default as ObsMainPageCard } from "./components/main-page/ObsMainPageCard.vue"
 
 import ObsTransformInputVue from "./components/transform/ObsTransformInput.vue"
 
@@ -18,7 +19,7 @@ export function initPlugin() {
 	resourceStore.registerConfigSchema("OBSConnection", {
 		type: Object,
 		properties: {
-			name: { type: String, name: "Connection Name", required: true },
+			name: { type: String, name: "Connection Name", required: true, default: "OBS Connection" },
 			host: { type: String, name: "Hostname", required: true, default: "127.0.0.1" },
 			port: { type: Number, name: "Port", required: true, default: 4455 },
 			password: { type: String, name: "Password" },
