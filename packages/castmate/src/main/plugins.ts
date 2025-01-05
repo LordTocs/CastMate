@@ -52,7 +52,6 @@ export async function loadPlugins() {
 	await loadPlugin(dashboardPlugin)
 
 	const promises = [
-		loadPlugin(variablesPlugin),
 		loadPlugin(timePlugin),
 		loadPlugin(twitchPlugin),
 		loadPlugin(discordPlugin),
@@ -67,7 +66,10 @@ export async function loadPlugins() {
 		loadPlugin(remotePlugin),
 		loadPlugin(blueskyPlugin),
 	]
+
 	await Promise.allSettled(promises)
+
+	await loadPlugin(variablesPlugin)
 
 	await loadPlugin(spellcastPlugin)
 
