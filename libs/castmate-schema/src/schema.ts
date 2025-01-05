@@ -118,6 +118,8 @@ registerType("String", {
 	async fromString(value) {
 		return value
 	},
+	canBeVariable: true,
+	canBeViewerVariable: true,
 	canBeCommandArg: true,
 })
 
