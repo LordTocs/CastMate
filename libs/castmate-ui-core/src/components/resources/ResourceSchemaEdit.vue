@@ -1,6 +1,8 @@
 <template>
-	<data-input v-if="resourceData?.configSchema" :schema="resourceData.configSchema" v-model="model" />
-	<div v-else>SCHEMA MISSING</div>
+	<div style="min-width: 40vh">
+		<data-input v-if="resourceData?.configSchema" :schema="resourceData.configSchema" v-model="model" />
+		<div v-else>SCHEMA MISSING</div>
+	</div>
 </template>
 
 <script setup lang="ts">

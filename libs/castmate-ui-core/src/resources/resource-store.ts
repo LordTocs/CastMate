@@ -273,10 +273,7 @@ export function useResourceEditDialog(resourceType: MaybeRefOrGetter<string | un
 
 		dialog.open(ResourceEditDialogVue, {
 			props: {
-				header: `Create ${resourceName}`,
-				style: {
-					width: "40vw",
-				},
+				header: `Edit ${resource.config?.name ?? resourceName}`,
 				modal: true,
 			},
 			data: {
