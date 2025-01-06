@@ -36,7 +36,7 @@ export interface DockedArea extends DockedSplit {
 }
 
 export function useTabFrame() {
-	const tabFrame = inject<DockedFrame>("docking-frame")
+	const tabFrame = inject<DockedFrame | undefined>("docking-frame", undefined)
 	if (!tabFrame) {
 		throw new Error("useTabFrame can only be used in a child component of DockingFrame")
 	}
@@ -44,7 +44,7 @@ export function useTabFrame() {
 }
 
 export function useDockingArea() {
-	const dockingArea = inject<DockedArea>("docking-area")
+	const dockingArea = inject<DockedArea | undefined>("docking-area", undefined)
 	if (!dockingArea) {
 		throw new Error("useTabFrame can only be used in a child component of DockingFrame")
 	}
@@ -61,8 +61,8 @@ export function useSelectTab() {
 }
 
 export function useFocusThisTab() {
-	const tabFrame = inject<DockedFrame>("docking-frame")
-	const dockingArea = inject<DockedArea>("docking-area")
+	const tabFrame = inject<DockedFrame | undefined>("docking-frame", undefined)
+	const dockingArea = inject<DockedArea | undefined>("docking-area", undefined)
 
 	return function () {
 		if (tabFrame && dockingArea) {
