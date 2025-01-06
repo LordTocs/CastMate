@@ -232,28 +232,32 @@ export function useResourceCreateDialog(
 	const dialog = dialogService ?? useDialog()
 
 	function open() {
-		const resourceName = toValue(resourceType)
-		if (!resourceName) return
-		const resource = resourceStore.resourceMap.get(resourceName)
+		return new Promise<string | undefined>((resolve, reject) => {
+			const resourceName = toValue(resourceType)
+			if (!resourceName) return
+			const resource = resourceStore.resourceMap.get(resourceName)
 
-		dialog.open(ResourceEditDialogVue, {
-			props: {
-				header: `Create ${resourceName}`,
-				style: {
-					width: "40vw",
+			dialog.open(ResourceEditDialogVue, {
+				props: {
+					header: `Create ${resourceName}`,
+					modal: true,
 				},
-				modal: true,
-			},
-			data: {
-				resourceType: resourceName,
-			},
-			onClose(options) {
-				if (!options?.data) {
-					return
-				}
+				data: {
+					resourceType: resourceName,
+				},
+				async onClose(options) {
+					if (!options?.data) {
+						return resolve(undefined)
+					}
 
-				resourceStore.createResource(resourceName, options.data)
-			},
+					try {
+						const result = await resourceStore.createResource(resourceName, options.data)
+						return resolve(result)
+					} catch (err) {
+						return resolve(undefined)
+					}
+				},
+			})
 		})
 	}
 
