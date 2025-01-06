@@ -30,7 +30,7 @@ const props = defineProps<
 const model = useModel(props, "modelValue")
 
 function isTemplate(value: Color | string | undefined) {
-	return !!(value && isHexColor(value))
+	return !!(value && !isHexColor(value))
 }
 
 const overlayVisible = ref(false)
