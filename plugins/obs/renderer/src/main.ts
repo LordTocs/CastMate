@@ -9,12 +9,14 @@ import ObsTransformInputVue from "./components/transform/ObsTransformInput.vue"
 
 export { default as ObsPreview } from "./components/ObsPreview.vue"
 
+import ObsConnectionEdit from "./components/connections/ObsConnectionEdit.vue"
+
 export function initPlugin() {
 	const resourceStore = useResourceStore()
 
 	resourceStore.registerSettingComponent("OBSConnection", ResourceSettingList)
-	resourceStore.registerEditComponent("OBSConnection", ResourceSchemaEdit)
-	resourceStore.registerCreateComponent("OBSConnection", ResourceSchemaEdit)
+	resourceStore.registerEditComponent("OBSConnection", ObsConnectionEdit)
+	resourceStore.registerCreateComponent("OBSConnection", ObsConnectionEdit)
 
 	resourceStore.registerConfigSchema("OBSConnection", {
 		type: Object,
