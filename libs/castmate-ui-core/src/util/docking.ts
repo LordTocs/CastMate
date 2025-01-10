@@ -13,6 +13,7 @@ export interface DockedTab {
 	page?: Component
 	title?: string
 	pageData?: any
+	teleportPermutation?: string
 }
 
 export interface DockedFrame {
