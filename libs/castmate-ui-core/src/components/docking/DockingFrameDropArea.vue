@@ -36,10 +36,10 @@ function dragEnter(evt: DragEvent) {
 }
 
 function isOnlyTab(tabId: string) {
-	if (tabFrame.tabs.length > 1) {
+	if (tabFrame.value.tabs.length > 1) {
 		return false
 	}
-	if (tabFrame.tabs[0]?.id == tabId) {
+	if (tabFrame.value.tabs[0]?.id == tabId) {
 		return true
 	}
 	return false
@@ -88,7 +88,7 @@ function onDropped(evt: DragEvent) {
 	if (tabId && !isOnlyTab(tabId)) {
 		moveToFrame(tabId, dropMode.value)
 	}
-	dockingArea.dragging = false
+	dockingArea.value.dragging = false
 	evt.preventDefault()
 	evt.stopPropagation()
 }

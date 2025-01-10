@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid/non-secure"
-import { inject, type Component } from "vue"
+import { inject, ref, Ref, type Component } from "vue"
 import { useDocumentStore } from "./document"
 import { useDockingStore, iterTabs } from "../main"
 
@@ -37,7 +37,7 @@ export interface DockedArea extends DockedSplit {
 }
 
 export function useTabFrame() {
-	const tabFrame = inject<DockedFrame | undefined>("docking-frame", undefined)
+	const tabFrame = inject<Ref<DockedFrame> | undefined>("docking-frame", undefined)
 	if (!tabFrame) {
 		throw new Error("useTabFrame can only be used in a child component of DockingFrame")
 	}
@@ -45,7 +45,7 @@ export function useTabFrame() {
 }
 
 export function useDockingArea() {
-	const dockingArea = inject<DockedArea | undefined>("docking-area", undefined)
+	const dockingArea = inject<Ref<DockedArea> | undefined>("docking-area", undefined)
 	if (!dockingArea) {
 		throw new Error("useTabFrame can only be used in a child component of DockingFrame")
 	}
@@ -56,18 +56,18 @@ export function useSelectTab() {
 	const tabFrame = useTabFrame()
 	const dockingArea = useDockingArea()
 	return function (tabId: string) {
-		tabFrame.currentTab = tabId
-		dockingArea.focusedFrame = tabFrame.id
+		tabFrame.value.currentTab = tabId
+		dockingArea.value.focusedFrame = tabFrame.value.id
 	}
 }
 
 export function useFocusThisTab() {
-	const tabFrame = inject<DockedFrame | undefined>("docking-frame", undefined)
-	const dockingArea = inject<DockedArea | undefined>("docking-area", undefined)
+	const tabFrame = inject<Ref<DockedFrame> | undefined>("docking-frame", undefined)
+	const dockingArea = inject<Ref<DockedArea> | undefined>("docking-area", undefined)
 
 	return function () {
 		if (tabFrame && dockingArea) {
-			dockingArea.focusedFrame = tabFrame.id
+			dockingArea.value.focusedFrame = tabFrame.value.id
 		}
 	}
 }
@@ -162,13 +162,13 @@ export function useMoveToFrame() {
 	const dockingArea = useDockingArea()
 
 	return function (tabId: string, drop: DropMode = "all") {
-		const tab = findAndRemoveTab(dockingArea, tabId)
+		const tab = findAndRemoveTab(dockingArea.value, tabId)
 		if (tab) {
 			if (drop === "all") {
-				tabFrame.tabs.push(tab)
-				tabFrame.currentTab = tab.id
+				tabFrame.value.tabs.push(tab)
+				tabFrame.value.currentTab = tab.id
 			} else {
-				const split = findParentSplit(dockingArea, tabFrame.id)
+				const split = findParentSplit(dockingArea.value, tabFrame.value.id)
 				if (!split) {
 					throw new Error("WHAT HOW?")
 				}
@@ -180,7 +180,7 @@ export function useMoveToFrame() {
 					tabs: [tab],
 				}
 
-				const relativeIdx = split.divisions.findIndex((d) => d.id == tabFrame.id)
+				const relativeIdx = split.divisions.findIndex((d) => d.id == tabFrame.value.id)
 				const idxOffset = drop === "left" || drop === "top" ? 0 : 1
 				const dropDirection = drop === "left" || drop == "right" ? "horizontal" : "vertical"
 
@@ -212,16 +212,16 @@ export function useInsertToFrame() {
 	const dockingArea = useDockingArea()
 
 	return function (tabId: string, relativeId: string, side: InsertSide) {
-		const tab = findAndRemoveTab(dockingArea, tabId)
+		const tab = findAndRemoveTab(dockingArea.value, tabId)
 
 		if (tab) {
-			const idx = tabFrame.tabs.findIndex((t) => t.id == relativeId)
+			const idx = tabFrame.value.tabs.findIndex((t) => t.id == relativeId)
 			if (idx >= 0) {
 				console.log("Insert", side)
 				if (side == "left") {
-					tabFrame.tabs.splice(idx, 0, tab)
+					tabFrame.value.tabs.splice(idx, 0, tab)
 				} else {
-					tabFrame.tabs.splice(idx + 1, 0, tab)
+					tabFrame.value.tabs.splice(idx + 1, 0, tab)
 				}
 			}
 		}
@@ -233,7 +233,7 @@ export function useCloseTab() {
 	const documentStore = useDocumentStore()
 
 	return function (tabId: string) {
-		const tab = findAndRemoveTab(dockingArea, tabId)
+		const tab = findAndRemoveTab(dockingArea.value, tabId)
 		if (tab?.documentId) {
 			documentStore.removeDocument(tab.documentId)
 		}

@@ -85,7 +85,7 @@ const tabFrame = useTabFrame()
 const tabHead = ref<HTMLElement | null>(null)
 
 const frameFocused = computed(() => {
-	return dockingArea.focusedFrame == tabFrame.id
+	return dockingArea.value.focusedFrame == tabFrame.value.id
 })
 
 const { isOutside } = useMouseInElement(tabHead)
@@ -105,12 +105,12 @@ function dragStart(evt: DragEvent) {
 	evt.dataTransfer.effectAllowed = "move"
 	evt.dataTransfer.setData("tab-id", props.id)
 	dragging.value = true
-	dockingArea.dragging = true
+	dockingArea.value.dragging = true
 }
 
 useDragEnd(tabHead, (ev) => {
 	dragging.value = false
-	dockingArea.dragging = false
+	dockingArea.value.dragging = false
 })
 
 const dragHover = ref<boolean>(false)
@@ -139,7 +139,7 @@ useDrop(tabHead, "tab-id", (ev) => {
 
 		insertToFrame(tabId, props.id, percentX < 0.5 ? "left" : "right")
 	}
-	dockingArea.dragging = false
+	dockingArea.value.dragging = false
 })
 
 const selectTab = useSelectTab()

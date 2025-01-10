@@ -1,18 +1,13 @@
 <template>
-	<template v-for="tab in allTabs" :id="tab.id">
-		<Teleport v-if="tab.teleportPermutation" :to="`#tabdock-${tab.teleportPermutation}`">
-			<div class="tab">
-				<document-editor class="tab-fill" v-if="tab.documentId" :document-id="tab.documentId" />
-				<component class="tab-fill" v-else-if="tab.page" :is="tab.page" :page-data="tab.pageData"> </component>
-			</div>
-		</Teleport>
+	<template v-for="(tabFrame, i) in allTabs" :id="tabFrame.tab.id">
+		<docking-teleport :tab="tabFrame.tab" v-model:frame="allTabs[i].frame" />
 	</template>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { DockedSplit, DockedTab, useDockingArea } from "../../main"
-import DocumentEditor from "../document/DocumentEditor.vue"
+import { DockedFrame, DockedSplit, DockedTab, useDockingArea } from "../../main"
+import DockingTeleport from "./DockingTeleport.vue"
 
 //This component uses Vue Teleport to move the page components through the docking
 //Without remounting them. This preserves ref<> values inside it's component tree
@@ -20,12 +15,12 @@ import DocumentEditor from "../document/DocumentEditor.vue"
 
 const dockingArea = useDockingArea()
 
-function getAllTabs(split: DockedSplit): DockedTab[] {
-	const result = new Array<DockedTab>()
+function getAllTabs(split: DockedSplit): { tab: DockedTab; frame: DockedFrame }[] {
+	const result = new Array<{ tab: DockedTab; frame: DockedFrame }>()
 
 	for (const subSplit of split.divisions) {
 		if (subSplit.type == "frame") {
-			result.push(...subSplit.tabs)
+			result.push(...subSplit.tabs.map((t) => ({ tab: t, frame: subSplit })))
 		} else {
 			result.push(...getAllTabs(subSplit))
 		}
@@ -34,23 +29,5 @@ function getAllTabs(split: DockedSplit): DockedTab[] {
 	return result
 }
 
-const allTabs = computed(() => getAllTabs(dockingArea))
+const allTabs = computed(() => getAllTabs(dockingArea.value))
 </script>
-
-<style scoped>
-.tab {
-	position: absolute;
-	left: 0;
-	top: 0;
-	bottom: 0;
-	right: 0;
-
-	display: flex;
-	background-color: var(--surface-a);
-	flex: 1;
-}
-
-.tab-fill {
-	flex: 1;
-}
-</style>

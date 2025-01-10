@@ -43,7 +43,7 @@ function onDropped(evt: DragEvent) {
 
 	moveToFrame(tabId)
 
-	dockingArea.dragging = false
+	dockingArea.value.dragging = false
 
 	evt.preventDefault()
 	evt.stopPropagation()
