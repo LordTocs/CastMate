@@ -20,7 +20,7 @@
 		"electron": "^33.2.0",
 		"nanoid": "*",
 		"pinia": "*",
-		"vue": "*"
+		"vue": "^3.5.13"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "*",
