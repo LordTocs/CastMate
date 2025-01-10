@@ -1,9 +1,11 @@
 <template>
 	<template v-if="props.modelValue && state && plugin">
-		<span :style="{ color: plugin?.color }">{{ props.modelValue.plugin }}</span
-		>.<span>{{ props.modelValue.state }}</span
-		>&nbsp;
-		<span class="text-200">(<data-view :model-value="state.value" :schema="removeName(state.schema)" />)</span>
+		<span style="white-space: nowrap">
+			<span :style="{ color: plugin?.color }">{{ props.modelValue.plugin }}</span
+			>.<span>{{ props.modelValue.state }}</span
+			>&nbsp;
+			<span class="text-200">(<data-view :model-value="state.value" :schema="removeName(state.schema)" />)</span>
+		</span>
 	</template>
 	<template v-else-if="props.modelValue && plugin == null"> {{ props.modelValue?.state }} </template>
 	<template v-else-if="props.modelValue"> {{ props.modelValue?.plugin }}.{{ props.modelValue?.state }} </template>

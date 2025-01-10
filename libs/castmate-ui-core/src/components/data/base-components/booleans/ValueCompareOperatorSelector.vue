@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { ValueCompareOperator } from "castmate-schema"
-import { computed, useModel } from "vue"
+import { computed, onMounted, useModel, watch } from "vue"
 import PDropdown from "primevue/dropdown"
 import type { MenuItem } from "primevue/menuitem"
 
@@ -68,5 +68,13 @@ const options = computed<MenuItem[]>(() => {
 	}
 
 	return result
+})
+
+onMounted(() => {
+	watch(options, () => {
+		if (!options.value.find((o) => o.code == props.modelValue)) {
+			model.value = options.value[0].code
+		}
+	})
 })
 </script>

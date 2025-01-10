@@ -107,6 +107,7 @@ declare module "castmate-schema" {
 
 registerType("LightColor", {
 	constructor: LightColor,
+	icon: "mdi mdi-lightbulb-outline",
 	canBeVariable: true,
 	canBeViewerVariable: true,
 })
