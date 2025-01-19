@@ -1,7 +1,15 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps">
+	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps" ref="inputBase">
 		<div v-if="!schema.enum" class="w-full">
-			<c-number-input v-model="numModel" v-bind="inputProps" :min="min" :max="max" :step="step" class="w-full" />
+			<c-number-input
+				v-model="numModel"
+				v-bind="inputProps"
+				:min="min"
+				:max="max"
+				:step="step"
+				class="w-full"
+				ref="numberInput"
+			/>
 			<p-slider v-if="schema.slider" v-model="numModel" :min="min" :max="max" :step="step" />
 		</div>
 
@@ -12,6 +20,7 @@
 			:no-float="!!noFloat"
 			:context="context"
 			v-bind="inputProps"
+			ref="enumInput"
 		/>
 	</data-input-base>
 </template>
@@ -24,8 +33,8 @@ import PSlider from "primevue/slider"
 import { type SchemaBase, type SchemaNumber } from "castmate-schema"
 import { computed, ref, onMounted, useModel, watch } from "vue"
 import EnumInput from "../base-components/EnumInput.vue"
-import PInputText from "primevue/inputtext"
 import { SharedDataInputProps } from "../DataInputTypes"
+import { useDataBinding } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -34,6 +43,8 @@ const props = defineProps<
 		localPath?: string
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const isSlider = computed(() => props.schema?.slider ?? false)
 const min = computed(() => props.schema?.min ?? (isSlider.value ? 0 : undefined))

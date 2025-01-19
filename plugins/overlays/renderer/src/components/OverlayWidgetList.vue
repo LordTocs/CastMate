@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { useDocumentPath, useDocumentSelection, FlexScroller, usePropagationStop } from "castmate-ui-core"
+import { useDocumentSelection, FlexScroller, usePropagationStop } from "castmate-ui-core"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
@@ -37,9 +37,7 @@ const props = defineProps<{
 
 const model = useModel(props, "modelValue")
 
-const documentPath = useDocumentPath()
-
-const selection = useDocumentSelection(documentPath)
+const selection = useDocumentSelection()
 
 const overlayWidgets = useOverlayWidgets()
 

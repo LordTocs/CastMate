@@ -8,6 +8,7 @@
 		@open="onOpen"
 		:placeholder="placeholder"
 		:errorMessage="errorMessage"
+		ref="autoComplete"
 	/>
 </template>
 
@@ -73,5 +74,19 @@ const items = computed<{ id: any; name: string }[]>(() => {
 
 onMounted(() => {
 	onOpen()
+})
+
+const autoComplete = ref<InstanceType<typeof CAutocomplete>>()
+
+function focus() {
+	autoComplete.value?.focus()
+}
+function scrollIntoView() {
+	autoComplete.value?.scrollIntoView()
+}
+
+defineExpose({
+	focus,
+	scrollIntoView,
 })
 </script>

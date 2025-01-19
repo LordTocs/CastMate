@@ -57,6 +57,12 @@ defineEmits(["blur", "focus", "click"])
 
 defineExpose({
 	inputDiv,
+	focus() {
+		inputDiv.value?.focus()
+	},
+	scrollIntoView() {
+		inputDiv.value?.scrollIntoView()
+	},
 })
 </script>
 

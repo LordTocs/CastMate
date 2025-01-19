@@ -1,13 +1,13 @@
 <template>
 	<div class="automation-edit" @keydown="onKeyDown" @copy="onCopy" @cut="onCut" @paste="onPaste" ref="editDiv">
-		<document-path local-path="sequence">
+		<data-binding-path local-path="sequence">
 			<automation-edit-area
 				v-model="model"
 				v-model:view="view.automationView"
 				:trigger="model"
 				class="flex-grow-1 w-0"
 			/>
-		</document-path>
+		</data-binding-path>
 		<expander-slider
 			v-if="showSelectionEdit"
 			direction="vertical"
@@ -24,15 +24,7 @@
 
 <script setup lang="ts">
 import { computed, ref, useModel } from "vue"
-import {
-	AutomationView,
-	useDocumentPath,
-	useDocumentSelection,
-	DocumentPath,
-	joinDocumentPath,
-	FlexScroller,
-	ExpanderSlider,
-} from "../../main"
+import { AutomationView, useDocumentSelection, FlexScroller, ExpanderSlider, DataBindingPath } from "../../main"
 import { AnyAction, ActionStack, AutomationData, isActionStack, findActionById } from "castmate-schema"
 import AutomationEditArea from "./AutomationEditArea.vue"
 import ActionConfigEdit from "./ActionConfigEdit.vue"
@@ -42,8 +34,7 @@ import PSplitter from "primevue/splitter"
 import PSplitterPanel from "primevue/splitterpanel"
 import { useElementSize } from "@vueuse/core"
 
-const path = useDocumentPath()
-const selection = useDocumentSelection(() => joinDocumentPath(path.value, "sequence"))
+const selection = useDocumentSelection("sequence")
 
 interface AutomationPossiblyTrigger extends AutomationData {
 	plugin?: string

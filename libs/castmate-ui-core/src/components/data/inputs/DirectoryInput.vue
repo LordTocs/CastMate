@@ -1,6 +1,6 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
-		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" />
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" ref="inputBase">
+		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" ref="inputBox" />
 	</data-input-base>
 </template>
 
@@ -9,8 +9,9 @@ import DataInputBase from "../base-components/DataInputBase.vue"
 import { Directory, SchemaDirectory } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
 import { InputBox, useIpcCaller, usePropagationStop } from "../../../main"
-import { useModel } from "vue"
+import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
+import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -18,6 +19,8 @@ const props = defineProps<
 		schema: SchemaDirectory
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
@@ -39,4 +42,16 @@ async function dirClick(ev: MouseEvent) {
 		model.value = folder
 	}
 }
+
+const inputBox = ref<InstanceType<typeof InputBox>>()
+const inputBase = ref<InstanceType<typeof DataInputBase>>()
+
+useDataUIBinding({
+	focus() {
+		inputBox.value?.focus()
+	},
+	scrollIntoView() {
+		inputBox.value?.scrollIntoView()
+	},
+})
 </script>

@@ -3,34 +3,28 @@
 		<div class="flex flex-row">
 			<div class="force-float-label flex-grow-1">
 				<div class="flex flex-row flex-grow-1" input-id="range">
-					<document-path :local-path="localPath">
-						<document-path local-path="min">
-							<div class="flex-grow-1">
-								<c-number-input
-									input-id="min"
-									v-model="(min as number | undefined)"
-									placeholder="-∞"
-									class="w-full"
-									@contextmenu="minContext"
-								/>
-								<c-context-menu ref="minMenu" :items="minMenuItems" />
-							</div>
-						</document-path>
+					<div class="flex-grow-1">
+						<c-number-input
+							local-path="min"
+							v-model="(min as number | undefined)"
+							placeholder="-∞"
+							class="w-full"
+							@contextmenu="minContext"
+						/>
+						<c-context-menu ref="minMenu" :items="minMenuItems" />
+					</div>
 
-						<span class="mx-1 flex align-items-center justify-content-center">⟶</span>
-						<document-path local-path="max">
-							<div class="flex-grow-1">
-								<c-number-input
-									input-id="max"
-									v-model="(max as number | undefined)"
-									placeholder="∞"
-									class="w-full"
-									@contextmenu="maxContext"
-								/>
-								<c-context-menu ref="maxMenu" :items="maxMenuItems" />
-							</div>
-						</document-path>
-					</document-path>
+					<span class="mx-1 flex align-items-center justify-content-center">⟶</span>
+					<div class="flex-grow-1">
+						<c-number-input
+							local-path="max"
+							v-model="(max as number | undefined)"
+							placeholder="∞"
+							class="w-full"
+							@contextmenu="maxContext"
+						/>
+						<c-context-menu ref="maxMenu" :items="maxMenuItems" />
+					</div>
 				</div>
 				<label for="range" class="force-float"> {{ props.schema.name }}</label>
 			</div>
@@ -56,7 +50,6 @@ import CContextMenu from "../../util/CContextMenu.vue"
 import CNumberInput from "../base-components/CNumberInput.vue"
 import { SchemaRange, SchemaBase, Range } from "castmate-schema"
 import { computed, useModel, ref } from "vue"
-import DocumentPath from "../../document/DocumentPath.vue"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
 import type { MenuItem } from "primevue/menuitem"
@@ -91,7 +84,7 @@ const endMenuItems = computed<MenuItem[]>(() => {
 	return result
 })
 
-const menu = ref<PMenu>()
+const menu = ref<InstanceType<typeof PMenu>>()
 const hasMenu = computed(() => {
 	return endMenuItems.value.length > 0
 })

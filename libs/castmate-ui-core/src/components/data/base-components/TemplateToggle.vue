@@ -7,6 +7,7 @@
 				style="z-index: inherit"
 				v-model="model"
 				:disabled="disabled"
+				ref="inputText"
 			/>
 			<p-text-area
 				class="w-full"
@@ -14,6 +15,7 @@
 				v-model="model"
 				:disabled="disabled"
 				autoResize
+				ref="textArea"
 				v-else
 			/>
 			<p-input-icon class="mdi mdi-code-json" @click="suggestionClick" @mousedown="stopPropagation" />
@@ -24,7 +26,7 @@
 	<state-suggestion-panel :container="dropAnchor" v-model:open="suggestionVisible" @suggest="onSuggest" />
 </template>
 
-<script setup lang="ts" generic="T">
+<script setup lang="ts">
 import { computed, ref, useModel } from "vue"
 import PInputText from "primevue/inputtext"
 import PTextArea from "primevue/textarea"
@@ -33,13 +35,11 @@ import PInputIcon from "primevue/inputicon"
 import PBaseComponent from "@primevue/core/basecomponent"
 
 import StateSuggestionPanel from "./state/StateSuggestionPanel.vue"
-import { usePropagationStop } from "../../../main"
+import { useDataUIBinding, usePropagationStop } from "../../../main"
 import { VueInstance } from "@vueuse/core"
 
-const focused = ref(false)
-
 const props = defineProps<{
-	modelValue: T | string | undefined
+	modelValue: any | string | undefined
 	templateMode?: boolean
 	inputId?: string
 	noRightBezel?: boolean
@@ -58,16 +58,7 @@ const suggestionVisible = ref(false)
 const emit = defineEmits(["update:modelValue"])
 
 //Some bug in typescript incorrectly infered our model type
-//const model = useModel<any>(props, "modelValue")
-
-const model = computed<any>({
-	get() {
-		return props.modelValue
-	},
-	set(v) {
-		emit("update:modelValue", v)
-	},
-})
+const model = useModel(props, "modelValue")
 
 const stopPropagation = usePropagationStop()
 
@@ -91,6 +82,29 @@ function onSuggest(suggestion: string) {
 		model.value = suggestionTemplate
 	}
 }
+
+const textArea = ref<InstanceType<typeof PTextArea> & { $el: HTMLElement }>()
+const inputText = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
+
+function focus() {
+	textArea.value?.$el.focus()
+	inputText.value?.$el.focus()
+}
+
+function scrollIntoView() {
+	textArea.value?.$el.scrollIntoView()
+	inputText.value?.$el.scrollIntoView()
+}
+
+useDataUIBinding({
+	focus,
+	scrollIntoView,
+})
+
+defineExpose({
+	focus,
+	scrollIntoView,
+})
 </script>
 
 <style scoped>
@@ -106,8 +120,5 @@ function onSuggest(suggestion: string) {
 	margin-top: calc(-1 * calc(var(--p-icon-size) / 2));
 	width: var(--p-icon-size);
 	height: var(--p-icon-size);
-}
-
-.template-input {
 }
 </style>

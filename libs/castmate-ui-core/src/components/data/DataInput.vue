@@ -17,6 +17,7 @@ import { useDataComponent } from "../../util/data"
 import { Schema } from "castmate-schema"
 import { SharedDataInputProps } from "./DataInputTypes"
 import { useModel } from "vue"
+import { useDataBinding } from "../../main"
 
 const props = defineProps<
 	{

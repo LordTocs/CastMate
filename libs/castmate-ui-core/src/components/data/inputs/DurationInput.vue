@@ -1,6 +1,6 @@
 <template>
 	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
-		<duration-field v-model="model" :required="schema.required" v-bind="inputProps" />
+		<duration-field v-model="model" :required="schema.required" v-bind="inputProps" ref="durationInput" />
 	</data-input-base>
 </template>
 
@@ -15,6 +15,7 @@ import PButton from "primevue/button"
 import { ref, useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import LabelFloater from "../base-components/LabelFloater.vue"
+import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -23,21 +24,21 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
 
-const templateMode = ref(false)
+const inputBase = ref<InstanceType<typeof DataInputBase>>()
+const durationInput = ref<InstanceType<typeof DurationField>>()
 
-function clear() {
-	model.value = undefined
-}
-
-function toggleTemplate() {
-	if (!props.schema.template) {
-		return
-	}
-
-	templateMode.value = !templateMode.value
-}
+useDataUIBinding({
+	focus() {
+		durationInput.value?.focus()
+	},
+	scrollIntoView() {
+		durationInput.value?.scrollIntoView()
+	},
+})
 </script>
 
 <style scoped>

@@ -31,6 +31,7 @@
 						no-float
 						v-model="model.queue"
 						:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
+						local-path="queue"
 					/>
 					<p-button
 						text
@@ -61,7 +62,7 @@ import { ResourceProxyFactory, DataInput, usePropagationStop } from "../../main"
 import SequenceMiniPreview from "./mini/SequenceMiniPreview.vue"
 import PButton from "primevue/button"
 import PInputGroup from "primevue/inputgroup"
-import { DocumentPath, LabelFloater, InputBox } from "../../main"
+import { LabelFloater, InputBox } from "../../main"
 
 const props = defineProps<{
 	label?: string

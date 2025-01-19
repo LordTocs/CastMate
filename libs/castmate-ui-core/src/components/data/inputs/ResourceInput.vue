@@ -7,6 +7,7 @@
 		:menu-extra="hasDialogs ? menuItems : []"
 		v-slot="inputProps"
 		:disabled="disabled"
+		ref="inputBase"
 	>
 		<c-autocomplete
 			v-model="model"
@@ -19,6 +20,7 @@
 			v-bind="inputProps"
 			:disabled="disabled"
 			class="flex-grow-1 flex-shrink-0"
+			ref="autoComplete"
 		>
 			<template #groupHeader="{ item }" v-if="resourceStore?.selectorGroupHeaderComponent">
 				<component :is="resourceStore.selectorGroupHeaderComponent" :item="item" />
@@ -34,6 +36,7 @@ import { ResourceProxy } from "../../../util/data"
 import { computed, nextTick, ref, useModel, watch } from "vue"
 import {
 	LabelFloater,
+	useDataBinding,
 	useResourceArray,
 	useResourceCreateDialog,
 	useResourceData,
@@ -54,6 +57,8 @@ const props = defineProps<
 		modelValue: ResourceProxy | undefined
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 const resourceStore = useResourceData(() => props.schema.resourceType)
@@ -77,7 +82,6 @@ const hasDialogs = computed(() => resourceStore.value?.editDialog && resourceSto
 const createResourceDlg = useResourceCreateDialog(() => props.schema.resourceType)
 const editResourceDlg = useResourceEditDialog(() => props.schema.resourceType)
 
-const menu = ref<InstanceType<typeof PMenu>>()
 const menuItems = computed<MenuItem[]>(() => {
 	const selectedResource = props.modelValue ? resourceStore.value?.resources?.get(props.modelValue) : undefined
 

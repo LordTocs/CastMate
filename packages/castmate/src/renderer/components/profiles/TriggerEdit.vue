@@ -23,6 +23,7 @@
 						no-float
 						v-model="modelObj.queue"
 						:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
+						local-path="queue"
 					/>
 				</div>
 			</div>
@@ -41,14 +42,14 @@
 			:style="{ height: `${view.height}px` }"
 			ref="cardBody"
 		>
-			<document-path local-path="automation">
+			<data-binding-path local-path="automation">
 				<automation-edit
 					class="h-full flex-grow-1"
 					v-model="modelObj"
 					v-model:view="view"
 					:trigger="modelObj"
 				/>
-			</document-path>
+			</data-binding-path>
 			<expander-slider
 				v-model="view.height"
 				:color="(triggerColor as Color)"
@@ -79,7 +80,7 @@ import {
 	provideDataContextSchema,
 	AutomationEdit,
 	ExpanderSlider,
-	DocumentPath,
+	DataBindingPath,
 	SequenceMiniPreview,
 	TriggerSelection,
 	usePropagationStop,

@@ -29,7 +29,7 @@
 						:no-float="noFloat"
 						:secret="secret"
 						:context="context"
-						:local-path="localPath"
+						:local-path="`[${index}]`"
 					/>
 				</div>
 			</div>
@@ -45,6 +45,7 @@ import DataInput from "../DataInput.vue"
 import PButton from "primevue/button"
 import _cloneDeep from "lodash/cloneDeep"
 import { constructDefault } from "castmate-schema"
+import { useDataBinding } from "../../../main"
 
 const props = defineProps<
 	{
@@ -52,6 +53,8 @@ const props = defineProps<
 		schema: SchemaArray
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

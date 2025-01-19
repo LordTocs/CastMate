@@ -22,6 +22,7 @@
 			class="var-edit"
 			v-model="variableDef.defaultValue"
 			:schema="{ ...variableDef.schema, name: 'Default Value' }"
+			local-path="defaultValue"
 		/>
 		<div class="p-inputgroup var-edit">
 			<p-check-box binary input-id="check" v-model="variableDef.serialized" />

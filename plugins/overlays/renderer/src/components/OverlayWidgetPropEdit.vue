@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { FlexScroller, useDocumentPath, DataInput, useDocumentSelection } from "castmate-ui-core"
+import { FlexScroller, DataInput, useDocumentSelection } from "castmate-ui-core"
 import { computed, onMounted, useModel, watch } from "vue"
 import OverlayWidgetTransformEdit from "./OverlayWidgetTransformEdit.vue"
 
@@ -23,9 +23,7 @@ const props = defineProps<{
 
 const model = useModel(props, "modelValue")
 
-const documentPath = useDocumentPath()
-
-const widgetSelection = useDocumentSelection(documentPath)
+const widgetSelection = useDocumentSelection()
 
 const selectedWidgetId = computed(() => {
 	if (widgetSelection.value.length > 1 || widgetSelection.value.length == 0) return undefined

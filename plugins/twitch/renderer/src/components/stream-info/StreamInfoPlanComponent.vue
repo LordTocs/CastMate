@@ -1,5 +1,5 @@
 <template>
-	<data-input v-model="model" :schema="StreamInfoSchema" />
+	<data-input v-model="model" :schema="StreamInfoSchema" :local-path="localPath" />
 </template>
 
 <script setup lang="ts">
@@ -9,6 +9,7 @@ import { DataInput } from "castmate-ui-core"
 
 const props = defineProps<{
 	modelValue: StreamInfo
+	localPath: string
 }>()
 
 const model = useModel(props, "modelValue")

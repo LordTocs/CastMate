@@ -1,19 +1,18 @@
 <template>
-	<document-path :local-path="localPath">
-		<p-input-group v-bind="$attrs">
-			<p-check-box binary input-id="check" v-model="model" />
-			<label for="check" class="ml-2" v-if="schema.name"> {{ schema.name }} </label>
-		</p-input-group>
-	</document-path>
+	<p-input-group v-bind="$attrs">
+		<p-check-box binary input-id="check" v-model="model" ref="checkBox" />
+		<label for="check" class="ml-2" v-if="schema.name"> {{ schema.name }} </label>
+	</p-input-group>
 </template>
 
 <script setup lang="ts">
 import { SchemaBoolean } from "castmate-schema"
-import DocumentPath from "../../document/DocumentPath.vue"
+import DataBindingPath from "../binding/DataBindingPath.vue"
 import PCheckBox from "primevue/checkbox"
 import PInputGroup from "primevue/inputgroup"
-import { useModel } from "vue"
+import { ref, useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
+import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -22,7 +21,20 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
+
+const checkBox = ref<InstanceType<typeof PCheckBox> & { $el: HTMLElement }>()
+
+useDataUIBinding({
+	focus() {
+		checkBox.value?.$el.focus()
+	},
+	scrollIntoView() {
+		checkBox.value?.$el.scrollIntoView()
+	},
+})
 </script>
 
 <style scoped>

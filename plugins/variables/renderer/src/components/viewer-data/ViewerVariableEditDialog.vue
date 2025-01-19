@@ -27,6 +27,7 @@
 			class="var-edit"
 			v-model="variableDef.defaultValue"
 			:schema="defaultValueSchema"
+			local-path="defaultValue"
 		/>
 		<div class="flex justify-content-end mt-1">
 			<p-button :label="isCreate ? 'Create' : 'Save'" @click="submit"></p-button>

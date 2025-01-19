@@ -1,3 +1,4 @@
+import { getByPath } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { defineStore } from "pinia"
 import {
@@ -13,7 +14,13 @@ import {
 	inject,
 	WritableComputedRef,
 	ComputedRef,
+	Directive,
+	Ref,
+	onMounted,
+	onBeforeUnmount,
+	onUnmounted,
 } from "vue"
+import { DataBinding, DataPathView, joinDataPath, useDataPath } from "./data-binding"
 
 export type NamedData = {
 	name?: string
@@ -30,12 +37,17 @@ export type ViewData = {
 	selection: DocumentSelection
 } & Record<string | symbol, any>
 
+export interface DocumentView extends DataBinding {
+	selection: DocumentSelection
+}
+
 export interface Document {
 	id: string
 	type: string
 	dirty: boolean
 	data: NamedData
 	viewData: ViewData
+	view: DocumentView
 }
 
 export interface DocumentData {
@@ -60,6 +72,10 @@ export const useDocumentStore = defineStore("documents", () => {
 			dirty: false,
 			data,
 			viewData: view,
+			view: {
+				root: { data: {}, subPaths: {}, uiBindings: [] },
+				selection: { items: [], container: "" },
+			},
 		})
 
 		const document = documents.value.get(id)
@@ -156,49 +172,27 @@ export function provideDocument(id: MaybeRefOrGetter<string>) {
 	)
 }
 
-export function useCompleteDocumentSelection() {
-	const selection = inject<WritableComputedRef<DocumentSelection>>(
+export function useRawDocumentSelection() {
+	return inject<WritableComputedRef<DocumentSelection>>(
 		"documentSelection",
-		computed(() => {
-			return {
-				items: [],
-				container: "",
-			}
+		computed({
+			get() {
+				return {
+					items: [],
+					container: "",
+				}
+			},
+			set(v) {},
 		})
 	)
-
-	return computed(() => {
-		return (
-			selection.value ?? {
-				items: [],
-				container: "",
-			}
-		)
-	})
 }
 
-export function useSetDocumentSelection() {
-	const selection = inject<WritableComputedRef<DocumentSelection>>("documentSelection")
-
-	return function (newSelection: DocumentSelection) {
-		if (!selection) return
-		selection.value = newSelection
-	}
-}
-
-export function useIsSelected(path: MaybeRefOrGetter<string | undefined>, id: MaybeRefOrGetter<string>) {
-	const selection = inject<WritableComputedRef<DocumentSelection>>(
-		"documentSelection",
-		computed(() => {
-			return {
-				items: [],
-				container: "",
-			}
-		})
-	)
+export function useIsSelected(id: MaybeRefOrGetter<string>, localPath?: MaybeRefOrGetter<string | undefined>) {
+	const selection = useRawDocumentSelection()
+	const path = useDataPath()
 
 	return computed(() => {
-		const selectionPath = toValue(path)
+		const selectionPath = joinDataPath(toValue(path), toValue(localPath))
 		const selectionId = toValue(id)
 
 		if (!selectionPath) return false
@@ -209,12 +203,18 @@ export function useIsSelected(path: MaybeRefOrGetter<string | undefined>, id: Ma
 	})
 }
 
-export function useDocumentSelection(path: MaybeRefOrGetter<string | undefined>) {
-	const selection = inject<WritableComputedRef<DocumentSelection>>("documentSelection")
+export function useDocumentSelection(localPath?: MaybeRefOrGetter<string | undefined>) {
+	const selection = useRawDocumentSelection()
+	const path = useDataPath()
+
+	function getSelectionPath() {
+		const rootPath = toValue(path)
+		return joinDataPath(rootPath, toValue(localPath))
+	}
 
 	return computed({
 		get() {
-			const selectionPath = toValue(path)
+			const selectionPath = getSelectionPath()
 
 			if (!selectionPath) return []
 			if (!selection || !selection.value) return []
@@ -226,7 +226,7 @@ export function useDocumentSelection(path: MaybeRefOrGetter<string | undefined>)
 			return selection.value.items
 		},
 		set(v) {
-			const selectionPath = toValue(path)
+			const selectionPath = getSelectionPath()
 
 			if (!selectionPath) return
 			if (!selection) return
@@ -239,43 +239,53 @@ export function useDocumentSelection(path: MaybeRefOrGetter<string | undefined>)
 	})
 }
 
-export function useDocumentPath() {
-	const parentPath = inject<ComputedRef<string>>(
-		"documentObjectPath",
-		computed(() => "")
-	)
+/*
+export function viewRef<T>(key: PropertyKey, initialValue: T): Ref<T> {
+	const documentView = useDocumentView()
 
-	return computed<string>(() => parentPath?.value ?? "")
-}
+	const fallback = ref(initialValue)
 
-export function joinDocumentPath(...paths: (string | undefined)[]) {
-	let result = ""
-	for (const path of paths) {
-		if (!path) {
-			continue
+	onMounted(() => {
+		if (documentView.value) {
+			if (!(key in documentView.value.data)) {
+				documentView.value.data[key] = initialValue
+			}
 		}
-		if (result.length > 0) {
-			const separator = path.startsWith("[") ? "" : "."
-			result += separator
-		}
-		result += path
-	}
-
-	return result
-}
-
-export function provideDocumentPath(localPath: MaybeRefOrGetter<string | undefined>) {
-	const parentPath = inject<ComputedRef<string>>(
-		"documentObjectPath",
-		computed(() => "")
-	)
-
-	const ourPath = computed(() => {
-		const actualLocalPath = toValue(localPath)
-		return joinDocumentPath(parentPath.value, actualLocalPath)
 	})
 
-	provide("documentObjectPath", ourPath)
+	onUnmounted(() => {
+		if (documentView.value) {
+			if (key in documentView.value.data) {
+				delete documentView.value.data[key]
+			}
+		}
+	})
 
-	return ourPath
+	return computed<T>({
+		get() {
+			if (documentView.value) {
+				return documentView.value.data[key]
+			}
+			return fallback.value
+		},
+		set(v) {
+			if (documentView.value) {
+				documentView.value.data[key] = v
+			}
+			fallback.value = v
+		},
+	})
 }
+
+export const vPathFocus: Directive = {
+	mounted(el, binding, vnode) {
+		const documentView = useDocumentView()
+		if (documentView.value && binding.instance && "focus" in binding.instance) {
+			documentView.value.focusable = binding.instance as DocumentFocusable
+		}
+	},
+	beforeUnmount(el, binding, vnode) {
+		const documentView = useDocumentView()
+	},
+}
+*/

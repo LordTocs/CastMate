@@ -15,6 +15,7 @@
 				@focus="onFocus"
 				@blur="onBlur"
 				v-bind="inputProps"
+				ref="durationField"
 			/>
 		</template>
 	</data-input-base>
@@ -32,6 +33,7 @@ import { getTimeRemaining } from "castmate-schema"
 import { isTimerStarted } from "castmate-schema"
 import { pauseTimer } from "castmate-schema"
 import { startTimer } from "castmate-schema"
+import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -146,6 +148,17 @@ function updateTimer(timestamp: number) {
 
 	attemptAnimate()
 }
+
+const durationField = ref<InstanceType<typeof DurationField>>()
+
+useDataUIBinding({
+	focus() {
+		durationField.value?.focus()
+	},
+	scrollIntoView() {
+		durationField.value?.scrollIntoView()
+	},
+})
 </script>
 
 <style scoped></style>

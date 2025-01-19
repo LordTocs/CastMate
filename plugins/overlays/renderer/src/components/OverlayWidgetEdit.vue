@@ -23,9 +23,7 @@
 <script setup lang="ts">
 import { OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import {
-	PanArea,
 	PanAreaResizable,
-	useDocumentPath,
 	useDocumentSelection,
 	useFullState,
 	useIsSelected,
@@ -41,9 +39,8 @@ import { CastMateBridgeImplementation, provideEditorMediaResolver } from "castma
 import { useDialog } from "primevue/usedialog"
 import type { MenuItem } from "primevue/menuitem"
 
-const documentPath = useDocumentPath()
-const isSelected = useIsSelected(documentPath, () => props.modelValue.id)
-const selection = useDocumentSelection(documentPath)
+const isSelected = useIsSelected(() => props.modelValue.id)
+const selection = useDocumentSelection()
 
 const isOnlySelection = computed(() => {
 	return isSelected.value && selection.value.length == 1

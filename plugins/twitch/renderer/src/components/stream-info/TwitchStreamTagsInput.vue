@@ -7,6 +7,7 @@
 					v-model="model[i]"
 					:template="schema.template"
 					@delete="model.splice(i, 1)"
+					:local-path="`[${i}]`"
 				/>
 			</template>
 			<p-button severity="secondary" size="small" v-if="canAddTag" @click="addTag"> Add Tag</p-button>
@@ -24,7 +25,13 @@
 
 <script setup lang="ts">
 import { SchemaTwitchStreamTags, TwitchStreamTags } from "castmate-plugin-twitch-shared"
-import { SharedDataInputProps, DataInputBaseMenu, TemplateToggle } from "castmate-ui-core"
+import {
+	SharedDataInputProps,
+	DataInputBaseMenu,
+	DataBindingPath,
+	TemplateToggle,
+	useDataBinding,
+} from "castmate-ui-core"
 import { useModel, ref, computed } from "vue"
 
 import TwitchStreamTagLine from "./TwitchStreamTagLine.vue"
@@ -52,6 +59,8 @@ function addTag() {
 		model.value.push("")
 	}
 }
+
+useDataBinding(() => props.localPath)
 </script>
 
 <style scoped></style>

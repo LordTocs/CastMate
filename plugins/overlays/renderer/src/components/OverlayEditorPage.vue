@@ -75,20 +75,20 @@
 			</div>
 		</div>
 		<div class="flex flex-row flex-grow-1">
-			<document-path local-path="widgets">
+			<data-binding-path local-path="widgets">
 				<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
-			</document-path>
+			</data-binding-path>
 			<div class="overlay-properties">
 				<p-splitter layout="vertical" class="h-full">
 					<p-splitter-panel>
-						<document-path local-path="widgets">
+						<data-binding-path local-path="widgets">
 							<overlay-widget-prop-edit class="h-full" v-model="model" />
-						</document-path>
+						</data-binding-path>
 					</p-splitter-panel>
 					<p-splitter-panel>
-						<document-path local-path="widgets">
+						<data-binding-path local-path="widgets">
 							<overlay-widget-list class="h-full" v-model="model" />
-						</document-path>
+						</data-binding-path>
 					</p-splitter-panel>
 				</p-splitter>
 			</div>
@@ -103,7 +103,7 @@ import {
 	DataInput,
 	ResourceProxyFactory,
 	usePluginStore,
-	DocumentPath,
+	DataBindingPath,
 	useDocumentId,
 	useSettingValue,
 	DropDownPanel,

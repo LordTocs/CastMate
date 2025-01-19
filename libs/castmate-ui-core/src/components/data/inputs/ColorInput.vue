@@ -1,7 +1,7 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate">
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate" ref="dataInputBase">
 		<div class="container w-full" ref="container">
-			<input-box v-bind="inputProps" :model="model" @click="toggle">
+			<input-box v-bind="inputProps" :model="model" @click="toggle" ref="inputBox">
 				<div class="color-splash" :style="{ backgroundColor: model }"></div>
 			</input-box>
 		</div>
@@ -19,6 +19,7 @@ import { computed, onMounted, ref, useModel, watch } from "vue"
 import PColorPicker from "primevue/colorpicker"
 import { SharedDataInputProps } from "../DataInputTypes"
 import DropDownPanel from "../base-components/DropDownPanel.vue"
+import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -26,6 +27,8 @@ const props = defineProps<
 		schema: SchemaColor
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
@@ -69,6 +72,17 @@ function toggle(ev: MouseEvent) {
 }
 
 const container = ref<HTMLElement | null>(null)
+const inputBox = ref<InstanceType<typeof InputBox>>()
+const dataInputBase = ref<InstanceType<typeof DataInputBase>>()
+
+useDataUIBinding({
+	focus() {
+		inputBox.value?.inputDiv?.focus()
+	},
+	scrollIntoView() {
+		inputBox.value?.inputDiv?.scrollIntoView()
+	},
+})
 </script>
 
 <style scoped>

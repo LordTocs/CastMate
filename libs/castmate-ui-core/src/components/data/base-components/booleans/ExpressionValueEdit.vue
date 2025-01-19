@@ -28,7 +28,13 @@
 								</span>
 							</template>
 						</p-select>
-						<data-input class="w-full" v-model="valueModel" v-if="valueSchema" :schema="valueSchema" />
+						<data-input
+							local-path="value"
+							class="w-full"
+							v-model="valueModel"
+							v-if="valueSchema"
+							:schema="valueSchema"
+						/>
 					</div>
 				</p-tab-panel>
 			</p-tab-panels>

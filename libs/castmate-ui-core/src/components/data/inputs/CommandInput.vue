@@ -1,69 +1,80 @@
 <template>
 	<div class="command-input">
-		<p-tab-view v-model:active-index="tabModel">
-			<p-tab-panel header="Command">
-				<template v-if="model?.mode == 'command'">
-					<label-floater no-float label="Command" input-id="match" v-slot="labelProps">
+		<p-tabs v-model:value="tabModel">
+			<p-tab-list>
+				<p-tab value="0" class="small-tab">Command</p-tab>
+				<p-tab value="1" class="small-tab">Anywhere</p-tab>
+				<p-tab value="2" class="small-tab">RegEx</p-tab>
+			</p-tab-list>
+			<p-tab-panels>
+				<p-tab-panel value="0">
+					<template v-if="model?.mode == 'command'">
+						<label-floater no-float label="Command" input-id="match" v-slot="labelProps">
+							<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
+						</label-floater>
+						<template v-if="model?.arguments?.length">
+							<p>Command Variables</p>
+						</template>
+						<draggable-collection
+							v-if="model?.arguments"
+							v-model="model.arguments"
+							handle-class="command-drag-handle"
+							data-type="command-value"
+							key-prop="id"
+							style="gap: 0.25rem"
+						>
+							<template #item="{ item, index }">
+								<command-argument-edit v-model="model.arguments[index]" @delete="deleteValue(index)" />
+							</template>
+						</draggable-collection>
+						<div v-if="model?.hasMessage" class="mt-1 command-message">Command Message</div>
+						<div class="flex flex-row mt-2 gap-1 justify-content-center">
+							<p-button @click="addParameter" size="small">Add Parameter</p-button>
+							<p-button @click="toggleMessage" size="small">
+								{{ model?.hasMessage ? "Remove Message" : "Add Message" }}</p-button
+							>
+						</div>
+						<div class="command-preview pt-1">
+							{{ previewString }}
+						</div>
+					</template>
+				</p-tab-panel>
+				<p-tab-panel value="1">
+					<label-floater no-float label="Match Anywhere" input-id="match" v-slot="labelProps">
 						<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
 					</label-floater>
-					<template v-if="model?.arguments?.length">
-						<p>Command Variables</p>
-					</template>
-					<draggable-collection
-						v-if="model?.arguments"
-						v-model="model.arguments"
-						handle-class="command-drag-handle"
-						data-type="command-value"
-						key-prop="id"
-						style="gap: 0.25rem"
-					>
-						<template #item="{ item, index }">
-							<command-argument-edit v-model="model.arguments[index]" @delete="deleteValue(index)" />
-						</template>
-					</draggable-collection>
-					<div v-if="model?.hasMessage" class="mt-1 command-message">Command Message</div>
-					<div class="flex flex-row mt-2 gap-1 justify-content-center">
-						<p-button @click="addParameter" size="small">Add Parameter</p-button>
-						<p-button @click="toggleMessage" size="small">
-							{{ model?.hasMessage ? "Remove Message" : "Add Message" }}</p-button
-						>
-					</div>
+					<p-input-group class="mt-2" v-if="model?.mode == 'string'">
+						<p-check-box binary input-id="leftBoundary" v-model="model.leftBoundary" />
+						<label for="leftBoundary" class="ml-2"> Left Break </label>
+					</p-input-group>
+					<p-input-group class="mt-2" v-if="model?.mode == 'string'">
+						<p-check-box binary input-id="rightBondary" v-model="model.rightBoundary" />
+						<label for="rightBoundary" class="ml-2"> Right Break </label>
+					</p-input-group>
 					<div class="command-preview pt-1">
 						{{ previewString }}
 					</div>
-				</template>
-			</p-tab-panel>
-			<p-tab-panel header="Anywhere">
-				<label-floater no-float label="Match Anywhere" input-id="match" v-slot="labelProps">
-					<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
-				</label-floater>
-				<p-input-group class="mt-2" v-if="model?.mode == 'string'">
-					<p-check-box binary input-id="leftBoundary" v-model="model.leftBoundary" />
-					<label for="leftBoundary" class="ml-2"> Left Break </label>
-				</p-input-group>
-				<p-input-group class="mt-2" v-if="model?.mode == 'string'">
-					<p-check-box binary input-id="rightBondary" v-model="model.rightBoundary" />
-					<label for="rightBoundary" class="ml-2"> Right Break </label>
-				</p-input-group>
-				<div class="command-preview pt-1">
-					{{ previewString }}
-				</div>
-			</p-tab-panel>
-			<p-tab-panel header="RegEx">
-				<label-floater no-float label="Regex" input-id="match" v-slot="labelProps">
-					<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
-				</label-floater>
-				<div class="command-preview pt-1">
-					{{ previewString }}
-				</div>
-			</p-tab-panel>
-		</p-tab-view>
+				</p-tab-panel>
+				<p-tab-panel value="2">
+					<label-floater no-float label="Regex" input-id="match" v-slot="labelProps">
+						<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
+					</label-floater>
+					<div class="command-preview pt-1">
+						{{ previewString }}
+					</div>
+				</p-tab-panel>
+			</p-tab-panels>
+		</p-tabs>
 	</div>
 </template>
 
 <script setup lang="ts">
-import PTabView from "primevue/tabview"
+import PTabs from "primevue/tabs"
+import PTab from "primevue/tab"
+import PTabList from "primevue/tablist"
+import PTabPanels from "primevue/tabpanels"
 import PTabPanel from "primevue/tabpanel"
+
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
 import PInputGroup from "primevue/inputgroup"
@@ -72,7 +83,7 @@ import { computed, useModel } from "vue"
 import LabelFloater from "../base-components/LabelFloater.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import CommandArgumentEdit from "../base-components/commands/CommandArgumentEdit.vue"
-import { DraggableCollection } from "../../../main"
+import { DraggableCollection, useDataBinding } from "../../../main"
 import { nanoid } from "nanoid/non-secure"
 import PCheckBox from "primevue/checkbox"
 
@@ -82,6 +93,8 @@ const props = defineProps<
 		schema: SchemaCommand
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
@@ -180,5 +193,9 @@ const previewString = computed(() => {
 
 .command-input :deep(.p-tabview .p-tabview-panels) {
 	padding: 0.75rem;
+}
+
+.small-tab {
+	padding: 0.5rem;
 }
 </style>

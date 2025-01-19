@@ -1,6 +1,6 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
-		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" />
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" ref="inputBase">
+		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" ref="inputBox" />
 	</data-input-base>
 </template>
 
@@ -8,11 +8,12 @@
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { FilePath, SchemaFilePath } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { DocumentPath, InputBox, LabelFloater, useIpcCaller, usePropagationStop } from "../../../main"
+import { InputBox, LabelFloater, useIpcCaller, usePropagationStop } from "../../../main"
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
 import PButton from "primevue/button"
+import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -20,6 +21,8 @@ const props = defineProps<
 		schema: SchemaFilePath
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
@@ -41,4 +44,16 @@ async function dirClick(ev: MouseEvent) {
 		model.value = file
 	}
 }
+
+const inputBase = ref<InstanceType<typeof DataInputBase>>()
+const inputBox = ref<InstanceType<typeof InputBox>>()
+
+useDataUIBinding({
+	focus() {
+		inputBox.value?.inputDiv?.focus()
+	},
+	scrollIntoView() {
+		inputBox.value?.inputDiv?.scrollIntoView()
+	},
+})
 </script>

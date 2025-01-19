@@ -40,7 +40,6 @@ import {
 	useActionColors,
 	rectangleOverlaps,
 	useIsSelected,
-	useDocumentPath,
 	useActionTestTime,
 	SelectionPos,
 	Selection,
@@ -102,7 +101,7 @@ function onAutomationDrop(sequence: Sequence) {
 const action = useAction(() => props.modelValue)
 const { actionColorStyle } = useActionColors(() => props.modelValue, isFloating)
 
-const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
+const isSelected = useIsSelected(() => props.modelValue.id)
 
 const testTime = useActionTestTime(() => props.modelValue.id)
 

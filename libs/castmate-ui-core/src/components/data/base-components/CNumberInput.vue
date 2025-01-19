@@ -1,9 +1,10 @@
 <template>
-	<p-input-text v-model="bufferedNumModel" @blur="onBlur" :placeholder="placeholder" />
+	<p-input-text v-model="bufferedNumModel" @blur="onBlur" :placeholder="placeholder" ref="input" />
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue"
+import { useDataUIBinding } from "../../../util/data-binding"
 
 import PInputText from "primevue/inputtext"
 
@@ -17,7 +18,18 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue"])
 
+const input = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
+
 const numEditModel = ref("")
+
+useDataUIBinding({
+	focus() {
+		input.value?.$el.focus()
+	},
+	scrollIntoView() {
+		input.value?.$el.scrollIntoView()
+	},
+})
 
 onMounted(() => {
 	watch(

@@ -1,40 +1,38 @@
 <template>
-	<document-path :local-path="localPath">
-		<div
-			class="data-input"
-			:class="{ 'data-input-outline': showLabel }"
-			tabindex="-1"
-			v-bind="$attrs"
-			@mousedown="onMouseDown"
-			v-if="propKeys.length > 0"
-		>
-			<div v-if="showLabel" class="flex flex-row">
-				<span class="text-color-secondary text-sm">{{ schema.name }}</span>
-				<div class="flex-grow-1"></div>
-			</div>
-			<data-input
-				class="data-prop"
-				v-for="(prop, i) in propKeys"
-				:key="prop"
-				:model-value="getModelProp(prop)"
-				@update:model-value="setModelProp(prop, $event)"
-				:schema="schema.properties[prop]"
-				:local-path="prop"
-				:context="context"
-				:secret="secret"
-				:disabled="disabled"
-			/>
+	<div
+		class="data-input"
+		:class="{ 'data-input-outline': showLabel }"
+		tabindex="-1"
+		v-bind="$attrs"
+		@mousedown="onMouseDown"
+		v-if="propKeys.length > 0"
+	>
+		<div v-if="showLabel" class="flex flex-row">
+			<span class="text-color-secondary text-sm">{{ schema.name }}</span>
+			<div class="flex-grow-1"></div>
 		</div>
-	</document-path>
+		<data-input
+			class="data-prop"
+			v-for="(prop, i) in propKeys"
+			:key="prop"
+			:model-value="getModelProp(prop)"
+			@update:model-value="setModelProp(prop, $event)"
+			:schema="schema.properties[prop]"
+			:local-path="prop"
+			:context="context"
+			:secret="secret"
+			:disabled="disabled"
+		/>
+	</div>
 </template>
 
 <script setup lang="ts">
 import { type SchemaObj } from "castmate-schema"
 import DataInput from "../DataInput.vue"
-import DocumentPath from "../../document/DocumentPath.vue"
+import DataBindingPath from "../binding/DataBindingPath.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import { computed } from "vue"
-import { usePropagationStop } from "../../../main"
+import { useDataBinding, usePropagationStop } from "../../../main"
 
 interface ObjType {
 	[prop: string]: any
@@ -46,6 +44,8 @@ const props = defineProps<
 		modelValue: ObjType | undefined
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const propKeys = computed(() => Object.keys(props.schema.properties))
 

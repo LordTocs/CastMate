@@ -48,7 +48,7 @@
 import { computed, nextTick, ref, useModel } from "vue"
 
 import PInputText from "primevue/inputtext"
-import { usePropagationStop } from "../../../main"
+import { useDataUIBinding, usePropagationStop } from "../../../main"
 
 const props = withDefaults(
 	defineProps<{
@@ -71,19 +71,32 @@ const inputDiv = ref<HTMLElement>()
 //Drop Down Opening
 const container = ref<HTMLElement | null>(null)
 
+function focus() {
+	focused.value = true
+	nextTick(() => {
+		filterInputElement.value?.$el?.focus()
+	})
+}
+
+function blur() {
+	filterInputElement.value?.$el?.blur()
+	focused.value = false
+	nextTick(() => {})
+}
+
+function scrollIntoView() {
+	filterInputElement.value?.$el.scrollIntoView()
+}
+
 defineExpose({
-	focus() {
-		focused.value = true
-		nextTick(() => {
-			filterInputElement.value?.$el?.focus()
-		})
-	},
-	blur() {
-		console.log("Blurring")
-		filterInputElement.value?.$el?.blur()
-		focused.value = false
-		nextTick(() => {})
-	},
+	focus,
+	blur,
+	scrollIntoView,
+})
+
+useDataUIBinding({
+	focus,
+	scrollIntoView,
 })
 
 function onMousedown(ev: MouseEvent) {

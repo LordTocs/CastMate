@@ -66,6 +66,7 @@ import { useClickDragRect, usePropagationStop } from "../../../util/dom"
 import { emit } from "process"
 import InputBox from "./InputBox.vue"
 import { useEventListener } from "@vueuse/core"
+import { useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<{
 	modelValue: Duration | undefined
@@ -161,6 +162,17 @@ function onFakeClick(ev: MouseEvent) {
 	stopPropagation(ev)
 	ev.preventDefault()
 }
+
+function focus() {
+	hiddenInput.value?.focus()
+}
+
+function scrollIntoView() {}
+
+defineExpose({
+	focus,
+	scrollIntoView,
+})
 
 //Selection Drag
 const imposterDiv = computed(() => inputBox.value?.inputDiv)

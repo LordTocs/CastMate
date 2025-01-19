@@ -1,5 +1,5 @@
 export interface SharedDataInputProps {
-	localPath?: string
+	localPath: string
 	noFloat?: boolean
 	context?: any
 	secret?: boolean

@@ -60,7 +60,6 @@ import {
 	useAction,
 	useActionColors,
 	useActionTestTime,
-	useDocumentPath,
 	useIsSelected,
 	SelectionPos,
 	Selection,
@@ -86,7 +85,7 @@ const { actionColorStyle } = useActionColors(() => props.modelValue, isFloating)
 const model = useModel(props, "modelValue")
 const action = useAction(() => props.modelValue)
 
-const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
+const isSelected = useIsSelected(() => props.modelValue.id)
 const testTime = useActionTestTime(() => props.modelValue.id)
 
 function removeFlow(i: number) {

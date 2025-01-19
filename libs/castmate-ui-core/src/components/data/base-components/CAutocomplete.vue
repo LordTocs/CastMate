@@ -151,6 +151,15 @@ function onSelect(item: any) {
 function onFilterKeyDown(ev: KeyboardEvent) {
 	dropDown.value?.handleKeyEvent(ev)
 }
+
+defineExpose({
+	focus() {
+		filterBox.value?.focus()
+	},
+	scrollIntoView() {
+		filterBox.value?.scrollIntoView()
+	},
+})
 </script>
 
 <style scoped>

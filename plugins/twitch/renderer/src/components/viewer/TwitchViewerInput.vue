@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" ref="inputBase">
 		<filter-input-box
 			v-model="model"
 			@focus="onFocus"
@@ -176,6 +176,8 @@ watch(
 		queryDisplay()
 	}
 )
+
+const inputBase = ref<InstanceType<typeof DataInputBase>>()
 </script>
 
 <style scoped>
