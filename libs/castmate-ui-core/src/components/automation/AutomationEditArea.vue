@@ -13,7 +13,7 @@
 		@blur="onBlur"
 	>
 		<select-dummy ref="dummy" />
-		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
+		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false" :min-zoom-x="0.2">
 			<sequence-edit
 				v-model="model.sequence"
 				:floating="false"
