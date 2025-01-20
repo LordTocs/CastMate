@@ -26,7 +26,6 @@ const emit = defineEmits(["delete"])
 
 useDataBinding(() => props.localPath)
 
-const templateToggle = ref<InstanceType<typeof TemplateToggle>>()
 const inputText = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
 
 useDataUIBinding({

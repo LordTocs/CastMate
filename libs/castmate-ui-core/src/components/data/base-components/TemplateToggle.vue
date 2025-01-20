@@ -20,7 +20,6 @@
 			/>
 			<p-input-icon class="mdi mdi-code-json" @click="suggestionClick" @mousedown="stopPropagation" />
 		</p-icon-field>
-		<!-- <p-button class="flex-none no-focus-highlight" icon="mdi mdi-code-json" size="small" text /> -->
 	</template>
 	<slot v-else v-bind="$attrs" :input-id="inputId"> </slot>
 	<state-suggestion-panel :container="dropAnchor" v-model:open="suggestionVisible" @suggest="onSuggest" />
@@ -32,7 +31,6 @@ import PInputText from "primevue/inputtext"
 import PTextArea from "primevue/textarea"
 import PIconField from "primevue/iconfield"
 import PInputIcon from "primevue/inputicon"
-import PBaseComponent from "@primevue/core/basecomponent"
 
 import StateSuggestionPanel from "./state/StateSuggestionPanel.vue"
 import { useDataUIBinding, usePropagationStop } from "../../../main"
