@@ -160,7 +160,12 @@ export function provideDocument(id: MaybeRefOrGetter<string>) {
 		"documentSelection",
 		computed({
 			get() {
-				return documentStore.documents.get(toValue(id))?.viewData.selection
+				return (
+					documentStore.documents.get(toValue(id))?.viewData.selection ?? {
+						items: [],
+						container: "",
+					}
+				)
 			},
 			set(v) {
 				const doc = documentStore.documents.get(toValue(id))
