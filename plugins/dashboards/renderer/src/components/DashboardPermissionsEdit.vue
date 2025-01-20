@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<data-input v-model="model" :schema="editSchema" />
+		<data-input v-model="model" :schema="editSchema" local-path="remoteTwitchIds" />
 	</div>
 </template>
 
@@ -12,7 +12,7 @@ import { onMounted, ref, useModel } from "vue"
 
 const editSchema = declareSchema({
 	type: Array,
-	name: "Shared Viewers",
+	name: "Share w/ Others",
 	items: {
 		type: TwitchViewer,
 		required: true,
