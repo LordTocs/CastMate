@@ -8,6 +8,7 @@ export interface SharedDataInputProps {
 
 export interface SharedDataViewProps {
 	context?: any
+	noLabel?: boolean
 }
 
 export function defaultStringIsTemplate(value: any | string) {

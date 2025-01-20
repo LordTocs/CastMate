@@ -1,5 +1,5 @@
 <template>
-	<span class="data-label" v-if="schema.name">{{ schema.name }}:</span> {{ minString }} ⟶ {{ maxString }}
+	<span class="data-label" v-if="schema.name && !noLabel">{{ schema.name }}:</span> {{ minString }} ⟶ {{ maxString }}
 </template>
 
 <script setup lang="ts">

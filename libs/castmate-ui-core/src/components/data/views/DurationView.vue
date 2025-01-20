@@ -1,5 +1,5 @@
 <template>
-	<span class="data-label" v-if="schema.name">{{ schema.name }}: </span>
+	<span class="data-label" v-if="schema.name && !noLabel">{{ schema.name }}: </span>
 	<duration-label :model-value="props.modelValue" />
 </template>
 
