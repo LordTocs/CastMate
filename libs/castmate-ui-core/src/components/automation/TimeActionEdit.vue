@@ -30,6 +30,7 @@
 						:is="action?.actionComponent ?? DefaultActionComponent"
 						:plugin="model.plugin"
 						:action="model.action"
+						v-bind="action?.componentExtraProps"
 						v-if="action?.type == 'regular'"
 						class="time-action-custom"
 					/>

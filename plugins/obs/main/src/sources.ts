@@ -174,7 +174,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 
 	defineAction({
 		id: "screenshot",
-		name: "Screenshot",
+		name: "Screenshot Source",
 		icon: "mdi mdi-camera",
 		config: {
 			type: Object,

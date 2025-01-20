@@ -37,6 +37,7 @@ interface BaseActionDefinition {
 interface RegularActionDefinition extends BaseActionDefinition {
 	type: "regular"
 	actionComponent?: Component
+	componentExtraProps?: any
 	duration: IPCDurationConfig
 	config: Schema
 	result?: SchemaObj
@@ -336,7 +337,12 @@ export const usePluginStore = defineStore("plugins", () => {
 		return result as AnyAction
 	}
 
-	function setActionComponent(plugin: string, action: string, component: Component) {
+	function setActionComponent<Props, C extends Component<Props>>(
+		plugin: string,
+		action: string,
+		component: C,
+		extraProps?: Partial<Props>
+	) {
 		const pluginDef = pluginMap.value.get(plugin)
 		if (!pluginDef) {
 			console.error(`Unknown plugin ${plugin}`)
@@ -349,6 +355,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		}
 		if (actionDef.type != "regular") return
 		actionDef.actionComponent = markRaw(component)
+		actionDef.componentExtraProps = extraProps
 		console.log("Set Action Component", plugin, action, component)
 	}
 

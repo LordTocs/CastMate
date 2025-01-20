@@ -275,6 +275,7 @@ export const ViewerCache = Service(
 		private getOrCreate(userId: string) {
 			if (userId == "") throw new Error("No empty IDs!")
 			if (userId == "anonymous") throw new Error("No anonymous!")
+			if (isDefinitelyNotTwitchId(userId)) throw new Error("Invalid ID!")
 
 			let cached = this.viewerLookup.get(userId)
 			if (!cached) {

@@ -33,6 +33,9 @@ import ChannelPointGroupHeaderVue from "./components/channel-points/ChannelPoint
 import TwitchViewerGroupViewVue from "./components/TwitchViewerGroupView.vue"
 import ChatCommandHeader from "./components/triggers/ChatCommandHeader.vue"
 import TwitchStreamTagsInput from "./components/stream-info/TwitchStreamTagsInput.vue"
+import ShoutoutActionComponent from "./components/action-components/ShoutoutActionComponent.vue"
+import AnnoucementActionComponent from "./components/action-components/AnnoucementActionComponent.vue"
+import ChatActionComponent from "./components/action-components/ChatActionComponent.vue"
 
 export * from "./util/twitch-accounts"
 
@@ -136,4 +139,8 @@ export async function initPlugin(app: App<Element>) {
 
 	const pluginStore = usePluginStore()
 	pluginStore.setTriggerHeaderComponent("twitch", "chat", ChatCommandHeader)
+
+	pluginStore.setActionComponent("twitch", "chat", ChatActionComponent)
+	pluginStore.setActionComponent("twitch", "shoutout", ShoutoutActionComponent)
+	pluginStore.setActionComponent("twitch", "annoucement", AnnoucementActionComponent)
 }

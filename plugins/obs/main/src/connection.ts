@@ -476,6 +476,7 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getRemoteHost")
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "createNewSource")
 		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "updateSourceSettings")
+		ResourceRegistry.getInstance().exposeIPCFunction<OBSConnection>(OBSConnection, "getSceneSource")
 	}
 
 	/**
