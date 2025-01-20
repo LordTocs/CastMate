@@ -4,6 +4,7 @@
 			<data-input
 				v-model="model.widgets[selectedWidgetIndex].config"
 				:schema="selectedWidgetInfo.component.widget.config"
+				local-path="config"
 			/>
 			<overlay-widget-transform-edit v-model="model.widgets[selectedWidgetIndex]" />
 		</template>

@@ -1,6 +1,6 @@
 <template>
 	<div class="flex flex-column flex-grow-1">
-		<data-input v-model="editValue" :schema="StreamInfoSchema" />
+		<data-input v-model="editValue" :schema="StreamInfoSchema" local-path="streamInfo" />
 		<div class="flex flex-row">
 			<div class="flex-grow-1"></div>
 			<p-button @click="save" size="small">Save</p-button>
