@@ -47,6 +47,8 @@ interface FlowActionDefinition extends BaseActionDefinition {
 	type: "flow"
 	config: Schema
 	flowConfig?: Schema
+	flowComponent?: Component
+	flowComponentExtraProps?: any
 }
 
 export type ActionDefinition = RegularActionDefinition | FlowActionDefinition
@@ -359,6 +361,28 @@ export const usePluginStore = defineStore("plugins", () => {
 		console.log("Set Action Component", plugin, action, component)
 	}
 
+	function setFlowActionComponent<Props, C extends Component<Props>>(
+		plugin: string,
+		action: string,
+		component: C,
+		extraProps?: Partial<Props>
+	) {
+		const pluginDef = pluginMap.value.get(plugin)
+		if (!pluginDef) {
+			console.error(`Unknown plugin ${plugin}`)
+			return
+		}
+		const actionDef = pluginDef.actions[action]
+		if (!actionDef) {
+			console.error(`Unknown action ${plugin}:${action}`)
+			return
+		}
+		if (actionDef.type != "flow") return
+		actionDef.flowComponent = markRaw(component)
+		actionDef.flowComponentExtraProps = extraProps
+		console.log("Set Flow Action Component", plugin, action, component)
+	}
+
 	function setTriggerHeaderComponent(plugin: string, trigger: string, component: Component) {
 		const pluginDef = pluginMap.value.get(plugin)
 		if (!pluginDef) {
@@ -412,6 +436,7 @@ export const usePluginStore = defineStore("plugins", () => {
 		createAction,
 		getAction,
 		setActionComponent,
+		setFlowActionComponent,
 		setSettingComponent,
 		setTriggerHeaderComponent,
 		updateSettings,
@@ -490,6 +515,15 @@ export function useAction(selection: MaybeRefOrGetter<ActionSelection | undefine
 
 		if (!selectionValue.plugin || !selectionValue.action) return undefined
 		return pluginStore.pluginMap.get(selectionValue.plugin)?.actions?.[selectionValue.action]
+	})
+}
+
+export function useFlowAction(selection: MaybeRefOrGetter<ActionSelection | undefined>) {
+	const action = useAction(selection)
+
+	return computed(() => {
+		if (action.value?.type != "flow") return undefined
+		return action.value
 	})
 }
 
