@@ -62,6 +62,8 @@ export { default as DataInputBaseMenu } from "./components/data/base-components/
 export { default as DropListItem } from "./components/data/base-components/DropListItem.vue"
 export { default as FilterInputBox } from "./components/data/base-components/FilterInputBox.vue"
 
+export { default as DataBindingDebugger } from "./components/data/binding/DataBindingDebugger.vue"
+
 export { default as StreamPlanDashboardWidget } from "./components/stream-plan/StreamPlanDashboardWidget.vue"
 
 export { default as CancellableDynamicDialog } from "./components/dialogs/CancellableDynamicDialog.vue"

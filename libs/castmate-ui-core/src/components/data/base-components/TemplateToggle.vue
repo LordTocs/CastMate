@@ -94,10 +94,13 @@ function scrollIntoView() {
 	inputText.value?.$el.scrollIntoView()
 }
 
-useDataUIBinding({
-	focus,
-	scrollIntoView,
-})
+useDataUIBinding(
+	{
+		focus,
+		scrollIntoView,
+	},
+	"template-toggle"
+)
 
 defineExpose({
 	focus,

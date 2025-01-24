@@ -42,6 +42,8 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
 
 const updateForcer = ref(0)

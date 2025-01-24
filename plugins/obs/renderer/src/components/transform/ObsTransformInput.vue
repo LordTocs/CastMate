@@ -1,6 +1,11 @@
 <template>
 	<div class="transform-input" v-if="model">
-		<obs-transform-data-group v-model="model.position" inner-class="flex flex-row gap-1" label="Position">
+		<obs-transform-data-group
+			v-model="model.position"
+			inner-class="flex flex-row gap-1"
+			label="Position"
+			local-path="position"
+		>
 			<obs-transform-number-input
 				label="X"
 				v-model="model.position.x"
@@ -8,6 +13,7 @@
 				ws-prop="positionX"
 				:can-template="canTemplate"
 				unit="px"
+				local-path="x"
 			></obs-transform-number-input>
 			<obs-transform-number-input
 				label="Y"
@@ -16,6 +22,7 @@
 				ws-prop="positionY"
 				:can-template="canTemplate"
 				unit="px"
+				local-path="y"
 			></obs-transform-number-input>
 		</obs-transform-data-group>
 		<obs-transform-number-input
@@ -25,6 +32,7 @@
 			ws-prop="rotation"
 			:can-template="canTemplate"
 			unit="deg"
+			local-path="rotation"
 		/>
 		<obs-transform-enum-input
 			label="Alignment"
@@ -32,8 +40,14 @@
 			input-id="boundsAlignment"
 			ws-prop="boundsAlignment"
 			:enum="alignmentEnum"
+			local-path="alignment"
 		/>
-		<obs-transform-data-group v-model="model.scale" inner-class="flex flex-row gap-1" label="Size">
+		<obs-transform-data-group
+			v-model="model.scale"
+			inner-class="flex flex-row gap-1"
+			label="Size"
+			local-path="scale"
+		>
 			<obs-transform-number-input
 				label="X"
 				v-model="model.scale.x"
@@ -41,6 +55,7 @@
 				ws-prop="scaleY"
 				:can-template="canTemplate"
 				unit="px"
+				local-path="x"
 			/>
 			<obs-transform-number-input
 				label="Y"
@@ -49,9 +64,10 @@
 				ws-prop="scaleY"
 				:can-template="canTemplate"
 				unit="px"
+				local-path="y"
 			/>
 		</obs-transform-data-group>
-		<obs-transform-data-group v-model="model.crop" label="Crop">
+		<obs-transform-data-group v-model="model.crop" label="Crop" local-path="crop">
 			<div class="flex flex-row justify-content-center">
 				<obs-transform-number-input
 					label="Top"
@@ -59,6 +75,7 @@
 					input-id="top"
 					ws-prop="cropTop"
 					:can-template="canTemplate"
+					local-path="top"
 				/>
 			</div>
 			<div class="flex flex-row justify-content-center gap-1">
@@ -68,6 +85,7 @@
 					input-id="cropLeft"
 					ws-prop="cropLeft"
 					:can-template="canTemplate"
+					local-path="left"
 				/>
 				<obs-transform-number-input
 					label="Right"
@@ -75,6 +93,7 @@
 					input-id="x"
 					ws-prop="cropRight"
 					:can-template="canTemplate"
+					local-path="right"
 				/>
 			</div>
 			<div class="flex flex-row justify-content-center">
@@ -84,16 +103,18 @@
 					input-id="cropBottom"
 					ws-prop="cropBottom"
 					:can-template="canTemplate"
+					local-path="bottom"
 				/>
 			</div>
 		</obs-transform-data-group>
-		<obs-transform-data-group label="Bounds" v-model="model.boundingBox">
+		<obs-transform-data-group label="Bounds" v-model="model.boundingBox" local-path="boundingBox">
 			<obs-transform-enum-input
 				label="Alignment"
 				v-model="model.boundingBox.alignment"
 				input-id="boundsAlignment"
 				ws-prop="boundsAlignment"
 				:enum="alignmentEnum"
+				local-path="alignment"
 			/>
 			<obs-transform-enum-input
 				label="Bounds Type"
@@ -101,6 +122,7 @@
 				input-id="boundsType"
 				ws-prop="boundsType"
 				:enum="boundsTypeEnum"
+				local-path="boxType"
 			/>
 			<div class="flex flex-row justify-content-center gap-1">
 				<obs-transform-number-input
@@ -109,6 +131,7 @@
 					input-id="boundsWidth"
 					ws-prop="boundsWidth"
 					:can-template="canTemplate"
+					local-path="width"
 				/>
 				<obs-transform-number-input
 					label="Height"
@@ -116,6 +139,7 @@
 					input-id="boundsHeight"
 					ws-prop="boundsHeight"
 					:can-template="canTemplate"
+					local-path="height"
 				/>
 			</div>
 		</obs-transform-data-group>
@@ -124,7 +148,7 @@
 
 <script setup lang="ts">
 import { OBSSourceTransform, SchemaOBSSourceTransform, OBSBoundsType, OBSAlignment } from "castmate-plugin-obs-shared"
-import { SharedDataInputProps, CAutocomplete, LabelFloater } from "castmate-ui-core"
+import { SharedDataInputProps, CAutocomplete, LabelFloater, useDataBinding } from "castmate-ui-core"
 import { useModel, computed } from "vue"
 
 import ObsTransformDataGroup from "./ObsTransformDataGroup.vue"
@@ -137,6 +161,8 @@ const props = defineProps<
 		schema: SchemaOBSSourceTransform
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

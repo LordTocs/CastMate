@@ -23,7 +23,14 @@
 </template>
 
 <script setup lang="ts">
-import { LabelFloater, InputBox, SharedDataInputProps, DataInputBase, usePropagationStop } from "castmate-ui-core"
+import {
+	LabelFloater,
+	InputBox,
+	SharedDataInputProps,
+	DataInputBase,
+	usePropagationStop,
+	useDataBinding,
+} from "castmate-ui-core"
 import { KeyboardKey, SchemaKeyboardKey, Keys, getKeyboardKey, KeyCombo } from "castmate-plugin-input-shared"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
@@ -34,6 +41,8 @@ const props = defineProps<
 		schema: SchemaKeyboardKey
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 const captureMode = ref(false)

@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { TemplateNumber } from "castmate-schema"
-import { LabelFloater, TemplateToggle, ClearButton, CContextMenu } from "castmate-ui-core"
+import { LabelFloater, TemplateToggle, ClearButton, CContextMenu, useDataBinding } from "castmate-ui-core"
 import { useModel, ref, computed, onMounted } from "vue"
 import { OBSWSSourceTransform } from "castmate-plugin-obs-shared"
 import PInputNumber from "primevue/inputnumber"
@@ -38,7 +38,10 @@ const props = defineProps<{
 	inputId: string
 	wsProp: keyof OBSWSSourceTransform
 	unit?: string
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

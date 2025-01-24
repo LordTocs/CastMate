@@ -54,6 +54,7 @@ import {
 	DataInputBase,
 	stopPropagation,
 	defaultStringIsTemplate,
+	useDataBinding,
 } from "castmate-ui-core"
 import { TwitchViewerUnresolved, SchemaTwitchViewer, TwitchViewerDisplayData } from "castmate-plugin-twitch-shared"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
@@ -66,6 +67,8 @@ const props = defineProps<
 		schema: SchemaTwitchViewer
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

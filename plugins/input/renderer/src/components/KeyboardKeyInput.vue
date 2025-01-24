@@ -27,7 +27,13 @@
 </template>
 
 <script setup lang="ts">
-import { CAutocomplete, SharedDataInputProps, DataInputBase, usePropagationStop } from "castmate-ui-core"
+import {
+	CAutocomplete,
+	SharedDataInputProps,
+	DataInputBase,
+	usePropagationStop,
+	useDataBinding,
+} from "castmate-ui-core"
 import { KeyboardKey, SchemaKeyboardKey, Keys, getKeyboardKey } from "castmate-plugin-input-shared"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
@@ -38,6 +44,8 @@ const props = defineProps<
 		schema: SchemaKeyboardKey
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

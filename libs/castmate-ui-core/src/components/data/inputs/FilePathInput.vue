@@ -1,6 +1,6 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" ref="inputBase">
-		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" ref="inputBox" />
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" ref="inputBoxRef" />
 	</data-input-base>
 </template>
 
@@ -45,15 +45,14 @@ async function dirClick(ev: MouseEvent) {
 	}
 }
 
-const inputBase = ref<InstanceType<typeof DataInputBase>>()
-const inputBox = ref<InstanceType<typeof InputBox>>()
+const inputBoxRef = ref<InstanceType<typeof InputBox>>()
 
 useDataUIBinding({
 	focus() {
-		inputBox.value?.inputDiv?.focus()
+		inputBoxRef.value?.inputDiv?.focus()
 	},
 	scrollIntoView() {
-		inputBox.value?.inputDiv?.scrollIntoView()
+		inputBoxRef.value?.inputDiv?.scrollIntoView()
 	},
 })
 </script>

@@ -28,12 +28,15 @@ useDataBinding(() => props.localPath)
 
 const inputText = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
 
-useDataUIBinding({
-	focus() {
-		inputText.value?.$el.focus()
+useDataUIBinding(
+	{
+		focus() {
+			inputText.value?.$el.focus()
+		},
+		scrollIntoView() {
+			inputText.value?.$el.scrollIntoView()
+		},
 	},
-	scrollIntoView() {
-		inputText.value?.$el.scrollIntoView()
-	},
-})
+	"tagline"
+)
 </script>

@@ -31,7 +31,14 @@
 
 <script setup lang="ts">
 import { LightColor, SchemaLightcolor } from "castmate-plugin-iot-shared"
-import { InputBox, SharedDataInputProps, DropDownPanel, DataInputBase, usePropagationStop } from "castmate-ui-core"
+import {
+	InputBox,
+	SharedDataInputProps,
+	DropDownPanel,
+	DataInputBase,
+	usePropagationStop,
+	useDataBinding,
+} from "castmate-ui-core"
 import { ref, useModel } from "vue"
 import LightColorWheel from "./LightColorWheel.vue"
 import LightTemperatureSlider from "./LightTemperatureSlider.vue"
@@ -46,6 +53,8 @@ const props = defineProps<
 		schema: SchemaLightcolor
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

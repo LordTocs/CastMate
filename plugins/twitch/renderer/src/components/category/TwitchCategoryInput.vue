@@ -66,6 +66,7 @@ import {
 	TemplateToggle,
 	DataInputBase,
 	FilterInputBox,
+	useDataBinding,
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
 import { useCategoryStore } from "../../util/category"
@@ -77,6 +78,8 @@ const props = defineProps<
 		schema: SchemaTwitchCategory
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

@@ -3,6 +3,7 @@ import {
 	ComputedRef,
 	inject,
 	MaybeRefOrGetter,
+	onBeforeMount,
 	onBeforeUnmount,
 	onMounted,
 	provide,
@@ -18,7 +19,7 @@ import { provideLocal, injectLocal } from "@vueuse/core"
 
 //Handles document pathing like a.b[2].c
 function parsePath(path: string) {
-	return path.split(/\.|\[|\]\./i)
+	return path.split(/\./i)
 }
 
 export function joinDataPath(...paths: (string | undefined)[]) {
@@ -28,7 +29,7 @@ export function joinDataPath(...paths: (string | undefined)[]) {
 			continue
 		}
 		if (result.length > 0) {
-			const separator = path.startsWith("[") ? "" : "."
+			const separator = "."
 			result += separator
 		}
 		result += path
@@ -103,11 +104,12 @@ export function useLocalDataBinding() {
 	return computed(() => getDataViewByPath(baseBinding.root, path.value))
 }
 
-export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>) {
+export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>, debug?: MaybeRefOrGetter<string>) {
+	const localPath = useDataPath()
 	const localBinding = useLocalDataBinding()
 	const currentBinding = ref<DataUIBinding>()
 
-	onMounted(() => {
+	onBeforeMount(() => {
 		watch(
 			[localBinding, () => toValue(uiBinding)],
 			([view, binding], [oldView, oldBinding]) => {
@@ -116,6 +118,7 @@ export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>) {
 					currentBinding.value = undefined
 				}
 
+				console.log("OnBeforeMount Data UI Binding", toValue(debug), localPath.value)
 				if (view) {
 					registerDataUiBinding(view, binding)
 					currentBinding.value = binding
@@ -126,6 +129,7 @@ export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>) {
 	})
 
 	onBeforeUnmount(() => {
+		console.log("OnBeforeUnmount Data UI Binding", toValue(debug), localPath.value)
 		if (localBinding.value && currentBinding.value) {
 			unregisterDataUiBinding(localBinding.value, currentBinding.value)
 		}
@@ -133,18 +137,17 @@ export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>) {
 }
 
 export function useDataBinding(localPath: MaybeRefOrGetter<string>) {
-	const parentPath = useDataPath()
 	const baseBinding = useBaseDataBinding()
 
-	const fullPath = computed(() => joinDataPath(parentPath.value, toValue(localPath)))
+	const fullPath = provideLocalPath(localPath)
 
-	provide("ui-data-path", fullPath)
-
-	onMounted(() => {
+	onBeforeMount(() => {
+		console.log("onBeforeMount DataBinding", fullPath.value)
 		ensureDataView(baseBinding.root, fullPath.value)
 	})
 
 	onBeforeUnmount(() => {
+		console.log("onBeforeUnmount DataBinding", fullPath.value)
 		deleteDataView(baseBinding.root, fullPath.value)
 	})
 
@@ -159,7 +162,7 @@ export function useDataBinding(localPath: MaybeRefOrGetter<string>) {
 ///////////////////////////////////////
 ///////////////////////////////////////
 
-async function focusDataByPath(root: DataPathView, path: string) {
+export async function focusDataByPath(root: DataPathView, path: string) {
 	const parsedPath = parsePath(path)
 
 	let base = root
@@ -178,7 +181,7 @@ async function focusDataByPath(root: DataPathView, path: string) {
 	}
 }
 
-async function scrollIntoViewDataByPath(root: DataPathView, path: string) {
+export async function scrollIntoViewDataByPath(root: DataPathView, path: string) {
 	const parsedPath = parsePath(path)
 
 	let base = root
@@ -217,6 +220,7 @@ function ensureDataView(root: DataPathView, path: string) {
 	const pathParsed = parsePath(path)
 
 	let base = root
+	console.log("Ensuring", root, path)
 	for (const trace of pathParsed) {
 		if (!(trace in base.subPaths)) {
 			base.subPaths[trace] = {

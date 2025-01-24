@@ -45,6 +45,8 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
 
 const templateMode = ref(false)
@@ -59,8 +61,6 @@ function addTag() {
 		model.value.push("")
 	}
 }
-
-useDataBinding(() => props.localPath)
 </script>
 
 <style scoped></style>

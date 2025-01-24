@@ -8,7 +8,7 @@
 
 <script setup lang="ts" generic="T">
 import { OBSWSSourceTransform } from "castmate-plugin-obs-shared"
-import { LabelFloater, CAutocomplete } from "castmate-ui-core"
+import { LabelFloater, CAutocomplete, useDataBinding } from "castmate-ui-core"
 import { useModel, computed } from "vue"
 
 const props = defineProps<{
@@ -17,7 +17,10 @@ const props = defineProps<{
 	inputId: string
 	wsProp: keyof OBSWSSourceTransform
 	enum: { name: string; value: T }[]
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const items = computed(() => {
 	return props.enum.map((e) => ({ name: e.name, id: e.value }))

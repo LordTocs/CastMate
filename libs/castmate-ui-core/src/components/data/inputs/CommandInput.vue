@@ -114,15 +114,16 @@ const matchModel = computed({
 const tabModel = computed({
 	get() {
 		if (model.value?.mode == "string") {
-			return 1
+			return "1"
 		} else if (model.value?.mode == "regex") {
-			return 2
+			return "2"
 		}
-		return 0
+		return "0"
 	},
 	set(v) {
-		console.log("Set Tab Model", v)
-		const mode: CommandMode = v == 2 ? "regex" : v == 1 ? "string" : "command"
+		const mode: CommandMode = v == "2" ? "regex" : v == "1" ? "string" : "command"
+
+		console.log("Set Tab Model", v, mode)
 		if (model.value) {
 			model.value.mode = mode
 		} else {

@@ -2,24 +2,49 @@
 	<scrolling-tab-body>
 		<div class="flex flex-row">
 			<div style="width: 50%; flex-shrink: 0">
-				<data-input :schema="baseTestSchema" v-model="testData" />
+				<data-input :schema="baseTestSchema" v-model="testData" local-path="" />
 			</div>
-			<div class="flex-grow-1 flex-shrink-0">
-				<pre>{{
-					util.inspect(testData, {
-						depth: 10,
-						compact: false,
-					})
-				}}</pre>
+			<div class="flex flex-column flex-grow-1 flex-shrink-0">
+				<div>
+					<pre>{{
+						util.inspect(testData, {
+							depth: 10,
+							compact: false,
+						})
+					}}</pre>
+				</div>
+				<div>
+					<data-binding-debugger :binding="baseDataBinding" />
+				</div>
 			</div>
 		</div>
 	</scrolling-tab-body>
 </template>
 
 <script setup lang="ts">
-import { Color, Duration, Timer, FilePath, Range, Directory, Toggle, declareSchema, MediaFile } from "castmate-schema"
-import { ScrollingTabBody, useDataInputStore, DataInputBase, DataInput, ResourceProxyFactory } from "castmate-ui-core"
-import { ref } from "vue"
+import {
+	Color,
+	Duration,
+	Timer,
+	FilePath,
+	Range,
+	Directory,
+	Toggle,
+	declareSchema,
+	MediaFile,
+	constructDefault,
+} from "castmate-schema"
+import {
+	ScrollingTabBody,
+	useDataInputStore,
+	DataInputBase,
+	DataInput,
+	ResourceProxyFactory,
+	DataBinding,
+	provideBaseDataBinding,
+	DataBindingDebugger,
+} from "castmate-ui-core"
+import { onBeforeMount, onMounted, ref } from "vue"
 import util from "util"
 import { TwitchCategory, TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { LightColor } from "castmate-plugin-iot-shared"
@@ -36,9 +61,21 @@ const testSchema = declareSchema({
 	name: "New Base Test",
 	template: true,
 })
-const baseDataTest = ref<any>(undefined)
+const baseDataBinding = ref<DataBinding>({
+	root: {
+		data: {},
+		subPaths: {},
+		uiBindings: [],
+	},
+})
+
+provideBaseDataBinding(baseDataBinding.value)
 
 const testData = ref({})
+
+onBeforeMount(async () => {
+	testData.value = await constructDefault(baseTestSchema)
+})
 
 const baseTestSchema = declareSchema({
 	type: Object,
@@ -67,7 +104,7 @@ const baseTestSchema = declareSchema({
 		resource: { type: ResourceProxyFactory, resourceType: "ActionQueue", name: "Resource" },
 		command: { type: Command, name: "Command Test", required: true, template: true },
 		powershellCommand: { type: PowerShellCommand, name: "PowerShellCommand", template: true },
-		obsTransform: { type: OBSSourceTransform, name: "Source Transform", template: true },
+		obsTransform: { type: OBSSourceTransform, name: "Source Transform", template: true, required: true },
 	},
 })
 </script>

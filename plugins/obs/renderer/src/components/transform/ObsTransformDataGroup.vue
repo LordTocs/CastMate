@@ -10,13 +10,17 @@
 </template>
 
 <script setup lang="ts">
+import { useDataBinding } from "castmate-ui-core"
 import { StyleValue } from "vue"
 
 const props = defineProps<{
 	label?: string
 	modelValue: object | undefined
 	innerClass?: any
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 </script>
 
 <style scoped>
