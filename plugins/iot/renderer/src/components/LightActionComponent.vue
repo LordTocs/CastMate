@@ -1,6 +1,7 @@
 <template>
 	<div class="light-action">
-		<div
+		<div class="gradient" :style="{ backgroundColor: lightColor }"></div>
+		<!-- <div
 			v-if="props.modelValue.on === true || props.modelValue.on == 'toggle'"
 			class="gradient on"
 			:class="{ toggle: props.modelValue.on == 'toggle' }"
@@ -11,7 +12,7 @@
 			class="gradient off"
 			:class="{ toggle: props.modelValue.on == 'toggle' }"
 			:style="{ background: offGradient }"
-		></div>
+		></div> -->
 		<i :class="icon" style="position: relative; font-size: 1.5rem" />
 	</div>
 </template>
