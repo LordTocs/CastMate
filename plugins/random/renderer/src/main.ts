@@ -1,7 +1,7 @@
 import { usePluginStore } from "castmate-ui-core"
 import RandomFlowActionComponent from "./components/RandomFlowActionComponent.vue"
 
-export function initPlugin() {
+export async function initPlugin() {
 	console.log("init random!")
 	const pluginStore = usePluginStore()
 
