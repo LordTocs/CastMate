@@ -162,7 +162,7 @@ export function setupAds() {
 
 		if (soonestTriggerTime < Number.POSITIVE_INFINITY) {
 			//Issue a schedule validation check 1s before the next trigger
-			const validationTime = soonestTriggerTime - 1
+			const validationTime = soonestTriggerTime - 15
 			if (validationTime > 0) {
 				setTimeout(async () => {
 					await queryAdSchedule()
@@ -258,7 +258,7 @@ export function setupAds() {
 			setTimeout(() => {
 				//Wait a little bit after the stream comes online to query the ad schedule since we don't seem to get info on first startup
 				queryAdSchedule()
-			}, 10 * 1000)
+			}, 60 * 1000)
 		})
 
 		service.eventsub.onChannelAdBreakBegin(channel.twitchId, async (event) => {
