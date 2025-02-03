@@ -69,7 +69,7 @@ const inputDiv = ref<HTMLElement>()
 
 ////////////////////////////
 //Drop Down Opening
-const container = ref<HTMLElement | null>(null)
+const container = ref<HTMLElement>()
 
 function focus() {
 	focused.value = true
