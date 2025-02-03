@@ -78,6 +78,7 @@ import { IPCOverlayWidgetDescriptor } from "castmate-plugin-overlays-shared"
 import { sendDashboardsToMain, sendOverlaysToMain } from "./util/overlay-util"
 import { setupProxyDialogService } from "../../../../libs/castmate-ui-core/src/util/dialog-helper"
 import { definePreset } from "@primevue/themes"
+import KeyFilter from "primevue/keyfilter"
 /*
 const router = createRouter({
 	history: createWebHistory(),
@@ -135,6 +136,7 @@ setupProxyDialogService(app)
 
 app.use(ConfirmationService)
 
+app.directive("keyfilter", KeyFilter)
 app.directive("tooltip", Tooltip)
 //app.use(Maska)
 

@@ -8,7 +8,7 @@
 				v-slot="templateProps"
 				@contextmenu="menu?.show($event)"
 			>
-				<p-input-number v-model="numModel" v-bind="templateProps" :format="false" :suffix="unit" />
+				<c-number-input v-model="numModel" v-bind="templateProps" ref="numInput" />
 			</template-toggle>
 		</label-floater>
 		<!-- <p-button
@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { TemplateNumber } from "castmate-schema"
-import { LabelFloater, TemplateToggle, ClearButton, CContextMenu, useDataBinding } from "castmate-ui-core"
+import { LabelFloater, TemplateToggle, CContextMenu, useDataBinding, CNumberInput } from "castmate-ui-core"
 import { useModel, ref, computed, onMounted } from "vue"
 import { OBSWSSourceTransform } from "castmate-plugin-obs-shared"
 import PInputNumber from "primevue/inputnumber"

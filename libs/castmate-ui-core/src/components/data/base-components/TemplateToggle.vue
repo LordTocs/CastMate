@@ -18,7 +18,7 @@
 				ref="textArea"
 				v-else
 			/>
-			<p-input-icon class="mdi mdi-code-json" @click="suggestionClick" @mousedown="stopPropagation" />
+			<p-input-icon class="mdi mdi-code-json" @click="suggestionClick" @mousedown="onSuggestionMouseDown" />
 		</p-icon-field>
 	</template>
 	<slot v-else v-bind="$attrs" :input-id="inputId"> </slot>
@@ -26,14 +26,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useModel } from "vue"
+import { computed, nextTick, ref, useModel } from "vue"
 import PInputText from "primevue/inputtext"
 import PTextArea from "primevue/textarea"
 import PIconField from "primevue/iconfield"
 import PInputIcon from "primevue/inputicon"
 
 import StateSuggestionPanel from "./state/StateSuggestionPanel.vue"
-import { useDataUIBinding, usePropagationStop } from "../../../main"
+import {
+	useCommitUndo,
+	useDataUIBinding,
+	usePropagationStop,
+	useTextUndoCommitter,
+	useUndoCommitter,
+} from "../../../main"
 import { VueInstance } from "@vueuse/core"
 
 const props = defineProps<{
@@ -57,13 +63,22 @@ const emit = defineEmits(["update:modelValue"])
 
 //Some bug in typescript incorrectly infered our model type
 const model = useModel(props, "modelValue")
+const undoModel = useUndoCommitter(model)
+
+const commitUndo = useCommitUndo()
 
 const stopPropagation = usePropagationStop()
+
+function onSuggestionMouseDown(ev: MouseEvent) {
+	stopPropagation(ev)
+	ev.preventDefault()
+}
 
 function suggestionClick(ev: MouseEvent) {
 	stopPropagation(ev)
 	ev.preventDefault()
 	suggestionVisible.value = true
+	commitUndo()
 }
 
 function isString(obj: any): obj is string {
@@ -72,17 +87,56 @@ function isString(obj: any): obj is string {
 
 function onSuggest(suggestion: string) {
 	const suggestionTemplate = `{{ ${suggestion} }}`
-	const currentValue = model.value
+	const currentValue = undoModel.value
 
 	if (currentValue != null && isString(currentValue)) {
-		model.value += suggestionTemplate
+		const selection = getSelection()
+
+		if (selection == null) {
+			undoModel.value += suggestionTemplate
+		} else {
+			undoModel.value =
+				currentValue.slice(0, selection.start) + suggestionTemplate + currentValue.slice(selection.end)
+
+			nextTick(() => {
+				const end = selection.start + suggestionTemplate.length
+				setSelection(end, end)
+			})
+		}
 	} else {
-		model.value = suggestionTemplate
+		undoModel.value = suggestionTemplate
 	}
 }
 
-const textArea = ref<InstanceType<typeof PTextArea> & { $el: HTMLElement }>()
-const inputText = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
+const textArea = ref<InstanceType<typeof PTextArea> & { $el: HTMLInputElement }>()
+const inputText = ref<InstanceType<typeof PInputText> & { $el: HTMLInputElement }>()
+
+function getSelection() {
+	const start = inputText.value?.$el?.selectionStart ?? textArea.value?.$el?.selectionStart
+	const end = inputText.value?.$el?.selectionEnd ?? textArea.value?.$el?.selectionEnd
+
+	if (start == null || end == null) {
+		return undefined
+	}
+
+	return {
+		start: Math.min(start, end),
+		end: Math.max(start, end),
+	}
+}
+
+function setSelection(start: number, end: number) {
+	if (inputText.value?.$el) {
+		inputText.value.$el.selectionStart = start
+		inputText.value.$el.selectionEnd = end
+	} else if (textArea.value?.$el) {
+		textArea.value.$el.selectionStart = start
+		textArea.value.$el.selectionEnd = end
+	}
+}
+
+useTextUndoCommitter(() => inputText.value?.$el)
+useTextUndoCommitter(() => textArea.value?.$el)
 
 function focus() {
 	textArea.value?.$el.focus()

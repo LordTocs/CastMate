@@ -15,6 +15,7 @@
 import { useEventListener } from "@vueuse/core"
 import { useModel, ref, watch, toValue, HTMLAttributes } from "vue"
 import { InputSelection } from "./FakeInputTypes.ts"
+import { useTextUndoCommitter, useUndoCommitter } from "../../main.ts"
 
 const props = withDefaults(
 	defineProps<{
@@ -23,11 +24,14 @@ const props = withDefaults(
 		focused: boolean
 		pattern?: string
 		inputmode?: HTMLAttributes["inputmode"]
+		emitUndo?: boolean
 	}>(),
-	{}
+	{ emitUndo: true }
 )
 
-const hiddenInput = ref<HTMLInputElement | null>(null)
+const hiddenInput = ref<HTMLInputElement>()
+
+useTextUndoCommitter(() => (props.emitUndo ? hiddenInput.value : undefined))
 
 const model = useModel(props, "modelValue")
 const selection = useModel(props, "selection")

@@ -29,7 +29,6 @@
 <script setup lang="ts">
 import { type SchemaObj } from "castmate-schema"
 import DataInput from "../DataInput.vue"
-import DataBindingPath from "../binding/DataBindingPath.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import { computed } from "vue"
 import { useDataBinding, usePropagationStop } from "../../../main"

@@ -56,7 +56,7 @@ import InputBox from "../base-components/InputBox.vue"
 import { useElementSize } from "@vueuse/core"
 import { MediaFile } from "castmate-schema"
 import PInputText from "primevue/inputtext"
-import { useDataBinding } from "../../../util/data-binding"
+import { useDataBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -66,6 +66,10 @@ const props = defineProps<
 >()
 
 useDataBinding(() => props.localPath)
+
+const model = useModel(props, "modelValue")
+
+const undoModel = useUndoCommitter(model)
 
 const mediaStore = useMediaStore()
 const mediaItems = computed(() =>
@@ -100,15 +104,13 @@ function onFilterKeyDown(ev: KeyboardEvent) {
 	//dropDown.value?.handleKeyEvent(ev)
 }
 
-const model = useModel(props, "modelValue")
-
 const selectedMedia = computed({
 	get() {
 		if (!props.modelValue) return undefined
 		return mediaStore.media[props.modelValue]
 	},
 	set(v: MediaMetadata | undefined) {
-		model.value = v?.path
+		undoModel.value = v?.path
 	},
 })
 
@@ -122,7 +124,7 @@ function onDropdownMouseDown(ev: MouseEvent) {
 }
 
 function mediaClicked(media: MediaFile) {
-	model.value = media
+	undoModel.value = media
 	filterInput.value?.blur()
 }
 </script>

@@ -7,10 +7,10 @@
 		</div>
 		<div class="p-1">
 			<label-floater :no-float="true" label="Name" input-id="type" v-slot="labelProps">
-				<variable-name-input v-model="model.name" v-bind="labelProps" style="width: 100%" />
+				<variable-name-input v-model="model.name" v-bind="labelProps" style="width: 100%" local-path="name" />
 			</label-floater>
 			<label-floater :no-float="true" label="Type" input-id="type" v-slot="labelProps">
-				<p-dropdown
+				<c-dropdown
 					v-bind="labelProps"
 					v-model="model.schema.type"
 					:options="argTypeOptions"
@@ -18,7 +18,8 @@
 					option-label="name"
 					style="width: 100%"
 					class="mt-1"
-				></p-dropdown>
+					local-path="schema.type"
+				/>
 			</label-floater>
 		</div>
 	</div>
@@ -32,10 +33,15 @@ import PDropdown from "primevue/dropdown"
 import LabelFloater from "../LabelFloater.vue"
 import VariableNameInput from "../VariableNameInput.vue"
 import PButton from "primevue/button"
+import CDropdown from "../CDropdown.vue"
+import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{
 	modelValue: CommandArgument
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

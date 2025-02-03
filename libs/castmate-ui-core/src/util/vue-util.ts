@@ -1,0 +1,23 @@
+import { computed, MaybeRefOrGetter, Ref } from "vue"
+
+export function useDefaultableModel<T extends object, P extends keyof T>(
+	model: Ref<T | undefined>,
+	prop: P,
+	propDefault: T[P],
+	defaultMaker: () => T
+) {
+	return computed({
+		get() {
+			return model.value?.[prop] ?? propDefault
+		},
+		set(v) {
+			if (model.value == null) {
+				const newValue = defaultMaker()
+				newValue[prop] = v
+				model.value = newValue
+			} else {
+				model.value[prop] = v
+			}
+		},
+	})
+}

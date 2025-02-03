@@ -16,6 +16,7 @@
 				@blur="onBlur"
 				v-bind="inputProps"
 				ref="durationField"
+				:emit-undo="false"
 			/>
 		</template>
 	</data-input-base>
@@ -33,7 +34,7 @@ import { getTimeRemaining } from "castmate-schema"
 import { isTimerStarted } from "castmate-schema"
 import { pauseTimer } from "castmate-schema"
 import { startTimer } from "castmate-schema"
-import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -45,6 +46,7 @@ const props = defineProps<
 useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
+const undoModel = useUndoCommitter(model)
 
 const updateForcer = ref(0)
 
@@ -99,9 +101,9 @@ const pauseModel = computed<boolean | undefined>({
 			console.log("Setting Actual Value")
 
 			if (!isTimerStarted(props.modelValue)) {
-				model.value = startTimer(props.modelValue)
+				undoModel.value = startTimer(props.modelValue)
 			} else {
-				model.value = pauseTimer(props.modelValue)
+				undoModel.value = pauseTimer(props.modelValue)
 			}
 		} else {
 			editPause.value = !!v
@@ -126,7 +128,7 @@ function pushDuration() {
 		return
 	}
 
-	model.value = Timer.fromDuration(editDuration.value, editPause.value)
+	undoModel.value = Timer.fromDuration(editDuration.value, editPause.value)
 }
 
 function attemptAnimate() {

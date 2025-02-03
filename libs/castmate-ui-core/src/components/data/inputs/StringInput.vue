@@ -52,7 +52,7 @@ import { TemplateToggle } from "../../../main"
 import EnumInput from "../base-components/EnumInput.vue"
 import { computed, onMounted, ref, useModel } from "vue"
 import PTextArea from "primevue/textarea"
-import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -74,6 +74,10 @@ const toggleTemplate = computed(() => {
 const inputPassword = ref<InstanceType<typeof PPassword> & { $el: HTMLElement }>()
 const textArea = ref<InstanceType<typeof PTextArea> & { $el: HTMLElement }>()
 const inputText = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
+
+useTextUndoCommitter(() => inputPassword.value?.$el)
+useTextUndoCommitter(() => textArea.value?.$el)
+useTextUndoCommitter(() => inputText.value?.$el)
 
 useDataUIBinding({
 	focus() {

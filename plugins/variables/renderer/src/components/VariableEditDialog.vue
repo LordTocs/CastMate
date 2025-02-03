@@ -2,7 +2,7 @@
 	<div ref="container" v-if="variableDef" class="variable-edit-dialog">
 		<div class="p-inputgroup var-edit">
 			<p-float-label>
-				<variable-name-input v-model="variableDef.id" />
+				<variable-name-input v-model="variableDef.id" local-path="id" />
 				<label for="name"> Variable Name </label>
 			</p-float-label>
 		</div>
@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { computed, markRaw, onMounted, ref } from "vue"
-import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput } from "castmate-ui-core"
+import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput, CDropdown } from "castmate-ui-core"
 import _cloneDeep from "lodash/cloneDeep"
 
 import PDropdown from "primevue/dropdown"

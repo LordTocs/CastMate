@@ -2,7 +2,9 @@ import { isObject } from "@vueuse/core"
 import _cloneDeep from "lodash/cloneDeep"
 import { DiffOpCode, iterDiff } from "./myers-diff"
 
-export function computeDataDiff(a: any, b: any) {
+export type DataDiff = GenericDiff<any> | ArrayDiff | ObjectDiff
+
+export function computeDataDiff(a: any, b: any): DataDiff | undefined {
 	if (Array.isArray(a)) {
 		if (!Array.isArray(b)) {
 			// Replace

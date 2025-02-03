@@ -18,7 +18,7 @@ import PButton from "primevue/button"
 import PMenu from "primevue/menu"
 import type { MenuItem } from "primevue/menuitem"
 import { computed, ref, useModel } from "vue"
-import { usePropagationStop } from "../../../main"
+import { usePropagationStop, useUndoCommitter } from "../../../main"
 
 const props = defineProps<{
 	modelValue: any
@@ -34,10 +34,12 @@ const contextMenu = ref<InstanceType<typeof CContextMenu>>()
 
 const model = useModel(props, "modelValue")
 
+const undoModel = useUndoCommitter(model)
+
 const templateMode = useModel(props, "templateMode")
 
 function clear() {
-	model.value = undefined
+	undoModel.value = undefined
 }
 
 const menuItems = computed<MenuItem[]>(() => {

@@ -15,7 +15,7 @@ import PButton from "primevue/button"
 import { ref, useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import LabelFloater from "../base-components/LabelFloater.vue"
-import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{

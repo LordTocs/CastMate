@@ -63,6 +63,7 @@ import { getItemText, ItemType, AutocompleteItemProps, groupFilteredItems } from
 import _clamp from "lodash/clamp"
 import FilterInputBox from "./FilterInputBox.vue"
 import AutocompleteDropList from "./AutocompleteDropList.vue"
+import { useUndoCommitter } from "../../../main"
 
 const props = withDefaults(
 	defineProps<
@@ -79,6 +80,8 @@ const props = withDefaults(
 
 const model = useModel(props, "modelValue")
 const emit = defineEmits(["update:modelValue", "open"])
+
+const undoModel = useUndoCommitter(model)
 
 const dropDown = ref<InstanceType<typeof AutocompleteDropList>>()
 const filterBox = ref<InstanceType<typeof FilterInputBox>>()
@@ -140,7 +143,7 @@ function onBlur(ev: FocusEvent) {
 }
 
 function onSelect(item: any) {
-	model.value = item.id
+	undoModel.value = item.id
 	hide()
 	filterBox?.value?.blur()
 }

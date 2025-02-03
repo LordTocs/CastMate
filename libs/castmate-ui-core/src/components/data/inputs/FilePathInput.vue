@@ -13,7 +13,7 @@ import TemplateToggle from "../base-components/TemplateToggle.vue"
 import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
 import PButton from "primevue/button"
-import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -25,6 +25,7 @@ const props = defineProps<
 useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
+const undoModel = useUndoCommitter(model)
 
 const getFileInput = useIpcCaller<(existing: string | undefined, exts: string[] | undefined) => string | undefined>(
 	"filesystem",
@@ -41,7 +42,7 @@ async function dirClick(ev: MouseEvent) {
 
 	const file = await getFileInput(model.value, props.schema.extensions)
 	if (file != null) {
-		model.value = file
+		undoModel.value = file
 	}
 }
 

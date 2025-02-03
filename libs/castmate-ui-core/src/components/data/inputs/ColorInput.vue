@@ -16,7 +16,7 @@ import DataInputBase from "../base-components/DataInputBase.vue"
 import InputBox from "../base-components/InputBox.vue"
 import { Color, isHexColor, SchemaColor } from "castmate-schema"
 import { computed, onMounted, ref, useModel, watch } from "vue"
-import PColorPicker from "primevue/colorpicker"
+import PColorPicker, { ColorPickerChangeEvent } from "primevue/colorpicker"
 import { SharedDataInputProps } from "../DataInputTypes"
 import DropDownPanel from "../base-components/DropDownPanel.vue"
 import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
@@ -83,6 +83,10 @@ useDataUIBinding({
 		inputBox.value?.inputDiv?.scrollIntoView()
 	},
 })
+
+function onChange(ev: ColorPickerChangeEvent) {
+	console.log(ev)
+}
 </script>
 
 <style scoped>

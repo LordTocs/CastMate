@@ -104,7 +104,7 @@ export function* iterDiff<E>(a: ArrayLike<E>, b: ArrayLike<E>): IterableIterator
 
 let indent = ""
 function* walkSnakes<E>(a: ArrayLike<E>, b: ArrayLike<E>, compare: (a: E, b: E) => boolean) {
-	console.log("Walk Snakes", a, b)
+	//console.log("Walk Snakes", a, b)
 
 	indent = ""
 	const path = findPath(0, 0, a.length, b.length, a, b, compare)
@@ -158,29 +158,29 @@ function findPath<E>(
 	compare: (a: E, b: E) => boolean
 ): PathResult | undefined {
 	const box = new Box(left, top, right, bottom)
-	console.log(indent, "FindPath", box, left, top, right, bottom)
+	//console.log(indent, "FindPath", box, left, top, right, bottom)
 	indent = indent + "  "
 
 	const snake = midpoint(box, a, b, compare)
-	console.log(`${indent}Snake ${util.inspect(snake)}`)
+	//console.log(`${indent}Snake ${util.inspect(snake)}`)
 
 	if (!snake) {
 		indent = indent.substring(0, indent.length - 2)
-		console.log(indent, "P: ", undefined)
+		//console.log(indent, "P: ", undefined)
 		return undefined
 	}
 
 	const [start, finish] = snake
 
-	console.log(indent, "head")
+	//console.log(indent, "head")
 	const head = findPath(box.left, box.top, start[0], start[1], a, b, compare)
-	console.log(indent, "tail")
+	//console.log(indent, "tail")
 	const tail = findPath(finish[0], finish[1], box.right, box.bottom, a, b, compare)
 
 	const result = [...(head ? head : [start]), ...(tail ? tail : [finish])]
 
 	indent = indent.substring(0, indent.length - 2)
-	console.log(indent, "P: ", result)
+	//console.log(indent, "P: ", result)
 
 	return result
 }
@@ -203,14 +203,14 @@ function midpoint<E>(box: Box, a: ArrayLike<E>, b: ArrayLike<E>, compare: (a: E,
 		const fi = forwards(box, vf, vb, d, a, b, compare)
 		const fr = fi.next().value
 		if (fr) {
-			console.log(indent, "  Picked Front")
+			//console.log(indent, "  Picked Front")
 			return fr
 		}
 
 		const bi = backwards(box, vf, vb, d, a, b, compare)
 		const br = bi.next().value
 		if (br) {
-			console.log(indent, "  Picked Back")
+			//console.log(indent, "  Picked Back")
 			return br
 		}
 	}

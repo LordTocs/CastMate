@@ -1,6 +1,6 @@
 <template>
 	<p-input-group v-bind="$attrs">
-		<p-check-box binary input-id="check" v-model="model" ref="checkBox" />
+		<p-check-box binary input-id="check" v-model="undoModel" ref="checkBox" />
 		<label for="check" class="ml-2" v-if="schema.name"> {{ schema.name }} </label>
 	</p-input-group>
 </template>
@@ -12,7 +12,7 @@ import PCheckBox from "primevue/checkbox"
 import PInputGroup from "primevue/inputgroup"
 import { ref, useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -24,6 +24,8 @@ const props = defineProps<
 useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
+
+const undoModel = useUndoCommitter(model)
 
 const checkBox = ref<InstanceType<typeof PCheckBox> & { $el: HTMLElement }>()
 

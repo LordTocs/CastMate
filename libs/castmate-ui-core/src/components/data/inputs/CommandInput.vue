@@ -2,16 +2,14 @@
 	<div class="command-input">
 		<p-tabs v-model:value="tabModel">
 			<p-tab-list>
-				<p-tab value="0" class="small-tab">Command</p-tab>
-				<p-tab value="1" class="small-tab">Anywhere</p-tab>
-				<p-tab value="2" class="small-tab">RegEx</p-tab>
+				<p-tab value="command" class="small-tab">Command</p-tab>
+				<p-tab value="string" class="small-tab">Anywhere</p-tab>
+				<p-tab value="regex" class="small-tab">RegEx</p-tab>
 			</p-tab-list>
 			<p-tab-panels>
-				<p-tab-panel value="0">
+				<p-tab-panel value="command">
 					<template v-if="model?.mode == 'command'">
-						<label-floater no-float label="Command" input-id="match" v-slot="labelProps">
-							<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
-						</label-floater>
+						<command-match-input label="Command" v-model="matchModel" />
 						<template v-if="model?.arguments?.length">
 							<p>Command Variables</p>
 						</template>
@@ -22,9 +20,14 @@
 							data-type="command-value"
 							key-prop="id"
 							style="gap: 0.25rem"
+							local-path="arguments"
 						>
 							<template #item="{ item, index }">
-								<command-argument-edit v-model="model.arguments[index]" @delete="deleteValue(index)" />
+								<command-argument-edit
+									v-model="model.arguments[index]"
+									@delete="deleteValue(index)"
+									:local-path="`[${index}]`"
+								/>
 							</template>
 						</draggable-collection>
 						<div v-if="model?.hasMessage" class="mt-1 command-message">Command Message</div>
@@ -39,26 +42,22 @@
 						</div>
 					</template>
 				</p-tab-panel>
-				<p-tab-panel value="1">
-					<label-floater no-float label="Match Anywhere" input-id="match" v-slot="labelProps">
-						<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
-					</label-floater>
+				<p-tab-panel value="string">
+					<command-match-input label="Match Anywhere" v-model="matchModel" />
 					<p-input-group class="mt-2" v-if="model?.mode == 'string'">
-						<p-check-box binary input-id="leftBoundary" v-model="model.leftBoundary" />
+						<c-check-box local-path="leftBoundary" v-model="leftBoundaryModel" />
 						<label for="leftBoundary" class="ml-2"> Left Break </label>
 					</p-input-group>
 					<p-input-group class="mt-2" v-if="model?.mode == 'string'">
-						<p-check-box binary input-id="rightBondary" v-model="model.rightBoundary" />
+						<c-check-box local-path="rightBondary" v-model="rightBoundaryModel" />
 						<label for="rightBoundary" class="ml-2"> Right Break </label>
 					</p-input-group>
 					<div class="command-preview pt-1">
 						{{ previewString }}
 					</div>
 				</p-tab-panel>
-				<p-tab-panel value="2">
-					<label-floater no-float label="Regex" input-id="match" v-slot="labelProps">
-						<p-input-text v-model="matchModel" v-bind="labelProps" style="width: 100%" />
-					</label-floater>
+				<p-tab-panel value="regex">
+					<command-match-input label="Regex" v-model="matchModel" />
 					<div class="command-preview pt-1">
 						{{ previewString }}
 					</div>
@@ -78,14 +77,22 @@ import PTabPanel from "primevue/tabpanel"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
 import PInputGroup from "primevue/inputgroup"
-import { Command, CommandMode, SchemaCommand, getCommandInfoString } from "castmate-schema"
-import { computed, useModel } from "vue"
+import { Command, CommandMode, SchemaCommand, StringModeCommand, getCommandInfoString } from "castmate-schema"
+import { computed, ref, useModel } from "vue"
 import LabelFloater from "../base-components/LabelFloater.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import CommandArgumentEdit from "../base-components/commands/CommandArgumentEdit.vue"
-import { DraggableCollection, useDataBinding } from "../../../main"
+import {
+	DraggableCollection,
+	useDataBinding,
+	useDataUIBinding,
+	useDefaultableModel,
+	useUndoCommitter,
+} from "../../../main"
 import { nanoid } from "nanoid/non-secure"
-import PCheckBox from "primevue/checkbox"
+import CCheckBox from "../base-components/CCheckBox.vue"
+
+import CommandMatchInput from "../base-components/commands/CommandMatchInput.vue"
 
 const props = defineProps<
 	{
@@ -98,40 +105,20 @@ useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
-const matchModel = computed({
-	get() {
-		return model.value?.match
-	},
-	set(v) {
-		if (model.value) {
-			model.value.match = v ?? ""
-		} else {
-			model.value = { mode: "command", match: v ?? "", arguments: [], hasMessage: false }
-		}
-	},
-})
+const defaultCommand = () => Command.factoryCreate()
 
-const tabModel = computed({
-	get() {
-		if (model.value?.mode == "string") {
-			return "1"
-		} else if (model.value?.mode == "regex") {
-			return "2"
-		}
-		return "0"
-	},
-	set(v) {
-		const mode: CommandMode = v == "2" ? "regex" : v == "1" ? "string" : "command"
+const matchModel = useDefaultableModel(model, "match", "", defaultCommand)
+const tabModel = useUndoCommitter(useDefaultableModel(model, "mode", "command", defaultCommand))
 
-		console.log("Set Tab Model", v, mode)
-		if (model.value) {
-			model.value.mode = mode
-		} else {
-			//@ts-ignore TODO FIX
-			model.value = { mode, match: "", arguments: [], hasMessage: false }
-		}
-	},
-})
+const leftBoundaryModel = useUndoCommitter(
+	//@ts-ignore
+	useDefaultableModel<StringModeCommand, "leftBoundary">(model, "leftBoundary", false, defaultCommand)
+)
+
+const rightBoundaryModel = useUndoCommitter(
+	//@ts-ignore
+	useDefaultableModel<StringModeCommand, "rightBoundary">(model, "rightBoundary", false, defaultCommand)
+)
 
 function deleteValue(index: number) {
 	if (model.value == null) return
@@ -170,6 +157,18 @@ function toggleMessage() {
 
 const previewString = computed(() => {
 	return getCommandInfoString(props.modelValue)
+})
+
+const matchInput = ref<{ $el: HTMLElement }>()
+
+useDataUIBinding({
+	focus() {
+		console.log(matchInput.value?.$el)
+		matchInput.value?.$el.focus()
+	},
+	scrollIntoView() {
+		matchInput.value?.$el.scrollIntoView()
+	},
 })
 </script>
 

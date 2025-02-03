@@ -19,6 +19,7 @@
 				data-type="boolean-sub-expression"
 				key-prop="id"
 				style="gap: 0.25rem"
+				local-path="operands"
 			>
 				<template #no-items>
 					<div class="flex flex-column align-items-center p-3">No Conditions (Always On)</div>

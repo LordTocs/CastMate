@@ -39,8 +39,10 @@ export { default as EnumInput } from "./components/data/base-components/EnumInpu
 export { default as DataBindingPath } from "./components/data/binding/DataBindingPath.vue"
 export { default as BooleanExpressionInput } from "./components/data/inputs/BooleanExpressionInput.vue"
 export { default as DropDownPanel } from "./components/data/base-components/DropDownPanel.vue"
-export { default as ClearButton } from "./components/data/base-components/ClearButton.vue"
 export { default as DurationField } from "./components/data/base-components/DurationField.vue"
+export { default as CNumberInput } from "./components/data/base-components/CNumberInput.vue"
+export { default as CDropdown } from "./components/data/base-components/CDropdown.vue"
+export { default as CCheckBox } from "./components/data/base-components/CCheckBox.vue"
 
 export { default as AutomationEdit } from "./components/automation/AutomationEdit.vue"
 export { default as InlineAutomationEdit } from "./components/automation/InlineAutomation.vue"
@@ -113,3 +115,4 @@ export * from "./util/panning"
 export * from "./util/electron"
 
 export * from "./util/dialog-helper"
+export * from "./util/vue-util"

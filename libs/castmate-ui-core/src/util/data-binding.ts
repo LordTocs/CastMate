@@ -7,12 +7,16 @@ import {
 	onBeforeUnmount,
 	onMounted,
 	provide,
+	Ref,
 	ref,
 	toValue,
 	watch,
 	watchEffect,
 } from "vue"
-import { provideLocal, injectLocal } from "@vueuse/core"
+import { provideLocal, injectLocal, useEventListener } from "@vueuse/core"
+import { computeDataDiff, DataDiff } from "./diff"
+
+import _cloneDeep from "lodash/cloneDeep"
 ///////////////////////////////////////
 ///////////////////////////////////////
 ///////////////////////////////////////
@@ -73,6 +77,7 @@ export interface DataPathView {
 	data: Record<PropertyKey, any>
 	subPaths: Record<PropertyKey, DataPathView>
 	uiBindings: DataUIBinding[]
+	refCount: number
 }
 
 function registerDataUiBinding(pathView: DataPathView, binding: DataUIBinding) {
@@ -85,8 +90,94 @@ function unregisterDataUiBinding(pathView: DataPathView, binding: DataUIBinding)
 	pathView.uiBindings.splice(idx, 1)
 }
 
+export interface UndoStack<T = any> {
+	stack: DataDiff[]
+	snapshot: T
+}
+export function createUndoStack<T = any>(initialValue: T): UndoStack {
+	return {
+		stack: [],
+		snapshot: initialValue,
+	}
+}
 export interface DataBinding {
-	root: DataPathView
+	rootData: any
+	rootView: DataPathView
+	undoStack: UndoStack
+}
+
+///
+
+export function useCommitUndo() {
+	const databinding = useBaseDataBinding()
+
+	return function () {
+		const newData = databinding.rootData
+		const diff = computeDataDiff(databinding.undoStack.snapshot, newData)
+
+		if (diff == undefined) return
+
+		databinding.undoStack.stack.push(diff)
+		databinding.undoStack.snapshot = _cloneDeep(newData)
+	}
+}
+
+export function useUndoCommitter<T>(valueRef: Ref<T>) {
+	const commitUndo = useCommitUndo()
+
+	return computed({
+		get() {
+			return valueRef.value
+		},
+		set(v) {
+			valueRef.value = v
+			commitUndo()
+		},
+	})
+}
+
+// hello
+
+export function useTextUndoCommitter(inputElement: MaybeRefOrGetter<HTMLElement | undefined>) {
+	const commitUndo = useCommitUndo()
+
+	const lastInputType = ref<string>()
+
+	useEventListener(inputElement, "beforeinput", (ev: InputEvent) => {
+		const inputTypeChanged = lastInputType.value != null && lastInputType.value != ev.inputType
+
+		if (ev.inputType == "insertText") {
+			if (ev.data == " " || inputTypeChanged) {
+				commitUndo()
+			}
+		} else if (ev.inputType == "deleteContentBackward") {
+			//No way to determine what was deleted :(
+			if (inputTypeChanged) {
+				commitUndo()
+			}
+		} else if (ev.inputType == "deleteContentForward") {
+			//No way to determine what was deleted :(
+			if (inputTypeChanged) {
+				commitUndo()
+			}
+		} else {
+			commitUndo()
+		}
+
+		lastInputType.value = ev.inputType
+	})
+
+	// useEventListener(inputElement, "selectionchange", (ev) => {
+	// 	if (lastInputType.value != null) {
+	// 		lastInputType.value = undefined
+	// 		commitUndo()
+	// 	}
+	// })
+
+	useEventListener(inputElement, "blur", (ev) => {
+		lastInputType.value = undefined
+		commitUndo()
+	})
 }
 
 export function provideBaseDataBinding(binding: DataBinding) {
@@ -94,14 +185,18 @@ export function provideBaseDataBinding(binding: DataBinding) {
 }
 
 export function useBaseDataBinding() {
-	return inject<DataBinding>("ui-data-binding", { root: { data: {}, subPaths: {}, uiBindings: [] } })
+	return inject<DataBinding>("ui-data-binding", {
+		rootData: undefined,
+		rootView: { data: {}, subPaths: {}, uiBindings: [], refCount: 1 },
+		undoStack: createUndoStack({}),
+	})
 }
 
 export function useLocalDataBinding() {
 	const baseBinding = useBaseDataBinding()
 	const path = useDataPath()
 
-	return computed(() => getDataViewByPath(baseBinding.root, path.value))
+	return computed(() => getDataViewByPath(baseBinding.rootView, path.value))
 }
 
 export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>, debug?: MaybeRefOrGetter<string>) {
@@ -118,7 +213,7 @@ export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>, deb
 					currentBinding.value = undefined
 				}
 
-				console.log("OnBeforeMount Data UI Binding", toValue(debug), localPath.value)
+				//console.log("OnBeforeMount Data UI Binding", toValue(debug), localPath.value)
 				if (view) {
 					registerDataUiBinding(view, binding)
 					currentBinding.value = binding
@@ -129,7 +224,7 @@ export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>, deb
 	})
 
 	onBeforeUnmount(() => {
-		console.log("OnBeforeUnmount Data UI Binding", toValue(debug), localPath.value)
+		//console.log("OnBeforeUnmount Data UI Binding", toValue(debug), localPath.value)
 		if (localBinding.value && currentBinding.value) {
 			unregisterDataUiBinding(localBinding.value, currentBinding.value)
 		}
@@ -143,16 +238,16 @@ export function useDataBinding(localPath: MaybeRefOrGetter<string>) {
 
 	onBeforeMount(() => {
 		console.log("onBeforeMount DataBinding", fullPath.value)
-		ensureDataView(baseBinding.root, fullPath.value)
+		ensureDataView(baseBinding.rootView, fullPath.value)
 	})
 
 	onBeforeUnmount(() => {
 		console.log("onBeforeUnmount DataBinding", fullPath.value)
-		deleteDataView(baseBinding.root, fullPath.value)
+		deleteDataView(baseBinding.rootView, fullPath.value)
 	})
 
 	const view = computed(() => {
-		return getDataViewByPath(baseBinding.root, fullPath.value)
+		return getDataViewByPath(baseBinding.rootView, fullPath.value)
 	})
 
 	return view
@@ -220,18 +315,22 @@ function ensureDataView(root: DataPathView, path: string) {
 	const pathParsed = parsePath(path)
 
 	let base = root
-	console.log("Ensuring", root, path)
+	//console.log("Ensuring", root, path)
 	for (const trace of pathParsed) {
 		if (!(trace in base.subPaths)) {
 			base.subPaths[trace] = {
 				data: {},
 				subPaths: {},
 				uiBindings: [],
+				refCount: 0,
 			}
 		}
 
 		base = base.subPaths[trace]
 	}
+
+	base.refCount++
+
 	return base
 }
 
@@ -248,5 +347,8 @@ function deleteDataView(root: DataPathView, path: string) {
 		base = base.subPaths[trace]
 	}
 
-	delete base.subPaths[pathParsed[pathParsed.length - 1]]
+	const toDelete = base.subPaths[pathParsed[pathParsed.length - 1]]
+	if (--toDelete.refCount == 0) {
+		delete base.subPaths[pathParsed[pathParsed.length - 1]]
+	}
 }

@@ -1,15 +1,23 @@
 <template>
-	<p-input-text v-model="bufferedNumModel" @blur="onBlur" :placeholder="placeholder" ref="input" />
+	<p-input-text
+		v-model="bufferedNumModel"
+		v-keyfilter.num
+		@focus="onFocus"
+		@blur="onBlur"
+		:placeholder="placeholder"
+		ref="numInput"
+	/>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue"
-import { useDataUIBinding } from "../../../util/data-binding"
+import { useCommitUndo, useDataUIBinding, useTextUndoCommitter } from "../../../util/data-binding"
 
 import PInputText from "primevue/inputtext"
 
+const model = defineModel<number>()
+
 const props = defineProps<{
-	modelValue: number | undefined
 	min?: number
 	max?: number
 	step?: number
@@ -18,25 +26,29 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue"])
 
-const input = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
+const numInput = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
 
 const numEditModel = ref("")
 
+const focused = ref(false)
+
+useTextUndoCommitter(() => numInput.value?.$el)
+
 useDataUIBinding({
 	focus() {
-		input.value?.$el.focus()
+		numInput.value?.$el.focus()
 	},
 	scrollIntoView() {
-		input.value?.$el.scrollIntoView()
+		numInput.value?.$el.scrollIntoView()
 	},
 })
 
 onMounted(() => {
 	watch(
-		() => props.modelValue,
+		model,
 		() => {
-			if (props.modelValue != null) {
-				numEditModel.value = String(props.modelValue)
+			if (model.value != null) {
+				numEditModel.value = String(model.value)
 			} else {
 				numEditModel.value = ""
 			}
@@ -50,17 +62,14 @@ const bufferedNumModel = computed<string | undefined>({
 		return numEditModel.value
 	},
 	set(v) {
-		if (v != null) {
+		if (v) {
 			numEditModel.value = v
-			if (v == "") {
-				return emit("update:modelValue", undefined)
-			}
 			const num = Number(v)
 			if (!isNaN(num)) {
-				emit("update:modelValue", num)
+				model.value = num
 			}
 		} else {
-			emit("update:modelValue", undefined)
+			model.value = undefined
 		}
 	},
 })
@@ -69,14 +78,24 @@ function roundToStep(value: number, step: number) {
 	return Math.round(value / step) * step
 }
 
+const commitUndo = useCommitUndo()
+
+function onFocus() {
+	focused.value = true
+}
+
 function onBlur() {
+	focused.value = false
+
 	if (numEditModel.value == "") {
-		return emit("update:modelValue", undefined)
+		emit("update:modelValue", undefined)
+		commitUndo()
+		return
 	}
 
 	const num = Number(numEditModel.value)
 	if (isNaN(num)) {
-		numEditModel.value = props.modelValue != null ? String(props.modelValue) : ""
+		numEditModel.value = model.value != null ? String(model.value) : ""
 	} else {
 		let finalNum = num
 		if (props.step != null) {
@@ -91,10 +110,12 @@ function onBlur() {
 			finalNum = Math.max(finalNum, props.min)
 		}
 
-		if (finalNum != props.modelValue) {
-			emit("update:modelValue", finalNum)
+		if (finalNum != model.value) {
+			model.value = finalNum
 		}
 	}
+
+	commitUndo()
 }
 </script>
 

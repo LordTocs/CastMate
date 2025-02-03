@@ -57,8 +57,8 @@ const props = defineProps<
 		modelValue: boolean
 		container: HTMLElement | undefined | null
 		groupedItems: ItemType[][]
-		currentId?: string
-		focusedId?: string
+		currentId?: any
+		focusedId?: any
 	} & AutocompleteItemProps
 >()
 

@@ -25,7 +25,15 @@
 
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { VNode, computed, ref, useModel } from "vue"
-import { ClientPosition, isChildOfClass, useDragEnter, useDragLeave, useDrop, useDragOver } from "../../main"
+import {
+	ClientPosition,
+	isChildOfClass,
+	useDragEnter,
+	useDragLeave,
+	useDrop,
+	useDragOver,
+	useDataBinding,
+} from "../../main"
 
 const props = withDefaults(
 	defineProps<{
@@ -34,11 +42,14 @@ const props = withDefaults(
 		direction?: "horizontal" | "vertical"
 		handleClass: string
 		dataType: string
+		localPath: string
 	}>(),
 	{
 		direction: "vertical",
 	}
 )
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

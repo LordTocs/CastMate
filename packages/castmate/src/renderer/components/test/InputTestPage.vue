@@ -2,21 +2,9 @@
 	<scrolling-tab-body>
 		<div class="flex flex-row">
 			<div style="width: 50%; flex-shrink: 0">
-				<data-input :schema="baseTestSchema" v-model="testData" local-path="" />
+				<data-input :schema="baseTestSchema" v-model="baseDataBinding.rootData" local-path="" />
 			</div>
-			<div class="flex flex-column flex-grow-1 flex-shrink-0">
-				<div>
-					<pre>{{
-						util.inspect(testData, {
-							depth: 10,
-							compact: false,
-						})
-					}}</pre>
-				</div>
-				<div>
-					<data-binding-debugger :binding="baseDataBinding" />
-				</div>
-			</div>
+			<data-binding-debugger :binding="baseDataBinding" />
 		</div>
 	</scrolling-tab-body>
 </template>
@@ -43,6 +31,7 @@ import {
 	DataBinding,
 	provideBaseDataBinding,
 	DataBindingDebugger,
+	createUndoStack,
 } from "castmate-ui-core"
 import { onBeforeMount, onMounted, ref } from "vue"
 import util from "util"
@@ -61,20 +50,22 @@ const testSchema = declareSchema({
 	name: "New Base Test",
 	template: true,
 })
+
 const baseDataBinding = ref<DataBinding>({
-	root: {
+	rootView: {
 		data: {},
 		subPaths: {},
 		uiBindings: [],
 	},
+	rootData: {},
+	undoStack: createUndoStack({}),
 })
 
 provideBaseDataBinding(baseDataBinding.value)
 
-const testData = ref({})
-
 onBeforeMount(async () => {
-	testData.value = await constructDefault(baseTestSchema)
+	baseDataBinding.value.rootData = await constructDefault(baseTestSchema)
+	baseDataBinding.value.undoStack = createUndoStack(baseDataBinding.value.rootData)
 })
 
 const baseTestSchema = declareSchema({
@@ -88,7 +79,7 @@ const baseTestSchema = declareSchema({
 		range: { type: Range, name: "Range", template: true },
 		color: { type: Color, name: "Color", template: true },
 		bool: { type: Boolean, name: "Boolean" },
-		toggle: { type: Toggle, name: "Toggle" },
+		toggle: { type: Toggle, name: "Toggle", template: true },
 		duration: { type: Duration, name: "Duration", template: true },
 		timer: { type: Timer, name: "Timer" },
 		media: { type: MediaFile, name: "MediaFile" },

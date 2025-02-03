@@ -10,7 +10,7 @@
 			<p-input-group v-bind="templateProps">
 				<toggle-switch
 					input-id="switch"
-					v-model="model"
+					v-model="toggleModel"
 					:true-icon="schema.trueIcon"
 					:false-icon="schema.falseIcon"
 					:toggle-icon="schema.toggleIcon"
@@ -39,7 +39,7 @@ import { SharedDataInputProps, defaultStringIsTemplate } from "../DataInputTypes
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import DataInputBaseMenu from "../base-components/DataInputBaseMenu.vue"
 import PInputGroup from "primevue/inputgroup"
-import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -51,6 +51,8 @@ const props = defineProps<
 useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
+
+const toggleModel = useUndoCommitter(model)
 
 const templateMode = ref(false)
 

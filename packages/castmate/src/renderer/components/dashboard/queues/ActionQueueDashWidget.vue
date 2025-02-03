@@ -1,12 +1,12 @@
 <template>
 	<div class="queue-card">
 		<div class="queue-card-header">
-			<h3 class="my-0">{{ queue.config.name }}</h3>
+			<h3 class="my-0">{{ queue?.config.name }}</h3>
 			<p-button
 				plain
 				size="small"
 				text
-				:icon="queue.config.paused ? 'mdi mdi-play' : 'mdi mdi-pause'"
+				:icon="queue?.config.paused ? 'mdi mdi-play' : 'mdi mdi-pause'"
 				@click="togglePause"
 			></p-button>
 		</div>
@@ -23,7 +23,7 @@
 				</div>
 				<div class="queue-running-box">
 					<dash-queue-item
-						v-if="queue.state.running"
+						v-if="queue?.state.running"
 						:queue-item="queue.state.running"
 						state="running"
 						@skip="skip(queue.state.running.id)"
@@ -37,6 +37,7 @@
 					direction="horizontal"
 					handle-class="queue-drag-handle"
 					data-type="queued-sequence"
+					local-path=""
 				>
 					<template #item="{ item, index }">
 						<dash-queue-item :queue-item="item" state="queued" @skip="skip(item.id)" />
@@ -72,7 +73,7 @@ const spliceQueue = useResourceIPCCaller<(index: number, deleteCount: number, ..
 
 const queuedItems = settableArray({
 	get() {
-		return queue.value.state.queue
+		return queue.value?.state.queue ?? []
 	},
 	set(v) {},
 	setItem(index, v) {},
@@ -83,7 +84,7 @@ const queuedItems = settableArray({
 })
 
 const history = computed(() => {
-	return [...queue.value.state.history].reverse()
+	return [...(queue.value?.state.history ?? [])].reverse()
 })
 
 const queueList = ref<HTMLElement>()
@@ -99,7 +100,7 @@ function convertRemToPixels(rem: number) {
 }
 
 watch(
-	() => queue.value.state.history,
+	() => queue.value?.state.history,
 	(current, old) => {
 		if (current.length > old.length) {
 			nextTick(() => {
@@ -129,7 +130,7 @@ async function replay(id: string) {
 const resourceStore = useResourceStore()
 function togglePause() {
 	resourceStore.applyResourceConfig("ActionQueue", props.queueId, {
-		paused: !queue.value.config.paused,
+		paused: !queue.value?.config.paused,
 	})
 }
 </script>

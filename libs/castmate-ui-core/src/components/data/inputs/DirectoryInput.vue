@@ -11,7 +11,7 @@ import { SharedDataInputProps } from "../DataInputTypes"
 import { InputBox, useIpcCaller, usePropagationStop } from "../../../main"
 import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
-import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -23,6 +23,7 @@ const props = defineProps<
 useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
+const undoModel = useUndoCommitter(model)
 
 const getFolderInput = useIpcCaller<(existing: string | undefined) => string | undefined>(
 	"filesystem",
@@ -39,7 +40,7 @@ async function dirClick(ev: MouseEvent) {
 
 	const folder = await getFolderInput(model.value)
 	if (folder != null) {
-		model.value = folder
+		undoModel.value = folder
 	}
 }
 
