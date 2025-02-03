@@ -48,7 +48,7 @@ defineOptions({
 					items: {
 						type: Object,
 						properties: {
-							media: { type: MediaFile, name: "Media", required: true, sound: false },
+							media: { type: MediaFile, name: "Media", required: true, video: true, image: true },
 							duration: { type: Duration, name: "Duration", required: true, default: 4 },
 							weight: { type: Number, name: "Random Weight", required: true, default: 1 },
 						},
