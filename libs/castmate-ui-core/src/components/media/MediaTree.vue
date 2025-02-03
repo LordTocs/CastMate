@@ -1,11 +1,14 @@
 <template>
-	<template v-for="(item, i) in items">
+	<div class="empty-grid-span" v-if="noItemsAtAll"><slot name="noItems"></slot></div>
+	<div class="empty-grid-span" v-else-if="noItemsFilter"><slot name="noFiltered"> </slot></div>
+	<template v-else v-for="(item, i) in items">
 		<media-tree-file
 			v-if="item.type == 'file'"
 			:name="item.name"
 			:media="item.metadata"
 			:indent="indent"
 			@click="onClick"
+			:key="item.metadata.path"
 		/>
 		<media-tree-folder
 			v-else
@@ -14,6 +17,7 @@
 			:name="item.name"
 			:indent="indent"
 			@click="onClick"
+			:key="item.root"
 		/>
 	</template>
 </template>
@@ -26,14 +30,24 @@ import MediaTreeFile from "./MediaTreeFile.vue"
 import MediaTreeFolder from "./MediaTreeFolder.vue"
 import path from "path"
 
-const props = defineProps<{
-	files: MediaFile[]
-	filter?: string
-	root: string
-	index?: number
-	indent?: number
-	onClick?: (file: MediaFile) => any
-}>()
+const props = withDefaults(
+	defineProps<{
+		files: MediaFile[]
+		filter?: string
+		root: string
+		index?: number
+		indent?: number
+		onClick?: (file: MediaFile) => any
+		sound?: boolean
+		image?: boolean
+		video?: boolean
+	}>(),
+	{
+		sound: true,
+		image: true,
+		video: true,
+	}
+)
 
 const mediaStore = useMediaStore()
 
@@ -52,6 +66,16 @@ interface MediaSubFolderItem {
 
 type MediaItem = MediaFileItem | MediaSubFolderItem
 
+const noItemsAtAll = computed(() => props.files.length == 0)
+const noItemsFilter = computed(() => items.value.length == 0)
+
+function matchesTypeFilter(media: MediaMetadata) {
+	if (props.image && media.image) return true
+	if (props.sound && media.audio) return true
+	if (props.video && media.video) return true
+	return false
+}
+
 const items = computed(() => {
 	const filterLower = props.filter?.toLocaleLowerCase()
 
@@ -64,6 +88,10 @@ const items = computed(() => {
 		if (filterLower && !parsed.name.toLocaleLowerCase().includes(filterLower)) {
 			continue
 		}
+
+		const metadata = mediaStore.media[file]
+
+		if (!matchesTypeFilter(metadata)) continue
 
 		const parts = parsed.dir.split("\\")
 		if (parsed.dir.length > 0) {
@@ -90,10 +118,17 @@ const items = computed(() => {
 			result.push({
 				type: "file",
 				name: parsed.base,
-				metadata: mediaStore.media[file],
+				metadata,
 			})
 		}
 	}
 	return result
 })
 </script>
+
+<style scoped>
+.empty-grid-span {
+	grid-column: 1 / -1;
+	min-height: 5rem;
+}
+</style>
