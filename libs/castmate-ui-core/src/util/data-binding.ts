@@ -69,8 +69,8 @@ export function provideLocalPath(localPath: MaybeRefOrGetter<string | undefined>
 export interface DataUIBinding {
 	focus?(): any
 	scrollIntoView?(): any
-	onChildFocus?(): any
-	onChildScrollIntoView?(): any
+	onChildFocus?(parsedPath: string[]): any
+	onChildScrollIntoView?(parsedPath: string[]): any
 }
 
 export interface DataPathView {
@@ -261,11 +261,16 @@ export async function focusDataByPath(root: DataPathView, path: string) {
 	const parsedPath = parsePath(path)
 
 	let base = root
-	for (const trace of parsedPath) {
+
+	for (let i = 0; i < parsedPath.length; ++i) {
+		const trace = parsedPath[i]
+
+		const subPath = parsedPath.slice(i + 1)
+
 		if (base == null) return undefined
 
 		for (const binding of base.uiBindings) {
-			await binding?.onChildFocus?.()
+			await binding?.onChildFocus?.(subPath)
 		}
 
 		base = base.subPaths[trace]
@@ -280,11 +285,14 @@ export async function scrollIntoViewDataByPath(root: DataPathView, path: string)
 	const parsedPath = parsePath(path)
 
 	let base = root
-	for (const trace of parsedPath) {
+	for (let i = 0; i < parsedPath.length; ++i) {
+		const trace = parsedPath[i]
+
+		const subPath = parsedPath.slice(i + 1)
 		if (base == null) return undefined
 
 		for (const binding of base.uiBindings) {
-			await binding?.onChildScrollIntoView?.()
+			await binding?.onChildScrollIntoView?.(subPath)
 		}
 
 		base = base.subPaths[trace]
