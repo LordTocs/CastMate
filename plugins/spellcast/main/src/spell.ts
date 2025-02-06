@@ -266,6 +266,7 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 			await super.applyConfig({
 				spellId: apiData._id,
 			})
+			await this.save()
 		}
 
 		//logger.log("Inited Spell State", apiData.name)

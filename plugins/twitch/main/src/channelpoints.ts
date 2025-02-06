@@ -303,6 +303,7 @@ export class ChannelPointReward extends Resource<ChannelPointRewardConfig, Chann
 			await super.applyConfig({
 				twitchId: reward.id,
 			})
+			await this.save()
 		}
 
 		this.state.enabled = reward.isEnabled
