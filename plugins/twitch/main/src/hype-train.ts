@@ -30,7 +30,7 @@ export function setupHypeTrains() {
 
 	const hypeTrainLevelUp = defineTrigger({
 		id: "hypeTrainLevelUp",
-		name: "Hype Train Level Up",
+		name: "Hype Train Level Reached",
 		icon: "mdi mdi-train-car-caboose",
 		version: "0.0.1",
 		config: {
