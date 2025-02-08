@@ -49,7 +49,7 @@ export async function loadPlugins() {
 	await loadPlugin(castmatePlugin)
 	await loadPlugin(randomPlugin)
 	await loadPlugin(overlayPlugin)
-	await loadPlugin(dashboardPlugin)
+	//await loadPlugin(dashboardPlugin)
 
 	const promises = [
 		loadPlugin(timePlugin),

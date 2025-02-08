@@ -7,7 +7,7 @@
 	"scripts": {
 		"setup-vite": "yarn workspace castmate-vite build",
 		"build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build && yarn workspace castmate-satellite run electron:build",
-		"buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish && yarn workspace castmate-satellite run electron:buildpublish",
+		"buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish",
 		"dev": "node ./vite-util/multi-vite.mjs",
 		"satdev": "yarn workspace castmate-satellite dev",
 		"format": "prettier . --write",

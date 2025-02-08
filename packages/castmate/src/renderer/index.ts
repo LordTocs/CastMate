@@ -191,7 +191,7 @@ async function init() {
 
 	await initOverlaysPlugin(app)
 
-	await initDashboardPlugin(app)
+	//await initDashboardPlugin(app)
 
 	await initVariablesPlugin()
 	await initTwitchPlugin(app)
@@ -228,7 +228,7 @@ async function init() {
 	loadDashboardWidgets()
 
 	sendOverlaysToMain()
-	sendDashboardsToMain()
+	//sendDashboardsToMain()
 
 	await uiLoadComplete()
 
