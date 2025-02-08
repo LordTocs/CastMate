@@ -14,7 +14,7 @@ import {
 	watchEffect,
 } from "vue"
 import { provideLocal, injectLocal, useEventListener } from "@vueuse/core"
-import { computeDataDiff, DataDiff } from "./diff"
+import { applyInvDataDiff, computeDataDiff, DataDiff } from "./diff"
 
 import _cloneDeep from "lodash/cloneDeep"
 ///////////////////////////////////////
@@ -42,6 +42,13 @@ export function joinDataPath(...paths: (string | undefined)[]) {
 	return result
 }
 
+export function useParentDataPath() {
+	return inject<ComputedRef<string>>(
+		"ui-data-path",
+		computed(() => "")
+	)
+}
+
 export function useDataPath() {
 	return injectLocal<ComputedRef<string>>(
 		"ui-data-path",
@@ -50,7 +57,7 @@ export function useDataPath() {
 }
 
 export function provideLocalPath(localPath: MaybeRefOrGetter<string | undefined>) {
-	const parentPath = useDataPath()
+	const parentPath = useParentDataPath()
 
 	const ourPath = computed(() => {
 		const actualLocalPath = toValue(localPath)
@@ -174,6 +181,13 @@ export function useTextUndoCommitter(inputElement: MaybeRefOrGetter<HTMLElement 
 	// 	}
 	// })
 
+	useEventListener(inputElement, "keydown", (ev) => {
+		if (ev.ctrlKey && ev.key == "z") {
+			commitUndo()
+			ev.preventDefault()
+		}
+	})
+
 	useEventListener(inputElement, "blur", (ev) => {
 		lastInputType.value = undefined
 		commitUndo()
@@ -181,11 +195,11 @@ export function useTextUndoCommitter(inputElement: MaybeRefOrGetter<HTMLElement 
 }
 
 export function provideBaseDataBinding(binding: DataBinding) {
-	provide("ui-data-binding", binding)
+	provideLocal("ui-data-binding", binding)
 }
 
 export function useBaseDataBinding() {
-	return inject<DataBinding>("ui-data-binding", {
+	return injectLocal<DataBinding>("ui-data-binding", {
 		rootData: undefined,
 		rootView: { data: {}, subPaths: {}, uiBindings: [], refCount: 1 },
 		undoStack: createUndoStack({}),
@@ -231,26 +245,38 @@ export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>, deb
 	})
 }
 
-export function useDataBinding(localPath: MaybeRefOrGetter<string>) {
+export function useDataBinding(localPath: MaybeRefOrGetter<string | undefined>) {
 	const baseBinding = useBaseDataBinding()
 
 	const fullPath = provideLocalPath(localPath)
 
+	const parentPath = useParentDataPath()
+
 	onBeforeMount(() => {
-		console.log("onBeforeMount DataBinding", fullPath.value)
-		ensureDataView(baseBinding.rootView, fullPath.value)
+		watch(
+			() => toValue(localPath),
+			(value, oldValue) => {
+				if (oldValue) {
+					const oldPath = joinDataPath(parentPath.value, oldValue)
+					deleteDataView(baseBinding.rootView, oldPath)
+					//TODO: Should this be some sort of move?
+				}
+
+				if (value) {
+					const newPath = joinDataPath(parentPath.value, value)
+					ensureDataView(baseBinding.rootView, newPath)
+				}
+			},
+			{ immediate: true }
+		)
 	})
 
 	onBeforeUnmount(() => {
-		console.log("onBeforeUnmount DataBinding", fullPath.value)
-		deleteDataView(baseBinding.rootView, fullPath.value)
+		const local = toValue(localPath)
+		if (local) {
+			deleteDataView(baseBinding.rootView, fullPath.value)
+		}
 	})
-
-	const view = computed(() => {
-		return getDataViewByPath(baseBinding.rootView, fullPath.value)
-	})
-
-	return view
 }
 
 ///////////////////////////////////////
@@ -319,19 +345,28 @@ export function getDataViewByPath(root: DataPathView, path: string) {
 	return base
 }
 
-function ensureDataView(root: DataPathView, path: string) {
-	const pathParsed = parsePath(path)
+function createEmptyPathData(): DataPathView {
+	return {
+		data: {},
+		subPaths: {},
+		uiBindings: [],
+		refCount: 0,
+	}
+}
+
+function ensureDataView(root: DataPathView, path: string, pathData?: DataPathView) {
+	const parsed = parsePath(path)
+
+	const data: DataPathView = pathData ?? createEmptyPathData()
 
 	let base = root
 	//console.log("Ensuring", root, path)
-	for (const trace of pathParsed) {
+	for (let i = 0; i < parsed.length; ++i) {
+		const trace = parsed[i]
+
 		if (!(trace in base.subPaths)) {
-			base.subPaths[trace] = {
-				data: {},
-				subPaths: {},
-				uiBindings: [],
-				refCount: 0,
-			}
+			//If we're the last path in the parsed list insert the data, otherwise make an empty
+			base.subPaths[trace] = i == parsed.length - 1 ? data : createEmptyPathData()
 		}
 
 		base = base.subPaths[trace]
@@ -359,4 +394,30 @@ function deleteDataView(root: DataPathView, path: string) {
 	if (--toDelete.refCount == 0) {
 		delete base.subPaths[pathParsed[pathParsed.length - 1]]
 	}
+}
+
+//TODO: moveDataView() - What to do about refCount > 1
+
+///
+
+export function useUndoEvents(element: MaybeRefOrGetter<HTMLElement | undefined>) {
+	const baseDataBinding = useBaseDataBinding()
+
+	useEventListener(element, "keydown", (ev) => {
+		console.log(ev)
+		if (ev.ctrlKey && ev.key == "z") {
+			console.log("DOING UNDO", baseDataBinding)
+			ev.stopPropagation()
+
+			const top = baseDataBinding.undoStack.stack.pop()
+
+			if (!top) return
+
+			console.log("From", baseDataBinding.rootData)
+			applyInvDataDiff(baseDataBinding, "rootData", top)
+			console.log("To", baseDataBinding.rootData)
+
+			baseDataBinding.undoStack.snapshot = _cloneDeep(baseDataBinding.rootData)
+		}
+	})
 }
