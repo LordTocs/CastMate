@@ -21,3 +21,29 @@ export function useDefaultableModel<T extends object, P extends keyof T>(
 		},
 	})
 }
+
+export function useOptionalDefaultableModel<T extends object, P extends keyof T>(
+	model: Ref<T | undefined>,
+	prop: P,
+	defaultMaker: () => T
+) {
+	return computed({
+		get() {
+			return model.value?.[prop]
+		},
+		set(v) {
+			if (!v) {
+				model.value = undefined
+				return
+			}
+
+			if (model.value == null) {
+				const newValue = defaultMaker()
+				newValue[prop] = v
+				model.value = newValue
+			} else {
+				model.value[prop] = v
+			}
+		},
+	})
+}
