@@ -1,7 +1,7 @@
 <template>
 	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps" ref="inputBase">
 		<div v-if="!schema.enum" class="w-full">
-			<c-number-input
+			<number-field
 				v-model="numModel"
 				v-bind="inputProps"
 				:min="min"
@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import DataInputBase from "../base-components/DataInputBase.vue"
-import CNumberInput from "../base-components/CNumberInput.vue"
+import NumberField from "../base-components/NumberField.vue"
 import PSlider from "primevue/slider"
 import { type SchemaBase, type SchemaNumber } from "castmate-schema"
 import { computed, ref, onMounted, useModel, watch } from "vue"

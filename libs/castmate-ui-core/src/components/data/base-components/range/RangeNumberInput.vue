@@ -1,11 +1,11 @@
 <template>
 	<div class="flex-grow-1">
-		<c-number-input local-path="min" v-model="model" :placeholder="placeholder" class="w-full" />
+		<number-field local-path="min" v-model="model" :placeholder="placeholder" class="w-full" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import CNumberInput from "../CNumberInput.vue"
+import NumberField from "../NumberField.vue"
 import CContextMenu from "../../../util/CContextMenu.vue"
 import { ref } from "vue"
 import { useDataBinding, useDataUIBinding } from "../../../../main"

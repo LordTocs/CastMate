@@ -20,13 +20,19 @@ import { ref } from "vue"
 
 const model = defineModel<any>()
 
-const props = defineProps<{
-	localPath: string
-	options: MenuItem[]
-	label?: string
-	optionValue?: string | ((data: any) => string)
-	optionLabel?: string | ((data: any) => string)
-}>()
+const props = withDefaults(
+	defineProps<{
+		localPath: string
+		options: MenuItem[]
+		label?: string
+		optionValue?: string | ((data: any) => string)
+		optionLabel?: string | ((data: any) => string)
+	}>(),
+	{
+		optionLabel: "label",
+		optionValue: "code",
+	}
+)
 
 useDataBinding(() => props.localPath)
 

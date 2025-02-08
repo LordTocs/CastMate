@@ -1,19 +1,10 @@
 <template>
-	<p-input-text
-		v-model="bufferedNumModel"
-		v-keyfilter.num
-		@focus="onFocus"
-		@blur="onBlur"
-		:placeholder="placeholder"
-		ref="numInput"
-	/>
+	<number-field v-model="model" :min="min" :max="max" :placeholder="placeholder" :suffix="suffix" />
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue"
-import { useCommitUndo, useDataUIBinding, useTextUndoCommitter } from "../../../util/data-binding"
-
-import PInputText from "primevue/inputtext"
+import { useDataBinding } from "../../../main"
+import NumberField from "./NumberField.vue"
 
 const model = defineModel<number>()
 
@@ -22,101 +13,11 @@ const props = defineProps<{
 	max?: number
 	step?: number
 	placeholder?: string
+	localPath?: string
+	suffix?: string
 }>()
 
-const emit = defineEmits(["update:modelValue"])
-
-const numInput = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
-
-const numEditModel = ref("")
-
-const focused = ref(false)
-
-useTextUndoCommitter(() => numInput.value?.$el)
-
-useDataUIBinding({
-	focus() {
-		numInput.value?.$el.focus()
-	},
-	scrollIntoView() {
-		numInput.value?.$el.scrollIntoView()
-	},
-})
-
-onMounted(() => {
-	watch(
-		model,
-		() => {
-			if (model.value != null) {
-				numEditModel.value = String(model.value)
-			} else {
-				numEditModel.value = ""
-			}
-		},
-		{ immediate: true }
-	)
-})
-
-const bufferedNumModel = computed<string | undefined>({
-	get() {
-		return numEditModel.value
-	},
-	set(v) {
-		if (v) {
-			numEditModel.value = v
-			const num = Number(v)
-			if (!isNaN(num)) {
-				model.value = num
-			}
-		} else {
-			model.value = undefined
-		}
-	},
-})
-
-function roundToStep(value: number, step: number) {
-	return Math.round(value / step) * step
-}
-
-const commitUndo = useCommitUndo()
-
-function onFocus() {
-	focused.value = true
-}
-
-function onBlur() {
-	focused.value = false
-
-	if (numEditModel.value == "") {
-		emit("update:modelValue", undefined)
-		commitUndo()
-		return
-	}
-
-	const num = Number(numEditModel.value)
-	if (isNaN(num)) {
-		numEditModel.value = model.value != null ? String(model.value) : ""
-	} else {
-		let finalNum = num
-		if (props.step != null) {
-			finalNum = roundToStep(finalNum, props.step)
-		}
-
-		if (props.max != null) {
-			finalNum = Math.min(finalNum, props.max)
-		}
-
-		if (props.min != null) {
-			finalNum = Math.max(finalNum, props.min)
-		}
-
-		if (finalNum != model.value) {
-			model.value = finalNum
-		}
-	}
-
-	commitUndo()
-}
+useDataBinding(() => props.localPath)
 </script>
 
 <style scoped></style>
