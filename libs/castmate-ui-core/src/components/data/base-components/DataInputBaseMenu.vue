@@ -20,23 +20,20 @@ import type { MenuItem } from "primevue/menuitem"
 import { computed, ref, useModel } from "vue"
 import { usePropagationStop, useUndoCommitter } from "../../../main"
 
+const model = defineModel<any>()
+const templateMode = defineModel<boolean>("templateMode", { default: false })
+
 const props = defineProps<{
-	modelValue: any
-	templateMode: boolean
 	canClear: boolean
 	canTemplate: boolean
 	disabled?: boolean
 	menuExtra?: MenuItem[]
 }>()
 
-const menu = ref<PMenu>()
+const menu = ref<InstanceType<typeof PMenu>>()
 const contextMenu = ref<InstanceType<typeof CContextMenu>>()
 
-const model = useModel(props, "modelValue")
-
 const undoModel = useUndoCommitter(model)
-
-const templateMode = useModel(props, "templateMode")
 
 function clear() {
 	undoModel.value = undefined

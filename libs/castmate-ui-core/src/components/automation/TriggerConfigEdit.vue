@@ -8,7 +8,7 @@
 			</h3>
 			<p v-if="triggerInfo.description">{{ triggerInfo.description }}</p>
 		</div>
-		<data-input v-model="model.config" :schema="triggerInfo.config" />
+		<data-input v-model="model.config" :schema="triggerInfo.config" local-path="config" />
 		<p-divider />
 		<div
 			class="p-inputgroup px-4"

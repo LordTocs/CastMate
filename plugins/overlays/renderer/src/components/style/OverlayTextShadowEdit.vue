@@ -8,44 +8,22 @@
 				<div class="flex flex-row gap-1">
 					<div style="width: 0; flex: 1" class="mt-4">
 						<label-floater label="Blur" v-slot="labelProps">
-							<p-input-number
-								class="number-fix"
-								v-model="model.blur"
-								v-bind="labelProps"
-								show-buttons
-								:min="0"
-								mode="decimal"
-								suffix="px"
-							/>
+							<c-number-input v-model="model.blur" v-bind="labelProps" :min="0" suffix="px" />
 						</label-floater>
 					</div>
 					<div style="width: 0; flex: 1" class="mt-4">
-						<data-input v-model="model.color" :schema="colorSchema" />
+						<data-input v-model="model.color" :schema="colorSchema" local-path="color" />
 					</div>
 				</div>
 				<div class="flex flex-row gap-1">
 					<div style="width: 0; flex: 1" class="mt-4">
 						<label-floater label="Offset X" v-slot="labelProps">
-							<p-input-number
-								class="number-fix"
-								v-model="model.offsetX"
-								v-bind="labelProps"
-								show-buttons
-								mode="decimal"
-								suffix="px"
-							/>
+							<c-number-input v-model="model.offsetX" v-bind="labelProps" show-buttons suffix="px" />
 						</label-floater>
 					</div>
 					<div style="width: 0; flex: 1" class="mt-4">
 						<label-floater label="Offset Y" v-slot="labelProps">
-							<p-input-number
-								class="number-fix"
-								v-model="model.offsetY"
-								v-bind="labelProps"
-								show-buttons
-								mode="decimal"
-								suffix="px"
-							/>
+							<c-number-input v-model="model.offsetY" v-bind="labelProps" suffix="px" />
 						</label-floater>
 					</div>
 				</div>
@@ -64,10 +42,9 @@
 import { useModel } from "vue"
 
 import { OverlayShadowStyle } from "castmate-plugin-overlays-shared"
-import { LabelFloater, DataInput } from "castmate-ui-core"
+import { LabelFloater, DataInput, CNumberInput } from "castmate-ui-core"
 import { Color, declareSchema } from "castmate-schema"
 
-import PInputNumber from "primevue/inputnumber"
 import PButton from "primevue/button"
 
 const props = defineProps<{

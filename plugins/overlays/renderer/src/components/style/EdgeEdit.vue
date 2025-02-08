@@ -7,16 +7,16 @@
 		}"
 	>
 		<div class="value-edit top" ref="top" :class="{ 'edit-drag': topDragging }">
-			<margin-padding-num-edit v-model="model.top" />
+			<margin-padding-num-edit v-model="model.top" local-path="top" />
 		</div>
 		<div class="value-edit left" ref="left" :class="{ 'edit-drag': leftDragging }">
-			<margin-padding-num-edit v-model="model.left" />
+			<margin-padding-num-edit v-model="model.left" local-path="left" />
 		</div>
 		<div class="value-edit right" ref="right" :class="{ 'edit-drag': rightDragging }">
-			<margin-padding-num-edit v-model="model.right" />
+			<margin-padding-num-edit v-model="model.right" local-path="right" />
 		</div>
 		<div class="value-edit bottom" ref="bottom" :class="{ 'edit-drag': bottomDragging }">
-			<margin-padding-num-edit v-model="model.bottom" />
+			<margin-padding-num-edit v-model="model.bottom" local-path="bottom" />
 		</div>
 	</div>
 </template>
@@ -25,15 +25,18 @@
 import MarginPaddingNumEdit from "./MarginPaddingNumEdit.vue"
 import { OverlayEdgeInfo } from "castmate-plugin-overlays-shared"
 import { computed, ref, useModel } from "vue"
-import { useDragValue } from "castmate-ui-core"
+import { useCommitUndo, useDataBinding, useDragValue } from "castmate-ui-core"
 
 const props = defineProps<{
 	modelValue: OverlayEdgeInfo
 	editHeightFrac: number
 	editWidthFrac: number
+	localPath: string
 }>()
 
 const model = useModel(props, "modelValue")
+
+useDataBinding(() => props.localPath)
 
 const top = ref<HTMLElement>()
 const left = ref<HTMLElement>()
@@ -41,6 +44,8 @@ const right = ref<HTMLElement>()
 const bottom = ref<HTMLElement>()
 
 const dragScale = 3
+
+const commitUndo = useCommitUndo()
 
 const topDragging = useDragValue(
 	top,
@@ -52,7 +57,8 @@ const topDragging = useDragValue(
 			model.value.top = v
 		},
 	}),
-	{ direction: "vertical", scale: dragScale, min: 0 }
+	{ direction: "vertical", scale: dragScale, min: 0 },
+	() => commitUndo()
 )
 
 const leftDragging = useDragValue(
@@ -65,7 +71,8 @@ const leftDragging = useDragValue(
 			model.value.left = v
 		},
 	}),
-	{ direction: "horizontal", scale: dragScale, min: 0 }
+	{ direction: "horizontal", scale: dragScale, min: 0 },
+	() => commitUndo()
 )
 
 const rightDragging = useDragValue(
@@ -78,7 +85,8 @@ const rightDragging = useDragValue(
 			model.value.right = v
 		},
 	}),
-	{ direction: "horizontal", scale: dragScale, invert: true, min: 0 }
+	{ direction: "horizontal", scale: dragScale, invert: true, min: 0 },
+	() => commitUndo()
 )
 
 const bottomDragging = useDragValue(
@@ -91,7 +99,8 @@ const bottomDragging = useDragValue(
 			model.value.bottom = v
 		},
 	}),
-	{ direction: "vertical", scale: dragScale, invert: true, min: 0 }
+	{ direction: "vertical", scale: dragScale, invert: true, min: 0 },
+	() => commitUndo()
 )
 </script>
 

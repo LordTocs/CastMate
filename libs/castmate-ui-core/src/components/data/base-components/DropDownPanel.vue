@@ -25,7 +25,7 @@ import PPortal from "primevue/portal"
 import vFocusTrap from "primevue/focustrap"
 import { usePrimeVue } from "primevue/config"
 import { injectScrollAttachable, positionPortal, stopPropagation } from "../../../main"
-import { useEventListener, useResizeObserver } from "@vueuse/core"
+import { onClickOutside, useEventListener, useResizeObserver } from "@vueuse/core"
 
 defineOptions({
 	inheritAttrs: false,
@@ -70,6 +70,10 @@ watch(model, () => {
 	}
 })
 
+onClickOutside(overlayDiv, (evt) => {
+	model.value = false
+})
+/*
 useEventListener(
 	() => (overlayVisibleComplete.value ? document : undefined),
 	"click",
@@ -78,7 +82,7 @@ useEventListener(
 			model.value = false
 		}
 	}
-)
+)*/
 </script>
 
 <style scoped>

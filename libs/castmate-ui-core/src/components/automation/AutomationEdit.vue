@@ -15,7 +15,12 @@
 			v-model="splitterPos"
 			:invert="true"
 		/>
-		<flex-scroller class="config" v-if="showSelectionEdit" :style="{ width: `${splitterPos}px` }">
+		<flex-scroller
+			class="config"
+			inner-class="px-2"
+			v-if="showSelectionEdit"
+			:style="{ width: `${splitterPos}px` }"
+		>
 			<action-config-edit v-if="selectedActionDef" v-model="selectedActionDef" :sequence="selectedSequence" />
 			<trigger-config-edit v-else-if="selectedTriggerDef" v-model="selectedTriggerDef" />
 		</flex-scroller>
@@ -24,7 +29,14 @@
 
 <script setup lang="ts">
 import { computed, ref, useModel } from "vue"
-import { AutomationView, useDocumentSelection, FlexScroller, ExpanderSlider, DataBindingPath } from "../../main"
+import {
+	AutomationView,
+	useDocumentSelection,
+	FlexScroller,
+	ExpanderSlider,
+	DataBindingPath,
+	useDataUIBinding,
+} from "../../main"
 import { AnyAction, ActionStack, AutomationData, isActionStack, findActionById } from "castmate-schema"
 import AutomationEditArea from "./AutomationEditArea.vue"
 import ActionConfigEdit from "./ActionConfigEdit.vue"
@@ -135,6 +147,17 @@ function onCut(ev: ClipboardEvent) {
 function onPaste(ev: ClipboardEvent) {
 	ev.stopPropagation()
 }
+
+useDataUIBinding({
+	onChildFocus(subPath) {
+		console.log(subPath)
+		if (subPath[0] == "sequence") {
+		}
+	},
+	onChildScrollIntoView(subPath) {
+		console.log(subPath)
+	},
+})
 </script>
 
 <style scoped>

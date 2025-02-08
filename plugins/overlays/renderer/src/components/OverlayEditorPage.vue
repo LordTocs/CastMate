@@ -46,6 +46,7 @@
 					<data-input
 						:schema="{ type: ResourceProxyFactory, resourceType: 'OBSConnection', name: `OBS Connection` }"
 						v-model="view.obsId"
+						local-path="obsId"
 					/>
 				</div>
 				<div>

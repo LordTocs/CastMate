@@ -1,5 +1,5 @@
 <template>
-	<scrolling-tab-body>
+	<scrolling-tab-body ref="body">
 		<div class="flex flex-row">
 			<div style="width: 50%; flex-shrink: 0">
 				<data-input :schema="baseTestSchema" v-model="baseDataBinding.rootData" local-path="" />
@@ -32,6 +32,7 @@ import {
 	provideBaseDataBinding,
 	DataBindingDebugger,
 	createUndoStack,
+	useUndoEvents,
 } from "castmate-ui-core"
 import { onBeforeMount, onMounted, ref } from "vue"
 import util from "util"
@@ -56,6 +57,7 @@ const baseDataBinding = ref<DataBinding>({
 		data: {},
 		subPaths: {},
 		uiBindings: [],
+		refCount: 1,
 	},
 	rootData: {},
 	undoStack: createUndoStack({}),
@@ -98,6 +100,10 @@ const baseTestSchema = declareSchema({
 		obsTransform: { type: OBSSourceTransform, name: "Source Transform", template: true, required: true },
 	},
 })
+
+const body = ref<InstanceType<typeof ScrollingTabBody>>()
+
+useUndoEvents(() => body.value?.scrollDiv)
 </script>
 
 <style scoped></style>

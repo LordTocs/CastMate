@@ -1,24 +1,35 @@
 <template>
 	<data-input-base v-model="model" :schema="schema" :toggle-template="false">
 		<template #prepend>
-			<duration-field v-model="durationModel" style="width: 5rem" />
+			<c-duration-input v-model="durationModel" style="width: 5rem" local-path="duration" />
 		</template>
 
 		<template #default="inputProps">
-			<p-dropdown v-model="presetModel" :options="presetOptions" class="w-full" v-bind="inputProps"></p-dropdown>
+			<c-dropdown
+				v-model="presetModel"
+				:options="presetOptions"
+				class="w-full"
+				v-bind="inputProps"
+				local-path="preset"
+			/>
 		</template>
 	</data-input-base>
 </template>
 
 <script setup lang="ts">
-import { SharedDataInputProps, DataInputBase } from "castmate-ui-core"
+import {
+	SharedDataInputProps,
+	DataInputBase,
+	useDataBinding,
+	useOptionalDefaultableModel,
+	CDropdown,
+	CDurationInput,
+} from "castmate-ui-core"
 import { OverlayTransitionAnimation, SchemaOverlayTransitionAnimation } from "castmate-plugin-overlays-shared"
 import { computed, useModel } from "vue"
 
-import PInputNumber from "primevue/inputnumber"
-import PDropdown from "primevue/dropdown"
+import { MenuItem } from "primevue/menuitem"
 import { revealers } from "castmate-overlay-core"
-import { DurationField } from "castmate-ui-core"
 
 const props = defineProps<
 	{
@@ -29,49 +40,20 @@ const props = defineProps<
 
 const model = useModel(props, "modelValue")
 
-const presetModel = computed({
-	get() {
-		if (!props.modelValue) return undefined
-		return props.modelValue.preset
-	},
-	set(v) {
-		if (!v) {
-			model.value = undefined
-			return
-		}
+useDataBinding(() => props.localPath)
 
-		if (!model.value) {
-			model.value = {
-				duration: 1,
-				preset: v,
-			}
-		} else {
-			model.value.preset = v
-		}
-	},
-})
+const makeDefault = () => OverlayTransitionAnimation.factoryCreate()
 
-const durationModel = computed({
-	get() {
-		if (!props.modelValue) return undefined
-		return props.modelValue.duration
-	},
-	set(v) {
-		if (v == null) {
-			model.value = undefined
-			return
-		}
+const durationModel = useOptionalDefaultableModel(model, "duration", makeDefault)
+const presetModel = useOptionalDefaultableModel(model, "preset", makeDefault)
 
-		if (!model.value) {
-			model.value = {
-				duration: v,
-				preset: "None",
-			}
-		} else {
-			model.value.duration = v
-		}
-	},
-})
-
-const presetOptions = computed(() => Object.keys(revealers))
+const presetOptions = computed(() =>
+	Object.keys(revealers).map(
+		(key) =>
+			({
+				label: key,
+				code: key,
+			} as MenuItem)
+	)
+)
 </script>

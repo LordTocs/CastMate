@@ -15,9 +15,9 @@
 
 <script setup lang="ts">
 import { OverlayTextAlignment, SchemaOverlayTextAlignment } from "castmate-plugin-overlays-shared"
-import { SharedDataInputProps, useDefaulted } from "castmate-ui-core"
+import { SharedDataInputProps, useDataBinding, useOptionalDefaultableModel, useUndoCommitter } from "castmate-ui-core"
 import PSelectButton from "primevue/selectbutton"
-import { computed, useModel } from "vue"
+import { useModel } from "vue"
 
 const props = defineProps<
 	{
@@ -28,18 +28,11 @@ const props = defineProps<
 
 const model = useModel(props, "modelValue")
 
-const alignment = computed({
-	get() {
-		return props.modelValue?.textAlign
-	},
-	set(v) {
-		if (v == null) {
-			model.value = undefined
-		} else {
-			model.value = { textAlign: v }
-		}
-	},
-})
+useDataBinding(() => props.localPath)
+
+const alignment = useUndoCommitter(
+	useOptionalDefaultableModel(model, "textAlign", () => OverlayTextAlignment.factoryCreate())
+)
 
 const textIcons: Record<string, string> = {
 	left: "mdi mdi-format-align-left",

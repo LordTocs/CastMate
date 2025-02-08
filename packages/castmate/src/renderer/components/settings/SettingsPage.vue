@@ -26,6 +26,7 @@
 								:schema="setting.schema"
 								:secret="setting.type == 'secret'"
 								v-model="model.settings[pluginSettings.pluginId][sid]"
+								:local-path="`settings.${pluginSettings.pluginId}.${sid}`"
 							/>
 						</div>
 						<div v-else-if="setting.type == 'resource'">

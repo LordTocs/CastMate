@@ -7,14 +7,10 @@
 <script setup lang="ts">
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { Duration } from "castmate-schema"
-import { TemplateToggle, stopEvent } from "../../../main"
 import { SchemaDuration } from "castmate-schema"
 import DurationField from "../base-components/DurationField.vue"
-
-import PButton from "primevue/button"
 import { ref, useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
-import LabelFloater from "../base-components/LabelFloater.vue"
 import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
