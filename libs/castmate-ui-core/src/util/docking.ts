@@ -1,7 +1,10 @@
 import { nanoid } from "nanoid/non-secure"
 import { ComputedRef, inject, MaybeRefOrGetter, ref, Ref, type Component } from "vue"
 import { useDocumentStore } from "./document"
-import { useDockingStore, iterTabs } from "../main"
+import { useDockingStore, iterTabs, useSaveAskDialog } from "../main"
+import { useConfirm, useDialog } from "primevue"
+import { config } from "process"
+import SaveAskDialog from "../components/dialogs/SaveAskDialog.vue"
 
 export type DocumentBase = {
 	name: string
@@ -94,6 +97,37 @@ export function useSaveAllTabs() {
 		for (const t of iterTabs(dockingStore.rootDockArea)) {
 			if (!t.pageData?.documentId) continue
 			documentStore.saveDocument(t.pageData.documentId)
+		}
+	}
+}
+
+export function useCloseAllTabs() {
+	const dockingStore = useDockingStore()
+	const documentStore = useDocumentStore()
+	const closeTab = useCloseTab()
+
+	return async () => {
+		const tabs = [...iterTabs(dockingStore.rootDockArea)]
+		for (const t of tabs) {
+			if (!(await closeTab(t.id))) return false
+		}
+		return true
+	}
+}
+
+export function findTab(division: DockedSplit | DockedFrame, tabId: string): DockedTab | undefined {
+	if (division.type == "frame") {
+		const idx = division.tabs.findIndex((t) => t.id == tabId)
+		if (idx >= 0) {
+			return division.tabs[idx]
+		}
+	} else if (division.type == "split") {
+		for (let i = 0; i < division.divisions.length; ++i) {
+			const d = division.divisions[i]
+			const t = findTab(d, tabId)
+			if (t) {
+				return t
+			}
 		}
 	}
 }
@@ -229,13 +263,30 @@ export function useInsertToFrame() {
 }
 
 export function useCloseTab() {
-	const dockingArea = useDockingArea()
+	const dockingStore = useDockingStore()
 	const documentStore = useDocumentStore()
 
-	return function (tabId: string) {
-		const tab = findAndRemoveTab(dockingArea.value, tabId)
+	const askSave = useSaveAskDialog()
+
+	return async function (tabId: string) {
+		const t = findTab(dockingStore.rootDockArea, tabId)
+
+		if (t?.pageData?.dirty) {
+			const saveResult = await askSave(t.title ?? t.id)
+
+			if (saveResult == "cancel") return false
+
+			if (saveResult == "saveAndClose") {
+				//TODO: Make save document agnostic
+				await documentStore.saveDocument(t.pageData?.documentId)
+			}
+		}
+
+		const tab = findAndRemoveTab(dockingStore.rootDockArea, tabId)
 		if (tab?.pageData?.documentId) {
 			documentStore.removeDocument(tab.pageData.documentId)
 		}
+
+		return true
 	}
 }

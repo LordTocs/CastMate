@@ -45,13 +45,17 @@ import {
 	useOpenAutomationDocument,
 	useSaveActiveTab,
 	useSaveAllTabs,
+	useCloseAllTabs,
 } from "castmate-ui-core"
 import { useOpenSettings } from "../settings/SettingsTypes"
 import InputTestPage from "../test/InputTestPage.vue"
 import { useDialog } from "primevue/usedialog"
 import AboutPage from "../about/AboutPage.vue"
 
+const closeAllTabs = useCloseAllTabs()
+
 async function close() {
+	if (!(await closeAllTabs())) return
 	await ipcRenderer.invoke("windowFuncs_close")
 }
 
@@ -95,6 +99,8 @@ const resourceStore = useResourceStore()
 
 const openProfile = useOpenProfileDocument()
 const openAutomation = useOpenAutomationDocument()
+
+const dockingManager = useDockingStore()
 
 const saveActiveTab = useSaveActiveTab()
 const saveAllTabs = useSaveAllTabs()
