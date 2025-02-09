@@ -34,6 +34,7 @@ import {
 	createProfileViewData,
 	useDialogRef,
 	useDockingStore,
+	useOpenProfileDocument,
 	useResource,
 	useResourceArray,
 	useResourceStore,
@@ -61,8 +62,6 @@ const profiles = useResourceArray<ResourceData<ProfileConfig>>("Profile")
 
 const mainProfileId = ref<string>()
 
-const mainProfile = useResource<ResourceData<ProfileConfig>>("Profile", mainProfileId)
-
 async function ensureMainProfile() {
 	const mainProfile = profiles.value.find((p) => p.config.name == "Main")
 
@@ -76,14 +75,11 @@ async function ensureMainProfile() {
 
 const dockingStore = useDockingStore()
 
+const openProfile = useOpenProfileDocument()
+
 function openMainProfile() {
-	if (!mainProfile.value) return
-	dockingStore.openDocument(
-		mainProfile.value.id,
-		mainProfile.value.config,
-		createProfileViewData(mainProfile.value),
-		"profile"
-	)
+	if (!mainProfileId.value) return
+	openProfile(mainProfileId.value)
 }
 
 function done() {

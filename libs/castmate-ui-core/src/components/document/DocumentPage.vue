@@ -13,13 +13,13 @@ import { computed, watch } from "vue"
 import { provideDocument, useDocument, useDocumentComponent, useDocumentStore } from "../../main"
 
 const props = defineProps<{
-	documentId: string
+	pageData: { documentId: string; documentType: string }
 }>()
 
-const document = useDocument(() => props.documentId)
+const document = useDocument(() => props.pageData.documentId)
 const documentStore = useDocumentStore()
 const documentComponent = useDocumentComponent(document.value?.type)
-provideDocument(() => props.documentId)
+provideDocument(() => props.pageData.documentId)
 
 const documentData = computed({
 	get() {
@@ -57,5 +57,3 @@ const documentView = computed({
 	},
 })
 </script>
-
-<style scoped></style>

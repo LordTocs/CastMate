@@ -200,7 +200,7 @@ const menuItems = computed<MenuItem[]>(() => {
 			label: "Input Test",
 			icon: "mdi mdi-pencil",
 			command() {
-				dockingStore.openPage("input-test", "Input Test", InputTestPage)
+				dockingStore.openPage("input-test", "Input Test", "mdi mdi-pencil", InputTestPage)
 			},
 		}
 	)
@@ -224,7 +224,7 @@ const menuItems = computed<MenuItem[]>(() => {
 			label: "About",
 			icon: "mdi mdi-info",
 			command() {
-				dockingStore.openPage("about", "About", AboutPage)
+				dockingStore.openPage("about", "About", "mdi mdi-info", AboutPage)
 			},
 		},
 		{

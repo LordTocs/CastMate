@@ -69,6 +69,6 @@ export function useOpenSettings() {
 
 		console.log(model)
 
-		dockingStore.openDocument("settings", model, { scrollX: 0, scrollY: 0, filter: "" }, "settings")
+		dockingStore.openDocument("settings", model, { scrollX: 0, scrollY: 0, filter: "" }, "settings", "mdi mdi-cog")
 	}
 }

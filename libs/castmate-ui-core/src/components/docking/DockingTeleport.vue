@@ -1,8 +1,7 @@
 <template>
 	<Teleport v-if="tab.teleportPermutation" :to="`#tabdock-${tab.teleportPermutation}`">
 		<div class="tab">
-			<document-editor class="tab-fill" v-if="tab.documentId" :document-id="tab.documentId" />
-			<component class="tab-fill" v-else-if="tab.page" :is="tab.page" :page-data="tab.pageData"> </component>
+			<component class="tab-fill" v-if="tab.page" :is="tab.page" :page-data="tab.pageData"> </component>
 		</div>
 	</Teleport>
 </template>
@@ -10,7 +9,6 @@
 <script setup lang="ts">
 import { provide, useModel } from "vue"
 import { DockedTab, DockedFrame } from "../../main"
-import DocumentEditor from "../document/DocumentEditor.vue"
 
 const props = defineProps<{
 	tab: DockedTab

@@ -80,7 +80,8 @@ export function getResourceAsDirectProjectGroup<TData extends ResourceData>(
 							//TODO how do we get the view data?
 							dockingStore.openPage(
 								`${config.resourceType}.${r.id}`,
-								(r.config as NamedData).name ?? r.id,
+								() => (r.config as NamedData).name ?? r.id,
+								() => config.groupIcon ?? "mdi mdi-pencil",
 								config.page,
 								{ resourceId: r.id }
 							)
@@ -136,7 +137,13 @@ export function getResourceAsProjectGroup<TData extends ResourceData>(
 						title: (r.config as NamedData).name ?? r.id,
 						open() {
 							//TODO how do we get the view data?
-							dockingStore.openDocument(r.id, r.config, config.createView?.(r) ?? {}, config.documentType)
+							dockingStore.openDocument(
+								r.id,
+								r.config,
+								config.createView?.(r) ?? {},
+								config.documentType,
+								config.groupIcon ?? "mdi mdi-square"
+							)
 						},
 						rename(name: string) {
 							resourceStore.applyResourceConfig(config.resourceType, r.id, { name })

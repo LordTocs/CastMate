@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid/non-secure"
-import { inject, ref, Ref, type Component } from "vue"
+import { ComputedRef, inject, MaybeRefOrGetter, ref, Ref, type Component } from "vue"
 import { useDocumentStore } from "./document"
 import { useDockingStore, iterTabs } from "../main"
 
@@ -9,10 +9,10 @@ export type DocumentBase = {
 
 export interface DockedTab {
 	id: string
-	documentId?: string
 	page?: Component
+	icon?: Component | string
 	title?: string
-	pageData?: any
+	pageData?: Record<PropertyKey, any>
 	teleportPermutation?: string
 }
 
@@ -80,9 +80,9 @@ export function useSaveActiveTab() {
 		const tab = dockingStore.getActiveTab()
 
 		if (!tab) return
-		if (!tab.documentId) return
+		if (!tab.pageData?.documentId) return
 
-		documentStore.saveDocument(tab.documentId)
+		documentStore.saveDocument(tab.pageData.documentId)
 	}
 }
 
@@ -92,8 +92,8 @@ export function useSaveAllTabs() {
 
 	return () => {
 		for (const t of iterTabs(dockingStore.rootDockArea)) {
-			if (!t.documentId) continue
-			documentStore.saveDocument(t.documentId)
+			if (!t.pageData?.documentId) continue
+			documentStore.saveDocument(t.pageData.documentId)
 		}
 	}
 }
@@ -234,8 +234,8 @@ export function useCloseTab() {
 
 	return function (tabId: string) {
 		const tab = findAndRemoveTab(dockingArea.value, tabId)
-		if (tab?.documentId) {
-			documentStore.removeDocument(tab.documentId)
+		if (tab?.pageData?.documentId) {
+			documentStore.removeDocument(tab.pageData.documentId)
 		}
 	}
 }

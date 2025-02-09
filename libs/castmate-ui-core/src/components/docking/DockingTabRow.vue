@@ -1,14 +1,7 @@
 <template>
 	<div class="docking-tab-row" @drop="onDropped" @dragover="onDragOver" @dragenter="dragEnter" @dragleave="dragLeave">
 		<div class="docking-tab-row-inner" @mousewheel="onScroll" ref="inner" :class="{ dragHover }">
-			<docking-tab-head
-				v-for="tab in modelObj.tabs"
-				:key="tab.id"
-				:document-id="tab.documentId"
-				:title="tab.title"
-				:frame="modelObj"
-				:id="tab.id"
-			/>
+			<docking-tab-head v-for="tab in modelObj.tabs" :key="tab.id" :tab="tab" :frame="modelObj" />
 		</div>
 	</div>
 </template>

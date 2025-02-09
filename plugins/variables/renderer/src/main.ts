@@ -21,7 +21,7 @@ export async function initPlugin() {
 				title: "Variables",
 				icon: "mdi mdi-variable",
 				open() {
-					dockingStore.openPage("variables.variables", "Variables", VariablesPageVue)
+					dockingStore.openPage("variables.variables", "Variables", "mdi mdi-variable", VariablesPageVue)
 				},
 			}
 		})
@@ -33,7 +33,7 @@ export async function initPlugin() {
 			title: "Viewer Variables",
 			icon: "mdi mdi-table-account",
 			open() {
-				dockingStore.openPage("viewer-data", "Viewer Variables", ViewerVariablePage)
+				dockingStore.openPage("viewer-data", "Viewer Variables", "mdi mdi-table-account", ViewerVariablePage)
 			},
 		}
 	})

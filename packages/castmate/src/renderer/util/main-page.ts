@@ -8,7 +8,7 @@ export const useMainPageStore = defineStore("main-page", () => {
 	const projectStore = useProjectStore()
 
 	function openMain() {
-		dockingStore.openPage("dashboard", "CastMate", MainPage)
+		dockingStore.openPage("dashboard", "CastMate", "mdi mdi-square", MainPage)
 	}
 
 	async function initialize() {

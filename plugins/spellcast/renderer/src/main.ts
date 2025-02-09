@@ -68,7 +68,7 @@ export function initPlugin(app: App<Element>) {
 				title: "SpellCast",
 				icon: "sci sci-spellcast",
 				open() {
-					dockingStore.openPage("spellcast.spells", "SpellCast", SpellCastPage)
+					dockingStore.openPage("spellcast.spells", "SpellCast", "sci sci-spellcast", SpellCastPage)
 				},
 			}
 		})

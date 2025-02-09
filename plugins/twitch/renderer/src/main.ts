@@ -124,6 +124,7 @@ export async function initPlugin(app: App<Element>) {
 							dockingStore.openPage(
 								"twitch.channelpoints",
 								"Channel Point Rewards",
+								"twi twi-channel-points",
 								ChannelPointsEditPageVue
 							)
 						},
