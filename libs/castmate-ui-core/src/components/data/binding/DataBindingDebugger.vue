@@ -8,14 +8,14 @@
 				})
 			}}</pre>
 		</div>
-		<div>
-			<pre v-for="stackItem in binding.undoStack.stack">{{
-				util.inspect(stackItem, {
-					depth: 10,
-					compact: false,
-				})
-			}}</pre>
-		</div>
+	</div>
+	<div>
+		<pre v-for="stackItem in binding.undoStack.stack">{{
+			util.inspect(stackItem, {
+				depth: 10,
+				compact: false,
+			})
+		}}</pre>
 	</div>
 	<data-path-view-debug path="" parent-path="" :path-view="binding.rootView" :root="binding.rootView" />
 </template>
