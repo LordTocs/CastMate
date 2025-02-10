@@ -1,5 +1,6 @@
 import { isObject } from "@vueuse/core"
 import _cloneDeep from "lodash/cloneDeep"
+import _isEqual from "lodash/isEqual"
 import { DiffOpCode, iterDiff } from "./myers-diff"
 
 export type DataDiff = GenericDiff<any> | ArrayDiff | ObjectDiff
@@ -149,6 +150,15 @@ interface ObjectDiff {
 	}
 }
 
+function dataCompare(a: any, b: any) {
+	if (isObject(a) && isObject(b)) {
+		if ("id" in a && "id" in b) {
+			return a.id == b.id
+		}
+	}
+	return _isEqual(a, b)
+}
+
 function computeObjectDiff(a: Obj, b: Obj) {
 	const aKeys = Object.keys(a)
 	const bKeys = Object.keys(b)
@@ -226,8 +236,8 @@ function computeArrayDiff(a: any[], b: any[]): ArrayDiff | undefined {
 	const result: ArrayDiffOp[] = []
 
 	let index = 0
-	for (let diffOp of iterDiff(a, b)) {
-		console.log("ArrDiff", diffOp)
+	for (let diffOp of iterDiff(a, b, dataCompare)) {
+		//console.log("ArrDiff", diffOp)
 		if (diffOp.type == DiffOpCode.Equal) {
 			const subdiff = computeDataDiff(diffOp.oldValue, diffOp.newValue)
 			if (subdiff) {
