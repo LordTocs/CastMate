@@ -10,7 +10,13 @@
 
 <script setup lang="ts">
 import { computed, watch } from "vue"
-import { provideDocument, useDocument, useDocumentComponent, useDocumentStore } from "../../main"
+import {
+	provideBaseDataBinding,
+	provideDocument,
+	useDocument,
+	useDocumentComponent,
+	useDocumentStore,
+} from "../../main"
 
 const props = defineProps<{
 	pageData: { documentId: string; documentType: string }
@@ -20,6 +26,8 @@ const document = useDocument(() => props.pageData.documentId)
 const documentStore = useDocumentStore()
 const documentComponent = useDocumentComponent(document.value?.type)
 provideDocument(() => props.pageData.documentId)
+
+provideBaseDataBinding(() => document.value?.view)
 
 const documentData = computed({
 	get() {

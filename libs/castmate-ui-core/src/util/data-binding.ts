@@ -3,6 +3,7 @@ import {
 	ComputedRef,
 	inject,
 	MaybeRefOrGetter,
+	nextTick,
 	onBeforeMount,
 	onBeforeUnmount,
 	onMounted,
@@ -12,9 +13,11 @@ import {
 	toValue,
 	watch,
 	watchEffect,
+	queuePostFlushCb,
 } from "vue"
-import { provideLocal, injectLocal, useEventListener } from "@vueuse/core"
-import { applyInvDataDiff, computeDataDiff, DataDiff } from "./diff"
+import { provideLocal, injectLocal, useEventListener, toReactive } from "@vueuse/core"
+import { applyDataDiff, applyInvDataDiff, computeDataDiff, DataDiff } from "./diff"
+import { nanoid } from "nanoid/non-secure"
 
 import _cloneDeep from "lodash/cloneDeep"
 ///////////////////////////////////////
@@ -100,32 +103,67 @@ function unregisterDataUiBinding(pathView: DataPathView, binding: DataUIBinding)
 export interface UndoStack<T = any> {
 	stack: DataDiff[]
 	snapshot: T
+	redo: DataDiff[]
 }
 export function createUndoStack<T = any>(initialValue: T): UndoStack {
 	return {
 		stack: [],
 		snapshot: initialValue,
+		redo: [],
 	}
 }
 export interface DataBinding {
+	id: string
 	rootData: any
 	rootView: DataPathView
 	undoStack: UndoStack
+	delayedCommit: boolean
+}
+
+export function createDataBinding(rootData: any): DataBinding {
+	return {
+		id: nanoid(),
+		rootData,
+		rootView: { data: {}, subPaths: {}, uiBindings: [], refCount: 1 },
+		undoStack: createUndoStack(_cloneDeep(rootData)),
+		delayedCommit: false,
+	}
 }
 
 ///
+
+function commitDataView(dataBinding: DataBinding) {
+	const newData = dataBinding.rootData
+	const diff = computeDataDiff(dataBinding.undoStack.snapshot, newData)
+
+	if (diff == undefined) return
+
+	const caller = new Error().stack?.split("\n")[2]?.trim().split(" ")[1]
+	console.log("   - Commiting Undo", new Error().stack, caller, diff)
+
+	dataBinding.undoStack.stack.push(diff)
+	dataBinding.undoStack.snapshot = _cloneDeep(newData)
+	dataBinding.undoStack.redo = []
+}
 
 export function useCommitUndo() {
 	const databinding = useBaseDataBinding()
 
 	return function () {
-		const newData = databinding.rootData
-		const diff = computeDataDiff(databinding.undoStack.snapshot, newData)
+		commitDataView(databinding)
+	}
+}
 
-		if (diff == undefined) return
+export function useDelayedCommitUndo() {
+	const databinding = useBaseDataBinding()
 
-		databinding.undoStack.stack.push(diff)
-		databinding.undoStack.snapshot = _cloneDeep(newData)
+	return function () {
+		if (databinding.delayedCommit) return
+		databinding.delayedCommit = true
+		nextTick(() => {
+			commitDataView(databinding)
+			databinding.delayedCommit = false
+		})
 	}
 }
 
@@ -194,16 +232,12 @@ export function useTextUndoCommitter(inputElement: MaybeRefOrGetter<HTMLElement 
 	})
 }
 
-export function provideBaseDataBinding(binding: DataBinding) {
-	provideLocal("ui-data-binding", binding)
+export function provideBaseDataBinding(binding: MaybeRefOrGetter<DataBinding | undefined>) {
+	provideLocal("ui-data-binding", toReactive(computed(() => toValue(binding) ?? createDataBinding(undefined))))
 }
 
 export function useBaseDataBinding() {
-	return injectLocal<DataBinding>("ui-data-binding", {
-		rootData: undefined,
-		rootView: { data: {}, subPaths: {}, uiBindings: [], refCount: 1 },
-		undoStack: createUndoStack({}),
-	})
+	return injectLocal<DataBinding>("ui-data-binding", createDataBinding(undefined))
 }
 
 export function useLocalDataBinding() {
@@ -398,26 +432,27 @@ function deleteDataView(root: DataPathView, path: string) {
 
 //TODO: moveDataView() - What to do about refCount > 1
 
-///
+export function undoDataView(baseDataBinding: DataBinding) {
+	const top = baseDataBinding.undoStack.stack.pop()
 
-export function useUndoEvents(element: MaybeRefOrGetter<HTMLElement | undefined>) {
-	const baseDataBinding = useBaseDataBinding()
+	if (!top) return
 
-	useEventListener(element, "keydown", (ev) => {
-		console.log(ev)
-		if (ev.ctrlKey && ev.key == "z") {
-			console.log("DOING UNDO", baseDataBinding)
-			ev.stopPropagation()
+	console.log("From", baseDataBinding.rootData)
+	applyInvDataDiff(baseDataBinding, "rootData", top)
+	console.log("To", baseDataBinding.rootData)
 
-			const top = baseDataBinding.undoStack.stack.pop()
+	baseDataBinding.undoStack.redo.push(top)
 
-			if (!top) return
+	baseDataBinding.undoStack.snapshot = _cloneDeep(baseDataBinding.rootData)
+}
 
-			console.log("From", baseDataBinding.rootData)
-			applyInvDataDiff(baseDataBinding, "rootData", top)
-			console.log("To", baseDataBinding.rootData)
+export function redoDataView(baseDataBinding: DataBinding) {
+	const top = baseDataBinding.undoStack.redo.pop()
 
-			baseDataBinding.undoStack.snapshot = _cloneDeep(baseDataBinding.rootData)
-		}
-	})
+	if (!top) return
+
+	applyDataDiff(baseDataBinding, "rootData", top)
+	baseDataBinding.undoStack.stack.push(top)
+
+	baseDataBinding.undoStack.snapshot = _cloneDeep(baseDataBinding.rootData)
 }

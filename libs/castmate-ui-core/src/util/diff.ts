@@ -81,7 +81,9 @@ export function applyDataDiff<T>(parent: T, key: keyof T, diff: DataDiff) {
 
 function applyInvDataDiffArray(arr: any, diff: ArrayDiff) {
 	if (!Array.isArray(arr)) throw new Error("Diff Type Mismatch")
-	for (const op of diff.ops) {
+
+	for (let i = diff.ops.length - 1; i >= 0; --i) {
+		const op = diff.ops[i]
 		if (op.type == "delete") {
 			arr.splice(op.index, 0, op.oldValue)
 		} else if (op.type == "insert") {

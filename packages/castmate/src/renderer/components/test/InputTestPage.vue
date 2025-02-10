@@ -32,7 +32,6 @@ import {
 	provideBaseDataBinding,
 	DataBindingDebugger,
 	createUndoStack,
-	useUndoEvents,
 } from "castmate-ui-core"
 import { onBeforeMount, onMounted, ref } from "vue"
 import util from "util"
@@ -102,8 +101,6 @@ const baseTestSchema = declareSchema({
 })
 
 const body = ref<InstanceType<typeof ScrollingTabBody>>()
-
-useUndoEvents(() => body.value?.scrollDiv)
 </script>
 
 <style scoped></style>

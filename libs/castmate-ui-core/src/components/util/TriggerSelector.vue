@@ -49,8 +49,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { usePluginStore } from "../../plugins/plugin-store"
-import { useVModel } from "@vueuse/core"
-import { LabelFloater, useTrigger } from "../../main"
+import { LabelFloater, useDataBinding, useTrigger } from "../../main"
 import CAutocomplete from "../data/base-components/CAutocomplete.vue"
 
 const pluginStore = usePluginStore()
@@ -60,22 +59,23 @@ interface TriggerValue {
 	trigger: string
 }
 
+const model = defineModel<TriggerValue>()
+
+useDataBinding(() => "trigger")
+
 const props = withDefaults(
 	defineProps<{
-		modelValue: TriggerValue | undefined
 		label?: string
 	}>(),
 	{}
 )
-const emit = defineEmits(["update:modelValue"])
-const model = useVModel(props, "modelValue", emit)
 
-const selectedTrigger = useTrigger(() => props.modelValue)
+const selectedTrigger = useTrigger(() => model.value)
 
 const idModel = computed({
 	get() {
-		if (props.modelValue) {
-			return props.modelValue.plugin + "." + props.modelValue.trigger
+		if (model.value) {
+			return model.value.plugin + "." + model.value.trigger
 		}
 		return undefined
 	},

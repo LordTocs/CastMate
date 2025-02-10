@@ -12,7 +12,7 @@
 	<div>
 		<pre v-for="stackItem in binding.undoStack.stack">{{
 			util.inspect(stackItem, {
-				depth: 10,
+				depth: 50,
 				compact: false,
 			})
 		}}</pre>

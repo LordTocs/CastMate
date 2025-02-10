@@ -20,7 +20,7 @@ import {
 	onBeforeUnmount,
 	onUnmounted,
 } from "vue"
-import { DataBinding, DataPathView, joinDataPath, useDataPath } from "./data-binding"
+import { createDataBinding, DataBinding, DataPathView, joinDataPath, useDataPath } from "./data-binding"
 
 export type NamedData = {
 	name?: string
@@ -39,6 +39,12 @@ export type ViewData = {
 
 export interface DocumentView extends DataBinding {
 	selection: DocumentSelection
+}
+
+function createDocumentView(rootData: any): DocumentView {
+	const result = createDataBinding(rootData) as DocumentView
+	result.selection = { items: [], container: "" }
+	return result
 }
 
 export interface Document {
@@ -72,10 +78,7 @@ export const useDocumentStore = defineStore("documents", () => {
 			dirty: false,
 			data,
 			viewData: view,
-			view: {
-				root: { data: {}, subPaths: {}, uiBindings: [] },
-				selection: { items: [], container: "" },
-			},
+			view: createDocumentView(data),
 		})
 
 		const document = documents.value.get(id)

@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid/non-secure"
 import { ComputedRef, inject, MaybeRefOrGetter, ref, Ref, type Component } from "vue"
 import { useDocumentStore } from "./document"
-import { useDockingStore, iterTabs, useSaveAskDialog } from "../main"
+import { useDockingStore, iterTabs, useSaveAskDialog, undoDataView } from "../main"
 import { useConfirm, useDialog } from "primevue"
 import { config } from "process"
 import SaveAskDialog from "../components/dialogs/SaveAskDialog.vue"
@@ -86,6 +86,25 @@ export function useSaveActiveTab() {
 		if (!tab.pageData?.documentId) return
 
 		documentStore.saveDocument(tab.pageData.documentId)
+	}
+}
+
+export function useUndoActiveTab() {
+	const dockingStore = useDockingStore()
+	const documentStore = useDocumentStore()
+
+	return () => {
+		const tab = dockingStore.getActiveTab()
+
+		//TODO: tabs should have DataBinding and Docs should just *use* it
+
+		if (!tab) return
+		if (!tab.pageData?.documentId) return
+
+		const doc = documentStore.documents.get(tab.pageData.documentId)
+		if (!doc) return
+
+		undoDataView(doc.view)
 	}
 }
 

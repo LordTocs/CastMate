@@ -63,6 +63,7 @@ import {
 	useDataPath,
 	usePropagationStop,
 	SelectionPos,
+	useCommitUndo,
 } from "../../main"
 import SequenceEdit from "./SequenceEdit.vue"
 import { provideAutomationEditState, copySequenceData } from "../../util/automation-dragdrop"
@@ -82,6 +83,7 @@ const props = defineProps<{
 }>()
 
 const stopPropagation = usePropagationStop()
+const commitUndo = useCommitUndo()
 
 const editArea = ref<HTMLElement | null>(null)
 
@@ -184,6 +186,8 @@ async function onCreateAction(actionSelection: ActionSelection) {
 	}
 
 	model.value.floatingSequences.push(floatingSequence)
+
+	commitUndo()
 }
 
 function onContextMenu(ev: MouseEvent) {
@@ -199,6 +203,7 @@ function deleteSelection() {
 		for (const fs of floatingSequences.value) {
 			fs.deleteIds(selection.value)
 		}
+		commitUndo()
 	}
 }
 
@@ -283,6 +288,8 @@ function onPaste(ev: ClipboardEvent) {
 
 		stopPropagation(ev)
 		ev.preventDefault()
+
+		commitUndo()
 	} catch {}
 }
 

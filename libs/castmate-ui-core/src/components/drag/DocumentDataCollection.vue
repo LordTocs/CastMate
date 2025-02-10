@@ -25,7 +25,7 @@
 				@dragend="itemDragEnd(i, $event)"
 				draggable="true"
 			>
-				<data-binding-path :localPath="`[${data.id}]`">
+				<data-binding-path :localPath="`[${i}]`">
 					<component
 						:is="dataComponent"
 						v-model="model[i]"
@@ -48,7 +48,7 @@ import { nanoid } from "nanoid/non-secure"
 import { DragEventWithDataTransfer, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../util/dragging"
 import { useSelectionRect } from "../../util/selection"
 import { getElementRelativeRect, isChildOfClass, usePropagationImmediateStop, usePropagationStop } from "../../util/dom"
-import { provideLocalPath } from "../../main"
+import { provideLocalPath, useCommitUndo, useDataBinding } from "../../main"
 import DataBindingPath from "../data/binding/DataBindingPath.vue"
 import SelectDummy from "../util/SelectDummy.vue"
 
@@ -70,10 +70,14 @@ const props = withDefaults(
 	}
 )
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
 provideLocalPath(() => props.localPath)
+
+const commitUndo = useCommitUndo()
 
 const selection = useDocumentSelection()
 
@@ -207,6 +211,8 @@ useDrop(
 
 		console.log("NewModel", newModel)
 		console.log("NewView", newView)
+
+		commitUndo()
 	}
 )
 
@@ -314,6 +320,8 @@ function itemDragEnd(i: number, evt: DragEvent) {
 			//These items are dropped into another frame, remove them from our model
 			model.value = model.value.filter((i) => !selection.value.includes(i.id))
 			view.value = view.value.filter((i) => !selection.value.includes(i.id))
+
+			commitUndo()
 		}
 	} else if (evt.dataTransfer.dropEffect == "copy") {
 		//Copied somewhere
@@ -326,6 +334,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 function deleteItem(index: number) {
 	model.value.splice(index, 1)
 	view.value.splice(index, 1)
+	commitUndo()
 }
 
 /////////////////////////////////////////////
@@ -336,10 +345,11 @@ function deleteSelected() {
 	model.value = model.value.filter((i) => !selection.value.includes(i.id))
 	view.value = view.value.filter((i) => !selection.value.includes(i.id))
 	selection.value = []
+	commitUndo()
 }
 
 function onKeyDown(ev: KeyboardEvent) {
-	if (ev.key == "Delete") {
+	if (ev.key == "Delete" || ev.key == "Backspace") {
 		if (selection.value.length > 0) {
 			ev.preventDefault()
 			ev.stopPropagation()

@@ -27,6 +27,7 @@ import {
 	useIpcMessage,
 	useSaveActiveTab,
 	useSaveAllTabs,
+	useUndoActiveTab,
 } from "castmate-ui-core"
 import ProjectView from "./components/project/ProjectView.vue"
 
@@ -138,6 +139,8 @@ onMounted(async () => {
 const saveActiveTab = useSaveActiveTab()
 const saveAllTabs = useSaveAllTabs()
 
+const undoActiveTab = useUndoActiveTab()
+
 function onKeyDown(ev: KeyboardEvent) {
 	if (ev.ctrlKey && ev.code == "KeyS") {
 		if (ev.shiftKey) {
@@ -145,6 +148,14 @@ function onKeyDown(ev: KeyboardEvent) {
 		} else {
 			saveActiveTab()
 		}
+		return ev.preventDefault()
+	}
+
+	if (ev.ctrlKey && ev.code == "KeyZ") {
+		console.log("UNDO UNDO UNDO!")
+		ev.preventDefault()
+
+		undoActiveTab()
 	}
 }
 </script>
