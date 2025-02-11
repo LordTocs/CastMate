@@ -416,6 +416,8 @@ function deleteDataView(root: DataPathView, path: string) {
 
 	let base = root
 	for (let i = 0; i < pathParsed.length - 1; ++i) {
+		if (!base) return
+
 		const trace = pathParsed[i]
 		if (!(trace in base.subPaths)) {
 			return
@@ -425,6 +427,7 @@ function deleteDataView(root: DataPathView, path: string) {
 	}
 
 	const toDelete = base.subPaths[pathParsed[pathParsed.length - 1]]
+	if (!toDelete) return
 	if (--toDelete.refCount == 0) {
 		delete base.subPaths[pathParsed[pathParsed.length - 1]]
 	}
