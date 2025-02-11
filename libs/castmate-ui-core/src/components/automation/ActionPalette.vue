@@ -3,7 +3,7 @@
 		<template #submenuheader="{ item }">
 			<div class="text-center">
 				<span
-					class="p-menuitem-icon"
+					class="p-menu-item-icon"
 					style="margin-right: 0.5rem; color: var(--item-color)"
 					:class="item.icon"
 					v-if="item.icon"
@@ -12,9 +12,9 @@
 			</div>
 		</template>
 		<template #item="{ item }">
-			<a class="p-menuitem-link">
+			<a class="p-menu-item-link">
 				<span
-					class="p-menuitem-icon"
+					class="p-menu-item-icon"
 					style="margin-right: 0.5rem; color: var(--item-color)"
 					:class="item.icon"
 					v-if="item.icon"
@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import type { MenuItem } from "primevue/menuitem"
 import { computed, ref } from "vue"
-import { ActionSelection, usePluginStore, FilterPalette } from "../../main"
+import { ActionSelection, usePluginStore, FilterPalette, DropListItem } from "../../main"
 
 const props = withDefaults(
 	defineProps<{

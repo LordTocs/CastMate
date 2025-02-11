@@ -22,63 +22,33 @@
 						<!-- This is a group header -->
 						<li :class="['p-submenu-header', item.class]" :style="item.style" v-if="item.items.length > 0">
 							<slot name="submenuheader" :item="item">
-								<i v-if="item.icon" :class="['p-menuitem-icon', item.icon]"></i>
-								<span class="p-menuitem-text">
+								<i v-if="item.icon" :class="['p-menu-item-icon', item.icon]"></i>
+								<span class="p-menu-item-text">
 									{{ getItemText(item) }}
 								</span>
 							</slot>
 						</li>
-						<li
-							v-for="(subitem, i) in item.items"
-							:key="subitem.key"
-							class="p-menuitem"
-							:class="{ 'p-focus': isItemFocused(subitem), 'p-highlight': isCurrentItem(item) }"
-							:style="subitem.style"
-							:data-p-highlight="isCurrentItem(subitem)"
-							:data-p-focused="isItemFocused(subitem)"
-							:aria-label="getItemText(subitem)"
-							:aria-selected="isCurrentItem(subitem)"
+						<filter-palette-item-list
+							:items="item.items"
+							@item-select="onItemSelect"
+							:focused-id="focusedId"
 						>
-							<div
-								class="p-menuitem-content"
-								:style="subitem.style"
-								@click="onItemSelect($event, subitem)"
-							>
-								<slot name="item" :item="subitem">
-									<a class="p-menuitem-link">
-										<i v-if="subitem.icon" :class="['p-menuitem-icon', subitem.icon]"></i>
-										<span class="p-menuitem-text">
-											{{ getItemText(subitem) }}
-										</span>
-									</a>
-								</slot>
-							</div>
-						</li>
+							<template #item="itemProps" v-if="$slots.item">
+								<slot name="item" v-bind="itemProps"></slot>
+							</template>
+						</filter-palette-item-list>
 					</template>
 					<!-- TODO: Apply item.class -->
-					<li
+					<filter-palette-item-list
 						v-else
-						v-for="(item, i) in filteredItems"
-						class="p-menuitem"
-						:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
-						:style="item.style"
-						:key="item.key"
-						:data-p-highlight="isCurrentItem(item)"
-						:data-p-focused="isItemFocused(item)"
-						:aria-label="getItemText(item)"
-						:aria-selected="isCurrentItem(item)"
+						:items="filteredItems"
+						:focused-id="focusedId"
+						@item-select="onItemSelect"
 					>
-						<div class="p-menuitem-content" :style="item.style" @click="onItemSelect($event, item)">
-							<slot name="item" :item="item">
-								<a class="p-menuitem-link">
-									<i v-if="item.icon" :class="['p-menuitem-icon', item.icon]"></i>
-									<span class="p-menuitem-text">
-										{{ getItemText(item) }}
-									</span>
-								</a>
-							</slot>
-						</div>
-					</li>
+						<template #item="itemProps" v-if="$slots.item">
+							<slot name="item" v-bind="itemProps"></slot>
+						</template>
+					</filter-palette-item-list>
 				</template>
 			</ul>
 		</div>
@@ -94,6 +64,8 @@ import type { MenuItem } from "primevue/menuitem"
 import { resolveFieldData } from "@primeuix/utils/object"
 import _cloneDeep from "lodash/cloneDeep"
 import { useEventListener } from "@vueuse/core"
+
+import FilterPaletteItemList from "./FilterPaletteItemList.vue"
 
 const props = withDefaults(
 	defineProps<{
@@ -159,7 +131,7 @@ function hide() {
 function show() {
 	filter.value = ""
 	visible.value = true
-	focusedId.value = null
+	focusedId.value = undefined
 	nextTick(() => filterInput.value?.$el?.focus())
 }
 useEventListener(
@@ -181,7 +153,7 @@ defineExpose({
 	},
 })
 
-const focusedId = ref<string | null>(null)
+const focusedId = ref<string>()
 function isItemFocused(item: MenuItem) {
 	return item.key == focusedId.value
 }
@@ -214,7 +186,7 @@ watch(filteredItems, () => {
 	if (focusedId.value) {
 		const item = getItemById(filteredItems.value, focusedId.value)
 		if (!item) {
-			focusedId.value = null
+			focusedId.value = undefined
 		}
 	}
 })
@@ -316,7 +288,7 @@ function onKeyArrowDown(ev: KeyboardEvent) {
 		const nextId = getNextId(props.items, focusedId.value)
 		focusedId.value = nextId ?? focusedId.value
 	} else {
-		focusedId.value = getFirstId(filteredItems.value[0]) ?? null
+		focusedId.value = getFirstId(filteredItems.value[0])
 	}
 
 	ev.stopPropagation()
@@ -328,7 +300,7 @@ function onKeyArrowUp(ev: KeyboardEvent) {
 		const prevId = getPrevId(props.items, focusedId.value)
 		focusedId.value = prevId ?? focusedId.value
 	} else {
-		focusedId.value = getFirstId(filteredItems.value[0]) ?? null
+		focusedId.value = getFirstId(filteredItems.value[0])
 	}
 
 	ev.stopPropagation()

@@ -4,7 +4,7 @@ export interface IDHaver {
 	id: string
 }
 
-export function useOrderedRefs<ElemType>(items: MaybeRefOrGetter<IDHaver[]>) {
+export function useOrderedRefs<ElemType>(items: MaybeRefOrGetter<any[]>) {
 	const orderedElements = ref<ElemType[]>([])
 
 	watch(
