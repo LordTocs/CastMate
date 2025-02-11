@@ -30,17 +30,9 @@
 			</template>
 
 			<template #item="{ item, focused, highlighted, onClick }">
-				<li
-					class="p-select-option"
-					:class="{ 'p-focus': focused, 'p-highlight': highlighted }"
-					:data-p-highlight="highlighted"
-					:data-p-focused="focused"
-					:aria-label="item.name"
-					:aria-selected="highlighted"
-					@click="onClick"
-				>
+				<drop-list-item :highlighted="highlighted" :focused="focused" @click="onClick" :label="item.name">
 					<i :class="item?.icon" :style="{ color: item?.color }"></i> {{ item.name }}
-				</li>
+				</drop-list-item>
 			</template>
 		</c-autocomplete>
 	</label-floater>
@@ -51,6 +43,7 @@ import { computed, ref } from "vue"
 import { usePluginStore } from "../../plugins/plugin-store"
 import { LabelFloater, useDataBinding, useTrigger } from "../../main"
 import CAutocomplete from "../data/base-components/CAutocomplete.vue"
+import DropListItem from "../data/base-components/DropListItem.vue"
 
 const pluginStore = usePluginStore()
 
