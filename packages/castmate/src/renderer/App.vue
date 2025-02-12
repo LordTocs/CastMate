@@ -1,6 +1,7 @@
 <template>
 	<div class="app" @keydown="onKeyDown" tabindex="-1">
 		<system-bar title="Hello World"></system-bar>
+		<toast position="bottom-left" style="width: 17rem" />
 		<div class="app-row" v-if="initStore.inited">
 			<project-view />
 			<docking-area style="flex: 1" v-model="dockingStore.rootDockArea" />
@@ -41,6 +42,8 @@ import { useDialog } from "primevue/usedialog"
 import MigrationDialog from "./components/migration/MigrationDialog.vue"
 import FirstTimeSetupDialog from "./components/setup/FirstTimeSetupDialog.vue"
 import UpdateDialog from "./components/updates/UpdateDialog.vue"
+
+import Toast from "primevue/toast"
 
 const initStore = useInitStore()
 const dockingStore = useDockingStore()

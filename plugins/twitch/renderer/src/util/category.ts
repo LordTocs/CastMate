@@ -11,7 +11,7 @@ export const useCategoryStore = defineStore("twitch-categories", () => {
 
 	const setStreamInfo = useIpcCaller<(info: StreamInfo) => any>("twitch", "setStreamInfo")
 
-	const activeStreamInfo = ref<StreamInfo>({ title: undefined, category: undefined })
+	const activeStreamInfo = ref<StreamInfo>({ title: undefined, category: undefined, tags: [] })
 
 	async function initialize() {
 		activeStreamInfo.value = await getStreamInfo()

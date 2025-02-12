@@ -74,6 +74,7 @@ import { useMainPageStore } from "./util/main-page"
 import { initializeQueues } from "./util/queues"
 import { initSettingsDocuments } from "./components/settings/SettingsTypes"
 import Tooltip from "primevue/tooltip"
+import ToastService from "primevue/toastservice"
 import { IPCOverlayWidgetDescriptor } from "castmate-plugin-overlays-shared"
 import { sendDashboardsToMain, sendOverlaysToMain } from "./util/overlay-util"
 import { setupProxyDialogService } from "../../../../libs/castmate-ui-core/src/util/dialog-helper"
@@ -135,6 +136,7 @@ app.use(PrimeVue, {
 setupProxyDialogService(app)
 
 app.use(ConfirmationService)
+app.use(ToastService)
 
 app.directive("keyfilter", KeyFilter)
 app.directive("tooltip", Tooltip)
