@@ -12,8 +12,7 @@
 			><span v-else>--</span>
 		</main-page-card-item>
 		<main-page-card-item v-if="live?.value" label="Viewers">
-			<span v-if="channelAccount?.state.authenticated">{{ viewers?.value }}</span
-			><span v-else>--</span>
+			<span v-if="channelAccount?.state.authenticated">LIVE</span><span v-else>--</span>
 		</main-page-card-item>
 		<main-page-card-item v-else label="Offline">
 			<span>--</span>
@@ -29,7 +28,6 @@ import PAvatar from "primevue/avatar"
 const channelAccount = useChannelAccountResource()
 
 const followers = useState<number>({ plugin: "twitch", state: "followers" })
-const viewers = useState<number>({ plugin: "twitch", state: "viewers" })
 const subscribers = useState<number>({ plugin: "twitch", state: "subscribers" })
 const live = useState<boolean>({ plugin: "twitch", state: "live" })
 </script>

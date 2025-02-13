@@ -1,7 +1,6 @@
 import { EventSubWsListener } from "@twurple/eventsub-ws"
 import { TwitchAccount } from "./twitch-auth"
 import { ChatClient } from "@twurple/chat"
-import { PubSubClient } from "@twurple/pubsub"
 import { Service, isCastMate, onLoad, onUnload, usePluginLogger } from "castmate-core"
 import { EventList } from "castmate-core/src/util/events"
 
@@ -23,11 +22,6 @@ export const TwitchAPIService = Service(
 		private _chatClient: ChatClient
 		get chatClient() {
 			return this._chatClient
-		}
-
-		private _pubsubClient: PubSubClient
-		get pubsubClient() {
-			return this._pubsubClient
 		}
 
 		private _eventsub: EventSubWsListener
@@ -117,13 +111,7 @@ export const TwitchAPIService = Service(
 			logger.log("Reauthing Channel")
 
 			if (isCastMate()) {
-				this._pubsubClient?.removeAllHandlers()
 				this._eventsub?.stop()
-
-				this._pubsubClient = new PubSubClient({
-					authProvider: channelAccount,
-					logger: twurpleLog,
-				})
 
 				this._eventsub = new EventSubWsListener({
 					apiClient: channelAccount.apiClient,

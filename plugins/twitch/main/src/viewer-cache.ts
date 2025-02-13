@@ -19,7 +19,7 @@ import {
 	template,
 	usePluginLogger,
 } from "castmate-core"
-import { Color, getTypeByConstructor } from "castmate-schema"
+import { Color } from "castmate-schema"
 import { TwitchAccount } from "./twitch-auth"
 import { onChannelAuth } from "./api-harness"
 import {
@@ -28,9 +28,7 @@ import {
 	EventSubChannelFollowEvent,
 	EventSubChannelCheerEvent,
 } from "@twurple/eventsub-base"
-import { rawDataSymbol } from "@twurple/common"
 import fuzzysort from "fuzzysort"
-import { defineCallableIPC } from "castmate-core/src/util/electron"
 import {
 	SchemaTwitchViewer,
 	TwitchViewer,
@@ -38,7 +36,6 @@ import {
 	TwitchViewerDisplayData,
 	TwitchViewerUnresolved,
 } from "castmate-plugin-twitch-shared"
-import { nextTick } from "process"
 import { HelixChannelFollower, HelixPaginatedResultWithTotal } from "@twurple/api"
 
 const logger = usePluginLogger("twitch")
