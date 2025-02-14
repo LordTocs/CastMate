@@ -21,11 +21,15 @@ import { useModel } from "vue"
 import { isBooleanGroup } from "castmate-schema"
 import { isBooleanRangeExpr } from "castmate-schema"
 import { isBooleanValueExpr } from "castmate-schema"
+import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{
 	modelValue: BooleanSubExpression
 	selectedIds: string[]
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const emit = defineEmits(["update:modelValue", "delete"])
 

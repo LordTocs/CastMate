@@ -50,6 +50,7 @@ import { usePluginStore } from "../../../../plugins/plugin-store"
 import StateListItem from "./StateListItem.vue"
 import LabelFloater from "../LabelFloater.vue"
 import DropListItem from "../DropListItem.vue"
+import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{
 	modelValue: { plugin: string | undefined; state: string | undefined } | undefined
@@ -57,7 +58,10 @@ const props = defineProps<{
 	inputId: string
 	label?: string
 	noFloat?: boolean
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

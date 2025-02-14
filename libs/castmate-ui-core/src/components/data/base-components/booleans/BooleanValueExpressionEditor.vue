@@ -4,10 +4,19 @@
 			<i class="mdi mdi-drag" style="font-size: 2rem"></i>
 		</div>
 		<div class="state-expression-right">
-			<expression-value-edit v-model="model.lhs" class="w-0 flex-grow-1 flex-shrink-0 align-self-stretch" />
-			<value-compare-operator-selector v-model="model.operator" :inequalities="inequalities" />
+			<expression-value-edit
+				v-model="model.lhs"
+				local-path="lhs"
+				class="w-0 flex-grow-1 flex-shrink-0 align-self-stretch"
+			/>
+			<value-compare-operator-selector
+				v-model="model.operator"
+				:inequalities="inequalities"
+				local-path="operator"
+			/>
 			<expression-value-edit
 				v-model="model.rhs"
+				local-path="rhs"
 				:left-schema="leftSchema"
 				class="w-0 flex-grow-1 flex-shrink-0 align-self-stretch"
 			/>

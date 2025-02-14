@@ -8,9 +8,13 @@
 import { BooleanExpression } from "castmate-schema"
 import { ref, useModel } from "vue"
 import BooleanGroupExpression from "../base-components/booleans/BooleanGroupExpression.vue"
+import { useDataBinding } from "../../../main"
 const props = defineProps<{
 	modelValue: BooleanExpression | undefined
+	localPath?: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 </script>

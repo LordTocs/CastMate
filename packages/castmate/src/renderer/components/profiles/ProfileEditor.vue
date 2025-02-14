@@ -37,11 +37,13 @@
 			<inline-automation-edit
 				v-model="model.activationAutomation"
 				v-model:view="view.activationAutomation"
+				local-path="activationAutomation"
 				label="On Activate"
 			/>
 			<inline-automation-edit
 				v-model="model.deactivationAutomation"
 				v-model:view="view.deactivationAutomation"
+				local-path="deactivationAutomation"
 				label="On Deactivate"
 			/>
 		</div>

@@ -20,9 +20,9 @@
 			<p-menu ref="menu" id="input_menu" :model="endMenuItems" :popup="true" v-if="hasMenu" />
 		</div>
 
-		<div class="flex flex-row">
+		<!-- <div class="flex flex-row">
 			<error-label :error-message="errorMessage" />
-		</div>
+		</div> -->
 	</div>
 </template>
 

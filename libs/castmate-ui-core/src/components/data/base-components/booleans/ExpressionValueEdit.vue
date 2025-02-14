@@ -7,17 +7,18 @@
 			</p-tab-list>
 			<p-tab-panels>
 				<p-tab-panel value="0">
-					<state-selector v-model="stateModel" input-id="state" :required="true" />
+					<state-selector v-model="stateModel" input-id="state" :required="true" local-path="state" />
 				</p-tab-panel>
 				<p-tab-panel value="1">
 					<div class="flex flex-row gap-1 align-items-center">
-						<p-select
+						<c-dropdown
 							v-model="valueTypeModel"
 							:options="variableTypeOptions"
 							option-value="code"
 							option-label="name"
 							input-id="type"
 							v-if="valueSchemaTypes.length > 1"
+							local-path="schemaType"
 						>
 							<template #value="slotProps">
 								<div v-if="slotProps.value" class="flex items-center">
@@ -27,7 +28,7 @@
 									{{ slotProps.placeholder }}
 								</span>
 							</template>
-						</p-select>
+						</c-dropdown>
 						<data-input
 							local-path="value"
 							class="w-full"
@@ -56,14 +57,18 @@ import { computed, useModel, watch } from "vue"
 import { getTypeByName } from "castmate-schema"
 
 import type { MenuItem } from "primevue/menuitem"
-import PSelect from "primevue/select"
+import CDropdown from "../CDropdown.vue"
 import { getAllVariableTypes } from "castmate-schema"
 import { getTypeByConstructor } from "castmate-schema"
+import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{
 	modelValue: ExpressionValue
 	leftSchema?: Schema
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
@@ -170,6 +175,7 @@ const tabModel = computed({
 		} else if (v == "1") {
 			model.value = {
 				type: "value",
+				//@ts-ignore
 				schemaType: valueSchemaTypes.value[0] ?? "String",
 				value: undefined,
 			}

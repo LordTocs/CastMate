@@ -28,9 +28,9 @@
 			/>
 		</div>
 
-		<div class="flex flex-row">
+		<!-- <div class="flex flex-row">
 			<error-label :error-message="errorMessage" />
-		</div>
+		</div> -->
 	</div>
 </template>
 

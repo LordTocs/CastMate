@@ -1,5 +1,5 @@
 <template>
-	<p-dropdown v-model="model" :options="options" option-value="code">
+	<c-dropdown v-model="model" :options="options" option-value="code" :local-path="localPath">
 		<template #option="{ option, index }: { option: MenuItem, index: number }">
 			<i :class="option.icon" />
 		</template>
@@ -7,18 +7,19 @@
 		<template #value="{ value }">
 			<i :class="getIcon(value)" />
 		</template>
-	</p-dropdown>
+	</c-dropdown>
 </template>
 
 <script setup lang="ts">
 import { ValueCompareOperator } from "castmate-schema"
 import { computed, onMounted, useModel, watch } from "vue"
-import PDropdown from "primevue/dropdown"
+import CDropdown from "../CDropdown.vue"
 import type { MenuItem } from "primevue/menuitem"
 
 const props = defineProps<{
 	modelValue: ValueCompareOperator
 	inequalities?: boolean
+	localPath: string
 }>()
 
 const model = useModel(props, "modelValue")

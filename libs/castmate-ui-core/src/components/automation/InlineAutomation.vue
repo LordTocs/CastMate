@@ -58,7 +58,7 @@ import { InlineAutomationView } from "../../automations/automations.ts"
 import { useModel, ref, computed } from "vue"
 import ExpanderSlider from "../util/ExpanderSlider.vue"
 import AutomationEdit from "./AutomationEdit.vue"
-import { ResourceProxyFactory, DataInput, usePropagationStop } from "../../main"
+import { ResourceProxyFactory, DataInput, usePropagationStop, useDataBinding } from "../../main"
 import SequenceMiniPreview from "./mini/SequenceMiniPreview.vue"
 import PButton from "primevue/button"
 import PInputGroup from "primevue/inputgroup"
@@ -69,7 +69,10 @@ const props = defineProps<{
 	icon?: string
 	modelValue: InlineAutomation
 	view: InlineAutomationView
+	localPath?: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const hasActions = computed(() => {
 	if (!props.modelValue?.sequence?.actions) return undefined

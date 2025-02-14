@@ -7,7 +7,15 @@
 			:option-value="optionValue"
 			:option-label="optionLabel"
 			ref="dropDown"
-		/>
+		>
+			<template #option="optionProps" v-if="$slots.option">
+				<slot name="option" v-bind="optionProps" />
+			</template>
+
+			<template #value="valueProps" v-if="$slots.value">
+				<slot name="value" v-bind="valueProps" />
+			</template>
+		</p-select>
 	</label-floater>
 </template>
 
@@ -28,10 +36,7 @@ const props = withDefaults(
 		optionValue?: string | ((data: any) => string)
 		optionLabel?: string | ((data: any) => string)
 	}>(),
-	{
-		optionLabel: "label",
-		optionValue: "code",
-	}
+	{}
 )
 
 useDataBinding(() => props.localPath)
