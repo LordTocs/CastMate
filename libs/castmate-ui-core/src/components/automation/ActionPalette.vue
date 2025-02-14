@@ -72,6 +72,7 @@ const allItems = computed<MenuItem[]>(() => {
 				label: action.name,
 				key: action.id,
 				icon: action.icon,
+				filterExtra: plugin.id,
 				command(event) {
 					selectItem({ plugin: plugin.id, action: action.id })
 				},

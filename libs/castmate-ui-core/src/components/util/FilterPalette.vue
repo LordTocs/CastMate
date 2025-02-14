@@ -85,6 +85,16 @@ const props = withDefaults(
 )
 const filter = ref("")
 const filterInput = ref<{ $el: HTMLElement } | null>(null)
+
+function defaultFilterFunc(item: MenuItem, filter: string) {
+	const mainText = getItemText(item)
+	if (mainText.toLocaleLowerCase().includes(filter)) return true
+	if ("filterExtra" in item && typeof item.filterExtra == "string") {
+		if (item.filterExtra.toLocaleLowerCase().includes(filter)) return true
+	}
+	return false
+}
+
 function filterItem(item: MenuItem, filterValue: string): MenuItem | undefined {
 	if (item.items) {
 		const resultItem: MenuItem = {
@@ -101,7 +111,7 @@ function filterItem(item: MenuItem, filterValue: string): MenuItem | undefined {
 		}
 		return hasItem ? resultItem : undefined
 	} else {
-		return getItemText(item).toLocaleLowerCase().includes(filterValue) ? item : undefined
+		return defaultFilterFunc(item, filterValue) ? item : undefined
 	}
 }
 
