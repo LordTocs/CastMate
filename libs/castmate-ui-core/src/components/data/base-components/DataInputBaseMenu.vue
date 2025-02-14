@@ -1,7 +1,7 @@
 <template>
 	<p-button
 		v-if="hasMenu"
-		class="ml-1"
+		class="ml-1 flex-shrink-0"
 		text
 		icon="mdi mdi-dots-vertical"
 		aria-controls="input_menu"
