@@ -1,4 +1,17 @@
+import { set } from "@vueuse/core"
+import { get } from "node:http"
 import { computed, MaybeRefOrGetter, Ref } from "vue"
+
+export function usePropModel<T extends object, P extends keyof T>(model: Ref<T>, prop: P) {
+	return computed({
+		get() {
+			return model.value[prop]
+		},
+		set(v) {
+			model.value[prop] = v
+		},
+	})
+}
 
 export function useDefaultableModel<T extends object, P extends keyof T>(
 	model: Ref<T | undefined>,

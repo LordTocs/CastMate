@@ -26,6 +26,7 @@
 				:key="widget.id"
 				ref="widgets"
 				@delete="deleteWidget(i)"
+				:local-path="`[${i}]`"
 			/>
 		</pan-area>
 		<div
@@ -51,6 +52,7 @@ import {
 	usePropagationStop,
 	useSelectionRect,
 	SelectDummy,
+	useDataBinding,
 } from "castmate-ui-core"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
@@ -65,6 +67,8 @@ const props = defineProps<{
 	modelValue: OverlayConfig
 	view: OverlayEditorView
 }>()
+
+useDataBinding(() => "widgets")
 
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")

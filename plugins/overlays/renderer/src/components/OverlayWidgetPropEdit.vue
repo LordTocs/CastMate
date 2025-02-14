@@ -1,12 +1,14 @@
 <template>
 	<flex-scroller class="flex-grow-1 widget-props">
 		<template v-if="selectedWidgetIndex != null && selectedWidgetInfo != null">
-			<data-input
-				v-model="model.widgets[selectedWidgetIndex].config"
-				:schema="selectedWidgetInfo.component.widget.config"
-				local-path="config"
-			/>
-			<overlay-widget-transform-edit v-model="model.widgets[selectedWidgetIndex]" />
+			<data-binding-path :local-path="`[${selectedWidgetIndex}]`">
+				<data-input
+					v-model="model.widgets[selectedWidgetIndex].config"
+					:schema="selectedWidgetInfo.component.widget.config"
+					local-path="config"
+				/>
+				<overlay-widget-transform-edit v-model="model.widgets[selectedWidgetIndex]" />
+			</data-binding-path>
 		</template>
 	</flex-scroller>
 </template>
@@ -14,7 +16,7 @@
 <script setup lang="ts">
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { FlexScroller, DataInput, useDocumentSelection, useDataBinding } from "castmate-ui-core"
+import { FlexScroller, DataInput, useDocumentSelection, useDataBinding, DataBindingPath } from "castmate-ui-core"
 import { computed, onMounted, useModel, watch } from "vue"
 import OverlayWidgetTransformEdit from "./OverlayWidgetTransformEdit.vue"
 
@@ -23,6 +25,8 @@ const props = defineProps<{
 }>()
 
 const model = useModel(props, "modelValue")
+
+useDataBinding("widgets")
 
 const widgetSelection = useDocumentSelection()
 
@@ -41,11 +45,6 @@ const selectedWidgetIndex = computed(() => {
 	if (idx < 0) return undefined
 
 	return idx
-})
-
-useDataBinding(() => {
-	if (selectedWidgetIndex.value == null) return undefined
-	return `widgets[${selectedWidgetIndex}]`
 })
 
 const selectedWidgetInfo = computed(() => {

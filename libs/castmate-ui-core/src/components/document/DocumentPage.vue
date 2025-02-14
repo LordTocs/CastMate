@@ -5,6 +5,7 @@
 		v-model="documentData"
 		v-model:view="documentView"
 		tabindex="-1"
+		:pageData="pageData"
 	/>
 </template>
 
@@ -19,7 +20,7 @@ import {
 } from "../../main"
 
 const props = defineProps<{
-	pageData: { documentId: string; documentType: string }
+	pageData: { documentId: string; documentType: string } & Record<string, any>
 }>()
 
 const document = useDocument(() => props.pageData.documentId)

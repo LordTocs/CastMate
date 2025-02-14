@@ -30,6 +30,7 @@ import {
 	CContextMenu,
 	NameDialog,
 	useMediaStore,
+	useDataBinding,
 } from "castmate-ui-core"
 import { ComputedRef, computed, inject, markRaw, onMounted, provide, ref, useModel, watch } from "vue"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
@@ -48,7 +49,10 @@ const isOnlySelection = computed(() => {
 
 const props = defineProps<{
 	modelValue: OverlayWidgetConfig
+	localPath?: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 onMounted(() => {
 	console.log("Mount Widget Edit", props.modelValue)

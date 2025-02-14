@@ -17,25 +17,22 @@
 						<div class="flex flex-row pt-3 gap-1">
 							<div style="width: 0; flex: 1">
 								<label-floater label="Width" v-slot="labelProps">
-									<p-input-number
-										class="number-fix"
+									<c-number-input
 										v-model="model.size.width"
 										v-bind="labelProps"
-										show-buttons
-										mode="decimal"
 										suffix="px"
+										local-path="size.width"
 									/>
 								</label-floater>
 							</div>
 							<div style="width: 0; flex: 1">
 								<label-floater label="Height" v-slot="labelProps">
-									<p-input-number
+									<c-number-input
 										class="number-fix"
 										v-model="model.size.height"
 										v-bind="labelProps"
-										show-buttons
-										mode="decimal"
 										suffix="px"
+										local-path="size.height"
 									/>
 								</label-floater>
 							</div>
@@ -76,20 +73,14 @@
 			</div>
 		</div>
 		<div class="flex flex-row flex-grow-1">
-			<data-binding-path local-path="widgets">
-				<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
-			</data-binding-path>
+			<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
 			<div class="overlay-properties">
 				<p-splitter layout="vertical" class="h-full">
 					<p-splitter-panel>
-						<data-binding-path local-path="widgets">
-							<overlay-widget-prop-edit class="h-full" v-model="model" />
-						</data-binding-path>
+						<overlay-widget-prop-edit class="h-full" v-model="model" />
 					</p-splitter-panel>
 					<p-splitter-panel>
-						<data-binding-path local-path="widgets">
-							<overlay-widget-list class="h-full" v-model="model" />
-						</data-binding-path>
+						<overlay-widget-list class="h-full" v-model="model" />
 					</p-splitter-panel>
 				</p-splitter>
 			</div>
@@ -111,6 +102,7 @@ import {
 	LabelFloater,
 	stopPropagation,
 	provideScrollAttachable,
+	CNumberInput,
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
