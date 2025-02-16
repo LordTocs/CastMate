@@ -102,6 +102,8 @@ function convertRemToPixels(rem: number) {
 watch(
 	() => queue.value?.state.history,
 	(current, old) => {
+		if (!current || !old) return
+
 		if (current.length > old.length) {
 			nextTick(() => {
 				if (!queueList.value) return
@@ -114,7 +116,7 @@ watch(
 
 onMounted(() => {
 	if (!queueList.value) return
-	queueList.value.scrollLeft = queue.value.state.history.length * convertRemToPixels(10.5)
+	queueList.value.scrollLeft = (queue.value?.state.history.length ?? 0) * convertRemToPixels(10.5)
 })
 
 const skipItem = useResourceIPCCaller<(id: string) => any>("ActionQueue", () => props.queueId, "skip")

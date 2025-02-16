@@ -4,6 +4,9 @@
 			<twitch-main-page-card class="flex-grow-1" style="flex-basis: 0" />
 			<obs-main-page-card class="flex-grow-1" style="flex-basis: 0" />
 		</div>
+		<div class="flex flex-column gap-2 px-2 py-2">
+			<action-queue-dash-widget v-for="queue in queues" :queue-id="queue.id" :key="queue.id" />
+		</div>
 	</flex-scroller>
 </template>
 
@@ -12,6 +15,7 @@ import { useResourceArray, FlexScroller } from "castmate-ui-core"
 
 import { TwitchMainPageCard } from "castmate-plugin-twitch-renderer"
 import { ObsMainPageCard } from "castmate-plugin-obs-renderer"
+import ActionQueueDashWidget from "../dashboard/queues/ActionQueueDashWidget.vue"
 
 const queues = useResourceArray("ActionQueue")
 const obsConnections = useResourceArray("OBSConnection")
