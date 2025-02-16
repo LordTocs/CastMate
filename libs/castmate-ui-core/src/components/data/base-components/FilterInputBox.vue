@@ -34,7 +34,7 @@
 			@blur="onBlur"
 			ref="filterInputElement"
 			:tabindex="tabIndex"
-			style="width: 100%"
+			style="width: 100%; max-width: 100%"
 			v-model="filter"
 			@keydown="onFilterKeyDown"
 			:placeholder="placeholder"

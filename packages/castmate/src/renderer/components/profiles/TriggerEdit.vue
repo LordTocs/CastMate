@@ -4,7 +4,7 @@
 			<div class="drag-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
 			</div>
-			<div class="flex flex-row flex-grow-1 align-items-center" v-if="!open" @dblclick="open = !open">
+			<div class="flex flex-row flex-grow-1 align-items-center" v-if="!open" @dblclick="openTrigger">
 				<span class="trigger-name">
 					<i :class="[trigger?.icon]" />
 					{{ trigger?.name }}
@@ -14,24 +14,25 @@
 					<component :is="trigger.headerComponent" :config="modelValue.config" />
 				</template>
 			</div>
-			<div class="flex flex-row flex-grow-1 align-items-center mt-1 mb-1 gap-1" v-else>
-				<div class="flex-grow-1">
-					<trigger-selector v-model="triggerModel" label="Trigger" />
-				</div>
-				<div class="flex-grow-1">
-					<data-input
-						no-float
-						v-model="modelObj.queue"
-						:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
-						local-path="queue"
-					/>
-				</div>
+			<div
+				class="flex flex-row flex-grow-1 align-items-center my-2 mb-1 gap-1 pl-3"
+				v-else
+				@dblclick="closeTrigger"
+			>
+				<trigger-selector v-model="triggerModel" label="Trigger" style="width: 300px" />
+				<data-input
+					v-model="modelObj.queue"
+					:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
+					local-path="queue"
+					style="width: 300px"
+				/>
+				<i class="" />
 			</div>
 			<p-button
 				text
 				class="no-focus-highlight"
 				:icon="open ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'"
-				@click.stop="open = !open"
+				@click.stop="toggleTriggerOpen"
 				@mousedown="stopPropagation"
 			/>
 		</div>
@@ -84,12 +85,14 @@ import {
 	SequenceMiniPreview,
 	TriggerSelection,
 	usePropagationStop,
+	useDocumentSelection,
 } from "castmate-ui-core"
 import isFunction from "lodash/isFunction"
 import { useVModel, asyncComputed } from "@vueuse/core"
 import { Schema } from "castmate-schema"
 import _debounce from "lodash/debounce"
 import { constructDefault } from "castmate-schema"
+import { useRawDocumentSelection } from "../../../../../../libs/castmate-ui-core/src/util/document"
 
 const stopPropagation = usePropagationStop()
 
@@ -120,6 +123,8 @@ const props = withDefaults(
 
 const view = useModel(props, "view")
 
+const sequenceSelection = useDocumentSelection("automation.sequence")
+
 const isSelected = computed(() => {
 	return props.selectedIds.includes(modelObj.value.id)
 })
@@ -134,6 +139,23 @@ const open = computed<boolean>({
 		view.value.open = v
 	},
 })
+
+function openTrigger() {
+	sequenceSelection.value = ["trigger"]
+	open.value = true
+}
+
+function closeTrigger() {
+	open.value = false
+}
+
+function toggleTriggerOpen() {
+	if (open.value) {
+		closeTrigger()
+	} else {
+		openTrigger()
+	}
+}
 
 const triggerModel = computed({
 	get() {

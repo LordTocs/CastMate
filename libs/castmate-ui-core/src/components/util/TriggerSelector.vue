@@ -1,5 +1,5 @@
 <template>
-	<label-floater :no-float="true" :label="label" input-id="trigger" v-slot="labelProps">
+	<label-floater label="Trigger" input-id="trigger" v-slot="labelProps">
 		<c-autocomplete
 			v-model="idModel"
 			:items="triggers"
