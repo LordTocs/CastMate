@@ -8,8 +8,6 @@
 				:global-filter-fields="['id']"
 				style="width: 100%; max-height: 100%"
 				scrollable
-				:sort-order="-1"
-				sort-field="id"
 			>
 				<template #header>
 					<div class="flex">
@@ -22,9 +20,9 @@
 					</div>
 				</template>
 
-				<p-column header="Name" field="id"> </p-column>
+				<p-column header="Name" field="id" sortable> </p-column>
 
-				<p-column header="Type">
+				<p-column header="Type" field="schema.type" sortable>
 					<template #body="{ data }: { data: RendererVariableDefinition }">
 						{{ getTypeByConstructor(data.schema.type)?.name ?? "UNKNOWN TYPE" }}
 					</template>
