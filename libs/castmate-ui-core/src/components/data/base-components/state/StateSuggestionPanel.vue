@@ -6,6 +6,7 @@
 			overflowY: 'auto',
 			maxHeight: '15rem',
 		}"
+		side="right"
 	>
 		<ul class="p-select-list">
 			<li

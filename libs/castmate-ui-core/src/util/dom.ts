@@ -1,7 +1,23 @@
-import { useEventListener } from "@vueuse/core"
+import { useEventListener, useResizeObserver, useScroll } from "@vueuse/core"
 import { absolutePosition, relativePosition } from "@primevue/core/utils"
-import { computed, MaybeRefOrGetter, toValue, ref, toRaw, nextTick, provide, inject, ComputedRef } from "vue"
+import {
+	computed,
+	MaybeRefOrGetter,
+	toValue,
+	ref,
+	toRaw,
+	nextTick,
+	provide,
+	inject,
+	ComputedRef,
+	watch,
+	onMounted,
+} from "vue"
 import { useFocusThisTab } from "./docking"
+
+export function isHTMLElement(o: unknown): o is HTMLElement {
+	return o instanceof HTMLElement
+}
 
 export function isChildOfClass(element: HTMLElement, clazz: string) {
 	if (element.classList.contains(clazz)) return true
@@ -276,16 +292,100 @@ export function injectScrollAttachable(defaultAttach?: MaybeRefOrGetter<DOMAttac
 	)
 }
 
+export function useArtificialScrollAttach(
+	attach: MaybeRefOrGetter<HTMLElement | undefined | null>,
+	anchor: MaybeRefOrGetter<HTMLElement | undefined | null>,
+	side: MaybeRefOrGetter<"left" | "right">
+) {
+	const scrollContainer = injectScrollAttachable()
+
+	const scrollContainerElement = computed(() => {
+		if (!toValue(attach)) return undefined
+
+		if (isHTMLElement(scrollContainer.value)) {
+			return scrollContainer.value
+		}
+
+		return undefined
+	})
+
+	const scroll = useScroll(scrollContainerElement)
+
+	const body = computed(() => (toValue(attach) ? document.getElementsByTagName("body")[0] : undefined))
+
+	const doPosition = () => {
+		positionPortal(toValue(attach), toValue(anchor), "body", toValue(side))
+	}
+
+	onMounted(() => {
+		watch([scroll.x, scroll.y], () => {
+			if (!isHTMLElement(scrollContainer.value)) return
+			doPosition()
+		})
+	})
+
+	useResizeObserver(attach, (ev) => {
+		nextTick(doPosition)
+	})
+
+	useResizeObserver(scrollContainerElement, (ev) => {
+		nextTick(doPosition)
+	})
+
+	useResizeObserver(body, () => {
+		nextTick(doPosition)
+	})
+}
+
+function positionPortalInElement(
+	element: HTMLElement | undefined | null,
+	anchor: HTMLElement | undefined | null,
+	container: HTMLElement | undefined | null,
+	side: "left" | "right"
+) {
+	if (!element || !anchor || !container) return
+
+	const anchorRect = getElementRelativeRect(anchor, container)
+
+	const containerBounds = container.getBoundingClientRect()
+	const anchorBounds = anchor.getBoundingClientRect()
+	const elemRect = element.getBoundingClientRect()
+
+	element.style.top = `${anchorRect.bottom}px`
+
+	if (side == "left") {
+		let left = anchorRect.left
+
+		const clientRight = anchorBounds.left + elemRect.width
+
+		if (clientRight >= containerBounds.right) {
+			left = anchorRect.right - elemRect.width
+		}
+
+		element.style.left = `${left}px`
+	} else if (side == "right") {
+		let left = anchorRect.right - elemRect.width
+
+		const clientLeft = anchorBounds.right - elemRect.width
+
+		if (clientLeft < 0) {
+			left = anchorRect.left
+		}
+
+		element.style.left = `${left}px`
+	}
+}
+
 export function positionPortal(
 	element: HTMLElement | undefined | null,
 	target: HTMLElement | undefined | null,
-	attachTo: HTMLElement | undefined | null | string
+	attachTo: HTMLElement | undefined | null | string,
+	side: "left" | "right"
 ) {
 	if (!element || !target || !attachTo) return
 
 	if (attachTo == "body") {
-		absolutePosition(element, target)
-		return
+		attachTo = document.getElementsByTagName("body")[0]
 	} else if (attachTo == "self") {
 		relativePosition(element, target)
 		return
@@ -293,37 +393,5 @@ export function positionPortal(
 		return
 	}
 
-	const targetRect = getElementRelativeRect(target, attachTo)
-	const targetBounds = target.getBoundingClientRect()
-
-	const elemRect = element.getBoundingClientRect()
-
-	let left = 0
-	let top = 0
-
-	const attachBounds = attachTo.getBoundingClientRect()
-	//const viewport = { width: window.innerWidth, height: window.innerHeight }
-
-	left = targetRect.left
-	top = targetRect.bottom
-
-	const clientBottom = targetBounds.bottom + elemRect.height
-	//Something with the transition animation ruins this.
-	/*if (viewportBottom >= viewport.height) {
-		//Try the top
-
-		top = targetRect.top - elemRect.height
-		element.style.top = `${top}px`
-	} else {*/
-	element.style.top = `${top}px`
-	//}
-
-	const clientRight = targetBounds.left + elemRect.width
-	if (clientRight >= attachBounds.right) {
-		//const overlap = clientRight - attachBounds.right
-		//console.log("RIGHT", viewport.width, viewportRight, elemRect.width, left, overlap, left - overlap)
-		left = targetRect.right - elemRect.width
-	}
-
-	element.style.left = `${left}px`
+	positionPortalInElement(element, target, attachTo, side)
 }
