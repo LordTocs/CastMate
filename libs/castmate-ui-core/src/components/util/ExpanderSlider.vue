@@ -49,6 +49,8 @@ function onMouseDown(ev: MouseEvent) {
 	startPos.y -= dragOffset.value.y
 	dragStartPos.value = startPos
 	dragStartValue.value = model.value
+
+	ev.preventDefault()
 }
 
 function calcNewValue(ev: ClientPosition) {
