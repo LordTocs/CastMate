@@ -8,6 +8,7 @@ import { useDialog } from "primevue/usedialog"
 import { useConfirm } from "primevue/useconfirm"
 import ResourceEditDialogVue from "../components/resources/ResourceEditDialog.vue"
 import { DialogServiceMethods } from "primevue/dialogservice"
+import ResourceCreateDialog from "../components/resources/ResourceCreateDialog.vue"
 
 interface ResourceStorage<TResourceData extends ResourceData = ResourceData> {
 	resources: Map<string, TResourceData>
@@ -237,7 +238,7 @@ export function useResourceCreateDialog(
 			if (!resourceName) return
 			const resource = resourceStore.resourceMap.get(resourceName)
 
-			dialog.open(ResourceEditDialogVue, {
+			dialog.open(ResourceCreateDialog, {
 				props: {
 					header: `Create ${resourceName}`,
 					modal: true,
