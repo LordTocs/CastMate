@@ -36,6 +36,7 @@ import TwitchStreamTagsInput from "./components/stream-info/TwitchStreamTagsInpu
 import ShoutoutActionComponent from "./components/action-components/ShoutoutActionComponent.vue"
 import AnnoucementActionComponent from "./components/action-components/AnnoucementActionComponent.vue"
 import ChatActionComponent from "./components/action-components/ChatActionComponent.vue"
+import StreamInfoPlanDashboardCard from "./components/stream-info/StreamInfoPlanDashboardCard.vue"
 
 export * from "./util/twitch-accounts"
 
@@ -137,6 +138,7 @@ export async function initPlugin(app: App<Element>) {
 
 	const streamPlanStore = useStreamPlanStore()
 	streamPlanStore.registerStreamPlanComponent("twitch-stream-info", StreamInfoPlanComponentVue)
+	streamPlanStore.registerStreamPlanComponentView("twitch-stream-info", StreamInfoPlanDashboardCard)
 
 	const pluginStore = usePluginStore()
 	pluginStore.setTriggerHeaderComponent("twitch", "chat", ChatCommandHeader)

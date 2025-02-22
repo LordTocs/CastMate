@@ -75,6 +75,7 @@ const setActiveSegment = useIpcCaller<(planId: string) => any>("stream-plan", "s
 
 export const useStreamPlanStore = defineStore("stream-plan", () => {
 	const components = ref(new Map<string, Component>())
+	const viewComponents = ref(new Map<string, Component>())
 
 	async function initialize() {
 		handleIpcMessage("stream-plan", "activePlanChanged", (event, planId: string | undefined) => {
@@ -101,10 +102,16 @@ export const useStreamPlanStore = defineStore("stream-plan", () => {
 		components.value.set(id, markRaw(comp))
 	}
 
+	function registerStreamPlanComponentView(id: string, comp: Component) {
+		viewComponents.value.set(id, markRaw(comp))
+	}
+
 	return {
 		initialize,
 		components,
+		viewComponents,
 		registerStreamPlanComponent,
+		registerStreamPlanComponentView,
 		activePlan,
 		activeSegment,
 		setActivePlan,

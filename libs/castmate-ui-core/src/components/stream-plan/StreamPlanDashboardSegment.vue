@@ -9,15 +9,30 @@
 					<div class="text-center">
 						<label class="text-color-secondary text-xs">Activation</label>
 					</div>
-					<sequence-mini-preview :sequence="segment.activationAutomation.sequence" :max-length="3" />
+					<sequence-mini-preview
+						class="justify-content-center"
+						:sequence="segment.activationAutomation.sequence"
+						:max-length="3"
+					/>
 				</div>
 				<div class="flex-grow-1">
 					<div class="text-center">
 						<label class="text-color-secondary text-xs">Deactivation</label>
 					</div>
-					<sequence-mini-preview :sequence="segment.deactivationAutomation.sequence" :max-length="3" />
+					<sequence-mini-preview
+						class="justify-content-center"
+						:sequence="segment.deactivationAutomation.sequence"
+						:max-length="3"
+					/>
 				</div>
 			</div>
+
+			<stream-plan-dashboard-segment-component
+				v-for="type in Object.keys(segment.components)"
+				:key="type"
+				:type="type"
+				:config="segment.components[type]"
+			/>
 		</div>
 		<div class="controls flex flex-row">
 			<p-button
@@ -40,6 +55,8 @@ import PButton from "primevue/button"
 import SequenceMiniPreview from "../automation/mini/SequenceMiniPreview.vue"
 import { useStreamPlanStore, useSegmentEditDialog } from "./stream-plan-types"
 import { computed } from "vue"
+
+import StreamPlanDashboardSegmentComponent from "./StreamPlanDashboardSegmentComponent.vue"
 
 const planStore = useStreamPlanStore()
 

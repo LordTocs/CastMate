@@ -37,7 +37,7 @@
 							@click="onClick"
 							:label="item.displayName"
 						>
-							<img class="box-art" :src="item.image" />
+							<img class="box-art vertical-align-middle" :src="item.image" />
 							<span> {{ item.name }}</span>
 						</drop-list-item>
 					</template>
@@ -48,9 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import PInputText from "primevue/inputtext"
-import PButton from "primevue/button"
-
 import {
 	SchemaTwitchCategory,
 	TwitchCategory,
@@ -61,9 +58,6 @@ import {
 	SharedDataInputProps,
 	AutocompleteDropList,
 	DropListItem,
-	InputBox,
-	LabelFloater,
-	TemplateToggle,
 	DataInputBase,
 	FilterInputBox,
 	useDataBinding,
