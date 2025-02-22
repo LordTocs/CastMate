@@ -7,16 +7,30 @@ import {
 	useDocumentStore,
 	useIpcCaller,
 	useProjectStore,
+	useResource,
+	useResourceArray,
 	useResourceData,
 	useResourceStore,
 } from "../../main"
-import { ResourceData, StreamPlanConfig, StreamPlanState } from "castmate-schema"
+import { ResourceData, StreamPlanConfig, StreamPlanState, StreamPlanSegment } from "castmate-schema"
 import { defineStore } from "pinia"
+import _cloneDeep from "lodash/cloneDeep"
+import { StreamPlan } from "castmate-core"
+import { useDialog } from "primevue"
+import StreamPlanSegmentEditDialog from "./StreamPlanSegmentEditDialog.vue"
 
 export interface StreamPlanSegmentView {
 	id: string
 	activationAutomation: InlineAutomationView
 	deactivationAutomation: InlineAutomationView
+}
+
+export function createStreamPlanSegmentView(segment: StreamPlanSegment) {
+	return {
+		id: segment.id,
+		activationAutomation: createInlineAutomationView(),
+		deactivationAutomation: createInlineAutomationView(),
+	} as StreamPlanSegmentView
 }
 
 export interface StreamPlanView {
@@ -33,7 +47,8 @@ export function initializeStreamPlans(app: App<Element>) {
 	const projectStore = useProjectStore()
 
 	documentStore.registerSaveFunction("streamplan", async (doc) => {
-		await resourceStore.setResourceConfig("StreamPlan", doc.id, doc.data)
+		const dataCopy = _cloneDeep(doc.data)
+		await resourceStore.setResourceConfig("StreamPlan", doc.id, dataCopy)
 	})
 
 	projectStore.registerProjectGroupItem(
@@ -48,11 +63,7 @@ export function initializeStreamPlans(app: App<Element>) {
 					scrollY: 0,
 					activationAutomation: createInlineAutomationView(),
 					deactivationAutomation: createInlineAutomationView(),
-					segments: resource.config.segments.map((s) => ({
-						id: s.id,
-						activationAutomation: createInlineAutomationView(),
-						deactivationAutomation: createInlineAutomationView(),
-					})),
+					segments: resource.config.segments.map((s) => createStreamPlanSegmentView(s)),
 				} as StreamPlanView
 			},
 		})
@@ -100,3 +111,42 @@ export const useStreamPlanStore = defineStore("stream-plan", () => {
 		setActiveSegment,
 	}
 })
+
+export function useSegmentEditDialog() {
+	const dialog = useDialog()
+	const resourceStore = useResourceStore()
+	const resources = useResourceArray<ResourceData<StreamPlanConfig>>("StreamPlan")
+
+	return (planId: string, segmentId: string) => {
+		const plan = resources.value.find((r) => r.id == planId)
+		if (!plan) return
+		const segmentIdx = plan.config.segments.findIndex((s) => s.id == segmentId)
+		if (segmentIdx < 0) return
+		const segment = plan.config.segments[segmentIdx]
+
+		return new Promise<void>((resolve, reject) => {
+			dialog.open(StreamPlanSegmentEditDialog, {
+				props: {
+					header: `Edit ${segment.name}`,
+					modal: true,
+				},
+				data: _cloneDeep(segment),
+				async onClose(options) {
+					if (!options?.data) {
+						return resolve()
+					}
+
+					try {
+						const dataUpdate = _cloneDeep(plan.config)
+						dataUpdate.segments[segmentIdx] = options.data
+						await resourceStore.setResourceConfig("StreamPlan", planId, dataUpdate)
+
+						return resolve()
+					} catch (err) {
+						return resolve()
+					}
+				},
+			})
+		})
+	}
+}

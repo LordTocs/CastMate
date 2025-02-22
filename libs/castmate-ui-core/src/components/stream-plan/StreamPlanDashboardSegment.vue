@@ -28,7 +28,7 @@
 				severity="success"
 			></p-button>
 			<div class="flex-grow-1" />
-			<!-- <p-button size="small" text icon="mdi mdi-pencil"></p-button> -->
+			<p-button size="small" text icon="mdi mdi-pencil" @click="edit"></p-button>
 		</div>
 	</div>
 </template>
@@ -38,7 +38,7 @@ import { StreamPlanSegment } from "castmate-schema"
 import PButton from "primevue/button"
 
 import SequenceMiniPreview from "../automation/mini/SequenceMiniPreview.vue"
-import { useStreamPlanStore } from "./stream-plan-types"
+import { useStreamPlanStore, useSegmentEditDialog } from "./stream-plan-types"
 import { computed } from "vue"
 
 const planStore = useStreamPlanStore()
@@ -48,9 +48,17 @@ const active = computed(() => {
 })
 
 const props = defineProps<{
+	planId?: string
 	segment: StreamPlanSegment
 	activePlan: boolean
 }>()
+
+const editSegment = useSegmentEditDialog()
+
+function edit() {
+	if (!props.planId) return
+	editSegment(props.planId, props.segment.id)
+}
 
 function activate() {
 	planStore.setActiveSegment(props.segment.id)

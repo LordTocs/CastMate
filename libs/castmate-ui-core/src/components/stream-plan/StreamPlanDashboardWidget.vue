@@ -1,11 +1,17 @@
 <template>
-	<main-page-card class="flex-1" style="height: unset">
-		<template #header> Stream Plan </template>
+	<main-page-card class="flex-1">
+		<template #header> <i class="mdi mdi-view-agenda" /> Stream Plan </template>
 
 		<div class="flex-1 flex flex-column gap-2">
 			<div class="flex flex-row">
 				<div class="w-full flex-1">
-					<data-input :no-float="true" v-model="planId" :disabled="hasActivePlan" :schema="planSchema" />
+					<data-input
+						:no-float="true"
+						v-model="planId"
+						:disabled="hasActivePlan"
+						:schema="planSchema"
+						local-path="plan"
+					/>
 				</div>
 				<p-button
 					@click="planToggle"
@@ -21,6 +27,7 @@
 								v-for="segment in selectedPlan.config.segments"
 								:key="segment.id"
 								:segment="segment"
+								:plan-id="planId"
 								:activePlan="hasActivePlan"
 							/>
 						</template>
@@ -107,6 +114,7 @@ function planToggle() {
 	border: solid 1px var(--surface-border);
 	padding: 0.25rem;
 	flex-grow: 1;
+	height: 20rem;
 }
 
 .segment-scroller-outer {
