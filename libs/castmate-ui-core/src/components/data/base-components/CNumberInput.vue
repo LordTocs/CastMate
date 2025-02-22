@@ -1,5 +1,12 @@
 <template>
-	<number-field v-model="model" :min="min" :max="max" :placeholder="placeholder" :suffix="suffix" />
+	<number-field
+		v-model="model"
+		:min="min"
+		:max="max"
+		:placeholder="placeholder"
+		:suffix="suffix"
+		style="width: 100%"
+	/>
 </template>
 
 <script setup lang="ts">
