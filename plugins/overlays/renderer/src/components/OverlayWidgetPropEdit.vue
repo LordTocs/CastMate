@@ -1,5 +1,5 @@
 <template>
-	<flex-scroller class="flex-grow-1 widget-props">
+	<flex-scroller class="flex-grow-1 widget-props" inner-class="px-2" ref="scroller">
 		<template v-if="selectedWidgetIndex != null && selectedWidgetInfo != null">
 			<data-binding-path :local-path="`[${selectedWidgetIndex}]`">
 				<data-input
@@ -16,8 +16,15 @@
 <script setup lang="ts">
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { FlexScroller, DataInput, useDocumentSelection, useDataBinding, DataBindingPath } from "castmate-ui-core"
-import { computed, onMounted, useModel, watch } from "vue"
+import {
+	FlexScroller,
+	DataInput,
+	useDocumentSelection,
+	useDataBinding,
+	DataBindingPath,
+	provideScrollAttachable,
+} from "castmate-ui-core"
+import { computed, onMounted, ref, useModel, watch } from "vue"
 import OverlayWidgetTransformEdit from "./OverlayWidgetTransformEdit.vue"
 
 const props = defineProps<{
@@ -27,6 +34,9 @@ const props = defineProps<{
 const model = useModel(props, "modelValue")
 
 useDataBinding("widgets")
+
+const scroller = ref<InstanceType<typeof FlexScroller>>()
+provideScrollAttachable(() => scroller.value?.scroller ?? undefined)
 
 const widgetSelection = useDocumentSelection()
 

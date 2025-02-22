@@ -13,8 +13,8 @@
 						overflowY: 'auto',
 					}"
 				>
-					<div class="p-1 pt-3 flex flex-column gap-4" @mousedown="stopPropagation">
-						<div class="flex flex-row pt-3 gap-1">
+					<div class="p-1 py-2 flex flex-column gap-4" @mousedown="stopPropagation">
+						<div class="flex flex-row gap-1">
 							<div style="width: 0; flex: 1">
 								<label-floater label="Width" v-slot="labelProps">
 									<c-number-input
@@ -72,9 +72,10 @@
 				</div>
 			</div>
 		</div>
-		<div class="flex flex-row flex-grow-1">
+		<div class="flex flex-row flex-grow-1" ref="slideDiv">
 			<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
-			<div class="overlay-properties">
+			<expander-slider direction="vertical" invert v-model="splitterPos" :container="slideDiv" />
+			<div class="overlay-properties" :style="{ width: `${splitterPos}px` }">
 				<p-splitter layout="vertical" class="h-full">
 					<p-splitter-panel>
 						<overlay-widget-prop-edit class="h-full" v-model="model" />
@@ -103,6 +104,8 @@ import {
 	stopPropagation,
 	provideScrollAttachable,
 	CNumberInput,
+	ExpanderSlider,
+	viewRef,
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
@@ -128,7 +131,10 @@ const overlayId = useDocumentId()
 const port = useSettingValue({ plugin: "castmate", setting: "port" })
 const defaultObsSetting = useSettingValue({ plugin: "obs", setting: "obsDefault" })
 
+const splitterPos = viewRef<number>("splitterPos", 350)
+
 const editorDiv = ref<HTMLElement>()
+const slideDiv = ref<HTMLElement>()
 
 provideScrollAttachable(editorDiv)
 
