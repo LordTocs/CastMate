@@ -89,7 +89,7 @@
 		"eslint": "^8.17.0",
 		"nanoid": "^5.0.7",
 		"pinia": "^2.1.7",
-		"primeflex": "*",
+		"primeflex": "^4.0.0",
 		"primeicons": "^6.0.1",
 		"primevue": "^4.2.4",
 		"sass": "^1.71.0",
