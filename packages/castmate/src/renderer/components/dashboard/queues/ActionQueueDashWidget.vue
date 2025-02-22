@@ -1,15 +1,22 @@
 <template>
-	<div class="queue-card">
-		<div class="queue-card-header">
-			<h3 class="my-0">{{ queue?.config.name }}</h3>
+	<main-page-card class="queue-card">
+		<template #header>
+			<i class="mdi mdi-tray-full" />&nbsp;
+			<span class="mr-1" :class="{ 'text-color-secondary': queue?.config?.paused }">{{
+				queue?.config.name ?? queue?.id ?? "UNKNOWN"
+			}}</span>
 			<p-button
 				plain
 				size="small"
+				class="extra-small-button"
 				text
 				:icon="queue?.config.paused ? 'mdi mdi-play' : 'mdi mdi-pause'"
 				@click="togglePause"
-			></p-button>
-		</div>
+				v-tooltip="queue?.config.paused ? `Unpause Queue` : `Pause Queue`"
+			>
+			</p-button>
+		</template>
+
 		<div class="queue-list-outer">
 			<div class="queue-list" @mousewheel="onScroll" ref="queueList">
 				<div class="queue-history">
@@ -45,12 +52,18 @@
 				</draggable-collection>
 			</div>
 		</div>
-	</div>
+	</main-page-card>
 </template>
 
 <script setup lang="ts">
 import { ActionQueueState, ActionQueueConfig, ResourceData } from "castmate-schema"
-import { useResource, DraggableCollection, useResourceIPCCaller, useResourceStore } from "castmate-ui-core"
+import {
+	useResource,
+	DraggableCollection,
+	useResourceIPCCaller,
+	useResourceStore,
+	MainPageCard,
+} from "castmate-ui-core"
 
 import DashQueueItem from "./DashQueueItem.vue"
 import { computed, nextTick, onMounted, ref, watch } from "vue"
@@ -144,8 +157,8 @@ function togglePause() {
 	padding: 0.5rem;
 	display: flex;
 	flex-direction: column;
-	border-radius: var(--border-radius);
-	background-color: grey;
+	/* border-radius: var(--border-radius); */
+	/* background-color: grey; */
 }
 
 .queue-list-outer {
