@@ -54,7 +54,7 @@ export function initializeStreamPlans(app: App<Element>) {
 	projectStore.registerProjectGroupItem(
 		getResourceAsProjectGroup<ResourceData<StreamPlanConfig>>(app, {
 			resourceType: "StreamPlan",
-			resourceName: "Stream Plan",
+			resourceName: "Stream Plans",
 			documentType: "streamplan",
 			groupIcon: "mdi mdi-view-agenda",
 			createView(resource) {
