@@ -167,6 +167,36 @@ export function useDelayedCommitUndo() {
 	}
 }
 
+export function viewRef<T>(id: string): Ref<T | undefined>
+export function viewRef<T = any>(id: string, value: T): Ref<T>
+export function viewRef(id: string, value?: any) {
+	const dataBinding = useLocalDataBinding()
+
+	const backup = ref(value)
+
+	onMounted(() => {
+		if (!dataBinding.value) return
+		if (id in dataBinding.value.data) return
+
+		dataBinding.value.data[id] = value
+	})
+
+	return computed({
+		get() {
+			if (!dataBinding.value?.data) return backup.value
+			if (id in dataBinding.value.data) return dataBinding.value.data[id]
+			return backup.value
+		},
+		set(v) {
+			if (dataBinding.value) {
+				dataBinding.value.data[id] = v
+			} else {
+				backup.value = v
+			}
+		},
+	})
+}
+
 export function useUndoCommitter<T>(valueRef: Ref<T>) {
 	const commitUndo = useCommitUndo()
 
