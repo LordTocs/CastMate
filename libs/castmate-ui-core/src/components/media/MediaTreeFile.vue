@@ -7,42 +7,41 @@
 		@click="handleClick"
 	>
 		<div class="media-preview">
-			<img v-if="isImagePreview" :src="media.file" class="thumbnail" />
-			<sound-player v-else-if="media.audio && !media.video" :file="media.file" />
+			<img v-if="isImagePreview" :src="file.metadata.file" class="thumbnail" />
+			<sound-player v-else-if="file.metadata.audio && !file.metadata.video" :file="file.metadata.file" />
 		</div>
-		{{ name }}
+		{{ file.metadata.name }}
 	</div>
 	<div class="media-tree-cell px-4" @contextmenu="menu?.show($event)" @click="handleClick">
 		<div style="color: var(--text-color-secondary); font-size: small">
-			<i class="mdi mdi-image" v-if="media.image"></i>
-			<i class="mdi mdi-volume-high" v-if="media.audio"></i>
-			<i class="mdi mdi-filmstrip" v-if="media.video"></i>
+			<i class="mdi mdi-image" v-if="file.metadata.image"></i>
+			<i class="mdi mdi-volume-high" v-if="file.metadata.audio"></i>
+			<i class="mdi mdi-filmstrip" v-if="file.metadata.video"></i>
 		</div>
 	</div>
-	<div class="media-tree-cell px-4" @contextmenu="menu?.show($event)" @click="handleClick">
-		<duration-label
-			style="color: var(--text-color-secondary); font-size: small"
-			:model-value="media.duration"
-			v-if="media.duration"
-			:decimal-places="1"
-		/>
+	<div
+		class="media-tree-cell px-4"
+		style="color: var(--text-color-secondary); font-size: small"
+		@contextmenu="menu?.show($event)"
+		@click="handleClick"
+	>
+		<duration-label :model-value="file.metadata.duration" v-if="file.metadata.duration" :decimal-places="1" />
 	</div>
 	<c-context-menu :items="contextOptions" ref="menu" />
 </template>
 
 <script setup lang="ts">
 import path from "path"
-import { MediaMetadata } from "castmate-schema"
 import { DurationLabel, useMediaStore } from "../../main"
 import { computed, ref } from "vue"
 import SoundPlayer from "./SoundPlayer.vue"
 import CContextMenu from "../util/CContextMenu.vue"
 import type { MenuItem } from "primevue/menuitem"
 import { MediaFile } from "castmate-schema"
+import { MediaFileItem } from "./media-tree-types"
 
 const props = defineProps<{
-	name: string
-	media: MediaMetadata
+	file: MediaFileItem
 	indent?: number
 	onClick?: (file: MediaFile) => any
 }>()
@@ -52,8 +51,8 @@ const emit = defineEmits(["click"])
 const menu = ref<InstanceType<typeof CContextMenu>>()
 
 const isImagePreview = computed(() => {
-	if (props.media.image) return true
-	const ext = path.extname(props.media.path)
+	if (props.file.metadata.image) return true
+	const ext = path.extname(props.file.metadata.path)
 	return [".gif", ".webp", ".apng"].includes(ext)
 })
 
@@ -65,7 +64,7 @@ const contextOptions = computed<MenuItem[]>(() => {
 			label: "Show In Explorer",
 			icon: "mdi mdi-folder",
 			command(event) {
-				mediaStore.exploreMediaItem(props.media.path)
+				mediaStore.exploreMediaItem(props.file.metadata.path)
 			},
 		},
 	]
@@ -80,7 +79,7 @@ function handleClick(ev: MouseEvent) {
 	ev.preventDefault()
 
 	if (props.onClick) {
-		emit("click", props.media.path)
+		emit("click", props.file.metadata.path)
 	}
 }
 </script>

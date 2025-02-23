@@ -17,7 +17,6 @@
 					:anchor="anchor"
 					v-model="dropDown"
 					:filter="filterValue"
-					:files="mediaItems.map((m) => m.path)"
 					@media-clicked="mediaClicked"
 					:image="schema.image ?? showAll"
 					:sound="schema.sound ?? showAll"
@@ -59,7 +58,6 @@ const model = useModel(props, "modelValue")
 const undoModel = useUndoCommitter(model)
 
 const mediaStore = useMediaStore()
-const mediaItems = computed(() => Object.values(mediaStore.media).sort((a, b) => a.path.localeCompare(b.path)))
 
 const filterInput = ref<InstanceType<typeof FilterInputBox>>()
 

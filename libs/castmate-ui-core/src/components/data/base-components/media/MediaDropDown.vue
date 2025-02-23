@@ -12,30 +12,27 @@
 			maxHeight: '15rem',
 		}"
 	>
-		<div class="media-folder-tree">
-			<media-tree
-				root="default"
-				:files="files"
-				@click="mediaClicked"
-				:filter="filter"
-				:sound="sound"
-				:image="image"
-				:video="video"
-			>
-				<template #noItems>
-					<div class="empty-div">CastMate doesn't have any media in it's media folder.</div>
-				</template>
+		<media-tree-root
+			root="default"
+			@click="mediaClicked"
+			:filter="filter"
+			:sound="sound"
+			:image="image"
+			:video="video"
+		>
+			<template #noItems>
+				<div class="empty-div">CastMate doesn't have any media in it's media folder.</div>
+			</template>
 
-				<template #noFiltered> <div class="empty-div">No Media by that name.</div> </template>
-			</media-tree>
-		</div>
+			<template #noFiltered> <div class="empty-div">No Media by that name.</div> </template>
+		</media-tree-root>
 	</drop-down-panel>
 </template>
 
 <script setup lang="ts">
 import DropDownPanel from "../DropDownPanel.vue"
 
-import MediaTree from "../../../media/MediaTree.vue"
+import MediaTreeRoot from "../../../media/MediaTreeRoot.vue"
 import { usePropagationStop } from "../../../../main"
 import { MediaFile } from "castmate-schema"
 import { useElementSize } from "@vueuse/core"
@@ -47,7 +44,6 @@ const dropDown = defineModel<boolean>({ default: false })
 const props = withDefaults(
 	defineProps<{
 		anchor: HTMLElement | undefined
-		files: string[]
 		filter?: string
 		sound?: boolean
 		image?: boolean
@@ -77,13 +73,6 @@ function mediaClicked(media: MediaFile) {
 </script>
 
 <style scoped>
-.media-folder-tree {
-	display: grid;
-	grid-template-columns: 1fr fit-content(100px) fit-content(150px);
-	gap: 0 2px;
-	height: 100%;
-}
-
 .empty-div {
 	width: 100%;
 	height: 100%;

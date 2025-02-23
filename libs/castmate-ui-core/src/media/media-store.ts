@@ -68,6 +68,8 @@ export const useMediaStore = defineStore("media", () => {
 	}
 })
 
+export type MediaStore = ReturnType<typeof useMediaStore>
+
 export function useMediaDrop(
 	element: MaybeRefOrGetter<HTMLElement | undefined>,
 	subPath: MaybeRefOrGetter<string>,

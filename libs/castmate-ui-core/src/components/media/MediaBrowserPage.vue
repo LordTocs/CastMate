@@ -8,18 +8,10 @@
 				<p-input-text v-model="filters['global'].value" placeholder="Search" />
 			</span> -->
 		</div>
-		<!-- <table style="width: 100%">
-			<tr>
-				<th>Media</th>
-				<th>Type</th>
-				<th>Duration</th>
-			</tr> -->
+
 		<div class="flex-grow-1" :class="{ 'file-hover': hoveringFiles }">
-			<div class="media-folder-tree">
-				<media-tree root="default" :files="mediaItems.map((i) => i.path)" allow-drop />
-			</div>
+			<media-tree-root root="default" allow-drop />
 		</div>
-		<!-- </table> -->
 	</scrolling-tab-body>
 </template>
 
@@ -27,6 +19,7 @@
 import { computed, ref } from "vue"
 import { useMediaStore } from "../../media/media-store.ts"
 import MediaTree from "./MediaTree.vue"
+import MediaTreeRoot from "./MediaTreeRoot.vue"
 import PDataTable from "primevue/datatable"
 import PInputText from "primevue/inputtext"
 //import { FilterMatchMode } from "primevue/api"
@@ -82,19 +75,8 @@ const { hoveringFiles } = useMediaDrop(() => tabBody.value?.scrollDiv, "/default
 	overflow: hidden;
 }
 
-.thumbnail {
-	max-width: 100px;
-	max-height: 100px;
-}
-
 .media-browser {
 	--media-preview-size: 50px;
-}
-
-.media-folder-tree {
-	display: grid;
-	grid-template-columns: 1fr fit-content(100px) fit-content(150px);
-	gap: 0 2px;
 }
 
 .file-hover {
