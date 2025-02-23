@@ -19,6 +19,8 @@ import {
 	defineState,
 	isProbablyFromTemplate,
 	usePluginLogger,
+	ReactiveRef,
+	useState,
 } from "castmate-core"
 import {
 	StreamInfo,
@@ -40,12 +42,18 @@ export const StreamInfoManager = Service(
 	class {
 		private activeInfo: StreamInfo
 
+		private titleRef: ReactiveRef<string>
+		private categoryRef: ReactiveRef<TwitchCategory | undefined>
+
 		constructor() {
 			this.activeInfo = {
 				title: undefined,
 				category: undefined,
 				tags: [],
 			}
+
+			this.titleRef = useState<string>("twitch", "title")
+			this.categoryRef = useState<TwitchCategory | undefined>("twitch", "category")
 		}
 
 		async initialize() {
@@ -76,16 +84,20 @@ export const StreamInfoManager = Service(
 
 			if (resolvedInfo.title != null) {
 				update.title = resolvedInfo.title
+				this.titleRef.value = resolvedInfo.title
 			}
 			if (resolvedInfo.category != null) {
 				update.gameId = resolvedInfo.category
+				try {
+					this.categoryRef.value = await CategoryCache.getInstance().getCategoryById(resolvedInfo.category)
+				} catch (err) {}
 			}
 
 			if (resolvedInfo.tags != null) {
 				update.tags = resolvedInfo.tags
 			}
 
-			if (update.title == null && update.gameId == null) return
+			if (update.title == null && update.gameId == null && update.tags == null) return
 
 			await TwitchAccount.channel.apiClient.channels.updateChannelInfo(TwitchAccount.channel.twitchId, update)
 		}
@@ -156,11 +168,11 @@ export function setupInfoManager() {
 
 		StreamPlanManager.getInstance().registerComponentType({
 			id: "twitch-stream-info",
-			onActivate(segmentId, config: Partial<StreamInfo>) {
-				StreamInfoManager.getInstance().updateInfo(config)
+			async onActivate(segmentId, config: Partial<StreamInfo>) {
+				await StreamInfoManager.getInstance().updateInfo(config)
 			},
-			activeConfigChanged(segmentId, config: Partial<StreamInfo>) {
-				StreamInfoManager.getInstance().updateInfo(config)
+			async activeConfigChanged(segmentId, config: Partial<StreamInfo>) {
+				await StreamInfoManager.getInstance().updateInfo(config)
 			},
 		})
 	})
@@ -211,10 +223,7 @@ export function setupInfoManager() {
 			logger.log("Channel Update", event.streamTitle, event.categoryName)
 
 			title.value = event.streamTitle
-
-			const updateCategory = await CategoryCache.getInstance().getCategoryById(event.categoryId)
-
-			category.value = updateCategory
+			category.value = await CategoryCache.getInstance().getCategoryById(event.categoryId)
 
 			await StreamInfoManager.getInstance().reconcileTwitchUpdate(event.streamTitle, event.categoryId, undefined)
 		})

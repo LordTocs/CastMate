@@ -207,10 +207,11 @@ export function defineState<T extends Schema>(id: string, schema: T, serialized:
 	return result
 }
 
-export function useState<T>(id: string) {
-	if (!initingPlugin) throw new Error()
+export function useState<T>(plugin: string, id: string) {
+	const pluginObj = PluginManager.getInstance().getPlugin(plugin)
+	if (!pluginObj) throw new Error()
 
-	const state = initingPlugin.state.get(id)
+	const state = pluginObj.state.get(id)
 	if (!state) throw new Error()
 
 	return state.ref as ReactiveRef<T>
