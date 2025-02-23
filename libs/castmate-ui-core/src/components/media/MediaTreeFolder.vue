@@ -5,7 +5,7 @@
 			@click="toggleOpen"
 			:style="{ '--media-indent': indent ?? 0 }"
 		>
-			<div class="media-folder-spacer">
+			<div class="media-folder-spacer text-color-secondary">
 				<i class="mdi mdi-folder" v-if="!open" />
 				<i class="mdi mdi-folder-open" v-else />
 			</div>
@@ -87,14 +87,6 @@ const { hoveringFiles } = useMediaDrop(() => (true ? folderElement.value : undef
 
 .media-folder-spacer i {
 	font-size: var(--media-preview-size);
-}
-
-.media-tree-item:nth-child(even) {
-	background-color: var(--surface-a);
-}
-
-.media-tree-item:nth-child(odd) {
-	background-color: #2a2a2a;
 }
 
 .media-folder-row {
