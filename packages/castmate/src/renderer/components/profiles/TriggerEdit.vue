@@ -274,6 +274,10 @@ const modelObj = useVModel(props, "modelValue", emit)
 	padding-bottom: 0.25rem;
 }
 
+.closed-body :deep(.data-label) {
+	color: var(--p-text-muted-color);
+}
+
 .trigger-name {
 	user-select: none;
 	line-height: 1rem;
