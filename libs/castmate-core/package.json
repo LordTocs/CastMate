@@ -35,7 +35,7 @@
 		"castmate-schema": "workspace:^",
 		"chokidar": "^3.5.3",
 		"cors": "^2.8.5",
-		"electron": "^33.2.0",
+		"electron": "^34.2.0",
 		"electron-updater": "6.1.8",
 		"express": "^4.18.2",
 		"fluent-ffmpeg": "^2.1.2",
