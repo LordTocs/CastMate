@@ -75,6 +75,7 @@ import { useEventListener } from "@vueuse/core"
 import FilterPaletteItemList from "./FilterPaletteItemList.vue"
 
 import { ZIndex } from "@primeuix/utils/zindex"
+import { getNextItem } from "../../util/autocomplete-helpers"
 
 const props = withDefaults(
 	defineProps<{
@@ -308,7 +309,7 @@ function getPrevId(items: MenuItem[], id: string): string | undefined {
 
 function onKeyArrowDown(ev: KeyboardEvent) {
 	if (focusedId.value) {
-		const nextId = getNextId(props.items, focusedId.value)
+		const nextId = getNextId(filteredItems.value, focusedId.value)
 		focusedId.value = nextId ?? focusedId.value
 	} else {
 		focusedId.value = getFirstId(filteredItems.value[0])
@@ -320,7 +321,7 @@ function onKeyArrowDown(ev: KeyboardEvent) {
 
 function onKeyArrowUp(ev: KeyboardEvent) {
 	if (focusedId.value) {
-		const prevId = getPrevId(props.items, focusedId.value)
+		const prevId = getPrevId(filteredItems.value, focusedId.value)
 		focusedId.value = prevId ?? focusedId.value
 	} else {
 		focusedId.value = getFirstId(filteredItems.value[0])
@@ -333,7 +334,7 @@ function onKeyArrowUp(ev: KeyboardEvent) {
 function selectedFocusedItem(ev: Event) {
 	if (focusedId.value) {
 		console.log("Grabbing Focused", focusedId.value)
-		const item = getItemById(props.items, focusedId.value)
+		const item = getItemById(filteredItems.value, focusedId.value)
 		if (item) {
 			item.command?.({
 				originalEvent: ev,
