@@ -43,14 +43,7 @@
 			:style="{ height: `${view.height}px` }"
 			ref="cardBody"
 		>
-			<data-binding-path local-path="automation">
-				<automation-edit
-					class="h-full flex-grow-1"
-					v-model="modelObj"
-					v-model:view="view"
-					:trigger="modelObj"
-				/>
-			</data-binding-path>
+			<automation-edit class="h-full flex-grow-1" v-model="modelObj" v-model:view="view" :trigger="modelObj" />
 			<expander-slider
 				v-model="view.height"
 				:color="(triggerColor as Color)"
@@ -86,6 +79,8 @@ import {
 	TriggerSelection,
 	usePropagationStop,
 	useDocumentSelection,
+	useDataBinding,
+	useDataUIBinding,
 } from "castmate-ui-core"
 import isFunction from "lodash/isFunction"
 import { useVModel, asyncComputed } from "@vueuse/core"
@@ -101,6 +96,7 @@ const props = withDefaults(
 		modelValue: TriggerData
 		view: TriggerView
 		selectedIds: string[]
+		localPath: string
 	}>(),
 	{
 		view: () => ({
@@ -120,6 +116,11 @@ const props = withDefaults(
 		selectedIds: () => [],
 	}
 )
+
+const emit = defineEmits(["update:modelValue"])
+const modelObj = useVModel(props, "modelValue", emit)
+
+useDataBinding(() => props.localPath)
 
 const view = useModel(props, "view")
 
@@ -229,8 +230,11 @@ provide(
 
 const { triggerColorStyle, triggerColor } = useTriggerColors(() => props.modelValue)
 
-const emit = defineEmits(["update:modelValue"])
-const modelObj = useVModel(props, "modelValue", emit)
+useDataUIBinding({
+	onChildFocus(parsedPath) {
+		open.value = true
+	},
+})
 </script>
 
 <style scoped>

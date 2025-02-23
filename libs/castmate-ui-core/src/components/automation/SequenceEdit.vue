@@ -32,7 +32,7 @@
 <script setup lang="ts">
 import { useModel, ref, provide, computed } from "vue"
 import { Sequence, type NonStackActionInfo } from "castmate-schema"
-import { type SelectionPos, type Selection } from "../../main"
+import { type SelectionPos, type Selection, useDataBinding } from "../../main"
 import SequenceActionsEdit from "./SequenceActionsEdit.vue"
 import SequenceStart from "./SequenceStart.vue"
 import AutomationDropZone from "./AutomationDropZone.vue"

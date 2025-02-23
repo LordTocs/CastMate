@@ -93,7 +93,7 @@ export function useUndoActiveTab() {
 	const dockingStore = useDockingStore()
 	const documentStore = useDocumentStore()
 
-	return () => {
+	return async () => {
 		const tab = dockingStore.getActiveTab()
 
 		//TODO: tabs should have DataBinding and Docs should just *use* it
@@ -104,7 +104,7 @@ export function useUndoActiveTab() {
 		const doc = documentStore.documents.get(tab.pageData.documentId)
 		if (!doc) return
 
-		undoDataView(doc.view)
+		await undoDataView(doc.view)
 	}
 }
 

@@ -21,7 +21,12 @@
 			v-if="showSelectionEdit"
 			:style="{ width: `${splitterPos}px` }"
 		>
-			<action-config-edit v-if="selectedActionDef" v-model="selectedActionDef" :sequence="selectedSequence" />
+			<action-config-edit
+				v-if="selectedActionDef"
+				v-model="selectedActionDef"
+				:sequence="selectedSequence"
+				:local-path="selectedActionPath"
+			/>
 			<trigger-config-edit v-else-if="selectedTriggerDef" v-model="selectedTriggerDef" />
 		</flex-scroller>
 	</div>
@@ -37,13 +42,18 @@ import {
 	DataBindingPath,
 	useDataUIBinding,
 } from "../../main"
-import { AnyAction, ActionStack, AutomationData, isActionStack, findActionById } from "castmate-schema"
+import {
+	AnyAction,
+	ActionStack,
+	AutomationData,
+	isActionStack,
+	findActionById,
+	getActionByParsedPath,
+} from "castmate-schema"
 import AutomationEditArea from "./AutomationEditArea.vue"
 import ActionConfigEdit from "./ActionConfigEdit.vue"
 import TriggerConfigEdit from "./TriggerConfigEdit.vue"
 import { findActionAndSequenceById } from "castmate-schema"
-import PSplitter from "primevue/splitter"
-import PSplitterPanel from "primevue/splitterpanel"
 import { useElementSize } from "@vueuse/core"
 
 const selection = useDocumentSelection("sequence")
@@ -86,6 +96,20 @@ const showSelectionEdit = computed(() => {
 		return false
 	}
 	return true
+})
+
+const selectedActionPath = computed(() => {
+	if (selection.value.length > 1 || selection.value.length == 0) {
+		return undefined
+	}
+
+	const id = selection.value[0]
+
+	const actionSeq = findActionAndSequenceById(id, props.modelValue)
+
+	console.log("Selected Action Path", actionSeq?.path)
+
+	return actionSeq?.path
 })
 
 const selectedSequence = computed(() => {
@@ -150,8 +174,10 @@ function onPaste(ev: ClipboardEvent) {
 
 useDataUIBinding({
 	onChildFocus(subPath) {
-		console.log(subPath)
-		if (subPath[0] == "sequence") {
+		console.log("AUTOM CHILD FOCUS", subPath)
+		const action = getActionByParsedPath(subPath, model.value)
+		if (action) {
+			selection.value = [action.id]
 		}
 	},
 	onChildScrollIntoView(subPath) {

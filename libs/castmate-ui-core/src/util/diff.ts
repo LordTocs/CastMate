@@ -2,6 +2,7 @@ import { isObject } from "@vueuse/core"
 import _cloneDeep from "lodash/cloneDeep"
 import _isEqual from "lodash/isEqual"
 import { DiffOpCode, iterDiff } from "./myers-diff"
+import { joinDataPath } from "./data-binding"
 
 export type DataDiff = GenericDiff<any> | ArrayDiff | ObjectDiff
 
@@ -41,6 +42,8 @@ export function computeDataDiff(a: any, b: any): DataDiff | undefined {
 	}
 	return undefined
 }
+
+//APPLY
 
 function applyDataDiffArray(arr: any, diff: ArrayDiff) {
 	if (!Array.isArray(arr)) throw new Error("Diff Type Mismatch")
@@ -117,6 +120,31 @@ export function applyInvDataDiff<T>(parent: T, key: keyof T, diff: DataDiff) {
 		parent[key] = diff.oldValue
 	}
 }
+
+///PATHS
+export function getInvDataDiffPath(diff: DataDiff): string {
+	if (diff.type == "array") {
+		const op = diff.ops[diff.ops.length - 1]
+		if (op.type == "insert" || op.type == "delete") {
+			return `[${op.index}]`
+		}
+
+		return joinDataPath(`[${op.index}]`, getInvDataDiffPath(op.diff))
+	} else if (diff.type == "object") {
+		const keys = Object.keys(diff.properties)
+		const firstKey = keys[0]
+		if (!firstKey) throw new Error("Weird Diff Object")
+
+		const op = diff.properties[firstKey]
+
+		if (op.op == "added" || op.op == "removed") return firstKey
+
+		return joinDataPath(firstKey, getInvDataDiffPath(op.diff))
+	}
+	return ""
+}
+
+///UTIL
 
 interface GenericDiff<T = any> {
 	type: "generic"

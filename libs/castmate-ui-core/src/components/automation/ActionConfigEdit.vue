@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { AnyAction, constructDefault, isFlowAction, getSequenceResultVariables } from "castmate-schema"
-import { useAction, DataInput } from "../../main"
+import { useAction, DataInput, useDataBinding } from "../../main"
 import { computed, inject, provide, useModel } from "vue"
 import PButton from "primevue/button"
 import { SubFlow } from "castmate-schema"
@@ -53,7 +53,10 @@ import DataBindingPath from "../data/binding/DataBindingPath.vue"
 const props = defineProps<{
 	modelValue: AnyAction
 	sequence?: Sequence
+	localPath: string | undefined
 }>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

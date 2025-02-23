@@ -16,7 +16,7 @@ import {
 	queuePostFlushCb,
 } from "vue"
 import { provideLocal, injectLocal, useEventListener, toReactive } from "@vueuse/core"
-import { applyDataDiff, applyInvDataDiff, computeDataDiff, DataDiff } from "./diff"
+import { applyDataDiff, applyInvDataDiff, computeDataDiff, DataDiff, getInvDataDiffPath } from "./diff"
 import { nanoid } from "nanoid/non-secure"
 
 import _cloneDeep from "lodash/cloneDeep"
@@ -26,7 +26,7 @@ import _cloneDeep from "lodash/cloneDeep"
 
 //Handles document pathing like a.b[2].c
 function parsePath(path: string) {
-	return path.split(/\./i)
+	return path.split(/\.|\[|\]\.?/i).filter((v) => v.length > 0)
 }
 
 export function joinDataPath(...paths: (string | undefined)[]) {
@@ -35,7 +35,7 @@ export function joinDataPath(...paths: (string | undefined)[]) {
 		if (!path) {
 			continue
 		}
-		if (result.length > 0) {
+		if (result.length > 0 && !path.startsWith("[")) {
 			const separator = "."
 			result += separator
 		}
@@ -138,8 +138,8 @@ function commitDataView(dataBinding: DataBinding) {
 
 	if (diff == undefined) return
 
-	const caller = new Error().stack?.split("\n")[2]?.trim().split(" ")[1]
-	console.log("   - Commiting Undo", new Error().stack, caller, diff)
+	//const caller = new Error().stack?.split("\n")[2]?.trim().split(" ")[1]
+	//console.log("   - Commiting Undo", new Error().stack, caller, diff)
 
 	dataBinding.undoStack.stack.push(diff)
 	dataBinding.undoStack.snapshot = _cloneDeep(newData)
@@ -347,24 +347,41 @@ export function useDataBinding(localPath: MaybeRefOrGetter<string | undefined>) 
 ///////////////////////////////////////
 ///////////////////////////////////////
 
+function nextTickAsync() {
+	return new Promise<void>((resolve, reject) => {
+		nextTick(() => {
+			resolve()
+		})
+	})
+}
+
 export async function focusDataByPath(root: DataPathView, path: string) {
 	const parsedPath = parsePath(path)
+
+	console.log("FOCUS PATH", parsedPath)
 
 	let base = root
 
 	for (let i = 0; i < parsedPath.length; ++i) {
 		const trace = parsedPath[i]
 
-		const subPath = parsedPath.slice(i + 1)
+		const subPath = parsedPath.slice(i)
 
 		if (base == null) return undefined
 
 		for (const binding of base.uiBindings) {
-			await binding?.onChildFocus?.(subPath)
+			if (binding?.onChildFocus) {
+				await binding.onChildFocus(subPath)
+				await nextTickAsync()
+			}
 		}
 
 		base = base.subPaths[trace]
+
+		console.log("    - Found ", trace, base)
 	}
+
+	if (!base) return
 
 	for (const binding of base.uiBindings) {
 		await binding?.focus?.()
@@ -424,7 +441,7 @@ function ensureDataView(root: DataPathView, path: string, pathData?: DataPathVie
 	const data: DataPathView = pathData ?? createEmptyPathData()
 
 	let base = root
-	//console.log("Ensuring", root, path)
+	//console.log("Ensuring", root, parsed)
 	for (let i = 0; i < parsed.length; ++i) {
 		const trace = parsed[i]
 
@@ -465,18 +482,22 @@ function deleteDataView(root: DataPathView, path: string) {
 
 //TODO: moveDataView() - What to do about refCount > 1
 
-export function undoDataView(baseDataBinding: DataBinding) {
+export async function undoDataView(baseDataBinding: DataBinding) {
 	const top = baseDataBinding.undoStack.stack.pop()
 
 	if (!top) return
 
-	console.log("From", baseDataBinding.rootData)
+	const invPath = getInvDataDiffPath(top)
+
+	console.log("From", baseDataBinding.rootData, getInvDataDiffPath(top))
 	applyInvDataDiff(baseDataBinding, "rootData", top)
 	console.log("To", baseDataBinding.rootData)
 
 	baseDataBinding.undoStack.redo.push(top)
 
 	baseDataBinding.undoStack.snapshot = _cloneDeep(baseDataBinding.rootData)
+
+	await focusDataByPath(baseDataBinding.rootView, invPath)
 }
 
 export function redoDataView(baseDataBinding: DataBinding) {

@@ -121,6 +121,45 @@ export function getActionById(id: string, sequence: Sequence): AnyAction | Actio
 	return undefined
 }
 
+export function getActionAndPathById(
+	id: string,
+	sequence: Sequence
+): { action: AnyAction | ActionStack; path: string } | undefined {
+	for (let i = 0; i < sequence.actions.length; ++i) {
+		const action = sequence.actions[i]
+		if (action.id == id) {
+			return { action, path: `actions[${i}]` }
+		} else {
+			if (isTimeAction(action)) {
+				for (let o = 0; o < action.offsets.length; ++o) {
+					const offset = action.offsets[o]
+					const subAction = getActionAndPathById(id, offset)
+					if (subAction)
+						return { action: subAction.action, path: `actions[${i}].offsets[${o}].${subAction.path}` }
+				}
+			} else if (isActionStack(action)) {
+				for (let s = 0; s < action.stack.length; ++s) {
+					const subAction = action.stack[s]
+					if (subAction.id == id) {
+						return { action: subAction, path: `actions[${i}].stack[${s}]` }
+					}
+				}
+			} else if (isFlowAction(action)) {
+				//for (const subFlow of action.subFlows) {
+				for (let s = 0; s < action.subFlows.length; ++s) {
+					const subFlow = action.subFlows[s]
+
+					const subAction = getActionAndPathById(id, subFlow)
+
+					if (subAction)
+						return { action: subAction.action, path: `actions[${i}].subFlows[${s}].${subAction.path}` }
+				}
+			}
+		}
+	}
+	return undefined
+}
+
 export function assignNewIds(sequence: Sequence) {
 	for (const action of sequence.actions) {
 		action.id = nanoid()

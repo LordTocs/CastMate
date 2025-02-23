@@ -25,15 +25,14 @@
 				@dragend="itemDragEnd(i, $event)"
 				draggable="true"
 			>
-				<data-binding-path :localPath="`[${i}]`">
-					<component
-						:is="dataComponent"
-						v-model="model[i]"
-						v-model:view="view[i]"
-						:selectedIds="selection"
-						@delete="deleteItem(i)"
-					></component>
-				</data-binding-path>
+				<component
+					:is="dataComponent"
+					v-model="model[i]"
+					v-model:view="view[i]"
+					:selectedIds="selection"
+					@delete="deleteItem(i)"
+					:localPath="`[${i}]`"
+				></component>
 			</div>
 		</div>
 		<slot name="footer"></slot>
