@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, onMounted, ref, useModel } from "vue"
+import { computed, markRaw, onBeforeMount, onMounted, ref, useModel } from "vue"
 import { LabelFloater, TemplateToggle, defaultStringIsTemplate } from "../../../main"
 import ErrorLabel from "./ErrorLabel.vue"
 import { Schema } from "castmate-schema"
@@ -74,7 +74,7 @@ const canTemplate = computed(() => !!props.schema.template)
 
 const templateMode = ref(false)
 
-onMounted(() => {
+onBeforeMount(() => {
 	if (canTemplate.value) {
 		templateMode.value = props.isTemplate(props.modelValue)
 	}
