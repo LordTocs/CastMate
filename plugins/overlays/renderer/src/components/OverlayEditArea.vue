@@ -53,6 +53,7 @@ import {
 	useSelectionRect,
 	SelectDummy,
 	useDataBinding,
+	useDataUIBinding,
 } from "castmate-ui-core"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
@@ -248,6 +249,20 @@ function onFocus() {
 }
 
 function onBlur() {}
+
+useDataUIBinding({
+	onChildFocus(parsedPath) {
+		console.log("OVERLAY FOCUS", parsedPath)
+		const idx = Number(parsedPath[0])
+		if (isNaN(idx)) return
+
+		const id = model.value.widgets[idx]?.id
+
+		if (!id) return
+
+		selection.value = [id]
+	},
+})
 </script>
 
 <style scoped>
