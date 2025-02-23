@@ -46,7 +46,7 @@ const props = defineProps<{
 
 const model = useModel(props, "modelValue")
 
-const selection = useDocumentSelection()
+const selection = useDocumentSelection("widgets")
 
 const overlayWidgets = useOverlayWidgets()
 
