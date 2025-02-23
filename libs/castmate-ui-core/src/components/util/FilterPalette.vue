@@ -1,57 +1,64 @@
 <template>
 	<p-portal :append-to="appendTo">
-		<div
-			class="p-menu p-component filter-palette p-ripple-disabled"
-			:style="{ '--page-x': `${pageX}px`, '--page-y': `${pageY}px` }"
-			v-if="visible"
-			@mousedown="onMouseDown"
-		>
-			<div class="p-menu-start">
-				<p-input-group>
-					<p-input-text
-						v-model="filter"
-						ref="filterInput"
-						:placeholder="filterPlaceholder"
-						@keydown="onKeyDown"
-					/>
-				</p-input-group>
-			</div>
-			<ul class="p-menu-list" ref="scroller">
-				<template v-for="item of filteredItems">
-					<template v-if="item.items">
-						<!-- This is a group header -->
-						<li :class="['p-submenu-header', item.class]" :style="item.style" v-if="item.items.length > 0">
-							<slot name="submenuheader" :item="item">
-								<i v-if="item.icon" :class="['p-menu-item-icon', item.icon]"></i>
-								<span class="p-menu-item-text">
-									{{ getItemText(item) }}
-								</span>
-							</slot>
-						</li>
+		<transition name="p-connected-overlay" @enter="onEnter">
+			<div
+				class="p-menu p-component filter-palette p-ripple-disabled"
+				:style="{ '--page-x': `${pageX}px`, '--page-y': `${pageY}px` }"
+				ref="paletteDiv"
+				v-if="visible"
+				@mousedown="onMouseDown"
+			>
+				<div class="p-menu-start">
+					<p-input-group>
+						<p-input-text
+							v-model="filter"
+							ref="filterInput"
+							:placeholder="filterPlaceholder"
+							@keydown="onKeyDown"
+						/>
+					</p-input-group>
+				</div>
+				<ul class="p-menu-list" ref="scroller">
+					<template v-for="item of filteredItems">
+						<template v-if="item.items">
+							<!-- This is a group header -->
+							<li
+								:class="['p-submenu-header', item.class]"
+								:style="item.style"
+								v-if="item.items.length > 0"
+							>
+								<slot name="submenuheader" :item="item">
+									<i v-if="item.icon" :class="['p-menu-item-icon', item.icon]"></i>
+									<span class="p-menu-item-text">
+										{{ getItemText(item) }}
+									</span>
+								</slot>
+							</li>
+							<filter-palette-item-list
+								:items="item.items"
+								@item-select="onItemSelect"
+								:focused-id="focusedId"
+							>
+								<template #item="itemProps" v-if="$slots.item">
+									<slot name="item" v-bind="itemProps"></slot>
+								</template>
+							</filter-palette-item-list>
+						</template>
+						<!-- TODO: Apply item.class -->
 						<filter-palette-item-list
-							:items="item.items"
-							@item-select="onItemSelect"
+							v-else
+							:items="filteredItems"
 							:focused-id="focusedId"
+							@item-select="onItemSelect"
 						>
 							<template #item="itemProps" v-if="$slots.item">
 								<slot name="item" v-bind="itemProps"></slot>
 							</template>
 						</filter-palette-item-list>
 					</template>
-					<!-- TODO: Apply item.class -->
-					<filter-palette-item-list
-						v-else
-						:items="filteredItems"
-						:focused-id="focusedId"
-						@item-select="onItemSelect"
-					>
-						<template #item="itemProps" v-if="$slots.item">
-							<slot name="item" v-bind="itemProps"></slot>
-						</template>
-					</filter-palette-item-list>
-				</template>
-			</ul>
-		</div>
+				</ul>
+			</div>
+		</transition>
 	</p-portal>
 </template>
 
@@ -59,13 +66,15 @@
 import PPortal from "primevue/portal"
 import PInputText from "primevue/inputtext"
 import PInputGroup from "primevue/inputgroup"
-import { ref, toValue, computed, markRaw, nextTick, watch } from "vue"
+import { ref, toValue, computed, markRaw, nextTick, watch, onBeforeUnmount } from "vue"
 import type { MenuItem } from "primevue/menuitem"
 import { resolveFieldData } from "@primeuix/utils/object"
 import _cloneDeep from "lodash/cloneDeep"
 import { useEventListener } from "@vueuse/core"
 
 import FilterPaletteItemList from "./FilterPaletteItemList.vue"
+
+import { ZIndex } from "@primeuix/utils/zindex"
 
 const props = withDefaults(
 	defineProps<{
@@ -134,9 +143,13 @@ const filteredItems = computed<MenuItem[]>(() => {
 	return result
 })
 
+const paletteDiv = ref<HTMLElement>()
 const visible = ref(false)
 function hide() {
 	visible.value = false
+	if (paletteDiv.value) {
+		ZIndex.clear(paletteDiv.value)
+	}
 }
 function show() {
 	filter.value = ""
@@ -362,6 +375,18 @@ function onKeyDown(ev: KeyboardEvent) {
 function onMouseDown(ev: MouseEvent) {
 	ev.stopPropagation()
 }
+
+function onEnter() {
+	if (paletteDiv.value) {
+		ZIndex.set("overlay", paletteDiv.value)
+	}
+}
+
+onBeforeUnmount(() => {
+	if (paletteDiv.value) {
+		ZIndex.set("overlay", paletteDiv.value)
+	}
+})
 </script>
 
 <style scoped>
