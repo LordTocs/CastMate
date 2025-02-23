@@ -36,7 +36,10 @@ const props = withDefaults(
 		optionValue?: string | ((data: any) => string)
 		optionLabel?: string | ((data: any) => string)
 	}>(),
-	{}
+	{
+		optionValue: "code",
+		optionLabel: "label",
+	}
 )
 
 useDataBinding(() => props.localPath)
