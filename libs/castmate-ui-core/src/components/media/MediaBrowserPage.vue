@@ -3,14 +3,14 @@
 		<div class="flex align-items-center p-3">
 			<p-button @click="openMediaFolder">Open Media Folder</p-button>
 			<div class="flex-grow-1" />
-			<!-- <span class="p-input-icon-left">
-				<i class="pi pi-search" />
-				<p-input-text v-model="filters['global'].value" placeholder="Search" />
-			</span> -->
+			<p-icon-field>
+				<p-input-icon class="pi pi-search" />
+				<p-input-text v-model="filter" placeholder="Search" />
+			</p-icon-field>
 		</div>
 
 		<div class="flex-grow-1" :class="{ 'file-hover': hoveringFiles }">
-			<media-tree-root root="default" allow-drop />
+			<media-tree-root root="default" allow-drop :filter="filter" />
 		</div>
 	</scrolling-tab-body>
 </template>
@@ -18,25 +18,22 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { useMediaStore } from "../../media/media-store.ts"
-import MediaTree from "./MediaTree.vue"
+
 import MediaTreeRoot from "./MediaTreeRoot.vue"
-import PDataTable from "primevue/datatable"
+
 import PInputText from "primevue/inputtext"
-//import { FilterMatchMode } from "primevue/api"
-import PColumn from "primevue/column"
+import PIconField from "primevue/iconfield"
+import PInputIcon from "primevue/inputicon"
+
 import { MediaMetadata } from "castmate-schema"
 import path from "path"
-import { useElementSize } from "@vueuse/core"
 import PButton from "primevue/button"
 
-import SoundPlayer from "./SoundPlayer.vue"
 import { ScrollingTabBody } from "../../main"
 
 import { useMediaDrop } from "../../media/media-store"
 
-// const filters = ref({
-// 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-// })
+const filter = ref("")
 
 const mediaStore = useMediaStore()
 const mediaItems = computed(() => {
