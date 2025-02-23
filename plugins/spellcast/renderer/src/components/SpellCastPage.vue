@@ -28,10 +28,6 @@
 				<p-column class="column-fit-width">
 					<template #body="{ data }: { data: SpellHookResource }">
 						<div class="flex flex-row">
-							<p-toggle-button
-								:model-value="data.config.spellData.enabled"
-								@update:model-value="changeEnabled(data.id, $event)"
-							></p-toggle-button>
 							<p-button icon="mdi mdi-pencil" text @click="editDialog(data.id)"></p-button>
 							<p-button
 								icon="mdi mdi-delete"
