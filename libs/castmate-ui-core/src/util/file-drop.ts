@@ -2,6 +2,8 @@ import { useEventListener } from "@vueuse/core"
 import { computed, MaybeRefOrGetter, ref, Ref, toValue } from "vue"
 import { isUnnestedChild } from "./dom"
 
+const { webUtils } = require("electron")
+
 interface FromTo {
 	fromElement?: HTMLElement
 	toElement?: HTMLElement
@@ -123,8 +125,8 @@ export function useFileDragDrop(
 			}
 		} else {
 			for (const file of ev.dataTransfer.files) {
-				if (file.path && file.type) {
-					result.push({ path: file.path, mimetype: file.type, remote: false })
+				if (file.type) {
+					result.push({ path: webUtils.getPathForFile(file), mimetype: file.type, remote: false })
 				}
 			}
 		}
