@@ -1,6 +1,6 @@
 {
 	"name": "castmate",
-	"version": "0.5.4-beta",
+	"version": "0.5.4",
 	"description": "CastMate",
 	"author": "LordTocs",
 	"scripts": {
@@ -13,7 +13,6 @@
 		"fix-app-deps": "electron-builder install-app-deps"
 	},
 	"main": "dist/dist-electron/background.js",
-	"electronVersion": "29.1.1",
 	"dependencies": {
 		"archiver": "^7.0.1",
 		"castmate-core": "workspace:^",
@@ -88,6 +87,7 @@
 		"electron-devtools-installer": "^3.2.0",
 		"eslint": "^8.17.0",
 		"nanoid": "^5.0.7",
+		"node-abi": "^3.74.0",
 		"pinia": "^2.1.7",
 		"primeflex": "^4.0.0",
 		"primeicons": "^6.0.1",

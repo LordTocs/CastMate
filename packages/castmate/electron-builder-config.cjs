@@ -2,6 +2,7 @@ module.exports = {
 	appId: "com.lordtocs.castmate",
 	productName: "CastMate",
 	asar: true,
+	electronVersion: "34.2.0",
 	directories: {
 		output: "../../release",
 	},

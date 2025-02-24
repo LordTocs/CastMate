@@ -1,12 +1,12 @@
 {
 	"name": "castmate-monorepo",
-	"version": "0.5.4-beta",
+	"version": "0.5.4",
 	"description": "",
 	"private": true,
 	"type": "module",
 	"scripts": {
 		"setup-vite": "yarn workspace castmate-vite build",
-		"build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build && yarn workspace castmate-satellite run electron:build",
+		"build": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:build",
 		"buildpublish": "node ./vite-util/multi-vite.mjs build && yarn workspace castmate run electron:buildpublish",
 		"dev": "node ./vite-util/multi-vite.mjs",
 		"satdev": "yarn workspace castmate-satellite dev",
