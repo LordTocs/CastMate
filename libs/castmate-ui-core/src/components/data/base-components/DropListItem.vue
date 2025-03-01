@@ -14,7 +14,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue"
+import { onBeforeMount, onMounted, ref, watch } from "vue"
+import { Theme } from "@primeuix/styled"
+import { BaseStyle } from "@primevue/core"
+import SelectStyle from "primevue/select/style"
 
 const props = defineProps<{
 	focused?: boolean
@@ -25,6 +28,25 @@ const props = defineProps<{
 const emit = defineEmits(["click"])
 
 const li = ref<HTMLElement>()
+
+onBeforeMount(() => {
+	//@ts-ignore
+	const selectStyle: BaseStyle = SelectStyle
+
+	if (selectStyle.name && !Theme.isStyleNameLoaded(selectStyle.name)) {
+		//@ts-ignore
+		const { css, style } = selectStyle.getComponentTheme?.() || {}
+
+		selectStyle.load?.(css, { name: `${selectStyle.name}-variables` })
+		//@ts-ignore
+		selectStyle.loadStyle?.({ name: `${selectStyle.name}-style` }, style)
+
+		Theme.setLoadedStyleName(selectStyle.name)
+	} else {
+		//@ts-ignore
+		console.log("LOADED??? ", SelectStyle?.name)
+	}
+})
 
 onMounted(() => {
 	watch(
