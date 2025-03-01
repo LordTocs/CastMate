@@ -22,13 +22,16 @@
 				v-model:view="view.deactivationAutomation"
 			/>
 
-			<template v-for="componentId in Object.keys(model.components)" :key="componentId">
-				<component
-					v-if="streamPlanStore.components.has(componentId)"
-					:is="streamPlanStore.components.get(componentId)"
-					v-model="model.components[componentId]"
-				/>
-			</template>
+			<data-binding-path local-path="components">
+				<template v-for="componentId in Object.keys(model.components)" :key="componentId">
+					<component
+						v-if="streamPlanStore.components.has(componentId)"
+						:is="streamPlanStore.components.get(componentId)"
+						v-model="model.components[componentId]"
+						:local-path="componentId"
+					/>
+				</template>
+			</data-binding-path>
 		</div>
 	</div>
 </template>
@@ -37,7 +40,7 @@
 import { StreamPlanSegment } from "castmate-schema"
 import { StreamPlanSegmentView, useStreamPlanStore } from "./stream-plan-types"
 import { computed, useModel } from "vue"
-import { InlineAutomationEdit, useDataBinding, usePropagationStop } from "../../main"
+import { InlineAutomationEdit, useDataBinding, usePropagationStop, DataBindingPath } from "../../main"
 import PInputText from "primevue/inputtext"
 
 const props = defineProps<{
