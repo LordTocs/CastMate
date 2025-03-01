@@ -6,7 +6,7 @@
 			</div>
 			<div class="flex flex-row flex-grow-1 align-items-center" @mousedown="stopPropagation">
 				<span class="segment-name">
-					<p-input-text v-model="model.name" />
+					<c-text-input v-model="model.name" local-path="name" />
 				</span>
 			</div>
 		</div>
@@ -15,11 +15,13 @@
 				label="On Activate"
 				v-model="model.activationAutomation"
 				v-model:view="view.activationAutomation"
+				local-path="activationAutomation"
 			/>
 			<inline-automation-edit
 				label="On Deactivate"
 				v-model="model.deactivationAutomation"
 				v-model:view="view.deactivationAutomation"
+				local-path="deactivationAutomation"
 			/>
 
 			<data-binding-path local-path="components">
@@ -41,7 +43,7 @@ import { StreamPlanSegment } from "castmate-schema"
 import { StreamPlanSegmentView, useStreamPlanStore } from "./stream-plan-types"
 import { computed, useModel } from "vue"
 import { InlineAutomationEdit, useDataBinding, usePropagationStop, DataBindingPath } from "../../main"
-import PInputText from "primevue/inputtext"
+import CTextInput from "../data/base-components/CTextInput.vue"
 
 const props = defineProps<{
 	modelValue: StreamPlanSegment

@@ -6,7 +6,7 @@
 					v-for="(t, i) in model"
 					v-model="model[i]"
 					:template="schema.template"
-					@delete="model.splice(i, 1)"
+					@delete="deleteTag(i)"
 					:local-path="`[${i}]`"
 				/>
 			</template>
@@ -31,6 +31,7 @@ import {
 	DataBindingPath,
 	TemplateToggle,
 	useDataBinding,
+	useCommitUndo,
 } from "castmate-ui-core"
 import { useModel, ref, computed } from "vue"
 
@@ -54,12 +55,20 @@ const canClear = computed(() => !props.schema.required)
 
 const canAddTag = computed(() => !model.value || model.value.length < 10)
 
+const commitUndo = useCommitUndo()
+
+function deleteTag(index: number) {
+	model.splice(index, 1)
+	commitUndo()
+}
+
 function addTag() {
 	if (!model.value) {
 		model.value = [""]
 	} else {
 		model.value.push("")
 	}
+	commitUndo()
 }
 </script>
 

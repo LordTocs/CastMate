@@ -43,6 +43,7 @@ export { default as DropDownPanel } from "./components/data/base-components/Drop
 export { default as DurationField } from "./components/data/base-components/DurationField.vue"
 export { default as NumberField } from "./components/data/base-components/NumberField.vue"
 
+export { default as CTextInput } from "./components/data/base-components/CTextInput.vue"
 export { default as CAutocomplete } from "./components/data/base-components/CAutocomplete.vue"
 export { default as CDurationInput } from "./components/data/base-components/CDurationInput.vue"
 export { default as CNumberInput } from "./components/data/base-components/CNumberInput.vue"

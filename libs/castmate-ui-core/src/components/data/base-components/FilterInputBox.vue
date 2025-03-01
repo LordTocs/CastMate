@@ -56,8 +56,9 @@ const props = withDefaults(
 		tabIndex?: number
 		errorMessage?: string
 		disabled?: boolean
+		undoBound?: boolean
 	}>(),
-	{ tabIndex: -1 }
+	{ tabIndex: -1, undoBound: true }
 )
 
 const model = defineModel<any>()
@@ -95,8 +96,12 @@ defineExpose({
 })
 
 useDataUIBinding({
-	focus,
-	scrollIntoView,
+	focus() {
+		if (props.undoBound) focus()
+	},
+	scrollIntoView() {
+		if (props.undoBound) scrollIntoView()
+	},
 })
 
 function onMousedown(ev: MouseEvent) {

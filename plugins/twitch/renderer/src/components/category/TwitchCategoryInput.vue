@@ -8,6 +8,7 @@
 			@blur="onBlur"
 			@focus="onFocus"
 			@filter-key-down="onFilterKeyDown"
+			:undo-bound="false"
 		>
 			<template v-if="selectedDisplayData">
 				<span class="flex flex-row align-items-center">
@@ -61,6 +62,8 @@ import {
 	DataInputBase,
 	FilterInputBox,
 	useDataBinding,
+	useUndoCommitter,
+	useCommitUndo,
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
 import { useCategoryStore } from "../../util/category"
@@ -99,6 +102,8 @@ async function queryDisplay() {
 	}
 }
 
+const commitUndo = useCommitUndo()
+
 onMounted(() => {
 	watch(
 		() => props.modelValue,
@@ -130,6 +135,7 @@ function onSelect(item: TwitchCategory) {
 	console.log("Select!", filterBox.value)
 	model.value = item.id
 	filterBox.value?.blur()
+	commitUndo()
 }
 
 //Key Events
