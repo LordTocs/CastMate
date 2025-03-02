@@ -1,6 +1,12 @@
 <template>
 	<div class="group-ref p-1 pt-4">
-		<data-input v-model="groupRef" :schema="groupSchema" class="flex-grow-1 flex-shrink-0" style="width: 0" />
+		<data-input
+			v-model="groupRef"
+			:schema="groupSchema"
+			class="flex-grow-1 flex-shrink-0"
+			style="width: 0"
+			local-path="group"
+		/>
 
 		<p-button text size="small" icon="mdi mdi-delete" @click="deleteMe"></p-button>
 		<p-button

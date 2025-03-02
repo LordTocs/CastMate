@@ -15,20 +15,25 @@
 			class="p-inputtext p-component input-box-internal"
 			:class="{ 'focus-outline': focused, 'no-left-bezel': !bezelLeft, 'no-right-bezel': !bezelRight }"
 			:tabindex="tabIndex"
-			style="width: unset"
+			style="width: unset; max-width: 100%"
 			@focus="$emit('focus', $event)"
 			@blur="$emit('blur', $event)"
+			@click="$emit('click', $event)"
+			ref="inputDiv"
 		>
-			<slot v-if="model != null && model !== ''">
+			<slot name="always-render" :inputDiv="inputDiv"></slot>
+			<slot v-if="((model != null && model !== '') || focused) && inputDiv" :input-div="inputDiv">
 				<span class="model-span">{{ model }}</span>
 			</slot>
-			<span v-else-if="placeholder"> {{ placeholder }}</span>
+			<span v-else-if="placeholder">{{ placeholder }}</span>
 			<span v-else>&nbsp;</span>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue"
+
 const props = withDefaults(
 	defineProps<{
 		model: any
@@ -45,6 +50,20 @@ const props = withDefaults(
 		bezelRight: true,
 	}
 )
+
+const inputDiv = ref<HTMLElement>()
+
+defineEmits(["blur", "focus", "click"])
+
+defineExpose({
+	inputDiv,
+	focus() {
+		inputDiv.value?.focus()
+	},
+	scrollIntoView() {
+		inputDiv.value?.scrollIntoView()
+	},
+})
 </script>
 
 <style scoped>
@@ -56,11 +75,12 @@ const props = withDefaults(
 }
 
 .input-box-internal:hover {
-	border-color: var(--primary-color);
+	border-color: var(--p-primary-color);
 }
 
 .input-box {
 	width: 0;
+	flex: 1;
 }
 
 .model-span {

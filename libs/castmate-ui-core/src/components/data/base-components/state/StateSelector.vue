@@ -30,17 +30,14 @@
 			</template>
 
 			<template #item="{ item, focused, highlighted, onClick }">
-				<li
-					class="p-dropdown-item"
-					:class="{ 'p-focus': focused, 'p-highlight': highlighted }"
-					:data-p-highlight="highlighted"
-					:data-p-focused="focused"
-					:aria-label="`${item.plugin}.${item.state}`"
-					:aria-selected="highlighted"
+				<drop-list-item
 					@click="onClick"
+					:focused="focused"
+					:highlighted="highlighted"
+					:label="`${item.plugin}.${item.state}`"
 				>
 					<state-list-item :model-value="(item as any)" />
-				</li>
+				</drop-list-item>
 			</template>
 		</c-autocomplete>
 	</label-floater>
@@ -52,6 +49,8 @@ import CAutocomplete from "../CAutocomplete.vue"
 import { usePluginStore } from "../../../../plugins/plugin-store"
 import StateListItem from "./StateListItem.vue"
 import LabelFloater from "../LabelFloater.vue"
+import DropListItem from "../DropListItem.vue"
+import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{
 	modelValue: { plugin: string | undefined; state: string | undefined } | undefined
@@ -59,7 +58,10 @@ const props = defineProps<{
 	inputId: string
 	label?: string
 	noFloat?: boolean
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

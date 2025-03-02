@@ -32,6 +32,8 @@ import dashboardPlugin from "castmate-plugin-dashboards-main"
 import randomPlugin from "castmate-plugin-random-main"
 import remotePlugin from "castmate-plugin-remote-main"
 
+import blueskyPlugin from "castmate-plugin-bluesky-main"
+
 import castmatePlugin from "./builtin-plugin"
 import { WebService, Plugin } from "castmate-core"
 import { migratePlugin } from "./migration/old-migration"
@@ -47,10 +49,9 @@ export async function loadPlugins() {
 	await loadPlugin(castmatePlugin)
 	await loadPlugin(randomPlugin)
 	await loadPlugin(overlayPlugin)
-	await loadPlugin(dashboardPlugin)
+	//await loadPlugin(dashboardPlugin)
 
 	const promises = [
-		loadPlugin(variablesPlugin),
 		loadPlugin(timePlugin),
 		loadPlugin(twitchPlugin),
 		loadPlugin(discordPlugin),
@@ -63,8 +64,12 @@ export async function loadPlugins() {
 		loadPlugin(voicemodPlugin),
 		loadPlugin(minecraftPlugin),
 		loadPlugin(remotePlugin),
+		loadPlugin(blueskyPlugin),
 	]
+
 	await Promise.allSettled(promises)
+
+	await loadPlugin(variablesPlugin)
 
 	await loadPlugin(spellcastPlugin)
 

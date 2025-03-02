@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { CSSProperties, computed, ref, useModel } from "vue"
-import { usePanQuery, usePanState, usePropagationStop } from "../../main"
+import { useCommitUndo, usePanQuery, usePanState, usePropagationStop } from "../../main"
 import { useEventListener } from "@vueuse/core"
 
 const props = withDefaults(
@@ -92,6 +92,8 @@ const positioningStyle = computed<CSSProperties>(() => ({
 const dragOffsetX = ref(0)
 const dragOffsetY = ref(0)
 const grabbedHandle = ref<string>()
+
+const commitUndo = useCommitUndo()
 
 const stopPropagation = usePropagationStop()
 
@@ -232,6 +234,9 @@ useEventListener("mouseup", (ev) => {
 
 	ev.preventDefault()
 	ev.stopImmediatePropagation()
+
+	console.log("Drag Stopped")
+	commitUndo()
 
 	stopNextClick()
 })

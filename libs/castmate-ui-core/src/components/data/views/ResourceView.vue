@@ -1,5 +1,5 @@
 <template>
-	<span class="data-label" v-if="schema.name">{{ schema.name }}: </span>
+	<span class="data-label" v-if="schema.name && !noLabel">{{ schema.name }}: </span>
 	<component :is="resourceView" :resource-id="modelValue" :resource-type="props.schema.resourceType" />
 </template>
 

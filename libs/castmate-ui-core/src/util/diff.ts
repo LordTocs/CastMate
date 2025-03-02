@@ -1,8 +1,12 @@
 import { isObject } from "@vueuse/core"
 import _cloneDeep from "lodash/cloneDeep"
+import _isEqual from "lodash/isEqual"
 import { DiffOpCode, iterDiff } from "./myers-diff"
+import { joinDataPath } from "./data-binding"
 
-export function computeDataDiff(a: any, b: any) {
+export type DataDiff = GenericDiff<any> | ArrayDiff | ObjectDiff
+
+export function computeDataDiff(a: any, b: any): DataDiff | undefined {
 	if (Array.isArray(a)) {
 		if (!Array.isArray(b)) {
 			// Replace
@@ -39,6 +43,109 @@ export function computeDataDiff(a: any, b: any) {
 	return undefined
 }
 
+//APPLY
+
+function applyDataDiffArray(arr: any, diff: ArrayDiff) {
+	if (!Array.isArray(arr)) throw new Error("Diff Type Mismatch")
+	for (const op of diff.ops) {
+		if (op.type == "delete") {
+			arr.splice(op.index, 1)
+		} else if (op.type == "insert") {
+			arr.splice(op.index, 0, op.value)
+		} else if (op.type == "diff") {
+			applyDataDiff(arr, op.index, op.diff)
+		}
+	}
+}
+
+function applyDataDiffObject(obj: any, diff: ObjectDiff) {
+	if (typeof obj != "object") throw new Error("Diff Type Mismatch")
+	for (const prop in diff.properties) {
+		const op = diff.properties[prop]
+		if (op.op == "added") {
+			obj[prop] = op.value
+		} else if (op.op == "removed") {
+			delete obj[prop]
+		} else if (op.op == "diff") {
+			applyDataDiff(obj, prop, op.diff)
+		}
+	}
+}
+
+export function applyDataDiff<T>(parent: T, key: keyof T, diff: DataDiff) {
+	if (diff.type == "array") {
+		applyDataDiffArray(parent[key], diff)
+	} else if (diff.type == "object") {
+		applyDataDiffObject(parent[key], diff)
+	} else if (diff.type == "generic") {
+		parent[key] = diff.newValue
+	}
+}
+
+function applyInvDataDiffArray(arr: any, diff: ArrayDiff) {
+	if (!Array.isArray(arr)) throw new Error("Diff Type Mismatch")
+
+	for (let i = diff.ops.length - 1; i >= 0; --i) {
+		const op = diff.ops[i]
+		if (op.type == "delete") {
+			arr.splice(op.index, 0, op.oldValue)
+		} else if (op.type == "insert") {
+			arr.splice(op.index, 1)
+		} else if (op.type == "diff") {
+			applyInvDataDiff(arr, op.index, op.diff)
+		}
+	}
+}
+
+function applyInvDataDiffObject(obj: any, diff: ObjectDiff) {
+	if (typeof obj != "object") throw new Error("Diff Type Mismatch")
+	for (const prop in diff.properties) {
+		const op = diff.properties[prop]
+		if (op.op == "added") {
+			delete obj[prop]
+		} else if (op.op == "removed") {
+			obj[prop] = op.oldValue
+		} else if (op.op == "diff") {
+			applyInvDataDiff(obj, prop, op.diff)
+		}
+	}
+}
+
+export function applyInvDataDiff<T>(parent: T, key: keyof T, diff: DataDiff) {
+	if (diff.type == "array") {
+		applyInvDataDiffArray(parent[key], diff)
+	} else if (diff.type == "object") {
+		applyInvDataDiffObject(parent[key], diff)
+	} else if (diff.type == "generic") {
+		parent[key] = diff.oldValue
+	}
+}
+
+///PATHS
+export function getInvDataDiffPath(diff: DataDiff): string {
+	if (diff.type == "array") {
+		const op = diff.ops[diff.ops.length - 1]
+		if (op.type == "insert" || op.type == "delete") {
+			return `[${op.index}]`
+		}
+
+		return joinDataPath(`[${op.index}]`, getInvDataDiffPath(op.diff))
+	} else if (diff.type == "object") {
+		const keys = Object.keys(diff.properties)
+		const firstKey = keys[0]
+		if (!firstKey) throw new Error("Weird Diff Object")
+
+		const op = diff.properties[firstKey]
+
+		if (op.op == "added" || op.op == "removed") return firstKey
+
+		return joinDataPath(firstKey, getInvDataDiffPath(op.diff))
+	}
+	return ""
+}
+
+///UTIL
+
 interface GenericDiff<T = any> {
 	type: "generic"
 	oldValue: T
@@ -71,6 +178,15 @@ interface ObjectDiff {
 	properties: {
 		[key: PropertyKey]: PropChange
 	}
+}
+
+function dataCompare(a: any, b: any) {
+	if (isObject(a) && isObject(b)) {
+		if ("id" in a && "id" in b) {
+			return a.id == b.id
+		}
+	}
+	return _isEqual(a, b)
 }
 
 function computeObjectDiff(a: Obj, b: Obj) {
@@ -150,8 +266,8 @@ function computeArrayDiff(a: any[], b: any[]): ArrayDiff | undefined {
 	const result: ArrayDiffOp[] = []
 
 	let index = 0
-	for (let diffOp of iterDiff(a, b)) {
-		console.log("ArrDiff", diffOp)
+	for (let diffOp of iterDiff(a, b, dataCompare)) {
+		//console.log("ArrDiff", diffOp)
 		if (diffOp.type == DiffOpCode.Equal) {
 			const subdiff = computeDataDiff(diffOp.oldValue, diffOp.newValue)
 			if (subdiff) {

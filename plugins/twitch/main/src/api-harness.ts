@@ -1,8 +1,7 @@
 import { EventSubWsListener } from "@twurple/eventsub-ws"
 import { TwitchAccount } from "./twitch-auth"
 import { ChatClient } from "@twurple/chat"
-import { PubSubClient } from "@twurple/pubsub"
-import { Service, onLoad, onUnload, usePluginLogger } from "castmate-core"
+import { Service, isCastMate, onLoad, onUnload, usePluginLogger } from "castmate-core"
 import { EventList } from "castmate-core/src/util/events"
 
 const logger = usePluginLogger("twitch")
@@ -23,11 +22,6 @@ export const TwitchAPIService = Service(
 		private _chatClient: ChatClient
 		get chatClient() {
 			return this._chatClient
-		}
-
-		private _pubsubClient: PubSubClient
-		get pubsubClient() {
-			return this._pubsubClient
 		}
 
 		private _eventsub: EventSubWsListener
@@ -114,39 +108,37 @@ export const TwitchAPIService = Service(
 		private async onReauthChannel() {
 			const channelAccount = TwitchAccount.channel
 
-			this._pubsubClient?.removeAllHandlers()
-			this._eventsub?.stop()
-
-			this._pubsubClient = new PubSubClient({
-				authProvider: channelAccount,
-				logger: twurpleLog,
-			})
-
-			this._eventsub = new EventSubWsListener({
-				apiClient: channelAccount.apiClient,
-				logger: twurpleLog,
-			})
-
 			logger.log("Reauthing Channel")
+
+			if (isCastMate()) {
+				this._eventsub?.stop()
+
+				this._eventsub = new EventSubWsListener({
+					apiClient: channelAccount.apiClient,
+					logger: twurpleLog,
+				})
+			}
 
 			//@ts-ignore Damned type system
 			await this.onChannelReauthList.run(channelAccount, this)
 
-			this.eventsub.onSubscriptionCreateFailure((sub, error) => {
-				logger.error("ERROR WITH EVENTSUB", sub.id)
-				logger.error(error)
-			})
+			if (isCastMate()) {
+				this.eventsub.onSubscriptionCreateFailure((sub, error) => {
+					logger.error("ERROR WITH EVENTSUB", sub.id)
+					logger.error(error)
+				})
 
-			this.eventsub.onSubscriptionCreateSuccess((event, sub) => {
-				logger.log("Listening to eventsub", event.id, sub.id)
-			})
+				this.eventsub.onSubscriptionCreateSuccess((event, sub) => {
+					logger.log("Listening to eventsub", event.id, sub.id)
+				})
 
-			this.eventsub.onSubscriptionDeleteFailure((sub, error) => {
-				logger.error("ERROR DELETING EVENTSUB", sub.id)
-				logger.error(error)
-			})
+				this.eventsub.onSubscriptionDeleteFailure((sub, error) => {
+					logger.error("ERROR DELETING EVENTSUB", sub.id)
+					logger.error(error)
+				})
 
-			this.eventsub.start()
+				this.eventsub.start()
+			}
 
 			//Restart the bot stuffs since we've changed main channel.
 			await this.onReauthBot()

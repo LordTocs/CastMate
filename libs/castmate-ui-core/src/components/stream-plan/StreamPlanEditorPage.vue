@@ -5,11 +5,13 @@
 			label="On Activate"
 			v-model="model.activationAutomation"
 			v-model:view="view.activationAutomation"
+			local-path="activationAutomation"
 		/>
 		<inline-automation-edit
 			label="On Deactivate"
 			v-model="model.deactivationAutomation"
 			v-model:view="view.deactivationAutomation"
+			local-path="deactivationAutomation"
 		/>
 
 		<document-data-collection

@@ -24,6 +24,7 @@ import { ViewerData } from "./viewer-data/viewer-data"
 import { SatelliteService } from "./satellite/satellite-service"
 import { SatelliteResources } from "./satellite/satellite-resource"
 import { SatelliteMedia } from "./satellite/satellite-media"
+import { setAppMode } from "./util/init-mode"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -78,6 +79,7 @@ export async function setupCastMateDirectories(userOverride?: string) {
 const notifyRendererInitialSetupFinished = defineCallableIPC<() => void>("castmate", "initialSetupFinished")
 
 export async function initializeCastMate() {
+	setAppMode("castmate")
 	globalLogger.log("Initing Castmate")
 	AnalyticsService.initialize()
 	await AnalyticsService.getInstance().initialize()
@@ -92,9 +94,9 @@ export async function initializeCastMate() {
 	PluginManager.initialize()
 	setupMedia()
 	ResourceRegistry.initialize()
-	PubSubManager.initialize("castmate")
-	SatelliteService.initialize("castmate")
-	SatelliteResources.initialize("castmate")
+	PubSubManager.initialize()
+	SatelliteService.initialize()
+	SatelliteResources.initialize()
 	SequenceResolvers.initialize()
 	EmoteCache.initialize()
 	setupStreamPlans()
@@ -129,6 +131,7 @@ export async function finializeCastMateSetup() {
 }
 
 export async function initializeCastMateSatellite() {
+	setAppMode("satellite")
 	globalLogger.log("Initing Castmate Satellite")
 	AnalyticsService.initialize()
 	await AnalyticsService.getInstance().initialize()
@@ -143,9 +146,9 @@ export async function initializeCastMateSatellite() {
 	PluginManager.initialize()
 	//setupMedia()
 	ResourceRegistry.initialize()
-	PubSubManager.initialize("satellite")
-	SatelliteService.initialize("satellite")
-	SatelliteResources.initialize("satellite")
+	PubSubManager.initialize()
+	SatelliteService.initialize()
+	SatelliteResources.initialize()
 	SatelliteService.getInstance().startListening()
 	SatelliteMedia.initialize()
 	await SatelliteMedia.getInstance().initialize()
@@ -171,7 +174,7 @@ export async function finializeCastMateSatelliteSetup() {
 	//ProfileManager.initialize()
 	//await ProfileManager.getInstance().finishSetup()
 	//await EmoteCache.getInstance().initialize()
-	globalLogger.log("CastMate Init Complete")
+	globalLogger.log("CastMate Satellite Init Complete")
 	setupComplete = true
 	notifyRendererSetupFinished()
 }

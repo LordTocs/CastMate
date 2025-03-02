@@ -1,18 +1,20 @@
 <template>
 	<div ref="container" class="dialog-container">
-		<component
-			v-if="resource?.editDialog"
-			:is="resource.editDialog"
-			:resourceType="resourceType"
-			:resourceId="resourceId"
-			v-model="config"
-		/>
-		<div class="p-inputgroup mt-5" v-else>
-			<span class="p-float-label">
-				<p-input-text id="l" v-model="config" ref="nameInput" autofocus />
-				<label for="l"> Name </label>
-			</span>
-		</div>
+		<template v-if="config != null">
+			<component
+				v-if="resource?.editDialog"
+				:is="resource.editDialog"
+				:resourceType="resourceType"
+				:resourceId="resourceId"
+				v-model="config"
+			/>
+			<p-input-group class="mt-5" v-else>
+				<p-float-label variant="on">
+					<p-input-text id="l" v-model="config" ref="nameInput" autofocus />
+					<label for="l"> Name </label>
+				</p-float-label>
+			</p-input-group>
+		</template>
 		<div class="flex justify-content-end mt-1">
 			<p-button :label="isCreate ? 'Create' : 'Save'" @click="submit"></p-button>
 		</div>
@@ -25,6 +27,8 @@ import { provideScrollAttachable, useDialogRef, useResourceData } from "../../ma
 import PButton from "primevue/button"
 import PInputText from "primevue/inputtext"
 import { constructDefault } from "castmate-schema"
+import PInputGroup from "primevue/inputgroup"
+import PFloatLabel from "primevue/floatlabel"
 
 const props = defineProps<{}>()
 

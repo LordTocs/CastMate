@@ -1,33 +1,62 @@
 <template>
-	<div class="flex flex-row" @keydown="onKeyDown" @copy="onCopy" @cut="onCut" @paste="onPaste">
-		<document-path local-path="sequence">
-			<automation-edit-area v-model="model" v-model:view="view.automationView" style="flex: 1" :trigger="model" />
-		</document-path>
-		<flex-scroller class="config" v-if="showSelectionEdit">
-			<action-config-edit v-if="selectedActionDef" v-model="selectedActionDef" :sequence="selectedSequence" />
+	<div class="automation-edit" @keydown="onKeyDown" @copy="onCopy" @cut="onCut" @paste="onPaste" ref="editDiv">
+		<data-binding-path local-path="sequence">
+			<automation-edit-area
+				v-model="model"
+				v-model:view="view.automationView"
+				:trigger="model"
+				class="flex-grow-1 w-0"
+			/>
+		</data-binding-path>
+		<expander-slider
+			v-if="showSelectionEdit"
+			direction="vertical"
+			:container="editDiv"
+			v-model="splitterPos"
+			:invert="true"
+		/>
+		<flex-scroller
+			class="config"
+			inner-class="px-2"
+			v-if="showSelectionEdit"
+			:style="{ width: `${splitterPos}px` }"
+		>
+			<action-config-edit
+				v-if="selectedActionDef"
+				v-model="selectedActionDef"
+				:sequence="selectedSequence"
+				:local-path="selectedActionPath"
+			/>
 			<trigger-config-edit v-else-if="selectedTriggerDef" v-model="selectedTriggerDef" />
 		</flex-scroller>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, useModel } from "vue"
+import { computed, ref, useModel } from "vue"
 import {
 	AutomationView,
-	useDocumentPath,
 	useDocumentSelection,
-	DocumentPath,
-	joinDocumentPath,
 	FlexScroller,
+	ExpanderSlider,
+	DataBindingPath,
+	useDataUIBinding,
 } from "../../main"
-import { AnyAction, ActionStack, AutomationData, isActionStack, findActionById } from "castmate-schema"
+import {
+	AnyAction,
+	ActionStack,
+	AutomationData,
+	isActionStack,
+	findActionById,
+	getActionByParsedPath,
+} from "castmate-schema"
 import AutomationEditArea from "./AutomationEditArea.vue"
 import ActionConfigEdit from "./ActionConfigEdit.vue"
 import TriggerConfigEdit from "./TriggerConfigEdit.vue"
 import { findActionAndSequenceById } from "castmate-schema"
+import { useElementSize } from "@vueuse/core"
 
-const path = useDocumentPath()
-const selection = useDocumentSelection(() => joinDocumentPath(path.value, "sequence"))
+const selection = useDocumentSelection("sequence")
 
 interface AutomationPossiblyTrigger extends AutomationData {
 	plugin?: string
@@ -48,11 +77,39 @@ const props = defineProps<{
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
+const editDiv = ref<HTMLElement>()
+
+const editDivSize = useElementSize(editDiv)
+
+const splitterPos = ref(350)
+
+const minConfigSize = computed(() => {
+	if (!editDiv.value) return 25
+	if (editDivSize.width.value < 650) return 50
+	const size = (350 / editDivSize.width.value) * 100
+	console.log(size)
+	return size
+})
+
 const showSelectionEdit = computed(() => {
 	if (selection.value.length > 1 || selection.value.length == 0) {
 		return false
 	}
 	return true
+})
+
+const selectedActionPath = computed(() => {
+	if (selection.value.length > 1 || selection.value.length == 0) {
+		return undefined
+	}
+
+	const id = selection.value[0]
+
+	const actionSeq = findActionAndSequenceById(id, props.modelValue)
+
+	console.log("Selected Action Path", actionSeq?.path)
+
+	return actionSeq?.path
 })
 
 const selectedSequence = computed(() => {
@@ -114,13 +171,31 @@ function onCut(ev: ClipboardEvent) {
 function onPaste(ev: ClipboardEvent) {
 	ev.stopPropagation()
 }
+
+useDataUIBinding({
+	onChildFocus(subPath) {
+		console.log("AUTOM CHILD FOCUS", subPath)
+		const action = getActionByParsedPath(subPath, model.value)
+		if (action) {
+			selection.value = [action.id]
+		}
+	},
+	onChildScrollIntoView(subPath) {
+		console.log(subPath)
+	},
+})
 </script>
 
 <style scoped>
+.automation-edit {
+	height: 100%;
+	display: flex;
+}
+
 .config {
 	background-color: var(--surface-b);
 	user-select: none;
-	width: 350px;
 	overflow-y: auto;
+	height: 100%;
 }
 </style>

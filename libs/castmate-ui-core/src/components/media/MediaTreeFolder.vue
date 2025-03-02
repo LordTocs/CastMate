@@ -5,13 +5,19 @@
 			@click="toggleOpen"
 			:style="{ '--media-indent': indent ?? 0 }"
 		>
-			<div class="media-folder-spacer">
+			<div class="media-folder-spacer text-color-secondary">
 				<i class="mdi mdi-folder" v-if="!open" />
 				<i class="mdi mdi-folder-open" v-else />
 			</div>
-			{{ name }}
+			{{ folder.name }}
 		</div>
-		<media-tree :root="root" :files="files" v-if="open" :indent="(indent ?? 0) + 1" @click="onClick"></media-tree>
+		<media-tree
+			:items="folder.items"
+			v-if="isOpen"
+			:indent="(indent ?? 0) + 1"
+			@click="onClick"
+			:filtering="filtering"
+		></media-tree>
 	</div>
 </template>
 
@@ -22,17 +28,19 @@ import MediaTree from "./MediaTree.vue"
 import { usePropagationStop } from "../../main"
 
 import { useMediaDrop } from "../../main"
+import { MediaSubFolderItem } from "./media-tree-types"
 
 const props = defineProps<{
-	name: string
-	root: string
-	files: MediaFile[]
+	folder: MediaSubFolderItem
 	indent?: number
 	onClick?: (file: MediaFile) => any
 	allowDrop?: boolean
+	filtering?: boolean
 }>()
 
 const open = ref(false)
+
+const isOpen = computed(() => open.value || props.filtering)
 
 const stopPropagation = usePropagationStop()
 
@@ -45,7 +53,7 @@ function toggleOpen(ev: MouseEvent) {
 }
 
 const fixedRoot = computed(() => {
-	return `${props.root.startsWith("/") ? "" : "/"}${props.root.replace("\\", "/")}`
+	return `${props.folder.root.startsWith("/") ? "" : "/"}${props.folder.root.replace("\\", "/")}`
 })
 
 const folderElement = ref<HTMLElement>()
@@ -81,20 +89,12 @@ const { hoveringFiles } = useMediaDrop(() => (true ? folderElement.value : undef
 	font-size: var(--media-preview-size);
 }
 
-.media-tree-item:nth-child(even) {
-	background-color: var(--surface-a);
-}
-
-.media-tree-item:nth-child(odd) {
-	background-color: #2a2a2a;
-}
-
 .media-folder-row {
 	grid-column-start: 1;
 	grid-column-end: 4;
 }
 
 .file-hover {
-	border: solid 2px var(--primary-color);
+	border: solid 2px var(--p-primary-color);
 }
 </style>

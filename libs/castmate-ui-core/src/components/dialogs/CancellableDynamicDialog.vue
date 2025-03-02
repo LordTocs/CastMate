@@ -36,7 +36,7 @@
 
 import PDialog from "primevue/dialog"
 import { useDialogEvent, DynamicDialogInstance } from "../../util/dialog-helper"
-import { UniqueComponentId } from "primevue/utils"
+import { UniqueComponentId } from "@primevue/core/utils"
 import { ref } from "vue"
 
 const instanceMap = ref<Record<string, DynamicDialogInstance>>({})

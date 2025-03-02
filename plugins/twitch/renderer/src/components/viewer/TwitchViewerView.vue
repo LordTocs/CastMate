@@ -1,5 +1,5 @@
 <template>
-	<span class="data-label" v-if="schema.name">{{ schema.name }}:</span>
+	<span class="data-label" v-if="schema.name && !noLabel">{{ schema.name }}:</span>
 	<span class="inline-flex vertical-align-middle flex-row align-items-center" v-if="viewerDisplayData">
 		<img class="twitch-avatar" :src="viewerDisplayData.profilePicture" />
 		<span :style="{ color: viewerDisplayData.color }"> {{ viewerDisplayData.displayName }}</span>
@@ -34,5 +34,6 @@ const viewerDisplayData = computedAsync(async () => {
 	display: inline-block;
 	height: 1em;
 	margin-right: 0.5em;
+	border-radius: 100%;
 }
 </style>

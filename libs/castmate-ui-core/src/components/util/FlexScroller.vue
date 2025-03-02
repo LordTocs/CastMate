@@ -33,31 +33,26 @@ function onScroll(ev: Event) {
 	}
 }
 
-watch(
-	() => props.scrollY,
-	() => {
-		if (!scroller.value || props.scrollY == null) return
-
-		scroller.value.scrollTop = props.scrollY
-	},
-	{ immediate: true }
-)
-
-watch(
-	() => props.scrollX,
-	() => {
-		if (!scroller.value || props.scrollX == null) return
-
-		scroller.value.scrollLeft = props.scrollX
-	},
-	{ immediate: true }
-)
-
 onMounted(() => {
-	if (!scroller.value || props.scrollY == null || props.scrollX == null) return
+	watch(
+		() => props.scrollY,
+		() => {
+			if (!scroller.value || props.scrollY == null) return
 
-	scroller.value.scrollTop = props.scrollY
-	scroller.value.scrollLeft = props.scrollX
+			scroller.value.scrollTop = props.scrollY
+		},
+		{ immediate: true }
+	)
+
+	watch(
+		() => props.scrollX,
+		() => {
+			if (!scroller.value || props.scrollX == null) return
+
+			scroller.value.scrollLeft = props.scrollX
+		},
+		{ immediate: true }
+	)
 })
 
 defineExpose({

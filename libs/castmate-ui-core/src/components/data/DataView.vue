@@ -1,5 +1,12 @@
 <template>
-	<component v-if="viewComponent" :is="viewComponent" :modelValue="modelObj" :schema="schema" :context="context" />
+	<component
+		v-if="viewComponent"
+		:is="viewComponent"
+		:modelValue="modelObj"
+		:schema="schema"
+		:context="context"
+		:no-label="noLabel"
+	/>
 </template>
 
 <script setup lang="ts">

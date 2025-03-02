@@ -37,6 +37,7 @@ import { computed, onMounted, ref } from "vue"
 import { ipcRenderer } from "electron"
 import { useIpcMessage, isDev } from "castmate-ui-core"
 import { useDialog } from "primevue/usedialog"
+import { usePageStore } from "../../util/page-store"
 
 async function close() {
 	await ipcRenderer.invoke("windowFuncs_close")
@@ -74,6 +75,8 @@ const props = defineProps<{
 
 const dialog = useDialog()
 
+const pageStore = usePageStore()
+
 const menuItems = computed<MenuItem[]>(() => {
 	const result: MenuItem[] = []
 
@@ -100,6 +103,14 @@ const menuItems = computed<MenuItem[]>(() => {
 		// 	}
 		// )
 	}
+
+	fileMenu.items?.push({
+		label: "Settings",
+		icon: "mdi mdi-cog",
+		command() {
+			pageStore.page = "settings"
+		},
+	})
 
 	fileMenu.items?.push({
 		label: "Exit",

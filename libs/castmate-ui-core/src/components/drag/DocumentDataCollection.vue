@@ -25,15 +25,14 @@
 				@dragend="itemDragEnd(i, $event)"
 				draggable="true"
 			>
-				<document-path :localPath="`[${data.id}]`">
-					<component
-						:is="dataComponent"
-						v-model="model[i]"
-						v-model:view="view[i]"
-						:selectedIds="selection"
-						@delete="deleteItem(i)"
-					></component>
-				</document-path>
+				<component
+					:is="dataComponent"
+					v-model="model[i]"
+					v-model:view="view[i]"
+					:selectedIds="selection"
+					@delete="deleteItem(i)"
+					:localPath="`[${i}]`"
+				></component>
 			</div>
 		</div>
 		<slot name="footer"></slot>
@@ -48,8 +47,8 @@ import { nanoid } from "nanoid/non-secure"
 import { DragEventWithDataTransfer, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../util/dragging"
 import { useSelectionRect } from "../../util/selection"
 import { getElementRelativeRect, isChildOfClass, usePropagationImmediateStop, usePropagationStop } from "../../util/dom"
-import { provideDocumentPath } from "../../main"
-import DocumentPath from "../document/DocumentPath.vue"
+import { provideLocalPath, useCommitUndo, useDataBinding } from "../../main"
+import DataBindingPath from "../data/binding/DataBindingPath.vue"
 import SelectDummy from "../util/SelectDummy.vue"
 
 import { useOrderedRefs } from "./OrderedTemplateRefs"
@@ -70,34 +69,23 @@ const props = withDefaults(
 	}
 )
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
-const path = provideDocumentPath(() => props.localPath)
+provideLocalPath(() => props.localPath)
 
-const selection = useDocumentSelection(path)
+const commitUndo = useCommitUndo()
+
+const selection = useDocumentSelection()
 
 ///DRAG HANDLERS
-
-type VueHTMLElement = HTMLElement & {
-	__vnode: VNode
-}
 
 const draggingItems = ref(false)
 const dragArea = ref<HTMLElement | null>(null)
 const dragHovering = ref(false)
-const dataComponents = ref<VueHTMLElement[]>([])
 const insertionIndex = ref<number>(0)
-
-/*
-const orderedDataComponents = computed(() => {
-	return model.value.map((i) =>
-		dataComponents.value.find((c) => {
-			console.log(Object)
-			return c.__vnode?.key == i.id
-		})
-	)
-})*/
 
 const { orderedElements: orderedDataComponents, setRef: setDataCompRef } = useOrderedRefs<HTMLElement>(
 	() => props.modelValue
@@ -109,33 +97,29 @@ function overlaps(from: { x: number; y: number }, to: { x: number; y: number }, 
 	return true
 }
 
-const selectState = useSelectionRect(
-	dragArea,
-	(from, to) => {
-		//console.log("Select", from, to)
-		const dragAreaElem = dragArea.value
-		if (!dragAreaElem) {
-			return []
+const selectState = useSelectionRect(dragArea, (from, to) => {
+	//console.log("Select", from, to)
+	const dragAreaElem = dragArea.value
+	if (!dragAreaElem) {
+		return []
+	}
+
+	const newSelection = []
+
+	for (let i = 0; i < orderedDataComponents.value.length; ++i) {
+		const comp = orderedDataComponents.value[i]
+		if (!comp) continue
+
+		const localRect = getElementRelativeRect(comp, dragAreaElem)
+		if (overlaps(from, to, localRect)) {
+			newSelection.push(model.value[i].id)
 		}
+	}
 
-		const newSelection = []
+	//console.log("Select", newSelection)
 
-		for (let i = 0; i < orderedDataComponents.value.length; ++i) {
-			const comp = orderedDataComponents.value[i]
-			if (!comp) continue
-
-			const localRect = getElementRelativeRect(comp, dragAreaElem)
-			if (overlaps(from, to, localRect)) {
-				newSelection.push(model.value[i].id)
-			}
-		}
-
-		//console.log("Select", newSelection)
-
-		return newSelection
-	},
-	path
-)
+	return newSelection
+})
 
 useDragOver(
 	dragArea,
@@ -226,6 +210,8 @@ useDrop(
 
 		console.log("NewModel", newModel)
 		console.log("NewView", newView)
+
+		commitUndo()
 	}
 )
 
@@ -333,6 +319,8 @@ function itemDragEnd(i: number, evt: DragEvent) {
 			//These items are dropped into another frame, remove them from our model
 			model.value = model.value.filter((i) => !selection.value.includes(i.id))
 			view.value = view.value.filter((i) => !selection.value.includes(i.id))
+
+			commitUndo()
 		}
 	} else if (evt.dataTransfer.dropEffect == "copy") {
 		//Copied somewhere
@@ -345,6 +333,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 function deleteItem(index: number) {
 	model.value.splice(index, 1)
 	view.value.splice(index, 1)
+	commitUndo()
 }
 
 /////////////////////////////////////////////
@@ -355,10 +344,11 @@ function deleteSelected() {
 	model.value = model.value.filter((i) => !selection.value.includes(i.id))
 	view.value = view.value.filter((i) => !selection.value.includes(i.id))
 	selection.value = []
+	commitUndo()
 }
 
 function onKeyDown(ev: KeyboardEvent) {
-	if (ev.key == "Delete") {
+	if (ev.key == "Delete" || ev.key == "Backspace") {
 		if (selection.value.length > 0) {
 			ev.preventDefault()
 			ev.stopPropagation()

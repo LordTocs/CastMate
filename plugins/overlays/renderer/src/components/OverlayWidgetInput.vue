@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { OverlayConfig, OverlayWidget, OverlayWidgetConfig, SchemaOverlayWidget } from "castmate-plugin-overlays-shared"
 import { ResourceData } from "castmate-schema"
-import { DataInputBase, SharedDataInputProps, CAutocomplete, useResourceArray } from "castmate-ui-core"
+import { DataInputBase, SharedDataInputProps, CAutocomplete, useResourceArray, useDataBinding } from "castmate-ui-core"
 import { computed, useModel } from "vue"
 
 const props = defineProps<
@@ -54,6 +54,8 @@ interface WidgetWithID extends OverlayWidget {
 }
 
 const model = useModel(props, "modelValue")
+
+useDataBinding(() => props.localPath)
 
 const modelId = computed({
 	get() {

@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<div class="flex flex-row">
-			<div class="p-inputgroup" style="flex-grow: 1; flex-shrink: 1" @contextmenu="onContext">
+			<p-input-group style="flex-grow: 1; flex-shrink: 1" @contextmenu="onContext">
 				<slot name="prepend" v-if="!(canTemplate && templateMode)"></slot>
 				<label-floater :model-value="modelValue" :label="schema.name" :no-float="noFloat" v-slot="labelProps">
 					<template-toggle
@@ -15,7 +15,7 @@
 					</template-toggle>
 				</label-floater>
 				<slot name="extra" v-if="!(canTemplate && templateMode)"></slot>
-			</div>
+			</p-input-group>
 
 			<data-input-base-menu
 				v-model="model"
@@ -28,20 +28,21 @@
 			/>
 		</div>
 
-		<div class="flex flex-row">
+		<!-- <div class="flex flex-row">
 			<error-label :error-message="errorMessage" />
-		</div>
+		</div> -->
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, onMounted, ref, useModel } from "vue"
+import { computed, markRaw, onBeforeMount, onMounted, ref, useModel } from "vue"
 import { LabelFloater, TemplateToggle, defaultStringIsTemplate } from "../../../main"
 import ErrorLabel from "./ErrorLabel.vue"
 import { Schema } from "castmate-schema"
 import { useValidator } from "../../../util/validation"
 
 import type { MenuItem } from "primevue/menuitem"
+import PInputGroup from "primevue/inputgroup"
 
 import DataInputBaseMenu from "./DataInputBaseMenu.vue"
 
@@ -73,7 +74,7 @@ const canTemplate = computed(() => !!props.schema.template)
 
 const templateMode = ref(false)
 
-onMounted(() => {
+onBeforeMount(() => {
 	if (canTemplate.value) {
 		templateMode.value = props.isTemplate(props.modelValue)
 	}

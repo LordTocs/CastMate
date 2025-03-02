@@ -23,15 +23,14 @@
 <script setup lang="ts">
 import { OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import {
-	PanArea,
 	PanAreaResizable,
-	useDocumentPath,
 	useDocumentSelection,
 	useFullState,
 	useIsSelected,
 	CContextMenu,
 	NameDialog,
 	useMediaStore,
+	useDataBinding,
 } from "castmate-ui-core"
 import { ComputedRef, computed, inject, markRaw, onMounted, provide, ref, useModel, watch } from "vue"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
@@ -41,9 +40,8 @@ import { CastMateBridgeImplementation, provideEditorMediaResolver } from "castma
 import { useDialog } from "primevue/usedialog"
 import type { MenuItem } from "primevue/menuitem"
 
-const documentPath = useDocumentPath()
-const isSelected = useIsSelected(documentPath, () => props.modelValue.id)
-const selection = useDocumentSelection(documentPath)
+const isSelected = useIsSelected(() => props.modelValue.id)
+const selection = useDocumentSelection()
 
 const isOnlySelection = computed(() => {
 	return isSelected.value && selection.value.length == 1
@@ -51,7 +49,10 @@ const isOnlySelection = computed(() => {
 
 const props = defineProps<{
 	modelValue: OverlayWidgetConfig
+	localPath?: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 onMounted(() => {
 	console.log("Mount Widget Edit", props.modelValue)

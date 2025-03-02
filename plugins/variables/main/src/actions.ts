@@ -1,4 +1,4 @@
-import { defineAction, onLoad, onUnload, usePluginLogger } from "castmate-core"
+import { defineAction, exposeSchema, onLoad, onUnload, usePluginLogger } from "castmate-core"
 import { VariableManager } from "./variable-manager"
 import { DynamicType, Range } from "castmate-schema"
 
@@ -57,7 +57,9 @@ export function setupVariableActions() {
 
 			if (!variable) return //TODO: Log
 
-			variable.ref.value = config.value
+			const exposedValue = await exposeSchema(variable.schema, config.value)
+
+			variable.ref.value = exposedValue
 		},
 	})
 

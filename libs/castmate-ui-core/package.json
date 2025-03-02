@@ -15,11 +15,11 @@
 		"@vueuse/core": "*",
 		"castmate-schema": "workspace:^",
 		"chromatism2": "*",
-		"electron": "29.4.5",
+		"electron": "^34.2.0",
 		"nanoid": "^5.0.7",
 		"pinia": "^2.1.7",
-		"primevue": "3.53.0",
-		"vue": "^3.4.23"
+		"primevue": "^4.2.4",
+		"vue": "^3.5.13"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "4.6.2",

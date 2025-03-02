@@ -30,6 +30,7 @@
 						:is="action?.actionComponent ?? DefaultActionComponent"
 						:plugin="model.plugin"
 						:action="model.action"
+						v-bind="action?.componentExtraProps"
 						v-if="action?.type == 'regular'"
 						class="time-action-custom"
 					/>
@@ -79,7 +80,6 @@ import {
 	getElementRelativeRect,
 	useAction,
 	useActionColors,
-	useDocumentPath,
 	useIsSelected,
 	TextHider,
 	useActionTestTime,
@@ -255,7 +255,7 @@ function onAutomationDrop(sequence: Sequence, offset: { x: number; y: number; wi
 	}
 }
 
-const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
+const isSelected = useIsSelected(() => props.modelValue.id)
 const offsetEdits = ref<InstanceType<typeof OffsetSequenceEdit>[]>([])
 
 const testTime = useActionTestTime(() => props.modelValue.id)
@@ -348,8 +348,7 @@ defineExpose({
 	},
 })
 
-const documentPath = useDocumentPath()
-const selection = useDocumentSelection(documentPath)
+const selection = useDocumentSelection()
 
 function onDurationInteraction() {
 	selection.value = [model.value.id]

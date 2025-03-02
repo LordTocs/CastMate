@@ -26,7 +26,7 @@ const props = defineProps<{
 }>()
 
 const model = useModel(props, "modelValue")
-provide("docking-frame", model.value)
+provide("docking-frame", model)
 
 const dockingStore = useDockingStore()
 

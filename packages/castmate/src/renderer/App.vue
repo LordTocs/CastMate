@@ -1,6 +1,7 @@
 <template>
 	<div class="app" @keydown="onKeyDown" tabindex="-1">
 		<system-bar title="Hello World"></system-bar>
+		<toast position="bottom-left" style="width: 17rem" />
 		<div class="app-row" v-if="initStore.inited">
 			<project-view />
 			<docking-area style="flex: 1" v-model="dockingStore.rootDockArea" />
@@ -27,6 +28,7 @@ import {
 	useIpcMessage,
 	useSaveActiveTab,
 	useSaveAllTabs,
+	useUndoActiveTab,
 } from "castmate-ui-core"
 import ProjectView from "./components/project/ProjectView.vue"
 
@@ -40,6 +42,8 @@ import { useDialog } from "primevue/usedialog"
 import MigrationDialog from "./components/migration/MigrationDialog.vue"
 import FirstTimeSetupDialog from "./components/setup/FirstTimeSetupDialog.vue"
 import UpdateDialog from "./components/updates/UpdateDialog.vue"
+
+import Toast from "primevue/toast"
 
 const initStore = useInitStore()
 const dockingStore = useDockingStore()
@@ -138,6 +142,8 @@ onMounted(async () => {
 const saveActiveTab = useSaveActiveTab()
 const saveAllTabs = useSaveAllTabs()
 
+const undoActiveTab = useUndoActiveTab()
+
 function onKeyDown(ev: KeyboardEvent) {
 	if (ev.ctrlKey && ev.code == "KeyS") {
 		if (ev.shiftKey) {
@@ -145,6 +151,14 @@ function onKeyDown(ev: KeyboardEvent) {
 		} else {
 			saveActiveTab()
 		}
+		return ev.preventDefault()
+	}
+
+	if (ev.ctrlKey && ev.code == "KeyZ") {
+		console.log("UNDO UNDO UNDO!")
+		ev.preventDefault()
+
+		undoActiveTab()
 	}
 }
 </script>

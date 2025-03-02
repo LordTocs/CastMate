@@ -1,5 +1,5 @@
 export interface SharedDataInputProps {
-	localPath?: string
+	localPath: string
 	noFloat?: boolean
 	context?: any
 	secret?: boolean
@@ -8,6 +8,7 @@ export interface SharedDataInputProps {
 
 export interface SharedDataViewProps {
 	context?: any
+	noLabel?: boolean
 }
 
 export function defaultStringIsTemplate(value: any | string) {

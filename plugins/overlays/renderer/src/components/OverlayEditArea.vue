@@ -26,6 +26,7 @@
 				:key="widget.id"
 				ref="widgets"
 				@delete="deleteWidget(i)"
+				:local-path="`[${i}]`"
 			/>
 		</pan-area>
 		<div
@@ -47,12 +48,12 @@ import {
 	PanArea,
 	getElementRelativeRect,
 	rectangleOverlaps,
-	useDocumentPath,
 	useDocumentSelection,
-	usePanState,
 	usePropagationStop,
 	useSelectionRect,
 	SelectDummy,
+	useDataBinding,
+	useDataUIBinding,
 } from "castmate-ui-core"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
@@ -67,6 +68,8 @@ const props = defineProps<{
 	modelValue: OverlayConfig
 	view: OverlayEditorView
 }>()
+
+useDataBinding(() => "widgets")
 
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
@@ -89,51 +92,44 @@ function deleteWidget(idx: number) {
 
 const lastSelectPos = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 
-const path = useDocumentPath()
-const selection = useDocumentSelection(path)
+const selection = useDocumentSelection()
 const {
 	selecting,
 	from: selectFrom,
 	to: selectTo,
-} = useSelectionRect(
-	editArea,
-	(from, to) => {
-		const areaElem = editArea.value
-		if (!areaElem) return []
+} = useSelectionRect(editArea, (from, to) => {
+	const areaElem = editArea.value
+	if (!areaElem) return []
 
-		const selectX =
-			(to.x - view.value.editView.panState.panX) / zoomScale.value / view.value.editView.panState.zoomX
-		const selectY =
-			(to.y - view.value.editView.panState.panY) / zoomScale.value / view.value.editView.panState.zoomY
+	const selectX = (to.x - view.value.editView.panState.panX) / zoomScale.value / view.value.editView.panState.zoomX
+	const selectY = (to.y - view.value.editView.panState.panY) / zoomScale.value / view.value.editView.panState.zoomY
 
-		lastSelectPos.value = {
-			x: selectX,
-			y: selectY,
+	lastSelectPos.value = {
+		x: selectX,
+		y: selectY,
+	}
+
+	const newSelect: string[] = []
+
+	for (let i = 0; i < widgets.value.length; ++i) {
+		const widget = widgets.value[i]
+		if (!widget.frame) {
+			console.error("NO FRAME ON WIDGET", i)
+			continue
 		}
 
-		const newSelect: string[] = []
+		if (props.modelValue.widgets[i].locked) continue
 
-		for (let i = 0; i < widgets.value.length; ++i) {
-			const widget = widgets.value[i]
-			if (!widget.frame) {
-				console.error("NO FRAME ON WIDGET", i)
-				continue
-			}
-
-			if (props.modelValue.widgets[i].locked) continue
-
-			const localRect = getElementRelativeRect(widget.frame, areaElem)
-			const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
-			if (rectangleOverlaps(selrect, localRect)) {
-				const id = props.modelValue.widgets[i].id
-				newSelect.push(id)
-			}
+		const localRect = getElementRelativeRect(widget.frame, areaElem)
+		const selrect = new DOMRect(from.x, from.y, to.x - from.x, to.y - from.y)
+		if (rectangleOverlaps(selrect, localRect)) {
+			const id = props.modelValue.widgets[i].id
+			newSelect.push(id)
 		}
+	}
 
-		return newSelect
-	},
-	path
-)
+	return newSelect
+})
 
 provide("overlay-zoom-scale", zoomScale)
 
@@ -253,6 +249,20 @@ function onFocus() {
 }
 
 function onBlur() {}
+
+useDataUIBinding({
+	onChildFocus(parsedPath) {
+		console.log("OVERLAY FOCUS", parsedPath)
+		const idx = Number(parsedPath[0])
+		if (isNaN(idx)) return
+
+		const id = model.value.widgets[idx]?.id
+
+		if (!id) return
+
+		selection.value = [id]
+	},
+})
 </script>
 
 <style scoped>

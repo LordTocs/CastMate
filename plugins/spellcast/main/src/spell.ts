@@ -21,6 +21,7 @@ import {
 	ProfileManager,
 	onCloudPubSubConnect,
 	onCloudPubSubBeforeDisconnect,
+	ResourceRegistry,
 } from "castmate-core"
 import {
 	SpellConfig,
@@ -118,6 +119,11 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 		return true
 	}
 
+	async setEnabled(enabled: boolean) {
+		const newSpellData = { ...this.config.spellData, enabled }
+		await this.applyConfig({ spellData: newSpellData })
+	}
+
 	static async create(config: SpellResourceConfig) {
 		const reward = new SpellHook()
 		reward._id = nanoid()
@@ -156,6 +162,8 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 
 	static async initialize(): Promise<void> {
 		await super.initialize()
+
+		ResourceRegistry.getInstance().exposeIPCFunction(this, "setEnabled")
 
 		const resolvedDir = resolveProjectPath(this.resourceDirectory)
 		await ensureDirectory(resolvedDir)
@@ -258,6 +266,7 @@ export class SpellHook extends Resource<SpellResourceConfig, SpellResourceState>
 			await super.applyConfig({
 				spellId: apiData._id,
 			})
+			await this.save()
 		}
 
 		//logger.log("Inited Spell State", apiData.name)

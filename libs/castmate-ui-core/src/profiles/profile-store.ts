@@ -58,7 +58,18 @@ function createProfileGroup(app: App<Element>) {
 				title: r.config.name,
 				icon: `mdi mdi-card-text-outline ${r.state.active ? "active-profile-icon" : ""}`,
 				open() {
-					dockingStore.openDocument(r.id, r.config, createProfileViewData(r), "profile")
+					dockingStore.openDocument(
+						r.id,
+						r.config,
+						createProfileViewData(r),
+						"profile",
+						computed(
+							() =>
+								`mdi mdi-card-text-outline ${
+									resources.value?.resources.get(r.id)?.state.active ? "active-profile-icon" : ""
+								}`
+						)
+					)
 				},
 				rename(name: string) {
 					resourceStore.applyResourceConfig("Profile", r.id, { name })
@@ -109,7 +120,13 @@ export function useOpenProfileDocument() {
 		const resource = resourceStore.value?.resources?.get(id)
 		if (!resource) return
 
-		dockingStore.openDocument(resource.id, resource.config, createProfileViewData(resource), "profile")
+		dockingStore.openDocument(
+			resource.id,
+			resource.config,
+			createProfileViewData(resource),
+			"profile",
+			() => `mdi mdi-card-text-outline ${resource.state.active ? "active-profile-icon" : ""}`
+		)
 	}
 }
 

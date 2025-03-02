@@ -1,14 +1,19 @@
-import { Toggle } from "castmate-schema"
+import { constructDefault, Toggle } from "castmate-schema"
 import {
 	ActionQueue,
 	Automation,
 	Profile,
+	ReactiveEffect,
 	SequenceRunner,
 	WebService,
 	defineAction,
 	definePlugin,
 	defineSetting,
+	defineTrigger,
+	forceRunWithEffect,
+	getSequenceHash,
 	onLoad,
+	onProfilesChanged,
 	runOnChange,
 } from "castmate-core"
 
@@ -130,6 +135,87 @@ export default definePlugin(
 
 				abortSignal.removeEventListener("abort", onabort)
 			},
+		})
+
+		const autoRunners = new Map<
+			string,
+			{
+				triggerHash: number
+				effect: ReactiveEffect
+			}
+		>()
+
+		const autoRun = defineTrigger({
+			id: "autoRun",
+			name: "Run On Change",
+			icon: "mdi mdi-cogs",
+			description: "Automatically triggers when the values it uses changes.",
+			config: {
+				type: Object,
+				properties: {},
+			},
+			context: {
+				type: Object,
+				properties: {
+					triggerId: { type: String, required: true, view: false },
+					profileId: { type: String, required: true, view: false },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (mapping.profileId != context.profileId) return false
+				if (mapping.triggerId != context.triggerId) return false
+				return true
+			},
+			runWrapper(inner, mapping) {
+				const key = `${mapping.profileId}.${mapping.triggerId}`
+				const runner = autoRunners.get(key)
+
+				if (runner) {
+					forceRunWithEffect(runner.effect, inner)
+				} else {
+					return inner()
+				}
+			},
+		})
+
+		onProfilesChanged((active, inactive) => {
+			for (const profile of active) {
+				for (const trigger of profile.iterTriggers(autoRun)) {
+					const key = `${profile.id}.${trigger.id}`
+
+					const existing = autoRunners.get(key)
+					const hash = getSequenceHash(trigger.sequence)
+					if (!existing) {
+						const effect = new ReactiveEffect(() => {
+							autoRun({
+								profileId: profile.id,
+								triggerId: trigger.id,
+							})
+						})
+						autoRunners.set(key, {
+							triggerHash: hash,
+							effect,
+						})
+						effect.run()
+					} else {
+						if (hash != existing.triggerHash) {
+							existing.triggerHash = hash
+							existing.effect.trigger()
+						}
+					}
+				}
+			}
+
+			for (const profile of inactive) {
+				for (const trigger of profile.iterTriggers(autoRun)) {
+					const key = `${profile.id}.${trigger.id}`
+					const existing = autoRunners.get(key)
+					if (existing) {
+						existing.effect.dispose()
+						autoRunners.delete(key)
+					}
+				}
+			}
 		})
 	}
 )

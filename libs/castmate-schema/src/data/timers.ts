@@ -149,6 +149,7 @@ declare module "../schema" {
 
 registerType("Timer", {
 	constructor: Timer,
+	icon: "mdi mdi-timer-outline",
 	canBeVariable: true,
 	async deserialize(value, schema): Promise<Timer> {
 		if (isTimer(value)) {

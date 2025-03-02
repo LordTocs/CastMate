@@ -42,6 +42,10 @@ import {
 	useDrop,
 	SelectionPos,
 	Selection,
+	useCommitUndo,
+	useDelayedCommitUndo,
+	DataBinding,
+	useBaseDataBinding,
 } from "../main"
 import { nanoid } from "nanoid/non-secure"
 import _cloneDeep from "lodash/cloneDeep"
@@ -86,6 +90,11 @@ export function provideAutomationEditState(
 	const dragging = ref<boolean>(false)
 	const dropCandidate = shallowRef<string | null>(null)
 	const dropCandidateDistance = ref<number>(defaultDistance)
+
+	//const commitUndo = useCommitUndo()
+	//Commits to undo, but does it on the next vue tick. Two calls before the next tick don't duplicate commit
+	const commitUndo = useCommitUndo()
+	const dataBinding = useBaseDataBinding()
 
 	const dropZones = ref<Record<string, DropZone[]>>({})
 	const sequenceLocalDrag = ref<LocalDragHandler>({ dragging: false, removeSequence: null, dropped: false })
@@ -194,17 +203,28 @@ export function provideAutomationEditState(
 
 		const dropZone = automationEditState.getZone(ev)
 
+		let needsUndoCommit = false
+
+		const sourceDataBinding = ev.dataTransfer.getData("data-binding-id")
+
 		//Use effectAllowed since for whatever reason dropEffect is always "none" (Probably chrome bug)
 		if (sequenceLocalDrag.value.dragging && ev.dataTransfer.effectAllowed == "move") {
 			console.log("Dropped Locally")
 			sequenceLocalDrag.value.dropped = true
 			//Local drop, we do removal here to avoid the v-model blowing up the element holding our dragend event.
 			sequenceLocalDrag.value.removeSequence?.()
+			needsUndoCommit = true
 		} else {
 			console.log("Dropped from Remote")
 			//Because of undo being document local, remote drops must always assign new Ids
 			assignNewIds(data)
 			sequenceLocalDrag.value.dropped = false
+			if (sourceDataBinding != dataBinding.id || ev.dataTransfer.dropEffect == "copy") {
+				console.log("needsUndo remote", sourceDataBinding, dataBinding.id, ev.dataTransfer.dropEffect)
+				//This is dropped from a remote automation AND from a different tab so we commit undo here
+				//If it's droped from the same tab but a remote automation it will commit in dragend
+				needsUndoCommit = true
+			}
 		}
 		const offset: { x: number; y: number } = JSON.parse(ev.dataTransfer.getData("automation-drag-offset"))
 
@@ -213,6 +233,11 @@ export function provideAutomationEditState(
 		} else {
 			//Create new floating sequence
 			createFloatingSequence(data, offset, ev)
+		}
+
+		if (needsUndoCommit) {
+			console.log("Commiting Undo From Drop")
+			commitUndo()
 		}
 	})
 
@@ -234,6 +259,9 @@ export function useSequenceDrag(
 
 	const dragging = ref<boolean>(false)
 	const draggingDelayed = ref<boolean>(false)
+
+	const dataBinding = useBaseDataBinding()
+	const commitUndo = useCommitUndo()
 
 	watch(dragging, (value) => {
 		setTimeout(() => {
@@ -298,6 +326,7 @@ export function useSequenceDrag(
 			assignNewIds(sequence)
 		}
 		ev.dataTransfer.setData("automation-sequence", JSON.stringify(sequence))
+		ev.dataTransfer.setData("data-binding-id", dataBinding.id)
 
 		if (
 			sequence.actions.length == 1 &&
@@ -320,17 +349,16 @@ export function useSequenceDrag(
 		if (!ev.dataTransfer) return
 		if (!automationEditState) return
 
-		console.log("DragEnd", ev.dataTransfer.dropEffect)
-
 		if (ev.dataTransfer.dropEffect == "none") {
 		} else if (ev.dataTransfer.dropEffect == "copy") {
 		} else if (ev.dataTransfer.dropEffect == "move") {
-			console.log(sequenceLocalDrag.value)
 			if (!sequenceLocalDrag.value.dropped) {
 				console.log("Removing Sequence in End")
 				//Pop the data now.
 				removeSequence()
 			}
+			console.log("Commiting Undo dragend")
+			commitUndo()
 		}
 
 		sequenceLocalDrag.value.dragging = false

@@ -13,6 +13,11 @@
 						<p-button @click="createDialog()"> Create Spell</p-button>
 					</div>
 				</template>
+				<p-column class="column-fit-width" header="Enabled">
+					<template #body="{ data }: { data: SpellHookResource }">
+						<spell-enable-switch :spell-id="data.id" />
+					</template>
+				</p-column>
 				<p-column class="column-fit-width">
 					<template #body="{ data }: { data: SpellHookResource }">
 						<spell-hook-preview :spell="data" />
@@ -42,6 +47,9 @@
 import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PButton from "primevue/button"
+
+import SpellEnableSwitch from "./SpellEnableSwitch.vue"
+
 import { ResourceData } from "castmate-schema"
 import SpellHookPreview from "./SpellHookPreview.vue"
 import {
@@ -57,17 +65,11 @@ type SpellHookResource = ResourceData<SpellResourceConfig>
 const spells = useResourceArray<SpellHookResource>("SpellHook")
 const resourceStore = useResourceStore()
 
-const editDialog = useResourceEditDialog("SpellHook", (id, data: SpellConfig) => {
-	resourceStore.applyResourceConfig("SpellHook", id, {
-		name: data.name,
-		spellData: {
-			enabled: data.enabled,
-			description: data.description,
-			bits: data.bits,
-			color: data.color,
-		},
-	})
-})
+async function changeEnabled(id: string, enabled: boolean) {
+	resourceStore.applyResourceConfig("SpellHook", id, { spellData: { enabled } })
+}
+
+const editDialog = useResourceEditDialog("SpellHook")
 const createDialog = useResourceCreateDialog("SpellHook")
 const deleteDialog = useResourceDeleteDialog("SpellHook")
 </script>

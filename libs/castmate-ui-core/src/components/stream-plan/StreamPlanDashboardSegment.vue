@@ -9,15 +9,30 @@
 					<div class="text-center">
 						<label class="text-color-secondary text-xs">Activation</label>
 					</div>
-					<sequence-mini-preview :sequence="segment.activationAutomation.sequence" :max-length="3" />
+					<sequence-mini-preview
+						class="justify-content-center"
+						:sequence="segment.activationAutomation.sequence"
+						:max-length="3"
+					/>
 				</div>
 				<div class="flex-grow-1">
 					<div class="text-center">
 						<label class="text-color-secondary text-xs">Deactivation</label>
 					</div>
-					<sequence-mini-preview :sequence="segment.deactivationAutomation.sequence" :max-length="3" />
+					<sequence-mini-preview
+						class="justify-content-center"
+						:sequence="segment.deactivationAutomation.sequence"
+						:max-length="3"
+					/>
 				</div>
 			</div>
+
+			<stream-plan-dashboard-segment-component
+				v-for="type in Object.keys(segment.components)"
+				:key="type"
+				:type="type"
+				:config="segment.components[type]"
+			/>
 		</div>
 		<div class="controls flex flex-row">
 			<p-button
@@ -28,7 +43,7 @@
 				severity="success"
 			></p-button>
 			<div class="flex-grow-1" />
-			<!-- <p-button size="small" text icon="mdi mdi-pencil"></p-button> -->
+			<p-button size="small" text icon="mdi mdi-pencil" @click="edit"></p-button>
 		</div>
 	</div>
 </template>
@@ -38,8 +53,10 @@ import { StreamPlanSegment } from "castmate-schema"
 import PButton from "primevue/button"
 
 import SequenceMiniPreview from "../automation/mini/SequenceMiniPreview.vue"
-import { useStreamPlanStore } from "./stream-plan-types"
+import { useStreamPlanStore, useSegmentEditDialog } from "./stream-plan-types"
 import { computed } from "vue"
+
+import StreamPlanDashboardSegmentComponent from "./StreamPlanDashboardSegmentComponent.vue"
 
 const planStore = useStreamPlanStore()
 
@@ -48,9 +65,17 @@ const active = computed(() => {
 })
 
 const props = defineProps<{
+	planId?: string
 	segment: StreamPlanSegment
 	activePlan: boolean
 }>()
+
+const editSegment = useSegmentEditDialog()
+
+function edit() {
+	if (!props.planId) return
+	editSegment(props.planId, props.segment.id)
+}
 
 function activate() {
 	planStore.setActiveSegment(props.segment.id)

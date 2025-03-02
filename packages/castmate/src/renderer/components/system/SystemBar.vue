@@ -45,13 +45,17 @@ import {
 	useOpenAutomationDocument,
 	useSaveActiveTab,
 	useSaveAllTabs,
+	useCloseAllTabs,
 } from "castmate-ui-core"
 import { useOpenSettings } from "../settings/SettingsTypes"
 import InputTestPage from "../test/InputTestPage.vue"
 import { useDialog } from "primevue/usedialog"
 import AboutPage from "../about/AboutPage.vue"
 
+const closeAllTabs = useCloseAllTabs()
+
 async function close() {
+	if (!(await closeAllTabs())) return
 	await ipcRenderer.invoke("windowFuncs_close")
 }
 
@@ -95,6 +99,8 @@ const resourceStore = useResourceStore()
 
 const openProfile = useOpenProfileDocument()
 const openAutomation = useOpenAutomationDocument()
+
+const dockingManager = useDockingStore()
 
 const saveActiveTab = useSaveActiveTab()
 const saveAllTabs = useSaveAllTabs()
@@ -191,20 +197,20 @@ const menuItems = computed<MenuItem[]>(() => {
 		}
 	)
 
-	if (isDev()) {
-		fileMenu.items?.push(
-			{
-				separator: true,
+	//if (isDev()) {
+	fileMenu.items?.push(
+		{
+			separator: true,
+		},
+		{
+			label: "Input Test",
+			icon: "mdi mdi-pencil",
+			command() {
+				dockingStore.openPage("input-test", "Input Test", "mdi mdi-pencil", InputTestPage)
 			},
-			{
-				label: "Input Test",
-				icon: "mdi mdi-pencil",
-				command() {
-					dockingStore.openPage("input-test", "Input Test", InputTestPage)
-				},
-			}
-		)
-	}
+		}
+	)
+	//}
 
 	fileMenu.items?.push({
 		label: "Exit",
@@ -224,7 +230,7 @@ const menuItems = computed<MenuItem[]>(() => {
 			label: "About",
 			icon: "mdi mdi-info",
 			command() {
-				dockingStore.openPage("about", "About", AboutPage)
+				dockingStore.openPage("about", "About", "mdi mdi-info", AboutPage)
 			},
 		},
 		{

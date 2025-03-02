@@ -12,6 +12,7 @@
 			v-if="allowMargin"
 			:edit-height-frac="0.23"
 			:edit-width-frac="0.2"
+			local-path="margin"
 		/>
 		<edge-edit
 			class="padding-edit"
@@ -19,6 +20,7 @@
 			v-if="allowPadding"
 			:edit-height-frac="0.46"
 			:edit-width-frac="0.4"
+			local-path="padding"
 		/>
 	</div>
 </template>
@@ -28,17 +30,8 @@ import EdgeEdit from "./EdgeEdit.vue"
 import { OverlayBlockStyle, OverlayEdgeInfo } from "castmate-plugin-overlays-shared"
 import { computed, ref, useModel } from "vue"
 
-import MarginPaddingNumEdit from "./MarginPaddingNumEdit.vue"
-import { useDefaulted, useDragValue } from "castmate-ui-core"
-
 const props = withDefaults(
 	defineProps<{
-		modelValue:
-			| {
-					margin: OverlayEdgeInfo
-					padding: OverlayEdgeInfo
-			  }
-			| undefined
 		allowMargin?: boolean
 		allowPadding?: boolean
 	}>(),
@@ -48,9 +41,10 @@ const props = withDefaults(
 	}
 )
 
-const model = useDefaulted(useModel(props, "modelValue"), () => {
-	return OverlayBlockStyle.factoryCreate()
-})
+const model = defineModel<{
+	margin: OverlayEdgeInfo
+	padding: OverlayEdgeInfo
+}>({ required: true })
 
 const editBoth = computed(() => props.allowMargin && props.allowPadding)
 const editOne = computed(() => (props.allowMargin && !props.allowPadding) || (!props.allowMargin && props.allowPadding))

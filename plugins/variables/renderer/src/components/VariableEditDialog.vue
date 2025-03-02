@@ -1,13 +1,13 @@
 <template>
 	<div ref="container" v-if="variableDef" class="variable-edit-dialog">
 		<div class="p-inputgroup var-edit">
-			<span class="p-float-label">
-				<variable-name-input v-model="variableDef.id" />
+			<p-float-label>
+				<variable-name-input v-model="variableDef.id" local-path="id" />
 				<label for="name"> Variable Name </label>
-			</span>
+			</p-float-label>
 		</div>
 		<div class="p-inputgroup var-edit">
-			<span class="p-float-label">
+			<p-float-label>
 				<p-dropdown
 					v-model="typeName"
 					:options="variableTypeOptions"
@@ -16,12 +16,13 @@
 					input-id="type"
 				/>
 				<label for="type"> Type </label>
-			</span>
+			</p-float-label>
 		</div>
 		<data-input
 			class="var-edit"
 			v-model="variableDef.defaultValue"
 			:schema="{ ...variableDef.schema, name: 'Default Value' }"
+			local-path="defaultValue"
 		/>
 		<div class="p-inputgroup var-edit">
 			<p-check-box binary input-id="check" v-model="variableDef.serialized" />
@@ -35,10 +36,11 @@
 
 <script setup lang="ts">
 import { computed, markRaw, onMounted, ref } from "vue"
-import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput } from "castmate-ui-core"
+import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput, CDropdown } from "castmate-ui-core"
 import _cloneDeep from "lodash/cloneDeep"
 
 import PDropdown from "primevue/dropdown"
+import PFloatLabel from "primevue/floatlabel"
 
 import { RendererVariableDefinition } from "../variable-store"
 import { getTypeByConstructor, getAllVariableTypes } from "castmate-schema"

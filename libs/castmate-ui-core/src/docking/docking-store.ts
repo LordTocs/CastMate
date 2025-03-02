@@ -1,31 +1,11 @@
 import { NamedData, useDocumentStore } from "./../util/document"
 import { defineStore } from "pinia"
-import { ref, computed, type Component, markRaw } from "vue"
+import { ref, computed, type Component, markRaw, MaybeRefOrGetter, toValue, reactive } from "vue"
 
 import { DockedArea, DockedFrame, DockedSplit, findAndRemoveTab, DockedTab } from "../main"
 import { nanoid } from "nanoid/non-secure"
 import _cloneDeep from "lodash/cloneDeep"
-
-function focusDocumentId(division: DockedFrame | DockedSplit, documentId: string) {
-	if (division.type == "frame") {
-		for (let tab of division.tabs) {
-			if (tab.documentId == documentId) {
-				//Focus the tab
-				//TODO: Actually focus the HTML element??
-				division.currentTab = tab.id
-				return true
-			}
-		}
-		return false
-	} else {
-		for (let div of division.divisions) {
-			if (focusDocumentId(div, documentId)) {
-				return true
-			}
-		}
-		return false
-	}
-}
+import DocumentPage from "../components/document/DocumentPage.vue"
 
 function focusTabId(division: DockedFrame | DockedSplit, tabId: string) {
 	if (division.type == "frame") {
@@ -140,45 +120,48 @@ export const useDockingStore = defineStore("docking", () => {
 	}
 
 	function getDocumentTabId(documentId: string) {
-		return findTabId(dockedInfo.value, (tab) => tab.documentId == documentId)?.id
+		return findTabId(dockedInfo.value, (tab) => tab.pageData?.documentId == documentId)?.id
 	}
 
-	function openDocument(documentId: string, data: NamedData, view: object, documentType: string) {
+	function openDocument(
+		documentId: string,
+		data: NamedData,
+		view: object,
+		documentType: string,
+		icon: MaybeRefOrGetter<string | Component>
+	) {
+		const idStr = `${documentType}.${documentId}`
+
 		//Check to see if there's a tab already open with this document id
-		if (focusDocumentId(dockedInfo.value, documentId)) {
+		if (focusTabId(dockedInfo.value, idStr)) {
 			return
 		}
 
 		//Document is not yet open... OPEN ONE
 		const doc = documentStore.addDocument(documentId, _cloneDeep(data), view, documentType)
 
-		let targetFrame = findFrame(dockedInfo.value, dockedInfo.value.focusedFrame)
-
-		if (!targetFrame) {
-			targetFrame = findFirstFrame(dockedInfo.value)
-		}
-
-		if (!targetFrame) {
-			//For whatever reason we don't have a frame, so make one!
-			targetFrame = {
-				id: nanoid(),
-				type: "frame",
-				currentTab: "",
-				tabs: [],
+		openPage(
+			idStr,
+			() => doc.data.name ?? documentId,
+			icon,
+			DocumentPage,
+			() => {
+				return {
+					documentId,
+					documentType,
+					dirty: doc.dirty,
+				}
 			}
-
-			dockedInfo.value.divisions.push(targetFrame)
-		}
-
-		const newTabId = nanoid()
-		targetFrame.tabs.push({
-			id: newTabId,
-			documentId: doc.id,
-		})
-		targetFrame.currentTab = newTabId
+		)
 	}
 
-	function openPage(id: string, title: string, page: Component, pageData?: any) {
+	function openPage(
+		id: string,
+		title: MaybeRefOrGetter<string>,
+		icon: MaybeRefOrGetter<Component | string>,
+		page: Component,
+		pageData?: MaybeRefOrGetter<object>
+	) {
 		if (focusTabId(dockedInfo.value, id)) {
 			return
 		}
@@ -201,12 +184,23 @@ export const useDockingStore = defineStore("docking", () => {
 			dockedInfo.value.divisions.push(targetFrame)
 		}
 
-		targetFrame.tabs.push({
-			id,
-			title,
-			page: markRaw(page),
-			pageData,
+		const iconComputed = computed(() => {
+			const iconValue = toValue(icon)
+			if (typeof iconValue == "string") {
+				return iconValue
+			}
+			return markRaw(iconValue)
 		})
+
+		targetFrame.tabs.push(
+			reactive({
+				id,
+				title: computed(() => toValue(title)),
+				icon: iconComputed,
+				page: markRaw(page),
+				pageData: computed(() => toValue(pageData)),
+			})
+		)
 		targetFrame.currentTab = id
 	}
 

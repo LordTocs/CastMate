@@ -1,32 +1,19 @@
 <template>
-	<div
-		class="p-dropdown p-inputwrapper"
-		:class="{
-			'p-filled': inputValue.length > 0 || focused,
-			'p-focused': focused,
-			'p-inputwrapper-filled': inputValue.length > 0 || focused,
-			'p-inputwrapper-focused': focused,
-		}"
-		:input-id="inputId"
-	>
-		<fake-input-backbone
-			ref="hiddenInput"
-			v-model="inputValue"
-			v-model:focused="focused"
-			v-model:selection="selection"
-			inputmode="numeric"
-			@blur="onBlur"
-			@focus="onFocus"
-			@keypress="onKeyPress"
-		/>
-		<div
-			class="p-dropdown-label p-component p-inputtext duration-input"
-			:class="{
-				'forced-focus': focused,
-			}"
-			ref="imposterDiv"
-			@click="onFakeClick"
-		>
+	<input-box :model="model" :focused="focused" :disabled="disabled" ref="inputBox" @click="onFakeClick">
+		<template #always-render>
+			<fake-input-backbone
+				ref="hiddenInput"
+				v-model="inputValue"
+				v-model:focused="focused"
+				v-model:selection="selection"
+				inputmode="numeric"
+				@blur="onBlur"
+				@focus="onFocus"
+				@keypress="onKeyPress"
+			/>
+		</template>
+
+		<template #default="{ inputDiv }">
 			<span class="prop-up"></span>
 			<fake-input-string
 				:text="inputHours"
@@ -37,7 +24,7 @@
 				@select-char="onCharSelect"
 				ref="fakeHours"
 				v-model:partial-select="hoursPartialSel"
-				:selection-container="imposterDiv"
+				:selection-container="inputDiv"
 				:drag-rect="dragState.dragRect"
 			/>
 			<fake-input-string
@@ -49,7 +36,7 @@
 				@select-char="onCharSelect"
 				ref="fakeMinutes"
 				v-model:partial-select="minutesPartialSel"
-				:selection-container="imposterDiv"
+				:selection-container="inputDiv"
 				:drag-rect="dragState.dragRect"
 			/>
 			<fake-input-string
@@ -62,11 +49,11 @@
 				@select-char="onCharSelect"
 				ref="fakeSeconds"
 				v-model:partial-select="secondsPartialSel"
-				:selection-container="imposterDiv"
+				:selection-container="inputDiv"
 				:drag-rect="dragState.dragRect"
 			/>
-		</div>
-	</div>
+		</template>
+	</input-box>
 </template>
 
 <script setup lang="ts">
@@ -77,11 +64,15 @@ import FakeInputBackbone from "../../fake-input/FakeInputBackbone.vue"
 import { InputSelection, PartialSelectionResult, useCombinedPartialSelects } from "../../fake-input/FakeInputTypes"
 import { useClickDragRect, usePropagationStop } from "../../../util/dom"
 import { emit } from "process"
+import InputBox from "./InputBox.vue"
+import { useEventListener } from "@vueuse/core"
+import { useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<{
 	modelValue: Duration | undefined
 	required?: boolean
 	inputId?: string
+	disabled?: boolean
 	placeholder?: string
 }>()
 
@@ -92,6 +83,7 @@ const model = useModel(props, "modelValue")
 const HOUR_DUR = 60 * 60
 const MINUTE_DUR = 60
 
+const inputBox = ref<InstanceType<typeof InputBox>>()
 const inputValue = ref<string>("")
 const hiddenInput = ref<InstanceType<typeof FakeInputBackbone> | null>(null)
 
@@ -162,6 +154,7 @@ function onCharSelect(index: number) {
 }
 
 function onFakeClick(ev: MouseEvent) {
+	console.log("FakeClick", hiddenInput.value)
 	hiddenInput.value?.focus()
 	if (!dragState.value.dragRect) {
 		hiddenInput.value?.selectChars(inputValue.value.length, inputValue.value.length)
@@ -170,8 +163,20 @@ function onFakeClick(ev: MouseEvent) {
 	ev.preventDefault()
 }
 
+function focus() {
+	hiddenInput.value?.focus()
+}
+
+function scrollIntoView() {}
+
+defineExpose({
+	focus,
+	scrollIntoView,
+})
+
 //Selection Drag
-const imposterDiv = ref<HTMLElement | null>(null)
+const imposterDiv = computed(() => inputBox.value?.inputDiv)
+
 const dragState = useClickDragRect(imposterDiv, () => {
 	hiddenInput.value?.focus()
 })
@@ -264,6 +269,7 @@ function onBlur(ev: FocusEvent) {
 }
 
 function onFocus(ev: FocusEvent) {
+	console.log("FOCUS")
 	emits("focus", ev)
 }
 
@@ -299,15 +305,17 @@ function onKeyPress(ev: KeyboardEvent) {
 </script>
 
 <style scoped>
+.duration-input {
+	width: 0;
+	flex: 1;
+	cursor: text;
+}
+
 .forced-focus {
 	outline: 0 none;
 	outline-offset: 0;
 	box-shadow: 0 0 0 1px #e9aaff;
 	border-color: #c9b1cb;
-}
-
-.duration-input {
-	cursor: text;
 }
 
 .prop-up {

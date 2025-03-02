@@ -27,6 +27,7 @@ declare module "../schema" {
 
 registerType("Color", {
 	constructor: Color,
+	icon: "mdi mdi-palette",
 	canBeVariable: true,
 	canBeViewerVariable: true,
 })

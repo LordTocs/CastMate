@@ -8,7 +8,7 @@ import {
 	MaybePromise,
 	mapKeys,
 } from "castmate-schema"
-import { AnalyticsService, PluginManager } from "../index"
+import { AnalyticsService, ignoreReactivity, PluginManager } from "../index"
 import { Color } from "castmate-schema"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin-init"
@@ -228,7 +228,7 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 			data: resolvedConfig,
 		})
 
-		return await this.spec.invoke(resolvedConfig, contextData, abortSignal)
+		return await ignoreReactivity(async () => await this.spec.invoke(resolvedConfig, contextData, abortSignal))
 	}
 
 	registerIPC(path: string) {

@@ -1,6 +1,9 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin } from "castmate-core"
 import { setupPowershell } from "./powershell"
-import { setupProcesses } from "./processes"
+import { setupProcesses, isProcessRunning } from "./processes"
+
+export { isProcessRunning }
+
 export default definePlugin(
 	{
 		id: "os",

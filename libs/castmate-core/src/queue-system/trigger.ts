@@ -44,6 +44,7 @@ interface TriggerDefinitionSpec<ConfigSchema extends Schema, ContextDataSchema e
 		context: SchemaType<ContextDataSchema>,
 		mapping: TriggerMapping
 	): Promise<boolean>
+	runWrapper?(inner: () => any, mapping: TriggerMapping): any
 }
 
 //A transform trigger is a trigger that outputs a different context schema than it is triggered on.
@@ -76,6 +77,7 @@ export interface TriggerDefinition {
 	trigger(context: any): Promise<boolean>
 	registerIPC(path: string): any
 	toIPC(path: string): IPCTriggerDefinition
+	runWrapper?(inner: () => any): any
 }
 
 function isTransformSpec<

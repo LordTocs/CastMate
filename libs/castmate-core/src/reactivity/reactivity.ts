@@ -16,8 +16,8 @@ function getActiveEffect() {
 	return activeEffectStorage.getStore()
 }
 
-export function ignoreReactivity(func: () => any) {
-	activeEffectStorage.exit(func)
+export function ignoreReactivity<T extends (...args: any[]) => any>(func: T, ...args: Parameters<T>): ReturnType<T> {
+	return activeEffectStorage.exit(func, ...args)
 }
 
 function reactiveLog(...values: any[]) {
@@ -137,6 +137,10 @@ export namespace DependencyStorage {
 interface PendingTrigger {
 	timestamp: number
 	timeoutTrigger: NodeJS.Timeout
+}
+
+export async function forceRunWithEffect(effect: ReactiveEffect, func: () => any) {
+	await activeEffectStorage.run(effect, func)
 }
 
 export class ReactiveEffect<T = any> {

@@ -35,7 +35,6 @@ export function useDuration(
 	})
 
 	async function updateIpcStorage() {
-		console.log("Querying Storage")
 		if (!("ipcCallback" in durationConfig.value)) return
 		ipcStateStorage.value = await ipcInvoke<IPCDurationState>(durationConfig.value.ipcCallback, toValue(config))
 	}

@@ -2,15 +2,12 @@
 	<div class="container">
 		<div class="inner-container">
 			<p-data-table
-				v-model:filters="filters"
 				class="flex flex-column"
 				:value="variables"
 				data-key="id"
 				:global-filter-fields="['id']"
 				style="width: 100%; max-height: 100%"
 				scrollable
-				:sort-order="-1"
-				sort-field="id"
 			>
 				<template #header>
 					<div class="flex">
@@ -18,14 +15,14 @@
 						<div class="flex-grow-1" />
 						<span class="p-input-icon-left">
 							<i class="pi pi-search" />
-							<p-input-text v-model="filters['global'].value" placeholder="Search" />
+							<!-- <p-input-text v-model="filters['global'].value" placeholder="Search" /> -->
 						</span>
 					</div>
 				</template>
 
-				<p-column header="Name" field="id"> </p-column>
+				<p-column header="Name" field="id" sortable> </p-column>
 
-				<p-column header="Type">
+				<p-column header="Type" field="schema.type" sortable>
 					<template #body="{ data }: { data: RendererVariableDefinition }">
 						{{ getTypeByConstructor(data.schema.type)?.name ?? "UNKNOWN TYPE" }}
 					</template>
@@ -67,7 +64,7 @@ import PDataTable from "primevue/datatable"
 import PColumn from "primevue/column"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
-import { FilterMatchMode } from "primevue/api"
+//import { FilterMatchMode } from "primevue/api"
 import { usePluginStore, DataView } from "castmate-ui-core"
 import { ref } from "vue"
 import { useVariableList, RendererVariableDefinition, useVariableStore } from "../variable-store"
@@ -103,9 +100,9 @@ function createNew() {
 	})
 }
 
-const filters = ref({
-	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-})
+// const filters = ref({
+// 	global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+// })
 
 function deleteDialog(def: RendererVariableDefinition) {
 	confirm.require({

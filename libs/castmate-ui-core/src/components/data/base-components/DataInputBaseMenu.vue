@@ -1,7 +1,7 @@
 <template>
 	<p-button
 		v-if="hasMenu"
-		class="ml-1"
+		class="ml-1 flex-shrink-0"
 		text
 		icon="mdi mdi-dots-vertical"
 		aria-controls="input_menu"
@@ -18,26 +18,25 @@ import PButton from "primevue/button"
 import PMenu from "primevue/menu"
 import type { MenuItem } from "primevue/menuitem"
 import { computed, ref, useModel } from "vue"
-import { usePropagationStop } from "../../../main"
+import { usePropagationStop, useUndoCommitter } from "../../../main"
+
+const model = defineModel<any>()
+const templateMode = defineModel<boolean>("templateMode", { default: false })
 
 const props = defineProps<{
-	modelValue: any
-	templateMode: boolean
 	canClear: boolean
 	canTemplate: boolean
 	disabled?: boolean
 	menuExtra?: MenuItem[]
 }>()
 
-const menu = ref<PMenu>()
+const menu = ref<InstanceType<typeof PMenu>>()
 const contextMenu = ref<InstanceType<typeof CContextMenu>>()
 
-const model = useModel(props, "modelValue")
-
-const templateMode = useModel(props, "templateMode")
+const undoModel = useUndoCommitter(model)
 
 function clear() {
-	model.value = undefined
+	undoModel.value = undefined
 }
 
 const menuItems = computed<MenuItem[]>(() => {

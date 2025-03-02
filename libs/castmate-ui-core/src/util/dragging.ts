@@ -211,7 +211,8 @@ export function useDragValue(
 		invert?: boolean
 		min?: number
 		max?: number
-	}>
+	}>,
+	dragComplete?: () => any
 ) {
 	const dragStart = ref({ x: 0, y: 0 })
 	const dragStartValue = ref(0)
@@ -271,6 +272,7 @@ export function useDragValue(
 		(ev: MouseEvent) => {
 			updateNumber(ev)
 			dragging.value = false
+			dragComplete?.()
 			console.log("Drag Value End")
 		}
 	)

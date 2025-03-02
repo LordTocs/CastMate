@@ -18,7 +18,7 @@
 			</div>
 		</div>
 		<div class="flex flex-row gap-1 mt-4">
-			<data-input class="flex-grow-1" v-model="model.fontColor" :schema="colorSchema" />
+			<data-input class="flex-grow-1" v-model="model.fontColor" :schema="colorSchema" local-path="fontColor" />
 		</div>
 		<overlay-text-stroke-edit v-model="model.stroke" />
 		<overlay-text-shadow-edit v-model="model.shadow" />

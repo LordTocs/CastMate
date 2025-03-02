@@ -13,7 +13,7 @@
 		@blur="onBlur"
 	>
 		<select-dummy ref="dummy" />
-		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false">
+		<pan-area class="panner grid-paper" v-model:panState="view.panState" :zoom-y="false" :min-zoom-x="0.2">
 			<sequence-edit
 				v-model="model.sequence"
 				:floating="false"
@@ -53,7 +53,6 @@ import {
 	PanArea,
 	AutomationView,
 	getInternalMousePos,
-	provideDocumentPath,
 	usePluginStore,
 	useDocumentSelection,
 	TriggerSelection,
@@ -61,9 +60,10 @@ import {
 	useSelectionRect,
 	useActiveTestSequence,
 	useActionQueueStore,
-	useDocumentPath,
+	useDataPath,
 	usePropagationStop,
 	SelectionPos,
+	useCommitUndo,
 } from "../../main"
 import SequenceEdit from "./SequenceEdit.vue"
 import { provideAutomationEditState, copySequenceData } from "../../util/automation-dragdrop"
@@ -83,15 +83,14 @@ const props = defineProps<{
 }>()
 
 const stopPropagation = usePropagationStop()
+const commitUndo = useCommitUndo()
 
 const editArea = ref<HTMLElement | null>(null)
 
 const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
-//const path = provideDocumentPath(() => props.localPath)
-const documentPath = useDocumentPath()
-const selection = useDocumentSelection(documentPath)
+const selection = useDocumentSelection()
 
 provideAutomationEditState(editArea, (seq, offset, ev) => {
 	if (!editArea.value) return
@@ -139,34 +138,30 @@ const {
 	selecting,
 	from: selectFrom,
 	to: selectTo,
-} = useSelectionRect(
-	editArea,
-	(from, to) => {
-		const container = toValue(editArea)
-		if (!container) return []
+} = useSelectionRect(editArea, (from, to) => {
+	const container = toValue(editArea)
+	if (!container) return []
 
-		const selectX = (to.x - view.value.panState.panX) / automationTimeScale / view.value.panState.zoomX
-		const selectY = (to.y - view.value.panState.panY) / view.value.panState.zoomY
+	const selectX = (to.x - view.value.panState.panX) / automationTimeScale / view.value.panState.zoomX
+	const selectY = (to.y - view.value.panState.panY) / view.value.panState.zoomY
 
-		lastSelectPos.value = {
-			x: selectX,
-			y: selectY,
-		}
+	lastSelectPos.value = {
+		x: selectX,
+		y: selectY,
+	}
 
-		const main = mainSequence.value?.getSelectedItems(container, from, to) ?? []
-		const floats = floatingSequences.value.map((fs) => fs.getSelectedItems(container, from, to))
-		const result: string[] = main
+	const main = mainSequence.value?.getSelectedItems(container, from, to) ?? []
+	const floats = floatingSequences.value.map((fs) => fs.getSelectedItems(container, from, to))
+	const result: string[] = main
 
-		for (const f of floats) {
-			result.push(...f)
-		}
+	for (const f of floats) {
+		result.push(...f)
+	}
 
-		//HACK: Edit Area doesn't get focus back because of preventDefault
-		editArea.value?.focus({ preventScroll: true })
-		return result
-	},
-	documentPath
-)
+	//HACK: Edit Area doesn't get focus back because of preventDefault
+	editArea.value?.focus({ preventScroll: true })
+	return result
+})
 
 const palettePosition = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const palette = ref<typeof ActionPalette | null>(null)
@@ -191,6 +186,8 @@ async function onCreateAction(actionSelection: ActionSelection) {
 	}
 
 	model.value.floatingSequences.push(floatingSequence)
+
+	commitUndo()
 }
 
 function onContextMenu(ev: MouseEvent) {
@@ -206,6 +203,7 @@ function deleteSelection() {
 		for (const fs of floatingSequences.value) {
 			fs.deleteIds(selection.value)
 		}
+		commitUndo()
 	}
 }
 
@@ -290,6 +288,8 @@ function onPaste(ev: ClipboardEvent) {
 
 		stopPropagation(ev)
 		ev.preventDefault()
+
+		commitUndo()
 	} catch {}
 }
 
@@ -310,7 +310,6 @@ function onBlur() {}
 	--time-handle-height: 15px;
 	--time-handle-width: 45px;
 
-	width: 100%;
 	height: 100%;
 	position: relative;
 }

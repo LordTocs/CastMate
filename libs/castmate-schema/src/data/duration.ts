@@ -25,6 +25,7 @@ declare module "../schema" {
 
 registerType("Duration", {
 	constructor: Duration,
+	icon: "mdi mdi-clock-time-eight-outline",
 	comparisonTypes: [
 		{
 			otherType: Duration,

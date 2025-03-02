@@ -1,6 +1,6 @@
 <template>
 	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
-		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" />
+		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" ref="inputBoxRef" />
 	</data-input-base>
 </template>
 
@@ -8,11 +8,12 @@
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { FilePath, SchemaFilePath } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { DocumentPath, InputBox, LabelFloater, useIpcCaller, usePropagationStop } from "../../../main"
+import { InputBox, LabelFloater, useIpcCaller, usePropagationStop } from "../../../main"
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
 import PButton from "primevue/button"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
 
 const props = defineProps<
 	{
@@ -21,7 +22,10 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
+const undoModel = useUndoCommitter(model)
 
 const getFileInput = useIpcCaller<(existing: string | undefined, exts: string[] | undefined) => string | undefined>(
 	"filesystem",
@@ -38,7 +42,18 @@ async function dirClick(ev: MouseEvent) {
 
 	const file = await getFileInput(model.value, props.schema.extensions)
 	if (file != null) {
-		model.value = file
+		undoModel.value = file
 	}
 }
+
+const inputBoxRef = ref<InstanceType<typeof InputBox>>()
+
+useDataUIBinding({
+	focus() {
+		inputBoxRef.value?.inputDiv?.focus()
+	},
+	scrollIntoView() {
+		inputBoxRef.value?.inputDiv?.scrollIntoView()
+	},
+})
 </script>

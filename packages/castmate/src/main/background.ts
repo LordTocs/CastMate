@@ -88,7 +88,7 @@ app.whenReady().then(async () => {
 	await finializeCastMateSetup()
 
 	//HACK HACK HACK HACK HACK
-	await finishInitDashboards()
+	//await finishInitDashboards()
 
 	//await testMigrate()
 })

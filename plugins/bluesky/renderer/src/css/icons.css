@@ -1,0 +1,25 @@
+.bsi::before {
+	display: inline-block;
+	text-rendering: auto;
+	line-height: inherit;
+	position: relative;
+}
+
+.bsi {
+	height: 1em;
+}
+
+.bsi.bsi-logo::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/bluesky_logo.svg");
+	-webkit-mask-image: url("../svg/bluesky_logo.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	mask-repeat: no-repeat;
+	mask-position: center;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+	top: 0.15em;
+}

@@ -25,7 +25,15 @@
 
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { VNode, computed, ref, useModel } from "vue"
-import { ClientPosition, isChildOfClass, useDragEnter, useDragLeave, useDrop, useDragOver } from "../../main"
+import {
+	ClientPosition,
+	isChildOfClass,
+	useDragEnter,
+	useDragLeave,
+	useDrop,
+	useDragOver,
+	useDataBinding,
+} from "../../main"
 
 const props = withDefaults(
 	defineProps<{
@@ -34,11 +42,14 @@ const props = withDefaults(
 		direction?: "horizontal" | "vertical"
 		handleClass: string
 		dataType: string
+		localPath: string
 	}>(),
 	{
 		direction: "vertical",
 	}
 )
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
@@ -182,6 +193,8 @@ useDrop(
 
 		if (ev.dataTransfer.effectAllowed == "move" && draggingItem.value) {
 			//We're dropping an item from this list which means we both remove and insert the element here.
+			droppedLocal.value = true
+
 			const oldIdx = model.value.findIndex((item) => item[props.keyProp] == data[props.keyProp])
 
 			if (oldIdx >= 0) {
@@ -191,13 +204,11 @@ useDrop(
 					console.log("Walking Back", insertionIdx)
 				}
 			}
-
-			droppedLocal.value = true
 		}
 
 		if (ev.dataTransfer.effectAllowed == "move" || ev.dataTransfer.effectAllowed == "copy") {
 			//Just do the insertion
-			console.log("Insert")
+			console.log("Insert", insertionIdx)
 			await model.value.splice(insertionIdx, 0, data)
 		}
 	}

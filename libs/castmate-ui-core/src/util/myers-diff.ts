@@ -87,8 +87,12 @@ interface DiffOpEqual<E> {
 
 type DiffOp<E> = DiffOpDelete<E> | DiffOpInsert<E> | DiffOpEqual<E>
 
-export function* iterDiff<E>(a: ArrayLike<E>, b: ArrayLike<E>): IterableIterator<DiffOp<E>> {
-	for (const [x1, y1, x2, y2] of walkSnakes(a, b, (a, b) => a == b)) {
+export function* iterDiff<E>(
+	a: ArrayLike<E>,
+	b: ArrayLike<E>,
+	compare: (a: E, b: E) => boolean = (a, b) => a === b
+): IterableIterator<DiffOp<E>> {
+	for (const [x1, y1, x2, y2] of walkSnakes(a, b, compare)) {
 		if (x1 == x2) {
 			//Insert
 			yield { type: DiffOpCode.Insert, value: b[y1] }
@@ -104,7 +108,7 @@ export function* iterDiff<E>(a: ArrayLike<E>, b: ArrayLike<E>): IterableIterator
 
 let indent = ""
 function* walkSnakes<E>(a: ArrayLike<E>, b: ArrayLike<E>, compare: (a: E, b: E) => boolean) {
-	console.log("Walk Snakes", a, b)
+	//console.log("Walk Snakes", a, b)
 
 	indent = ""
 	const path = findPath(0, 0, a.length, b.length, a, b, compare)
@@ -118,7 +122,7 @@ function* walkSnakes<E>(a: ArrayLike<E>, b: ArrayLike<E>, compare: (a: E, b: E) 
 		let [x1, y1] = path[i]
 		let [x2, y2] = path[i + 1]
 
-		console.log(`Pair ${x1}, ${y1} -> ${x2}, ${y2}`)
+		//console.log(`Pair ${x1}, ${y1} -> ${x2}, ${y2}`)
 
 		while (x1 < x2 && y1 < y2 && compare(a[x1], b[y1])) {
 			//The same
@@ -158,29 +162,29 @@ function findPath<E>(
 	compare: (a: E, b: E) => boolean
 ): PathResult | undefined {
 	const box = new Box(left, top, right, bottom)
-	console.log(indent, "FindPath", box, left, top, right, bottom)
+	//console.log(indent, "FindPath", box, left, top, right, bottom)
 	indent = indent + "  "
 
 	const snake = midpoint(box, a, b, compare)
-	console.log(`${indent}Snake ${util.inspect(snake)}`)
+	//console.log(`${indent}Snake ${util.inspect(snake)}`)
 
 	if (!snake) {
 		indent = indent.substring(0, indent.length - 2)
-		console.log(indent, "P: ", undefined)
+		//console.log(indent, "P: ", undefined)
 		return undefined
 	}
 
 	const [start, finish] = snake
 
-	console.log(indent, "head")
+	//console.log(indent, "head")
 	const head = findPath(box.left, box.top, start[0], start[1], a, b, compare)
-	console.log(indent, "tail")
+	//console.log(indent, "tail")
 	const tail = findPath(finish[0], finish[1], box.right, box.bottom, a, b, compare)
 
 	const result = [...(head ? head : [start]), ...(tail ? tail : [finish])]
 
 	indent = indent.substring(0, indent.length - 2)
-	console.log(indent, "P: ", result)
+	//console.log(indent, "P: ", result)
 
 	return result
 }
@@ -190,7 +194,7 @@ function midpoint<E>(box: Box, a: ArrayLike<E>, b: ArrayLike<E>, compare: (a: E,
 		return undefined
 	}
 
-	console.log(indent, "Midpoint", box)
+	//console.log(indent, "Midpoint", box)
 
 	const max = Math.ceil(box.size / 2)
 
@@ -203,14 +207,14 @@ function midpoint<E>(box: Box, a: ArrayLike<E>, b: ArrayLike<E>, compare: (a: E,
 		const fi = forwards(box, vf, vb, d, a, b, compare)
 		const fr = fi.next().value
 		if (fr) {
-			console.log(indent, "  Picked Front")
+			//console.log(indent, "  Picked Front")
 			return fr
 		}
 
 		const bi = backwards(box, vf, vb, d, a, b, compare)
 		const br = bi.next().value
 		if (br) {
-			console.log(indent, "  Picked Back")
+			//console.log(indent, "  Picked Back")
 			return br
 		}
 	}
@@ -236,7 +240,7 @@ function* forwards<E>(
 	b: ArrayLike<E>,
 	compare: (a: E, b: E) => boolean
 ) {
-	console.log(indent, "  Forwards", box, vf, vb, d)
+	//console.log(indent, "  Forwards", box, vf, vb, d)
 	for (let k = d; k >= -d; k -= 2) {
 		const c = k - box.delta
 
@@ -263,7 +267,7 @@ function* forwards<E>(
 
 		rubyArraySet(vf, k, x)
 
-		console.log(indent, "    f", k, x)
+		//console.log(indent, "    f", k, x)
 
 		if (box.delta % 2 != 0 && between(c, -(d - 1), d - 1) && y >= rubyArrayGet(vb, c)) {
 			yield [
@@ -288,7 +292,7 @@ function* backwards<E>(
 	b: ArrayLike<E>,
 	compare: (a: E, b: E) => boolean
 ) {
-	console.log(indent, "  Backwards", box, vf, vb, d)
+	//console.log(indent, "  Backwards", box, vf, vb, d)
 	for (let c = d; c >= -d; c -= 2) {
 		const k = c + box.delta
 
@@ -313,7 +317,7 @@ function* backwards<E>(
 
 		rubyArraySet(vb, c, y)
 
-		console.log(indent, "    b", c, y)
+		//console.log(indent, "    b", c, y)
 
 		if (box.delta % 2 == 0 && between(k, -d, d) && x <= rubyArrayGet(vf, k)) {
 			yield [

@@ -1,6 +1,6 @@
 {
 	"name": "castmate",
-	"version": "0.5.4-beta",
+	"version": "0.5.4",
 	"description": "CastMate",
 	"author": "LordTocs",
 	"scripts": {
@@ -13,10 +13,10 @@
 		"fix-app-deps": "electron-builder install-app-deps"
 	},
 	"main": "dist/dist-electron/background.js",
-	"electronVersion": "29.1.1",
 	"dependencies": {
 		"archiver": "^7.0.1",
 		"castmate-core": "workspace:^",
+		"castmate-plugin-bluesky-main": "workspace:^",
 		"castmate-plugin-dashboards-main": "workspace:^",
 		"castmate-plugin-discord-main": "workspace:^",
 		"castmate-plugin-elgato-main": "workspace:^",
@@ -46,6 +46,7 @@
 	},
 	"devDependencies": {
 		"@mdi/font": "^7.1.96",
+		"@primevue/themes": "^4.2.4",
 		"@rollup/plugin-node-resolve": "^15.2.1",
 		"@types/archiver": "^6.0.2",
 		"@vitejs/plugin-vue": "4.6.2",
@@ -53,6 +54,7 @@
 		"castmate-dashboard-widget-loader": "workspace:^",
 		"castmate-overlay-core": "workspace:^",
 		"castmate-overlay-widget-loader": "workspace:^",
+		"castmate-plugin-bluesky-renderer": "workspace:^",
 		"castmate-plugin-dashboards-renderer": "workspace:^",
 		"castmate-plugin-discord-renderer": "workspace:^",
 		"castmate-plugin-govee-renderer": "workspace:^",
@@ -80,21 +82,22 @@
 		"castmate-ui-core": "workspace:^",
 		"castmate-vite": "workspace:^",
 		"chromatism2": "*",
-		"electron": "29.4.5",
+		"electron": "^34.2.0",
 		"electron-builder": "^25.1.8",
 		"electron-devtools-installer": "^3.2.0",
 		"eslint": "^8.17.0",
 		"nanoid": "^5.0.7",
+		"node-abi": "^3.74.0",
 		"pinia": "^2.1.7",
-		"primeflex": "*",
+		"primeflex": "^4.0.0",
 		"primeicons": "^6.0.1",
-		"primevue": "3.53.0",
+		"primevue": "^4.2.4",
 		"sass": "^1.71.0",
 		"ts-toolbelt": "*",
 		"vite": "^5.2.9",
 		"vite-plugin-electron": "^0.12.0",
 		"vite-plugin-electron-renderer": "^0.14.5",
-		"vue": "^3.4.23",
+		"vue": "^3.5.13",
 		"vue-tsc": "*"
 	},
 	"browserslist": [

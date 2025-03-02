@@ -135,7 +135,7 @@ async function onLazyLoad(event: VirtualScrollerLazyEvent) {
 	overflow: hidden;
 }
 
-.inner-container :deep(.p-datatable-wrapper) {
+.inner-container :deep(.p-datatable-table-container) {
 	flex: 1;
 }
 

@@ -17,14 +17,25 @@
 import { SchemaTwitchViewerGroup, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupEdit from "./TwitchViewerGroupEdit.vue"
 import { useModel, ref, computed } from "vue"
-import { useResourceStore, DropDownPanel, DataInputBase, InputBox, usePropagationStop } from "castmate-ui-core"
+import {
+	useResourceStore,
+	DropDownPanel,
+	DataInputBase,
+	InputBox,
+	usePropagationStop,
+	useDataBinding,
+	SharedDataInputProps,
+} from "castmate-ui-core"
 import { getGroupPhrase } from "../util/group"
 import TwitchViewerGroupSpan from "./groups/TwitchViewerGroupSpan.vue"
-const props = defineProps<{
-	modelValue: TwitchViewerGroup | undefined
-	schema: SchemaTwitchViewerGroup
-	localPath?: string
-}>()
+const props = defineProps<
+	{
+		modelValue: TwitchViewerGroup | undefined
+		schema: SchemaTwitchViewerGroup
+	} & SharedDataInputProps
+>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 

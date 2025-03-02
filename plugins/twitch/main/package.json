@@ -1,30 +1,29 @@
 {
-  "name": "castmate-plugin-twitch-main",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/main.ts",
-  "devMain": "src/main.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "typescript": "*"
-  },
-  "dependencies": {
-    "@twurple/api": "^7.1.0",
-    "@twurple/api-call": "^7.1.0",
-    "@twurple/auth": "^7.1.0",
-    "@twurple/chat": "^7.1.0",
-    "@twurple/eventsub-base": "^7.1.0",
-    "@twurple/eventsub-ws": "^7.1.0",
-    "@twurple/pubsub": "^7.1.0",
-    "castmate-core": "workspace:^",
-    "castmate-plugin-overlays-main": "workspace:^",
-    "castmate-plugin-twitch-shared": "workspace:^",
-    "castmate-schema": "workspace:^",
-    "electron": "29.4.5",
-    "fuzzysort": "^2.0.4"
-  }
+	"name": "castmate-plugin-twitch-main",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "*"
+	},
+	"dependencies": {
+		"@twurple/api": "^7.1.0",
+		"@twurple/api-call": "^7.1.0",
+		"@twurple/auth": "^7.1.0",
+		"@twurple/chat": "^7.1.0",
+		"@twurple/eventsub-base": "^7.1.0",
+		"@twurple/eventsub-ws": "^7.1.0",
+		"castmate-core": "workspace:^",
+		"castmate-plugin-overlays-main": "workspace:^",
+		"castmate-plugin-twitch-shared": "workspace:^",
+		"castmate-schema": "workspace:^",
+		"electron": "^34.2.0",
+		"fuzzysort": "^2.0.4"
+	}
 }

@@ -7,7 +7,7 @@ import {
 	usePropagationImmediateStop,
 	usePropagationStop,
 } from "./dom"
-import { Selection, useDocumentPath, useDocumentSelection } from "./document"
+import { Selection, useDocumentSelection } from "./document"
 import _uniq from "lodash/uniq"
 import _isEqual from "lodash/isEqual"
 
@@ -52,7 +52,7 @@ export function injectSelectionState(): SelectionState {
 export function useSelectionRect(
 	elem: MaybeRefOrGetter<HTMLElement | null | undefined>,
 	collectSelection: (from: SelectionPos, to: SelectionPos) => Selection,
-	path: MaybeRefOrGetter<string> = useDocumentPath()
+	localPath?: MaybeRefOrGetter<string | undefined>
 ): SelectionState {
 	const selecting = ref(false)
 	const selectionStart = ref<{ x: number; y: number } | null>(null)
@@ -70,7 +70,7 @@ export function useSelectionRect(
 		selectionMode.value = "overwrite"
 	}
 
-	const selection = useDocumentSelection(path)
+	const selection = useDocumentSelection(localPath)
 	const oldSelection = ref<Selection>([])
 
 	const from = computed<SelectionPos | null>(() => {
@@ -193,7 +193,7 @@ export function useSelectionRect(
 		}
 		oldSelection.value = [...selection.value]
 
-		console.log("Select Start", toValue(path))
+		//console.log("Select Start", toValue(path))
 		stopPropagation(ev)
 		ev.preventDefault()
 	})

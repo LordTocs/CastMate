@@ -1,7 +1,11 @@
 <template>
 	<flex-scroller class="flex-grow-1 dashboard-props">
 		<template v-if="widgetModel != null && selectedWidgetInfo != null">
-			<data-input v-model="widgetModel.config" :schema="selectedWidgetInfo.component?.widget.config" />
+			<data-input
+				v-model="widgetModel.config"
+				:schema="selectedWidgetInfo.component?.widget.config"
+				local-path="config"
+			/>
 			<dashboard-widget-size-edit v-model="widgetModel.size" />
 		</template>
 		<template v-else-if="sectionModel != null">
@@ -13,7 +17,7 @@
 <script setup lang="ts">
 import { useDashboardWidgets } from "castmate-dashboard-widget-loader"
 import { DashboardConfig } from "castmate-plugin-dashboards-shared"
-import { joinDocumentPath, useCompleteDocumentSelection, useDocumentPath, useDocumentSelection } from "castmate-ui-core"
+import { useRawDocumentSelection } from "castmate-ui-core"
 import { computed, useModel } from "vue"
 import { DataInput, FlexScroller } from "castmate-ui-core"
 
@@ -24,7 +28,7 @@ const props = defineProps<{
 	modelValue: DashboardConfig
 }>()
 
-const selection = useCompleteDocumentSelection()
+const selection = useRawDocumentSelection()
 
 const model = useModel(props, "modelValue")
 

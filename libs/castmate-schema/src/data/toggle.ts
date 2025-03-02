@@ -25,5 +25,6 @@ declare module "../schema" {
 
 registerType("Toggle", {
 	constructor: Toggle,
+	icon: "mdi mdi-toggle-switch-outline",
 	canBeVariable: true,
 })

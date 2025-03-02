@@ -6,15 +6,17 @@
 			overflowY: 'auto',
 			maxHeight: '15rem',
 		}"
+		side="right"
 	>
-		<ul class="p-dropdown-items">
+		<ul class="p-select-list">
 			<li
 				v-for="suggestion in suggestions"
-				class="p-dropdown-item"
+				class="p-select-option"
 				:class="{ 'p-focus': isFocused(suggestion) }"
 				:data-p-focused="isFocused(suggestion)"
 				:aria-label="suggestion.id"
 				@click="onSuggestionClick($event, suggestion)"
+				@mousedown="onMouseDown"
 			>
 				<state-list-item :model-value="suggestion" />
 			</li>
@@ -93,6 +95,11 @@ const suggestions = computed(() => {
 function onSuggestionClick(ev: MouseEvent, suggestion: Suggestion) {
 	emit("suggest", suggestion.id)
 	open.value = false
+	ev.stopPropagation()
+	ev.preventDefault()
+}
+
+function onMouseDown(ev: MouseEvent) {
 	ev.stopPropagation()
 	ev.preventDefault()
 }

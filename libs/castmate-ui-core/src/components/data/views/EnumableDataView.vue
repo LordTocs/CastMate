@@ -1,5 +1,5 @@
 <template>
-	<span class="data-label" v-if="schema.name">{{ schema.name }}: </span>{{ dataView }}
+	<span class="data-label" v-if="schema.name && !noLabel">{{ schema.name }}: </span>{{ dataView }}
 </template>
 
 <script setup lang="ts">

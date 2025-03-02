@@ -6,7 +6,7 @@
 			</div>
 			<div style="width: 0; flex: 1" class="mt-4">
 				<label-floater label="Width" v-slot="labelProps">
-					<p-input-number
+					<c-number-input
 						class="number-fix"
 						v-model="model.width"
 						v-bind="labelProps"
@@ -14,11 +14,12 @@
 						:min="0"
 						mode="decimal"
 						suffix="px"
+						local-path="width"
 					/>
 				</label-floater>
 			</div>
 			<div style="width: 0; flex: 1" class="mt-4">
-				<data-input v-model="model.color" :schema="colorSchema" />
+				<data-input v-model="model.color" :schema="colorSchema" local-path="color" />
 			</div>
 			<div class="mt-4 flex flex-column justify-content-center">
 				<p-button icon="mdi mdi-delete" text class="extra-small-button" @click="clearStroke"> </p-button>
@@ -34,7 +35,7 @@
 import { useModel } from "vue"
 
 import { OverlayStrokeStyle } from "castmate-plugin-overlays-shared"
-import { LabelFloater, DataInput } from "castmate-ui-core"
+import { LabelFloater, DataInput, CNumberInput } from "castmate-ui-core"
 import { Color, declareSchema } from "castmate-schema"
 
 import PInputNumber from "primevue/inputnumber"

@@ -24,7 +24,6 @@ import { setupHypeTrains } from "./hype-train"
 import { setupModeration } from "./moderation"
 import { ViewerCache, setupViewerCache } from "./viewer-cache"
 import { setupViewerGroups } from "./group"
-import { setupUndocumented } from "./undocumented"
 import { setupEmotes } from "./native-emotes"
 import { setup7tv } from "./seventv"
 import { setupCategoryCache } from "./category-cache"
@@ -87,7 +86,6 @@ export default definePlugin(
 		setupRaids()
 		setupSubscriptions()
 		setupModeration()
-		setupUndocumented()
 		setupEmotes()
 		setup7tv()
 		setupWalkOns()

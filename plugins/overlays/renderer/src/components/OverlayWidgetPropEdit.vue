@@ -1,11 +1,14 @@
 <template>
-	<flex-scroller class="flex-grow-1 widget-props">
+	<flex-scroller class="flex-grow-1 widget-props" inner-class="px-2" ref="scroller">
 		<template v-if="selectedWidgetIndex != null && selectedWidgetInfo != null">
-			<data-input
-				v-model="model.widgets[selectedWidgetIndex].config"
-				:schema="selectedWidgetInfo.component.widget.config"
-			/>
-			<overlay-widget-transform-edit v-model="model.widgets[selectedWidgetIndex]" />
+			<data-binding-path :local-path="`[${selectedWidgetIndex}]`">
+				<data-input
+					v-model="model.widgets[selectedWidgetIndex].config"
+					:schema="selectedWidgetInfo.component.widget.config"
+					local-path="config"
+				/>
+				<overlay-widget-transform-edit v-model="model.widgets[selectedWidgetIndex]" />
+			</data-binding-path>
 		</template>
 	</flex-scroller>
 </template>
@@ -13,8 +16,15 @@
 <script setup lang="ts">
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { FlexScroller, useDocumentPath, DataInput, useDocumentSelection } from "castmate-ui-core"
-import { computed, onMounted, useModel, watch } from "vue"
+import {
+	FlexScroller,
+	DataInput,
+	useDocumentSelection,
+	useDataBinding,
+	DataBindingPath,
+	provideScrollAttachable,
+} from "castmate-ui-core"
+import { computed, onMounted, ref, useModel, watch } from "vue"
 import OverlayWidgetTransformEdit from "./OverlayWidgetTransformEdit.vue"
 
 const props = defineProps<{
@@ -23,12 +33,16 @@ const props = defineProps<{
 
 const model = useModel(props, "modelValue")
 
-const documentPath = useDocumentPath()
+useDataBinding("widgets")
 
-const widgetSelection = useDocumentSelection(documentPath)
+const scroller = ref<InstanceType<typeof FlexScroller>>()
+provideScrollAttachable(() => scroller.value?.scroller ?? undefined)
+
+const widgetSelection = useDocumentSelection()
 
 const selectedWidgetId = computed(() => {
 	if (widgetSelection.value.length > 1 || widgetSelection.value.length == 0) return undefined
+	console.log(widgetSelection.value[0])
 	return widgetSelection.value[0]
 })
 

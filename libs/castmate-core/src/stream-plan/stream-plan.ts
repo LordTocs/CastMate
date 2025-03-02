@@ -255,6 +255,9 @@ export function setupStreamPlans() {
 		async getContextSchema(id, subId) {
 			return { type: Object, properties: {} }
 		},
+		getRunWrapper(id, subId) {
+			return (inner) => inner()
+		},
 	})
 }
 

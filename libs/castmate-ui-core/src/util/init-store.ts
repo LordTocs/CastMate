@@ -11,7 +11,11 @@ export const useInitStore = defineStore("init", () => {
 	const mainProcessInitResolver = createDelayedResolver()
 	const mainProcessInitialInitResolver = createDelayedResolver()
 
-	async function initialize() {
+	const mode = ref<"castmate" | "satellite">("castmate")
+
+	async function initialize(appMode: "castmate" | "satellite") {
+		mode.value = appMode
+
 		const isInited = await ipcInvoke("castmate_isSetupFinished")
 		if (isInited) {
 			mainProcessInited.value = true
@@ -48,5 +52,8 @@ export const useInitStore = defineStore("init", () => {
 		initialize,
 		waitForInitialSetup,
 		waitForInit,
+		mode: computed(() => mode.value),
+		isCastMate: computed(() => mode.value == "castmate"),
+		isSatellite: computed(() => mode.value == "satellite"),
 	}
 })

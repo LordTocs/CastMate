@@ -20,10 +20,12 @@ import {
 	mapRecord,
 	Schema,
 	InlineAutomation,
+	hashString,
 } from "castmate-schema"
 import { ActionInvokeContextData } from "./action"
 import { globalLogger } from "../logging/logging"
 import { Service } from "../util/service"
+import { templateSchema } from "../templates/template"
 
 export interface SequenceDebugger {
 	sequenceStarted(): void
@@ -205,9 +207,15 @@ export class SequenceRunner {
 	}
 }
 
+export function getSequenceHash(sequence: Sequence) {
+	//Hack?
+	return hashString(JSON.stringify(sequence))
+}
+
 interface SequenceResolverImpl {
 	getAutomation(id: string, subId?: string): InlineAutomation | undefined
 	getContextSchema(id: string, subId?: string): Promise<Schema | undefined>
+	getRunWrapper(id: string, subId?: string): (inner: () => any) => any
 }
 
 export const SequenceResolvers = Service(

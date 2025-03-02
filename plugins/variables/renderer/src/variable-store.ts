@@ -75,6 +75,7 @@ export const useVariableStore = defineStore("variables", () => {
 		if (!def) return
 
 		//TODO: Serialize?
+		console.log("Setting Variable!", id, value)
 
 		await setVariableValueIPC(id, value)
 	}

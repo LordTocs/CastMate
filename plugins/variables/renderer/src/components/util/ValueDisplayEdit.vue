@@ -4,7 +4,7 @@
 	</div>
 
 	<form class="flex flex-row" @submit.prevent="accept" v-else-if="schema" @keydown="onKeyDown">
-		<data-input class="flex-grow-1" v-model="editValue" :schema="schema" />
+		<data-input class="flex-grow-1" v-model="editValue" :schema="schema" :local-path="localPath" />
 		<p-button icon="pi pi-check" text @click="accept"></p-button>
 		<p-button icon="pi pi-times" text @click="reject"></p-button>
 	</form>
@@ -20,10 +20,14 @@ import _cloneDeep from "lodash/cloneDeep"
 import PButton from "primevue/button"
 import { useModel } from "vue"
 
-const props = defineProps<{
-	modelValue: any
-	schema: Schema
-}>()
+const props = withDefaults(
+	defineProps<{
+		modelValue: any
+		schema: Schema
+		localPath?: string
+	}>(),
+	{ localPath: "" }
+)
 
 const model = useModel(props, "modelValue")
 

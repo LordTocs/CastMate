@@ -48,14 +48,15 @@ export interface SchemaNumber extends Enumable<number>, SchemaBase<number> {
 export type TemplateNumber = number | string
 registerType("Number", {
 	constructor: Number,
+	icon: "mdi mdi-numeric",
 	validate(value: number | string | undefined, schema: SchemaNumber) {
 		if (typeof value == "string") {
-			if (!schema.template) return `${schema.name} cannot be a template value`
+			if (!schema.template) return `${schema.name ?? "This"} cannot be a template value`
 			return undefined
 		}
 
 		if (value == null) {
-			if (schema.required) return `${schema.name} is required`
+			if (schema.required) return `${schema.name ?? "This"} is required`
 			return undefined
 		}
 
@@ -95,6 +96,7 @@ export interface SchemaString extends Enumable<string>, SchemaBase<string> {
 
 registerType("String", {
 	constructor: String,
+	icon: "mdi mdi-text-short",
 	validate(value: string | undefined, schema: SchemaString) {
 		if (value == null) {
 			if (schema.required) return `${schema.name} is required`
@@ -118,6 +120,8 @@ registerType("String", {
 	async fromString(value) {
 		return value
 	},
+	canBeVariable: true,
+	canBeViewerVariable: true,
 	canBeCommandArg: true,
 })
 
@@ -129,6 +133,7 @@ export interface SchemaBoolean extends SchemaBase<boolean> {
 
 registerType("Boolean", {
 	constructor: Boolean,
+	icon: "mdi mdi-checkbox-outline",
 	canBeVariable: true,
 	canBeViewerVariable: true,
 })
@@ -536,6 +541,7 @@ export interface DataTypeMetaData<T extends DataConstructorOrFactory> {
 	canBeVariable?: boolean
 	canBeCommandArg?: boolean
 	canBeViewerVariable?: boolean
+	icon?: string
 	expose?: (value: ResolvedTypeByConstructor<T>, schema: Schema) => ExposedTypeByConstructor<T>
 	unexpose?: (value: ExposedTypeByConstructor<T>, schema: Schema) => ResolvedTypeByConstructor<T>
 	/**
@@ -557,7 +563,7 @@ export interface DataTypeMetaData<T extends DataConstructorOrFactory> {
 	) => ResolvedTypeByConstructor<T>
 }
 
-interface FullDataTypeMetaData<T extends DataConstructorOrFactory = any> extends DataTypeMetaData<T> {
+export interface FullDataTypeMetaData<T extends DataConstructorOrFactory = any> extends DataTypeMetaData<T> {
 	name: string
 	canBeVariable: boolean
 	canBeCommandArg: boolean

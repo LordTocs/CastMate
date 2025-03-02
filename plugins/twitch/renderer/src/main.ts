@@ -15,6 +15,7 @@ import {
 	TwitchViewerGroup,
 	TwitchCategory,
 	ChannelPointRewardConfig,
+	TwitchStreamTags,
 } from "castmate-plugin-twitch-shared"
 import TwitchViewerGroupInput from "./components/TwitchViewerGroupInput.vue"
 import { computed, App } from "vue"
@@ -31,10 +32,16 @@ import TwitchViewerViewVue from "./components/viewer/TwitchViewerView.vue"
 import ChannelPointGroupHeaderVue from "./components/channel-points/ChannelPointGroupHeader.vue"
 import TwitchViewerGroupViewVue from "./components/TwitchViewerGroupView.vue"
 import ChatCommandHeader from "./components/triggers/ChatCommandHeader.vue"
+import TwitchStreamTagsInput from "./components/stream-info/TwitchStreamTagsInput.vue"
+import ShoutoutActionComponent from "./components/action-components/ShoutoutActionComponent.vue"
+import AnnoucementActionComponent from "./components/action-components/AnnoucementActionComponent.vue"
+import ChatActionComponent from "./components/action-components/ChatActionComponent.vue"
+import StreamInfoPlanDashboardCard from "./components/stream-info/StreamInfoPlanDashboardCard.vue"
 
 export * from "./util/twitch-accounts"
 
 export { default as StreamInfoDashboardCard } from "./components/stream-info/StreamInfoDashboardCard.vue"
+export { default as TwitchMainPageCard } from "./components/main-page/TwitchMainPageCard.vue"
 
 export async function initPlugin(app: App<Element>) {
 	console.log("Registering", TwitchViewerGroup, "TwitchViewerGroup")
@@ -47,6 +54,8 @@ export async function initPlugin(app: App<Element>) {
 
 	dataStore.registerInputComponent(TwitchCategory, TwitchCategoryInputVue)
 	dataStore.registerViewComponent(TwitchCategory, TwitchCategoryViewVue)
+
+	dataStore.registerInputComponent(TwitchStreamTags, TwitchStreamTagsInput)
 
 	const resourceStore = useResourceStore()
 	resourceStore.registerSettingComponent("TwitchAccount", TwitchAccountSettingsVue)
@@ -116,6 +125,7 @@ export async function initPlugin(app: App<Element>) {
 							dockingStore.openPage(
 								"twitch.channelpoints",
 								"Channel Point Rewards",
+								"twi twi-channel-points",
 								ChannelPointsEditPageVue
 							)
 						},
@@ -128,7 +138,12 @@ export async function initPlugin(app: App<Element>) {
 
 	const streamPlanStore = useStreamPlanStore()
 	streamPlanStore.registerStreamPlanComponent("twitch-stream-info", StreamInfoPlanComponentVue)
+	streamPlanStore.registerStreamPlanComponentView("twitch-stream-info", StreamInfoPlanDashboardCard)
 
 	const pluginStore = usePluginStore()
 	pluginStore.setTriggerHeaderComponent("twitch", "chat", ChatCommandHeader)
+
+	pluginStore.setActionComponent("twitch", "chat", ChatActionComponent)
+	pluginStore.setActionComponent("twitch", "shoutout", ShoutoutActionComponent)
+	pluginStore.setActionComponent("twitch", "annoucement", AnnoucementActionComponent)
 }

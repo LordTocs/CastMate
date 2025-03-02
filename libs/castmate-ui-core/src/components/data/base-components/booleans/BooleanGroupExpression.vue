@@ -5,7 +5,7 @@
 	>
 		<div class="boolean-group-card-header">
 			<i v-if="showDrag" class="mdi mdi-drag boolean-drag-handle" style="font-size: 2rem" />
-			<boolean-group-operator-selector v-model="operator" />
+			<boolean-group-operator-selector v-model="operator" local-path="operator" />
 			<div style="flex: 1"></div>
 			<p-button @click="addValue"> Add Value </p-button>
 			<p-button @click="addGroup"> Add Group </p-button>
@@ -19,6 +19,7 @@
 				data-type="boolean-sub-expression"
 				key-prop="id"
 				style="gap: 0.25rem"
+				local-path="operands"
 			>
 				<template #no-items>
 					<div class="flex flex-column align-items-center p-3">No Conditions (Always On)</div>
@@ -28,6 +29,7 @@
 						v-model="model.operands[index]"
 						:selected-ids="[]"
 						@delete="deleteOperand(index)"
+						:local-path="`[${index}]`"
 					/>
 				</template>
 			</draggable-collection>
@@ -41,7 +43,7 @@ import BooleanGroupOperatorSelector from "./BooleanGroupOperatorSelector.vue"
 import BooleanValueExpressionEditor from "./BooleanValueExpressionEditor.vue"
 
 import BooleanSubExpression from "./BooleanSubExpression.vue"
-import { DocumentDataCollection, DraggableCollection } from "../../../../main"
+import { DocumentDataCollection, DraggableCollection, useCommitUndo, useDefaultableModel } from "../../../../main"
 
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
@@ -64,6 +66,8 @@ const props = withDefaults(
 const emit = defineEmits(["update:modelValue", "delete"])
 
 const model = useModel(props, "modelValue")
+
+const commitUndo = useCommitUndo()
 
 const isAnd = computed(() => {
 	return model.value && model.value.operands.length > 1 && model.value.operator == "and"
@@ -96,10 +100,12 @@ function addValue() {
 			operator: "or",
 			operands: [defaultValueExpression],
 		}
+		commitUndo()
 		return
 	}
 
 	model.value.operands.push(defaultValueExpression)
+	commitUndo()
 }
 
 function addGroup() {
@@ -119,11 +125,14 @@ function addGroup() {
 	} else {
 		model.value.operands.push(defaultGroup)
 	}
+
+	commitUndo()
 }
 
 function deleteOperand(index: number) {
 	if (!model.value) return
 	model.value.operands.splice(index, 1)
+	commitUndo()
 }
 
 const operator = computed({

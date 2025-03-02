@@ -2,13 +2,16 @@
 	<div class="flex flex-column widget-list">
 		<div class="flex-grow-1 widget-list-container">
 			<flex-scroller class="h-full" inner-class="flex flex-column gap-1">
-				<overlay-widget-list-item
-					v-for="(widget, i) in model.widgets"
-					v-model="model.widgets[i]"
-					:selected="selection.includes(widget.id)"
-					@click="widgetClick(i, $event)"
-					@delete="deleteWidget(i)"
-				/>
+				<data-binding-path local-path="widgets">
+					<overlay-widget-list-item
+						v-for="(widget, i) in model.widgets"
+						v-model="model.widgets[i]"
+						:selected="selection.includes(widget.id)"
+						@click="widgetClick(i, $event)"
+						@delete="deleteWidget(i)"
+						:local-path="`[${i}]`"
+					/>
+				</data-binding-path>
 			</flex-scroller>
 		</div>
 		<div class="flex flex-row px-2 pb-2">
@@ -20,7 +23,13 @@
 
 <script setup lang="ts">
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { useDocumentPath, useDocumentSelection, FlexScroller, usePropagationStop } from "castmate-ui-core"
+import {
+	useDocumentSelection,
+	FlexScroller,
+	usePropagationStop,
+	useCommitUndo,
+	DataBindingPath,
+} from "castmate-ui-core"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
@@ -37,11 +46,11 @@ const props = defineProps<{
 
 const model = useModel(props, "modelValue")
 
-const documentPath = useDocumentPath()
-
-const selection = useDocumentSelection(documentPath)
+const selection = useDocumentSelection("widgets")
 
 const overlayWidgets = useOverlayWidgets()
+
+const commitUndo = useCommitUndo()
 
 async function addWidget(widget: OverlayWidgetInfo) {
 	const size = {
@@ -77,9 +86,11 @@ async function addWidget(widget: OverlayWidgetInfo) {
 		visible: true,
 		locked: false,
 	})
+
+	commitUndo()
 }
 
-const addMenu = ref<PMenu>()
+const addMenu = ref<InstanceType<typeof PMenu>>()
 const addMenuItems = computed<MenuItem[]>(() => {
 	return overlayWidgets.widgets.map((w) => {
 		return {
@@ -120,6 +131,7 @@ function widgetClick(idx: number, ev: MouseEvent) {
 
 function deleteWidget(idx: number) {
 	model.value.widgets.splice(idx, 1)
+	commitUndo()
 }
 </script>
 

@@ -89,11 +89,11 @@ export function setupAds() {
 		required: true,
 	})
 
-	const queryAdSchedule = measurePerfFunc(async function () {
+	const queryAdSchedule = measurePerfFunc(async function (validation = false) {
 		const schedule = await TwitchAccount.channel.apiClient.channels.getAdSchedule(TwitchAccount.channel.twitchId)
 
 		nextAdDuration.value = schedule.duration
-		nextAdTimer.value = Timer.fromDate(schedule.nextAdDate)
+		nextAdTimer.value = schedule.nextAdDate ? Timer.fromDate(schedule.nextAdDate) : Timer.factoryCreate()
 
 		if (schedule.prerollFreeTime <= 0) {
 			prerollFreeTime.value = Timer.factoryCreate()
@@ -101,11 +101,25 @@ export function setupAds() {
 			prerollFreeTime.value = Timer.fromDuration(schedule.prerollFreeTime)
 		}
 
+		const oldSnoozes = adSnoozes.value
+
 		adSnoozes.value = schedule.snoozeCount
-		snoozeRefreshTimer.value = Timer.fromDate(schedule.snoozeRefreshDate)
+		snoozeRefreshTimer.value = schedule.snoozeRefreshDate
+			? Timer.fromDate(schedule.snoozeRefreshDate)
+			: Timer.factoryCreate()
+
+		if (isTimerStarted(snoozeRefreshTimer.value)) {
+			if (snoozeQueryTimeout) clearTimeout(snoozeQueryTimeout)
+
+			snoozeQueryTimeout = setTimeout(() => queryAdSchedule(), getTimeRemaining(snoozeRefreshTimer.value) * 1000)
+		}
 
 		//Adjust the schedule if necessary
-		scheduleAdTriggers(scheduledAdTriggers)
+		if (!validation || adSnoozes.value < oldSnoozes) {
+			//Only adjust the schedule if our snooze count changed for validation calls.
+			//This should prevent issues where the user's system clock is ahead of the server clock.
+			scheduleAdTriggers(scheduledAdTriggers)
+		}
 	}, "queryAdSchedule")
 
 	interface ScheduledAdTrigger {
@@ -114,6 +128,8 @@ export function setupAds() {
 	}
 
 	let scheduledAdTriggers: ScheduledAdTrigger[] = []
+	let validationTimeout: NodeJS.Timeout | undefined = undefined
+	let snoozeQueryTimeout: NodeJS.Timeout | undefined = undefined
 
 	onProfilesChanged((activeProfiles, inactiveProfiles) => {
 		if (!isTimerStarted(nextAdTimer.value)) return
@@ -141,8 +157,13 @@ export function setupAds() {
 				st.timeout = undefined
 			}
 		}
+		if (validationTimeout) {
+			clearTimeout(validationTimeout)
+		}
 
 		scheduledAdTriggers = newTriggers
+
+		if (!isTimerStarted(nextAdTimer.value)) return
 
 		const nextAdTime = getTimeRemaining(nextAdTimer.value)
 		let soonestTriggerTime = Number.POSITIVE_INFINITY
@@ -164,8 +185,8 @@ export function setupAds() {
 			//Issue a schedule validation check 1s before the next trigger
 			const validationTime = soonestTriggerTime - 1
 			if (validationTime > 0) {
-				setTimeout(async () => {
-					await queryAdSchedule()
+				validationTimeout = setTimeout(async () => {
+					await queryAdSchedule(true)
 				}, validationTime * 1000)
 			}
 		}
@@ -257,8 +278,9 @@ export function setupAds() {
 		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
 			setTimeout(() => {
 				//Wait a little bit after the stream comes online to query the ad schedule since we don't seem to get info on first startup
+				logger.log("Querying Initial Ad Schedule")
 				queryAdSchedule()
-			}, 10 * 1000)
+			}, 60 * 1000)
 		})
 
 		service.eventsub.onChannelAdBreakBegin(channel.twitchId, async (event) => {

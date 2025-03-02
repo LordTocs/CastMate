@@ -6,7 +6,7 @@
 			<i :class="queuedTrigger?.icon" /> {{ queuedTrigger?.name }}
 		</div>
 
-		<flex-scroller class="data" inner-class="data-inner">
+		<flex-scroller class="data" inner-class="data-inner flex flex-column align-items-center justify-content-center">
 			<data-view
 				:model-value="queueItem.queueContext.contextState"
 				v-if="queuedContextSchema"
@@ -126,5 +126,6 @@ const queuedContextSchema = asyncComputed(async () => {
 
 :deep(.data-inner) {
 	padding: 0.25rem;
+	text-align: center;
 }
 </style>

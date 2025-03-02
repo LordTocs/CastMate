@@ -1,25 +1,42 @@
 <template>
-	<scrolling-tab-body>
+	<scrolling-tab-body ref="body">
 		<div class="flex flex-row">
-			<div style="width: 350px; flex-shrink: 0">
-				<data-input :schema="baseTestSchema" v-model="testData" />
+			<div style="width: 50%; flex-shrink: 0">
+				<c-color-picker v-model="color" />
+
+				<data-input :schema="baseTestSchema" v-model="baseDataBinding.rootData" local-path="" />
 			</div>
-			<div class="flex-grow-1 flex-shrink-0">
-				<pre>{{
-					util.inspect(testData, {
-						depth: 10,
-						compact: false,
-					})
-				}}</pre>
-			</div>
+			<data-binding-debugger :binding="baseDataBinding" />
 		</div>
 	</scrolling-tab-body>
 </template>
 
 <script setup lang="ts">
-import { Color, Duration, Timer, FilePath, Range, Directory, Toggle, declareSchema, MediaFile } from "castmate-schema"
-import { ScrollingTabBody, useDataInputStore, DataInputBase, DataInput, ResourceProxyFactory } from "castmate-ui-core"
-import { ref } from "vue"
+import {
+	Color,
+	Duration,
+	Timer,
+	FilePath,
+	Range,
+	Directory,
+	Toggle,
+	declareSchema,
+	MediaFile,
+	constructDefault,
+} from "castmate-schema"
+import {
+	ScrollingTabBody,
+	useDataInputStore,
+	DataInputBase,
+	DataInput,
+	ResourceProxyFactory,
+	DataBinding,
+	provideBaseDataBinding,
+	DataBindingDebugger,
+	createUndoStack,
+	CColorPicker,
+} from "castmate-ui-core"
+import { onBeforeMount, onMounted, ref } from "vue"
 import util from "util"
 import { TwitchCategory, TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { LightColor } from "castmate-plugin-iot-shared"
@@ -36,9 +53,26 @@ const testSchema = declareSchema({
 	name: "New Base Test",
 	template: true,
 })
-const baseDataTest = ref<any>(undefined)
 
-const testData = ref({})
+const color = ref<Color>(Color.factoryCreate())
+
+const baseDataBinding = ref<DataBinding>({
+	rootView: {
+		data: {},
+		subPaths: {},
+		uiBindings: [],
+		refCount: 1,
+	},
+	rootData: {},
+	undoStack: createUndoStack({}),
+})
+
+provideBaseDataBinding(baseDataBinding.value)
+
+onBeforeMount(async () => {
+	baseDataBinding.value.rootData = await constructDefault(baseTestSchema)
+	baseDataBinding.value.undoStack = createUndoStack(baseDataBinding.value.rootData)
+})
 
 const baseTestSchema = declareSchema({
 	type: Object,
@@ -51,7 +85,7 @@ const baseTestSchema = declareSchema({
 		range: { type: Range, name: "Range", template: true },
 		color: { type: Color, name: "Color", template: true },
 		bool: { type: Boolean, name: "Boolean" },
-		toggle: { type: Toggle, name: "Toggle" },
+		toggle: { type: Toggle, name: "Toggle", template: true },
 		duration: { type: Duration, name: "Duration", template: true },
 		timer: { type: Timer, name: "Timer" },
 		media: { type: MediaFile, name: "MediaFile" },
@@ -67,9 +101,11 @@ const baseTestSchema = declareSchema({
 		resource: { type: ResourceProxyFactory, resourceType: "ActionQueue", name: "Resource" },
 		command: { type: Command, name: "Command Test", required: true, template: true },
 		powershellCommand: { type: PowerShellCommand, name: "PowerShellCommand", template: true },
-		obsTransform: { type: OBSSourceTransform, name: "Source Transform", template: true },
+		obsTransform: { type: OBSSourceTransform, name: "Source Transform", template: true, required: true },
 	},
 })
+
+const body = ref<InstanceType<typeof ScrollingTabBody>>()
 </script>
 
 <style scoped></style>

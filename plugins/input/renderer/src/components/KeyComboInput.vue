@@ -23,7 +23,16 @@
 </template>
 
 <script setup lang="ts">
-import { LabelFloater, InputBox, SharedDataInputProps, DataInputBase, usePropagationStop } from "castmate-ui-core"
+import {
+	LabelFloater,
+	InputBox,
+	SharedDataInputProps,
+	DataInputBase,
+	usePropagationStop,
+	useDataBinding,
+	useUndoCommitter,
+	useCommitUndo,
+} from "castmate-ui-core"
 import { KeyboardKey, SchemaKeyboardKey, Keys, getKeyboardKey, KeyCombo } from "castmate-plugin-input-shared"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"
@@ -36,6 +45,9 @@ const props = defineProps<
 >()
 
 const model = useModel(props, "modelValue")
+
+useDataBinding(() => props.localPath)
+
 const captureMode = ref(false)
 const inputRef = ref<InstanceType<typeof InputBox>>()
 const focused = ref(false)
@@ -64,6 +76,8 @@ const modelString = computed(() => {
 })
 
 const stopPropagation = usePropagationStop()
+
+const commitUndo = useCommitUndo()
 
 function startCapture(ev: MouseEvent) {
 	stopPropagation(ev)
@@ -98,6 +112,7 @@ function onKeyUp(ev: KeyboardEvent) {
 	if (!captureMode.value) return
 
 	captureMode.value = false
+	commitUndo()
 
 	ev.stopPropagation()
 	ev.preventDefault()

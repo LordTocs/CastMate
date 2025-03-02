@@ -70,7 +70,7 @@ function createAutomationGroup(app: App<Element>) {
 				title: r.config.name,
 				icon: `mdi mdi-cogs`,
 				open() {
-					dockingStore.openDocument(r.id, r.config, createAutomationViewData(r), "automation")
+					dockingStore.openDocument(r.id, r.config, createAutomationViewData(r), "automation", "mdi mdi-cogs")
 				},
 				rename(name) {
 					resourceStore.applyResourceConfig("Automation", r.id, { name })
@@ -114,13 +114,19 @@ function createAutomationGroup(app: App<Element>) {
 
 export function useOpenAutomationDocument() {
 	const dockingStore = useDockingStore()
-	const resourceStore = useResourceData<ResourceData<AutomationConfig>>("Profile")
+	const resourceStore = useResourceData<ResourceData<AutomationConfig>>("Automation")
 
 	return (id: string) => {
 		const resource = resourceStore.value?.resources?.get(id)
 		if (!resource) return
 
-		dockingStore.openDocument(resource.id, resource.config, createAutomationViewData(resource), "profile")
+		dockingStore.openDocument(
+			resource.id,
+			resource.config,
+			createAutomationViewData(resource),
+			"automation",
+			"mdi mdi-cogs"
+		)
 	}
 }
 

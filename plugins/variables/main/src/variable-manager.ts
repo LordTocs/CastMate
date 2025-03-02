@@ -7,11 +7,13 @@ import {
 	defineIPCFunc,
 	deserializeSchema,
 	ensureYAML,
+	exposeSchema,
 	loadYAML,
 	reactiveRef,
 	runOnChange,
 	serializeSchema,
 	templateSchema,
+	unexposeSchema,
 	usePluginLogger,
 	writeYAML,
 } from "castmate-core"
@@ -76,7 +78,8 @@ export const VariableManager = Service(
 				if (!def) return
 
 				const value = await deserializeSchema(def.schema, serializedValue)
-				def.ref.value = value
+				const exposedValue = await exposeSchema(def.schema, value)
+				def.ref.value = exposedValue
 			})
 
 			defineIPCFunc("variables", "deleteVariable", async (id: string) => {
@@ -101,14 +104,18 @@ export const VariableManager = Service(
 					continue
 				}
 
+				const defaultUnexposed = await unexposeSchema(variable.schema, variable.defaultValue)
+
 				result[id] = {
 					type: type.name,
 					serialized: variable.serialized,
-					defaultValue: await serializeSchema(variable.schema, variable.defaultValue),
+					defaultValue: await serializeSchema(variable.schema, defaultUnexposed),
 				}
 
 				if (variable.serialized) {
-					result[id].savedValue = await serializeSchema(variable.schema, variable.ref.value)
+					const unexposed = await unexposeSchema(variable.schema, variable.ref.value)
+
+					result[id].savedValue = await serializeSchema(variable.schema, unexposed)
 				}
 			}
 			try {
@@ -158,7 +165,9 @@ export const VariableManager = Service(
 					? await deserializeSchema(schema, serializedDef.savedValue)
 					: await templateSchema(defaultValue, schema, PluginManager.getInstance().state)
 
-				const ref = reactiveRef(value)
+				const exposedValue = await exposeSchema(schema, value)
+
+				const ref = reactiveRef(exposedValue)
 
 				const def: VariableDefinition = {
 					id,
@@ -235,7 +244,9 @@ export const VariableManager = Service(
 
 			if (existing.schema.type != schema.type) {
 				//If we've changed type, revert to the default
-				ref.value = await templateSchema(defaultValue, schema, PluginManager.getInstance().state)
+				const templatedValue = await templateSchema(defaultValue, schema, PluginManager.getInstance().state)
+				const exposedValue = await exposeSchema(schema, templatedValue)
+				ref.value = exposedValue
 			}
 
 			existing.schema = schema

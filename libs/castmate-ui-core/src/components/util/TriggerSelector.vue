@@ -1,5 +1,5 @@
 <template>
-	<label-floater :no-float="true" :label="label" input-id="trigger" v-slot="labelProps">
+	<label-floater label="Trigger" input-id="trigger" v-slot="labelProps">
 		<c-autocomplete
 			v-model="idModel"
 			:items="triggers"
@@ -30,17 +30,9 @@
 			</template>
 
 			<template #item="{ item, focused, highlighted, onClick }">
-				<li
-					class="p-dropdown-item"
-					:class="{ 'p-focus': focused, 'p-highlight': highlighted }"
-					:data-p-highlight="highlighted"
-					:data-p-focused="focused"
-					:aria-label="item.name"
-					:aria-selected="highlighted"
-					@click="onClick"
-				>
+				<drop-list-item :highlighted="highlighted" :focused="focused" @click="onClick" :label="item.name">
 					<i :class="item?.icon" :style="{ color: item?.color }"></i> {{ item.name }}
-				</li>
+				</drop-list-item>
 			</template>
 		</c-autocomplete>
 	</label-floater>
@@ -49,9 +41,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { usePluginStore } from "../../plugins/plugin-store"
-import { useVModel } from "@vueuse/core"
-import { LabelFloater, useTrigger } from "../../main"
+import { LabelFloater, useDataBinding, useTrigger } from "../../main"
 import CAutocomplete from "../data/base-components/CAutocomplete.vue"
+import DropListItem from "../data/base-components/DropListItem.vue"
 
 const pluginStore = usePluginStore()
 
@@ -60,22 +52,23 @@ interface TriggerValue {
 	trigger: string
 }
 
+const model = defineModel<TriggerValue>()
+
+useDataBinding(() => "trigger")
+
 const props = withDefaults(
 	defineProps<{
-		modelValue: TriggerValue | undefined
 		label?: string
 	}>(),
 	{}
 )
-const emit = defineEmits(["update:modelValue"])
-const model = useVModel(props, "modelValue", emit)
 
-const selectedTrigger = useTrigger(() => props.modelValue)
+const selectedTrigger = useTrigger(() => model.value)
 
 const idModel = computed({
 	get() {
-		if (props.modelValue) {
-			return props.modelValue.plugin + "." + props.modelValue.trigger
+		if (model.value) {
+			return model.value.plugin + "." + model.value.trigger
 		}
 		return undefined
 	},

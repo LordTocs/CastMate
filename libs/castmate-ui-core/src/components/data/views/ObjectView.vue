@@ -6,6 +6,7 @@
 				:model-value="getModelProp(prop)"
 				:schema="schema.properties[prop]"
 				:context="context"
+				:no-label="noLabel"
 			/>
 		</div>
 	</div>

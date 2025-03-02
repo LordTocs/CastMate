@@ -2,7 +2,7 @@
 	<data-input-base v-model="model" :schema="schema">
 		<template #default="inputProps">
 			<div class="light-color-container w-full" ref="container">
-				<input-box v-bind="inputProps" :model="model" @click="onClick">
+				<input-box v-bind="inputProps" :model="model" @click="onClick" ref="ibox">
 					<div
 						class="color-splash"
 						:style="{ backgroundColor: model != null ? LightColor.toColor(model) : undefined }"
@@ -10,20 +10,26 @@
 				</input-box>
 			</div>
 			<drop-down-panel v-model="overlayVisible" :container="container">
-				<p-tab-view v-model="tabIndex">
-					<p-tab-panel header="RGB">
-						<div class="flex flex-row gap-2">
-							<light-color-wheel style="width: 15rem" v-model="model" />
-							<light-brightness-slider style="height: 15rem" v-model="model" />
-						</div>
-					</p-tab-panel>
-					<p-tab-panel header="Temp">
-						<div class="flex flex-row gap-2">
-							<light-temperature-slider style="height: 15rem" v-model="model" />
-							<light-brightness-slider style="height: 15rem" v-model="model" />
-						</div>
-					</p-tab-panel>
-				</p-tab-view>
+				<p-tabs v-model:value="colorMode">
+					<p-tab-list>
+						<p-tab value="rgb" class="small-tab">RGB</p-tab>
+						<p-tab value="cct" class="small-tab">CCT</p-tab>
+					</p-tab-list>
+					<p-tab-panels>
+						<p-tab-panel value="rgb">
+							<div class="flex flex-row gap-2">
+								<light-color-wheel style="width: 15rem" v-model="model" />
+								<light-brightness-slider style="height: 15rem" v-model="model" />
+							</div>
+						</p-tab-panel>
+						<p-tab-panel value="cct">
+							<div class="flex flex-row gap-2">
+								<light-temperature-slider style="height: 15rem" v-model="model" />
+								<light-brightness-slider style="height: 15rem" v-model="model" />
+							</div>
+						</p-tab-panel>
+					</p-tab-panels>
+				</p-tabs>
 			</drop-down-panel>
 		</template>
 	</data-input-base>
@@ -31,13 +37,23 @@
 
 <script setup lang="ts">
 import { LightColor, SchemaLightcolor } from "castmate-plugin-iot-shared"
-import { InputBox, SharedDataInputProps, DropDownPanel, DataInputBase, usePropagationStop } from "castmate-ui-core"
+import {
+	InputBox,
+	SharedDataInputProps,
+	DropDownPanel,
+	DataInputBase,
+	usePropagationStop,
+	useDataBinding,
+	useDataUIBinding,
+} from "castmate-ui-core"
 import { ref, useModel } from "vue"
 import LightColorWheel from "./LightColorWheel.vue"
 import LightTemperatureSlider from "./LightTemperatureSlider.vue"
 import LightBrightnessSlider from "./LightBrightnessSlider.vue"
-import PButton from "primevue/button"
-import PTabView from "primevue/tabview"
+import PTabs from "primevue/tabs"
+import PTab from "primevue/tab"
+import PTabList from "primevue/tablist"
+import PTabPanels from "primevue/tabpanels"
 import PTabPanel from "primevue/tabpanel"
 
 const props = defineProps<
@@ -47,12 +63,14 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
 
 const container = ref<HTMLElement>()
 const overlayVisible = ref(false)
 
-const tabIndex = ref(0)
+const colorMode = ref<"rgb" | "cct">("rgb")
 
 function show() {
 	if (!overlayVisible.value) {
@@ -72,6 +90,14 @@ function toggle() {
 }
 
 const stopPropagation = usePropagationStop()
+
+const ibox = ref<InstanceType<typeof InputBox>>()
+
+useDataUIBinding({
+	scrollIntoView() {
+		ibox.value?.scrollIntoView()
+	},
+})
 
 function onClick(ev: MouseEvent) {
 	toggle()

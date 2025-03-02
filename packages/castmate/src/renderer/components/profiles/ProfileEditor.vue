@@ -1,6 +1,6 @@
 <template>
 	<flex-scroller ref="scroller" v-model:scroll-y="view.scrollY" v-model:scroll-x="view.scrollX">
-		<div class="profile-edit">
+		<div class="profile-edit flex-grow-1">
 			<h1>Triggers</h1>
 
 			<document-data-collection
@@ -37,11 +37,13 @@
 			<inline-automation-edit
 				v-model="model.activationAutomation"
 				v-model:view="view.activationAutomation"
+				local-path="activationAutomation"
 				label="On Activate"
 			/>
 			<inline-automation-edit
 				v-model="model.deactivationAutomation"
 				v-model:view="view.deactivationAutomation"
+				local-path="deactivationAutomation"
 				label="On Deactivate"
 			/>
 		</div>
@@ -57,6 +59,9 @@ import {
 	provideScrollAttachable,
 	InlineAutomationEdit,
 	createInlineAutomationView,
+	DataBindingDebugger,
+	useBaseDataBinding,
+	useCommitUndo,
 } from "castmate-ui-core"
 import { ProfileConfig } from "castmate-schema"
 import TriggerEdit from "./TriggerEdit.vue"
@@ -89,6 +94,10 @@ const scroller = ref<InstanceType<typeof FlexScroller>>()
 
 provideScrollAttachable(() => scroller.value?.scroller ?? undefined)
 
+const commitUndo = useCommitUndo()
+
+const baseDataBinding = useBaseDataBinding()
+
 function createTriggerEnd() {
 	const id = nanoid()
 
@@ -114,6 +123,8 @@ function createTriggerEnd() {
 			},
 		},
 	})
+
+	commitUndo()
 }
 
 function createTriggerBeginning() {
@@ -141,6 +152,8 @@ function createTriggerBeginning() {
 			},
 		},
 	})
+
+	commitUndo()
 }
 </script>
 

@@ -1,98 +1,81 @@
 <template>
 	<p-portal :append-to="appendTo">
-		<div
-			class="p-menu p-component filter-palette p-ripple-disabled"
-			:style="{ '--page-x': `${pageX}px`, '--page-y': `${pageY}px` }"
-			v-if="visible"
-			@mousedown="onMouseDown"
-		>
-			<div class="p-menu-start">
-				<span class="p-inputgroup">
-					<p-input-text
-						v-model="filter"
-						ref="filterInput"
-						:placeholder="filterPlaceholder"
-						@keydown="onKeyDown"
-					/>
-				</span>
-			</div>
-			<ul class="p-menu-list" ref="scroller">
-				<template v-for="item of filteredItems">
-					<template v-if="item.items">
-						<!-- This is a group header -->
-						<li :class="['p-submenu-header', item.class]" :style="item.style" v-if="item.items.length > 0">
-							<slot name="submenuheader" :item="item">
-								<i v-if="item.icon" :class="['p-menuitem-icon', item.icon]"></i>
-								<span class="p-menuitem-text">
-									{{ getItemText(item) }}
-								</span>
-							</slot>
-						</li>
-						<li
-							v-for="(subitem, i) in item.items"
-							:key="subitem.key"
-							class="p-menuitem"
-							:class="{ 'p-focus': isItemFocused(subitem), 'p-highlight': isCurrentItem(item) }"
-							:style="subitem.style"
-							:data-p-highlight="isCurrentItem(subitem)"
-							:data-p-focused="isItemFocused(subitem)"
-							:aria-label="getItemText(subitem)"
-							:aria-selected="isCurrentItem(subitem)"
-						>
-							<div
-								class="p-menuitem-content"
-								:style="subitem.style"
-								@click="onItemSelect($event, subitem)"
+		<transition name="p-connected-overlay" @enter="onEnter">
+			<div
+				class="p-menu p-component filter-palette p-ripple-disabled"
+				:style="{ '--page-x': `${pageX}px`, '--page-y': `${pageY}px` }"
+				ref="paletteDiv"
+				v-if="visible"
+				@mousedown="onMouseDown"
+			>
+				<div class="p-menu-start">
+					<p-input-group>
+						<p-input-text
+							v-model="filter"
+							ref="filterInput"
+							:placeholder="filterPlaceholder"
+							@keydown="onKeyDown"
+						/>
+					</p-input-group>
+				</div>
+				<ul class="p-menu-list" ref="scroller">
+					<template v-for="item of filteredItems">
+						<template v-if="item.items">
+							<!-- This is a group header -->
+							<li
+								:class="['p-submenu-header', item.class]"
+								:style="item.style"
+								v-if="item.items.length > 0"
 							>
-								<slot name="item" :item="subitem">
-									<a class="p-menuitem-link">
-										<i v-if="subitem.icon" :class="['p-menuitem-icon', subitem.icon]"></i>
-										<span class="p-menuitem-text">
-											{{ getItemText(subitem) }}
-										</span>
-									</a>
-								</slot>
-							</div>
-						</li>
-					</template>
-					<!-- TODO: Apply item.class -->
-					<li
-						v-else
-						v-for="(item, i) in filteredItems"
-						class="p-menuitem"
-						:class="{ 'p-focus': isItemFocused(item), 'p-highlight': isCurrentItem(item) }"
-						:style="item.style"
-						:key="item.key"
-						:data-p-highlight="isCurrentItem(item)"
-						:data-p-focused="isItemFocused(item)"
-						:aria-label="getItemText(item)"
-						:aria-selected="isCurrentItem(item)"
-					>
-						<div class="p-menuitem-content" :style="item.style" @click="onItemSelect($event, item)">
-							<slot name="item" :item="item">
-								<a class="p-menuitem-link">
-									<i v-if="item.icon" :class="['p-menuitem-icon', item.icon]"></i>
-									<span class="p-menuitem-text">
+								<slot name="submenuheader" :item="item">
+									<i v-if="item.icon" :class="['p-menu-item-icon', item.icon]"></i>
+									<span class="p-menu-item-text">
 										{{ getItemText(item) }}
 									</span>
-								</a>
-							</slot>
-						</div>
-					</li>
-				</template>
-			</ul>
-		</div>
+								</slot>
+							</li>
+							<filter-palette-item-list
+								:items="item.items"
+								@item-select="onItemSelect"
+								:focused-id="focusedId"
+							>
+								<template #item="itemProps" v-if="$slots.item">
+									<slot name="item" v-bind="itemProps"></slot>
+								</template>
+							</filter-palette-item-list>
+						</template>
+						<!-- TODO: Apply item.class -->
+						<filter-palette-item-list
+							v-else
+							:items="filteredItems"
+							:focused-id="focusedId"
+							@item-select="onItemSelect"
+						>
+							<template #item="itemProps" v-if="$slots.item">
+								<slot name="item" v-bind="itemProps"></slot>
+							</template>
+						</filter-palette-item-list>
+					</template>
+				</ul>
+			</div>
+		</transition>
 	</p-portal>
 </template>
 
 <script setup lang="ts">
 import PPortal from "primevue/portal"
 import PInputText from "primevue/inputtext"
-import { ref, toValue, computed, markRaw, nextTick, watch } from "vue"
+import PInputGroup from "primevue/inputgroup"
+import { ref, toValue, computed, markRaw, nextTick, watch, onBeforeUnmount } from "vue"
 import type { MenuItem } from "primevue/menuitem"
-import { ObjectUtils } from "primevue/utils"
+import { resolveFieldData } from "@primeuix/utils/object"
 import _cloneDeep from "lodash/cloneDeep"
 import { useEventListener } from "@vueuse/core"
+
+import FilterPaletteItemList from "./FilterPaletteItemList.vue"
+
+import { ZIndex } from "@primeuix/utils/zindex"
+import { getNextItem } from "../../util/autocomplete-helpers"
 
 const props = withDefaults(
 	defineProps<{
@@ -112,6 +95,16 @@ const props = withDefaults(
 )
 const filter = ref("")
 const filterInput = ref<{ $el: HTMLElement } | null>(null)
+
+function defaultFilterFunc(item: MenuItem, filter: string) {
+	const mainText = getItemText(item)
+	if (mainText.toLocaleLowerCase().includes(filter)) return true
+	if ("filterExtra" in item && typeof item.filterExtra == "string") {
+		if (item.filterExtra.toLocaleLowerCase().includes(filter)) return true
+	}
+	return false
+}
+
 function filterItem(item: MenuItem, filterValue: string): MenuItem | undefined {
 	if (item.items) {
 		const resultItem: MenuItem = {
@@ -128,7 +121,7 @@ function filterItem(item: MenuItem, filterValue: string): MenuItem | undefined {
 		}
 		return hasItem ? resultItem : undefined
 	} else {
-		return getItemText(item).toLocaleLowerCase().includes(filterValue) ? item : undefined
+		return defaultFilterFunc(item, filterValue) ? item : undefined
 	}
 }
 
@@ -151,14 +144,18 @@ const filteredItems = computed<MenuItem[]>(() => {
 	return result
 })
 
+const paletteDiv = ref<HTMLElement>()
 const visible = ref(false)
 function hide() {
 	visible.value = false
+	if (paletteDiv.value) {
+		ZIndex.clear(paletteDiv.value)
+	}
 }
 function show() {
 	filter.value = ""
 	visible.value = true
-	focusedId.value = null
+	focusedId.value = undefined
 	nextTick(() => filterInput.value?.$el?.focus())
 }
 useEventListener(
@@ -180,14 +177,14 @@ defineExpose({
 	},
 })
 
-const focusedId = ref<string | null>(null)
+const focusedId = ref<string>()
 function isItemFocused(item: MenuItem) {
 	return item.key == focusedId.value
 }
 
 function getItemValue(item: MenuItem) {
 	//@ts-ignore prime-vue has mistyped their function
-	return props.optionValue ? ObjectUtils.resolveFieldData(item, props.optionValue) : item
+	return props.optionValue ? resolveFieldData(item, props.optionValue) : item
 }
 
 function isCurrentItem(item: MenuItem) {
@@ -213,7 +210,7 @@ watch(filteredItems, () => {
 	if (focusedId.value) {
 		const item = getItemById(filteredItems.value, focusedId.value)
 		if (!item) {
-			focusedId.value = null
+			focusedId.value = undefined
 		}
 	}
 })
@@ -312,10 +309,10 @@ function getPrevId(items: MenuItem[], id: string): string | undefined {
 
 function onKeyArrowDown(ev: KeyboardEvent) {
 	if (focusedId.value) {
-		const nextId = getNextId(props.items, focusedId.value)
+		const nextId = getNextId(filteredItems.value, focusedId.value)
 		focusedId.value = nextId ?? focusedId.value
 	} else {
-		focusedId.value = getFirstId(filteredItems.value[0]) ?? null
+		focusedId.value = getFirstId(filteredItems.value[0])
 	}
 
 	ev.stopPropagation()
@@ -324,10 +321,10 @@ function onKeyArrowDown(ev: KeyboardEvent) {
 
 function onKeyArrowUp(ev: KeyboardEvent) {
 	if (focusedId.value) {
-		const prevId = getPrevId(props.items, focusedId.value)
+		const prevId = getPrevId(filteredItems.value, focusedId.value)
 		focusedId.value = prevId ?? focusedId.value
 	} else {
-		focusedId.value = getFirstId(filteredItems.value[0]) ?? null
+		focusedId.value = getFirstId(filteredItems.value[0])
 	}
 
 	ev.stopPropagation()
@@ -337,7 +334,7 @@ function onKeyArrowUp(ev: KeyboardEvent) {
 function selectedFocusedItem(ev: Event) {
 	if (focusedId.value) {
 		console.log("Grabbing Focused", focusedId.value)
-		const item = getItemById(props.items, focusedId.value)
+		const item = getItemById(filteredItems.value, focusedId.value)
 		if (item) {
 			item.command?.({
 				originalEvent: ev,
@@ -379,6 +376,18 @@ function onKeyDown(ev: KeyboardEvent) {
 function onMouseDown(ev: MouseEvent) {
 	ev.stopPropagation()
 }
+
+function onEnter() {
+	if (paletteDiv.value) {
+		ZIndex.set("overlay", paletteDiv.value)
+	}
+}
+
+onBeforeUnmount(() => {
+	if (paletteDiv.value) {
+		ZIndex.set("overlay", paletteDiv.value)
+	}
+})
 </script>
 
 <style scoped>

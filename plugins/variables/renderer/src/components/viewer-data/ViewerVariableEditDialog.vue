@@ -1,32 +1,35 @@
 <template>
 	<div ref="container" v-if="variableDef" class="variable-edit-dialog">
-		<div class="p-inputgroup var-edit">
-			<span class="p-float-label">
-				<variable-name-input v-model="variableDef.name" />
-				<label for="name"> Variable Name </label>
-			</span>
-		</div>
-		<div class="p-inputgroup var-edit">
-			<span class="p-float-label">
-				<p-dropdown
-					v-model="variableDef.type"
-					:options="variableTypeOptions"
-					option-value="code"
-					option-label="name"
-					input-id="type"
-				/>
-				<label for="type"> Type </label>
-			</span>
-		</div>
-		<div class="p-inputgroup var-edit">
-			<p-check-box binary input-id="check" v-model="variableDef.required" />
-			<label for="check" class="ml-2"> Required Value </label>
+		<div class="flex flex-column gap-3 mt-2">
+			<p-input-group>
+				<p-float-label variant="on">
+					<variable-name-input v-model="variableDef.name" local-path="name" />
+					<label for="name"> Variable Name </label>
+				</p-float-label>
+			</p-input-group>
+			<p-input-group>
+				<p-float-label variant="on">
+					<p-dropdown
+						v-model="variableDef.type"
+						:options="variableTypeOptions"
+						option-value="code"
+						option-label="name"
+						input-id="type"
+					/>
+					<label for="type"> Type </label>
+				</p-float-label>
+			</p-input-group>
+			<div>
+				<p-check-box binary input-id="check" v-model="variableDef.required" />
+				<label for="check" class="ml-2"> Required Value </label>
+			</div>
 		</div>
 		<data-input
 			v-if="defaultValueSchema"
 			class="var-edit"
 			v-model="variableDef.defaultValue"
 			:schema="defaultValueSchema"
+			local-path="defaultValue"
 		/>
 		<div class="flex justify-content-end mt-1">
 			<p-button :label="isCreate ? 'Create' : 'Save'" @click="submit"></p-button>
@@ -42,6 +45,8 @@ import { useDialogRef, DataInput, provideScrollAttachable, VariableNameInput } f
 import PButton from "primevue/button"
 import PDropdown from "primevue/dropdown"
 import PCheckBox from "primevue/checkbox"
+import PFloatLabel from "primevue/floatlabel"
+import PInputGroup from "primevue/inputgroup"
 import type { MenuItem } from "primevue/menuitem"
 
 const isCreate = ref(true)

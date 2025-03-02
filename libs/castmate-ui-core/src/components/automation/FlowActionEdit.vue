@@ -16,7 +16,19 @@
 		<template v-for="(flow, i) in model.subFlows" :key="flow.id">
 			<div class="flow-row">
 				<div class="flow-side" ref="sides" :class="{ 'is-testing': testTime != null }">
-					<div class="flow-data"></div>
+					<div class="flow-data">
+						<component
+							v-if="action?.flowComponent && model.subFlows[i]?.config != null"
+							:is="action?.flowComponent"
+							:plugin="model.plugin"
+							:action="model.action"
+							:flow-index="i"
+							v-bind="action?.flowComponentExtraProps"
+							v-model:action-config="model.config"
+							v-model="model.subFlows[i].config"
+							:sub-flows="subFlowConfigs"
+						/>
+					</div>
 					<div class="flow-side-indicator">
 						{{ i + 1 }}
 					</div>
@@ -60,11 +72,11 @@ import {
 	useAction,
 	useActionColors,
 	useActionTestTime,
-	useDocumentPath,
 	useIsSelected,
 	SelectionPos,
 	Selection,
 	selectionOverlaps,
+	useFlowAction,
 } from "../../main"
 import { ComputedRef, computed, inject, ref, useModel } from "vue"
 import AutomationDropZone from "./AutomationDropZone.vue"
@@ -84,9 +96,9 @@ const isFloating = inject<ComputedRef<boolean>>(
 const { actionColorStyle } = useActionColors(() => props.modelValue, isFloating)
 
 const model = useModel(props, "modelValue")
-const action = useAction(() => props.modelValue)
+const action = useFlowAction(() => props.modelValue)
 
-const isSelected = useIsSelected(useDocumentPath(), () => props.modelValue.id)
+const isSelected = useIsSelected(() => props.modelValue.id)
 const testTime = useActionTestTime(() => props.modelValue.id)
 
 function removeFlow(i: number) {
@@ -106,6 +118,8 @@ const footer = ref<HTMLElement | null>(null)
 
 const sides = ref<HTMLElement[]>([])
 const spacers = ref<HTMLElement[]>([])
+
+const subFlowConfigs = computed(() => model.value.subFlows.map((s) => s.config))
 
 function overlapsThis(container: HTMLElement, from: SelectionPos, to: SelectionPos) {
 	if (selectionOverlaps(cap.value, container, from, to)) {
@@ -227,6 +241,7 @@ defineExpose({
 
 .flow-data {
 	flex: 1;
+	position: relative;
 }
 
 .flow-side-indicator {
@@ -258,6 +273,8 @@ defineExpose({
 	flex-direction: row;
 	/* height: calc(var(--timeline-height) / 4); */
 	flex: 1;
+
+	position: relative;
 }
 
 .flow-cap-bottom-right {

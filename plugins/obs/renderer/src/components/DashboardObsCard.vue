@@ -1,5 +1,5 @@
 <template>
-	<dashboard-card v-if="obs">
+	<main-page-card v-if="obs">
 		<template #header>
 			<div class="flex flex-row">
 				<i class="obsi obsi-obs" /> {{ obs?.config?.name }}
@@ -14,7 +14,7 @@
 				/>
 			</div>
 		</template>
-		<dashboard-card-item v-if="!obs.state.connected" label="Disconnected">
+		<main-page-card-item v-if="!obs.state.connected" label="Disconnected">
 			<p-button v-if="isLocal" text @click="openObs">Open</p-button>
 			<div
 				class="p-text-secondary"
@@ -24,26 +24,26 @@
 			>
 				Remote OBS
 			</div>
-		</dashboard-card-item>
+		</main-page-card-item>
 		<template v-else-if="obs.state.connected">
-			<dashboard-card-item label="Streaming">
+			<main-page-card-item label="Streaming">
 				<i
 					:style="{ color: obs.state.streaming ? 'blue' : 'var(--surface-300)' }"
 					:class="obs.state.streaming ? 'mdi mdi-broadcast' : 'mdi mdi-broadcast-off'"
 				/>
-			</dashboard-card-item>
-			<dashboard-card-item label="Recording">
+			</main-page-card-item>
+			<main-page-card-item label="Recording">
 				<i
 					:style="{ color: obs.state.recording ? 'red' : 'var(--surface-300)' }"
 					:class="obs.state.recording ? 'mdi mdi-record' : 'mdi mdi-record'"
 				/>
-			</dashboard-card-item>
+			</main-page-card-item>
 		</template>
-	</dashboard-card>
+	</main-page-card>
 </template>
 
 <script setup lang="ts">
-import { useResource, DashboardCard, DashboardCardItem, useResourceIPCCaller } from "castmate-ui-core"
+import { useResource, MainPageCard, MainPageCardItem, useResourceIPCCaller } from "castmate-ui-core"
 import { OBSConnectionConfig, OBSConnectionState } from "castmate-plugin-obs-shared"
 import { ResourceData } from "castmate-schema"
 import { computed } from "vue"

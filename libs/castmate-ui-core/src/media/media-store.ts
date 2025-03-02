@@ -25,7 +25,7 @@ export const useMediaStore = defineStore("media", () => {
 			title: "Media",
 			icon: "mdi mdi-multimedia",
 			open() {
-				dockingStore.openPage("media", "Media", MediaBrowserPage)
+				dockingStore.openPage("media", "Media", "mdi mdi-multimedia", MediaBrowserPage)
 			},
 		}
 	})
@@ -67,6 +67,8 @@ export const useMediaStore = defineStore("media", () => {
 		copyMedia,
 	}
 })
+
+export type MediaStore = ReturnType<typeof useMediaStore>
 
 export function useMediaDrop(
 	element: MaybeRefOrGetter<HTMLElement | undefined>,

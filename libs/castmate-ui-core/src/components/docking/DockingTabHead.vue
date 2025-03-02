@@ -8,11 +8,18 @@
 		draggable="true"
 		@dragstart="dragStart"
 	>
-		{{ document?.data?.name ?? props.title }}
+		<template v-if="typeof tab.icon == 'string'">
+			<i :class="tab.icon" class="pr-1" />
+		</template>
+		<component v-else-if="tab.icon" :is="tab.icon" class="pr-1" />
+
+		{{ tab.title }}
 
 		<div class="spacer"></div>
 
-		<div class="dirty-dot" v-if="document?.dirty && isOutside"></div>
+		<div class="button-placeholder" v-if="isDirty && isOutside">
+			<div class="dirty-dot"></div>
+		</div>
 		<p-button
 			icon="mdi mdi-close"
 			text
@@ -21,9 +28,9 @@
 			size="small"
 			class="tiny-button"
 			:style="{ color: buttonColor }"
-			v-if="!isOutside || (selected && !document?.dirty)"
+			v-if="!isOutside || (selected && !isDirty)"
 		></p-button>
-		<div class="button-placeholder" v-if="isOutside && !selected && !document?.dirty">
+		<div class="button-placeholder" v-if="isOutside && !selected && !isDirty">
 			<div style="width: 14px; height: 14px" />
 		</div>
 	</div>
@@ -44,32 +51,27 @@ import { useDocument } from "../../util/document"
 
 import PButton from "primevue/button"
 import { useMouseInElement } from "@vueuse/core"
-import {
-	getInternalMousePos,
-	useDragEnd,
-	useDragEnter,
-	useDragLeave,
-	useDragOver,
-	useDragStart,
-	useDrop,
-} from "../../main"
+import { useDragEnd, useDragEnter, useDragLeave, useDragOver, useDrop } from "../../main"
 
 const props = defineProps<{
 	frame: DockedFrame
-	id: string
-	title?: string
-	documentId?: string
+	tab: DockedTab
 }>()
 
-const document = useDocument(props.documentId)
-const selected = computed(() => props.frame.currentTab == props.id)
+const selected = computed(() => props.frame.currentTab == props.tab.id)
 const dragging = ref<boolean>(false)
+
+interface DirtyData {
+	dirty?: boolean
+}
+
+const isDirty = computed(() => (props.tab?.pageData as DirtyData | undefined)?.dirty == true)
 
 const buttonColor = computed(() => {
 	if (!selected.value) {
 		return "#9e9e9e"
 	} else {
-		if (document.value?.dirty) {
+		if (isDirty.value) {
 			return "white"
 		}
 		return undefined
@@ -83,7 +85,7 @@ const tabFrame = useTabFrame()
 const tabHead = ref<HTMLElement | null>(null)
 
 const frameFocused = computed(() => {
-	return dockingArea.focusedFrame == tabFrame.id
+	return dockingArea.value.focusedFrame == tabFrame.value.id
 })
 
 const { isOutside } = useMouseInElement(tabHead)
@@ -91,7 +93,7 @@ const { isOutside } = useMouseInElement(tabHead)
 const closeTab = useCloseTab()
 
 function close(ev: MouseEvent) {
-	closeTab(props.id)
+	closeTab(props.tab.id)
 	ev.stopPropagation()
 	ev.preventDefault()
 }
@@ -101,14 +103,14 @@ function dragStart(evt: DragEvent) {
 		return
 	}
 	evt.dataTransfer.effectAllowed = "move"
-	evt.dataTransfer.setData("tab-id", props.id)
+	evt.dataTransfer.setData("tab-id", props.tab.id)
 	dragging.value = true
-	dockingArea.dragging = true
+	dockingArea.value.dragging = true
 }
 
 useDragEnd(tabHead, (ev) => {
 	dragging.value = false
-	dockingArea.dragging = false
+	dockingArea.value.dragging = false
 })
 
 const dragHover = ref<boolean>(false)
@@ -130,27 +132,27 @@ useDrop(tabHead, "tab-id", (ev) => {
 	if (!tabHead.value) throw new Error("Shouldn't get here???")
 
 	const tabId = ev.dataTransfer.getData("tab-id")
-	if (tabId != props.id) {
+	if (tabId != props.tab.id) {
 		const buttonRect = tabHead.value.getBoundingClientRect()
 		const internalX = ev.clientX - buttonRect.left
 		const percentX = internalX / buttonRect.width
 
-		insertToFrame(tabId, props.id, percentX < 0.5 ? "left" : "right")
+		insertToFrame(tabId, props.tab.id, percentX < 0.5 ? "left" : "right")
 	}
-	dockingArea.dragging = false
+	dockingArea.value.dragging = false
 })
 
 const selectTab = useSelectTab()
 
 function onClicked(ev: MouseEvent) {
 	if (ev.button == 0) {
-		selectTab(props.id)
+		selectTab(props.tab.id)
 	}
 }
 
 function tabMouseDown(ev: MouseEvent) {
 	if (ev.button == 1) {
-		closeTab(props.id)
+		closeTab(props.tab.id)
 	}
 }
 </script>
@@ -171,7 +173,7 @@ function tabMouseDown(ev: MouseEvent) {
 }
 
 .selected.focused {
-	border-top: 2px solid var(--primary-color);
+	border-top: 2px solid var(--p-primary-color);
 	border-bottom: none;
 	background-color: var(--surface-d);
 }
@@ -183,7 +185,7 @@ function tabMouseDown(ev: MouseEvent) {
 }
 
 .dragHover {
-	background-color: var(--surface-400);
+	background-color: var(--p-surface-600);
 }
 
 .unselected {
@@ -199,7 +201,7 @@ function tabMouseDown(ev: MouseEvent) {
 	height: 10px;
 	border-radius: 100px;
 	background-color: white;
-	margin-right: 0.5rem;
+	margin: 2px 1px;
 }
 
 .docked-tab-head .tiny-button {

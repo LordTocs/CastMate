@@ -23,7 +23,6 @@ import {
 	getElementRelativeRect,
 	rectangleOverlaps,
 	useIsSelected,
-	useDocumentPath,
 	useParentTestSequence,
 	TriggerSelection,
 	useTrigger,
@@ -36,7 +35,7 @@ const stopPropagation = usePropagationStop()
 
 const sequenceStartElem = ref<HTMLElement | null>(null)
 
-const isSelected = useIsSelected(useDocumentPath(), "trigger")
+const isSelected = useIsSelected("trigger")
 
 const emit = defineEmits(["requestTestRun", "requestTestStop"])
 

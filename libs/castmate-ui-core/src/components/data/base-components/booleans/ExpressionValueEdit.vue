@@ -1,43 +1,74 @@
 <template>
 	<div class="boolean-expression">
-		<p-tab-view v-model:active-index="tabModel">
-			<p-tab-panel header="State">
-				<state-selector v-model="stateModel" input-id="state" :required="true" />
-			</p-tab-panel>
-			<p-tab-panel header="Value">
-				<p-dropdown
-					v-model="valueTypeModel"
-					:options="variableTypeOptions"
-					option-value="code"
-					option-label="name"
-					input-id="type"
-					class="w-full mb-4"
-					v-if="valueSchemaTypes.length > 1"
-				/>
-				<data-input v-model="valueModel" v-if="valueSchema" :schema="valueSchema" />
-			</p-tab-panel>
-		</p-tab-view>
+		<p-tabs v-model:value="tabModel">
+			<p-tab-list>
+				<p-tab value="0" class="small-tab">State</p-tab>
+				<p-tab value="1" class="small-tab">Value</p-tab>
+			</p-tab-list>
+			<p-tab-panels>
+				<p-tab-panel value="0">
+					<state-selector v-model="stateModel" input-id="state" :required="true" local-path="state" />
+				</p-tab-panel>
+				<p-tab-panel value="1">
+					<div class="flex flex-row gap-1 align-items-center">
+						<c-dropdown
+							v-model="valueTypeModel"
+							:options="variableTypeOptions"
+							option-value="code"
+							option-label="name"
+							input-id="type"
+							v-if="valueSchemaTypes.length > 1"
+							local-path="schemaType"
+						>
+							<template #value="slotProps">
+								<div v-if="slotProps.value" class="flex items-center">
+									<i :class="valueSchemaTypes.find((to) => to.name == slotProps.value)?.icon" />
+								</div>
+								<span v-else>
+									{{ slotProps.placeholder }}
+								</span>
+							</template>
+						</c-dropdown>
+						<data-input
+							local-path="value"
+							class="w-full"
+							v-model="valueModel"
+							v-if="valueSchema"
+							:schema="valueSchema"
+						/>
+					</div>
+				</p-tab-panel>
+			</p-tab-panels>
+		</p-tabs>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { Schema, ExpressionValue, isStateValueExpr, isValueValueExpr } from "castmate-schema"
-import PTabView from "primevue/tabview"
+import { Schema, ExpressionValue, isStateValueExpr, isValueValueExpr, FullDataTypeMetaData } from "castmate-schema"
+import PTabs from "primevue/tabs"
+import PTab from "primevue/tab"
+import PTabList from "primevue/tablist"
+import PTabPanels from "primevue/tabpanels"
 import PTabPanel from "primevue/tabpanel"
+
 import StateSelector from "../state/StateSelector.vue"
 import DataInput from "../../DataInput.vue"
 import { computed, useModel, watch } from "vue"
 import { getTypeByName } from "castmate-schema"
 
 import type { MenuItem } from "primevue/menuitem"
-import PDropdown from "primevue/dropdown"
+import CDropdown from "../CDropdown.vue"
 import { getAllVariableTypes } from "castmate-schema"
 import { getTypeByConstructor } from "castmate-schema"
+import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{
 	modelValue: ExpressionValue
 	leftSchema?: Schema
+	localPath: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
@@ -130,20 +161,21 @@ const valueTypeModel = computed({
 
 const tabModel = computed({
 	get() {
-		if (model.value.type == "state") return 0
-		if (model.value.type == "value") return 1
+		if (model.value.type == "state") return "0"
+		if (model.value.type == "value") return "1"
 		return 2
 	},
 	set(v) {
-		if (v == 0) {
+		if (v == "0") {
 			model.value = {
 				type: "state",
 				plugin: undefined,
 				state: undefined,
 			}
-		} else if (v == 1) {
+		} else if (v == "1") {
 			model.value = {
 				type: "value",
+				//@ts-ignore
 				schemaType: valueSchemaTypes.value[0] ?? "String",
 				value: undefined,
 			}
@@ -151,32 +183,40 @@ const tabModel = computed({
 	},
 })
 
-function definedString(str: string | undefined): str is string {
-	return str != null
+function validMetaData(meta: FullDataTypeMetaData<any> | undefined): meta is FullDataTypeMetaData<any> {
+	return meta?.name != null
 }
 
 const valueSchemaTypes = computed(() => {
 	if (!props.leftSchema) {
-		return getAllVariableTypes().map((t) => t.name)
+		return getAllVariableTypes()
 	} else {
 		const metaData = getTypeByConstructor(props.leftSchema.type)
-		return (
-			metaData?.comparisonTypes?.map((t) => getTypeByConstructor(t.otherType)?.name)?.filter(definedString) ?? []
-		)
+		if (!metaData) return []
+		const comparisonTypes = metaData.comparisonTypes
+
+		const comparisonTypeMetaDatas = comparisonTypes.map((t) => getTypeByConstructor(t.otherType))
+		const filteredComparisonMetaDatas = comparisonTypeMetaDatas.filter(validMetaData)
+
+		return filteredComparisonMetaDatas
 	}
 })
 
 const variableTypeOptions = computed<MenuItem[]>(() => {
-	return valueSchemaTypes.value.map((v) => ({
-		code: v,
-		name: v,
-	}))
+	return valueSchemaTypes.value.map(
+		(v) =>
+			({
+				code: v.name,
+				name: v.name,
+				icon: v.icon,
+			} as MenuItem)
+	)
 })
 
 watch(valueSchemaTypes, (value, oldValues) => {
-	if (!value.includes(valueTypeModel.value)) {
+	if (!value.find((meta) => meta.name == valueTypeModel.value)) {
 		valueModel.value = undefined
-		valueTypeModel.value = value[0]
+		valueTypeModel.value = value[0].name
 	}
 })
 </script>
@@ -188,5 +228,9 @@ watch(valueSchemaTypes, (value, oldValues) => {
 
 .boolean-expression :deep(.p-tabview .p-tabview-panels) {
 	padding: 0.75rem;
+}
+
+.small-tab {
+	padding: 0.5rem;
 }
 </style>

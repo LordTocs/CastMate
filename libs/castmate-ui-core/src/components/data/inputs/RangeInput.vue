@@ -3,34 +3,9 @@
 		<div class="flex flex-row">
 			<div class="force-float-label flex-grow-1">
 				<div class="flex flex-row flex-grow-1" input-id="range">
-					<document-path :local-path="localPath">
-						<document-path local-path="min">
-							<div class="flex-grow-1">
-								<c-number-input
-									input-id="min"
-									v-model="(min as number | undefined)"
-									placeholder="-∞"
-									class="w-full"
-									@contextmenu="minContext"
-								/>
-								<c-context-menu ref="minMenu" :items="minMenuItems" />
-							</div>
-						</document-path>
-
-						<span class="mx-1 flex align-items-center justify-content-center">⟶</span>
-						<document-path local-path="max">
-							<div class="flex-grow-1">
-								<c-number-input
-									input-id="max"
-									v-model="(max as number | undefined)"
-									placeholder="∞"
-									class="w-full"
-									@contextmenu="maxContext"
-								/>
-								<c-context-menu ref="maxMenu" :items="maxMenuItems" />
-							</div>
-						</document-path>
-					</document-path>
+					<range-number-input v-model="min" local-path="min" placeholder="-∞" />
+					<span class="mx-1 flex align-items-center justify-content-center">⟶</span>
+					<range-number-input v-model="max" local-path="max" placeholder="∞" />
 				</div>
 				<label for="range" class="force-float"> {{ props.schema.name }}</label>
 			</div>
@@ -45,24 +20,25 @@
 			<p-menu ref="menu" id="input_menu" :model="endMenuItems" :popup="true" v-if="hasMenu" />
 		</div>
 
-		<div class="flex flex-row">
+		<!-- <div class="flex flex-row">
 			<error-label :error-message="errorMessage" />
-		</div>
+		</div> -->
 	</div>
 </template>
 
 <script setup lang="ts">
 import CContextMenu from "../../util/CContextMenu.vue"
-import CNumberInput from "../base-components/CNumberInput.vue"
 import { SchemaRange, SchemaBase, Range } from "castmate-schema"
 import { computed, useModel, ref } from "vue"
-import DocumentPath from "../../document/DocumentPath.vue"
 import PButton from "primevue/button"
 import PMenu from "primevue/menu"
 import type { MenuItem } from "primevue/menuitem"
 
 import { SharedDataInputProps } from "../DataInputTypes"
 import { useValidator } from "../../../util/validation"
+import { useDataBinding } from "../../../main"
+
+import RangeNumberInput from "../base-components/range/RangeNumberInput.vue"
 
 const props = defineProps<
 	{
@@ -70,6 +46,8 @@ const props = defineProps<
 		modelValue: Range | undefined
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const canClear = computed(() => !props.schema.required)
 function clear() {
@@ -91,41 +69,12 @@ const endMenuItems = computed<MenuItem[]>(() => {
 	return result
 })
 
-const menu = ref<PMenu>()
+const menu = ref<InstanceType<typeof PMenu>>()
 const hasMenu = computed(() => {
 	return endMenuItems.value.length > 0
 })
 
 const canTemplate = computed(() => !!props.schema?.template)
-
-const minTemplateMode = ref(false)
-const minMenu = ref<InstanceType<typeof CContextMenu>>()
-const minMenuItems = computed<MenuItem[]>(() => {
-	let result: MenuItem[] = []
-
-	if (canTemplate.value) {
-		if (minTemplateMode.value) {
-			result.push({
-				label: "Disable Templating",
-				command(event) {
-					minTemplateMode.value = false
-				},
-			})
-		} else {
-			result.push({
-				label: "Enabling Templating",
-				command(event) {
-					minTemplateMode.value = true
-				},
-			})
-		}
-	}
-
-	return result
-})
-function minContext(event: MouseEvent) {
-	minMenu.value?.show(event)
-}
 
 const min = computed({
 	get() {
@@ -149,35 +98,6 @@ const min = computed({
 		}
 	},
 })
-
-const maxTemplateMode = ref(false)
-const maxMenu = ref<InstanceType<typeof CContextMenu>>()
-const maxMenuItems = computed<MenuItem[]>(() => {
-	let result: MenuItem[] = []
-
-	if (canTemplate.value) {
-		if (maxTemplateMode.value) {
-			result.push({
-				label: "Disable Templating",
-				command(event) {
-					maxTemplateMode.value = false
-				},
-			})
-		} else {
-			result.push({
-				label: "Enabling Templating",
-				command(event) {
-					maxTemplateMode.value = true
-				},
-			})
-		}
-	}
-
-	return result
-})
-function maxContext(event: MouseEvent) {
-	maxMenu.value?.show(event)
-}
 
 const max = computed({
 	get() {

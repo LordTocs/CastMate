@@ -1,12 +1,13 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate">
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate" ref="dataInputBase">
 		<div class="container w-full" ref="container">
-			<input-box v-bind="inputProps" :model="model" @click="toggle">
+			<input-box v-bind="inputProps" :model="model" @click="toggle" ref="inputBox">
 				<div class="color-splash" :style="{ backgroundColor: model }"></div>
 			</input-box>
 		</div>
-		<drop-down-panel v-model="overlayVisible" :container="container">
-			<p-color-picker v-model="poundConverter" inline />
+		<drop-down-panel class="p-1" v-model="overlayVisible" :container="container">
+			<!-- <p-color-picker v-model="poundConverter" inline /> -->
+			<c-color-picker v-model="model" />
 		</drop-down-panel>
 	</data-input-base>
 </template>
@@ -16,9 +17,12 @@ import DataInputBase from "../base-components/DataInputBase.vue"
 import InputBox from "../base-components/InputBox.vue"
 import { Color, isHexColor, SchemaColor } from "castmate-schema"
 import { computed, onMounted, ref, useModel, watch } from "vue"
-import PColorPicker from "primevue/colorpicker"
+import PColorPicker, { ColorPickerChangeEvent } from "primevue/colorpicker"
 import { SharedDataInputProps } from "../DataInputTypes"
 import DropDownPanel from "../base-components/DropDownPanel.vue"
+import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+
+import CColorPicker from "../base-components/CColorPicker.vue"
 
 const props = defineProps<
 	{
@@ -27,10 +31,12 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
+useDataBinding(() => props.localPath)
+
 const model = useModel(props, "modelValue")
 
 function isTemplate(value: Color | string | undefined) {
-	return !!(value && isHexColor(value))
+	return !!(value && !isHexColor(value))
 }
 
 const overlayVisible = ref(false)
@@ -69,6 +75,21 @@ function toggle(ev: MouseEvent) {
 }
 
 const container = ref<HTMLElement | null>(null)
+const inputBox = ref<InstanceType<typeof InputBox>>()
+const dataInputBase = ref<InstanceType<typeof DataInputBase>>()
+
+useDataUIBinding({
+	focus() {
+		inputBox.value?.inputDiv?.focus()
+	},
+	scrollIntoView() {
+		inputBox.value?.inputDiv?.scrollIntoView()
+	},
+})
+
+function onChange(ev: ColorPickerChangeEvent) {
+	console.log(ev)
+}
 </script>
 
 <style scoped>

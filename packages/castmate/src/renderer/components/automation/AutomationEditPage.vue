@@ -1,14 +1,14 @@
 <template>
 	<div class="automation-edit-page">
-		<document-path local-path="automation">
+		<data-binding-path local-path="automation">
 			<automation-edit v-model="model" v-model:view="view" style="flex: 1" />
-		</document-path>
+		</data-binding-path>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { AutomationConfig } from "castmate-schema"
-import { AutomationResourceView, AutomationEdit, DocumentPath } from "castmate-ui-core"
+import { AutomationResourceView, AutomationEdit, DataBindingPath } from "castmate-ui-core"
 import { useModel } from "vue"
 
 const props = defineProps<{

@@ -1,5 +1,5 @@
 <template>
-	<span class="data-label" v-if="schema.name">{{ schema.name }}:</span>
+	<span class="data-label" v-if="schema.name && !noLabel">{{ schema.name }}:</span>
 	<i :class="props.modelValue ? schema.trueIcon ?? 'pi pi-check' : schema.falseIcon ?? 'pi pi-times'" />
 </template>
 

@@ -5,7 +5,7 @@
 				v-if="modelObj.divisions[i].type == 'split'"
 				v-model="(modelObj.divisions[i] as DockedSplit)"
 			/>
-			<docking-frame v-else v-model="(modelObj.divisions[i] as DockedFrame)" />
+			<docking-frame v-else v-model="(modelObj.divisions[i] as DockedFrame)" :key="modelObj.divisions[i].id" />
 		</p-splitter-panel>
 	</p-splitter>
 </template>

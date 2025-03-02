@@ -16,7 +16,7 @@ export function getItemText(item: ItemType, props: AutocompleteItemProps): strin
 }
 
 export function groupItems(items: ItemType[], props: AutocompleteItemProps): ItemType[][] {
-	if (!props.groupProp) return [items]
+	if (!props?.groupProp) return [items]
 
 	const groups = new Map<any, ItemType[]>()
 
@@ -33,26 +33,36 @@ export function groupItems(items: ItemType[], props: AutocompleteItemProps): Ite
 	return [...groups.values()]
 }
 
+export type GroupFilterFunction = (
+	filter: string | undefined | null,
+	items: ItemType[],
+	props: AutocompleteItemProps
+) => ItemType[][]
+
+export function groupFilteredItems(filter: string | undefined | null, items: ItemType[], props: AutocompleteItemProps) {
+	let filteredItems = items
+
+	if (filter) {
+		const filterLower = filter.toLowerCase()
+		filteredItems = items.filter((item) => {
+			return getItemText(item, props).toLocaleLowerCase().includes(filterLower)
+		})
+	}
+
+	return groupItems(filteredItems, props)
+}
+
 export function useGroupedFilteredItems(
 	filter: MaybeRefOrGetter<string | undefined | null>,
 	items: MaybeRefOrGetter<ItemType[]>,
-	props: MaybeRefOrGetter<AutocompleteItemProps>
+	props: MaybeRefOrGetter<AutocompleteItemProps>,
+	groupFilterFunc: MaybeRefOrGetter<GroupFilterFunction>
 ) {
 	const result = computed<ItemType[][]>(() => {
 		const itemArr = toValue(items)
 		const filterValue = toValue(filter)
 		const autocompleteProps = toValue(props)
-
-		let filteredItems = itemArr
-
-		if (filterValue) {
-			const filterLower = filterValue.toLowerCase()
-			filteredItems = itemArr.filter((item) => {
-				return getItemText(item, autocompleteProps).toLocaleLowerCase().includes(filterLower)
-			})
-		}
-
-		return groupItems(filteredItems, autocompleteProps)
+		return groupFilteredItems(filterValue, itemArr, autocompleteProps)
 	})
 
 	return result
@@ -83,7 +93,7 @@ export function getNextItem(items: ItemType[][], id: string | undefined) {
 			if (nextItem) {
 				return nextItem.id
 			} else {
-				return items[groupIndex + 1][0]?.id ?? id
+				return items[groupIndex + 1]?.[0]?.id ?? id
 			}
 		}
 	}

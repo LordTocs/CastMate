@@ -1,7 +1,10 @@
 import { nanoid } from "nanoid/non-secure"
-import { inject, type Component } from "vue"
+import { ComputedRef, inject, MaybeRefOrGetter, ref, Ref, type Component } from "vue"
 import { useDocumentStore } from "./document"
-import { useDockingStore, iterTabs } from "../main"
+import { useDockingStore, iterTabs, useSaveAskDialog, undoDataView } from "../main"
+import { useConfirm, useDialog } from "primevue"
+import { config } from "process"
+import SaveAskDialog from "../components/dialogs/SaveAskDialog.vue"
 
 export type DocumentBase = {
 	name: string
@@ -9,10 +12,11 @@ export type DocumentBase = {
 
 export interface DockedTab {
 	id: string
-	documentId?: string
 	page?: Component
+	icon?: Component | string
 	title?: string
-	pageData?: any
+	pageData?: Record<PropertyKey, any>
+	teleportPermutation?: string
 }
 
 export interface DockedFrame {
@@ -36,7 +40,7 @@ export interface DockedArea extends DockedSplit {
 }
 
 export function useTabFrame() {
-	const tabFrame = inject<DockedFrame>("docking-frame")
+	const tabFrame = inject<Ref<DockedFrame> | undefined>("docking-frame", undefined)
 	if (!tabFrame) {
 		throw new Error("useTabFrame can only be used in a child component of DockingFrame")
 	}
@@ -44,7 +48,7 @@ export function useTabFrame() {
 }
 
 export function useDockingArea() {
-	const dockingArea = inject<DockedArea>("docking-area")
+	const dockingArea = inject<Ref<DockedArea> | undefined>("docking-area", undefined)
 	if (!dockingArea) {
 		throw new Error("useTabFrame can only be used in a child component of DockingFrame")
 	}
@@ -55,18 +59,18 @@ export function useSelectTab() {
 	const tabFrame = useTabFrame()
 	const dockingArea = useDockingArea()
 	return function (tabId: string) {
-		tabFrame.currentTab = tabId
-		dockingArea.focusedFrame = tabFrame.id
+		tabFrame.value.currentTab = tabId
+		dockingArea.value.focusedFrame = tabFrame.value.id
 	}
 }
 
 export function useFocusThisTab() {
-	const tabFrame = inject<DockedFrame>("docking-frame")
-	const dockingArea = inject<DockedArea>("docking-area")
+	const tabFrame = inject<Ref<DockedFrame> | undefined>("docking-frame", undefined)
+	const dockingArea = inject<Ref<DockedArea> | undefined>("docking-area", undefined)
 
 	return function () {
 		if (tabFrame && dockingArea) {
-			dockingArea.focusedFrame = tabFrame.id
+			dockingArea.value.focusedFrame = tabFrame.value.id
 		}
 	}
 }
@@ -79,9 +83,28 @@ export function useSaveActiveTab() {
 		const tab = dockingStore.getActiveTab()
 
 		if (!tab) return
-		if (!tab.documentId) return
+		if (!tab.pageData?.documentId) return
 
-		documentStore.saveDocument(tab.documentId)
+		documentStore.saveDocument(tab.pageData.documentId)
+	}
+}
+
+export function useUndoActiveTab() {
+	const dockingStore = useDockingStore()
+	const documentStore = useDocumentStore()
+
+	return async () => {
+		const tab = dockingStore.getActiveTab()
+
+		//TODO: tabs should have DataBinding and Docs should just *use* it
+
+		if (!tab) return
+		if (!tab.pageData?.documentId) return
+
+		const doc = documentStore.documents.get(tab.pageData.documentId)
+		if (!doc) return
+
+		await undoDataView(doc.view)
 	}
 }
 
@@ -91,8 +114,39 @@ export function useSaveAllTabs() {
 
 	return () => {
 		for (const t of iterTabs(dockingStore.rootDockArea)) {
-			if (!t.documentId) continue
-			documentStore.saveDocument(t.documentId)
+			if (!t.pageData?.documentId) continue
+			documentStore.saveDocument(t.pageData.documentId)
+		}
+	}
+}
+
+export function useCloseAllTabs() {
+	const dockingStore = useDockingStore()
+	const documentStore = useDocumentStore()
+	const closeTab = useCloseTab()
+
+	return async () => {
+		const tabs = [...iterTabs(dockingStore.rootDockArea)]
+		for (const t of tabs) {
+			if (!(await closeTab(t.id))) return false
+		}
+		return true
+	}
+}
+
+export function findTab(division: DockedSplit | DockedFrame, tabId: string): DockedTab | undefined {
+	if (division.type == "frame") {
+		const idx = division.tabs.findIndex((t) => t.id == tabId)
+		if (idx >= 0) {
+			return division.tabs[idx]
+		}
+	} else if (division.type == "split") {
+		for (let i = 0; i < division.divisions.length; ++i) {
+			const d = division.divisions[i]
+			const t = findTab(d, tabId)
+			if (t) {
+				return t
+			}
 		}
 	}
 }
@@ -161,13 +215,13 @@ export function useMoveToFrame() {
 	const dockingArea = useDockingArea()
 
 	return function (tabId: string, drop: DropMode = "all") {
-		const tab = findAndRemoveTab(dockingArea, tabId)
+		const tab = findAndRemoveTab(dockingArea.value, tabId)
 		if (tab) {
 			if (drop === "all") {
-				tabFrame.tabs.push(tab)
-				tabFrame.currentTab = tab.id
+				tabFrame.value.tabs.push(tab)
+				tabFrame.value.currentTab = tab.id
 			} else {
-				const split = findParentSplit(dockingArea, tabFrame.id)
+				const split = findParentSplit(dockingArea.value, tabFrame.value.id)
 				if (!split) {
 					throw new Error("WHAT HOW?")
 				}
@@ -179,7 +233,7 @@ export function useMoveToFrame() {
 					tabs: [tab],
 				}
 
-				const relativeIdx = split.divisions.findIndex((d) => d.id == tabFrame.id)
+				const relativeIdx = split.divisions.findIndex((d) => d.id == tabFrame.value.id)
 				const idxOffset = drop === "left" || drop === "top" ? 0 : 1
 				const dropDirection = drop === "left" || drop == "right" ? "horizontal" : "vertical"
 
@@ -211,16 +265,16 @@ export function useInsertToFrame() {
 	const dockingArea = useDockingArea()
 
 	return function (tabId: string, relativeId: string, side: InsertSide) {
-		const tab = findAndRemoveTab(dockingArea, tabId)
+		const tab = findAndRemoveTab(dockingArea.value, tabId)
 
 		if (tab) {
-			const idx = tabFrame.tabs.findIndex((t) => t.id == relativeId)
+			const idx = tabFrame.value.tabs.findIndex((t) => t.id == relativeId)
 			if (idx >= 0) {
 				console.log("Insert", side)
 				if (side == "left") {
-					tabFrame.tabs.splice(idx, 0, tab)
+					tabFrame.value.tabs.splice(idx, 0, tab)
 				} else {
-					tabFrame.tabs.splice(idx + 1, 0, tab)
+					tabFrame.value.tabs.splice(idx + 1, 0, tab)
 				}
 			}
 		}
@@ -228,13 +282,30 @@ export function useInsertToFrame() {
 }
 
 export function useCloseTab() {
-	const dockingArea = useDockingArea()
+	const dockingStore = useDockingStore()
 	const documentStore = useDocumentStore()
 
-	return function (tabId: string) {
-		const tab = findAndRemoveTab(dockingArea, tabId)
-		if (tab?.documentId) {
-			documentStore.removeDocument(tab.documentId)
+	const askSave = useSaveAskDialog()
+
+	return async function (tabId: string) {
+		const t = findTab(dockingStore.rootDockArea, tabId)
+
+		if (t?.pageData?.dirty) {
+			const saveResult = await askSave(t.title ?? t.id)
+
+			if (saveResult == "cancel") return false
+
+			if (saveResult == "saveAndClose") {
+				//TODO: Make save document agnostic
+				await documentStore.saveDocument(t.pageData?.documentId)
+			}
 		}
+
+		const tab = findAndRemoveTab(dockingStore.rootDockArea, tabId)
+		if (tab?.pageData?.documentId) {
+			documentStore.removeDocument(tab.pageData.documentId)
+		}
+
+		return true
 	}
 }

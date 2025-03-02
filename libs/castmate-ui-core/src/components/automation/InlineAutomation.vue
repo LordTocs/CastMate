@@ -1,5 +1,5 @@
 <template>
-	<div class="p-inputgroup" style="margin-top: 1.5rem">
+	<p-input-group style="margin-top: 1.5rem">
 		<label-floater :label="label" :icon="icon" input-id="inline-automation" v-slot="labelProps">
 			<input-box
 				v-if="!view?.open"
@@ -21,22 +21,24 @@
 					'p-inputwrapper-filled': true,
 				}"
 			>
-				<div class="flex flex-row edit-header align-items-center">
+				<div class="flex flex-row edit-header align-items-center py-2 gap-1 px-2" @dblclick="doClose">
 					<span class="mr-2">
 						<i :class="icon" v-if="icon" />
 						{{ label }}
 					</span>
 					<data-input
-						class="flex-grow-1 mr-2"
-						no-float
+						class="ml-3"
 						v-model="model.queue"
 						:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
+						local-path="queue"
+						style="width: 300px"
 					/>
+					<div class="flex-grow-1"></div>
 					<p-button
 						text
-						class="no-focus-highlight pl-1"
-						@click.stop="doClose"
-						@mousedown.stop
+						class="no-focus-highlight pl-1 flex-shrink-0"
+						@click="doClose"
+						@mousedown="stopPropagation"
 						icon="mdi mdi-chevron-up"
 					/>
 				</div>
@@ -48,7 +50,7 @@
 				<expander-slider color="#3c3c3c" v-model="view.height" :container="editBody" />
 			</div>
 		</label-floater>
-	</div>
+	</p-input-group>
 </template>
 
 <script setup lang="ts">
@@ -57,17 +59,21 @@ import { InlineAutomationView } from "../../automations/automations.ts"
 import { useModel, ref, computed } from "vue"
 import ExpanderSlider from "../util/ExpanderSlider.vue"
 import AutomationEdit from "./AutomationEdit.vue"
-import { ResourceProxyFactory, DataInput, usePropagationStop } from "../../main"
+import { ResourceProxyFactory, DataInput, usePropagationStop, useDataBinding, useDataUIBinding } from "../../main"
 import SequenceMiniPreview from "./mini/SequenceMiniPreview.vue"
 import PButton from "primevue/button"
-import { DocumentPath, LabelFloater, InputBox } from "../../main"
+import PInputGroup from "primevue/inputgroup"
+import { LabelFloater, InputBox } from "../../main"
 
 const props = defineProps<{
 	label?: string
 	icon?: string
 	modelValue: InlineAutomation
 	view: InlineAutomationView
+	localPath?: string
 }>()
+
+useDataBinding(() => props.localPath)
 
 const hasActions = computed(() => {
 	if (!props.modelValue?.sequence?.actions) return undefined
@@ -91,6 +97,12 @@ function doClose(ev: MouseEvent) {
 	view.value.open = false
 	stopPropagation(ev)
 }
+
+useDataUIBinding({
+	onChildFocus(parsedPath) {
+		view.value.open = true
+	},
+})
 </script>
 
 <style scoped>
@@ -111,7 +123,6 @@ function doClose(ev: MouseEvent) {
 }
 
 .edit-header {
-	padding: 0.5rem 0.75rem;
 }
 
 .trigger-name {

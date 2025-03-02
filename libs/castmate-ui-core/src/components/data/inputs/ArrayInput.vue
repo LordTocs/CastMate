@@ -29,7 +29,7 @@
 						:no-float="noFloat"
 						:secret="secret"
 						:context="context"
-						:local-path="localPath"
+						:local-path="`[${index}]`"
 					/>
 				</div>
 			</div>
@@ -45,6 +45,7 @@ import DataInput from "../DataInput.vue"
 import PButton from "primevue/button"
 import _cloneDeep from "lodash/cloneDeep"
 import { constructDefault } from "castmate-schema"
+import { useCommitUndo, useDataBinding } from "../../../main"
 
 const props = defineProps<
 	{
@@ -52,6 +53,8 @@ const props = defineProps<
 		schema: SchemaArray
 	} & SharedDataInputProps
 >()
+
+useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
@@ -65,7 +68,10 @@ function duplicateItem(idx: number) {
 	model.value.splice(idx, 0, dupe)
 }
 
+const commitUndo = useCommitUndo()
+
 function deleteItem(idx: number) {
+	commitUndo()
 	model.value?.splice(idx, 1)
 
 	if (model.value?.length == 0 && !props.schema.required) {
@@ -74,6 +80,7 @@ function deleteItem(idx: number) {
 }
 
 async function addItem() {
+	commitUndo()
 	const newItem = await constructDefault(props.schema.items)
 
 	if (model.value == null) {

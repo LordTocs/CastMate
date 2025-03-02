@@ -22,7 +22,7 @@ export function initPlugin(app: App<Element>) {
 			spellData: {
 				type: Object,
 				properties: {
-					enabled: { type: Boolean, name: "Enabled", required: true },
+					enabled: { type: Boolean, name: "Enabled", required: true, default: true },
 					description: { type: String, name: "Description", template: true },
 					bits: {
 						name: "Bits",
@@ -68,7 +68,7 @@ export function initPlugin(app: App<Element>) {
 				title: "SpellCast",
 				icon: "sci sci-spellcast",
 				open() {
-					dockingStore.openPage("spellcast.spells", "SpellCast", SpellCastPage)
+					dockingStore.openPage("spellcast.spells", "SpellCast", "sci sci-spellcast", SpellCastPage)
 				},
 			}
 		})

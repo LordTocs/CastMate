@@ -1,5 +1,5 @@
 <template>
-	<div class="overlay-editor">
+	<div class="overlay-editor" ref="editorDiv">
 		<div class="overlay-editor-header">
 			<div class="pt-4 px-1 flex flex-row w-full justify-content-center gap-1">
 				<div ref="settingsMenuContainer">
@@ -13,29 +13,26 @@
 						overflowY: 'auto',
 					}"
 				>
-					<div class="p-1 pt-3 flex flex-column gap-4" @mousedown="stopPropagation">
-						<div class="flex flex-row pt-3 gap-1">
+					<div class="p-1 py-2 flex flex-column gap-4" @mousedown="stopPropagation">
+						<div class="flex flex-row gap-1">
 							<div style="width: 0; flex: 1">
 								<label-floater label="Width" v-slot="labelProps">
-									<p-input-number
-										class="number-fix"
+									<c-number-input
 										v-model="model.size.width"
 										v-bind="labelProps"
-										show-buttons
-										mode="decimal"
 										suffix="px"
+										local-path="size.width"
 									/>
 								</label-floater>
 							</div>
 							<div style="width: 0; flex: 1">
 								<label-floater label="Height" v-slot="labelProps">
-									<p-input-number
+									<c-number-input
 										class="number-fix"
 										v-model="model.size.height"
 										v-bind="labelProps"
-										show-buttons
-										mode="decimal"
 										suffix="px"
+										local-path="size.height"
 									/>
 								</label-floater>
 							</div>
@@ -46,6 +43,7 @@
 					<data-input
 						:schema="{ type: ResourceProxyFactory, resourceType: 'OBSConnection', name: `OBS Connection` }"
 						v-model="view.obsId"
+						local-path="obsId"
 					/>
 				</div>
 				<div>
@@ -74,21 +72,16 @@
 				</div>
 			</div>
 		</div>
-		<div class="flex flex-row flex-grow-1">
-			<document-path local-path="widgets">
-				<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
-			</document-path>
-			<div class="overlay-properties">
+		<div class="flex flex-row flex-grow-1" ref="slideDiv">
+			<overlay-edit-area v-model="model" v-model:view="view" style="flex: 1" />
+			<expander-slider direction="vertical" invert v-model="splitterPos" :container="slideDiv" />
+			<div class="overlay-properties" :style="{ width: `${splitterPos}px` }">
 				<p-splitter layout="vertical" class="h-full">
 					<p-splitter-panel>
-						<document-path local-path="widgets">
-							<overlay-widget-prop-edit class="h-full" v-model="model" />
-						</document-path>
+						<overlay-widget-prop-edit class="h-full" v-model="model" />
 					</p-splitter-panel>
 					<p-splitter-panel>
-						<document-path local-path="widgets">
-							<overlay-widget-list class="h-full" v-model="model" />
-						</document-path>
+						<overlay-widget-list class="h-full" v-model="model" />
 					</p-splitter-panel>
 				</p-splitter>
 			</div>
@@ -103,12 +96,16 @@ import {
 	DataInput,
 	ResourceProxyFactory,
 	usePluginStore,
-	DocumentPath,
+	DataBindingPath,
 	useDocumentId,
 	useSettingValue,
 	DropDownPanel,
 	LabelFloater,
 	stopPropagation,
+	provideScrollAttachable,
+	CNumberInput,
+	ExpanderSlider,
+	viewRef,
 } from "castmate-ui-core"
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import OverlayWidgetPropEdit from "./OverlayWidgetPropEdit.vue"
@@ -133,6 +130,13 @@ const overlayId = useDocumentId()
 
 const port = useSettingValue({ plugin: "castmate", setting: "port" })
 const defaultObsSetting = useSettingValue({ plugin: "obs", setting: "obsDefault" })
+
+const splitterPos = viewRef<number>("splitterPos", 350)
+
+const editorDiv = ref<HTMLElement>()
+const slideDiv = ref<HTMLElement>()
+
+provideScrollAttachable(editorDiv)
 
 const overlayUrl = computed(() => {
 	return `http://localhost:${port.value ?? 8181}/overlays/${overlayId.value}`

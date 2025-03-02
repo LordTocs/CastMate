@@ -1,5 +1,11 @@
 <template>
-	<data-view v-if="dynamicSchema" :model-value="modelValue" :schema="dynamicSchema" :context="context" />
+	<data-view
+		v-if="dynamicSchema"
+		:model-value="modelValue"
+		:schema="dynamicSchema"
+		:context="context"
+		:no-label="noLabel"
+	/>
 </template>
 
 <script setup lang="ts">

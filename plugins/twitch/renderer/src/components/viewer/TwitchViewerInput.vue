@@ -1,58 +1,47 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
-		<div class="container w-full" ref="container" @mousedown="stopPropagation">
-			<input-box
-				:model="model"
-				:focused="focused"
-				@focus="onFocus"
-				:tab-index="-1"
-				v-bind="inputProps"
-				v-if="!focused"
-			>
-				<template v-if="selectedDisplayData">
-					<img class="twitch-avatar" :src="selectedDisplayData.profilePicture" />
-					<span :style="{ color: selectedDisplayData.color }"> {{ selectedDisplayData.displayName }}</span>
-				</template>
-			</input-box>
-
-			<p-input-text
-				v-else
-				@blur="onBlur"
-				class="p-dropdown-label"
-				ref="filterInputElement"
-				v-model="nameValue"
-				@keydown="onFilterKeyDown"
-				v-bind="inputProps"
-			/>
-		</div>
-
-		<autocomplete-drop-list
-			ref="dropDown"
-			:container="container"
-			:grouped-items="groupedSuggestions"
-			v-model="dropDownOpen"
-			v-model:focused-id="focusedId"
-			text-prop="displayName"
-			@select="onSelect"
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" ref="inputBase">
+		<filter-input-box
+			v-model="model"
+			@focus="onFocus"
+			@blur="onBlur"
+			@filter-key-down="onFilterKeyDown"
+			v-bind="inputProps"
+			:tab-index="-1"
+			v-model:filter="nameValue"
+			ref="filterInput"
 		>
-			<template #item="{ item, focused, highlighted, onClick }">
-				<li
-					class="p-dropdown-item"
-					:class="{ 'p-focus': focused, 'p-highlight': highlighted }"
-					:data-p-highlight="highlighted"
-					:data-p-focused="focused"
-					:aria-label="item.displayName"
-					:aria-selected="highlighted"
-					@click="onClick"
+			<template v-if="selectedDisplayData">
+				<img class="twitch-avatar" :src="selectedDisplayData.profilePicture" />
+				<span :style="{ color: selectedDisplayData.color }"> {{ selectedDisplayData.displayName }}</span>
+			</template>
+
+			<template #append="{ anchor }">
+				<autocomplete-drop-list
+					ref="dropDown"
+					:container="anchor"
+					:grouped-items="groupedSuggestions"
+					v-model="dropDownOpen"
+					v-model:focused-id="focusedId"
+					text-prop="displayName"
+					@select="onSelect"
 				>
-					<img class="twitch-avatar" :src="item.profilePicture" />
-					<span :style="{ color: item.color }"> {{ item.displayName }}</span>
-				</li>
+					<template #item="{ item, focused, highlighted, onClick }">
+						<drop-list-item
+							:focused="focused"
+							:highlighted="highlighted"
+							:label="item.displayName"
+							@click="onClick"
+						>
+							<img class="twitch-avatar" :src="item.profilePicture" />
+							<span :style="{ color: item.color }"> {{ item.displayName }}</span>
+						</drop-list-item>
+					</template>
+					<template #empty>
+						<div class="text-center p-text-secondary">Type Twitch Name, Hit Enter to Search</div>
+					</template>
+				</autocomplete-drop-list>
 			</template>
-			<template #empty>
-				<div class="text-center p-text-secondary">Type Twitch Name, Hit Enter to Search</div>
-			</template>
-		</autocomplete-drop-list>
+		</filter-input-box>
 	</data-input-base>
 </template>
 
@@ -60,18 +49,17 @@
 import {
 	SharedDataInputProps,
 	AutocompleteDropList,
-	InputBox,
-	LabelFloater,
-	TemplateToggle,
+	FilterInputBox,
+	DropListItem,
 	DataInputBase,
 	stopPropagation,
 	defaultStringIsTemplate,
+	useDataBinding,
 } from "castmate-ui-core"
 import { TwitchViewerUnresolved, SchemaTwitchViewer, TwitchViewerDisplayData } from "castmate-plugin-twitch-shared"
 import { computed, onMounted, ref, useModel, watch, nextTick } from "vue"
 import { useViewerStore } from "../../util/viewer"
 import _debounce from "lodash/debounce"
-import PInputText from "primevue/inputtext"
 
 const props = defineProps<
 	{
@@ -80,16 +68,17 @@ const props = defineProps<
 	} & SharedDataInputProps
 >()
 
-const model = useModel(props, "modelValue")
+useDataBinding(() => props.localPath)
 
-const container = ref<HTMLElement>()
+const model = useModel(props, "modelValue")
 
 const dropDown = ref<InstanceType<typeof AutocompleteDropList>>()
 const dropDownOpen = ref(false)
-const focused = ref(false)
 const focusedId = ref<string>()
 
 const nameValue = ref("")
+
+const filterInput = ref<InstanceType<typeof FilterInputBox>>()
 
 const selectedDisplayData = ref<TwitchViewerDisplayData>()
 
@@ -106,7 +95,6 @@ async function queryDisplay() {
 }
 
 const fuzzySuggestions = ref<TwitchViewerDisplayData[]>([])
-const filterInputElement = ref<{ $el: HTMLElement } | null>(null)
 
 function onFocus(ev: FocusEvent) {
 	//filterValue.value = itemText.value ?? ""
@@ -116,16 +104,13 @@ function onFocus(ev: FocusEvent) {
 		nameValue.value = ""
 	}
 
-	focused.value = true
-	nextTick(() => {
-		filterInputElement.value?.$el?.focus()
-	})
+	dropDownOpen.value = true
+	querySuggestions()
 }
 
 function onBlur() {
 	//filterValue.value = ""
 	dropDownOpen.value = false
-	focused.value = false
 	queryDisplay()
 }
 
@@ -141,14 +126,14 @@ const groupedSuggestions = computed<TwitchViewerDisplayData[][]>(() => {
 })
 
 async function onFilterKeyDown(ev: KeyboardEvent) {
-	if (focused.value && !dropDownOpen.value) {
+	/*if (focused.value && !dropDownOpen.value) {
 		dropDownOpen.value = true
 		if (selectedDisplayData.value) {
 			focusedId.value = selectedDisplayData.value.id
 		}
-	}
+	}*/
 
-	if (dropDownOpen.value && focused.value) {
+	if (dropDownOpen.value) {
 		if (ev.key == "Enter") {
 			const focusedSuggestion = fuzzySuggestions.value.find((s) => s.id == focusedId.value)
 			if (!focusedSuggestion) {
@@ -156,6 +141,7 @@ async function onFilterKeyDown(ev: KeyboardEvent) {
 				if (exactMatch) {
 					model.value = exactMatch.id
 					onBlur()
+					filterInput.value?.blur()
 					ev.preventDefault()
 					ev.stopPropagation()
 					return
@@ -174,7 +160,7 @@ async function querySuggestions() {
 
 function onSelect(item: TwitchViewerDisplayData) {
 	model.value = item.id
-	filterInputElement.value?.$el?.blur()
+	filterInput.value?.blur()
 }
 
 watch(nameValue, () => {
@@ -193,6 +179,8 @@ watch(
 		queryDisplay()
 	}
 )
+
+const inputBase = ref<InstanceType<typeof DataInputBase>>()
 </script>
 
 <style scoped>

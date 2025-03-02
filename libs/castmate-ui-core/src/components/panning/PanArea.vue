@@ -30,10 +30,16 @@ const props = withDefaults(
 		zoomX?: boolean
 		zoomY?: boolean
 		panState: PanState
+		maxZoomX?: number
+		maxZoomY?: number
+		minZoomX?: number
+		minZoomY?: number
 	}>(),
 	{
 		zoomX: true,
 		zoomY: true,
+		minZoomX: 0.01,
+		minZoomY: 0.01,
 		panState: () => ({
 			panX: 0,
 			panY: 0,
@@ -88,7 +94,6 @@ function onMouseWheel(ev: WheelEvent) {
 	}
 	if (ev.ctrlKey) {
 		if (!panArea.value) return
-		console.log(ev.deltaY)
 
 		const mpos = computePosition(ev)
 
@@ -99,11 +104,12 @@ function onMouseWheel(ev: WheelEvent) {
 
 			const posX = (mpos.x - panX) / zoomX
 
-			const newZoomX = zoomX + deltaZoom
+			const newZoomX = Math.max(zoomX + deltaZoom, props.minZoomX)
 
 			const newPanX = -(posX * newZoomX - mpos.x)
 
-			//console.log(`mX: ${mpos.x} posX: ${posX} panX: ${panX} npanX: ${newPanX}`)
+			console.log(`zoomX: ${zoomX} nzoomX: ${newZoomX}`)
+			console.log(`mX: ${mpos.x} posX: ${posX} panX: ${panX} npanX: ${newPanX}`)
 
 			panStateObj.value.panX = newPanX
 			panStateObj.value.zoomX = newZoomX
@@ -114,7 +120,7 @@ function onMouseWheel(ev: WheelEvent) {
 
 			const posY = (mpos.y - panY) / zoomY
 
-			const newZoomY = zoomY + deltaZoom
+			const newZoomY = Math.max(zoomY + deltaZoom, props.minZoomY)
 
 			const newPanY = -(posY * newZoomY - mpos.y)
 

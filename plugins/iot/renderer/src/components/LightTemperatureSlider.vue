@@ -22,7 +22,7 @@ import { ref, computed, onBeforeUnmount, useModel } from "vue"
 import { KB, LightColor, LightColorObj, kelvinToCSS } from "castmate-plugin-iot-shared"
 import { Color } from "castmate-schema"
 import { useEventListener } from "@vueuse/core"
-import { usePropagationStop } from "castmate-ui-core"
+import { useCommitUndo, usePropagationStop } from "castmate-ui-core"
 
 const props = defineProps<{
 	modelValue: LightColor | undefined
@@ -128,16 +128,18 @@ useEventListener(
 		const localX = ev.clientX - rect.left
 		const localY = ev.clientY - rect.top
 
-		console.log("Move", localX, localY)
 		kelvin.value = posToKelvin(localX, localY)
 	}
 )
+
+const commitUndo = useCommitUndo()
 
 useEventListener(
 	() => (dragging.value ? window : undefined),
 	"mouseup",
 	(ev: MouseEvent) => {
 		dragging.value = false
+		commitUndo()
 	}
 )
 </script>

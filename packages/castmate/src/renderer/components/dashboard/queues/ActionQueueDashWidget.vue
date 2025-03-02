@@ -1,15 +1,22 @@
 <template>
-	<div class="queue-card">
-		<div class="queue-card-header">
-			<h3 class="my-0">{{ queue.config.name }}</h3>
+	<main-page-card class="queue-card">
+		<template #header>
+			<i class="mdi mdi-tray-full" />&nbsp;
+			<span class="mr-1" :class="{ 'text-color-secondary': queue?.config?.paused }">{{
+				queue?.config.name ?? queue?.id ?? "UNKNOWN"
+			}}</span>
 			<p-button
 				plain
 				size="small"
+				class="extra-small-button"
 				text
-				:icon="queue.config.paused ? 'mdi mdi-play' : 'mdi mdi-pause'"
+				:icon="queue?.config.paused ? 'mdi mdi-play' : 'mdi mdi-pause'"
 				@click="togglePause"
-			></p-button>
-		</div>
+				v-tooltip="queue?.config.paused ? `Unpause Queue` : `Pause Queue`"
+			>
+			</p-button>
+		</template>
+
 		<div class="queue-list-outer">
 			<div class="queue-list" @mousewheel="onScroll" ref="queueList">
 				<div class="queue-history">
@@ -23,7 +30,7 @@
 				</div>
 				<div class="queue-running-box">
 					<dash-queue-item
-						v-if="queue.state.running"
+						v-if="queue?.state.running"
 						:queue-item="queue.state.running"
 						state="running"
 						@skip="skip(queue.state.running.id)"
@@ -37,6 +44,7 @@
 					direction="horizontal"
 					handle-class="queue-drag-handle"
 					data-type="queued-sequence"
+					local-path=""
 				>
 					<template #item="{ item, index }">
 						<dash-queue-item :queue-item="item" state="queued" @skip="skip(item.id)" />
@@ -44,12 +52,18 @@
 				</draggable-collection>
 			</div>
 		</div>
-	</div>
+	</main-page-card>
 </template>
 
 <script setup lang="ts">
 import { ActionQueueState, ActionQueueConfig, ResourceData } from "castmate-schema"
-import { useResource, DraggableCollection, useResourceIPCCaller, useResourceStore } from "castmate-ui-core"
+import {
+	useResource,
+	DraggableCollection,
+	useResourceIPCCaller,
+	useResourceStore,
+	MainPageCard,
+} from "castmate-ui-core"
 
 import DashQueueItem from "./DashQueueItem.vue"
 import { computed, nextTick, onMounted, ref, watch } from "vue"
@@ -72,7 +86,7 @@ const spliceQueue = useResourceIPCCaller<(index: number, deleteCount: number, ..
 
 const queuedItems = settableArray({
 	get() {
-		return queue.value.state.queue
+		return queue.value?.state.queue ?? []
 	},
 	set(v) {},
 	setItem(index, v) {},
@@ -83,7 +97,7 @@ const queuedItems = settableArray({
 })
 
 const history = computed(() => {
-	return [...queue.value.state.history].reverse()
+	return [...(queue.value?.state.history ?? [])].reverse()
 })
 
 const queueList = ref<HTMLElement>()
@@ -99,8 +113,10 @@ function convertRemToPixels(rem: number) {
 }
 
 watch(
-	() => queue.value.state.history,
+	() => queue.value?.state.history,
 	(current, old) => {
+		if (!current || !old) return
+
 		if (current.length > old.length) {
 			nextTick(() => {
 				if (!queueList.value) return
@@ -113,7 +129,7 @@ watch(
 
 onMounted(() => {
 	if (!queueList.value) return
-	queueList.value.scrollLeft = queue.value.state.history.length * convertRemToPixels(10.5)
+	queueList.value.scrollLeft = (queue.value?.state.history.length ?? 0) * convertRemToPixels(10.5)
 })
 
 const skipItem = useResourceIPCCaller<(id: string) => any>("ActionQueue", () => props.queueId, "skip")
@@ -129,7 +145,7 @@ async function replay(id: string) {
 const resourceStore = useResourceStore()
 function togglePause() {
 	resourceStore.applyResourceConfig("ActionQueue", props.queueId, {
-		paused: !queue.value.config.paused,
+		paused: !queue.value?.config.paused,
 	})
 }
 </script>
@@ -141,8 +157,8 @@ function togglePause() {
 	padding: 0.5rem;
 	display: flex;
 	flex-direction: column;
-	border-radius: var(--border-radius);
-	background-color: grey;
+	/* border-radius: var(--border-radius); */
+	/* background-color: grey; */
 }
 
 .queue-list-outer {

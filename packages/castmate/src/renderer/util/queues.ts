@@ -15,7 +15,7 @@ export function initializeQueues() {
 			title: "Queues",
 			icon: "mdi mdi-tray-full",
 			open() {
-				dockingStore.openPage("queues", "Queues", QueuePage)
+				dockingStore.openPage("queues", "Queues", "mdi mdi-tray-full", QueuePage)
 			},
 		}
 	})

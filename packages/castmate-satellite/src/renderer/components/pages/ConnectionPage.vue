@@ -15,11 +15,13 @@ import {
 	AccountWidget,
 	useGroupedDashboardRTCConnectionOptions,
 	useInitStore,
+	usePrimarySatelliteConnection,
 	useSatelliteConnection,
 } from "castmate-ui-core"
 import PButton from "primevue/button"
 import RemoteDashGroup from "../connection/RemoteDashGroup.vue"
-import { onMounted } from "vue"
+import { onMounted, watch } from "vue"
+import { usePageStore } from "../../util/page-store"
 
 const satelliteStore = useSatelliteConnection()
 const rtcConnectionGroups = useGroupedDashboardRTCConnectionOptions()
@@ -28,14 +30,28 @@ function refresh(ev: MouseEvent) {
 	satelliteStore.refreshConnections()
 }
 
+const connection = usePrimarySatelliteConnection()
+const pageStore = usePageStore()
+
 onMounted(() => {
 	satelliteStore.refreshConnections()
+
+	watch(
+		() => connection.value?.state,
+		() => {
+			if (!connection.value?.state) return
+
+			if (connection.value.state == "connected") pageStore.page = "dashboard"
+			if (connection.value.state == "connecting") pageStore.page = "connecting"
+		}
+	)
 })
 </script>
 
 <style scoped>
 .connection-page {
 	display: flex;
+	flex-grow: 1;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;

@@ -2,7 +2,7 @@
 	<div v-if="model != null" class="p-1 flex flex-column gap-4">
 		<div class="flex flex-row pt-3 gap-1">
 			<div style="width: 0; flex: 1">
-				<data-input :schema="previewFileSchema" v-model="previewFileModel" />
+				<data-input :schema="previewFileSchema" v-model="previewFileModel" local-path="source" />
 			</div>
 			<p-toggle-button
 				v-model="obsToggleModel"
@@ -16,26 +16,12 @@
 		<div class="flex flex-row pt-3 gap-1" @mousedown="stopPropagation">
 			<div style="width: 0; flex: 1">
 				<label-floater label="Offset X" v-slot="labelProps">
-					<p-input-number
-						class="number-fix"
-						v-model="model.offsetX"
-						v-bind="labelProps"
-						show-buttons
-						mode="decimal"
-						suffix="px"
-					/>
+					<c-number-input v-model="model.offsetX" v-bind="labelProps" suffix="px" local-path="offsetX" />
 				</label-floater>
 			</div>
 			<div style="width: 0; flex: 1">
 				<label-floater label="Offset Y" v-slot="labelProps">
-					<p-input-number
-						class="number-fix"
-						v-model="model.offsetY"
-						v-bind="labelProps"
-						show-buttons
-						mode="decimal"
-						suffix="px"
-					/>
+					<c-number-input v-model="model.offsetY" v-bind="labelProps" suffix="px" local-path="offsetX" />
 				</label-floater>
 			</div>
 		</div>
@@ -46,7 +32,7 @@
 import { OverlayPreviewConfig } from "castmate-plugin-overlays-shared"
 import { computed, useModel } from "vue"
 
-import { LabelFloater, DataInput, stopPropagation } from "castmate-ui-core"
+import { LabelFloater, DataInput, stopPropagation, useDataBinding, CNumberInput } from "castmate-ui-core"
 import PInputNumber from "primevue/inputnumber"
 import PToggleButton from "primevue/togglebutton"
 import { FilePath, declareSchema } from "castmate-schema"
@@ -54,6 +40,8 @@ import { FilePath, declareSchema } from "castmate-schema"
 const props = defineProps<{
 	modelValue: OverlayPreviewConfig | undefined
 }>()
+
+useDataBinding(() => "preview")
 
 const model = useModel(props, "modelValue")
 
