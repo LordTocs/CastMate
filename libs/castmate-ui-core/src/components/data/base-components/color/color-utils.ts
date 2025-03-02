@@ -1,46 +1,74 @@
-import { Color } from "castmate-schema"
-import { computed, Ref } from "vue"
+import { Color, isHexColor } from "castmate-schema"
+import { computed, onMounted, ref, Ref, watch } from "vue"
 
 import * as chromatism from "chromatism2"
 
-export function useColorProperties(color: Ref<Color | undefined>) {
-	const rgb = computed(() => {
-		if (!color.value) return { r: 255, g: 255, b: 255 }
-		return chromatism.convert(color.value).rgb
-	})
+const defaultRGB = () => ({ r: 255, g: 255, b: 255 })
+const defaultHSV = () => ({ h: 0, s: 0, v: 100 })
 
-	const hsv = computed(() => {
-		if (!color.value) return { h: 0, s: 0, v: 100 }
-		return chromatism.convert(color.value).hsv
+export function useColorProperties(color: Ref<Color | undefined>) {
+	const rgb = ref<{ r: number; g: number; b: number }>(defaultRGB())
+	const hsv = ref<{ h: number; s: number; v: number }>(defaultHSV())
+
+	onMounted(() => {
+		watch(
+			color,
+			() => {
+				if (!color.value || !isHexColor(color.value)) {
+					rgb.value = defaultRGB()
+					hsv.value = defaultHSV()
+					return
+				}
+
+				const converted = chromatism.convert(color.value)
+
+				const rgbHexed = chromatism.convert(rgb.value).hex
+				if (rgbHexed != color.value) {
+					rgb.value = converted.rgb
+				}
+
+				const hsvHexed = chromatism.convert(hsv.value).hex
+				if (hsvHexed != color.value) {
+					hsv.value = converted.hsv
+				}
+			},
+			{ immediate: true }
+		)
 	})
 
 	const red = computed({
 		get() {
-			return rgb.value.r
+			return Math.round(rgb.value.r)
 		},
 		set(v) {
+			rgb.value.r = v
+
 			//@ts-ignore
-			color.value = chromatism.convert({ ...rgb.value, r: v }).hex
+			color.value = chromatism.convert({ ...rgb.value }).hex
 		},
 	})
 
 	const green = computed({
 		get() {
-			return rgb.value.g
+			return Math.round(rgb.value.g)
 		},
 		set(v) {
+			rgb.value.g = v
+
 			//@ts-ignore
-			color.value = chromatism.convert({ ...rgb.value, g: v }).hex
+			color.value = chromatism.convert({ ...rgb.value }).hex
 		},
 	})
 
 	const blue = computed({
 		get() {
-			return rgb.value.b
+			return Math.round(rgb.value.b)
 		},
 		set(v) {
+			rgb.value.b = v
+
 			//@ts-ignore
-			color.value = chromatism.convert({ ...rgb.value, b: v }).hex
+			color.value = chromatism.convert({ ...rgb.value }).hex
 		},
 	})
 
@@ -49,8 +77,10 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 			return Math.round(hsv.value.h)
 		},
 		set(v) {
+			hsv.value.h = v
+
 			//@ts-ignore
-			color.value = chromatism.convert({ ...hsv.value, h: v }).hex
+			color.value = chromatism.convert({ ...hsv.value }).hex
 		},
 	})
 
@@ -59,8 +89,10 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 			return Math.round(hsv.value.s)
 		},
 		set(v) {
+			hsv.value.s = v
+
 			//@ts-ignore
-			color.value = chromatism.convert({ ...hsv.value, s: v }).hex
+			color.value = chromatism.convert({ ...hsv.value }).hex
 		},
 	})
 
@@ -69,8 +101,10 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 			return Math.round(hsv.value.v)
 		},
 		set(v) {
+			hsv.value.v = v
+
 			//@ts-ignore
-			color.value = chromatism.convert({ ...hsv.value, v: v }).hex
+			color.value = chromatism.convert({ ...hsv.value }).hex
 		},
 	})
 
