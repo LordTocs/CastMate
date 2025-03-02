@@ -1,8 +1,9 @@
 <template>
-	<div class="color-picker flex flex-row gap-1">
-		<div class="wheel">
+	<div class="color-picker flex flex-row gap-2">
+		<div class="wheel gap-1">
 			<p class="text-xs m-0">&nbsp;</p>
 			<color-wheel-picker v-model="model" />
+			<color-hex-edit v-model="model" />
 		</div>
 		<div class="sliders gap-1">
 			<p class="text-xs m-0">RGB</p>
@@ -23,6 +24,7 @@ import { useDataBinding } from "../../../main"
 
 import LinearGradientPicker from "./color/LinearGradientPicker.vue"
 import ColorWheelPicker from "./color/ColorWheelPicker.vue"
+import ColorHexEdit from "./color/ColorHexEdit.vue"
 import { computed } from "vue"
 import { useColorProperties } from "./color/color-utils"
 
@@ -70,6 +72,8 @@ useDataBinding(() => props.localPath)
 }
 .wheel {
 	width: 12rem;
+	display: flex;
+	flex-direction: column;
 }
 
 .sliders {

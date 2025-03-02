@@ -1,6 +1,6 @@
 import { Color, isHexColor } from "castmate-schema"
-import { computed, onMounted, ref, Ref, watch } from "vue"
-
+import { computed, ref, Ref, watch } from "vue"
+import { tryOnMounted } from "@vueuse/core"
 import * as chromatism from "chromatism2"
 
 const defaultRGB = () => ({ r: 255, g: 255, b: 255 })
@@ -10,7 +10,7 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 	const rgb = ref<{ r: number; g: number; b: number }>(defaultRGB())
 	const hsv = ref<{ h: number; s: number; v: number }>(defaultHSV())
 
-	onMounted(() => {
+	tryOnMounted(() => {
 		watch(
 			color,
 			() => {

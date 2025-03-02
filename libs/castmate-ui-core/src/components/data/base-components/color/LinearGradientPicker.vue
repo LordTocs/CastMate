@@ -1,6 +1,6 @@
 <template>
 	<div class="flex flex-row gap-1">
-		<div class="slider-label">
+		<div class="slider-label mr-1">
 			<slot name="label">{{ label }}</slot>
 		</div>
 		<div
