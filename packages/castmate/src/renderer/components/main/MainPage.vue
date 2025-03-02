@@ -1,9 +1,9 @@
 <template>
 	<flex-scroller>
-		<div class="flex flex-column gap-2 px-2">
+		<div class="flex flex-row flex-wrap gap-2 px-2">
 			<obs-main-page-card class="flex-grow-1" style="flex-basis: 0" />
 		</div>
-		<div class="flex flex-row gap-2 px-2">
+		<div class="flex flex-row flex-wrap gap-2 px-2">
 			<twitch-main-page-card class="flex-grow-1" style="flex-basis: 0" />
 			<stream-plan-dashboard-widget />
 		</div>

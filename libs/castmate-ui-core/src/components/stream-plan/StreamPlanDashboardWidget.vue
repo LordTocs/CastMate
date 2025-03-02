@@ -1,5 +1,5 @@
 <template>
-	<main-page-card class="flex-1">
+	<main-page-card class="flex-1" style="min-width: 380px">
 		<template #header> <i class="mdi mdi-view-agenda" /> Stream Plan </template>
 
 		<div class="flex-1 flex flex-column gap-2">
