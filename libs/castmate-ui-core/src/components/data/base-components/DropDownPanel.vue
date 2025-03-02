@@ -5,7 +5,7 @@
 				v-if="model"
 				ref="overlayDiv"
 				v-bind="$attrs"
-				class="overlay p-menu p-menu-overlay p-component p-ripple-disabled"
+				class="drop-down-panel p-menu p-menu-overlay p-component p-ripple-disabled"
 				v-focus-trap
 				@click="stopPropagation"
 				@mousedown="mouseDown"
@@ -87,23 +87,29 @@ onBeforeUnmount(() => {
 	}
 })
 
-onClickOutside(overlayDiv, (evt) => {
-	model.value = false
-})
-/*
-useEventListener(
-	() => (overlayVisibleComplete.value ? document : undefined),
-	"click",
-	(ev) => {
-		if (!props.container?.contains(ev.target as Node) && !overlayDiv.value?.contains(ev.target as Node)) {
-			model.value = false
+onClickOutside(overlayDiv, (ev) => {
+	const targetElement = ev.target as HTMLElement | undefined
+
+	if (targetElement) {
+		const currentZindex = overlayDiv.value?.style.zIndex ?? 0
+
+		let currentElement: HTMLElement | null = targetElement
+		while (currentElement) {
+			const overlayZIndex = currentElement.style.zIndex
+			console.log("z", overlayZIndex)
+
+			if (overlayZIndex > currentZindex) return
+
+			currentElement = currentElement.parentElement
 		}
 	}
-)*/
+
+	model.value = false
+})
 </script>
 
 <style scoped>
-.overlay {
+.drop-down-panel {
 	position: absolute;
 }
 </style>
