@@ -5,8 +5,9 @@
 				<div class="color-splash" :style="{ backgroundColor: model }"></div>
 			</input-box>
 		</div>
-		<drop-down-panel v-model="overlayVisible" :container="container">
-			<p-color-picker v-model="poundConverter" inline />
+		<drop-down-panel class="p-1" v-model="overlayVisible" :container="container">
+			<!-- <p-color-picker v-model="poundConverter" inline /> -->
+			<c-color-picker v-model="model" />
 		</drop-down-panel>
 	</data-input-base>
 </template>
@@ -20,6 +21,8 @@ import PColorPicker, { ColorPickerChangeEvent } from "primevue/colorpicker"
 import { SharedDataInputProps } from "../DataInputTypes"
 import DropDownPanel from "../base-components/DropDownPanel.vue"
 import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+
+import CColorPicker from "../base-components/CColorPicker.vue"
 
 const props = defineProps<
 	{

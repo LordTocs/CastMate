@@ -2,6 +2,8 @@
 	<scrolling-tab-body ref="body">
 		<div class="flex flex-row">
 			<div style="width: 50%; flex-shrink: 0">
+				<c-color-picker v-model="color" />
+
 				<data-input :schema="baseTestSchema" v-model="baseDataBinding.rootData" local-path="" />
 			</div>
 			<data-binding-debugger :binding="baseDataBinding" />
@@ -32,6 +34,7 @@ import {
 	provideBaseDataBinding,
 	DataBindingDebugger,
 	createUndoStack,
+	CColorPicker,
 } from "castmate-ui-core"
 import { onBeforeMount, onMounted, ref } from "vue"
 import util from "util"
@@ -50,6 +53,8 @@ const testSchema = declareSchema({
 	name: "New Base Test",
 	template: true,
 })
+
+const color = ref<Color>(Color.factoryCreate())
 
 const baseDataBinding = ref<DataBinding>({
 	rootView: {

@@ -50,6 +50,7 @@ export { default as CNumberInput } from "./components/data/base-components/CNumb
 export { default as CDropdown } from "./components/data/base-components/CDropdown.vue"
 export { default as CCheckBox } from "./components/data/base-components/CCheckBox.vue"
 export { default as CSelectButton } from "./components/data/base-components/CSelectButton.vue"
+export { default as CColorPicker } from "./components/data/base-components/CColorPicker.vue"
 
 export { default as AutomationEdit } from "./components/automation/AutomationEdit.vue"
 export { default as InlineAutomationEdit } from "./components/automation/InlineAutomation.vue"
