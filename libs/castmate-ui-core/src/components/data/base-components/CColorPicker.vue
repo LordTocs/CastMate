@@ -68,8 +68,6 @@ useDataBinding(() => props.localPath)
 </script>
 
 <style scoped>
-.color-picker {
-}
 .wheel {
 	width: 12rem;
 	display: flex;
