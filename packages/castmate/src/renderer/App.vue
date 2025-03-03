@@ -115,11 +115,12 @@ onMounted(async () => {
 	const queryString = window.location.search
 	const urlParams = new URLSearchParams(queryString)
 
-	const isPortable = urlParams.get("portable")
-	const isDev = urlParams.get("dev")
+	const isPortable = urlParams.get("portable") == "true"
+	const isDev = urlParams.get("dev") == "true"
+
 	if (isDev) {
 		document.title = "CastMate - Dev"
-	} else if (isPortable == "true") {
+	} else if (isPortable) {
 		document.title = "CastMate - Portable"
 	}
 

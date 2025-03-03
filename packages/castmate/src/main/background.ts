@@ -9,7 +9,7 @@ import { finishInitDashboards } from "castmate-plugin-dashboards-main"
 import { loadPlugins } from "./plugins"
 import { checkMigration, finishMigration, migrateAllOldAutomations } from "./migration/old-migration"
 
-const isDevelopment = !app.isPackaged // true //TODO: import.meta.env.DEV
+const isDevelopment = false //!app.isPackaged // true //TODO: import.meta.env.DEV
 
 if (process.platform === "win32") app.setAppUserModelId(app.getName())
 
