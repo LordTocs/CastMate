@@ -1,5 +1,5 @@
 <template>
-	<template v-for="(tabFrame, i) in allTabs" :id="tabFrame.tab.id">
+	<template v-for="(tabFrame, i) in allTabs" :key="tabFrame.tab.id">
 		<docking-teleport :tab="tabFrame.tab" v-model:frame="allTabs[i].frame" />
 	</template>
 </template>
