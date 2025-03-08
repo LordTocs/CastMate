@@ -1,7 +1,7 @@
 <template>
 	<flex-scroller>
 		<div class="flex flex-row flex-wrap gap-2 px-2">
-			<obs-main-page-card class="flex-grow-1" style="flex-basis: 0" />
+			<obs-main-page-card />
 		</div>
 		<div class="flex flex-row flex-wrap gap-2 px-2">
 			<twitch-main-page-card class="flex-grow-1" style="flex-basis: 0" />

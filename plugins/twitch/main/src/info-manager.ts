@@ -21,6 +21,7 @@ import {
 	usePluginLogger,
 	ReactiveRef,
 	useState,
+	ignoreReactivity,
 } from "castmate-core"
 import {
 	StreamInfo,
@@ -84,13 +85,9 @@ export const StreamInfoManager = Service(
 
 			if (resolvedInfo.title != null) {
 				update.title = resolvedInfo.title
-				this.titleRef.value = resolvedInfo.title
 			}
 			if (resolvedInfo.category != null) {
 				update.gameId = resolvedInfo.category
-				try {
-					this.categoryRef.value = await CategoryCache.getInstance().getCategoryById(resolvedInfo.category)
-				} catch (err) {}
 			}
 
 			if (resolvedInfo.tags != null) {
@@ -100,6 +97,20 @@ export const StreamInfoManager = Service(
 			if (update.title == null && update.gameId == null && update.tags == null) return
 
 			await TwitchAccount.channel.apiClient.channels.updateChannelInfo(TwitchAccount.channel.twitchId, update)
+
+			await ignoreReactivity(async () => {
+				logger.log("Updating Channel Info", update)
+
+				if (resolvedInfo.title != null) this.titleRef.value = resolvedInfo.title
+
+				if (resolvedInfo.category != null) {
+					try {
+						this.categoryRef.value = await CategoryCache.getInstance().getCategoryById(
+							resolvedInfo.category
+						)
+					} catch (err) {}
+				}
+			})
 		}
 		private debouncedUpdateTwitchInfo = _debounce(() => this.updateTwitchInfo(), 300)
 
