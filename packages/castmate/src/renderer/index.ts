@@ -130,6 +130,9 @@ console.log("Dialog service inited")
 app.use(PrimeVue, {
 	theme: {
 		preset: castMatePreset,
+		options: {
+			darkModeSelector: ".castmate-dark-mode",
+		},
 	},
 })
 //app.use(DialogService)
