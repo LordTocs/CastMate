@@ -34,6 +34,7 @@ export type TimerFactory = {
 	[TimerSymbol]: "Timer"
 	fromDate(date: Date): Timer
 	fromDuration(duration: Duration, paused?: boolean): Timer
+	scheduleFunc(timer: Timer, func: () => any, advance?: number): NodeJS.Timeout | undefined
 }
 
 function timerToPrimitive(hint: "default" | "string" | "number", timer: Timer) {
@@ -63,6 +64,15 @@ export const Timer: TimerFactory = {
 				remainingTime: duration,
 			})
 		}
+	},
+	scheduleFunc(timer, func, advance) {
+		if (!isTimerStarted(timer)) return undefined
+
+		const remaining = getTimeRemaining(timer) - (advance ?? 0)
+
+		if (remaining <= 0) return undefined
+
+		return setTimeout(func, remaining * 1000)
 	},
 	[TimerSymbol]: "Timer",
 }
