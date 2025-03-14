@@ -15,7 +15,7 @@ import { onChannelAuth } from "./api-harness"
 import { Duration, Timer, getTimeRemaining, isTimerStarted } from "castmate-schema"
 
 export function setupAds() {
-	const logger = usePluginLogger()
+	const logger = usePluginLogger("twitch-ad")
 
 	defineAction({
 		id: "runAd",
@@ -90,35 +90,61 @@ export function setupAds() {
 	})
 
 	const queryAdSchedule = measurePerfFunc(async function (validation = false) {
-		const schedule = await TwitchAccount.channel.apiClient.channels.getAdSchedule(TwitchAccount.channel.twitchId)
+		try {
+			logger.log("Starting Ad Schedule Query", validation, new Date().toLocaleString())
 
-		nextAdDuration.value = schedule.duration
-		nextAdTimer.value = schedule.nextAdDate ? Timer.fromDate(schedule.nextAdDate) : Timer.factoryCreate()
+			const schedule = await TwitchAccount.channel.apiClient.channels.getAdSchedule(
+				TwitchAccount.channel.twitchId
+			)
 
-		if (schedule.prerollFreeTime <= 0) {
-			prerollFreeTime.value = Timer.factoryCreate()
-		} else {
-			prerollFreeTime.value = Timer.fromDuration(schedule.prerollFreeTime)
-		}
+			logger.log(
+				"Got Ad Schedule",
+				schedule.lastAdDate?.toLocaleString() ?? "NoLast",
+				" -> ",
+				schedule.nextAdDate?.toLocaleString() ?? "NoNext",
+				schedule.snoozeCount
+			)
 
-		const oldSnoozes = adSnoozes.value
+			nextAdDuration.value = schedule.duration
+			nextAdTimer.value = schedule.nextAdDate ? Timer.fromDate(schedule.nextAdDate) : Timer.factoryCreate()
 
-		adSnoozes.value = schedule.snoozeCount
-		snoozeRefreshTimer.value = schedule.snoozeRefreshDate
-			? Timer.fromDate(schedule.snoozeRefreshDate)
-			: Timer.factoryCreate()
+			if (schedule.prerollFreeTime <= 0) {
+				prerollFreeTime.value = Timer.factoryCreate()
+			} else {
+				prerollFreeTime.value = Timer.fromDuration(schedule.prerollFreeTime)
+			}
 
-		if (isTimerStarted(snoozeRefreshTimer.value)) {
-			if (snoozeQueryTimeout) clearTimeout(snoozeQueryTimeout)
+			const oldSnoozes = adSnoozes.value
 
-			snoozeQueryTimeout = setTimeout(() => queryAdSchedule(), getTimeRemaining(snoozeRefreshTimer.value) * 1000)
-		}
+			adSnoozes.value = schedule.snoozeCount
+			snoozeRefreshTimer.value = schedule.snoozeRefreshDate
+				? Timer.fromDate(schedule.snoozeRefreshDate)
+				: Timer.factoryCreate()
 
-		//Adjust the schedule if necessary
-		if (!validation || adSnoozes.value < oldSnoozes) {
-			//Only adjust the schedule if our snooze count changed for validation calls.
-			//This should prevent issues where the user's system clock is ahead of the server clock.
-			scheduleAdTriggers(scheduledAdTriggers)
+			if (isTimerStarted(snoozeRefreshTimer.value)) {
+				logger.log("Starting Snooze Query Timer", schedule.snoozeRefreshDate?.toLocaleString())
+
+				if (snoozeQueryTimeout) clearTimeout(snoozeQueryTimeout)
+
+				snoozeQueryTimeout = Timer.scheduleFunc(snoozeRefreshTimer.value, () => queryAdSchedule())
+
+				if (!snoozeQueryTimeout) logger.log("Failed to Schedule Snooze Query", snoozeRefreshTimer.value)
+			}
+
+			//Adjust the schedule if necessary
+			if (!validation || adSnoozes.value < oldSnoozes) {
+				//Only adjust the schedule if our snooze count changed for validation calls.
+				//This should prevent issues where the user's system clock is ahead of the server clock.
+				if (validation) {
+					logger.log("SNOOZE DETECTED, REQUERY")
+				}
+
+				scheduleAdTriggers(scheduledAdTriggers)
+			}
+
+			logger.log("Finished Ad Schedule Query")
+		} catch (err) {
+			logger.error("Error Querying Ad Schedule", err)
 		}
 	}, "queryAdSchedule")
 
@@ -132,7 +158,6 @@ export function setupAds() {
 	let snoozeQueryTimeout: NodeJS.Timeout | undefined = undefined
 
 	onProfilesChanged((activeProfiles, inactiveProfiles) => {
-		if (!isTimerStarted(nextAdTimer.value)) return
 		const scheduledTriggers: ScheduledAdTrigger[] = []
 
 		for (const prof of activeProfiles) {
@@ -150,46 +175,99 @@ export function setupAds() {
 		scheduleAdTriggers(scheduledTriggers)
 	})
 
+	function scheduleValidationQuery(advance: Duration) {
+		if (advance <= 0 || !isTimerStarted(nextAdTimer.value)) return
+
+		//Issue a schedule validation check 1s before the next trigger
+		const validationAdvance = advance + 5
+		if (validationAdvance <= 0) return
+
+		const validationQueryTime = new Date(nextAdTimer.value.endTime - validationAdvance * 1000)
+
+		logger.log("Scheduling Validation Query", advance, validationQueryTime.toLocaleString())
+
+		if (validationTimeout) {
+			clearTimeout(validationTimeout)
+		}
+
+		validationTimeout = Timer.scheduleFunc(nextAdTimer.value, () => queryAdSchedule(true), validationAdvance)
+
+		if (!validationTimeout) {
+			logger.error("Unable to schedule validation", nextAdTimer.value)
+		}
+	}
+
 	function scheduleAdTriggers(newTriggers: ScheduledAdTrigger[]) {
+		logger.log("Starting Ad Scheduling")
 		for (const st of scheduledAdTriggers) {
 			if (st.timeout) {
 				clearTimeout(st.timeout)
 				st.timeout = undefined
 			}
 		}
+
 		if (validationTimeout) {
 			clearTimeout(validationTimeout)
 		}
 
 		scheduledAdTriggers = newTriggers
 
-		if (!isTimerStarted(nextAdTimer.value)) return
+		scheduledAdTriggers.sort((a, b) => {
+			return b.advance - a.advance
+		})
+
+		logger.log(scheduledAdTriggers)
+
+		if (!isTimerStarted(nextAdTimer.value)) {
+			logger.log("No Triggers Scheduled, nextAdTimer is stopped: ", nextAdTimer.value)
+			return
+		}
 
 		const nextAdTime = getTimeRemaining(nextAdTimer.value)
-		let soonestTriggerTime = Number.POSITIVE_INFINITY
+		logger.log("Next Ad Time: ", new Date(Date.now() + nextAdTime * 1000).toLocaleString())
+		let soonestAdvance = -1
 
-		for (const st of scheduledAdTriggers) {
+		for (let i = 0; i < scheduledAdTriggers.length; ++i) {
+			const st = scheduledAdTriggers[i]
+
 			const triggerTime = nextAdTime - st.advance
-			if (triggerTime <= 0) continue
+			const triggerDate = new Date(Date.now() + triggerTime * 1000)
 
-			soonestTriggerTime = Math.min(soonestTriggerTime)
+			if (triggerTime <= 0) {
+				//This trigger already happened
+				logger.log("Skipping Ad Trigger - Already Happened", st.advance)
+				continue
+			}
 
-			st.timeout = setTimeout(() => {
-				adSchedule({
-					advance: st.advance,
-				})
-			}, triggerTime * 1000)
-		}
+			soonestAdvance = Math.max(st.advance, soonestAdvance)
 
-		if (soonestTriggerTime < Number.POSITIVE_INFINITY) {
-			//Issue a schedule validation check 1s before the next trigger
-			const validationTime = soonestTriggerTime - 1
-			if (validationTime > 0) {
-				validationTimeout = setTimeout(async () => {
-					await queryAdSchedule(true)
-				}, validationTime * 1000)
+			logger.log("Scheduling Ad Trigger", st.advance, triggerDate.toLocaleString())
+
+			const nextAdvance = scheduledAdTriggers[i + 1]?.advance ?? 0
+
+			st.timeout = Timer.scheduleFunc(
+				nextAdTimer.value,
+				() => {
+					logger.log("Attempting Ad Schedule Trigger", st.advance, triggerDate.toLocaleString())
+
+					adSchedule({
+						advance: st.advance,
+					})
+
+					//Schedule next validation query
+					scheduleValidationQuery(nextAdvance)
+				},
+				st.advance
+			)
+
+			if (!st.timeout) {
+				logger.error("Failed to Schedule Ad Trigger", st.advance, nextAdTimer.value)
 			}
 		}
+
+		scheduleValidationQuery(soonestAdvance)
+
+		logger.log("Finished Ad Scheduling")
 	}
 
 	defineAction({
@@ -273,6 +351,7 @@ export function setupAds() {
 	})
 
 	onChannelAuth(async (channel, service) => {
+		logger.log("Channel Auth Query")
 		await queryAdSchedule()
 
 		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
