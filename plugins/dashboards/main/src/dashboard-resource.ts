@@ -207,10 +207,10 @@ export class Dashboard extends FileResource<DashboardConfig> {
 
 		if (needsListen) {
 			logger.log("Starting Satellite")
-			SatelliteService.getInstance().startListening()
+			SatelliteService.getInstance().startRTCSignalListening()
 		} else {
 			logger.log("Stopping Satellite")
-			SatelliteService.getInstance().startListening()
+			SatelliteService.getInstance().stopRTCSignalListening()
 		}
 	}
 

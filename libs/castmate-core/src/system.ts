@@ -149,7 +149,7 @@ export async function initializeCastMateSatellite() {
 	PubSubManager.initialize()
 	SatelliteService.initialize()
 	SatelliteResources.initialize()
-	SatelliteService.getInstance().startListening()
+	SatelliteService.getInstance().startRTCSignalListening()
 	SatelliteMedia.initialize()
 	await SatelliteMedia.getInstance().initialize()
 	//SequenceResolvers.initialize()

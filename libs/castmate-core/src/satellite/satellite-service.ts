@@ -20,35 +20,50 @@ import { isCastMate, isSatellite } from "../util/init-mode"
 
 //WebRTC connections are maintained out of the renderer process since no good node-webrtc libs exist
 
-const rendererSatelliteConnectionIceCandidate = defineCallableIPC<(candidate: SatelliteConnectionICECandidate) => any>(
+const rendererRTCSatelliteConnectionIceCandidate = defineCallableIPC<
+	(candidate: SatelliteConnectionICECandidate) => any
+>("satellite", "satelliteRTCConnectionIceCandidate")
+const rendererRTCSatelliteConnectionRequest = defineCallableIPC<(request: SatelliteConnectionRequest) => any>(
 	"satellite",
-	"satelliteConnectionIceCandidate"
+	"satelliteRTCConnectionRequest"
 )
-const rendererSatelliteConnectionRequest = defineCallableIPC<(request: SatelliteConnectionRequest) => any>(
+const rendererRTCSatelliteConnectionResponse = defineCallableIPC<(response: SatelliteConnectionResponse) => any>(
 	"satellite",
-	"satelliteConnectionRequest"
-)
-const rendererSatelliteConnectionResponse = defineCallableIPC<(response: SatelliteConnectionResponse) => any>(
-	"satellite",
-	"satelliteConnectionResponse"
+	"satelliteRTCConnectionResponse"
 )
 
-const rendererSatelliteSetRTCOptions = defineCallableIPC<(response: SatelliteConnectionOption[]) => any>(
+const rendererRTCSatelliteSetRTCOptions = defineCallableIPC<(response: SatelliteConnectionOption[]) => any>(
 	"satellite",
 	"setRTCConnectionOptions"
 )
 
 const rendererSendRTCMessage = defineCallableIPC<(id: string, data: string) => any>("satellite", "sendRTCMessage")
 
-interface RendererRTCConnection {
+interface BaseSatelliteConnection {
+	type: string
+	typeId: string
+}
+
+interface SatelliteRTCConnection extends BaseSatelliteConnection {
+	transport: "webrtc"
 	id: string
 
 	remoteService: SatelliteConnectionService
 	remoteId: string
-	type: string
-	typeId: string
 
 	state: "connecting" | "connected" | "disconnected"
+}
+
+interface SatelliteWebsocketConnection extends BaseSatelliteConnection {
+	transport: "websocket"
+}
+
+type SatelliteConnection = SatelliteRTCConnection | SatelliteWebsocketConnection
+
+function isRTCConnection(connection: unknown): connection is SatelliteRTCConnection {
+	if (!connection) return false
+	if ((connection as SatelliteConnection).transport == "webrtc") return true
+	return false
 }
 
 const logger = usePluginLogger("satellite")
@@ -61,21 +76,21 @@ export const SatelliteService = Service(
 
 		private pubsubMessageHandler: (plugin: string, event: string, data: object) => any
 
-		private rtcConnections = new Map<string, RendererRTCConnection>()
+		private satelliteConnections = new Map<string, SatelliteConnection>()
 
 		getConnection(id: string) {
-			return this.rtcConnections.get(id)
+			return this.satelliteConnections.get(id)
 		}
 
 		getCastMateConnection() {
 			if (!isSatellite()) throw new Error("This is for satellite only")
-			const connection = this.rtcConnections.keys().next()
+			const connection = this.satelliteConnections.keys().next()
 			return connection.done ? undefined : connection.value
 		}
 
 		private rpcHandler = new RPCHandler()
 
-		startListening() {
+		startRTCSignalListening() {
 			if (this.pubsubListening) return
 			logger.log("Starting Satellite Listening")
 			this.pubsubListening = true
@@ -83,7 +98,7 @@ export const SatelliteService = Service(
 			PubSubManager.getInstance().registerOnMessage(this.pubsubMessageHandler)
 		}
 
-		stopListening() {
+		stopRTCSignalListening() {
 			if (!this.pubsubListening) return
 			this.pubsubListening = false
 
@@ -91,21 +106,25 @@ export const SatelliteService = Service(
 		}
 
 		async setRTCConnectionOptions(options: SatelliteConnectionOption[]) {
-			rendererSatelliteSetRTCOptions(options)
+			rendererRTCSatelliteSetRTCOptions(options)
 		}
 
 		constructor() {
-			defineIPCFunc("satellite", "satelliteConnectionRequest", async (request: SatelliteConnectionRequest) => {
+			defineIPCFunc("satellite", "satelliteRTCConnectionRequest", async (request: SatelliteConnectionRequest) => {
 				await PubSubManager.getInstance().send("satellite", "satelliteConnectionRequest", request)
-			})
-
-			defineIPCFunc("satellite", "satelliteConnectionResponse", async (response: SatelliteConnectionResponse) => {
-				await PubSubManager.getInstance().send("satellite", "satelliteConnectionResponse", response)
 			})
 
 			defineIPCFunc(
 				"satellite",
-				"satelliteConnectionIceCandidate",
+				"satelliteRTCConnectionResponse",
+				async (response: SatelliteConnectionResponse) => {
+					await PubSubManager.getInstance().send("satellite", "satelliteConnectionResponse", response)
+				}
+			)
+
+			defineIPCFunc(
+				"satellite",
+				"satelliteRTCConnectionIceCandidate",
 				async (candidate: SatelliteConnectionICECandidate) => {
 					await PubSubManager.getInstance().send("satellite", "satelliteConnectionIceCandidate", candidate)
 				}
@@ -115,26 +134,30 @@ export const SatelliteService = Service(
 				if (plugin != "satellite") return
 
 				if (event == "satelliteConnectionIceCandidate") {
-					rendererSatelliteConnectionIceCandidate(data as SatelliteConnectionICECandidate)
+					rendererRTCSatelliteConnectionIceCandidate(data as SatelliteConnectionICECandidate)
 				} else if (event == "satelliteConnectionRequest") {
 					if (isSatellite()) return
-					rendererSatelliteConnectionRequest(data as SatelliteConnectionRequest)
+					rendererRTCSatelliteConnectionRequest(data as SatelliteConnectionRequest)
 				} else if (event == "satelliteConnectionResponse") {
 					if (isCastMate()) return
-					rendererSatelliteConnectionResponse(data as SatelliteConnectionResponse)
+					rendererRTCSatelliteConnectionResponse(data as SatelliteConnectionResponse)
 				}
 			}
 
-			defineIPCFunc("satellite", "onConnectionCreated", (connectionInfo: SatelliteConnectionInfo) => {
-				this.rtcConnections.set(connectionInfo.id, { ...connectionInfo, state: "connecting" })
+			defineIPCFunc("satellite", "onRTCConnectionCreated", (connectionInfo: SatelliteConnectionInfo) => {
+				this.satelliteConnections.set(connectionInfo.id, {
+					...connectionInfo,
+					state: "connecting",
+					transport: "webrtc",
+				})
 			})
 
 			defineIPCFunc(
 				"satellite",
-				"onConnectionStateChange",
+				"onRTCConnectionStateChange",
 				async (id: string, state: "connected" | "connecting" | "disconnected") => {
-					const connection = this.rtcConnections.get(id)
-					if (!connection) return
+					const connection = this.satelliteConnections.get(id)
+					if (!isRTCConnection(connection)) return
 
 					const newlyConnected = state == "connected" && connection.state == "connecting"
 					connection.state = state
@@ -145,18 +168,19 @@ export const SatelliteService = Service(
 				}
 			)
 
-			defineIPCFunc("satellite", "onConnectionDeleted", async (id: string) => {
-				if (this.rtcConnections.has(id)) {
-					await this.onDisconnected.run(id)
-					this.rtcConnections.delete(id)
-				}
+			defineIPCFunc("satellite", "onRTCConnectionDeleted", async (id: string) => {
+				const connection = this.satelliteConnections.get(id)
+				if (!isRTCConnection(connection)) return
+
+				await this.onDisconnected.run(id)
+				this.satelliteConnections.delete(id)
 			})
 
-			defineIPCFunc("satellite", "onControlMessage", (id: string, data: object) => {
+			defineIPCFunc("satellite", "onRTCControlMessage", (id: string, data: object) => {
 				//TODO
 				try {
-					const connection = this.rtcConnections.get(id)
-					if (!connection) return
+					const connection = this.satelliteConnections.get(id)
+					if (!isRTCConnection(connection)) return
 
 					this.rpcHandler.handleMessage(
 						data as RPCMessage,
@@ -170,7 +194,7 @@ export const SatelliteService = Service(
 		}
 
 		async callSatelliteRPC<T extends (...args: any[]) => any>(id: string, name: string, ...args: Parameters<T>) {
-			const connection = this.rtcConnections.get(id)
+			const connection = this.satelliteConnections.get(id)
 
 			if (!connection) return
 

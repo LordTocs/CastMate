@@ -77,14 +77,14 @@ type ConnectionState = "connected" | "connecting" | "disconnected"
 
 const satelliteOnCreated = useIpcCaller<(connectionInfo: SatelliteConnectionInfo) => any>(
 	"satellite",
-	"onConnectionCreated"
+	"onRTCConnectionCreated"
 )
 const satelliteOnStateChange = useIpcCaller<(id: string, state: ConnectionState) => any>(
 	"satellite",
-	"onConnectionStateChange"
+	"onRTCConnectionStateChange"
 )
-const satelliteOnDeleted = useIpcCaller<(id: string) => any>("satellite", "onConnectionDeleted")
-const satelliteOnControlMessage = useIpcCaller<(id: string, data: object) => any>("satellite", "onControlMessage")
+const satelliteOnDeleted = useIpcCaller<(id: string) => any>("satellite", "onRTCConnectionDeleted")
+const satelliteOnControlMessage = useIpcCaller<(id: string, data: object) => any>("satellite", "onRTCControlMessage")
 
 const triggerRefreshConnections = useIpcCaller<() => any>("dashboards", "refreshConnections")
 
