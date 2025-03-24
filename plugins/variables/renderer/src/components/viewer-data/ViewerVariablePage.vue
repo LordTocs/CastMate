@@ -12,7 +12,7 @@
 				style="width: 100%; height: 100%"
 				:virtual-scroller-options="{
 					lazy: true,
-					itemSize: 46,
+					itemSize: 45,
 					onLazyLoad,
 					numToleratedItems: 10,
 					loading,
@@ -85,13 +85,12 @@ const sortOrder = ref<number>()
 
 const { viewers, updateRange, loading } = useLazyViewerQuery(sortField, sortOrder)
 
-effect(() => {
-	console.log(sortField.value, " -> ", sortOrder.value)
-
-	for (const v of viewers.value) {
-		console.log(v)
-	}
-})
+// effect(() => {
+// 	console.log(sortField.value, " -> ", sortOrder.value)
+// 	for (let i = 0; i < viewers.value.length; ++i) {
+// 		console.log(`  ${i}:`, { ...viewers.value[i] })
+// 	}
+// })
 
 function createNew() {
 	dialog.open(ViewerVariableEditDialog, {
@@ -116,8 +115,7 @@ function createNew() {
 }
 
 async function onLazyLoad(event: VirtualScrollerLazyEvent) {
-	console.log("On Lazy Load!", event)
-	updateRange(event.first, event.last)
+	updateRange(event.first, event.last + 1)
 }
 </script>
 

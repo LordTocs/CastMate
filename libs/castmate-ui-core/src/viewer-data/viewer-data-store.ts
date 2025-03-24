@@ -189,8 +189,8 @@ export function useLazyViewerQuery(
 
 	const updateForcer = ref(0)
 
-	let first = 0
-	let last = 0
+	const first = ref(0)
+	const last = ref(0)
 
 	const observer: ViewerObserver = {
 		onNewViewerData(provider, id, viewer) {
@@ -228,14 +228,14 @@ export function useLazyViewerQuery(
 						}
 						return 0
 					},
-					first - 1,
-					last + 1
+					first.value - 1,
+					last.value + 1
 				)
 			}
 
 			totalDataRows.value++
 
-			if (idx < first || idx > last) {
+			if (idx < first.value || idx > last.value) {
 				//Not in view!
 				console.log("Out of view add!", idx, totalDataRows.value)
 				//NOTE: The PrimeVue virtual scroller doesn't properly hook reactivity.
@@ -277,7 +277,7 @@ export function useLazyViewerQuery(
 		async onNewViewerVariable(variable) {
 			const defaultValue = await constructDefault(variable.schema)
 
-			for (let i = first; i < last; ++i) {
+			for (let i = first.value; i < last.value; ++i) {
 				const viewer = lazyViewers.value[i]
 
 				if (!viewer) continue
@@ -286,7 +286,7 @@ export function useLazyViewerQuery(
 			}
 		},
 		onViewerVariableDeleted(variableName) {
-			for (let i = first; i < last; ++i) {
+			for (let i = first.value; i < last.value; ++i) {
 				const viewer = lazyViewers.value[i]
 
 				if (!viewer) continue
@@ -298,7 +298,7 @@ export function useLazyViewerQuery(
 
 	async function forceReload() {
 		lazyViewers.value = new Array<ViewerData>(totalDataRows.value)
-		await loadRange(first, last)
+		await loadRange(first.value, last.value)
 	}
 
 	onMounted(async () => {
@@ -321,13 +321,17 @@ export function useLazyViewerQuery(
 	)
 
 	async function updateRange(newFirst: number, newLast: number) {
-		console.log("UpdateRange!", newFirst, newLast)
+		console.log("UpdateRange(", newFirst, ",", newLast, ") out of", totalDataRows.value)
+		if (newLast < newFirst) {
+			console.log("Range Error!", newLast, newFirst)
+			return
+		}
 
-		const oldFirst = first
-		const oldLast = last
+		const oldFirst = first.value
+		const oldLast = last.value
 
-		first = newFirst
-		last = newLast
+		first.value = newFirst
+		last.value = newLast
 
 		const promises = new Array<Promise<void>>()
 
@@ -361,7 +365,12 @@ export function useLazyViewerQuery(
 	}
 
 	async function loadRange(start: number, end: number) {
-		if (start == end) return
+		if (start >= end) {
+			console.log("loadRange bad range", start, end)
+			return
+		}
+
+		console.log("Loading Viewer Range", start, "->", end)
 
 		loading.value = true
 		const viewers = await viewerDataStore.queryViewersPaged(
