@@ -40,6 +40,7 @@ export default defineConfig({
 							"castmate-plugin-input-native",
 							"node-screenshots",
 							"better-sqlite3",
+							"@azure/web-pubsub-client",
 						],
 					},
 				},
