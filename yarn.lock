@@ -4542,6 +4542,7 @@ __metadata:
     "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-spellcast-shared: "workspace:^"
+    castmate-plugin-twitch-renderer: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"

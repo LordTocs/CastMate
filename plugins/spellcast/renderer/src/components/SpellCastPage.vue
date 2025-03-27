@@ -11,6 +11,8 @@
 				<template #header>
 					<div class="flex flex-row">
 						<p-button @click="createDialog()"> Create Spell</p-button>
+						<div class="flex-grow-1" />
+						<p-button size="small" @click="openExtensionPopout"> View Extension </p-button>
 					</div>
 				</template>
 				<p-column class="column-fit-width" header="Enabled">
@@ -58,8 +60,11 @@ import {
 	useResourceCreateDialog,
 	useResourceDeleteDialog,
 	useResourceStore,
+	useResource,
 } from "castmate-ui-core"
 import { SpellConfig, SpellResourceConfig } from "castmate-plugin-spellcast-shared"
+
+import { useChannelAccountResource } from "castmate-plugin-twitch-renderer"
 
 type SpellHookResource = ResourceData<SpellResourceConfig>
 const spells = useResourceArray<SpellHookResource>("SpellHook")
@@ -72,6 +77,14 @@ async function changeEnabled(id: string, enabled: boolean) {
 const editDialog = useResourceEditDialog("SpellHook")
 const createDialog = useResourceCreateDialog("SpellHook")
 const deleteDialog = useResourceDeleteDialog("SpellHook")
+
+const channel = useChannelAccountResource()
+
+function openExtensionPopout() {
+	if (!channel.value) return
+	const popoutUrl = `https://www.twitch.tv/popout/${channel.value.config.name}/extensions/d6rcoml9cel8i3y7amoqjsqtstwtun/component`
+	window.open(popoutUrl, "_blank")
+}
 </script>
 
 <style scoped>
