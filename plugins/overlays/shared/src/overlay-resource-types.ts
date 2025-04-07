@@ -1,3 +1,4 @@
+import { SoundOutputConfig } from "castmate-plugin-sound-shared"
 import { IPCSchema, SchemaObj } from "castmate-schema"
 
 export interface OverlayWidgetSize {
@@ -65,4 +66,8 @@ export interface IPCOverlayWidgetDescriptor {
 		}
 		config: IPCSchema
 	}
+}
+
+export interface OverlaySoundConfig extends SoundOutputConfig {
+	overlayId: string
 }

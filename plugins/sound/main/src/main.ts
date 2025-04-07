@@ -132,3 +132,5 @@ export default definePlugin(
 		})
 	}
 )
+
+export { SoundOutput }

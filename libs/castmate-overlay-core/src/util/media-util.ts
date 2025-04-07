@@ -1,6 +1,7 @@
-import { ComputedRef, MaybeRefOrGetter, computed, inject, provide, toValue } from "vue"
+import { ComputedRef, MaybeRefOrGetter, computed, inject, markRaw, provide, ref, toValue } from "vue"
 import { useIsEditor } from "./editor-util"
 import path from "path"
+import { defineStore } from "pinia"
 
 export interface EditorMediaResolver {
 	resolveMedia(file: string): string
@@ -44,6 +45,55 @@ export function useMediaUrl(mediaFile: MaybeRefOrGetter<string | undefined>) {
 		return resolveMediaUrl(file, isEditor, mediaResolver.value)
 	})
 }
+
+type ExtendHTMLAudioElement = HTMLAudioElement & { setSinkId(sinkId: string): void }
+
+interface PlayingSound {
+	audioElem: ExtendHTMLAudioElement
+}
+
+export const useOverlaySoundPlayer = defineStore("overlaySoundPlayer", () => {
+	const playingSounds = ref(new Map<string, PlayingSound>())
+
+	function playSound(playId: string, resolvedUrl: string, startSec: number, endSec: number, volume: number) {
+		const audioElem: ExtendHTMLAudioElement = new Audio(resolvedUrl) as ExtendHTMLAudioElement
+		audioElem.volume = volume / 100
+		audioElem.currentTime = startSec
+
+		audioElem.addEventListener(
+			"canplaythrough",
+			(event) => {
+				audioElem.play()
+			},
+			{ once: true }
+		)
+
+		audioElem.addEventListener("timeupdate", () => {
+			if (audioElem.currentTime >= endSec) audioElem.pause()
+		})
+
+		const finishSound = () => {
+			playingSounds.value.delete(playId)
+		}
+
+		audioElem.addEventListener("pause", finishSound, { once: true })
+
+		playingSounds.value.set(playId, { audioElem: markRaw(audioElem) })
+	}
+
+	function cancelSound(playId: string) {
+		const sound = playingSounds.value.get(playId)
+		if (sound) {
+			sound.audioElem.pause()
+			playingSounds.value.delete(playId)
+		}
+	}
+
+	return {
+		playSound,
+		cancelSound,
+	}
+})
 
 export function useSoundPlayer() {
 	const isEditor = useIsEditor()

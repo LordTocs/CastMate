@@ -104,28 +104,59 @@ export const MediaManager = Service(
 			})
 
 			defineIPCFunc("media", "validateRemoteMediaPath", async (mediaPath: string) => {
-				try {
-					const realFile = await fs.realpath(mediaPath)
-
-					const tempFolder = await fs.realpath(app.getPath("temp"))
-					const mediaFolder = await fs.realpath(resolveProjectPath("./media"))
-
-					if (realFile.indexOf(tempFolder) == 0) {
-						return realFile
-					}
-					if (realFile.indexOf(mediaFolder) == 0) {
-						return realFile
-					}
-					return undefined
-				} catch (err) {
-					//Special case, could be TTS generated file in the temp path
-					return undefined
-				}
+				return await this.validateRemoteMediaPath(mediaPath)
 			})
 
 			const router = express.Router()
 			router.use(express.static(mediaPath))
 			WebService.getInstance().addRootRouter("/media/default", router)
+
+			//TODO: Move somewhere better
+			const ttsRouter = express.Router()
+			ttsRouter.use(express.static(path.join(app.getPath("temp"), "castmate-tts")))
+			WebService.getInstance().addRootRouter("/media/tts-cache", ttsRouter)
+		}
+
+		async validateRemoteMediaPath(mediaPath: string) {
+			try {
+				const realFile = await fs.realpath(mediaPath)
+
+				const tempFolder = await fs.realpath(path.join(app.getPath("temp"), "castmate-tts"))
+				const mediaFolder = await fs.realpath(resolveProjectPath("./media"))
+
+				if (realFile.indexOf(tempFolder) == 0) {
+					return realFile
+				}
+				if (realFile.indexOf(mediaFolder) == 0) {
+					return realFile
+				}
+				return undefined
+			} catch (err) {
+				//Special case, could be TTS generated file in the temp path
+				return undefined
+			}
+		}
+
+		async isTTSPath(mediaPath: string) {
+			try {
+				const realFile = await fs.realpath(mediaPath)
+				const tempFolder = await fs.realpath(path.join(app.getPath("temp"), "castmate-tts"))
+				if (realFile.indexOf(tempFolder) == 0) {
+					return path.relative(tempFolder, realFile)
+				}
+			} catch (err) {}
+			return false
+		}
+
+		async isMediaFolderPath(mediaPath: string) {
+			try {
+				const realFile = await fs.realpath(mediaPath)
+				const mediaFolder = await fs.realpath(resolveProjectPath("./media"))
+				if (realFile.indexOf(mediaFolder) == 0) {
+					return path.relative(mediaFolder, realFile)
+				}
+			} catch (err) {}
+			return false
 		}
 
 		getLocalPath(mediaPath: string) {

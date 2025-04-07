@@ -11,12 +11,14 @@ import {
 	ipcParseSchema,
 	onWebsocketMessage,
 	remoteTemplateSchema,
+	sleep,
 	usePluginLogger,
 } from "castmate-core"
 import {
 	InitialOverlayConfig,
 	IPCOverlayWidgetDescriptor,
 	OverlayConfig,
+	OverlaySoundConfig,
 	OverlayWidget,
 	OverlayWidgetConfig,
 	OverlayWidgetOptions,
@@ -26,6 +28,8 @@ import { nanoid } from "nanoid/non-secure"
 import { setupConfigEval } from "./config-evaluation"
 import { OverlayWebsocketService } from "./websocket-bridge"
 import { OBSConnection } from "castmate-plugin-obs-main"
+
+import { SoundOutput } from "castmate-plugin-sound-main"
 
 const logger = usePluginLogger("overlays")
 
@@ -50,12 +54,26 @@ export class Overlay extends FileResource<OverlayConfig> {
 	async setConfig(config: OverlayConfig): Promise<boolean> {
 		const result = await super.setConfig(config)
 		OverlayWebsocketService.getInstance().overlayConfigChanged(this.id)
+
+		const soundProxy = SoundOutput.storage.getById(`overlay-audio.${this.id}`) as OverlaySoundOutput | undefined
+		if (soundProxy) {
+			await soundProxy.applyConfig({ name: `Overlay - ${config.name}` })
+		}
+
 		return result
 	}
 
 	async applyConfig(config: Partial<OverlayConfig>): Promise<boolean> {
 		const result = await super.applyConfig(config)
 		OverlayWebsocketService.getInstance().overlayConfigChanged(this.id)
+
+		if ("name" in config) {
+			const soundProxy = SoundOutput.storage.getById(`overlay-audio.${this.id}`) as OverlaySoundOutput | undefined
+			if (soundProxy) {
+				await soundProxy.applyConfig({ name: `Overlay - ${config.name}` })
+			}
+		}
+
 		return result
 	}
 
@@ -71,6 +89,71 @@ export class Overlay extends FileResource<OverlayConfig> {
 		newWidgets[idx] = config
 
 		await this.applyConfig({ widgets: newWidgets })
+	}
+
+	async load(savedConfig: OverlayConfig) {
+		logger.log("Loading Overlay", savedConfig)
+		const result = await super.load(savedConfig)
+
+		if (result) {
+			const soundProxy = new OverlaySoundOutput(`Overlay - ${savedConfig.name}`, this._id)
+			await SoundOutput.storage.inject(soundProxy)
+		}
+
+		return result
+	}
+
+	static async onDelete(resource: Overlay) {
+		await super.onDelete(resource)
+		await OverlaySoundOutput.storage.remove(`overlay-audio.${resource.id}`)
+	}
+
+	static async onCreate(resource: Overlay) {
+		await super.onCreate(resource)
+		const soundProxy = new OverlaySoundOutput(`Overlay - ${resource.config.name}`, resource.id)
+		await SoundOutput.storage.inject(soundProxy)
+	}
+}
+
+export class OverlaySoundOutput extends SoundOutput<OverlaySoundConfig> {
+	constructor(name: string, overlayId: string) {
+		super()
+		this._id = `overlay-audio.${overlayId}`
+		this._config = {
+			name,
+			overlayId,
+		}
+
+		logger.log("Creating Overlay Sound Proxy", this.config)
+	}
+
+	async playFile(
+		file: string,
+		startSec: number,
+		endSec: number,
+		volume: number,
+		abortSignal: AbortSignal
+	): Promise<boolean> {
+		const playId = nanoid()
+
+		abortSignal.onabort = () =>
+			OverlayWebsocketService.getInstance().cancelOverlayAudio(this.config.overlayId, playId)
+
+		const playTime = Math.max(endSec - startSec, 0)
+
+		await Promise.allSettled([
+			OverlayWebsocketService.getInstance().playOverlayAudio(
+				this.config.overlayId,
+				playId,
+				file,
+				startSec,
+				endSec,
+				volume
+			),
+			sleep(playTime * 1000),
+		])
+
+		return true
 	}
 }
 

@@ -13,6 +13,7 @@ import {
 	defineWebsocketProxy,
 	onLoad,
 	onUnload,
+	MediaManager,
 } from "castmate-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { Overlay } from "./overlay-resource"
@@ -20,6 +21,8 @@ import * as express from "express"
 import { app } from "electron"
 import HttpProxy from "http-proxy"
 import { OverlayConfigEvaluator, createOverlayEvaluator } from "./config-evaluation"
+import { MediaFile } from "castmate-schema"
+import { nanoid } from "nanoid/non-secure"
 
 const logger = usePluginLogger("overlays")
 
@@ -188,6 +191,62 @@ export const OverlayWebsocketService = Service(
 			}
 
 			return []
+		}
+
+		async playOverlayAudio(
+			overlayId: string,
+			playId: string,
+			mediaFile: string,
+			startSec: number,
+			endSec: number,
+			volume: number
+		) {
+			const overlay = Overlay.storage.getById(overlayId)
+
+			if (!overlay) return playId
+
+			const openSockets = this.openOverlays.get(overlayId)
+
+			if (!openSockets) return playId
+
+			let remoteMediaName = ""
+
+			//Todo: Perhaps mediaFile's resolution should wait lol
+			const mediaPath = await MediaManager.getInstance().isMediaFolderPath(mediaFile)
+			if (mediaPath) {
+				remoteMediaName = `/media/default/${mediaPath}`
+			} else {
+				const ttsPath = await MediaManager.getInstance().isTTSPath(mediaFile)
+				if (ttsPath) {
+					remoteMediaName = `/media/tts-cache/${ttsPath}`
+				}
+			}
+
+			logger.log("Playing Overlay Audio", remoteMediaName)
+
+			if (!remoteMediaName) return playId
+
+			const calls = openSockets.sockets.map((s) =>
+				s.call("overlays_playAudio", remoteMediaName, playId, startSec, endSec, volume)
+			)
+
+			await Promise.allSettled(calls)
+
+			return playId
+		}
+
+		async cancelOverlayAudio(overlayId: string, playId: string) {
+			const overlay = Overlay.storage.getById(overlayId)
+
+			if (!overlay) return playId
+
+			const openSockets = this.openOverlays.get(overlayId)
+
+			if (!openSockets) return playId
+
+			const calls = openSockets.sockets.map((s) => s.call("overlays_cancelAudio", playId))
+
+			await Promise.allSettled(calls)
 		}
 
 		async sendOverlayMessage(messageId: string, ...args: any[]) {

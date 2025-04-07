@@ -17,6 +17,7 @@
 		"castmate-core": "workspace:^",
 		"castmate-plugin-obs-main": "workspace:^",
 		"castmate-plugin-overlays-shared": "workspace:^",
+		"castmate-plugin-sound-main": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"castmate-ws-rpc": "workspace:^",
 		"express": "^4.19.1",

@@ -4203,6 +4203,7 @@ __metadata:
     castmate-core: "workspace:^"
     castmate-plugin-obs-main: "workspace:^"
     castmate-plugin-overlays-shared: "workspace:^"
+    castmate-plugin-sound-main: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ws-rpc: "workspace:^"
     express: "npm:^4.19.1"
@@ -4262,6 +4263,7 @@ __metadata:
   dependencies:
     axios: "npm:*"
     castmate-core: "workspace:^"
+    castmate-plugin-sound-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "npm:*"
   languageName: unknown
