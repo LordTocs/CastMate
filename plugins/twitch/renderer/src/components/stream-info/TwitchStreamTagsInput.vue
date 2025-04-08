@@ -58,7 +58,7 @@ const canAddTag = computed(() => !model.value || model.value.length < 10)
 const commitUndo = useCommitUndo()
 
 function deleteTag(index: number) {
-	model.splice(index, 1)
+	model.value?.splice(index, 1)
 	commitUndo()
 }
 
