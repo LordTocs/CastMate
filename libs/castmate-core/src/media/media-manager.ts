@@ -11,18 +11,16 @@ import { ensureDirectory, resolveProjectPath } from "../io/file-system"
 import { shell, app } from "electron"
 import { globalLogger, usePluginLogger } from "../logging/logging"
 import { WebService } from "../webserver/internal-webserver"
-import express, { Application, response, Router } from "express"
+import express, { Application, NextFunction, Request, Response, response, Router } from "express"
 import { coreAxios } from "../util/request-utils"
 //require("@ffmpeg-installer/win32-x64")
 //require("@ffprobe-installer/win32-x64")
 //Thumbnails?
 //Durations?
 
-import http from "http"
-
 const logger = usePluginLogger("media")
 
-function probeMedia(file: string) {
+export function probeMedia(file: string) {
 	return new Promise<ffmpeg.FfprobeData>((resolve, reject) => {
 		ffmpeg.ffprobe(file, (err, data) => {
 			if (err) {
@@ -71,6 +69,13 @@ async function downloadFile(url: string, dest: string) {
 		})
 }
 
+export function expressLogging(req: Request, res: Response, next: NextFunction) {
+	//if (process.env.DEBUG_BUILD) {
+	logger.log("MEDIA REQUEST", req.method, req.url, req.body, req.headers)
+	//}
+	next()
+}
+
 export const MediaManager = Service(
 	class {
 		private mediaFolders: MediaFolder[] = []
@@ -108,6 +113,7 @@ export const MediaManager = Service(
 			})
 
 			const router = express.Router()
+			router.use(expressLogging)
 			router.use(express.static(mediaPath))
 			WebService.getInstance().addRootRouter("/media/default", router)
 
