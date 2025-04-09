@@ -15,6 +15,7 @@
 	"dependencies": {
 		"axios": "*",
 		"castmate-core": "workspace:^",
+		"castmate-plugin-sound-shared": "workspace:^",
 		"castmate-schema": "workspace:^"
 	}
 }

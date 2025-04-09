@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { ComputedRef, MaybeRefOrGetter, computed, ref, toValue } from "vue"
 import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
-import { CastMateBridgeImplementation } from "castmate-overlay-core"
+import { CastMateBridgeImplementation, useOverlaySoundPlayer } from "castmate-overlay-core"
 
 export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 	let websocket: WebSocket | undefined = undefined
@@ -79,6 +79,21 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 				console.error(err)
 			}
 		}
+	})
+
+	const soundPlayer = useOverlaySoundPlayer()
+
+	rpcs.handle(
+		"overlays_playAudio",
+		(mediaFile: string, playId: string, startSec: number, endSec: number, volume: number) => {
+			const url = `http://${window.location.host}/${mediaFile.startsWith("/") ? mediaFile.slice(1) : mediaFile}`
+
+			soundPlayer.playSound(playId, url, startSec, endSec, volume)
+		}
+	)
+
+	rpcs.handle("overlays_cancelAudio", (playId: string) => {
+		soundPlayer.cancelSound(playId)
 	})
 
 	function acquireState(plugin: string, state: string) {

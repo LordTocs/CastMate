@@ -1,4 +1,13 @@
-import { FileResource, Resource, ResourceStorage, defineAction, definePluginResource, onLoad } from "castmate-core"
+import {
+	FileResource,
+	Resource,
+	ResourceStorage,
+	defineAction,
+	definePluginResource,
+	ensureDirectory,
+	onLoad,
+	usePluginLogger,
+} from "castmate-core"
 import { TTSVoiceConfig, TTSVoiceProviderConfig } from "castmate-plugin-sound-shared"
 import { Schema, SchemaType, declareSchema } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
@@ -43,7 +52,10 @@ export class TTSVoice extends FileResource<TTSVoiceConfig> {
 		const provider = TTSVoiceProvider.storage.getById(this.config.voiceProvider)
 		if (!provider) return
 
-		const filename = path.join(app.getPath("temp"), `${nanoid()}.wav`)
+		const cachePath = path.join(app.getPath("temp"), "castmate-tts")
+		await ensureDirectory(cachePath)
+
+		const filename = path.join(cachePath, `${nanoid()}.wav`)
 		await provider.generate(text, this.config.providerConfig, filename)
 		return filename
 	}
@@ -122,6 +134,8 @@ export function setupTTS() {
 
 	const osTts = new OsTTSInterface()
 
+	const logger = usePluginLogger()
+
 	async function getOsVoices() {
 		const voices = osTts.getVoices()
 
@@ -137,6 +151,9 @@ export function setupTTS() {
 	}
 
 	onLoad(async () => {
+		ensureDirectory(path.join(app.getPath("temp"), "castmate-tts"))
+		logger.log(`TTS Cache Path: `, path.join(app.getPath("temp"), "castmate-tts"))
+
 		await getOsVoices()
 	})
 }

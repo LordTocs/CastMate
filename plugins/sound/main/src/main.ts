@@ -1,4 +1,12 @@
-import { defineAction, onLoad, definePlugin, onUILoad, defineSetting, definePluginResource } from "castmate-core"
+import {
+	defineAction,
+	onLoad,
+	definePlugin,
+	onUILoad,
+	defineSetting,
+	definePluginResource,
+	probeMedia,
+} from "castmate-core"
 import { MediaManager } from "castmate-core"
 import { Duration, MediaFile } from "castmate-schema"
 import { RendererSoundPlayer } from "./renderer-sound-player"
@@ -114,10 +122,20 @@ export default definePlugin(
 				const voiceFile = await config.voice?.generate(config.text)
 				if (!voiceFile) return
 				const globalFactor = globalVolume.value / 100
+
+				const probeInfo = await probeMedia(voiceFile)
+
+				let duration = probeInfo.format.duration as number | string | undefined
+
+				let finalDuration = undefined
+				if (duration && duration != "N/A") {
+					finalDuration = Number(duration)
+				}
+
 				await config.output.playFile(
 					voiceFile,
 					0,
-					Number.POSITIVE_INFINITY,
+					finalDuration ?? Number.POSITIVE_INFINITY,
 					config.volume * globalFactor,
 					abortSignal
 				)
@@ -132,3 +150,5 @@ export default definePlugin(
 		})
 	}
 )
+
+export { SoundOutput }

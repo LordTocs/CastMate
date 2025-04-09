@@ -48,6 +48,7 @@ export async function loadPlugins() {
 
 	await loadPlugin(castmatePlugin)
 	await loadPlugin(randomPlugin)
+	await loadPlugin(soundPlugin)
 	await loadPlugin(overlayPlugin)
 	//await loadPlugin(dashboardPlugin)
 
@@ -57,7 +58,6 @@ export async function loadPlugins() {
 		loadPlugin(discordPlugin),
 		loadPlugin(obsPlugin),
 		loadPlugin(iotPlugin),
-		loadPlugin(soundPlugin),
 		loadPlugin(osPlugin),
 		loadPlugin(httpPlugin),
 		loadPlugin(inputPlugin),
