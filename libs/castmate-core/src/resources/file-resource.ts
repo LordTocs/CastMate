@@ -1,13 +1,15 @@
-import { Resource, ResourceBase } from "./resource"
+import { Resource, ResourceBase, ResourceStorage, ResourceStorageBase } from "./resource"
 import * as fs from "fs/promises"
 import * as path from "path"
 import { ensureDirectory, loadYAML, resolveProjectPath, writeYAML } from "../io/file-system"
 import { globalLogger, usePluginLogger } from "../logging/logging"
+import { ConstructedType } from "../util/type-helpers"
 
 interface FileResourceConstructor {
 	new (...args: any[]): ResourceBase
 	resourceDirectory: string
 }
+const logger = usePluginLogger("resources")
 
 export class FileResource<ConfigType extends object, StateType extends object = {}> extends Resource<
 	ConfigType,
@@ -68,44 +70,61 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 	static async initialize() {
 		await super.initialize()
 
-		if (this.resourceDirectory == "") {
-			throw new Error("Cannot load resources, no directory set!")
-		}
+		await loadFileResources(this)
+	}
+}
 
-		const logger = usePluginLogger("resources")
-		logger.log("Loading Resources from ", this.resourceDirectory)
+export interface IFileResource extends ResourceBase {
+	load(config: object): Promise<boolean>
+	save(): Promise<any>
+}
 
-		const resolvedDir = resolveProjectPath(this.resourceDirectory)
-		await ensureDirectory(resolvedDir)
-		const files = await fs.readdir(resolvedDir)
+interface FileIshConstructor<RT extends IFileResource = IFileResource> {
+	new (): RT
+	storage: ResourceStorageBase
+	resourceDirectory: string
+}
 
-		const fileLoadPromises = files.map(async (file) => {
-			const id = path.basename(file, ".yaml")
+export async function loadFileResources<T extends FileIshConstructor>(resourceConstructor: T) {
+	if (!resourceConstructor) {
+		throw new Error("Missing Resource Constructor!")
+	}
 
-			logger.log("Loading", this.storage.name, id)
+	if (resourceConstructor.resourceDirectory == "") {
+		throw new Error("Cannot load resources, no directory set!")
+	}
 
-			const fullFile = path.join(resolvedDir, file)
+	const resolvedDir = resolveProjectPath(resourceConstructor.resourceDirectory)
+	await ensureDirectory(resolvedDir)
+	const files = await fs.readdir(resolvedDir)
 
-			try {
-				const data = await loadYAML(fullFile)
-				const resource = new this()
-				resource._id = id
+	const fileLoadPromises = files.map(async (file) => {
+		const id = path.basename(file, ".yaml")
 
-				if ((await resource.load(data)) === false) {
-					logger.error("Load Failed", id)
-					return undefined
-				}
+		logger.log("Loading", resourceConstructor.storage.name, id)
 
-				return resource
-			} catch (err) {
-				logger.error("Loading Resource Threw", id, err)
+		const fullFile = path.join(resolvedDir, file)
+
+		try {
+			const data = await loadYAML(fullFile)
+			const resource = new resourceConstructor()
+			//@ts-ignore
+			resource._id = id
+
+			if ((await resource.load(data)) === false) {
+				logger.error("Load Failed", id)
 				return undefined
 			}
-		})
 
-		//Heh typescript bug can't detect we've eliminated all undefines
-		const resources = (await Promise.all(fileLoadPromises)).filter((r) => r != null) as ResourceBase[]
+			return resource
+		} catch (err) {
+			logger.error("Loading Resource Threw", id, err)
+			return undefined
+		}
+	})
 
-		await this.storage.inject(...resources)
-	}
+	//Heh typescript bug can't detect we've eliminated all undefines
+	const resources = (await Promise.all(fileLoadPromises)).filter((r) => r != null) as ConstructedType<T>[]
+
+	await resourceConstructor.storage.inject(...resources)
 }
