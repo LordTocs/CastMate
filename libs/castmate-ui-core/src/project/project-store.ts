@@ -4,6 +4,7 @@ import { NamedData, useDockingStore, useResourceCreateDialog, useResourceData, u
 import NameDialogVue from "../components/dialogs/NameDialog.vue"
 import { ResourceData } from "castmate-schema"
 import ResourceEditDialog from "../components/resources/ResourceEditDialog.vue"
+import _isMatch from "lodash/isMatch"
 
 export interface ProjectItem {
 	id: string
@@ -47,6 +48,7 @@ interface ResourceGroupConfig<TData extends ResourceData> {
 	resourceName?: string
 	documentType: string
 	groupIcon?: string
+	filter?: Record<string, any>
 	creationDialog?: VueElementConstructor
 	createView?: (resource: TData) => object
 }
@@ -128,7 +130,11 @@ export function getResourceAsProjectGroup<TData extends ResourceData>(
 	const group = computed<ProjectGroup>((): ProjectGroup => {
 		let items: ProjectItem[] = []
 		if (resources.value) {
-			const resourceItems = [...resources.value.resources.values()]
+			let resourceItems = [...resources.value.resources.values()]
+
+			if (config.filter) {
+				resourceItems = resourceItems.filter((r) => _isMatch(r.config, config.filter as object))
+			}
 
 			items = resourceItems.map(
 				(r) =>
