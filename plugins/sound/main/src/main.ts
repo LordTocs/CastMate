@@ -13,6 +13,7 @@ import { RendererSoundPlayer } from "./renderer-sound-player"
 import { AudioDeviceInterface } from "castmate-plugin-sound-native"
 import { SoundOutput, setupOutput } from "./output"
 import { TTSVoice, setupTTS } from "./tts"
+import { setupRedirects } from "./redirector"
 
 export default definePlugin(
 	{
@@ -34,6 +35,7 @@ export default definePlugin(
 		})
 
 		setupOutput()
+		setupRedirects()
 		setupTTS()
 
 		defineAction({

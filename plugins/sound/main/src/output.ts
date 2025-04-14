@@ -28,6 +28,7 @@ export class SoundOutput<
 }
 
 interface SystemSoundOutputConfig extends SoundOutputConfig {
+	type: "system"
 	deviceId: string
 	webId?: string
 	isDefault: boolean
@@ -42,6 +43,7 @@ export class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
 			const id = mediaDevice == "main" ? "default" : "communications"
 			this._id = `system.${id}`
 			this._config = {
+				type: "system",
 				isDefault: true,
 				deviceId: id,
 				name:
@@ -53,6 +55,7 @@ export class SystemSoundOutput extends SoundOutput<SystemSoundOutputConfig> {
 		} else {
 			this._id = `system.${mediaDevice.id}`
 			this._config = {
+				type: "system",
 				isDefault: false,
 				deviceId: mediaDevice.id,
 				name: mediaDevice.name,
