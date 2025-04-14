@@ -24,9 +24,9 @@ function padLines(str: string, padding: number) {
 	return str.replaceAll("\n", "\n" + " ".repeat(padding))
 }
 const consoleLogFormat = winston.format.printf((info) => {
-	const plugin: string = info.plugin
+	const plugin = info.plugin as string
 	const level = info.level
-	const message = info.messageColored
+	const message = info.messageColored as string
 
 	return `${plugin.padStart(11, " ")}:${shortHands[level]}: ${padLines(message, 17)}`
 })
