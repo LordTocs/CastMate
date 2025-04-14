@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { AudioRedirectorConfig, AudioRedirect } from "castmate-plugin-sound-shared"
-import { ScrollingTabBody, DocumentDataCollection } from "castmate-ui-core"
+import { ScrollingTabBody, DocumentDataCollection, useCommitUndo } from "castmate-ui-core"
 import { AudioRedirectorView, AudioRedirectView } from "./redirect-types"
 import AudioRedirectEdit from "./AudioRedirectEdit.vue"
 import { nanoid } from "nanoid"
@@ -46,15 +46,19 @@ function createNewRedirect(): [AudioRedirect, AudioRedirectView] {
 	]
 }
 
+const commitUndo = useCommitUndo()
+
 function addNewRedirectEnd() {
 	const [redirect, viewdata] = createNewRedirect()
 	model.value.redirects.push(redirect)
 	view.value.redirects.push(viewdata)
+	commitUndo()
 }
 
 function addNewRedirectStart() {
 	const [redirect, viewdata] = createNewRedirect()
 	model.value.redirects.splice(0, 0, redirect)
 	view.value.redirects.splice(0, 0, viewdata)
+	commitUndo()
 }
 </script>
