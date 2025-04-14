@@ -38,6 +38,7 @@ import { ipcRenderer } from "electron"
 import {
 	useDockingStore,
 	useIpcMessage,
+	useIpcCaller,
 	isDev,
 	NameDialog,
 	useResourceStore,
@@ -84,6 +85,8 @@ useIpcMessage("windowFuncs", "stateChanged", (event, state: string) => {
 	console.log("Window State", state)
 	windowState.value = state
 })
+
+const openLogFolder = useIpcCaller<() => any>("logging", "openLogFolder")
 
 const props = defineProps<{
 	title: string
@@ -214,6 +217,7 @@ const menuItems = computed<MenuItem[]>(() => {
 
 	fileMenu.items?.push({
 		label: "Exit",
+		icon: "mdi mdi-exit-run",
 		command() {
 			close()
 		},
@@ -228,16 +232,23 @@ const menuItems = computed<MenuItem[]>(() => {
 	helpMenu.items?.push(
 		{
 			label: "About",
-			icon: "mdi mdi-info",
+			icon: "mdi mdi-information",
 			command() {
 				dockingStore.openPage("about", "About", "mdi mdi-info", AboutPage)
 			},
 		},
 		{
 			label: "Discord",
-			icon: "mdi mdi-discord",
+			icon: "di di-discord",
 			command() {
 				window.open("https://discord.gg/txt4DUzYJM")
+			},
+		},
+		{
+			label: "Open Log Folder",
+			icon: "mdi mdi-invoice-list",
+			command() {
+				openLogFolder()
 			},
 		}
 	)
