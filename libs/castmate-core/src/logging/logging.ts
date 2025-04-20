@@ -4,6 +4,8 @@ import { initingPlugin } from "../plugins/plugin-init"
 import { ensureDirectory, resolveProjectPath } from "../io/file-system"
 import fs from "fs"
 import colors from "@colors/colors"
+import { defineIPCFunc } from "../util/electron"
+import { shell } from "electron"
 
 const fileLogFormat = winston.format.printf((info) => {
 	const timestamp = info.timestamp
@@ -22,9 +24,9 @@ function padLines(str: string, padding: number) {
 	return str.replaceAll("\n", "\n" + " ".repeat(padding))
 }
 const consoleLogFormat = winston.format.printf((info) => {
-	const plugin: string = info.plugin
+	const plugin = info.plugin as string
 	const level = info.level
-	const message = info.messageColored
+	const message = info.messageColored as string
 
 	return `${plugin.padStart(11, " ")}:${shortHands[level]}: ${padLines(message, 17)}`
 })
@@ -34,6 +36,10 @@ export let winstonLogger: winston.Logger
 export async function initializeLogging() {
 	const logDir = resolveProjectPath("logs")
 	await ensureDirectory(logDir)
+
+	defineIPCFunc("logging", "openLogFolder", () => {
+		shell.openPath(logDir)
+	})
 
 	const initTime = Date.now()
 

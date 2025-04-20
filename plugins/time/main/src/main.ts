@@ -39,7 +39,21 @@ export default definePlugin(
 				},
 			},
 			async invoke(config, contextData, abortSignal) {
+				const start = Date.now()
 				await abortableSleep(config.duration * 1000, abortSignal)
+				const end = Date.now()
+
+				const waited = (end - start) / 1000
+				const delta = config.duration - waited
+				const absDelta = Math.abs(delta)
+
+				if (absDelta > 0.01) {
+					logger.error(
+						`Delay Inaccuracy! Waited ${waited}/${config.duration} : ${
+							abortSignal.aborted ? "aborted" : "not aborted"
+						}`
+					)
+				}
 			},
 		})
 

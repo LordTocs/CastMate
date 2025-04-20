@@ -1,13 +1,18 @@
-import { WebAudioDeviceInfo } from "castmate-plugin-sound-shared"
+import { SoundOutputConfig, WebAudioDeviceInfo } from "castmate-plugin-sound-shared"
 import {
+	NameDialog,
+	NamedData,
 	ProjectGroup,
+	ProjectItem,
 	getResourceAsProjectGroup,
 	handleIpcMessage,
 	handleIpcRpc,
+	useDockingStore,
 	useDocumentStore,
 	useIpcCaller,
 	usePluginStore,
 	useProjectStore,
+	useResourceData,
 	useResourceStore,
 } from "castmate-ui-core"
 
@@ -16,6 +21,13 @@ import { useSoundPlayerStore } from "./player-store"
 import { computed, App } from "vue"
 import VoiceEditPageVue from "./components/tts/VoiceEditPage.vue"
 import _cloneDeep from "lodash/cloneDeep"
+import { AudioSplitterView } from "./components/splitters/splitter-types"
+
+import { ResourceData } from "castmate-schema"
+
+import { AudioSplitterConfig } from "castmate-plugin-sound-shared"
+import _isMatch from "lodash/isMatch"
+import AudioSplitterEditPage from "./components/splitters/AudioSplitterEditPage.vue"
 
 export async function getOutputDevices(): Promise<WebAudioDeviceInfo[]> {
 	const devices = await navigator.mediaDevices.enumerateDevices()
@@ -45,6 +57,87 @@ export async function initSatellitePlugin() {
 	handleIpcRpc("sound", "getOutputWebId", async (name: string) => {
 		return await getOutputDeviceWebId(name)
 	})
+}
+
+//TODO: How to handle this better
+function createSplitterGroup(app: App<Element>) {
+	const resources = useResourceData<ResourceData<AudioSplitterConfig>>("SoundOutput")
+	const resourceStore = useResourceStore()
+	const dockingStore = useDockingStore()
+	const createSplitter = useIpcCaller<(name: string) => any>("sound", "createSplitter")
+
+	const createView = (resource: ResourceData<AudioSplitterConfig>): AudioSplitterView => {
+		return {
+			scrollX: 0,
+			scrollY: 0,
+			redirects: resource.config.redirects.map((r) => ({ id: r.id })),
+		}
+	}
+
+	const group = computed<ProjectGroup>((): ProjectGroup => {
+		let items: ProjectItem[] = []
+		if (resources.value) {
+			let resourceItems = [...resources.value.resources.values()].filter((r) =>
+				_isMatch(r.config, { type: "splitter" })
+			)
+
+			items = resourceItems.map(
+				(r) =>
+					({
+						id: r.id,
+						title: r.config.name ?? r.id,
+						open() {
+							//TODO how do we get the view data?
+							dockingStore.openDocument(
+								r.id,
+								r.config,
+								createView(r) ?? {},
+								"audio-splitter",
+								"mdi mdi-tune"
+							)
+						},
+						rename(name: string) {
+							resourceStore.applyResourceConfig("SoundOutput", r.id, { name })
+						},
+						delete() {
+							resourceStore.deleteResource("SoundOutput", r.id)
+
+							//TODO: dockingStore.closeDocument(r.id)
+							//TODO: unsaved data?
+						},
+					} as ProjectItem)
+			)
+		}
+
+		const title = "Audio Splitters"
+
+		return {
+			id: "audiosplitters",
+			title,
+			icon: "mdi mdi-tune",
+			items,
+			create() {
+				app.config.globalProperties.$dialog.open(NameDialog, {
+					props: {
+						header: `Create Audio Splitter`,
+						modal: true,
+					},
+					async onClose(options) {
+						if (!options?.data) {
+							return
+						}
+
+						const name = options.data as string
+						if (!name) return
+
+						await createSplitter(name)
+					},
+				})
+			},
+		}
+	})
+
+	return group
 }
 
 export async function initPlugin(app: App<Element>) {
@@ -84,13 +177,25 @@ export async function initPlugin(app: App<Element>) {
 		documentType: "ttsvoice",
 	})
 
+	const redirects = createSplitterGroup(app)
+
+	documentStore.registerDocumentComponent("audio-splitter", AudioSplitterEditPage)
+
+	documentStore.registerSaveFunction("audio-splitter", async (doc) => {
+		const docDataCopy = _cloneDeep(doc.data)
+
+		delete docDataCopy.name
+
+		await resourceStore.applyResourceConfig("SoundOutput", doc.id, docDataCopy)
+	})
+
 	projectStore.registerProjectGroupItem(
 		computed<ProjectGroup>(() => {
 			return {
 				id: "sound",
 				title: "Audio",
 				icon: "mdi mdi-volume-high",
-				items: [voices.value],
+				items: [voices.value, redirects.value],
 			}
 		})
 	)
