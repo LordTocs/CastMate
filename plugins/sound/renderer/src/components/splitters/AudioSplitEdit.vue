@@ -17,15 +17,15 @@
 </template>
 
 <script setup lang="ts">
-import { AudioRedirect } from "castmate-plugin-sound-shared"
-import { AudioRedirectView } from "./redirect-types"
+import { AudioSplit } from "castmate-plugin-sound-shared"
+import { AudioSplitView } from "./splitter-types"
 import { computed } from "vue"
 import { ResourceProxyFactory, useDataBinding, usePropagationStop, DataInput, CToggleButton } from "castmate-ui-core"
 import PButton from "primevue/button"
 import { declareSchema } from "castmate-schema"
 
-const model = defineModel<AudioRedirect>({ required: true })
-const view = defineModel<AudioRedirectView>("view", { required: true })
+const model = defineModel<AudioSplit>({ required: true })
+const view = defineModel<AudioSplitView>("view", { required: true })
 
 const props = defineProps<{
 	selectedIds: string[]

@@ -21,14 +21,13 @@ import { useSoundPlayerStore } from "./player-store"
 import { computed, App } from "vue"
 import VoiceEditPageVue from "./components/tts/VoiceEditPage.vue"
 import _cloneDeep from "lodash/cloneDeep"
-import { AudioRedirectorView } from "./components/redirects/redirect-types"
+import { AudioSplitterView } from "./components/splitters/splitter-types"
 
 import { ResourceData } from "castmate-schema"
 
-import { AudioRedirectorConfig } from "castmate-plugin-sound-shared"
+import { AudioSplitterConfig } from "castmate-plugin-sound-shared"
 import _isMatch from "lodash/isMatch"
-import { useDialog } from "primevue"
-import RedirectEditPage from "./components/redirects/RedirectEditPage.vue"
+import AudioSplitterEditPage from "./components/splitters/AudioSplitterEditPage.vue"
 
 export async function getOutputDevices(): Promise<WebAudioDeviceInfo[]> {
 	const devices = await navigator.mediaDevices.enumerateDevices()
@@ -61,13 +60,13 @@ export async function initSatellitePlugin() {
 }
 
 //TODO: How to handle this better
-function createRedirectGroup(app: App<Element>) {
-	const resources = useResourceData<ResourceData<AudioRedirectorConfig>>("SoundOutput")
+function createSplitterGroup(app: App<Element>) {
+	const resources = useResourceData<ResourceData<AudioSplitterConfig>>("SoundOutput")
 	const resourceStore = useResourceStore()
 	const dockingStore = useDockingStore()
-	const createRedirector = useIpcCaller<(name: string) => any>("sound", "createRedirector")
+	const createSplitter = useIpcCaller<(name: string) => any>("sound", "createSplitter")
 
-	const createView = (resource: ResourceData<AudioRedirectorConfig>): AudioRedirectorView => {
+	const createView = (resource: ResourceData<AudioSplitterConfig>): AudioSplitterView => {
 		return {
 			scrollX: 0,
 			scrollY: 0,
@@ -79,7 +78,7 @@ function createRedirectGroup(app: App<Element>) {
 		let items: ProjectItem[] = []
 		if (resources.value) {
 			let resourceItems = [...resources.value.resources.values()].filter((r) =>
-				_isMatch(r.config, { type: "redirector" })
+				_isMatch(r.config, { type: "splitter" })
 			)
 
 			items = resourceItems.map(
@@ -93,7 +92,7 @@ function createRedirectGroup(app: App<Element>) {
 								r.id,
 								r.config,
 								createView(r) ?? {},
-								"audio-redirector",
+								"audio-splitter",
 								"mdi mdi-tune"
 							)
 						},
@@ -110,17 +109,17 @@ function createRedirectGroup(app: App<Element>) {
 			)
 		}
 
-		const title = "Audio Redirectors"
+		const title = "Audio Splitters"
 
 		return {
-			id: "audioredirectors",
+			id: "audiosplitters",
 			title,
 			icon: "mdi mdi-tune",
 			items,
 			create() {
 				app.config.globalProperties.$dialog.open(NameDialog, {
 					props: {
-						header: `Create Audio Redirector`,
+						header: `Create Audio Splitter`,
 						modal: true,
 					},
 					async onClose(options) {
@@ -131,7 +130,7 @@ function createRedirectGroup(app: App<Element>) {
 						const name = options.data as string
 						if (!name) return
 
-						await createRedirector(name)
+						await createSplitter(name)
 					},
 				})
 			},
@@ -178,11 +177,11 @@ export async function initPlugin(app: App<Element>) {
 		documentType: "ttsvoice",
 	})
 
-	const redirects = createRedirectGroup(app)
+	const redirects = createSplitterGroup(app)
 
-	documentStore.registerDocumentComponent("audio-redirector", RedirectEditPage)
+	documentStore.registerDocumentComponent("audio-splitter", AudioSplitterEditPage)
 
-	documentStore.registerSaveFunction("audio-redirector", async (doc) => {
+	documentStore.registerSaveFunction("audio-splitter", async (doc) => {
 		const docDataCopy = _cloneDeep(doc.data)
 
 		delete docDataCopy.name

@@ -1,5 +1,5 @@
 export * from "./tts"
-export * from "./redirector"
+export * from "./splitter"
 
 export interface SoundOutputConfig {
 	name: string

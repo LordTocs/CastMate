@@ -1,16 +1,16 @@
 <template>
 	<scrolling-tab-body inner-class="px-1 py-1">
-		<div style="height: 2rem">Audio Redirects allow sounds to be played on multiple outputs.</div>
+		<div style="height: 2rem">Audio Splitters allow sounds to be played on multiple outputs.</div>
 		<document-data-collection
 			v-model="model.redirects"
 			v-model:view="view.redirects"
 			local-path="redirects"
-			:data-component="AudioRedirectEdit"
+			:data-component="AudioSplitEdit"
 		>
 			<template #header>
 				<div class="flex flex-column p-1">
 					<div>
-						<p-button @click="addNewRedirectStart">Add Audio Output</p-button>
+						<p-button @click="addNewSplitStart">Add Audio Output</p-button>
 					</div>
 				</div>
 			</template>
@@ -21,17 +21,17 @@
 </template>
 
 <script setup lang="ts">
-import { AudioRedirectorConfig, AudioRedirect } from "castmate-plugin-sound-shared"
+import { AudioSplitterConfig, AudioSplit } from "castmate-plugin-sound-shared"
 import { ScrollingTabBody, DocumentDataCollection, useCommitUndo } from "castmate-ui-core"
-import { AudioRedirectorView, AudioRedirectView } from "./redirect-types"
-import AudioRedirectEdit from "./AudioRedirectEdit.vue"
+import { AudioSplitterView, AudioSplitView } from "./splitter-types"
+import AudioSplitEdit from "./AudioSplitEdit.vue"
 import { nanoid } from "nanoid"
 import PButton from "primevue/button"
 
-const model = defineModel<AudioRedirectorConfig>({ required: true })
-const view = defineModel<AudioRedirectorView>("view", { required: true })
+const model = defineModel<AudioSplitterConfig>({ required: true })
+const view = defineModel<AudioSplitterView>("view", { required: true })
 
-function createNewRedirect(): [AudioRedirect, AudioRedirectView] {
+function createNewSplit(): [AudioSplit, AudioSplitView] {
 	const id = nanoid()
 	return [
 		{
@@ -48,15 +48,15 @@ function createNewRedirect(): [AudioRedirect, AudioRedirectView] {
 
 const commitUndo = useCommitUndo()
 
-function addNewRedirectEnd() {
-	const [redirect, viewdata] = createNewRedirect()
+function addNewSplitEnd() {
+	const [redirect, viewdata] = createNewSplit()
 	model.value.redirects.push(redirect)
 	view.value.redirects.push(viewdata)
 	commitUndo()
 }
 
-function addNewRedirectStart() {
-	const [redirect, viewdata] = createNewRedirect()
+function addNewSplitStart() {
+	const [redirect, viewdata] = createNewSplit()
 	model.value.redirects.splice(0, 0, redirect)
 	view.value.redirects.splice(0, 0, viewdata)
 	commitUndo()

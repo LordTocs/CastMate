@@ -1,4 +1,4 @@
-import { AudioRedirect, AudioRedirectorConfig } from "castmate-plugin-sound-shared"
+import { AudioSplit, AudioSplitterConfig } from "castmate-plugin-sound-shared"
 import { SoundOutput } from "./output"
 import { nanoid } from "nanoid/non-secure"
 import {
@@ -14,8 +14,8 @@ import fs from "fs/promises"
 
 const logger = usePluginLogger("sound")
 
-export class AudioRedirectorOutput extends SoundOutput<AudioRedirectorConfig> {
-	static resourceDirectory = "./sound/redirectors"
+export class AudioSplitterOutput extends SoundOutput<AudioSplitterConfig> {
+	static resourceDirectory = "./sound/splitters"
 
 	constructor(name?: string) {
 		super()
@@ -26,7 +26,7 @@ export class AudioRedirectorOutput extends SoundOutput<AudioRedirectorConfig> {
 
 		this._config = {
 			name: name ?? "",
-			type: "redirector",
+			type: "splitter",
 			redirects: [],
 		}
 	}
@@ -36,7 +36,7 @@ export class AudioRedirectorOutput extends SoundOutput<AudioRedirectorConfig> {
 	}
 
 	get filepath() {
-		return resolveProjectPath(AudioRedirectorOutput.resourceDirectory, this.filename)
+		return resolveProjectPath(AudioSplitterOutput.resourceDirectory, this.filename)
 	}
 
 	async load(savedConfig: object): Promise<boolean> {
@@ -55,21 +55,21 @@ export class AudioRedirectorOutput extends SoundOutput<AudioRedirectorConfig> {
 		await writeYAML(this.savedConfig, this.filepath)
 	}
 
-	static async onCreate(resource: AudioRedirectorOutput) {
+	static async onCreate(resource: AudioSplitterOutput) {
 		await resource.save()
 	}
 
-	static async onDelete(resource: AudioRedirectorOutput) {
+	static async onDelete(resource: AudioSplitterOutput) {
 		await fs.unlink(resource.filepath)
 	}
 
-	async applyConfig(config: AudioRedirectorConfig): Promise<boolean> {
+	async applyConfig(config: AudioSplitterConfig): Promise<boolean> {
 		await super.applyConfig(config)
 		await this.save()
 		return true
 	}
 
-	async setConfig(config: AudioRedirectorConfig): Promise<boolean> {
+	async setConfig(config: AudioSplitterConfig): Promise<boolean> {
 		await super.setConfig(config)
 		await this.save()
 		return true
@@ -82,17 +82,17 @@ export class AudioRedirectorOutput extends SoundOutput<AudioRedirectorConfig> {
 		volume: number,
 		abortSignal: AbortSignal
 	): Promise<boolean> {
-		interface RedirectedOutput {
+		interface SplitOutput {
 			output: SoundOutput
 			volume: number
 		}
 
 		//Manually unwrap any redirected sound outputs, to stop loops and resolve multiple refs.
 
-		const outputs = new Map<SoundOutput, RedirectedOutput>()
-		const processedRedirectors = new Set<AudioRedirectorOutput>()
+		const outputs = new Map<SoundOutput, SplitOutput>()
+		const processedSplitters = new Set<AudioSplitterOutput>()
 
-		const outputStack = new Array<RedirectedOutput | undefined>()
+		const outputStack = new Array<SplitOutput | undefined>()
 		outputStack.push({ output: this, volume })
 
 		while (outputStack.length > 0) {
@@ -103,16 +103,16 @@ export class AudioRedirectorOutput extends SoundOutput<AudioRedirectorConfig> {
 
 			const topOutput = top.output
 
-			if ("type" in topOutput.config && topOutput.config.type == "redirector") {
-				const topRedirector = topOutput as AudioRedirectorOutput
+			if ("type" in topOutput.config && topOutput.config.type == "splitter") {
+				const topSplitter = topOutput as AudioSplitterOutput
 
-				if (processedRedirectors.has(topRedirector)) {
+				if (processedSplitters.has(topSplitter)) {
 					continue
 				}
-				processedRedirectors.add(topRedirector)
+				processedSplitters.add(topSplitter)
 
 				outputStack.push(
-					...topRedirector.config.redirects.map((r) => {
+					...topSplitter.config.redirects.map((r) => {
 						if (!r.output) return undefined
 						if (r.mute) return undefined
 						const actualOutput = SoundOutput.storage.getById(r.output)
@@ -153,14 +153,13 @@ export class AudioRedirectorOutput extends SoundOutput<AudioRedirectorConfig> {
 	}
 }
 
-export function setupRedirects() {
-	defineIPCFunc("sound", "createRedirector", async (name: string) => {
-		const result = await createResource(AudioRedirectorOutput, name)
+export function setupSplitters() {
+	defineIPCFunc("sound", "createSplitter", async (name: string) => {
+		const result = await createResource(AudioSplitterOutput, name)
 		return result.id
 	})
 
 	onLoad(() => {
-		logger.log("------ REDIRECTOR", AudioRedirectorOutput)
-		loadFileResources(AudioRedirectorOutput)
+		loadFileResources(AudioSplitterOutput)
 	})
 }
