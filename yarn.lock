@@ -1013,6 +1013,86 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@matter/general@npm:0.13.0":
+  version: 0.13.0
+  resolution: "@matter/general@npm:0.13.0"
+  dependencies:
+    "@noble/curves": "npm:^1.8.2"
+  checksum: 10/0d70baafe3b736d50c593ab28dbaae54f0876870a9d754fcccaf17b45c73a62d42c2a7d864eed3b11e73d9755e5fefefa245211bd9213a0ae1421f4da432aa7b
+  languageName: node
+  linkType: hard
+
+"@matter/main@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "@matter/main@npm:0.13.0"
+  dependencies:
+    "@matter/general": "npm:0.13.0"
+    "@matter/model": "npm:0.13.0"
+    "@matter/node": "npm:0.13.0"
+    "@matter/nodejs": "npm:0.13.0"
+    "@matter/protocol": "npm:0.13.0"
+    "@matter/types": "npm:0.13.0"
+  dependenciesMeta:
+    "@matter/nodejs":
+      optional: true
+  checksum: 10/33f5730921fe2f59ffb569eecd83a4a91b99f10f9f1158cbce5986666d9eb19686de7d491c5b877fd9d8c704fb4300df2343d52ee70d574cbc69dca46fcbf12e
+  languageName: node
+  linkType: hard
+
+"@matter/model@npm:0.13.0":
+  version: 0.13.0
+  resolution: "@matter/model@npm:0.13.0"
+  dependencies:
+    "@matter/general": "npm:0.13.0"
+  checksum: 10/be18ee7bc5b7e0013a14d705a632bffd04de43af23eeeb5dc5f6836d91182cf70284af04dbb9072f1111a80d105e16ec654ff1d4312094106f91db045968f1a2
+  languageName: node
+  linkType: hard
+
+"@matter/node@npm:0.13.0":
+  version: 0.13.0
+  resolution: "@matter/node@npm:0.13.0"
+  dependencies:
+    "@matter/general": "npm:0.13.0"
+    "@matter/model": "npm:0.13.0"
+    "@matter/protocol": "npm:0.13.0"
+    "@matter/types": "npm:0.13.0"
+  checksum: 10/41a7dcb22db060f203fd4c7491f090a13e3f7cc9f1b6478fd539747a90cc2a271054a06e3762040a999a846a41478ef923e536acc243b049550f4465d7146a69
+  languageName: node
+  linkType: hard
+
+"@matter/nodejs@npm:0.13.0":
+  version: 0.13.0
+  resolution: "@matter/nodejs@npm:0.13.0"
+  dependencies:
+    "@matter/general": "npm:0.13.0"
+    "@matter/node": "npm:0.13.0"
+    "@matter/protocol": "npm:0.13.0"
+    "@matter/types": "npm:0.13.0"
+  checksum: 10/4fe42de5be4333a68ae48d0b7dbd6576c778f03bcb69e23ad739f4babc3cd0be330f219e506b5cb744c8e8f8a5bfce80dd798fbd60718cf26899a7dfb8b61144
+  languageName: node
+  linkType: hard
+
+"@matter/protocol@npm:0.13.0":
+  version: 0.13.0
+  resolution: "@matter/protocol@npm:0.13.0"
+  dependencies:
+    "@matter/general": "npm:0.13.0"
+    "@matter/model": "npm:0.13.0"
+    "@matter/types": "npm:0.13.0"
+  checksum: 10/563048f527772455141a2c66e7d38440976ec8c4e173ebc658aea9c7e878fba3f68c612af0527b36fd36fe4956a379c465dd188b1654017c15f2a1815edd72f7
+  languageName: node
+  linkType: hard
+
+"@matter/types@npm:0.13.0":
+  version: 0.13.0
+  resolution: "@matter/types@npm:0.13.0"
+  dependencies:
+    "@matter/general": "npm:0.13.0"
+    "@matter/model": "npm:0.13.0"
+  checksum: 10/5080ccb313486a77fba58e5314e48e324770c7f699bbf920885cb5ccf6a42874e39ba40dfa87ced56a1754b142ec9eb61073e07fcd678eb6ef54f79f1446679a
+  languageName: node
+  linkType: hard
+
 "@mdi/font@npm:^7.1.96":
   version: 7.4.47
   resolution: "@mdi/font@npm:7.4.47"
@@ -1077,6 +1157,22 @@ __metadata:
   version: 2.8.0
   resolution: "@msgpack/msgpack@npm:2.8.0"
   checksum: 10/d90ab780c2c96fa5af22f38e0b76871d7c77d06fcf40786b64ada4e0ae02e17b216b38a5505fb4b7d1c339d95caee0669f5ec9004a2b392ce0cbe16afdbd9333
+  languageName: node
+  linkType: hard
+
+"@noble/curves@npm:^1.8.2":
+  version: 1.9.0
+  resolution: "@noble/curves@npm:1.9.0"
+  dependencies:
+    "@noble/hashes": "npm:1.8.0"
+  checksum: 10/f2c5946310722fee23e04ed747f21ce72e0436e38e1fa620d226a8c613262e7d0dbab5341f14caf92936089d01d9e9231964c409cd1ac2a73a075f3cdb1acc41
+  languageName: node
+  linkType: hard
+
+"@noble/hashes@npm:1.8.0":
+  version: 1.8.0
+  resolution: "@noble/hashes@npm:1.8.0"
+  checksum: 10/474b7f56bc6fb2d5b3a42132561e221b0ea4f91e590f4655312ca13667840896b34195e2b53b7f097ec080a1fdd3b58d902c2a8d0fbdf51d2e238b53808a177e
   languageName: node
   linkType: hard
 
@@ -1405,6 +1501,19 @@ __metadata:
     "@primeuix/styled": "npm:^0.5.0"
     "@primeuix/themes": "npm:^1.0.0"
   checksum: 10/194fe89fc78f82511f6987b86cf433057c86d5e1ce82506f1e93061e3f3ef9c5e8cf2e8cb2bb6e7019f103529ee1490d366e550626362e381602bb972fb3b012
+  languageName: node
+  linkType: hard
+
+"@project-chip/matter.js@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "@project-chip/matter.js@npm:0.13.0"
+  dependencies:
+    "@matter/general": "npm:0.13.0"
+    "@matter/model": "npm:0.13.0"
+    "@matter/node": "npm:0.13.0"
+    "@matter/protocol": "npm:0.13.0"
+    "@matter/types": "npm:0.13.0"
+  checksum: 10/df76676ff6a63d4860b1902a5e1b1b94cb1de669481584f994657f3d6e7ae7d0472bcb5de285fbe8a114d1c92fc2bd2908a4c15053e745cd66c348dc56cdc029
   languageName: node
   linkType: hard
 
@@ -4052,6 +4161,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-matter-main@workspace:plugins/matter/main"
   dependencies:
+    "@matter/main": "npm:^0.13.0"
+    "@project-chip/matter.js": "npm:^0.13.0"
     castmate-core: "workspace:^"
     castmate-plugin-matter-shared: "workspace:^"
     castmate-schema: "workspace:^"

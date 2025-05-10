@@ -13,6 +13,8 @@
 		"typescript": "*"
 	},
 	"dependencies": {
+		"@matter/main": "^0.13.0",
+		"@project-chip/matter.js": "^0.13.0",
 		"castmate-core": "workspace:^",
 		"castmate-plugin-matter-shared": "workspace:^",
 		"castmate-schema": "workspace:^"

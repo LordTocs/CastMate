@@ -25,6 +25,7 @@
 		"castmate-plugin-input-main": "workspace:^",
 		"castmate-plugin-iot-main": "workspace:^",
 		"castmate-plugin-lifx-main": "workspace:^",
+		"castmate-plugin-matter-main": "workspace:^",
 		"castmate-plugin-minecraft-main": "workspace:^",
 		"castmate-plugin-obs-main": "workspace:^",
 		"castmate-plugin-os-main": "workspace:^",

@@ -20,6 +20,7 @@ import lifxPlugin from "castmate-plugin-lifx-main"
 import wyzePlugin from "castmate-plugin-wyze-main"
 import goveePlugin from "castmate-plugin-govee-main"
 import twinklyPlugin from "castmate-plugin-twinkly-main"
+import matterPlugin from "castmate-plugin-matter-main"
 
 import spellcastPlugin from "castmate-plugin-spellcast-main"
 
@@ -84,6 +85,7 @@ export async function loadPlugins() {
 		loadPlugin(wyzePlugin),
 		loadPlugin(goveePlugin),
 		loadPlugin(twinklyPlugin),
+		loadPlugin(matterPlugin),
 	]
 
 	await Promise.allSettled(iotPromises)
