@@ -41,6 +41,8 @@ export default defineConfig({
 							"node-screenshots",
 							"better-sqlite3",
 							"@azure/web-pubsub-client",
+							"jzz",
+							"jazz-midi",
 						],
 					},
 				},

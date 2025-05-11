@@ -1,0 +1,22 @@
+{
+	"name": "castmate-plugin-midi-main",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"rebuild": "electron-rebuild -f -w jazz-midi"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "*"
+	},
+	"dependencies": {
+		"castmate-core": "workspace:^",
+		"castmate-plugin-midi-shared": "workspace:^",
+		"castmate-schema": "workspace:^",
+		"jzz": "^1.9.3"
+	}
+}

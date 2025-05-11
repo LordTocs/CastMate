@@ -2194,6 +2194,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/webmidi@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@types/webmidi@npm:2.1.0"
+  checksum: 10/7d5489b6ad44b33307d68519107d8c7f62d0760e2e89a3afd0942f6bc1b9fead267b899ea6e1011bbf0633858ace75dce2e05b6302b195cd59dcc453235e2890
+  languageName: node
+  linkType: hard
+
 "@types/ws@npm:^8.5.10, @types/ws@npm:^8.5.4":
   version: 8.5.14
   resolution: "@types/ws@npm:8.5.14"
@@ -4069,6 +4076,52 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-midi-main@workspace:^, castmate-plugin-midi-main@workspace:plugins/midi/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-midi-main@workspace:plugins/midi/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-midi-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    jzz: "npm:^1.9.3"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-midi-renderer@workspace:plugins/midi/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-midi-renderer@workspace:plugins/midi/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:4.6.2"
+    "@vueuse/core": "npm:*"
+    castmate-schema: "workspace:^"
+    electron: "npm:^36.2.0"
+    nanoid: "npm:^5.0.7"
+    pinia: "npm:^2.1.7"
+    typescript: "npm:*"
+    vite: "npm:^5.2.9"
+    vue: "npm:^3.5.13"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-midi-shared@workspace:^, castmate-plugin-midi-shared@workspace:plugins/midi/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-midi-shared@workspace:plugins/midi/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-midi@workspace:plugins/midi":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-midi@workspace:plugins/midi"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-minecraft-main@workspace:^, castmate-plugin-minecraft-main@workspace:plugins/minecraft/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-minecraft-main@workspace:plugins/minecraft/main"
@@ -5138,6 +5191,7 @@ __metadata:
     castmate-plugin-iot-renderer: "workspace:^"
     castmate-plugin-lifx-main: "workspace:^"
     castmate-plugin-lifx-renderer: "workspace:^"
+    castmate-plugin-midi-main: "workspace:^"
     castmate-plugin-minecraft-main: "workspace:^"
     castmate-plugin-minecraft-renderer: "workspace:^"
     castmate-plugin-obs-main: "workspace:^"
@@ -7765,6 +7819,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jazz-midi@npm:^1.7.9":
+  version: 1.7.9
+  resolution: "jazz-midi@npm:1.7.9"
+  checksum: 10/6f74d8a5d79974112fb6b2e58aebf9480033e07b0882e24020164d307baff1f4a183f41be0c9c1e167288cc17c3cc214b8b5e277261e375bf3b2d9e76f1af8cc
+  languageName: node
+  linkType: hard
+
 "jju@npm:~1.4.0":
   version: 1.4.0
   resolution: "jju@npm:1.4.0"
@@ -7875,6 +7936,16 @@ __metadata:
     readable-stream: "npm:~2.3.6"
     setimmediate: "npm:^1.0.5"
   checksum: 10/bfbfbb9b0a27121330ac46ab9cdb3b4812433faa9ba4a54742c87ca441e31a6194ff70ae12acefa5fe25406c432290e68003900541d948a169b23d30c34dd984
+  languageName: node
+  linkType: hard
+
+"jzz@npm:^1.9.3":
+  version: 1.9.3
+  resolution: "jzz@npm:1.9.3"
+  dependencies:
+    "@types/webmidi": "npm:^2.1.0"
+    jazz-midi: "npm:^1.7.9"
+  checksum: 10/2c3d91596c63d7587d02a1a2c31d558f8be5e5813b4688e90b51a27aef0645d4c7d4d4ef7b2b705e067ee9aa51bb870e9dc38311c047289c9865781172438b0a
   languageName: node
   linkType: hard
 

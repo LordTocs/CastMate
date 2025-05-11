@@ -34,6 +34,8 @@ import remotePlugin from "castmate-plugin-remote-main"
 
 import blueskyPlugin from "castmate-plugin-bluesky-main"
 
+import midiPlugin from "castmate-plugin-midi-main"
+
 import castmatePlugin from "./builtin-plugin"
 import { WebService, Plugin } from "castmate-core"
 import { migratePlugin } from "./migration/old-migration"
@@ -74,6 +76,8 @@ export async function loadPlugins() {
 	await loadPlugin(spellcastPlugin)
 
 	await loadPlugin(streamPlanPlugin)
+
+	await loadPlugin(midiPlugin)
 
 	//iot
 	const iotPromises = [
