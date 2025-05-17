@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "*",
+		"castmate-plugin-midi-shared": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"electron": "^36.2.0",
 		"nanoid": "^5.0.7",

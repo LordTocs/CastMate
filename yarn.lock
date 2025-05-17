@@ -4088,12 +4088,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-midi-renderer@workspace:plugins/midi/renderer":
+"castmate-plugin-midi-renderer@workspace:^, castmate-plugin-midi-renderer@workspace:plugins/midi/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-midi-renderer@workspace:plugins/midi/renderer"
   dependencies:
     "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
+    castmate-plugin-midi-shared: "workspace:^"
     castmate-schema: "workspace:^"
     electron: "npm:^36.2.0"
     nanoid: "npm:^5.0.7"
@@ -5192,6 +5193,7 @@ __metadata:
     castmate-plugin-lifx-main: "workspace:^"
     castmate-plugin-lifx-renderer: "workspace:^"
     castmate-plugin-midi-main: "workspace:^"
+    castmate-plugin-midi-renderer: "workspace:^"
     castmate-plugin-minecraft-main: "workspace:^"
     castmate-plugin-minecraft-renderer: "workspace:^"
     castmate-plugin-obs-main: "workspace:^"

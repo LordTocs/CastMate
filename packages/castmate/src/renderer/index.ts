@@ -67,6 +67,8 @@ import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
 
 import { initPlugin as initBlueSkyPlugin } from "castmate-plugin-bluesky-renderer"
 
+import { initPlugin as initMidiPlugin } from "castmate-plugin-midi-renderer"
+
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
 import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
 
@@ -205,6 +207,7 @@ async function init() {
 	//TODO: This init function is bonkers, we should formalize initing these plugins after their main process side gets inited.
 
 	await initSoundPlugin(app)
+	await initMidiPlugin(app)
 	await initTimePlugin()
 	await initObsPlugin()
 	await initDiscordPlugin()
