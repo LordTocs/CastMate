@@ -1,3 +1,5 @@
+export * from "./midi-type"
+
 export interface MidiPortConfig {
 	name: string
 	midiDeviceName: string

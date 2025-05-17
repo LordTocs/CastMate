@@ -6,9 +6,10 @@ import {
 	usePluginLogger,
 	definePluginResource,
 	defineIPCFunc,
+	defineAction,
 } from "castmate-core"
-import { JZZPortInfo, MidiPortConfig, MidiPortState } from "castmate-plugin-midi-shared"
-import jzz from "jzz"
+import { JZZPortInfo, MidiMessage, MidiPortConfig, MidiPortState } from "castmate-plugin-midi-shared"
+import jzz, { MIDI } from "jzz"
 import { nanoid } from "nanoid/non-secure"
 
 const logger = usePluginLogger("midi")
@@ -158,6 +159,30 @@ export class MidiOutputResource extends FileResource<MidiPortConfig, MidiPortSta
 		this.state = { connected: false }
 	}
 
+	async setConfig(config: MidiPortConfig): Promise<boolean> {
+		const beforeDevice = this.config.midiDeviceName
+		const beforeConnect = this.config.shouldConnect
+		const result = await super.setConfig(config)
+		if (!result) return false
+
+		if (beforeDevice != this.config.midiDeviceName || beforeConnect != this.config.shouldConnect) {
+			await this.openPort()
+		}
+		return true
+	}
+
+	async applyConfig(config: MidiPortConfig): Promise<boolean> {
+		const beforeDevice = this.config.midiDeviceName
+		const beforeConnect = this.config.shouldConnect
+		const result = await super.applyConfig(config)
+		if (!result) return false
+
+		if (beforeDevice != this.config.midiDeviceName || beforeConnect != this.config.shouldConnect) {
+			await this.openPort()
+		}
+		return true
+	}
+
 	async closePort() {
 		try {
 			await this.port?.close()
@@ -186,6 +211,19 @@ export class MidiOutputResource extends FileResource<MidiPortConfig, MidiPortSta
 			this.state.connected = false
 		}
 		return false
+	}
+
+	async sendMidiMessage(midiMessage: MidiMessage) {
+		if (!this.port) return
+
+		const formatted = new MIDI(
+			(midiMessage.status << 4) | midiMessage.subStatus,
+			midiMessage.data1,
+			midiMessage.data2
+		)
+
+		logger.log("Sending MIDI", midiMessage, formatted.toString())
+		await this.port.send(formatted)
 	}
 
 	async handlePortAdded(info: JZZPortInfo) {
@@ -226,7 +264,7 @@ export function setupMidiResources() {
 	onLoad(async () => {
 		await jzz.requestMIDIAccess()
 
-		midiEngine = await jzz()
+		midiEngine = await jzz({ sysex: true })
 
 		const engineInfo = midiEngine.info() as JZZEngineInfo
 
@@ -279,5 +317,21 @@ export function setupMidiResources() {
 				}
 			}
 		})
+	})
+
+	defineAction({
+		id: "midiOutput",
+		name: "Send Midi Message",
+		icon: "mdi mdi-midi",
+		config: {
+			type: Object,
+			properties: {
+				output: { type: MidiOutputResource, name: "Midi Output", required: true },
+				midiMessage: { type: MidiMessage, name: "Midi Message", required: true },
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			config.output?.sendMidiMessage(config.midiMessage)
+		},
 	})
 }
