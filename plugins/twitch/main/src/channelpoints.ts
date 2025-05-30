@@ -524,7 +524,7 @@ export function setupChannelPointRewards() {
 				return false
 			}
 
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
 				return false
 			}
 

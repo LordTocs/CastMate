@@ -46,7 +46,7 @@ function getExpressionSchema(expression: ExpressionValue): Schema | undefined {
 
 async function getExpressionValueAndSchema(
 	expression: ExpressionValue,
-	otherSchema?: Schema
+	context?: object
 ): Promise<{ value: any; schema: Schema } | undefined> {
 	if (expression.type == "state") {
 		if (!expression.plugin) return undefined
@@ -70,7 +70,7 @@ async function getExpressionValueAndSchema(
 
 		//logger.log("Value Value", expression.schemaType, expression.value)
 
-		let value = await templateSchema(expression.value, schema, PluginManager.getInstance().state)
+		let value = await templateSchema(expression.value, schema, context ?? PluginManager.getInstance().state)
 
 		//logger.log("Templated", value)
 
@@ -97,17 +97,18 @@ function baseCompare(left: any, right: any, operator: ValueCompareOperator) {
 	return false
 }
 
-async function evaluateValueExpression(expression: BooleanValueExpression) {
-	const left = await getExpressionValueAndSchema(expression.lhs)
-	return await evaluateHalfBooleanExpression(left, expression.rhs, expression.operator)
+async function evaluateValueExpression(expression: BooleanValueExpression, context?: object) {
+	const left = await getExpressionValueAndSchema(expression.lhs, context)
+	return await evaluateHalfBooleanExpression(left, expression.rhs, expression.operator, context)
 }
 
 export async function evaluateHalfBooleanExpression(
 	left: { value: any; schema: Schema } | undefined,
 	rhs: ExpressionValue,
-	operator: ValueCompareOperator
+	operator: ValueCompareOperator,
+	context?: object
 ) {
-	const right = await getExpressionValueAndSchema(rhs)
+	const right = await getExpressionValueAndSchema(rhs, context)
 
 	let compareFunc = baseCompare
 

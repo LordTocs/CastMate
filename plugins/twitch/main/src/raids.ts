@@ -31,7 +31,7 @@ export function setupRaids() {
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.raider, config.group))) {
+			if (!(await inTwitchViewerGroup(context.raider, config.group, context))) {
 				return false
 			}
 
@@ -64,7 +64,7 @@ export function setupRaids() {
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.raidedStreamer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.raidedStreamer, config.group, context))) {
 				return false
 			}
 

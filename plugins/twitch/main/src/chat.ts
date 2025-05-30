@@ -125,7 +125,7 @@ export function setupChat() {
 
 			if (matchResult == null) return undefined
 
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
 				return undefined
 			}
 
@@ -206,7 +206,7 @@ export function setupChat() {
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
 				return false
 			}
 
@@ -264,7 +264,7 @@ export function setupChat() {
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
 				return false
 			}
 			return Range.inRange(config.bits, context.bits)

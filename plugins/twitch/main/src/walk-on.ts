@@ -32,7 +32,7 @@ export function setupWalkOns() {
 				return false
 			}
 
-			return await inTwitchViewerGroup(context.viewer, config.group)
+			return await inTwitchViewerGroup(context.viewer, config.group, context)
 		},
 	})
 

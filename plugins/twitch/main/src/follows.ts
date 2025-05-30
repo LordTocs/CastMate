@@ -26,7 +26,7 @@ export function setupFollows() {
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
 				return false
 			}
 			return true

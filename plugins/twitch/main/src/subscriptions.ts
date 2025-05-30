@@ -43,7 +43,7 @@ export function setupSubscriptions() {
 			if (context.tier == 2 && !config.tier2) return false
 			if (context.tier == 3 && !config.tier3) return false
 
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
 				return false
 			}
 
@@ -79,7 +79,7 @@ export function setupSubscriptions() {
 			},
 		},
 		async handle(config, context) {
-			if (!(await inTwitchViewerGroup(context.gifter, config.group))) {
+			if (!(await inTwitchViewerGroup(context.gifter, config.group, context))) {
 				return false
 			}
 
