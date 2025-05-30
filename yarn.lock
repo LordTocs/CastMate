@@ -246,14 +246,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-fischer/rate-limiter@npm:^1.0.0":
-  version: 1.0.1
-  resolution: "@d-fischer/rate-limiter@npm:1.0.1"
+"@d-fischer/rate-limiter@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@d-fischer/rate-limiter@npm:1.1.0"
   dependencies:
     "@d-fischer/logger": "npm:^4.2.3"
     "@d-fischer/shared-utils": "npm:^3.6.3"
     tslib: "npm:^2.6.2"
-  checksum: 10/661dc6b7623d690cf8a0950efc0eed57e7fae643fb954d3daed94c5731c69282a0d4aa1fb4930d72db569ed40fab3c8aeb815684f32d52552f0fdd040b336557
+  checksum: 10/a06e95323e4f6b81b7d03d65102e98bfd78febe4e83b5a49e6ea4bea2b00c5bf53e697da23ce5910078964bdcd57e1c55c9eb3210156b0964ba21fd7a1d81c98
   languageName: node
   linkType: hard
 
@@ -1752,114 +1752,114 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@twurple/api-call@npm:7.2.1, @twurple/api-call@npm:^7.1.0":
-  version: 7.2.1
-  resolution: "@twurple/api-call@npm:7.2.1"
+"@twurple/api-call@npm:7.3.0, @twurple/api-call@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "@twurple/api-call@npm:7.3.0"
   dependencies:
     "@d-fischer/cross-fetch": "npm:^5.0.1"
     "@d-fischer/qs": "npm:^7.0.2"
     "@d-fischer/shared-utils": "npm:^3.6.1"
-    "@twurple/common": "npm:7.2.1"
+    "@twurple/common": "npm:7.3.0"
     tslib: "npm:^2.0.3"
-  checksum: 10/8925480eab6e9a4572b710deb74559d8e8be391273718e66dde055dc2438e1f3f9b5dc51af2df8b48649205b95b2d45cedbfef05f02f4f889cee51bf5cc6d8fe
+  checksum: 10/3ed9e52c94894b27ca85304becd271b8d6a331fff2e15cdef895e5536df7f88e0c6f2a4701cc307902863df9ce836af9275f3ae47f19de541ed896df9a531954
   languageName: node
   linkType: hard
 
-"@twurple/api@npm:7.2.1, @twurple/api@npm:^7.1.0":
-  version: 7.2.1
-  resolution: "@twurple/api@npm:7.2.1"
+"@twurple/api@npm:7.3.0, @twurple/api@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "@twurple/api@npm:7.3.0"
   dependencies:
     "@d-fischer/cache-decorators": "npm:^4.0.0"
     "@d-fischer/cross-fetch": "npm:^5.0.1"
     "@d-fischer/detect-node": "npm:^3.0.1"
     "@d-fischer/logger": "npm:^4.2.1"
-    "@d-fischer/rate-limiter": "npm:^1.0.0"
+    "@d-fischer/rate-limiter": "npm:^1.1.0"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.1"
-    "@twurple/api-call": "npm:7.2.1"
-    "@twurple/common": "npm:7.2.1"
+    "@twurple/api-call": "npm:7.3.0"
+    "@twurple/common": "npm:7.3.0"
     retry: "npm:^0.13.1"
     tslib: "npm:^2.0.3"
   peerDependencies:
-    "@twurple/auth": 7.2.1
-  checksum: 10/d8277e87871d79bce829836852074e0ba640b1822bb218c44b725393fe3634a4ce0ec013bc74efb286659a3c2b0f0a4bffb976a7f866fa4127b902826107276f
+    "@twurple/auth": 7.3.0
+  checksum: 10/60de7480e1f664993e43ff04b698586565b2ac862b52ea16d6ce2e0120ee11c2d0dc67c45916f909f0dbd7e8819e46e093f8d2d54f2e681fa2b8d9731e36961f
   languageName: node
   linkType: hard
 
-"@twurple/auth@npm:7.2.1, @twurple/auth@npm:^7.1.0":
-  version: 7.2.1
-  resolution: "@twurple/auth@npm:7.2.1"
+"@twurple/auth@npm:7.3.0, @twurple/auth@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "@twurple/auth@npm:7.3.0"
   dependencies:
     "@d-fischer/logger": "npm:^4.2.1"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.1"
-    "@twurple/api-call": "npm:7.2.1"
-    "@twurple/common": "npm:7.2.1"
+    "@twurple/api-call": "npm:7.3.0"
+    "@twurple/common": "npm:7.3.0"
     tslib: "npm:^2.0.3"
-  checksum: 10/f72675bd82df7eb257f4b28827c8b2b46f3739aa72d858dbb364d5a187eb9362c79fbf36667a69b00113c20d1957e11026b841e3bb867a63008f7d4dc62d7b0d
+  checksum: 10/5c80d5a81de0429d64db81908ba7de41a97408cae30ede25315d1361d8fb59b335f1f43000d8e8cff7a6e30b5cc80f9f06e5ce608e1f85e5792a335296d7d0d2
   languageName: node
   linkType: hard
 
-"@twurple/chat@npm:^7.1.0":
-  version: 7.2.1
-  resolution: "@twurple/chat@npm:7.2.1"
+"@twurple/chat@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "@twurple/chat@npm:7.3.0"
   dependencies:
     "@d-fischer/cache-decorators": "npm:^4.0.0"
     "@d-fischer/deprecate": "npm:^2.0.2"
     "@d-fischer/logger": "npm:^4.2.1"
-    "@d-fischer/rate-limiter": "npm:^1.0.0"
+    "@d-fischer/rate-limiter": "npm:^1.1.0"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.0"
-    "@twurple/common": "npm:7.2.1"
+    "@twurple/common": "npm:7.3.0"
     ircv3: "npm:^0.33.0"
     tslib: "npm:^2.0.3"
   peerDependencies:
-    "@twurple/auth": 7.2.1
-  checksum: 10/b4d7c864f764710eee0598f03bec77c3eb330a6ec74f3a509f83be354e76dbdf3cd5cee62cbe84a28098c48612099c1c7194f3922442d019995d4d9357cba307
+    "@twurple/auth": 7.3.0
+  checksum: 10/c1b6bae495e4dab3ee1d3ec44e52940b7dc6b2e3a4c7c05921b1462edb28e8776ea2e521d6cef9cfe206da6a0cc1a1f741c50f76f04816de43df55b1889117b3
   languageName: node
   linkType: hard
 
-"@twurple/common@npm:7.2.1":
-  version: 7.2.1
-  resolution: "@twurple/common@npm:7.2.1"
+"@twurple/common@npm:7.3.0":
+  version: 7.3.0
+  resolution: "@twurple/common@npm:7.3.0"
   dependencies:
     "@d-fischer/shared-utils": "npm:^3.6.1"
     klona: "npm:^2.0.4"
     tslib: "npm:^2.0.3"
-  checksum: 10/7776b326476dbd55d5d1df9c2664ed9c63e691086816219127d503970d109d28959b689ce3bd600c468f11535ae7c748f1960d7cd46436d058205beeabeb2312
+  checksum: 10/3107f33ed4e1b679e3f5873f5b93d6c94488c75551c7c5848dfa3e5e8c02b4123a784de5cadb0308dd9caa56b6e2af39a2704e7b781517133f0a31db7b9fd46b
   languageName: node
   linkType: hard
 
-"@twurple/eventsub-base@npm:7.2.1, @twurple/eventsub-base@npm:^7.1.0":
-  version: 7.2.1
-  resolution: "@twurple/eventsub-base@npm:7.2.1"
+"@twurple/eventsub-base@npm:7.3.0, @twurple/eventsub-base@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "@twurple/eventsub-base@npm:7.3.0"
   dependencies:
     "@d-fischer/logger": "npm:^4.2.1"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.0"
-    "@twurple/api": "npm:7.2.1"
-    "@twurple/auth": "npm:7.2.1"
-    "@twurple/common": "npm:7.2.1"
+    "@twurple/api": "npm:7.3.0"
+    "@twurple/auth": "npm:7.3.0"
+    "@twurple/common": "npm:7.3.0"
     tslib: "npm:^2.0.3"
-  checksum: 10/688ae2ff6e35753e3ad177bb431fa75df48065a86b4d4f63f8c7634085d24da8eedd8a72d0f809df07df0dd096695a2b91654ef2a42ff92dfb2d2802c8401ba8
+  checksum: 10/33647b2c6f027e01db49608a4e26834ac3d7b366fefee6c6a9a95a18fb29690157788acbb9a6f8b25e665aca4acae8ee50e6dd5e01ed865e18d2ab4666142ca4
   languageName: node
   linkType: hard
 
-"@twurple/eventsub-ws@npm:^7.1.0":
-  version: 7.2.1
-  resolution: "@twurple/eventsub-ws@npm:7.2.1"
+"@twurple/eventsub-ws@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "@twurple/eventsub-ws@npm:7.3.0"
   dependencies:
     "@d-fischer/connection": "npm:^9.0.0"
     "@d-fischer/logger": "npm:^4.2.1"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.0"
-    "@twurple/auth": "npm:7.2.1"
-    "@twurple/common": "npm:7.2.1"
-    "@twurple/eventsub-base": "npm:7.2.1"
+    "@twurple/auth": "npm:7.3.0"
+    "@twurple/common": "npm:7.3.0"
+    "@twurple/eventsub-base": "npm:7.3.0"
     tslib: "npm:^2.0.3"
   peerDependencies:
-    "@twurple/api": 7.2.1
-  checksum: 10/09b9cf551a9a7189ddb4f312e5ed0a5661595afdced3e5c2964988f51515837726fc0aed06343ce800834c59954dbdd61a94850c95033ad657d975cc2877bf3d
+    "@twurple/api": 7.3.0
+  checksum: 10/ed32e74fd9389bb00f6d26de0bc6c00488bf600412807e161bdbe2afa1ae12d6e02532e7adb9992fffa1157c41680b711b8f28caf8e8398de2b434765ceb8393
   languageName: node
   linkType: hard
 
@@ -4791,12 +4791,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twitch-main@workspace:plugins/twitch/main"
   dependencies:
-    "@twurple/api": "npm:^7.1.0"
-    "@twurple/api-call": "npm:^7.1.0"
-    "@twurple/auth": "npm:^7.1.0"
-    "@twurple/chat": "npm:^7.1.0"
-    "@twurple/eventsub-base": "npm:^7.1.0"
-    "@twurple/eventsub-ws": "npm:^7.1.0"
+    "@twurple/api": "npm:^7.3.0"
+    "@twurple/api-call": "npm:^7.3.0"
+    "@twurple/auth": "npm:^7.3.0"
+    "@twurple/chat": "npm:^7.3.0"
+    "@twurple/eventsub-base": "npm:^7.3.0"
+    "@twurple/eventsub-ws": "npm:^7.3.0"
     castmate-core: "workspace:^"
     castmate-plugin-overlays-main: "workspace:^"
     castmate-plugin-twitch-shared: "workspace:^"
