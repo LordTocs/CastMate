@@ -7,8 +7,8 @@
 			<i v-if="showDrag" class="mdi mdi-drag boolean-drag-handle" style="font-size: 2rem" />
 			<boolean-group-operator-selector v-model="operator" local-path="operator" />
 			<div style="flex: 1"></div>
-			<p-button @click="addValue"> Add Value </p-button>
-			<p-button @click="addGroup"> Add Group </p-button>
+			<p-button @click="addValue" size="small"> Add Value </p-button>
+			<p-button @click="addGroup" size="small"> Add Group </p-button>
 			<p-button v-if="showDrag" text icon="mdi mdi-delete" @click="emit('delete', $event)"></p-button>
 		</div>
 		<div class="boolean-group-card-body" ref="groupBody">

@@ -13,6 +13,7 @@ import {
 	Range,
 	isBooleanRangeExpr,
 	getTypeByName,
+	hashString,
 } from "castmate-schema"
 import { PluginManager } from "../plugins/plugin-manager"
 import { unexposeSchema } from "./ipc-schema"
@@ -198,4 +199,8 @@ async function evaluateGroupExpression(expression: BooleanExpressionGroup) {
 
 export async function evalueBooleanExpression(expression: BooleanExpression) {
 	return await evaluateGroupExpression(expression)
+}
+
+export function getExpressionHash(expression: BooleanExpression) {
+	return hashString(JSON.stringify(expression))
 }

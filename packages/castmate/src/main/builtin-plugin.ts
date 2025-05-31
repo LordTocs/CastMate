@@ -1,4 +1,4 @@
-import { constructDefault, Toggle } from "castmate-schema"
+import { BooleanExpression, constructDefault, Toggle } from "castmate-schema"
 import {
 	ActionQueue,
 	Automation,
@@ -15,7 +15,15 @@ import {
 	onLoad,
 	onProfilesChanged,
 	runOnChange,
+	evalueBooleanExpression,
 } from "castmate-core"
+import { getExpressionHash } from "castmate-core/src/util/boolean-helpers"
+
+interface ConditionalTrigger {
+	conditionHash: number
+	lastEval: boolean
+	effect: ReactiveEffect
+}
 
 export default definePlugin(
 	{
@@ -213,6 +221,79 @@ export default definePlugin(
 					if (existing) {
 						existing.effect.dispose()
 						autoRunners.delete(key)
+					}
+				}
+			}
+		})
+
+		const conditonalRunners = new Map<string, ConditionalTrigger>()
+
+		const conditional = defineTrigger({
+			id: "condition",
+			name: "Condition",
+			icon: "mdi mdi-cogs",
+			config: {
+				type: Object,
+				properties: {
+					condition: { type: BooleanExpression, name: "Condition", template: true },
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					triggerId: { type: String, required: true, view: false },
+					profileId: { type: String, required: true, view: false },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (mapping.profileId != context.profileId) return false
+				if (mapping.triggerId != context.triggerId) return false
+				return true
+			},
+		})
+
+		onProfilesChanged((active, inactive) => {
+			for (const profile of active) {
+				for (const trigger of profile.iterTriggers(conditional)) {
+					const key = `${profile.id}.${trigger.id}`
+
+					const existing = conditonalRunners.get(key)
+					const hash = getExpressionHash(trigger.config.condition)
+					if (!existing) {
+						const conditionalTrigger: ConditionalTrigger = {
+							conditionHash: hash,
+							lastEval: false,
+							effect: new ReactiveEffect(async () => {
+								const result = await evalueBooleanExpression(trigger.config.condition)
+								if (result && !conditionalTrigger.lastEval) {
+									//Rising edge, run trigger
+									conditional({
+										triggerId: trigger.id,
+										profileId: profile.id,
+									})
+								}
+								conditionalTrigger.lastEval = result
+							}),
+						}
+
+						conditonalRunners.set(key, conditionalTrigger)
+						conditionalTrigger.effect.run()
+					} else {
+						if (hash != existing.conditionHash) {
+							existing.conditionHash = hash
+							existing.effect.trigger()
+						}
+					}
+				}
+			}
+
+			for (const profile of inactive) {
+				for (const trigger of profile.iterTriggers(conditional)) {
+					const key = `${profile.id}.${trigger.id}`
+					const existing = conditonalRunners.get(key)
+					if (existing) {
+						existing.effect.dispose()
+						conditonalRunners.delete(key)
 					}
 				}
 			}

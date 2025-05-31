@@ -230,6 +230,10 @@ watch(valueSchemaTypes, (value, oldValues) => {
 	padding: 0.75rem;
 }
 
+.boolean-expression {
+	min-width: 10rem;
+}
+
 .small-tab {
 	padding: 0.5rem;
 }
