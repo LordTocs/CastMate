@@ -10,7 +10,7 @@ import {
 import { Resource, ResourceStorage } from "../resources/resource"
 import { FileResource } from "../resources/file-resource"
 import { nanoid } from "nanoid/non-secure"
-import { evalueBooleanExpression } from "../util/boolean-helpers"
+import { evaluateBooleanExpression } from "../util/boolean-helpers"
 import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 import { ProfileManager } from "./profile-system"
 import { TriggerFunc } from "../queue-system/trigger"
@@ -95,7 +95,7 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> {
 
 		this.stateEffect = await autoRerun(async () => {
 			if (this.config.activationMode == "toggle") {
-				const activationResult = await evalueBooleanExpression(this.config.activationCondition)
+				const activationResult = await evaluateBooleanExpression(this.config.activationCondition)
 				this.state.active = activationResult
 			} else {
 				this.state.active = this.config.activationMode

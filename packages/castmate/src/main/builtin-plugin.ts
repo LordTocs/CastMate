@@ -15,7 +15,9 @@ import {
 	onLoad,
 	onProfilesChanged,
 	runOnChange,
-	evalueBooleanExpression,
+	evaluateBooleanExpression,
+	defineFlowAction,
+	globalLogger,
 } from "castmate-core"
 import { getExpressionHash } from "castmate-core/src/util/boolean-helpers"
 
@@ -235,7 +237,7 @@ export default definePlugin(
 			config: {
 				type: Object,
 				properties: {
-					condition: { type: BooleanExpression, name: "Condition", template: true },
+					condition: { type: BooleanExpression, name: "Condition" },
 				},
 			},
 			context: {
@@ -264,7 +266,7 @@ export default definePlugin(
 							conditionHash: hash,
 							lastEval: false,
 							effect: new ReactiveEffect(async () => {
-								const result = await evalueBooleanExpression(trigger.config.condition)
+								const result = await evaluateBooleanExpression(trigger.config.condition)
 								if (result && !conditionalTrigger.lastEval) {
 									//Rising edge, run trigger
 									conditional({
@@ -297,6 +299,29 @@ export default definePlugin(
 					}
 				}
 			}
+		})
+
+		defineFlowAction({
+			id: "branch",
+			name: "Branch",
+			icon: "mdi mdi-source-branch",
+			config: { type: Object, properties: {} },
+			flowConfig: {
+				type: Object,
+				properties: {
+					condition: { type: BooleanExpression, name: "Condition", required: true },
+				},
+			},
+			async invoke(config, flows, contextData, abortSignal) {
+				//globalLogger.log("Invoking Branch", contextData.contextState, flows)
+				for (const [key, flow] of Object.entries(flows)) {
+					//globalLogger.log("Eval Condition", flow.condition)
+					if (await evaluateBooleanExpression(flow.condition, contextData.contextState)) {
+						//globalLogger.log("Condition True", key)
+						return key
+					}
+				}
+			},
 		})
 	}
 )

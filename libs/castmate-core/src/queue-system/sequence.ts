@@ -123,9 +123,10 @@ export class SequenceRunner {
 			)
 
 			const subFlow = action.subFlows.find((f) => f.id == subFlowId)
-			if (!subFlow) throw new Error(`Chose Undefined Subflow ${subFlowId}`)
 
-			await this.runSequence(subFlow)
+			if (subFlow) {
+				await this.runSequence(subFlow)
+			}
 		} catch (err) {
 			this.dbg?.logError(action.id, err)
 		} finally {
