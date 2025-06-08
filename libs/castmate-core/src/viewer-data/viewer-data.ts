@@ -130,13 +130,22 @@ function createInsertWithColumnValue(db: sqlite.Database) {
 type InsertColumnValue = ReturnType<typeof createInsertWithColumnValue>
 
 function createGetAllValuesStatement(db: sqlite.Database) {
-	return db.prepare<
-		{
-			provider: string
-			ids: string | string[]
-		},
-		Record<string, any>
-	>("SELECT * FROM ViewerData WHERE :provider = :ids")
+	return function (args: { provider: string; ids: string | string[] }) {
+		if (Array.isArray(args.ids)) {
+			const query = `SELECT * FROM ViewerData WHERE ${args.provider} IN (${args.ids
+				.map((id) => `'${escapeSql(id)}'`)
+				.join(",")})`
+
+			const statement = db.prepare<unknown[], Record<string, any>>(query)
+
+			return statement.get()
+		} else {
+			const query = `SELECT * FROM ViewerData WHERE ${args.provider}='${escapeSql(args.ids)}'`
+			const statement = db.prepare<unknown[], Record<string, any>>(query)
+
+			return statement.get()
+		}
+	}
 }
 
 type GetAllValuesStatement = ReturnType<typeof createGetAllValuesStatement>
@@ -555,7 +564,7 @@ export const ViewerData = Service(
 
 		async getViewerData(provider: string, id: string) {
 			try {
-				const data = await this.getAllValuesStatement.get({ provider, ids: id })
+				const data = await this.getAllValuesStatement({ provider, ids: id })
 
 				if (!data) return undefined
 
@@ -574,52 +583,55 @@ export const ViewerData = Service(
 		}
 
 		async getMultipleViewerData(provider: string, ids: string[]) {
-			try {
-				const data = await this.getAllValuesStatement.all({ provider, ids })
+			return await Promise.all(ids.map((id) => this.getViewerData(provider, id)))
+			//Turns out SQLITE doesn't handle array substitutions??
+			// try {
+			// 	const data = await this.getAllValuesStatement.all({ provider, ids })
 
-				const result: (Record<string, any> | undefined)[] = []
+			// 	const result: (Record<string, any> | undefined)[] = []
 
-				await Promise.allSettled(
-					data.map(async (row) => {
-						const idx = ids.findIndex((id) => id == row[provider])
-						if (idx < 0) return
+			// 	await Promise.allSettled(
+			// 		data.map(async (row) => {
+			// 			const idx = ids.findIndex((id) => id == row[provider])
+			// 			if (idx < 0) return
 
-						const viewerData: Record<string, any> = {}
-						for (const vari of this.variables) {
-							const schemaType = getTypeByConstructor(vari.schema.type)
-							if (!schemaType) continue
+			// 			const viewerData: Record<string, any> = {}
+			// 			for (const vari of this.variables) {
+			// 				const schemaType = getTypeByConstructor(vari.schema.type)
+			// 				if (!schemaType) continue
 
-							const sqlized = row[vari.name]
-							let desqlized: any
+			// 				const sqlized = row[vari.name]
+			// 				let desqlized: any
 
-							if (typeof sqlized == "number") {
-								if (vari.schema.type == Boolean) {
-									desqlized = sqlized != 0
-								} else {
-									desqlized = sqlized
-								}
-							} else if (typeof sqlized == "string") {
-								const sqlType = sqlTypes[schemaType.name]
-								if (sqlType == "TEXT") {
-									desqlized = sqlized
-								} else {
-									desqlized = JSON.parse(sqlized)
-								}
-							}
+			// 				if (typeof sqlized == "number") {
+			// 					if (vari.schema.type == Boolean) {
+			// 						desqlized = sqlized != 0
+			// 					} else {
+			// 						desqlized = sqlized
+			// 					}
+			// 				} else if (typeof sqlized == "string") {
+			// 					const sqlType = sqlTypes[schemaType.name]
+			// 					if (sqlType == "TEXT") {
+			// 						desqlized = sqlized
+			// 					} else {
+			// 						desqlized = JSON.parse(sqlized)
+			// 					}
+			// 				}
 
-							const deserialized = await deserializeSchema(vari.schema, desqlized)
-							const exposed = await exposeSchema(vari.schema, deserialized)
-							viewerData[vari.name] = exposed
-						}
+			// 				const deserialized = await deserializeSchema(vari.schema, desqlized)
+			// 				const exposed = await exposeSchema(vari.schema, deserialized)
+			// 				viewerData[vari.name] = exposed
+			// 			}
 
-						result[idx] = viewerData
-					})
-				)
+			// 			result[idx] = viewerData
+			// 		})
+			// 	)
 
-				return result
-			} catch {
-				return []
-			}
+			// 	return result
+			// } catch (err) {
+			// 	logger.error(err, ids)
+			// 	return []
+			// }
 		}
 
 		async getNumRows() {

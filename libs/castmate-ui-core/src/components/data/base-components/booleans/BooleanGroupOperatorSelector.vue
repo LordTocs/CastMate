@@ -1,12 +1,5 @@
 <template>
 	<c-dropdown v-model="model" :options="options" option-value="code" option-label="name" :local-path="localPath">
-		<!-- <template #option="{ option, index }: { option: MenuItem, index: number }">
-			<i :class="option.icon" />
-		</template>
-
-		<template #value="{ value }">
-			<i :class="getIcon(value)" />
-		</template> -->
 	</c-dropdown>
 </template>
 

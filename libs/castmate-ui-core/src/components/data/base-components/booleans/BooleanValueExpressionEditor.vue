@@ -3,7 +3,7 @@
 		<div class="state-expression-left boolean-drag-handle">
 			<i class="mdi mdi-drag" style="font-size: 2rem"></i>
 		</div>
-		<div class="state-expression-right">
+		<div class="state-expression-middle">
 			<expression-value-edit
 				v-model="model.lhs"
 				local-path="lhs"
@@ -20,6 +20,8 @@
 				:left-schema="leftSchema"
 				class="w-0 flex-grow-1 flex-shrink-0 align-self-stretch"
 			/>
+		</div>
+		<div class="state-expression-right">
 			<p-button icon="mdi mdi-delete" text @click="emit('delete', $event)"></p-button>
 		</div>
 	</div>
@@ -121,7 +123,7 @@ const inequalities = computed(() => {
 	flex-direction: row;
 	align-items: center;
 	align-self: stretch;
-	padding: 0.25rem;
+	padding: 0rem;
 
 	border-top-left-radius: var(--border-radius);
 	border-bottom-left-radius: var(--border-radius);
@@ -129,18 +131,25 @@ const inequalities = computed(() => {
 	background-color: var(--surface-300);
 }
 
-.boolean-true > .state-expression-right {
+.boolean-true > .state-expression-middle {
 	background-color: var(--true-color);
 }
 
-.state-expression-right {
+.state-expression-middle {
 	flex: 1;
 	display: flex;
 	flex-direction: row;
+	flex-wrap: wrap;
 	align-items: center;
+	justify-content: center;
 	gap: 0.5rem;
-	padding: 0.5rem;
 	background-color: var(--surface-0);
+}
+
+.state-expression-right {
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .boolean-drag-handle {

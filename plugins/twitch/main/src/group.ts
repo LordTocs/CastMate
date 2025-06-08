@@ -1,5 +1,6 @@
 import {
 	FileResource,
+	PluginManager,
 	Resource,
 	ResourceRegistry,
 	ResourceStorage,
@@ -150,19 +151,19 @@ export function setupViewerGroups() {
 	})
 }
 
-async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promise<boolean> {
+async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule, context?: object): Promise<boolean> {
 	if ("exclude" in rule) {
-		return !(await satisfiesRule(userId, rule.exclude))
+		return !(await satisfiesRule(userId, rule.exclude, context))
 	} else if ("and" in rule) {
 		for (const subrule of rule.and) {
-			if (!(await satisfiesRule(userId, subrule))) {
+			if (!(await satisfiesRule(userId, subrule, context))) {
 				return false
 			}
 		}
 		return true
 	} else if ("or" in rule) {
 		for (const subrule of rule.or) {
-			if (await satisfiesRule(userId, subrule)) {
+			if (await satisfiesRule(userId, subrule, context)) {
 				return true
 			}
 		}
@@ -204,13 +205,15 @@ async function satisfiesRule(userId: string, rule: TwitchViewerGroupRule): Promi
 	} else if (isInlineViewerGroup(rule)) {
 		return rule.userIds.includes(userId)
 	} else if (isGroupCondition(rule)) {
+		if (!rule.varname) return false
+
 		const vari = ViewerData.getInstance().getVariable(rule.varname)
 		if (!vari) return false
 
 		const data = await ViewerCache.getInstance().getViewerData(userId)
 		const value = data[vari.name]
 
-		return await evaluateHalfBooleanExpression({ value, schema: vari.schema }, rule.operand, rule.operator)
+		return await evaluateHalfBooleanExpression({ value, schema: vari.schema }, rule.operand, rule.operator, context)
 	}
 	logger.log("Unknown Group Rule", rule)
 	return false
@@ -220,8 +223,13 @@ export async function isEmptyTwitchViewerGroup(group: TwitchViewerGroup) {
 	return !group?.rule
 }
 
-export async function inTwitchViewerGroup(userId: string, group: TwitchViewerGroup) {
+export async function inTwitchViewerGroup(userId: string, group: TwitchViewerGroup, additionalContext?: object) {
 	if (!group?.rule) return true //Empty is everyone
 
-	return await satisfiesRule(userId, group.rule)
+	const fullContext = {
+		...additionalContext,
+		...PluginManager.getInstance().state,
+	}
+
+	return await satisfiesRule(userId, group.rule, fullContext)
 }

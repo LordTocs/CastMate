@@ -1,4 +1,4 @@
-import { constructDefault, Toggle } from "castmate-schema"
+import { BooleanExpression, constructDefault, Toggle } from "castmate-schema"
 import {
 	ActionQueue,
 	Automation,
@@ -15,7 +15,17 @@ import {
 	onLoad,
 	onProfilesChanged,
 	runOnChange,
+	evaluateBooleanExpression,
+	defineFlowAction,
+	globalLogger,
 } from "castmate-core"
+import { getExpressionHash } from "castmate-core/src/util/boolean-helpers"
+
+interface ConditionalTrigger {
+	conditionHash: number
+	lastEval: boolean | undefined
+	effect: ReactiveEffect
+}
 
 export default definePlugin(
 	{
@@ -216,6 +226,109 @@ export default definePlugin(
 					}
 				}
 			}
+		})
+
+		const conditonalRunners = new Map<string, ConditionalTrigger>()
+
+		const conditional = defineTrigger({
+			id: "condition",
+			name: "Condition",
+			icon: "mdi mdi-cogs",
+			config: {
+				type: Object,
+				properties: {
+					condition: { type: BooleanExpression, name: "Condition" },
+					runImmediately: { type: Boolean, name: "Run On Enable", required: true, default: false },
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					triggerId: { type: String, required: true, view: false },
+					profileId: { type: String, required: true, view: false },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (mapping.profileId != context.profileId) return false
+				if (mapping.triggerId != context.triggerId) return false
+				return true
+			},
+		})
+
+		onProfilesChanged((active, inactive) => {
+			for (const profile of active) {
+				for (const trigger of profile.iterTriggers(conditional)) {
+					const key = `${profile.id}.${trigger.id}`
+
+					const existing = conditonalRunners.get(key)
+					const hash = getExpressionHash(trigger.config.condition)
+					if (!existing) {
+						const conditionalTrigger: ConditionalTrigger = {
+							conditionHash: hash,
+							lastEval: trigger.config.runImmediately ? false : undefined,
+							effect: new ReactiveEffect(async () => {
+								const result = await evaluateBooleanExpression(trigger.config.condition)
+								if (conditionalTrigger.lastEval === undefined) {
+									//If lastEval is undefined then we ignore the first eval, which will be at creation time.
+									//This way if the trigger is enabled and the condition is true, it won't fire on the enable.
+									conditionalTrigger.lastEval = result
+								}
+
+								if (result && !conditionalTrigger.lastEval) {
+									//Rising edge, run trigger
+									conditional({
+										triggerId: trigger.id,
+										profileId: profile.id,
+									})
+								}
+								conditionalTrigger.lastEval = result
+							}),
+						}
+
+						conditonalRunners.set(key, conditionalTrigger)
+						conditionalTrigger.effect.run()
+					} else {
+						if (hash != existing.conditionHash) {
+							existing.conditionHash = hash
+							existing.effect.trigger()
+						}
+					}
+				}
+			}
+
+			for (const profile of inactive) {
+				for (const trigger of profile.iterTriggers(conditional)) {
+					const key = `${profile.id}.${trigger.id}`
+					const existing = conditonalRunners.get(key)
+					if (existing) {
+						existing.effect.dispose()
+						conditonalRunners.delete(key)
+					}
+				}
+			}
+		})
+
+		defineFlowAction({
+			id: "branch",
+			name: "Branch",
+			icon: "mdi mdi-source-branch",
+			config: { type: Object, properties: {} },
+			flowConfig: {
+				type: Object,
+				properties: {
+					condition: { type: BooleanExpression, name: "Condition", required: true },
+				},
+			},
+			async invoke(config, flows, contextData, abortSignal) {
+				//globalLogger.log("Invoking Branch", contextData.contextState, flows)
+				for (const [key, flow] of Object.entries(flows)) {
+					//globalLogger.log("Eval Condition", flow.condition)
+					if (await evaluateBooleanExpression(flow.condition, contextData.contextState)) {
+						//globalLogger.log("Condition True", key)
+						return key
+					}
+				}
+			},
 		})
 	}
 )

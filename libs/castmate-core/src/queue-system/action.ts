@@ -111,7 +111,12 @@ interface FlowActionDefinition extends BaseActionDefinition {
 	type: "flow"
 	readonly configSchema: Schema
 	readonly flowSchema?: Schema
-	invoke(config: any, flows: any, contextData: ActionInvokeContextData, abortSignal: AbortSignal): Promise<any>
+	invoke(
+		config: any,
+		flows: any,
+		contextData: ActionInvokeContextData,
+		abortSignal: AbortSignal
+	): Promise<string | undefined>
 	getDuration(config: any): Promise<number | undefined>
 }
 
@@ -378,7 +383,7 @@ class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends S
 		flows: Flows<FlowSchema>,
 		contextData: ActionInvokeContextData,
 		abortSignal: AbortSignal
-	): Promise<string> {
+	): Promise<string | undefined> {
 		const templateContext = {
 			...contextData.contextState,
 			...PluginManager.getInstance().state,
@@ -390,12 +395,16 @@ class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends S
 			templateContext
 		)
 
+		//globalLogger.log("Flow Invoke", flows)
+
 		const resolvedFlows: ResolvedFlows<FlowSchema> = {}
 		await Promise.allSettled(
 			Object.keys(flows).map(async (k) => {
 				resolvedFlows[k] = await templateSchema(flows[k], this.flowSchema, templateContext)
 			})
 		)
+
+		//globalLogger.log("Resolved Flow Invoke", resolvedFlows)
 
 		return await this.spec.invoke(resolveConfig, resolvedFlows, contextData, abortSignal)
 	}
@@ -413,7 +422,7 @@ interface FlowActionSpec<ConfigSchema extends Schema, FlowSchema extends Schema>
 		flows: ResolvedFlows<FlowSchema>,
 		contextData: ActionInvokeContextData,
 		abortSignal: AbortSignal
-	): Promise<string>
+	): Promise<string | undefined>
 }
 
 export function defineFlowAction<ConfigSchema extends Schema, FlowSchema extends Schema>(

@@ -13,17 +13,17 @@
 		"typescript": "*"
 	},
 	"dependencies": {
-		"@twurple/api": "^7.1.0",
-		"@twurple/api-call": "^7.1.0",
-		"@twurple/auth": "^7.1.0",
-		"@twurple/chat": "^7.1.0",
-		"@twurple/eventsub-base": "^7.1.0",
-		"@twurple/eventsub-ws": "^7.1.0",
+		"@twurple/api": "^7.3.0",
+		"@twurple/api-call": "^7.3.0",
+		"@twurple/auth": "^7.3.0",
+		"@twurple/chat": "^7.3.0",
+		"@twurple/eventsub-base": "^7.3.0",
+		"@twurple/eventsub-ws": "^7.3.0",
 		"castmate-core": "workspace:^",
 		"castmate-plugin-overlays-main": "workspace:^",
 		"castmate-plugin-twitch-shared": "workspace:^",
 		"castmate-schema": "workspace:^",
-		"electron": "^34.2.0",
+		"electron": "^36.2.0",
 		"fuzzysort": "^2.0.4"
 	}
 }

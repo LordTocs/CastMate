@@ -33,7 +33,7 @@
 			</document-data-collection>
 
 			<h1>Activation</h1>
-			<boolean-expression-input v-model="model.activationCondition" />
+			<c-boolean-expression v-model="model.activationCondition" local-path="activationCondition" />
 			<inline-automation-edit
 				v-model="model.activationAutomation"
 				v-model:view="view.activationAutomation"
@@ -62,6 +62,7 @@ import {
 	DataBindingDebugger,
 	useBaseDataBinding,
 	useCommitUndo,
+	CBooleanExpression,
 } from "castmate-ui-core"
 import { ProfileConfig } from "castmate-schema"
 import TriggerEdit from "./TriggerEdit.vue"

@@ -1,6 +1,6 @@
 import { defineAction, exposeSchema, onLoad, onUnload, usePluginLogger } from "castmate-core"
 import { VariableManager } from "./variable-manager"
-import { DynamicType, Range } from "castmate-schema"
+import { Duration, DynamicType, Range } from "castmate-schema"
 
 export function setupVariableActions() {
 	const logger = usePluginLogger()
@@ -76,7 +76,7 @@ export function setupVariableActions() {
 					required: true,
 					async enum() {
 						return VariableManager.getInstance()
-							.variableDefinitions.filter((v) => v.schema.type == Number)
+							.variableDefinitions.filter((v) => v.schema.type == Number || v.schema.type == Duration)
 							.map((v) => v.id)
 					},
 				},

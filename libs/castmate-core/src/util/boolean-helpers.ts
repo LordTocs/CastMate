@@ -13,6 +13,7 @@ import {
 	Range,
 	isBooleanRangeExpr,
 	getTypeByName,
+	hashString,
 } from "castmate-schema"
 import { PluginManager } from "../plugins/plugin-manager"
 import { unexposeSchema } from "./ipc-schema"
@@ -46,7 +47,7 @@ function getExpressionSchema(expression: ExpressionValue): Schema | undefined {
 
 async function getExpressionValueAndSchema(
 	expression: ExpressionValue,
-	otherSchema?: Schema
+	context?: object
 ): Promise<{ value: any; schema: Schema } | undefined> {
 	if (expression.type == "state") {
 		if (!expression.plugin) return undefined
@@ -70,7 +71,7 @@ async function getExpressionValueAndSchema(
 
 		//logger.log("Value Value", expression.schemaType, expression.value)
 
-		let value = await templateSchema(expression.value, schema, PluginManager.getInstance().state)
+		let value = await templateSchema(expression.value, schema, context ?? PluginManager.getInstance().state)
 
 		//logger.log("Templated", value)
 
@@ -97,17 +98,18 @@ function baseCompare(left: any, right: any, operator: ValueCompareOperator) {
 	return false
 }
 
-async function evaluateValueExpression(expression: BooleanValueExpression) {
-	const left = await getExpressionValueAndSchema(expression.lhs)
-	return await evaluateHalfBooleanExpression(left, expression.rhs, expression.operator)
+async function evaluateValueExpression(expression: BooleanValueExpression, context?: object) {
+	const left = await getExpressionValueAndSchema(expression.lhs, context)
+	return await evaluateHalfBooleanExpression(left, expression.rhs, expression.operator, context)
 }
 
 export async function evaluateHalfBooleanExpression(
 	left: { value: any; schema: Schema } | undefined,
 	rhs: ExpressionValue,
-	operator: ValueCompareOperator
+	operator: ValueCompareOperator,
+	context?: object
 ) {
-	const right = await getExpressionValueAndSchema(rhs)
+	const right = await getExpressionValueAndSchema(rhs, context)
 
 	let compareFunc = baseCompare
 
@@ -120,6 +122,8 @@ export async function evaluateHalfBooleanExpression(
 			compareFunc = meta.compare
 		}
 	}
+
+	logger.log("Comparing", leftValue, rightValue, operator)
 
 	return compareFunc(leftValue, rightValue, operator)
 }
@@ -145,35 +149,35 @@ function inRangeCompare(
 	return true
 }
 
-async function evaluateValueRange(expression: BooleanRangeExpression) {
-	let left = getExpressionValue(expression.lhs)
-	const leftSchema = getExpressionSchema(expression.lhs)
+async function evaluateValueRange(expression: BooleanRangeExpression, context?: object) {
+	const left = await getExpressionValueAndSchema(expression.lhs, context)
 
 	let compareFunc = baseCompare
 
-	if (leftSchema) {
-		left = await unexposeSchema(leftSchema, left)
-		const typeMeta = getTypeByConstructor(leftSchema.type)
-		if (typeMeta?.compare) {
-			compareFunc = typeMeta.compare
+	if (left?.schema) {
+		const meta = getTypeByConstructor(left.schema.type)
+		if (meta?.compare) {
+			compareFunc = meta.compare
 		}
 	}
 
-	return inRangeCompare(expression.range, left, compareFunc)
+	return inRangeCompare(expression.range, left?.value, compareFunc)
 }
 
-async function evaluateGroupExpression(expression: BooleanExpressionGroup) {
+async function evaluateGroupExpression(expression: BooleanExpressionGroup, context?: object) {
 	if (expression.operands.length == 0) return true
+
+	logger.log("Evaluating", expression)
 
 	const results = (
 		await Promise.allSettled(
 			expression.operands.map(async (o) => {
 				if (isBooleanGroup(o)) {
-					return await evaluateGroupExpression(o)
+					return await evaluateGroupExpression(o, context)
 				} else if (isBooleanValueExpr(o)) {
-					return await evaluateValueExpression(o)
+					return await evaluateValueExpression(o, context)
 				} else if (isBooleanRangeExpr(o)) {
-					return await evaluateValueRange(o)
+					return await evaluateValueRange(o, context)
 				}
 			})
 		)
@@ -195,6 +199,15 @@ async function evaluateGroupExpression(expression: BooleanExpressionGroup) {
 	}
 }
 
-export async function evalueBooleanExpression(expression: BooleanExpression) {
-	return await evaluateGroupExpression(expression)
+export async function evaluateBooleanExpression(expression: BooleanExpression, additionalContext?: object) {
+	const fullContext = {
+		...additionalContext,
+		...PluginManager.getInstance().state,
+	}
+
+	return await evaluateGroupExpression(expression, fullContext)
+}
+
+export function getExpressionHash(expression: BooleanExpression) {
+	return hashString(JSON.stringify(expression))
 }

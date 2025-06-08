@@ -22,6 +22,7 @@ export * from "./util/events"
 export * from "./util/ipc-schema"
 export * from "./util/electron"
 export * from "./util/request-utils"
+export * from "./util/boolean-helpers"
 
 export * from "./io/file-system"
 

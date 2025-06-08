@@ -79,7 +79,7 @@ export function setupModeration() {
 			},
 		},
 		async handle(config, context, mapping) {
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
 				return false
 			}
 
@@ -104,7 +104,7 @@ export function setupModeration() {
 			},
 		},
 		async handle(config, context, mapping) {
-			if (!(await inTwitchViewerGroup(context.viewer, config.group))) {
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
 				return false
 			}
 
