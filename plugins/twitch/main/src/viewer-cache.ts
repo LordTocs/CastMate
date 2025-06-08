@@ -488,12 +488,19 @@ export const ViewerCache = Service(
 		}*/
 
 		private async queryViewerData(...userIds: string[]) {
+			const perf = startPerfTime("Querying Viewer Data")
+
 			const data = await ViewerData.getInstance().getMultipleViewerData("twitch", userIds)
-			if (!data) return
+			if (!data) {
+				logger.error("getMultipleViewerData returned nothing!")
+				return
+			}
 
 			for (let i = 0; i < userIds.length; ++i) {
 				const id = userIds[i]
 				const userData = data[i]
+
+				logger.log("DATA FOR", id, userData)
 
 				this.unknownViewerData.delete(id)
 
@@ -503,6 +510,8 @@ export const ViewerCache = Service(
 
 				Object.assign(cached, userData)
 			}
+
+			perf.stop(logger)
 		}
 
 		async getIsVIP(userId: string): Promise<boolean> {
@@ -642,20 +651,24 @@ export const ViewerCache = Service(
 				})
 
 				for (const cached of cachedUsers) {
-					if (cached.subbed == null || (cached.subbed === true && cached.sub == null)) {
+					if (this.unknownSubInfo.has(cached.id)) {
 						neededSubIds.push(cached.id)
 					}
 
-					if (cached.color == null) {
+					if (this.unknownColors.has(cached.id)) {
 						neededColorIds.push(cached.id)
 					}
 
-					if (cached.profilePicture == null || cached.description == null) {
+					if (this.unknownUserInfo.has(cached.id)) {
 						neededUserInfoIds.push(cached.id)
 					}
 
 					if (cached.following == null) {
 						neededFollowerIds.push(cached.id)
+					}
+
+					if (this.unknownViewerData.has(cached.id)) {
+						neededViewerDataIds.push(cached.id)
 					}
 				}
 
@@ -682,6 +695,7 @@ export const ViewerCache = Service(
 				}
 
 				if (neededViewerDataIds.length > 0) {
+					logger.log("---Query Viewer Data:", neededViewerDataIds.length)
 					queryPromises.push(this.queryViewerData(...neededViewerDataIds))
 				}
 
