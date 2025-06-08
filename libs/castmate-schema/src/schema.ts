@@ -584,6 +584,15 @@ export function registerType<T extends DataConstructorOrFactory>(name: string, m
 	dataConstructorLookup.set(metaData.constructor, fullMetaData)
 }
 
+export function registerTypeFromString<T extends DataConstructorOrFactory>(
+	type: T,
+	fromString: (value: string) => Promise<ResolvedTypeByConstructor<T> | undefined>
+) {
+	const metaData = getTypeByConstructor(type)
+	if (!metaData) return
+	metaData.fromString = fromString
+}
+
 export function getAllTypes() {
 	return [...dataNameLookup.values()]
 }

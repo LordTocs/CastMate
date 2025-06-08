@@ -19,7 +19,7 @@ import {
 	template,
 	usePluginLogger,
 } from "castmate-core"
-import { Color } from "castmate-schema"
+import { Color, registerTypeFromString } from "castmate-schema"
 import { TwitchAccount } from "./twitch-auth"
 import { onChannelAuth } from "./api-harness"
 import {
@@ -144,6 +144,18 @@ registerSchemaTemplate(
 		}
 	}
 )
+
+registerTypeFromString(TwitchViewer, async (value) => {
+	if (isDefinitelyNotTwitchId(value)) {
+		return await ViewerCache.getInstance().getUserId(value)
+	}
+
+	if (await ViewerCache.getInstance().validateUserId(value)) {
+		return value
+	} else {
+		return await ViewerCache.getInstance().getUserId(value)
+	}
+})
 
 //Twitch IDs only contain numbers, so if it has any non-number it must be a username.
 //BUT a twitch username CAN be only numbers. So we can't write an isTwitchId() without running an API query
