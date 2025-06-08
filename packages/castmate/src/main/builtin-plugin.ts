@@ -23,7 +23,7 @@ import { getExpressionHash } from "castmate-core/src/util/boolean-helpers"
 
 interface ConditionalTrigger {
 	conditionHash: number
-	lastEval: boolean
+	lastEval: boolean | undefined
 	effect: ReactiveEffect
 }
 
@@ -238,6 +238,7 @@ export default definePlugin(
 				type: Object,
 				properties: {
 					condition: { type: BooleanExpression, name: "Condition" },
+					runImmediately: { type: Boolean, name: "Run On Enable", required: true, default: false },
 				},
 			},
 			context: {
@@ -264,9 +265,15 @@ export default definePlugin(
 					if (!existing) {
 						const conditionalTrigger: ConditionalTrigger = {
 							conditionHash: hash,
-							lastEval: false,
+							lastEval: trigger.config.runImmediately ? false : undefined,
 							effect: new ReactiveEffect(async () => {
 								const result = await evaluateBooleanExpression(trigger.config.condition)
+								if (conditionalTrigger.lastEval === undefined) {
+									//If lastEval is undefined then we ignore the first eval, which will be at creation time.
+									//This way if the trigger is enabled and the condition is true, it won't fire on the enable.
+									conditionalTrigger.lastEval = result
+								}
+
 								if (result && !conditionalTrigger.lastEval) {
 									//Rising edge, run trigger
 									conditional({
