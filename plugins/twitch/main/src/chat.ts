@@ -125,7 +125,12 @@ export function setupChat() {
 
 			if (matchResult == null) return undefined
 
-			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) {
+			const finalContext = {
+				...context,
+				...matchResult,
+			}
+
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, finalContext))) {
 				return undefined
 			}
 
@@ -141,10 +146,7 @@ export function setupChat() {
 				chatCommandCooldownMap.set(slug, now)
 			}
 
-			return {
-				...context,
-				...matchResult,
-			}
+			return finalContext
 		},
 	})
 
