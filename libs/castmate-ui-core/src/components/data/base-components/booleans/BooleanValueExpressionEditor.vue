@@ -123,7 +123,7 @@ const inequalities = computed(() => {
 	flex-direction: row;
 	align-items: center;
 	align-self: stretch;
-	padding: 0.25rem;
+	padding: 0rem;
 
 	border-top-left-radius: var(--border-radius);
 	border-bottom-left-radius: var(--border-radius);
@@ -143,7 +143,6 @@ const inequalities = computed(() => {
 	align-items: center;
 	justify-content: center;
 	gap: 0.5rem;
-	padding: 0.5rem;
 	background-color: var(--surface-0);
 }
 

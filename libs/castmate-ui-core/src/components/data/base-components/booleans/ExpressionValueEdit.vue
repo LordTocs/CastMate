@@ -226,8 +226,8 @@ watch(valueSchemaTypes, (value, oldValues) => {
 	padding: 0.25rem 0.5rem;
 }
 
-.boolean-expression :deep(.p-tabview .p-tabview-panels) {
-	padding: 0.75rem;
+.boolean-expression :deep(.p-tabpanels) {
+	padding: 0.3rem;
 }
 
 .boolean-expression {
