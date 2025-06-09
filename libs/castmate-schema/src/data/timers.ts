@@ -126,7 +126,7 @@ export function offsetTimer(timer: Timer, duration: Duration): Timer {
 		}
 	} else {
 		return wrapTimerData({
-			remainingTime: timer.remainingTime + duration * 1000,
+			remainingTime: timer.remainingTime + duration,
 		})
 	}
 }
