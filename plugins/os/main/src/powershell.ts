@@ -1,5 +1,5 @@
 import { PowerShellCommand } from "castmate-plugin-os-shared"
-import { defineAction, evaluateTemplate, registerSchemaTemplate, usePluginLogger } from "castmate-core"
+import { defineAction, evaluateTemplate, globalLogger, registerSchemaTemplate, usePluginLogger } from "castmate-core"
 import { abortablePromise } from "castmate-core/src/util/abort-utils"
 import { getTemplateRegionString, parseTemplateString, trimTemplateJS, Directory } from "castmate-schema"
 import { ChildProcess, exec, spawn } from "child_process"
@@ -103,6 +103,10 @@ function trackPowershellString(filler: string, parseContext: ParseContext) {
 }
 
 function escapePowerShellResult(templateResult: string, parseContext: ParseContext) {
+	if (!templateResult) {
+		return ""
+	}
+
 	if (parseContext.strType == SINGLE_QUOTE) {
 		return powershellEscapeForSingleQuote(templateResult)
 	} else if (parseContext.strType == DOUBLE_QUOTE) {
@@ -134,7 +138,7 @@ async function powershellTemplate(str: string, data: Record<string, any>) {
 			if (trimmed) {
 				let templateResult = undefined
 				try {
-					templateResult = escapePowerShellResult(await evaluateTemplate(trimmed, data), strContext)
+					templateResult = escapePowerShellResult(String(await evaluateTemplate(trimmed, data)), strContext)
 				} catch (err) {
 					console.error("Error evaluating Template", err)
 					continue
