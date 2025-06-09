@@ -281,6 +281,7 @@ export async function exposeSchema<TSchema extends Schema>(
 				const propSchema = schema.properties[key]
 				if (!propSchema) {
 					globalLogger.error("(expose) Unable to find type for", key, value)
+					copyValue[key] = objValue[key]
 					return
 				}
 				copyValue[key] = await exposeSchema(propSchema, objValue[key])
