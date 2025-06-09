@@ -16,7 +16,7 @@
 		"castmate-overlay-core": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"chromatism2": "*",
-		"electron": "^36.2.0",
+		"electron": "^34.2.0",
 		"nanoid": "^5.0.7",
 		"pinia": "^2.1.7",
 		"primevue": "^4.2.4",
