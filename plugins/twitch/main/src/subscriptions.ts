@@ -79,6 +79,10 @@ export function setupSubscriptions() {
 			},
 		},
 		async handle(config, context) {
+			if (context.tier == 1 && !config.tier1) return false
+			if (context.tier == 2 && !config.tier2) return false
+			if (context.tier == 3 && !config.tier3) return false
+
 			if (!(await inTwitchViewerGroup(context.gifter, config.group, context))) {
 				return false
 			}
