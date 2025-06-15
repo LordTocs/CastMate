@@ -17,6 +17,7 @@
 		"castmate-overlay-widget-loader": "workspace:^",
 		"castmate-plugin-obs-renderer": "workspace:^",
 		"castmate-plugin-overlays-shared": "workspace:^",
+		"castmate-satellite-ui-core": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"castmate-ui-core": "workspace:^",
 		"chromatism2": "*",

@@ -15,10 +15,13 @@
 		"jsx": "preserve",
 
 		/* Linting */
-		"strict": true
+		"strict": true,
 		// "noUnusedLocals": true,
 		// "noUnusedParameters": true,
 		// "noFallthroughCasesInSwitch": true
+		"paths": {
+			"castmate-satellite-ui-core": ["../castmate-satellite-ui-core/src/satellite-ui-core-main.ts"]
+		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
 	"references": [{ "path": "./tsconfig.node.json" }]

@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import * as chromatism from "chromatism2"
-import { declareWidgetOptions, useCallDashboardRPC, useCastMateBridge, useIsEditor } from "castmate-dashboard-core"
+import { declareWidgetOptions, useCallDashboardRPC, useIsEditor } from "castmate-dashboard-core"
 import { DashboardWidgetSize } from "castmate-plugin-dashboards-shared"
 import { Color } from "castmate-schema"
 import { computed, CSSProperties, onMounted, ref, watch } from "vue"

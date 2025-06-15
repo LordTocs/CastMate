@@ -4,7 +4,6 @@ import {
 	onLoad,
 	onUnload,
 	definePlugin,
-	onWebsocketMessage,
 	useHTTPRouter,
 	ProfileManager,
 	Profile,

@@ -1,6 +1,6 @@
-import { useResolvedWidgetConfig } from "castmate-overlay-core"
-import { useOverlayWidgets } from "castmate-overlay-widget-loader"
+import { useOverlayWidget, useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
+import { useResolvedSchema } from "castmate-satellite-ui-core"
 import { handleIpcMessage, useIpcCaller, useIpcMessage } from "castmate-ui-core"
 import { nanoid } from "nanoid/non-secure"
 import { defineStore } from "pinia"
@@ -106,16 +106,12 @@ export const useOverlayRemoteConfigStore = defineStore("overlay-remote-config", 
 
 export function useRemoteOverlayConfig(config: MaybeRefOrGetter<OverlayWidgetConfig>) {
 	const configStore = useOverlayRemoteConfigStore()
-	const widgets = useOverlayWidgets()
+	const widget = useOverlayWidget(config)
 
 	let id = ""
 	const remote = ref<object>()
 
-	const resolved = useResolvedWidgetConfig(remote, () => {
-		const configValue = toValue(config)
-		return widgets.getWidget(configValue.plugin, configValue.widget)?.component
-	})
-
+	const resolved = useResolvedSchema(config, widget.value?.widget.config)
 	onMounted(() => {
 		id = configStore.start(config, remote)
 	})

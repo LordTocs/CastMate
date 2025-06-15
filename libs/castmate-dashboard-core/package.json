@@ -14,6 +14,7 @@
 	"dependencies": {
 		"@vueuse/core": "*",
 		"castmate-plugin-dashboards-shared": "workspace:^",
+		"castmate-satellite-ui-core": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"chromatism2": "*",
 		"nanoid": "^5.0.7",

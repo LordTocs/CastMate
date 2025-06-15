@@ -3,7 +3,7 @@ import overlaysPlugin from "castmate-plugin-overlays-overlays"
 import randomPlugin from "castmate-plugin-random-overlays"
 import twitchPlugin from "castmate-plugin-twitch-overlays"
 import { defineStore } from "pinia"
-import { ref, Component, computed, markRaw } from "vue"
+import { ref, Component, computed, markRaw, MaybeRefOrGetter, toValue } from "vue"
 
 export interface OverlayWidgetInfo {
 	plugin: string
@@ -34,4 +34,13 @@ export function loadOverlayWidgets() {
 	widgets.loadPluginWidgets(overlaysPlugin)
 	widgets.loadPluginWidgets(randomPlugin)
 	widgets.loadPluginWidgets(twitchPlugin)
+}
+
+export function useOverlayWidget(config: MaybeRefOrGetter<{ plugin: string; widget: string }>) {
+	const widgetStore = useOverlayWidgets()
+
+	return computed<OverlayWidgetComponent | undefined>(() => {
+		const resolved = toValue(config)
+		return widgetStore.getWidget(resolved.plugin, resolved.widget)?.component
+	})
 }

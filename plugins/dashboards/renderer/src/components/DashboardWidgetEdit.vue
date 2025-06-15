@@ -14,9 +14,8 @@ import { DashboardWidget } from "castmate-plugin-dashboards-shared"
 import { DashboardWidgetView } from "../dashboard-types"
 import { computed, CSSProperties, provide, useModel } from "vue"
 import { useDashboardWidgets } from "castmate-dashboard-widget-loader"
-import { CastMateBridgeImplementation } from "castmate-dashboard-core"
-import { useFullState } from "castmate-ui-core"
 import { useRemoteDashboardConfig } from "../config/dashboard-config"
+import { provideSatelliteWidgetBridge } from "castmate-satellite-ui-core"
 
 const props = defineProps<{
 	modelValue: DashboardWidget
@@ -30,21 +29,7 @@ const dashboardWidgets = useDashboardWidgets()
 
 const resolvedConfig = useRemoteDashboardConfig(() => props.modelValue)
 
-const state = useFullState()
-
-provide("isEditor", true)
-
-provide<CastMateBridgeImplementation>("castmate-bridge", {
-	acquireState(plugin, state) {},
-	releaseState(plugin, state) {},
-	config: computed(() => props.modelValue),
-	state,
-	registerRPC(id, func) {},
-	unregisterRPC(id) {},
-	registerMessage(id, func) {},
-	unregisterMessage(id, func) {},
-	async callRPC(id, ...args) {},
-})
+provideSatelliteWidgetBridge(() => model.value.id)
 
 const widgetComponent = computed(
 	() => dashboardWidgets.getWidget(props.modelValue.plugin, props.modelValue.widget)?.component

@@ -54,6 +54,7 @@ import {
 	SelectDummy,
 	useDataBinding,
 	useDataUIBinding,
+	provideEditorSatelliteShallowBridge,
 } from "castmate-ui-core"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
@@ -91,6 +92,8 @@ function deleteWidget(idx: number) {
 }
 
 const lastSelectPos = ref<{ x: number; y: number }>({ x: 0, y: 0 })
+
+provideEditorSatelliteShallowBridge(model)
 
 const selection = useDocumentSelection()
 const {

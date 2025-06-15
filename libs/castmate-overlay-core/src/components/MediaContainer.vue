@@ -13,7 +13,6 @@ import { computed, nextTick, onMounted, ref, watch } from "vue"
 import { ImageFormats } from "castmate-schema"
 import path from "path"
 import { useMediaUrl } from "../util/media-util"
-import { useIsEditor } from "../util/editor-util"
 import { useEventListener } from "@vueuse/core"
 
 const video = ref<HTMLVideoElement>()

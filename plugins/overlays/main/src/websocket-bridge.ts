@@ -13,6 +13,9 @@ import {
 	defineWebsocketProxy,
 	onLoad,
 	onUnload,
+	handleSatelliteWebsocketConnection,
+	SatelliteService,
+	onSatelliteRPC,
 } from "castmate-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { Overlay } from "./overlay-resource"
@@ -222,27 +225,14 @@ export const OverlayWebsocketService = Service(
 )
 
 export function setupWebsockets() {
+	handleSatelliteWebsocketConnection("/overlays/:overlayId", (socket, params, request) => {
+		const overlay = Overlay.storage.getById(params.overlayId)
+		if (!overlay) return undefined
+
+		return { type: "overlay", typeid: params.overlayId }
+	})
+
 	OverlayWebsocketService.initialize()
-
-	onWebsocketConnection(async (socket, url) => {
-		await OverlayWebsocketService.getInstance().onConnection(socket, url)
-	})
-
-	onWebsocketDisconnect(async (socket) => {
-		await OverlayWebsocketService.getInstance().onDisconnect(socket)
-	})
-
-	onWebsocketRPC("overlays_acquireState", async (socket, plugin: string, state: string) => {
-		await OverlayWebsocketService.getInstance().acquireState(socket, plugin, state)
-	})
-
-	onWebsocketRPC("overlays_freeState", async (socket, plugin: string, state: string) => {
-		await OverlayWebsocketService.getInstance().freeState(socket, plugin, state)
-	})
-
-	onWebsocketRPC("overlays_widgetRPC", async (socket, id: string, from: string, ...args: any[]) => {
-		return await OverlayWebsocketService.getInstance().handleWidgetRPCRequest(socket, id, from, ...args)
-	})
 
 	const router = useRootHTTPRouter("overlays")
 
@@ -313,11 +303,13 @@ export function setupWebsockets() {
 }
 
 export function handleWidgetRPC<T extends WidgetRPCHandler>(id: string, func: T) {
-	onLoad(() => {
-		OverlayWebsocketService.getInstance().handleWidgetRPC(id, func)
-	})
+	onSatelliteRPC("overlays_wrpc", id, async (connectionId: string, ...args: any[]) => {
+		const connection = SatelliteService.getInstance().getConnection(connectionId)
+		if (connection?.type != "overlay") throw new Error("Not an overlay")
 
-	onUnload(() => {
-		OverlayWebsocketService.getInstance().unhandleWidgetRPC(id)
+		const overlay = Overlay.storage.getById(connection.typeId)
+		if (!overlay) throw new Error("Missing Overlay!")
+
+		return await func(overlay)
 	})
 }

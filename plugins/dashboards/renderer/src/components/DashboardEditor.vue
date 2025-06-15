@@ -50,14 +50,13 @@
 import { DashboardConfig, DashboardPage } from "castmate-plugin-dashboards-shared"
 import { DashboardPageView, DashboardView } from "../dashboard-types"
 import DashboardPropertiesEdit from "./DashboardPropertiesEdit.vue"
-import { ScrollingTabBody, DocumentDataCollection } from "castmate-ui-core"
+import { ScrollingTabBody, DocumentDataCollection, provideEditorSatelliteShallowBridge } from "castmate-ui-core"
 import { computed, useModel } from "vue"
 
 import PButton from "primevue/button"
 
 import DashboardPageEdit from "./DashboardPageEdit.vue"
 import { nanoid } from "nanoid/non-secure"
-import { useDialog } from "primevue/usedialog"
 import DashboardPermissionsEdit from "./DashboardPermissionsEdit.vue"
 import DashboardSlotsEdit from "./DashboardSlotsEdit.vue"
 const props = defineProps<{
@@ -67,6 +66,8 @@ const props = defineProps<{
 
 const view = useModel(props, "view")
 const model = useModel(props, "modelValue")
+
+provideEditorSatelliteShallowBridge(model)
 
 function createNewPage(): [DashboardPage, DashboardPageView] {
 	const id = nanoid()

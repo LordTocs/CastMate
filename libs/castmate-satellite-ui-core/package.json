@@ -1,11 +1,11 @@
 {
-	"name": "castmate-plugin-dashboards-renderer",
+	"name": "castmate-satellite-ui-core",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
-	"main": "src/main.ts",
-	"devMain": "src/main.ts",
-	"types": "./dist/types/main.d.ts",
+	"main": "src/satellite-ui-core-main.ts",
+	"devMain": "src/satellite-ui-core-main.ts",
+	"types": "./dist/types/satellite-ui-core-main.d.ts",
 	"scripts": {
 		"dev": "vite",
 		"build": "vue-tsc && vite build",
@@ -13,19 +13,16 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "*",
-		"castmate-dashboard-widget-loader": "workspace:^",
-		"castmate-plugin-dashboards-shared": "workspace:^",
-		"castmate-satellite-ui-core": "workspace:^",
 		"castmate-schema": "workspace:^",
-		"castmate-ui-core": "workspace:^",
 		"chromatism2": "*",
-		"electron": "^34.2.0",
 		"nanoid": "^5.0.7",
 		"pinia": "^2.1.7",
+		"primevue": "^4.2.4",
 		"vue": "^3.5.13"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "4.6.2",
+		"ts-toolbelt": "*",
 		"typescript": "*",
 		"vite": "^5.2.9",
 		"vue-tsc": "*"

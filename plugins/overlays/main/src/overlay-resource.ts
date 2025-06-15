@@ -9,7 +9,6 @@ import {
 	defineIPCFunc,
 	definePluginResource,
 	ipcParseSchema,
-	onWebsocketMessage,
 	remoteTemplateSchema,
 	usePluginLogger,
 } from "castmate-core"

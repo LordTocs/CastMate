@@ -3442,6 +3442,7 @@ __metadata:
     sqlite3: "npm:^5.1.7"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
+    urlpattern-polyfill: "npm:^10.0.0"
     winston: "npm:^3.11.0"
     ws: "npm:^8.16.0"
     yaml: "npm:^2.2.1"
@@ -3455,6 +3456,7 @@ __metadata:
     "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-dashboards-shared: "workspace:^"
+    castmate-satellite-ui-core: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
     nanoid: "npm:^5.0.7"
@@ -3529,6 +3531,7 @@ __metadata:
     axios: "npm:^1.1.3"
     castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
+    castmate-satellite-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
     events: "npm:^3.3.0"
     pinia: "npm:^2.1.7"
@@ -3544,6 +3547,7 @@ __metadata:
     "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
     castmate-plugin-overlays-shared: "workspace:^"
+    castmate-satellite-ui-core: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
     nanoid: "npm:^5.0.7"
@@ -3681,6 +3685,7 @@ __metadata:
     "@vueuse/core": "npm:*"
     castmate-dashboard-widget-loader: "workspace:^"
     castmate-plugin-dashboards-shared: "workspace:^"
+    castmate-satellite-ui-core: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
@@ -4242,6 +4247,7 @@ __metadata:
     castmate-overlay-widget-loader: "workspace:^"
     castmate-plugin-obs-renderer: "workspace:^"
     castmate-plugin-overlays-shared: "workspace:^"
+    castmate-satellite-ui-core: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     chromatism2: "npm:*"
@@ -4980,6 +4986,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-satellite-ui-core@workspace:^, castmate-satellite-ui-core@workspace:libs/castmate-satellite-ui-core":
+  version: 0.0.0-use.local
+  resolution: "castmate-satellite-ui-core@workspace:libs/castmate-satellite-ui-core"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:4.6.2"
+    "@vueuse/core": "npm:*"
+    castmate-schema: "workspace:^"
+    chromatism2: "npm:*"
+    nanoid: "npm:^5.0.7"
+    pinia: "npm:^2.1.7"
+    primevue: "npm:^4.2.4"
+    ts-toolbelt: "npm:*"
+    typescript: "npm:*"
+    vite: "npm:^5.2.9"
+    vue: "npm:^3.5.13"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
 "castmate-satellite@workspace:packages/castmate-satellite":
   version: 0.0.0-use.local
   resolution: "castmate-satellite@workspace:packages/castmate-satellite"
@@ -5046,6 +5071,7 @@ __metadata:
   dependencies:
     "@vitejs/plugin-vue": "npm:4.6.2"
     "@vueuse/core": "npm:*"
+    castmate-satellite-ui-core: "workspace:^"
     castmate-schema: "workspace:^"
     chromatism2: "npm:*"
     electron: "npm:^34.2.0"
@@ -11075,6 +11101,13 @@ __metadata:
   dependencies:
     punycode: "npm:^2.1.0"
   checksum: 10/b271ca7e3d46b7160222e3afa3e531505161c9a4e097febae9664e4b59912f4cbe94861361a4175edac3a03fee99d91e44b6a58c17a634bc5a664b19fc76fbcb
+  languageName: node
+  linkType: hard
+
+"urlpattern-polyfill@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "urlpattern-polyfill@npm:10.0.0"
+  checksum: 10/346819dbe718e929988298d02a988b8ddfa601d08daaa7e69b1148eab699c86c0f0f933d68d8c8cf913166fe64156ed28904e673200d18ef7e9ed6b58cea3fc7
   languageName: node
   linkType: hard
 

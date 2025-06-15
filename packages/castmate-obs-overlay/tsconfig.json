@@ -23,6 +23,7 @@
 			"castmate-overlay-widget-loader": [
 				"../../libs/castmate-overlay-widget-loader/src/overlay-widget-loader.ts"
 			],
+			"castmate-satellite-ui-core": ["../../libs/castmate-satellite-ui-core/src/satellite-ui-core-main.ts"],
 			"castmate-overlay-core": ["../../libs/castmate-overlay-core/src/overlay-core-main.ts"]
 		}
 	},

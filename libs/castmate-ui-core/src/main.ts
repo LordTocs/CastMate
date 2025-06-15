@@ -114,6 +114,7 @@ export * from "./components/stream-plan/stream-plan-types"
 
 export * from "./viewer-data/viewer-data-store"
 
+export * from "./satellite/editor-satellite-bridge"
 export * from "./satellite/satellite-connection"
 export * from "./satellite/satellite-resources"
 export * from "./satellite/satellite-media"

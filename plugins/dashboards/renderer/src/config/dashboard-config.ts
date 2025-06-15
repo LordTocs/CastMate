@@ -1,10 +1,11 @@
-import { useDashboardWidgets } from "castmate-dashboard-widget-loader"
+import { useDashboardWidget, useDashboardWidgets } from "castmate-dashboard-widget-loader"
 import { DashboardWidget } from "castmate-plugin-dashboards-shared"
 import { handleIpcMessage, useIpcCaller } from "castmate-ui-core"
 import { nanoid } from "nanoid/non-secure"
 import { defineStore } from "pinia"
 import { MaybeRefOrGetter, Ref, WatchStopHandle, computed, onBeforeUnmount, onMounted, ref, toValue, watch } from "vue"
 import { useResolvedWidgetConfig } from "castmate-dashboard-core"
+import { useResolvedSchema } from "castmate-satellite-ui-core"
 
 const startEdit = useIpcCaller<(id: string, plugin: string, widget: string, initialConfig: object) => any>(
 	"dashboards",
@@ -87,15 +88,12 @@ export const useDashboardRemoteConfigStore = defineStore("dashboard-config-store
 
 export function useRemoteDashboardConfig(config: MaybeRefOrGetter<DashboardWidget>) {
 	const configStore = useDashboardRemoteConfigStore()
-	const widgets = useDashboardWidgets()
+	const widget = useDashboardWidget(config)
 
 	let id = ""
 	const remote = ref<object>()
 
-	const resolved = useResolvedWidgetConfig(remote, () => {
-		const configValue = toValue(config)
-		return widgets.getWidget(configValue.plugin, configValue.widget)?.component
-	})
+	const resolved = useResolvedSchema(config, widget.value?.widget.config)
 
 	onMounted(() => {
 		id = configStore.start(config, remote)

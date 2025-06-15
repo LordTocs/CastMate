@@ -1,7 +1,7 @@
 import { Service } from "../util/service"
 import express, { Application, Router } from "express"
 import http from "http"
-import ws from "ws"
+import ws, { WebSocketServer, WebSocket } from "ws"
 import { usePluginLogger } from "../logging/logging"
 import { PluginManager } from "../plugins/plugin-manager"
 import { EventList } from "../util/events"
@@ -12,6 +12,7 @@ import { filterPromiseAll } from "castmate-schema"
 import HttpProxy from "http-proxy"
 import os from "os"
 import cors from "cors"
+import { SatelliteService } from "../satellite/satellite-service"
 
 function closeHttpServer(httpServer: http.Server | undefined) {
 	return new Promise<void>((resolve, reject) => {
@@ -31,12 +32,11 @@ const logger = usePluginLogger("webserver")
 
 interface WebSocketExtras {
 	heartbeat: boolean
-	call<T extends (...args: any[]) => any>(name: string, ...args: Parameters<T>): Promise<ReturnType<T>>
 }
 
-export type ExtendedWebsocket = ws.WebSocket & WebSocketExtras
+export type ExtendedWebsocket = WebSocket & WebSocketExtras
 
-export type ExtendedServer = ws.Server & {
+export type ExtendedServer = WebSocketServer & {
 	readonly clients: ExtendedWebsocket[]
 }
 
@@ -70,7 +70,7 @@ export const WebService = Service(
 			this.app.use("/plugins/", this.routes)
 
 			this.httpServer = http.createServer(this.app)
-			this.websocketServer = new ws.Server({ noServer: true }) as ExtendedServer
+			this.websocketServer = new WebSocketServer({ noServer: true }) as ExtendedServer
 
 			this.pingInterval = setInterval(() => {
 				for (const socket of this.websocketServer.clients) {
@@ -82,7 +82,7 @@ export const WebService = Service(
 			}, 30000)
 
 			this.websocketServer.on("connection", async (socket, request) => {
-				logger.log("Websocket Connection")
+				logger.log("Websocket Connection!")
 
 				if (!request.url) return
 
@@ -90,48 +90,23 @@ export const WebService = Service(
 
 				const expandedSocket: ExtendedWebsocket = Object.assign(socket, {
 					heartbeat: true,
-					call: async <T extends (...args: any[]) => any>(
-						name: string,
-						...args: Parameters<T>
-					): Promise<ReturnType<T>> => {
-						return (await WebService.getInstance().rpcs.call(
-							name,
-							async (message) => {
-								await expandedSocket.send(JSON.stringify(message))
-							},
-							...args
-						)) as any
-					},
 				} satisfies WebSocketExtras)
-
-				expandedSocket.on("message", (rawData, isBinary) => {
-					const dataString = rawData.toString()
-
-					let data: any
-					try {
-						data = JSON.parse(dataString)
-					} catch (err) {
-						return
-					}
-
-					this.rpcs.handleMessage(
-						data as RPCMessage,
-						(msg) => expandedSocket.send(JSON.stringify(msg)),
-						expandedSocket
-					)
-
-					this.onMessage.run(expandedSocket, data)
-				})
 
 				expandedSocket.on("pong", async () => {
 					expandedSocket.heartbeat = true
 				})
 
-				expandedSocket.on("close", async () => {
-					this.onDisconnected.run(expandedSocket)
-				})
+				const result = await SatelliteService.getInstance().handleWebsocketConnection(
+					expandedSocket,
+					requestUrl,
+					request
+				)
 
-				this.onConnection.run(expandedSocket, requestUrl)
+				if (!result) {
+					logger.error("Unhandled Websocket Connection", requestUrl)
+					expandedSocket.close()
+					return
+				}
 			})
 
 			this.httpServer.on("error", (err) => {
@@ -148,6 +123,7 @@ export const WebService = Service(
 		}
 
 		removePluginRouter(router: express.Router) {
+			//@ts-ignore
 			const idx = this.routes.stack.findIndex((layer) => layer == router)
 			if (idx >= 0) {
 				this.routes.stack.splice(idx, 1)
@@ -159,6 +135,7 @@ export const WebService = Service(
 		}
 
 		removeRootRouter(router: express.Router) {
+			//@ts-ignore
 			const idx = this.app.stack.findIndex((layer) => layer == router)
 			if (idx >= 0) {
 				this.app.stack.splice(idx, 1)
@@ -253,16 +230,6 @@ export function onWebsocketDisconnect(func: (socket: ExtendedWebsocket) => any) 
 
 	onUnload(() => {
 		WebService.getInstance().onDisconnected.unregister(func)
-	})
-}
-
-export function onWebsocketMessage(func: (socket: ExtendedWebsocket, message: any) => any) {
-	onLoad(() => {
-		WebService.getInstance().onMessage.register(func)
-	})
-
-	onUnload(() => {
-		WebService.getInstance().onMessage.unregister(func)
 	})
 }
 

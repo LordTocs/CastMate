@@ -1,4 +1,5 @@
 import {
+	MaybePromise,
 	SatelliteConnectionICECandidate,
 	SatelliteConnectionInfo,
 	SatelliteConnectionOption,
@@ -17,6 +18,10 @@ import { SatelliteResourceConstructor } from "./satellite-resource"
 import { nanoid } from "nanoid/non-secure"
 import { Resource } from "../resources/resource"
 import { isCastMate, isSatellite } from "../util/init-mode"
+import http from "http"
+import ws, { WebSocket } from "ws"
+
+import { URLPattern } from "urlpattern-polyfill/urlpattern"
 
 //WebRTC connections are maintained out of the renderer process since no good node-webrtc libs exist
 
@@ -39,14 +44,62 @@ const rendererRTCSatelliteSetRTCOptions = defineCallableIPC<(response: Satellite
 
 const rendererSendRTCMessage = defineCallableIPC<(id: string, data: string) => any>("satellite", "sendRTCMessage")
 
+/////////////BORROWED FROM express-serve-static-core types/////////////////////////
+
+type RemoveTail<S extends string, Tail extends string> = S extends `${infer P}${Tail}` ? P : S
+type GetRouteParameter<S extends string> = RemoveTail<
+	RemoveTail<RemoveTail<S, `/${string}`>, `-${string}`>,
+	`.${string}`
+>
+
+export interface ParamsDictionary {
+	[key: string]: string
+}
+
+// prettier-ignore
+export type RouteParameters<Route extends string> = Route extends `${infer Required}{${infer Optional}}${infer Next}`
+    ? ParseRouteParameters<Required> & Partial<ParseRouteParameters<Optional>> & RouteParameters<Next>
+    : ParseRouteParameters<Route>;
+
+type ParseRouteParameters<Route extends string> = string extends Route
+	? ParamsDictionary
+	: Route extends `${string}(${string}`
+	? ParamsDictionary // TODO: handling for regex parameters
+	: Route extends `${string}:${infer Rest}`
+	? (GetRouteParameter<Rest> extends never
+			? ParamsDictionary
+			: GetRouteParameter<Rest> extends `${infer ParamName}?`
+			? { [P in ParamName]?: string } // TODO: Remove old `?` handling when Express 5 is promoted to "latest"
+			: { [P in GetRouteParameter<Rest>]: string }) &
+			(Rest extends `${GetRouteParameter<Rest>}${infer Next}` ? RouteParameters<Next> : unknown)
+	: {}
+
+type SatelliteWebsocketConnectionHandlerBase = (
+	socket: WebSocket,
+	params: object,
+	request: http.IncomingMessage
+) => MaybePromise<{ type: string; typeid: string } | undefined | Error>
+
+type SatelliteWebsocketConnectionHandler<Route extends string> = (
+	socket: WebSocket,
+	params: RouteParameters<Route>,
+	request: http.IncomingMessage
+) => MaybePromise<{ type: string; typeid: string } | undefined | Error>
+
+interface SatelliteWebsocketConnectionHandlerData {
+	pattern: URLPattern
+	handler: SatelliteWebsocketConnectionHandlerBase
+}
+
 interface BaseSatelliteConnection {
+	id: string
 	type: string
 	typeId: string
+	sender: (msg: RPCMessage) => any
 }
 
 interface SatelliteRTCConnection extends BaseSatelliteConnection {
 	transport: "webrtc"
-	id: string
 
 	remoteService: SatelliteConnectionService
 	remoteId: string
@@ -56,6 +109,7 @@ interface SatelliteRTCConnection extends BaseSatelliteConnection {
 
 interface SatelliteWebsocketConnection extends BaseSatelliteConnection {
 	transport: "websocket"
+	socket: WebSocket
 }
 
 type SatelliteConnection = SatelliteRTCConnection | SatelliteWebsocketConnection
@@ -66,11 +120,20 @@ function isRTCConnection(connection: unknown): connection is SatelliteRTCConnect
 	return false
 }
 
+function isRpcType(rpc: string, type: string) {
+	if (rpc.startsWith("satellite")) return true
+	if (rpc.startsWith(type)) return true
+
+	return false
+}
+
 const logger = usePluginLogger("satellite")
 export const SatelliteService = Service(
 	class {
 		onConnection = new EventList<(satelliteId: string) => any>()
 		onDisconnected = new EventList<(satelliteId: string) => any>()
+
+		websocketHandlers = new Array<SatelliteWebsocketConnectionHandlerData>()
 
 		private pubsubListening = false
 
@@ -107,6 +170,76 @@ export const SatelliteService = Service(
 
 		async setRTCConnectionOptions(options: SatelliteConnectionOption[]) {
 			rendererRTCSatelliteSetRTCOptions(options)
+		}
+
+		async handleWebsocketConnection(socket: WebSocket, url: URL, request: http.IncomingMessage) {
+			const id = nanoid()
+
+			for (const handler of this.websocketHandlers) {
+				const match = handler.pattern.exec(url.pathname)
+				if (!match) continue
+
+				const result = handler.handler(socket, match.pathname.groups, request)
+				if (!result) continue
+
+				if ("type" in result) {
+					const connection: SatelliteWebsocketConnection = {
+						id,
+						transport: "websocket",
+						type: result.type,
+						typeId: result.typeid,
+						socket,
+						sender: (msg) => {
+							return new Promise<void>((resolve, reject) => {
+								try {
+									socket.send(JSON.stringify(msg), (err) => {
+										if (err) return reject(err)
+										resolve()
+									})
+								} catch (err) {
+									reject(err)
+								}
+							})
+						},
+					}
+
+					socket.on("message", async (rawData, isBinary) => {
+						if (isBinary) return
+
+						const dataString = rawData.toString()
+
+						let data: any
+						try {
+							data = JSON.parse(dataString)
+						} catch (err) {
+							return
+						}
+
+						const message = data as RPCMessage
+						this.rpcHandler.handleMessage(message, (msg) => socket.send(JSON.stringify(msg)), id)
+					})
+
+					this.satelliteConnections.set(id, connection)
+					await this.onConnection.run(connection.id)
+
+					return true
+				}
+			}
+
+			return false
+		}
+
+		addWebsocketHandler<Route extends string>(route: Route, handler: SatelliteWebsocketConnectionHandler<Route>) {
+			this.websocketHandlers.push({
+				pattern: new URLPattern(route),
+				handler,
+			})
+		}
+
+		removeWebsocketHandler(handler: SatelliteWebsocketConnectionHandlerBase) {
+			const idx = this.websocketHandlers.findIndex((h) => h.handler === handler)
+			if (idx < 0) return
+			this.websocketHandlers.splice(idx, 1)
 		}
 
 		constructor() {
@@ -149,6 +282,9 @@ export const SatelliteService = Service(
 					...connectionInfo,
 					state: "connecting",
 					transport: "webrtc",
+					sender: (msg) => {
+						rendererSendRTCMessage(connectionInfo.id, JSON.stringify(msg))
+					},
 				})
 			})
 
@@ -182,27 +318,24 @@ export const SatelliteService = Service(
 					const connection = this.satelliteConnections.get(id)
 					if (!isRTCConnection(connection)) return
 
-					this.rpcHandler.handleMessage(
-						data as RPCMessage,
-						(msg) => rendererSendRTCMessage(id, JSON.stringify(msg)),
-						id
-					)
+					this.rpcHandler.handleMessage(data as RPCMessage, connection.sender, id)
 				} catch (err) {
 					logger.error("CONTROL MESSAGE ERROR", err)
 				}
 			})
 		}
 
-		async callSatelliteRPC<T extends (...args: any[]) => any>(id: string, name: string, ...args: Parameters<T>) {
-			const connection = this.satelliteConnections.get(id)
+		async callSatelliteRPC<T extends (...args: any[]) => any>(
+			connectionId: string,
+			type: string,
+			name: string,
+			...args: Parameters<T>
+		) {
+			const connection = this.satelliteConnections.get(connectionId)
 
 			if (!connection) return
 
-			return (await this.rpcHandler.call(
-				name,
-				(msg) => rendererSendRTCMessage(id, JSON.stringify(msg)),
-				...args
-			)) as ReturnType<T>
+			return (await this.rpcHandler.call(`${type}_${name}`, connection.sender, ...args)) as ReturnType<T>
 		}
 
 		registerRPC<T extends (id: string, ...args: any[]) => any>(name: string, func: T) {
@@ -225,6 +358,19 @@ export function onSatelliteConnection(func: (satelliteId: string) => any) {
 	})
 }
 
+export function handleSatelliteWebsocketConnection<Route extends string>(
+	route: Route,
+	handler: SatelliteWebsocketConnectionHandler<Route>
+) {
+	onLoad(() => {
+		SatelliteService.getInstance().addWebsocketHandler(route, handler)
+	})
+
+	onUnload(() => {
+		SatelliteService.getInstance().removeWebsocketHandler(handler)
+	})
+}
+
 export function onSatelliteDisconnect(func: (satelliteId: string) => any) {
 	onLoad(() => {
 		SatelliteService.getInstance().onDisconnected.register(func)
@@ -235,12 +381,16 @@ export function onSatelliteDisconnect(func: (satelliteId: string) => any) {
 	})
 }
 
-export function onSatelliteRPC<T extends (satelliteId: string, ...args: any[]) => any>(name: string, func: T) {
+export function onSatelliteRPC<T extends (satelliteId: string, ...args: any[]) => any>(
+	type: string,
+	name: string,
+	func: T
+) {
 	onLoad(() => {
-		SatelliteService.getInstance().registerRPC(name, func)
+		SatelliteService.getInstance().registerRPC(`${type}_${name}`, func)
 	})
 
 	onUnload(() => {
-		SatelliteService.getInstance().unregisterRPC(name)
+		SatelliteService.getInstance().unregisterRPC(`${type}_${name}`)
 	})
 }

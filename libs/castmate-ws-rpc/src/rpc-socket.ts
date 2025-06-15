@@ -23,15 +23,30 @@ interface RequestMessage {
 }
 
 export type RPCMessage = ResponseMessage | RequestMessage
-type Sender = (data: RPCMessage) => any
+export type RPCSender = (data: RPCMessage) => any
+export type RPCReceiver = (data: unknown) => Promise<boolean>
+
+export function isRPCMessage(data: unknown): data is RPCMessage {
+	if (typeof data != "object") return false
+	if (!data) return false
+	if ("responseId" in data && ("failed" in data || "result" in data)) {
+		return true
+	}
+	if ("requestId" in data && "name" in data && "args" in data) {
+		return true
+	}
+	return true
+}
 
 export class RPCHandler {
 	private outstandingCalls: Record<string, DelayedResolver<any>> = {}
-	private handlers: Record<string, (id: string, sender: Sender, ...args: any[]) => any> = {}
+	private handlers: Record<string, (id: string, sender: RPCSender, ...args: any[]) => any> = {}
 
 	constructor() {}
 
-	async handleMessage(data: RPCMessage, sender: (data: RPCMessage) => any, ...preArgs: any[]) {
+	async handleMessage(data: unknown, sender: RPCSender, ...preArgs: any[]) {
+		if (!isRPCMessage(data)) return
+
 		if ("responseId" in data) {
 			const outstandingCall = this.outstandingCalls[data.responseId]
 			if (!outstandingCall) {
@@ -91,7 +106,7 @@ export class RPCHandler {
 		delete this.handlers[name]
 	}
 
-	call(name: string, sender: (message: RPCMessage) => any, ...args: any[]) {
+	call(name: string, sender: RPCSender, ...args: any[]) {
 		const resolver = createDelayedResolver<unknown>()
 
 		const data = {

@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@vueuse/core": "*",
+		"castmate-satellite-ui-core": "workspace:^",
 		"castmate-schema": "workspace:^",
 		"chromatism2": "*",
 		"electron": "^34.2.0",

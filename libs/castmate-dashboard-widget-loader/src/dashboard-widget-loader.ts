@@ -3,7 +3,7 @@ import dashboardPlugin from "castmate-plugin-dashboards-dashboard"
 import remotePlugin from "castmate-plugin-remote-dashboard"
 
 import { defineStore } from "pinia"
-import { ref, computed, markRaw } from "vue"
+import { ref, computed, markRaw, MaybeRefOrGetter, toValue } from "vue"
 
 export interface DashboardWidgetInfo {
 	plugin: string
@@ -27,6 +27,15 @@ export const useDashboardWidgets = defineStore("castmate-dashboard-widgets", () 
 
 	return { loadPluginWidgets, getWidget, widgets: computed<DashboardWidgetInfo[]>(() => [...widgets.value.values()]) }
 })
+
+export function useDashboardWidget(config: MaybeRefOrGetter<{ plugin: string; widget: string }>) {
+	const widgetStore = useDashboardWidgets()
+
+	return computed<DashboardWidgetComponent | undefined>(() => {
+		const resolved = toValue(config)
+		return widgetStore.getWidget(resolved.plugin, resolved.widget)?.component
+	})
+}
 
 export function loadDashboardWidgets() {
 	const widgets = useDashboardWidgets()

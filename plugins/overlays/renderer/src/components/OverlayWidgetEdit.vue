@@ -35,10 +35,11 @@ import {
 import { ComputedRef, computed, inject, markRaw, onMounted, provide, ref, useModel, watch } from "vue"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { useRemoteOverlayConfig } from "../config/overlay-config"
-import { CastMateBridgeImplementation, provideEditorMediaResolver } from "castmate-overlay-core"
+import { provideEditorMediaResolver } from "castmate-overlay-core"
 
 import { useDialog } from "primevue/usedialog"
 import type { MenuItem } from "primevue/menuitem"
+import { provideSatelliteWidgetBridge } from "castmate-satellite-ui-core"
 
 const isSelected = useIsSelected(() => props.modelValue.id)
 const selection = useDocumentSelection()
@@ -59,6 +60,8 @@ onMounted(() => {
 })
 
 provide("isEditor", true)
+
+provideSatelliteWidgetBridge(() => props.modelValue.id)
 
 const mediaStore = useMediaStore()
 provideEditorMediaResolver({
@@ -88,18 +91,6 @@ const widgetStore = useOverlayWidgets()
 
 //TODO: Is this bad?
 const state = useFullState()
-
-provide<CastMateBridgeImplementation>("castmate-bridge", {
-	acquireState(plugin, state) {},
-	releaseState(plugin, state) {},
-	config: computed(() => props.modelValue),
-	state,
-	registerRPC(id, func) {},
-	unregisterRPC(id) {},
-	registerMessage(id, func) {},
-	unregisterMessage(id, func) {},
-	async callRPC(id, ...args) {},
-})
 
 const widgetComponent = computed(
 	() => widgetStore.getWidget(props.modelValue.plugin, props.modelValue.widget)?.component
