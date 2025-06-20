@@ -125,7 +125,7 @@ provide("activeTestSequence", activeTestSequence)
 const trigger = useTrigger(() => props.trigger)
 
 async function onRunSequence() {
-	testSequenceId.value = await actionQueueStore.testSequence(props.modelValue.sequence, props.trigger)
+	testSequenceId.value = await actionQueueStore.testSequence(props.modelValue)
 }
 
 async function onStopSequence() {

@@ -14,6 +14,7 @@ import _cloneDeep from "lodash/cloneDeep"
 export interface AutomationData {
 	sequence: Sequence
 	floatingSequences: FloatingSequence[]
+	testContext?: any
 }
 
 export interface InlineAutomation extends AutomationData {

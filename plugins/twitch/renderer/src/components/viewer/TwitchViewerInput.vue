@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" ref="inputBase">
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" ref="inputBase" :local-path="localPath">
 		<filter-input-box
 			v-model="model"
 			@focus="onFocus"
@@ -9,6 +9,7 @@
 			:tab-index="-1"
 			v-model:filter="nameValue"
 			ref="filterInput"
+			:local-path="localPath"
 		>
 			<template v-if="selectedDisplayData">
 				<img class="twitch-avatar" :src="selectedDisplayData.profilePicture" />

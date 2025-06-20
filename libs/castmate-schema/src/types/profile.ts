@@ -10,6 +10,12 @@ export interface TriggerData<Config = any> extends InlineAutomation {
 	stop?: boolean
 }
 
+export function isTriggerData(obj: AutomationData): obj is TriggerData {
+	if ("plugin" in obj) return true
+	if ("trigger" in obj) return true
+	return false
+}
+
 export interface ProfileConfig {
 	name: string
 	activationMode: Toggle

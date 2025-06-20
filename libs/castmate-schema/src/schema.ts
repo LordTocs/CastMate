@@ -143,6 +143,16 @@ export interface SchemaObj extends SchemaBase<object> {
 	properties: Record<string, Schema>
 }
 
+export function isObjectSchema(schema: unknown) : schema is SchemaObj {
+	if (!schema) return false
+	if (typeof schema != "object") return false
+	if (!("type" in schema)) return false
+	if (schema.type != Object) return false
+	if (!("properties" in schema)) return false
+	if (typeof schema.properties != "object") return false
+	return true
+}
+
 export interface SchemaArray extends SchemaBase<Array<any>> {
 	type: ArrayConstructor
 	items: Schema
@@ -467,6 +477,24 @@ export async function constructDefault<T extends Schema>(schema: T): Promise<Sch
 		}
 	}
 	return undefined as SchemaType<T>
+}
+
+export async function addDefaults<T extends SchemaObj>(schema: T, obj: Record<any,any>) {
+	 if (schema.type == Object) {
+		for (const prop in schema.properties) {
+			const propSchema = schema.properties[prop]
+
+			if (!(prop in obj)) {
+				obj[prop] = await constructDefault(propSchema)
+			} else if (isObjectSchema(propSchema)) {
+				if (typeof obj[prop] == "object") {
+					await addDefaults(propSchema, obj[prop])
+				} else {
+					obj[prop] = await constructDefault(propSchema)
+				}
+			}
+		}
+	}
 }
 
 ////////////////////////////////////Schema Squashes/////////////////////////////////////////////

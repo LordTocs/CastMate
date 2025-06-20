@@ -179,6 +179,13 @@ onMounted(() => {
 			console.log("TRIGGER CHANGED!")
 			const schemaDefaults = await constructDefault(trigger.value.config)
 			modelObj.value.config = schemaDefaults
+
+			const contextSchema =
+				typeof trigger.value.context == "function"
+					? await trigger.value.context(schemaDefaults)
+					: trigger.value.context
+
+			modelObj.value.testContext = await constructDefault(contextSchema)
 		}
 	})
 })
