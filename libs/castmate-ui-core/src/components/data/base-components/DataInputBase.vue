@@ -3,7 +3,12 @@
 		<div class="flex flex-row">
 			<p-input-group style="flex-grow: 1; flex-shrink: 1; max-width: 100%" @contextmenu="onContext">
 				<slot name="prepend" v-if="!(canTemplate && templateMode)"></slot>
-				<label-floater :model-value="modelValue" :label="schema.name" :no-float="noFloat" v-slot="labelProps">
+				<label-floater
+					:model-value="modelValue"
+					:label="getDataLabel(props)"
+					:no-float="noFloat"
+					v-slot="labelProps"
+				>
 					<template-toggle
 						v-bind="labelProps"
 						v-model="model"
@@ -36,7 +41,7 @@
 
 <script setup lang="ts">
 import { computed, markRaw, onBeforeMount, onMounted, ref, useModel } from "vue"
-import { LabelFloater, TemplateToggle, defaultStringIsTemplate } from "../../../main"
+import { LabelFloater, TemplateToggle, defaultStringIsTemplate, getDataLabel } from "../../../main"
 import ErrorLabel from "./ErrorLabel.vue"
 import { Schema } from "castmate-schema"
 import { useValidator } from "../../../util/validation"
@@ -55,6 +60,7 @@ const props = withDefaults(
 		menuExtra?: MenuItem[]
 		toggleTemplate?: boolean
 		disabled?: boolean
+		localPath?: string
 		isTemplate?: (value: any) => boolean
 	}>(),
 	{

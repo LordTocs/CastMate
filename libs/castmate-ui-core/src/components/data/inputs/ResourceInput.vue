@@ -8,11 +8,12 @@
 		v-slot="inputProps"
 		:disabled="disabled"
 		ref="inputBase"
+		:local-path="localPath"
 	>
 		<c-autocomplete
 			v-model="model"
 			:required="!!schema.required"
-			:label="schema.name"
+			:label="getDataLabel(props)"
 			text-prop="config.name"
 			:items="sortedResourceItems"
 			:group-prop="resourceStore?.configGroupPath ? 'config.' + resourceStore.configGroupPath : undefined"
@@ -47,7 +48,7 @@ import PMenu from "primevue/menu"
 import type { MenuItem } from "primevue/menuitem"
 import _clamp from "lodash/clamp"
 import _isMatch from "lodash/isMatch"
-import { SharedDataInputProps } from "../DataInputTypes"
+import { getDataLabel, SharedDataInputProps } from "../DataInputTypes"
 
 import CAutocomplete from "../base-components/CAutocomplete.vue"
 

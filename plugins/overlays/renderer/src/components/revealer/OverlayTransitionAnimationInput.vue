@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :toggle-template="false">
+	<data-input-base v-model="model" :schema="schema" :toggle-template="false" :local-path="localPath">
 		<template #prepend>
 			<c-duration-input v-model="durationModel" style="width: 5rem" local-path="duration" />
 		</template>

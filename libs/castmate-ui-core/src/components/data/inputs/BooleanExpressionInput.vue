@@ -1,6 +1,6 @@
 <template>
 	<div class="boolean-expression-input" tabindex="-1">
-		<span class="text-color-secondary text-sm">{{ schema.name }}</span>
+		<span class="text-color-secondary text-sm">{{ getDataLabel(props) }}</span>
 		<boolean-group-expression v-model="model" :show-drag="false" :selected-ids="[]" />
 	</div>
 </template>
@@ -9,7 +9,7 @@
 import { BooleanExpression, SchemaBooleanExpression } from "castmate-schema"
 import { ref, useModel } from "vue"
 import BooleanGroupExpression from "../base-components/booleans/BooleanGroupExpression.vue"
-import { SharedDataInputProps, useDataBinding } from "../../../main"
+import { getDataLabel, SharedDataInputProps, useDataBinding } from "../../../main"
 const props = defineProps<
 	{
 		modelValue: BooleanExpression | undefined

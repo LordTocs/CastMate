@@ -1,5 +1,12 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps" ref="inputBase">
+	<data-input-base
+		v-model="model"
+		:schema="schema"
+		:no-float="noFloat"
+		v-slot="inputProps"
+		ref="inputBase"
+		:local-path="localPath"
+	>
 		<div v-if="!schema.enum" class="w-full">
 			<number-field
 				v-model="numModel"

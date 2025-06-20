@@ -15,8 +15,8 @@
 					:false-icon="schema.falseIcon"
 					:toggle-icon="schema.toggleIcon"
 				/>
-				<label for="switch" class="ml-2 p-text-secondary align-self-center" v-if="schema.name">
-					{{ schema.name }}
+				<label for="switch" class="ml-2 p-text-secondary align-self-center" v-if="hasDataLabel(props)">
+					{{ getDataLabel(props) }}
 				</label>
 			</p-input-group>
 		</template-toggle>
@@ -35,7 +35,7 @@ import { Toggle } from "castmate-schema"
 import { computed, onMounted, ref, useModel } from "vue"
 import ToggleSwitch from "../base-components/ToggleSwitch.vue"
 import { SchemaToggle } from "castmate-schema"
-import { SharedDataInputProps, defaultStringIsTemplate } from "../DataInputTypes"
+import { SharedDataInputProps, defaultStringIsTemplate, getDataLabel, hasDataLabel } from "../DataInputTypes"
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import DataInputBaseMenu from "../base-components/DataInputBaseMenu.vue"
 import PInputGroup from "primevue/inputgroup"

@@ -6,6 +6,7 @@
 		:toggle-template="toggleTemplate"
 		v-slot="inputProps"
 		ref="dataInputBase"
+		:local-path="localPath"
 	>
 		<template-toggle
 			v-model="model"

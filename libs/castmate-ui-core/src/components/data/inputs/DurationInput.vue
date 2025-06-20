@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :local-path="localPath">
 		<duration-field v-model="model" :required="schema.required" v-bind="inputProps" ref="durationInput" />
 	</data-input-base>
 </template>

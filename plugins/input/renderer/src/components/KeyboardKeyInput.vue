@@ -5,11 +5,12 @@
 		:no-float="noFloat"
 		v-slot="inputProps"
 		:class="{ 'capture-mode1': captureMode }"
+		:local-path="localPath"
 	>
 		<c-autocomplete
 			class="key-input"
 			:items="keyItems"
-			:label="schema.name"
+			:label="getDataLabel(props)"
 			:required="!!schema.required"
 			v-model="model"
 			ref="inputRef"
@@ -33,6 +34,7 @@ import {
 	DataInputBase,
 	usePropagationStop,
 	useDataBinding,
+	getDataLabel,
 } from "castmate-ui-core"
 import { KeyboardKey, SchemaKeyboardKey, Keys, getKeyboardKey } from "castmate-plugin-input-shared"
 import { computed, ref, useModel } from "vue"

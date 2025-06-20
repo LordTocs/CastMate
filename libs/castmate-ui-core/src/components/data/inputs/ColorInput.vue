@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate" ref="dataInputBase">
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate" ref="dataInputBase" :local-path="localPath">
 		<div class="container w-full" ref="container">
 			<input-box v-bind="inputProps" :model="model" @click="toggle" ref="inputBox">
 				<div class="color-splash" :style="{ backgroundColor: model }"></div>

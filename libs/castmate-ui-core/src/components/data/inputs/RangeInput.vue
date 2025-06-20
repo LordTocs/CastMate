@@ -7,7 +7,7 @@
 					<span class="mx-1 flex align-items-center justify-content-center">⟶</span>
 					<range-number-input v-model="max" local-path="max" placeholder="∞" />
 				</div>
-				<label for="range" class="force-float"> {{ props.schema.name }}</label>
+				<label for="range" class="force-float"> {{ getDataLabel(props) }}</label>
 			</div>
 			<p-button
 				v-if="hasMenu"
@@ -34,7 +34,7 @@ import PButton from "primevue/button"
 import PMenu from "primevue/menu"
 import type { MenuItem } from "primevue/menuitem"
 
-import { SharedDataInputProps } from "../DataInputTypes"
+import { getDataLabel, SharedDataInputProps } from "../DataInputTypes"
 import { useValidator } from "../../../util/validation"
 import { useDataBinding } from "../../../main"
 

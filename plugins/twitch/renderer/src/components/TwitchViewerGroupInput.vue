@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :toggle-template="false">
+	<data-input-base v-model="model" :schema="schema" :toggle-template="false" :local-path="localPath">
 		<div class="container w-full" ref="container">
 			<input-box :model="model" @click="onClick">
 				<span style="white-space: nowrap">

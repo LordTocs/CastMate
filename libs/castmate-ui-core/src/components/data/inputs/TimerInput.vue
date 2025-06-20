@@ -1,5 +1,11 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :toggle-template="false" :no-float="noFloat">
+	<data-input-base
+		v-model="model"
+		:schema="schema"
+		:toggle-template="false"
+		:no-float="noFloat"
+		:local-path="localPath"
+	>
 		<template #prepend>
 			<p-button
 				:icon="!pauseModel ? 'mdi mdi-play' : 'mdi mdi-pause'"
