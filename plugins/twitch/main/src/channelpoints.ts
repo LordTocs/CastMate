@@ -514,7 +514,7 @@ export function setupChannelPointRewards() {
 			type: Object,
 			properties: {
 				viewer: { type: TwitchViewer, required: true, default: "27082158" },
-				reward: { type: ChannelPointReward, required: true },
+				reward: { type: ChannelPointReward, required: true, view: false },
 				redemptionId: { type: String, required: true, view: false },
 				message: { type: String, default: "Thanks for using CastMate!" },
 			},

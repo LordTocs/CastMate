@@ -350,7 +350,7 @@ export function setupSpells() {
 		context: {
 			type: Object,
 			properties: {
-				spell: { type: SpellHook, required: true },
+				spell: { type: SpellHook, required: true, view: false },
 				viewer: { type: TwitchViewer, required: true },
 				bits: { type: Number, required: true },
 			},

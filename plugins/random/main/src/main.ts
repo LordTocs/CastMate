@@ -120,6 +120,7 @@ export default definePlugin(
 						required: true,
 						name: "Wheel",
 						widgetType: { plugin: "random", widget: "wheel" },
+						view: false,
 					},
 					item: { type: String, required: true },
 				},

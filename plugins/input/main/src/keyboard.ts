@@ -69,7 +69,7 @@ export function setupKeyboard(inputInterface: InputInterface) {
 		config: {
 			type: Object,
 			properties: {
-				combo: { type: KeyCombo, name: "Combo", required: true },
+				combo: { type: KeyCombo, name: "Combo", required: true, view: false },
 			},
 		},
 		async handle(config, context) {

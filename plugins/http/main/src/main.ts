@@ -87,8 +87,8 @@ export default definePlugin(
 			context: {
 				type: Object,
 				properties: {
-					method: { type: String, name: "Method", required: true },
-					route: { type: String, name: "Route", required: true },
+					method: { type: String, name: "Method", required: true, view: false },
+					route: { type: String, name: "Route", required: true, view: false },
 					params: { type: Object, name: "URL Params", required: true, properties: {} },
 					query: { type: Object, name: "Query Params", required: true, properties: {} },
 					body: { type: Object, name: "Request Body", required: true, properties: {} },

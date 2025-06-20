@@ -39,7 +39,7 @@ export default definePlugin(
 			context: {
 				type: Object,
 				properties: {
-					name: { type: String, name: "Button Name", required: true },
+					name: { type: String, name: "Button Name", required: true, view: false },
 				},
 			},
 			async handle(config, context, mapping) {

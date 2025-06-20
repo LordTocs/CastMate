@@ -342,7 +342,7 @@ export function setupAds() {
 		context: {
 			type: Object,
 			properties: {
-				advance: { type: Duration, required: true },
+				advance: { type: Duration, required: true, view: false },
 			},
 		},
 		async handle(config, context, mapping) {
