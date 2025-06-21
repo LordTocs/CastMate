@@ -351,8 +351,8 @@ export function setupSpells() {
 			type: Object,
 			properties: {
 				spell: { type: SpellHook, required: true, view: false },
-				viewer: { type: TwitchViewer, required: true },
-				bits: { type: Number, required: true },
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
+				bits: { type: Number, required: true, default: 100 },
 			},
 		},
 		async handle(config, context, mapping) {
