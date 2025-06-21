@@ -15,18 +15,29 @@
 				</template>
 			</div>
 			<div
-				class="flex flex-row flex-grow-1 align-items-center my-2 mb-1 gap-1 pl-3"
+				class="flex flex-row flex-wrap flex-grow-1 align-items-center my-2 mb-1 gap-1 pl-3"
 				v-else
 				@dblclick="closeTrigger"
 			>
-				<trigger-selector v-model="triggerModel" label="Trigger" style="width: 300px" />
+				<trigger-selector
+					v-model="triggerModel"
+					label="Trigger"
+					style="flex-basis: 200px; flex: 1; min-width: 200px"
+				/>
 				<data-input
 					v-model="modelObj.queue"
 					:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
 					local-path="queue"
-					style="width: 300px"
+					style="flex-basis: 200px; flex: 1; min-width: 200px"
 				/>
-				<i class="" />
+				<c-text-input
+					multi-line
+					v-model="modelObj.description"
+					@mousedown="stopPropagation"
+					style="flex: 1; min-width: 300px"
+					placeholder="Description"
+					local-path="description"
+				/>
 			</div>
 			<p-button
 				text
@@ -81,6 +92,7 @@ import {
 	useDocumentSelection,
 	useDataBinding,
 	useDataUIBinding,
+	CTextInput,
 } from "castmate-ui-core"
 import isFunction from "lodash/isFunction"
 import { useVModel, asyncComputed } from "@vueuse/core"

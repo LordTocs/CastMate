@@ -19,6 +19,7 @@ export interface AutomationData {
 
 export interface InlineAutomation extends AutomationData {
 	queue?: string
+	description?: string
 }
 
 export function createInlineAutomation(): InlineAutomation {
