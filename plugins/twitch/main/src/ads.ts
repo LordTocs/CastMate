@@ -11,7 +11,7 @@ import {
 } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { CommercialLength } from "@twurple/api"
-import { onChannelAuth } from "./api-harness"
+import { onChannelAuth, onStreamOnline } from "./api-harness"
 import { Duration, Timer, getTimeRemaining, isTimerStarted } from "castmate-schema"
 
 export function setupAds() {
@@ -350,17 +350,17 @@ export function setupAds() {
 		},
 	})
 
+	onStreamOnline(() => {
+		setTimeout(() => {
+			//Wait a little bit after the stream comes online to query the ad schedule since we don't seem to get info on first startup
+			logger.log("Querying Initial Ad Schedule")
+			queryAdSchedule()
+		}, 60 * 1000)
+	})
+
 	onChannelAuth(async (channel, service) => {
 		logger.log("Channel Auth Query")
 		await queryAdSchedule()
-
-		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
-			setTimeout(() => {
-				//Wait a little bit after the stream comes online to query the ad schedule since we don't seem to get info on first startup
-				logger.log("Querying Initial Ad Schedule")
-				queryAdSchedule()
-			}, 60 * 1000)
-		})
 
 		service.eventsub.onChannelAdBreakBegin(channel.twitchId, async (event) => {
 			adStarted({ duration: event.durationSeconds })

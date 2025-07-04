@@ -32,7 +32,7 @@ import {
 } from "castmate-plugin-twitch-shared"
 import { TwitchAccount } from "./twitch-auth"
 import { HelixChannelUpdate } from "@twurple/api"
-import { onChannelAuth } from "./api-harness"
+import { onChannelAuth, onStreamOffline, onStreamOnline } from "./api-harness"
 import { CategoryCache } from "./category-cache"
 import { ViewerCache } from "./viewer-cache"
 
@@ -255,16 +255,13 @@ export function setupInfoManager() {
 		live.value = stream != null
 
 		await StreamInfoManager.getInstance().startManagingInfo()
+	})
 
-		logger.log("Registering Online Handlers")
-		service.eventsub.onStreamOnline(channel.twitchId, async (event) => {
-			logger.log("Stream Going Online")
-			live.value = true
-		})
+	onStreamOnline(() => {
+		live.value = true
+	})
 
-		service.eventsub.onStreamOffline(channel.twitchId, async (event) => {
-			logger.log("Stream Going Offline")
-			live.value = false
-		})
+	onStreamOffline(() => {
+		live.value = false
 	})
 }
