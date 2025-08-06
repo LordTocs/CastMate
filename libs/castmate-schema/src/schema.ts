@@ -143,7 +143,7 @@ export interface SchemaObj extends SchemaBase<object> {
 	properties: Record<string, Schema>
 }
 
-export function isObjectSchema(schema: unknown) : schema is SchemaObj {
+export function isObjectSchema(schema: unknown): schema is SchemaObj {
 	if (!schema) return false
 	if (typeof schema != "object") return false
 	if (!("type" in schema)) return false
@@ -268,6 +268,7 @@ export type ResolvedTypeByConstructor<T extends DataConstructorOrFactory> = Fall
 export interface RemoteTemplateSchemaTypeMap {
 	dummy: [Dummy, Dummy]
 	String: [SchemaString, RemoteTemplateString]
+	Number: [SchemaNumber, RemoteTemplateString | number]
 }
 export type RemoteTemplateSchemaTypeUnion = MapToUnion<RemoteTemplateSchemaTypeMap>
 
@@ -479,8 +480,8 @@ export async function constructDefault<T extends Schema>(schema: T): Promise<Sch
 	return undefined as SchemaType<T>
 }
 
-export async function addDefaults<T extends SchemaObj>(schema: T, obj: Record<any,any>) {
-	 if (schema.type == Object) {
+export async function addDefaults<T extends SchemaObj>(schema: T, obj: Record<any, any>) {
+	if (schema.type == Object) {
 		for (const prop in schema.properties) {
 			const propSchema = schema.properties[prop]
 

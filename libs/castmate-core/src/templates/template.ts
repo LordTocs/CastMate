@@ -19,6 +19,8 @@ import {
 	SchemaDynamicType,
 	SchemaType,
 	SchemaTypeByConstructor,
+	TemplateString,
+	TemplateStringRegion,
 	TemplateTypeByConstructor,
 	Toggle,
 	getTemplateRegionString,
@@ -34,7 +36,6 @@ import escapeRegExp from "lodash/escapeRegExp"
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
 const logger = usePluginLogger("template")
-
 export async function evaluateTemplate(template: string, data: object) {
 	let contextObjs = { ...data }
 
@@ -47,29 +48,48 @@ export async function evaluateTemplate(template: string, data: object) {
 	}
 }
 
-export async function template(templateStr: string, data: object) {
-	const templateData = parseTemplateString(templateStr)
-	let result = ""
+export interface TransformedTemplateString {
+	fullString: string
+	regions: TemplateStringRegion[]
+	transformed: any[]
+}
 
-	for (const region of templateData.regions) {
-		if (region.type == "string") {
-			result += getTemplateRegionString(templateData, region)
-		} else {
-			const js = getTemplateRegionString(templateData, region)
-			const trimmed = trimTemplateJS(js)
-			if (trimmed) {
-				let templateResult = undefined
-				try {
-					templateResult = await evaluateTemplate(trimmed, data)
-					result += templateResult != null ? String(templateResult) : ""
-				} catch (err) {
-					console.error("Error evaluating Template", err)
+export async function transformTemplateString(
+	templateStr: TemplateString,
+	data: object
+): Promise<TransformedTemplateString> {
+	const results = await Promise.all(
+		templateStr.regions.map(async (region) => {
+			if (region.type == "string") {
+				return getTemplateRegionString(templateStr, region)
+			} else {
+				const js = getTemplateRegionString(templateStr, region)
+				const trimmed = trimTemplateJS(js)
+				if (trimmed) {
+					let templateResult = undefined
+					try {
+						templateResult = await evaluateTemplate(trimmed, data)
+					} catch (err) {
+						console.error("Error evaluating Template", err)
+					}
+					return templateResult
 				}
 			}
-		}
-	}
+		})
+	)
 
-	return result
+	return {
+		...templateStr,
+		transformed: results,
+	}
+}
+
+export async function template(templateStr: string, data: object) {
+	const templateData = parseTemplateString(templateStr)
+
+	const transformedData = await transformTemplateString(templateData, data)
+
+	return transformedData.transformed.map((d) => (d != null ? String(d) : "")).join("")
 }
 
 export function isProbablyFromTemplate(value: string, template: string) {
@@ -94,7 +114,17 @@ export function isProbablyFromTemplate(value: string, template: string) {
 
 export async function templateNumber(value: string | number, context: object) {
 	if (isNumber(value)) return value
-	return Number(await template(value, context))
+
+	const templateData = parseTemplateString(value.trim())
+	const transformedData = await transformTemplateString(templateData, context)
+
+	if (transformedData.regions.length == 1) {
+		//Skip conversion to string if there's only one templated element
+		return Number(transformedData.transformed[0])
+	} else {
+		const numStr = transformedData.transformed.map((d) => (d != null ? String(d) : "")).join("")
+		return Number(numStr)
+	}
 }
 
 export type SchemaTemplater<T extends DataConstructorOrFactory> = (
@@ -289,6 +319,12 @@ registerSchemaTemplate(Number, async (value, context, schema) => {
 	}
 
 	return num
+})
+
+registerSchemaRemoteTemplate(Number, async (value, context, schema) => {
+	if (isNumber(value)) return value
+
+	return remoteTemplate(value.trim(), context)
 })
 
 registerSchemaTemplate(Duration, async (value, context, schema) => {

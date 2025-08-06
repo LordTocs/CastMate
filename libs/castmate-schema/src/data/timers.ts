@@ -40,6 +40,8 @@ export type TimerFactory = {
 function timerToPrimitive(hint: "default" | "string" | "number", timer: Timer) {
 	if (hint == "default" || hint == "string") {
 		return formatDuration(getTimeRemaining(timer), 0)
+	} else if (hint == "number") {
+		return getTimeRemaining(timer)
 	}
 }
 
@@ -197,8 +199,8 @@ registerRemoteDataDeserializer("Timer", (data, context) => {
 
 	if (isTimerStarted(timer)) {
 		const remaining = getTimeRemaining(timer)
-		context.scheduleReEval(remaining - Math.floor(remaining))
+		context.scheduleReEval(Math.min(remaining - Math.floor(remaining), 0.1))
 	}
 
-	return String(timer)
+	return timer
 })
