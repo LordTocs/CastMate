@@ -1,6 +1,6 @@
-import { ReactiveRef, defineAction, ensureDirectory } from "castmate-core"
+import { MediaManager, ReactiveRef, WebService, defineAction, ensureDirectory } from "castmate-core"
 import { OBSConnection } from "./connection"
-import { Directory, Toggle } from "castmate-schema"
+import { Directory, MediaFile, Toggle } from "castmate-schema"
 import path from "path"
 
 export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
@@ -387,6 +387,66 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 				inputName: config.sourceName,
 				inputSettings: {
 					url: config.url,
+				},
+			})
+		},
+	})
+
+	defineAction({
+		id: "setImage",
+		name: "Set Image Source",
+		icon: "mdi mdi-refresh",
+		config: {
+			type: Object,
+			properties: {
+				obs: {
+					type: OBSConnection,
+					name: "OBS Connection",
+					required: true,
+					default: () => obsDefault.value,
+				},
+				sourceName: {
+					type: String,
+					name: "Source Name",
+					required: true,
+					async enum(context: { obs: OBSConnection }) {
+						const obs = context?.obs?.connection
+						if (!obs) return []
+
+						const textInputs = await context.obs.getInputs("image_source")
+
+						return textInputs
+					},
+				},
+				image: {
+					type: MediaFile,
+					name: "Image",
+					image: true,
+					required: true,
+					template: true,
+				},
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			if (!config.obs.state.connected) return
+
+			//TODO: Wtf types?
+			let imagePath = config.image as string
+
+			if (MediaManager.getInstance().isMediaPath(config.image)) {
+				if (config.obs.isLocal) {
+					imagePath = MediaManager.getInstance().getLocalPath(imagePath)
+				} else {
+					if (await MediaManager.getInstance().validateRemoteMediaPath(imagePath)) {
+						imagePath = `${WebService.getInstance().remoteBaseUrl}/media/${imagePath}`
+					}
+				}
+			}
+
+			await config.obs.connection.call("SetInputSettings", {
+				inputName: config.sourceName,
+				inputSettings: {
+					file: imagePath,
 				},
 			})
 		},

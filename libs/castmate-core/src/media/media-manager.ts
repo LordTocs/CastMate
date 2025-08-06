@@ -154,6 +154,10 @@ export const MediaManager = Service(
 			return false
 		}
 
+		isMediaPath(mediaPath: string) {
+			return mediaPath.startsWith("default\\") || mediaPath.startsWith("default/")
+		}
+
 		async isMediaFolderPath(mediaPath: string) {
 			try {
 				const realFile = await fs.realpath(mediaPath)
@@ -168,11 +172,13 @@ export const MediaManager = Service(
 		getLocalPath(mediaPath: string) {
 			const baseMediaPath = resolveProjectPath("./media")
 
-			if (!mediaPath.startsWith("/default")) throw new Error(`"${mediaPath}" not a media path`)
+			if (!this.isMediaPath(mediaPath)) throw new Error(`"${mediaPath}" not a media path`)
 
-			const defaultPath = path.relative("/default", mediaPath)
+			const defaultPath = path.relative("default/", mediaPath)
 
 			const localPath = path.join(baseMediaPath, defaultPath)
+
+			console.log(mediaPath, baseMediaPath, defaultPath, localPath)
 
 			return localPath
 		}
@@ -241,6 +247,8 @@ export const MediaManager = Service(
 				url: "",
 				name: pathTools.basename(filepath),
 			}
+
+			logger.log("New Media", metadata)
 
 			//Duration
 			try {
