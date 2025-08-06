@@ -346,4 +346,49 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 			})
 		},
 	})
+
+	defineAction({
+		id: "setBrowserURL",
+		name: "Set Browser URL",
+		icon: "mdi mdi-refresh",
+		config: {
+			type: Object,
+			properties: {
+				obs: {
+					type: OBSConnection,
+					name: "OBS Connection",
+					required: true,
+					default: () => obsDefault.value,
+				},
+				sourceName: {
+					type: String,
+					name: "Source Name",
+					required: true,
+					async enum(context: { obs: OBSConnection }) {
+						const obs = context?.obs?.connection
+						if (!obs) return []
+
+						const textInputs = await context.obs.getInputs("browser_source")
+						return textInputs
+					},
+				},
+				url: {
+					type: String,
+					name: "URL",
+					required: true,
+					template: true,
+				},
+			},
+		},
+		async invoke(config, contextData, abortSignal) {
+			if (!config.obs.state.connected) return
+
+			await config.obs.connection.call("SetInputSettings", {
+				inputName: config.sourceName,
+				inputSettings: {
+					url: config.url,
+				},
+			})
+		},
+	})
 }
