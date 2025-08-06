@@ -8,6 +8,7 @@ import {
 	Duration,
 	DynamicType,
 	FilePath,
+	MediaFile,
 	Range,
 	RemoteSchemaType,
 	RemoteTemplateIntermediateSubstring,
@@ -351,6 +352,11 @@ registerSchemaTemplate(Color, async (value, context, schema) => {
 })
 
 registerSchemaTemplate(FilePath, async (value, context, schema) => {
+	let str = await template(value, context)
+	return str
+})
+
+registerSchemaTemplate(MediaFile, async (value, context, schema) => {
 	let str = await template(value, context)
 	return str
 })
