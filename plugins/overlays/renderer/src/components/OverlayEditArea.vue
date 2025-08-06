@@ -24,7 +24,7 @@
 				v-for="(widget, i) in model.widgets"
 				v-model="model.widgets[i]"
 				:key="widget.id"
-				ref="widgets"
+				:ref="(elem) => setWidgetRef(i, elem as OverlayWidgetEditComponent)"
 				@delete="deleteWidget(i)"
 				:local-path="`[${i}]`"
 			/>
@@ -54,6 +54,8 @@ import {
 	SelectDummy,
 	useDataBinding,
 	useDataUIBinding,
+	useOrderedRefs,
+	useCommitUndo,
 } from "castmate-ui-core"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import { OverlayEditorView } from "./overlay-edit-types"
@@ -78,7 +80,12 @@ const editArea = ref<HTMLElement>()
 
 const editSize = useElementSize(editArea)
 
-const widgets = ref<InstanceType<typeof OverlayWidgetEdit>[]>([])
+const commitUndo = useCommitUndo()
+
+type OverlayWidgetEditComponent = InstanceType<typeof OverlayWidgetEdit>
+const { orderedElements: widgets, setRef: setWidgetRef } = useOrderedRefs<OverlayWidgetEditComponent>(
+	() => model.value.widgets
+)
 
 const zoomScale = computed(() => {
 	const horizontalScale = editSize.width.value / model.value.size.width
@@ -88,6 +95,7 @@ const zoomScale = computed(() => {
 
 function deleteWidget(idx: number) {
 	model.value.widgets.splice(idx, 1)
+	commitUndo()
 }
 
 const lastSelectPos = ref<{ x: number; y: number }>({ x: 0, y: 0 })
@@ -143,6 +151,7 @@ function deleteSelection() {
 
 		model.value.widgets.splice(idx, 1)
 	}
+	commitUndo()
 }
 
 function onKeyDown(ev: KeyboardEvent) {
@@ -232,6 +241,8 @@ function onPaste(ev: ClipboardEvent) {
 		}
 
 		model.value.widgets.push(...pasteData)
+
+		commitUndo()
 
 		stopPropagation(ev)
 		ev.preventDefault()
