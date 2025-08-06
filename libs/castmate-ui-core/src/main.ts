@@ -102,6 +102,7 @@ export * from "./util/generic-login"
 export * from "./util/init-store"
 export * from "./util/events"
 export * from "./util/data-binding"
+export * from "./components/drag/OrderedTemplateRefs"
 
 export * from "./plugins/plugin-store"
 export * from "./project/project-store"

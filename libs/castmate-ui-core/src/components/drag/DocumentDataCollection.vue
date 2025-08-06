@@ -13,11 +13,11 @@
 	>
 		<select-dummy ref="selectDummy" />
 		<slot name="header"></slot>
-		<slot name="no-items" v-if="props.modelValue.length == 0"></slot>
+		<slot name="no-items" v-if="model.length == 0"></slot>
 		<div>
 			<div
 				class="draggable-item"
-				v-for="(data, i) in props.modelValue"
+				v-for="(data, i) in model"
 				:key="data.id"
 				:ref="(el) => setDataCompRef(i, el as HTMLElement)"
 				@mousedown="itemMouseDown(i, $event)"
@@ -28,7 +28,8 @@
 				<component
 					:is="dataComponent"
 					v-model="model[i]"
-					v-model:view="view[i]"
+					:view="view?.[i]"
+					@update:view="(v: any) => updateView(i, v)"
 					:selectedIds="selection"
 					@delete="deleteItem(i)"
 					:localPath="`[${i}]`"
@@ -55,8 +56,6 @@ import { useOrderedRefs } from "./OrderedTemplateRefs"
 
 const props = withDefaults(
 	defineProps<{
-		modelValue: DocumentData[]
-		view: any[]
 		dataComponent: Component
 		dataType?: string
 		handleClass?: string
@@ -65,16 +64,18 @@ const props = withDefaults(
 	{
 		dataType: "document-data",
 		handleClass: "drag-handle",
-		view: () => [],
 	}
 )
 
 useDataBinding(() => props.localPath)
 
-const model = useModel(props, "modelValue")
-const view = useModel(props, "view")
+const model = defineModel<any[]>({ required: true })
+const view = defineModel<any[]>("view")
 
-provideLocalPath(() => props.localPath)
+function updateView(i: number, value: any) {
+	if (!view.value) return
+	view.value[i] = value
+}
 
 const commitUndo = useCommitUndo()
 
@@ -88,7 +89,7 @@ const dragHovering = ref(false)
 const insertionIndex = ref<number>(0)
 
 const { orderedElements: orderedDataComponents, setRef: setDataCompRef } = useOrderedRefs<HTMLElement>(
-	() => props.modelValue
+	() => model.value
 )
 
 function overlaps(from: { x: number; y: number }, to: { x: number; y: number }, elem: DOMRect) {
@@ -159,21 +160,29 @@ useDrop(
 		console.log("Inserting at", insertionIdx)
 
 		const dataStr = ev.dataTransfer.getData(props.dataType)
-		const viewStr = ev.dataTransfer.getData(`${props.dataType}-view`)
-
 		let data: DocumentData[] = []
-		let viewData: any[] = []
-
 		try {
 			data = JSON.parse(dataStr)
-			viewData = JSON.parse(viewStr)
 		} catch (err) {
 			console.error("HOW DID WE GET HERE?")
 			return
 		}
 
+		const hasView = ev.dataTransfer.types.includes(`${props.dataType}-view`)
+
+		let viewData: any[] | undefined
+		if (hasView) {
+			const viewStr = ev.dataTransfer.getData(`${props.dataType}-view`)
+			try {
+				viewData = JSON.parse(viewStr)
+			} catch (err) {
+				console.error("HOW DID WE GET HERE?")
+				return
+			}
+		}
+
 		const newModel = [...model.value]
-		const newView = [...view.value]
+		const newView = view.value != null ? [...view.value] : undefined
 		//console.log("DropEffect", evt.dataTransfer.dropEffect, evt.dataTransfer.effectAllowed)
 		if (ev.dataTransfer.effectAllowed == "move" && draggingItems.value) {
 			//We're moving internal items
@@ -195,18 +204,22 @@ useDrop(
 
 				//console.log("Removing", id, idx)
 				newModel.splice(idx, 1)
-				newView.splice(idx, 1)
+				newView?.splice(idx, 1)
 			}
 		}
 
 		if (ev.dataTransfer.effectAllowed == "move" || ev.dataTransfer.effectAllowed == "copy") {
 			//console.log("Final inserting at", insertionIdx)
 			newModel.splice(insertionIdx, 0, ...data)
-			newView.splice(insertionIdx, 0, ...viewData)
+			if (viewData) {
+				newView?.splice(insertionIdx, 0, ...viewData)
+			}
 		}
 
 		model.value = newModel
-		view.value = newView
+		if (hasView) {
+			view.value = newView
+		}
 
 		console.log("NewModel", newModel)
 		console.log("NewView", newView)
@@ -241,28 +254,31 @@ function getInsertionIndex(clientY: number) {
 
 function getSelectedData(copy: boolean) {
 	const resultItems = []
-	const resultView = []
+	const resultView = view.value ? new Array<any>() : undefined
 
 	for (const id of selection.value) {
 		const item = model.value.find((v) => v.id == id)
-		const viewItem = view.value.find((v) => v.id == id)
+		const viewItem = view.value?.find((v) => v.id == id)
 
-		if (!item || !viewItem) continue
+		if (!item || (item && !view)) continue
 
 		const itemDupe = _cloneDeep(item)
-		const viewDupe = _cloneDeep(viewItem)
+		const viewDupe = viewItem ? _cloneDeep(viewItem) : undefined
 		if (copy) {
 			itemDupe.id = nanoid()
-			viewDupe.id = itemDupe.id
+			if (viewDupe) {
+				viewDupe.id = itemDupe.id
+			}
 		}
 		resultItems.push(itemDupe)
-		resultView.push(viewDupe)
+		if (viewDupe) {
+			resultView?.push(viewDupe)
+		}
 	}
 
 	return { modelItems: resultItems, viewItems: resultView }
 }
 
-const stopPropagation = usePropagationStop()
 const stopImmediatePropagation = usePropagationImmediateStop()
 
 /// DRAG ITEM HANDLERS
@@ -318,7 +334,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 			console.log("Remote Drop")
 			//These items are dropped into another frame, remove them from our model
 			model.value = model.value.filter((i) => !selection.value.includes(i.id))
-			view.value = view.value.filter((i) => !selection.value.includes(i.id))
+			view.value = view.value?.filter((i) => !selection.value.includes(i.id))
 
 			commitUndo()
 		}
@@ -332,7 +348,7 @@ function itemDragEnd(i: number, evt: DragEvent) {
 
 function deleteItem(index: number) {
 	model.value.splice(index, 1)
-	view.value.splice(index, 1)
+	view.value?.splice(index, 1)
 	commitUndo()
 }
 
@@ -342,7 +358,7 @@ function deleteItem(index: number) {
 
 function deleteSelected() {
 	model.value = model.value.filter((i) => !selection.value.includes(i.id))
-	view.value = view.value.filter((i) => !selection.value.includes(i.id))
+	view.value = view.value?.filter((i) => !selection.value.includes(i.id))
 	selection.value = []
 	commitUndo()
 }
@@ -418,7 +434,7 @@ function onPaste(ev: ClipboardEvent) {
 		if (!Array.isArray(pasteData)) return
 
 		model.value.splice(model.value.length, 0, ...pasteData)
-		view.value.splice(view.value.length, 0, ...viewData)
+		view.value?.splice(view.value.length, 0, ...viewData)
 	} catch {}
 }
 </script>
