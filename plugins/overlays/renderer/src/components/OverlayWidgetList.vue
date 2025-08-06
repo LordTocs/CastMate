@@ -2,16 +2,25 @@
 	<div class="flex flex-column widget-list">
 		<div class="flex-grow-1 widget-list-container">
 			<flex-scroller class="h-full" inner-class="flex flex-column gap-1">
-				<data-binding-path local-path="widgets">
-					<overlay-widget-list-item
-						v-for="(widget, i) in model.widgets"
-						v-model="model.widgets[i]"
-						:selected="selection.includes(widget.id)"
-						@click="widgetClick(i, $event)"
-						@delete="deleteWidget(i)"
-						:local-path="`[${i}]`"
-					/>
-				</data-binding-path>
+				<draggable-collection
+					v-model="model.widgets"
+					data-type="overlay-widgets"
+					key-prop="id"
+					handle-class="drag-handle"
+					local-path="widgets"
+					style="gap: 0.25rem"
+				>
+					<template #no-items></template>
+					<template #item="{ item, index }">
+						<overlay-widget-list-item
+							v-model="model.widgets[index]"
+							:selected="selection.includes(item.id)"
+							@click="widgetClick(index, $event)"
+							@delete="deleteWidget(index)"
+							:local-path="`[${index}]`"
+						/>
+					</template>
+				</draggable-collection>
 			</flex-scroller>
 		</div>
 		<div class="flex flex-row px-2 pb-2">
@@ -29,6 +38,7 @@ import {
 	usePropagationStop,
 	useCommitUndo,
 	DataBindingPath,
+	DraggableCollection,
 } from "castmate-ui-core"
 import { computed, ref, useModel } from "vue"
 import PButton from "primevue/button"

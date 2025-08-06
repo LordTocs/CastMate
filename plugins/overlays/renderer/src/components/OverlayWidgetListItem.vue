@@ -1,5 +1,8 @@
 <template>
 	<div class="widget-list-item gap-1" :class="{ selected }" :key="model.id" @click="onClick" @contextmenu="onContext">
+		<div class="drag-handle">
+			<i class="mdi mdi-drag" style="font-size: 2rem"></i>
+		</div>
 		<span class="flex-grow-1">{{ model.name }}</span>
 		<p-toggle-button
 			on-icon="mdi mdi-eye-outline"
