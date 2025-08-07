@@ -1,16 +1,16 @@
 <template>
 	<div class="border-radius-edit">
 		<div class="corner tl" ref="tl" :class="{ 'edit-drag': tlDragging }">
-			<margin-padding-num-edit v-model="tlLinked" local-path="topLeft" />
+			<widget-size-editable v-model="tlLinked" local-path="topLeft" />
 		</div>
 		<div class="corner tr" ref="tr" :class="{ 'edit-drag': trDragging }">
-			<margin-padding-num-edit v-model="trLinked" local-path="topRight" />
+			<widget-size-editable v-model="trLinked" local-path="topRight" />
 		</div>
 		<div class="corner bl" ref="bl" :class="{ 'edit-drag': blDragging }">
-			<margin-padding-num-edit v-model="blLinked" local-path="bottomLeft" />
+			<widget-size-editable v-model="blLinked" local-path="bottomLeft" />
 		</div>
 		<div class="corner br" ref="br" :class="{ 'edit-drag': brDragging }">
-			<margin-padding-num-edit v-model="brLinked" local-path="bottomRight" />
+			<widget-size-editable v-model="brLinked" local-path="bottomRight" />
 		</div>
 		<p-button @click="linked = !linked">
 			<i v-if="linked" class="pi pi-lock" />
@@ -23,7 +23,7 @@
 import { SchemaWidgetBorderRadius, WidgetBorderRadius } from "castmate-plugin-overlays-shared"
 import { SharedDataInputProps, useDataBinding, useDefaultableModel, useDragValue, usePropModel } from "castmate-ui-core"
 import { computed, onMounted, Ref, ref, watch } from "vue"
-import MarginPaddingNumEdit from "./MarginPaddingNumEdit.vue"
+import WidgetSizeEditable from "./WidgetSizeEditable.vue"
 import PButton from "primevue/button"
 
 const props = defineProps<

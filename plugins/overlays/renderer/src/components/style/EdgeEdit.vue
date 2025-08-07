@@ -7,22 +7,22 @@
 		}"
 	>
 		<div class="value-edit top" ref="top" :class="{ 'edit-drag': topDragging }">
-			<margin-padding-num-edit v-model="model.top" local-path="top" />
+			<widget-size-editable v-model="model.top" local-path="top" />
 		</div>
 		<div class="value-edit left" ref="left" :class="{ 'edit-drag': leftDragging }">
-			<margin-padding-num-edit v-model="model.left" local-path="left" />
+			<widget-size-editable v-model="model.left" local-path="left" />
 		</div>
 		<div class="value-edit right" ref="right" :class="{ 'edit-drag': rightDragging }">
-			<margin-padding-num-edit v-model="model.right" local-path="right" />
+			<widget-size-editable v-model="model.right" local-path="right" />
 		</div>
 		<div class="value-edit bottom" ref="bottom" :class="{ 'edit-drag': bottomDragging }">
-			<margin-padding-num-edit v-model="model.bottom" local-path="bottom" />
+			<widget-size-editable v-model="model.bottom" local-path="bottom" />
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import MarginPaddingNumEdit from "./MarginPaddingNumEdit.vue"
+import WidgetSizeEditable from "./WidgetSizeEditable.vue"
 import { OverlayEdgeInfo } from "castmate-plugin-overlays-shared"
 import { computed, ref, useModel } from "vue"
 import { useCommitUndo, useDataBinding, useDragValue } from "castmate-ui-core"
