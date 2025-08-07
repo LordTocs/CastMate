@@ -1,7 +1,7 @@
 <template>
 	<p-input-text
 		v-model="bufferedNumModel"
-		v-keyfilter.num
+		v-keyfilter="/[\d-.]|Enter/"
 		@focus="onFocus"
 		@blur="onBlur"
 		:placeholder="placeholder"
