@@ -13,10 +13,10 @@ export function usePropModel<T extends object, P extends keyof T>(model: Ref<T>,
 	})
 }
 
-export function useDefaultableModel<T extends object, P extends keyof T>(
+export function useDefaultableModel<T extends object, P extends keyof T, PD extends T[P]>(
 	model: Ref<T | undefined>,
 	prop: P,
-	propDefault: T[P],
+	propDefault: PD,
 	defaultMaker: () => T
 ) {
 	return computed({
