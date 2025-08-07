@@ -1,5 +1,5 @@
 <template>
-	<p-button :severity="model ? onSeverity : offSeverity" @click="onClick" :size="size" ref="button">
+	<p-button :severity="model ? onSeverity : offSeverity" @click="onClick" :size="size" ref="button" :text="text">
 		<slot name="off" v-if="!model">
 			<i v-if="offIcon" :class="offIcon" /><span v-if="label">{{ label }}</span>
 		</slot>
@@ -22,6 +22,7 @@ const props = defineProps<{
 	onIcon?: string
 	label?: string
 	localPath?: string
+	text?: boolean
 }>()
 
 useDataBinding(() => props.localPath)

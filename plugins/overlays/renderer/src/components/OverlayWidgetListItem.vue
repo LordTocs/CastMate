@@ -1,28 +1,30 @@
 <template>
 	<div class="widget-list-item gap-1" :class="{ selected }" :key="model.id" @click="onClick" @contextmenu="onContext">
 		<div class="drag-handle">
-			<i class="mdi mdi-drag" style="font-size: 2rem"></i>
+			<i class="text-color-secondary mdi mdi-drag" style="font-size: 2rem"></i>
 		</div>
 		<span class="flex-grow-1">{{ model.name }}</span>
-		<p-toggle-button
+		<c-toggle-button
 			on-icon="mdi mdi-eye-outline"
-			on-label=""
 			off-icon="mdi mdi-eye-off-outline"
-			off-label=""
 			size="small"
-			text
 			class="extra-small-button"
 			v-model="visibleModel"
-		/>
-		<p-toggle-button
-			on-icon="mdi mdi-lock-outline"
-			on-label=""
-			off-icon="mdi mdi-lock-open-outline"
-			off-label=""
-			size="small"
+			local-path="visible"
+			on-severity="contrast"
+			off-severity="secondary"
 			text
+		/>
+		<c-toggle-button
+			on-icon="mdi mdi-lock-outline"
+			off-icon="mdi mdi-lock-open-outline"
+			size="small"
 			class="extra-small-button"
+			local-path="locked"
 			v-model="lockedModel"
+			on-severity="contrast"
+			off-severity="secondary"
+			text
 		/>
 		<c-context-menu ref="contextMenu" :items="contextItems" />
 	</div>
@@ -33,7 +35,14 @@ import { OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
 import type { MenuItem } from "primevue/menuitem"
 import PToggleButton from "primevue/togglebutton"
 import { computed, ref, useModel } from "vue"
-import { CContextMenu, NameDialog, useDataBinding, usePropModel, useUndoCommitter } from "castmate-ui-core"
+import {
+	CContextMenu,
+	NameDialog,
+	useDataBinding,
+	usePropModel,
+	CToggleButton,
+	useUndoCommitter,
+} from "castmate-ui-core"
 
 import { useDialog } from "primevue/usedialog"
 
@@ -53,8 +62,8 @@ const emit = defineEmits(["click", "delete"])
 
 const dialog = useDialog()
 
-const visibleModel = useUndoCommitter(usePropModel(model, "visible"))
-const lockedModel = useUndoCommitter(usePropModel(model, "locked"))
+const visibleModel = usePropModel(model, "visible")
+const lockedModel = usePropModel(model, "locked")
 
 const contextItems = computed<MenuItem[]>(() => {
 	return [
