@@ -204,9 +204,9 @@ export function useDraggable(
 
 export function useDragValue(
 	element: MaybeRefOrGetter<HTMLElement | undefined>,
-	numRef: Ref<number>,
+	numRef: Ref<number | undefined>,
 	config?: MaybeRefOrGetter<{
-		direction?: "horizontal" | "vertical"
+		direction?: "horizontal" | "vertical" | "up-left" | "up-right" | "down-left" | "down-right"
 		scale?: number
 		invert?: boolean
 		min?: number
@@ -225,7 +225,7 @@ export function useDragValue(
 
 		dragging.value = true
 		dragStart.value = pos
-		dragStartValue.value = numRef.value
+		dragStartValue.value = numRef.value ?? 0
 	})
 
 	function updateNumber(ev: MouseEvent) {
@@ -235,9 +235,21 @@ export function useDragValue(
 		let offset: number
 		if (configValue?.direction == "vertical") {
 			offset = pos.y - dragStart.value.y
-		} else {
+		} else if (configValue?.direction == "horizontal") {
 			//Horizontal
 			offset = pos.x - dragStart.value.x
+		} else {
+			let dx = pos.x - dragStart.value.x
+			let dy = pos.y - dragStart.value.y
+
+			if (configValue?.direction == "up-left" || configValue?.direction == "up-right") {
+				dy = -dy
+			}
+			if (configValue?.direction == "up-left" || configValue?.direction == "down-left") {
+				dx = -dx
+			}
+
+			offset = Math.max(dx, dy)
 		}
 
 		if (configValue?.invert) {
