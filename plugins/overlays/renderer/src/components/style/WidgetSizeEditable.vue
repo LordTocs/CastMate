@@ -49,5 +49,7 @@ function labelClick(ev: MouseEvent) {
 	padding: 0.1rem;
 	margin: 0;
 	font-size: 10px;
+	min-height: 1em;
+	min-width: 1em;
 }
 </style>
