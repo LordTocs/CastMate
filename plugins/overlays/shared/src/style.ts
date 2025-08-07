@@ -1,5 +1,7 @@
 import { Color, SchemaBase, registerType } from "castmate-schema"
 
+import { CSSProperties } from "vue"
+
 export interface OverlayStrokeStyle {
 	width: number
 	color: Color
@@ -19,6 +21,76 @@ export interface OverlayTextStyle {
 	fontWeight: number
 	stroke?: OverlayStrokeStyle
 	shadow?: OverlayShadowStyle
+}
+
+export function clamp(value: number, min: number, max: number) {
+	return Math.min(Math.max(value, min), max)
+}
+
+function createCSS() {
+	return {} as CSSProperties
+}
+
+export function cssProp<Key extends keyof CSSProperties, T>(
+	obj: CSSProperties,
+	prop: Key,
+	select: T,
+	func: (value: NonNullable<T>) => CSSProperties[Key]
+) {
+	if (select == null) return
+	obj[prop] = func(select)
+}
+
+export function cssStaticProp<Key extends keyof CSSProperties>(
+	obj: CSSProperties,
+	prop: Key,
+	select: CSSProperties[Key] | undefined | null
+) {
+	if (select == null) return
+	obj[prop] = select
+}
+
+export type WidgetSizePixels = number
+
+export interface WidgetSizePercent {
+	unit: "%"
+	amount: number
+}
+
+export type WidgetStyleSize = WidgetSizePixels | WidgetSizePercent
+
+function isPixelSize(size: WidgetStyleSize): size is WidgetSizePixels {
+	return typeof size == "number"
+}
+
+function toSizeCSS(size: WidgetStyleSize, scale: number = 1) {
+	if (isPixelSize(size)) {
+		return `${size}px`
+	}
+	return `${size.amount}${size.unit}`
+}
+
+export function createWidetSize(size: number, unit: "px" | "%" = "px") {
+	return {
+		unit,
+		amount: size,
+	} as WidgetStyleSize
+}
+
+type Numberish = string | number
+type KeysMatching<T extends object, V> = {
+	[K in keyof T]-?: V extends T[K] ? K : never
+}[keyof T]
+
+type NumberishCSSProperties = Pick<CSSProperties, KeysMatching<CSSProperties, Numberish>>
+export function cssSizeProp<Key extends keyof NumberishCSSProperties>(
+	obj: CSSProperties,
+	prop: Key,
+	select: WidgetStyleSize | undefined | null,
+	scale: number = 1
+) {
+	if (select == null) return
+	obj[prop] = toSizeCSS(select, scale)
 }
 
 const OverlayTextSymbol = Symbol()
@@ -169,11 +241,79 @@ export interface SchemaOverlayTextAlignment extends SchemaBase<OverlayTextAlignm
 	type: OverlayTextAlignmentFactory
 }
 
+export interface WidgetCornerInfo<T = number> {
+	topLeft: T
+	topRight: T
+	bottomLeft: T
+	bottomRight: T
+}
+
+export interface WidgetCornerInfoBound<T = number> {
+	topLeft: T
+	topRight: T
+	bottomLeft: T
+	bottomRight: T
+}
+
+export function clampCornerInfo(
+	style: Partial<WidgetCornerInfo<WidgetSizePixels>> | undefined,
+	min: WidgetCornerInfoBound<WidgetSizePixels>,
+	max: WidgetCornerInfoBound<WidgetSizePixels>
+) {
+	if (!style) return undefined
+
+	const result: Partial<WidgetCornerInfo<WidgetSizePixels>> = {}
+
+	if (style.topLeft != null) {
+		result.topLeft = clamp(style.topLeft, min.topLeft, max.topLeft)
+	}
+	if (style.bottomLeft != null) {
+		result.bottomLeft = clamp(style.bottomLeft, min.bottomLeft, max.bottomLeft)
+	}
+	if (style.topRight != null) {
+		result.topRight = clamp(style.topRight, min.topRight, max.topRight)
+	}
+	if (style.bottomRight != null) {
+		result.bottomRight = clamp(style.bottomRight, min.bottomRight, max.bottomRight)
+	}
+
+	return result
+}
+
+export type WidgetBorderRadius = Partial<WidgetCornerInfo<WidgetSizePixels>>
+
+export function getBorderRadiusCSS(style: WidgetBorderRadius | undefined, scale: number = 1) {
+	const result = createCSS()
+	if (!style) return result
+
+	cssSizeProp(result, "border-top-left-radius", style.topLeft, scale)
+	cssSizeProp(result, "border-top-right-radius", style.topRight, scale)
+	cssSizeProp(result, "border-bottom-left-radius", style.bottomLeft, scale)
+	cssSizeProp(result, "border-bottom-right-radius", style.bottomRight, scale)
+
+	return result
+}
+
+const WidgetBorderRadiusSymbol = Symbol()
+export const WidgetBorderRadius = {
+	factoryCreate(initial?: WidgetBorderRadius): WidgetBorderRadius {
+		return { ...initial }
+	},
+	[WidgetBorderRadiusSymbol]: "WidgetBorderRadius",
+}
+
+export type WidgetBorderRadiusFactory = typeof WidgetBorderRadius
+
+export interface SchemaWidgetBorderRadius extends SchemaBase<WidgetBorderRadius> {
+	type: WidgetBorderRadiusFactory
+}
+
 declare module "castmate-schema" {
 	interface SchemaTypeMap {
 		OverlayTextStyle: [SchemaOverlayTextStyle, OverlayTextStyle]
 		OverlayBlockStyle: [SchemaOverlayBlockStyle, OverlayBlockStyle]
 		OverlayTextAlignment: [SchemaOverlayTextAlignment, OverlayTextAlignment]
+		WidgetBorderRadius: [SchemaWidgetBorderRadius, WidgetBorderRadius]
 	}
 }
 
@@ -187,4 +327,8 @@ registerType("OverlayBlockStyle", {
 
 registerType("OverlayTextAlignment", {
 	constructor: OverlayTextAlignment,
+})
+
+registerType("WidgetBorderRadius", {
+	constructor: WidgetBorderRadius,
 })

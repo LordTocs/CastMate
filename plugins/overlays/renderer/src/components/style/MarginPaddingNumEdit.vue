@@ -15,7 +15,7 @@ const props = defineProps<{
 	localPath: string
 }>()
 
-const model = defineModel<number>({ required: true })
+const model = defineModel<number>()
 
 useDataBinding(() => props.localPath)
 
