@@ -112,12 +112,12 @@ const tabModel = useUndoCommitter(useDefaultableModel(model, "mode", "command", 
 
 const leftBoundaryModel = useUndoCommitter(
 	//@ts-ignore
-	useDefaultableModel<StringModeCommand, "leftBoundary">(model, "leftBoundary", false, defaultCommand)
+	useDefaultableModel<StringModeCommand, "leftBoundary", boolean>(model, "leftBoundary", false, defaultCommand)
 )
 
 const rightBoundaryModel = useUndoCommitter(
 	//@ts-ignore
-	useDefaultableModel<StringModeCommand, "rightBoundary">(model, "rightBoundary", false, defaultCommand)
+	useDefaultableModel<StringModeCommand, "rightBoundary", boolean>(model, "rightBoundary", false, defaultCommand)
 )
 
 function deleteValue(index: number) {
