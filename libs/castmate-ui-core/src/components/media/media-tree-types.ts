@@ -1,4 +1,4 @@
-import { MediaFile, MediaMetadata } from "castmate-schema"
+import { MediaFile, MediaMetadata, normalizeMediaPath } from "castmate-schema"
 import path from "path"
 import { MediaStore, useMediaStore } from "../../main"
 import { computed, MaybeRefOrGetter, toValue } from "vue"
@@ -40,8 +40,11 @@ export function treeifyMediaFile(files: MediaFile[], filtering: MediaFiltering, 
 
 	const tree: Record<string, MediaTreeItem> = {}
 
+	const root = normalizeMediaPath(filtering.root)
+
 	for (const file of files) {
-		const rel = path.relative(filtering.root, file)
+		const rel = path.relative(root, file)
+		console.log("Treeify Parse", file, rel)
 		const parsed = path.parse(rel)
 
 		if (filterLower && !parsed.name.toLocaleLowerCase().includes(filterLower)) continue
