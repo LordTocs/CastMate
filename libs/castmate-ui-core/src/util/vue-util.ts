@@ -41,17 +41,18 @@ export function useOptionalDefaultableModel<T extends object, P extends keyof T>
 	defaultMaker: () => T
 ) {
 	return computed({
-		get() {
+		get(): T[P] | undefined {
+			if (typeof model.value != "object") return
 			return model.value?.[prop]
 		},
 		set(v) {
-			if (!v) {
+			if (v == null) {
 				model.value = undefined
 				return
 			}
 
-			if (model.value == null) {
-				const newValue = defaultMaker()
+			if (typeof model.value != "object") {
+				const newValue = defaultMaker() as T
 				newValue[prop] = v
 				model.value = newValue
 			} else {
