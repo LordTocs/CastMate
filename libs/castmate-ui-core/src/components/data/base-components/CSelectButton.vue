@@ -1,5 +1,5 @@
 <template>
-	<p-select-button v-model="undoModel" :options="options">
+	<p-select-button v-model="undoModel" :options="options" :size="size">
 		<template #option="slotProps" v-if="$slots.option">
 			<slot name="option" v-bind="slotProps"></slot>
 		</template>
@@ -13,6 +13,7 @@ import { useDataBinding, useUndoCommitter } from "../../../main"
 const props = defineProps<{
 	localPath?: string
 	options: string[]
+	size?: "small" | "large"
 }>()
 
 const model = defineModel<string>()
