@@ -37,14 +37,15 @@ import {
 	useCommitUndo,
 } from "../../main"
 import { useOrderedRefs } from "./OrderedTemplateRefs"
+import _isEqual from "lodash/isEqual"
 
 const props = withDefaults(
 	defineProps<{
-		keyProp: keyof T
+		keyProp?: keyof T
 		direction?: "horizontal" | "vertical"
 		handleClass: string
 		dataType: string
-		localPath: string
+		localPath?: string
 	}>(),
 	{
 		direction: "vertical",
@@ -60,7 +61,18 @@ const model = defineModel<T[]>({ default: () => [] })
 const dragArea = ref<HTMLElement>()
 
 function getKey(item: T) {
-	return item[props.keyProp]
+	if (props.keyProp) {
+		return item[props.keyProp]
+	}
+}
+
+function getIndex(data: T) {
+	if (props.keyProp) {
+		//@ts-ignore
+		return model.value.findIndex((item) => item[props.keyProp] == data[props.keyProp])
+	} else {
+		return model.value.findIndex((item) => _isEqual(item, data))
+	}
 }
 
 const dragTarget = ref<HTMLElement>()
@@ -201,7 +213,7 @@ useDrop(
 			//We're dropping an item from this list which means we both remove and insert the element here.
 			droppedLocal.value = true
 
-			const oldIdx = model.value.findIndex((item) => item[props.keyProp] == data[props.keyProp])
+			const oldIdx = getIndex(data)
 
 			if (oldIdx >= 0) {
 				model.value.splice(oldIdx, 1)
