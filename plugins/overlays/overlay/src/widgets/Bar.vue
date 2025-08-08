@@ -1,24 +1,40 @@
 <template>
-	<div class="outer-bar" :style="getBorderRadiusCSS(props.config.outerRadius)">
+	<div
+		class="outer-bar"
+		:style="{
+			...getBorderRadiusCSS(props.config.outerRadius),
+			...getBackgroundCSS(props.config.backgroundStyle, mediaResolver),
+		}"
+	>
 		<div
 			class="inner-bar"
 			:style="{
 				width: `${percentage}%`,
+				...getBackgroundCSS(props.config.fillStyle, mediaResolver),
 			}"
 		></div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { declareWidgetOptions } from "castmate-overlay-core"
-import { getBorderRadiusCSS, WidgetBorderRadius } from "castmate-plugin-overlays-shared"
+import { declareWidgetOptions, useMediaResolver } from "castmate-overlay-core"
+import {
+	getBackgroundCSS,
+	getBorderRadiusCSS,
+	WidgetBackgroundStyle,
+	WidgetBorderRadius,
+} from "castmate-plugin-overlays-shared"
 import { computed } from "vue"
+
+const mediaResolver = useMediaResolver()
 
 const props = defineProps<{
 	config: {
 		value: number
 		target: number
 		outerRadius: WidgetBorderRadius
+		backgroundStyle: WidgetBackgroundStyle
+		fillStyle: WidgetBackgroundStyle
 	}
 }>()
 
@@ -43,6 +59,8 @@ defineOptions({
 				value: { type: Number, name: "Value", required: true, default: 0, template: true },
 				target: { type: Number, name: "Target", required: true, default: 100, template: true },
 				outerRadius: { type: WidgetBorderRadius, name: "Outer Corners", required: true },
+				backgroundStyle: { type: WidgetBackgroundStyle, name: "Background Style", required: true },
+				fillStyle: { type: WidgetBackgroundStyle, name: "Fill Style", required: true },
 			},
 		},
 	}),
@@ -54,7 +72,6 @@ defineOptions({
 	position: relative;
 	width: 100%;
 	height: 100%;
-	background-color: red;
 
 	overflow: hidden;
 }

@@ -22,6 +22,7 @@ import {
 	OverlayTextStyle,
 	OverlayTransitionAnimation,
 	OverlayWidget,
+	WidgetBackgroundStyle,
 	WidgetBorderRadius,
 } from "castmate-plugin-overlays-shared"
 import OverlayTextStyleInput from "./components/style/OverlayTextStyleInput.vue"
@@ -30,6 +31,7 @@ import OverlayTextAlignInput from "./components/style/OverlayTextAlignInput.vue"
 import OverlayWidgetInput from "./components/OverlayWidgetInput.vue"
 import OverlayTransitionAnimationInput from "./components/revealer/OverlayTransitionAnimationInput.vue"
 import WidgetBorderRadiusInput from "./components/style/WidgetBorderRadiusInput.vue"
+import WidgetBackgroundStyleInput from "./components/style/WidgetBackgroundStyleInput.vue"
 
 export function initPlugin(app: App<Element>) {
 	const dataStore = useDataInputStore()
@@ -40,6 +42,7 @@ export function initPlugin(app: App<Element>) {
 	dataStore.registerInputComponent(OverlayWidget, OverlayWidgetInput)
 	dataStore.registerInputComponent(OverlayTransitionAnimation, OverlayTransitionAnimationInput)
 	dataStore.registerInputComponent(WidgetBorderRadius, WidgetBorderRadiusInput)
+	dataStore.registerInputComponent(WidgetBackgroundStyle, WidgetBackgroundStyleInput)
 
 	const resourceStore = useResourceStore()
 	const documentStore = useDocumentStore()

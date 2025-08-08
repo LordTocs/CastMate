@@ -1,4 +1,5 @@
 import { Color, SchemaBase, registerType } from "castmate-schema"
+import _cloneDeep from "lodash/cloneDeep"
 
 import { CSSProperties } from "vue"
 
@@ -308,12 +309,150 @@ export interface SchemaWidgetBorderRadius extends SchemaBase<WidgetBorderRadius>
 	type: WidgetBorderRadiusFactory
 }
 
+//Backgrounds////////////////////////////
+
+export interface WidgetGradientStop {
+	color: Color
+	position: number
+}
+
+function getGradientStopCSS(stop: WidgetGradientStop) {
+	return `${stop.color} ${stop.position}%`
+}
+
+export interface WidgetGradientStyle {
+	gradientType: "linear" | "radial"
+	angle: number
+	stops: WidgetGradientStop[]
+}
+
+export function getGradientCSS(gradient: WidgetGradientStyle) {
+	if (gradient.gradientType == "linear") {
+		return `linear-gradient(${gradient.angle ?? 0}deg, ${gradient.stops
+			.map((s) => getGradientStopCSS(s))
+			.join(", ")})`
+	} else {
+		return `radial-gradient(${gradient.stops.map((s) => getGradientStopCSS(s)).join(", ")})`
+	}
+}
+
+export type WidgetBackgroundRepeat = "repeat" | "no-repeat"
+export type WidgetBackgroundPositionH = "left" | "center" | "right"
+export type WidgetBackgroundPositionV = "top" | "center" | "bottom"
+export type WidgetBackgroundSizeOptions = "contain" | "cover"
+
+interface WidgetBackgroundDimensions<H, V = H> {
+	horizontal: H
+	vertical: V
+}
+
+export interface WidgetBackgroundSettings {
+	repeat?: WidgetBackgroundDimensions<WidgetBackgroundRepeat>
+	position?: WidgetBackgroundDimensions<WidgetBackgroundPositionH, WidgetBackgroundPositionV>
+	size?: WidgetBackgroundDimensions<WidgetSizePixels> | WidgetBackgroundSizeOptions
+}
+
+export function getBackgroundSettingsCSS(style: WidgetBackgroundSettings | undefined, scale: number = 1) {
+	if (!style) return ""
+
+	let result = ""
+
+	if (style.position) {
+		result += `${style.position.horizontal} ${style.position.vertical} `
+	}
+
+	if (style.size) {
+		if (style.position) {
+			result += "/ "
+		}
+
+		if (typeof style.size == "object") {
+			result += `${toSizeCSS(style.size.horizontal, scale)} ${toSizeCSS(style.size.vertical, scale)} `
+		} else if (style.size) {
+			result += `${style.size} `
+		}
+	}
+
+	if (style.repeat) {
+		result += `${style.repeat.horizontal} ${style.repeat.vertical} `
+	}
+
+	return result
+}
+
+export interface WidgetBackgroundImage extends WidgetBackgroundSettings {
+	image: string
+}
+
+export function isWidgetBackgroundImage(value: unknown): value is WidgetBackgroundImage {
+	return value != null && typeof value == "object" && "image" in value
+}
+
+export interface WidgetBackgroundGradient extends WidgetBackgroundSettings {
+	gradient: WidgetGradientStyle
+}
+
+export function isWidgetBackgroundGradient(value: unknown): value is WidgetBackgroundGradient {
+	return value != null && typeof value == "object" && "gradient" in value
+}
+
+export type WidgetBackgroundStyleElement = WidgetBackgroundGradient | WidgetBackgroundImage
+
+export interface WidgetBackgroundStyle {
+	color?: Color
+	elements: WidgetBackgroundStyleElement[]
+}
+
+export function getBackgroundCSS(
+	style: WidgetBackgroundStyle | undefined,
+	resolver: (media: string) => string,
+	scale: number = 1
+) {
+	const result = createCSS()
+	if (!style) return result
+
+	result.background = style.elements
+		.map((bg, index) => {
+			if (!bg) {
+			} else if ("image" in bg) {
+				//TODO: RESOLVE
+				return `${getBackgroundSettingsCSS(bg, scale)}url("${resolver(bg.image)}")`
+			} else if ("gradient" in bg) {
+				return `${getBackgroundSettingsCSS(bg, scale)}${getGradientCSS(bg.gradient)}`
+			}
+		})
+		.join(",")
+
+	if (style.color) {
+		result.background += ` ${style.color}`
+	}
+
+	console.log("Background CSS", result.background)
+
+	return result
+}
+
+const WidgetBackgroundStyleSymbol = Symbol()
+export const WidgetBackgroundStyle = {
+	factoryCreate(initial?: WidgetBackgroundStyle): WidgetBackgroundStyle {
+		return initial ? _cloneDeep(initial) : { elements: [] }
+	},
+	[WidgetBackgroundStyleSymbol]: "WidgetBackgroundStyle",
+}
+
+export type WidgetBackgroundStyleFactory = typeof WidgetBackgroundStyle
+
+export interface SchemaWidgetBackgroundStyle extends SchemaBase<WidgetBackgroundStyle> {
+	type: WidgetBackgroundStyleFactory
+}
+
 declare module "castmate-schema" {
 	interface SchemaTypeMap {
 		OverlayTextStyle: [SchemaOverlayTextStyle, OverlayTextStyle]
 		OverlayBlockStyle: [SchemaOverlayBlockStyle, OverlayBlockStyle]
 		OverlayTextAlignment: [SchemaOverlayTextAlignment, OverlayTextAlignment]
 		WidgetBorderRadius: [SchemaWidgetBorderRadius, WidgetBorderRadius]
+		WidgetBackgroundStyle: [SchemaWidgetBackgroundStyle, WidgetBackgroundStyle]
 	}
 }
 
@@ -331,4 +470,8 @@ registerType("OverlayTextAlignment", {
 
 registerType("WidgetBorderRadius", {
 	constructor: WidgetBorderRadius,
+})
+
+registerType("WidgetBackgroundStyle", {
+	constructor: WidgetBackgroundStyle,
 })
