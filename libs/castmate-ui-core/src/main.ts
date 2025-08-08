@@ -73,6 +73,7 @@ export { default as DataInputBase } from "./components/data/base-components/Data
 export { default as DataInputBaseMenu } from "./components/data/base-components/DataInputBaseMenu.vue"
 export { default as DropListItem } from "./components/data/base-components/DropListItem.vue"
 export { default as FilterInputBox } from "./components/data/base-components/FilterInputBox.vue"
+export { default as MediaDropDown } from "./components/data/base-components/media/MediaDropDown.vue"
 
 export { default as DataBindingDebugger } from "./components/data/binding/DataBindingDebugger.vue"
 
