@@ -76,7 +76,7 @@ const props = defineProps<{
 	placeholder?: string
 }>()
 
-const emits = defineEmits(["update:modelValue", "blur", "focus"])
+const emits = defineEmits(["update:modelValue", "blur", "focus", "enter"])
 
 const model = useModel(props, "modelValue")
 
@@ -293,9 +293,13 @@ watch(
 )
 
 function onKeyPress(ev: KeyboardEvent) {
-	if (!ev.key.match(/[0-9\.]/g)) {
+	if (!ev.key.match(/[0-9\.]|Enter/g)) {
 		ev.preventDefault()
 	}
+	if (ev.key == "Enter") {
+		emits("enter")
+	}
+
 	if (ev.key == ".") {
 		if (inputValue.value.includes(".")) {
 			ev.preventDefault()

@@ -1,5 +1,12 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate" ref="dataInputBase" :local-path="localPath">
+	<data-input-base
+		v-model="model"
+		:schema="schema"
+		v-slot="inputProps"
+		:is-template="isTemplate"
+		ref="dataInputBase"
+		:local-path="localPath"
+	>
 		<div class="container w-full" ref="container">
 			<input-box v-bind="inputProps" :model="model" @click="toggle" ref="inputBox">
 				<div class="color-splash" :style="{ backgroundColor: model }"></div>
@@ -79,6 +86,15 @@ const inputBox = ref<InstanceType<typeof InputBox>>()
 const dataInputBase = ref<InstanceType<typeof DataInputBase>>()
 
 useDataUIBinding({
+	focus() {
+		inputBox.value?.inputDiv?.focus()
+	},
+	scrollIntoView() {
+		inputBox.value?.inputDiv?.scrollIntoView()
+	},
+})
+
+defineExpose({
 	focus() {
 		inputBox.value?.inputDiv?.focus()
 	},

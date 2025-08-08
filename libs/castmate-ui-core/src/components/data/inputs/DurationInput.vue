@@ -35,6 +35,15 @@ useDataUIBinding({
 		durationInput.value?.scrollIntoView()
 	},
 })
+
+defineExpose({
+	focus() {
+		durationInput.value?.focus()
+	},
+	scrollIntoView() {
+		durationInput.value?.scrollIntoView()
+	},
+})
 </script>
 
 <style scoped>

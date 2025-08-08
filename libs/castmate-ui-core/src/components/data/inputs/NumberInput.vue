@@ -44,7 +44,7 @@ import DataInputBase from "../base-components/DataInputBase.vue"
 import NumberField from "../base-components/NumberField.vue"
 import PSlider from "primevue/slider"
 import { type SchemaBase, type SchemaNumber } from "castmate-schema"
-import { computed, ref, onMounted, useModel, watch } from "vue"
+import { computed, ref, onMounted, useModel, watch, useTemplateRef } from "vue"
 import EnumInput from "../base-components/EnumInput.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import { useCommitUndo, useDataBinding } from "../../../util/data-binding"
@@ -89,4 +89,14 @@ const commitUndo = useCommitUndo()
 function onSlideEnd() {
 	commitUndo()
 }
+
+const enumInput = useTemplateRef("enumInput")
+const numberInput = useTemplateRef("numberInput")
+
+defineExpose({
+	focus() {
+		enumInput.value?.focus()
+		numberInput.value?.focus()
+	},
+})
 </script>

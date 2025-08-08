@@ -7,6 +7,7 @@
 		:placeholder="placeholder"
 		ref="numInput"
 		:suffix="suffix"
+		:size="size"
 	/>
 </template>
 
@@ -27,6 +28,7 @@ const props = withDefaults(
 		suffix?: string
 		showButtons?: boolean
 		allowEmpty?: boolean
+		size?: "small" | "large"
 	}>(),
 	{
 		allowEmpty: true,

@@ -4,7 +4,13 @@
 	</div>
 
 	<form class="flex flex-row" @submit.prevent="accept" v-else-if="schema" @keydown="onKeyDown">
-		<data-input class="flex-grow-1" v-model="editValue" :schema="schema" :local-path="localPath" />
+		<data-input
+			class="flex-grow-1"
+			v-model="editValue"
+			:schema="schema"
+			:local-path="localPath"
+			ref="dataInputComp"
+		/>
 		<p-button icon="pi pi-check" text @click="accept"></p-button>
 		<p-button icon="pi pi-times" text @click="reject"></p-button>
 	</form>
@@ -15,7 +21,7 @@
 <script setup lang="ts">
 import { Schema } from "castmate-schema"
 import { DataView, DataInput, usePropagationStop } from "castmate-ui-core"
-import { ref } from "vue"
+import { nextTick, ref } from "vue"
 import _cloneDeep from "lodash/cloneDeep"
 import PButton from "primevue/button"
 import { useModel } from "vue"
@@ -36,6 +42,8 @@ const editValue = ref<any>(undefined)
 
 const stopPropagation = usePropagationStop()
 
+const dataInputComp = ref<InstanceType<typeof DataInput>>()
+
 function startEdit(ev: MouseEvent) {
 	if (ev.button != 0) return
 
@@ -44,6 +52,10 @@ function startEdit(ev: MouseEvent) {
 
 	editing.value = true
 	editValue.value = _cloneDeep(props.modelValue)
+
+	nextTick(() => {
+		dataInputComp.value?.focus()
+	})
 }
 
 async function accept() {

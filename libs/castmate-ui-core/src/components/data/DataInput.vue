@@ -9,6 +9,7 @@
 		:context="context"
 		:secret="secret"
 		:disabled="disabled"
+		ref="inputElem"
 	/>
 </template>
 
@@ -16,8 +17,7 @@
 import { useDataComponent } from "../../util/data"
 import { Schema } from "castmate-schema"
 import { SharedDataInputProps } from "./DataInputTypes"
-import { useModel } from "vue"
-import { useDataBinding } from "../../main"
+import { ref, useModel } from "vue"
 
 const props = defineProps<
 	{
@@ -29,4 +29,11 @@ const props = defineProps<
 const model = useModel(props, "modelValue")
 
 const inputComponent = useDataComponent(() => props.schema.type)
+
+const inputElem = ref<{ focus?: () => any }>()
+defineExpose({
+	focus() {
+		inputElem.value?.focus?.()
+	},
+})
 </script>
