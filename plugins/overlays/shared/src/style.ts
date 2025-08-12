@@ -316,8 +316,8 @@ export interface WidgetGradientStop {
 	position: number
 }
 
-function getGradientStopCSS(stop: WidgetGradientStop) {
-	return `${stop.color} ${stop.position}%`
+export function getGradientStopCSS(stop: WidgetGradientStop) {
+	return `${stop.color} ${stop.position * 100}%`
 }
 
 export interface WidgetGradientStyle {
@@ -328,7 +328,7 @@ export interface WidgetGradientStyle {
 
 export function getGradientCSS(gradient: WidgetGradientStyle) {
 	if (gradient.gradientType == "linear") {
-		return `linear-gradient(${gradient.angle ?? 0}deg, ${gradient.stops
+		return `linear-gradient(${(gradient.angle ?? 0) + 90}deg, ${gradient.stops
 			.map((s) => getGradientStopCSS(s))
 			.join(", ")})`
 	} else {

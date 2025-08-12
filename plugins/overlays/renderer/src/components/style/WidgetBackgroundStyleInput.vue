@@ -18,7 +18,7 @@
 		</div>
 		<div class="flex flex-row">
 			<p-button @click="toggleColor" size="small" text><i class="mdi mdi-format-color-fill" /></p-button>
-			<!-- <p-button @click="toggleColor" size="small" text><i class="mdi mdi-gradient-horizontal" /></p-button> -->
+			<p-button @click="addGradient" size="small" text><i class="mdi mdi-gradient-horizontal" /></p-button>
 			<p-button @click="addImage" size="small" text><i class="mdi mdi-image" /></p-button>
 		</div>
 	</div>
@@ -27,6 +27,7 @@
 <script setup lang="ts">
 import {
 	SchemaWidgetBackgroundStyle,
+	WidgetBackgroundGradient,
 	WidgetBackgroundImage,
 	WidgetBackgroundStyle,
 	WidgetBackgroundStyleElement,
@@ -62,6 +63,25 @@ function addImage() {
 		}
 	} else {
 		model.value.elements.push({ image: "" })
+	}
+}
+
+function addGradient() {
+	const newGradient: WidgetBackgroundGradient = {
+		gradient: {
+			stops: [
+				{ color: "#FFFFFF", position: 0 },
+				{ color: "#000000", position: 1 },
+			],
+			angle: 90,
+			gradientType: "linear",
+		},
+	}
+
+	if (!model.value) {
+		model.value = { elements: [newGradient] }
+	} else {
+		model.value.elements.push(newGradient)
 	}
 }
 
