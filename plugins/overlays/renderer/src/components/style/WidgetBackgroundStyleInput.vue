@@ -62,7 +62,7 @@ function addImage() {
 			elements: [{ image: "" }],
 		}
 	} else {
-		model.value.elements.push({ image: "" })
+		model.value.elements.unshift({ image: "" })
 	}
 }
 
@@ -70,10 +70,10 @@ function addGradient() {
 	const newGradient: WidgetBackgroundGradient = {
 		gradient: {
 			stops: [
-				{ color: "#FFFFFF", position: 0 },
-				{ color: "#000000", position: 1 },
+				{ color: "#FF00DC", position: 0 },
+				{ color: "#00FFFF", position: 1 },
 			],
-			angle: 90,
+			angle: 0,
 			gradientType: "linear",
 		},
 	}
@@ -81,7 +81,7 @@ function addGradient() {
 	if (!model.value) {
 		model.value = { elements: [newGradient] }
 	} else {
-		model.value.elements.push(newGradient)
+		model.value.elements.unshift(newGradient)
 	}
 }
 
