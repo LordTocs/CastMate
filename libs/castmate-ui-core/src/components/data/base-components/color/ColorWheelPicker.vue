@@ -20,7 +20,7 @@ import { Color } from "castmate-schema"
 import { useColorProperties } from "./color-utils"
 import * as chromatism from "chromatism2"
 
-const props = defineProps<{}>()
+const props = defineProps<{ alpha?: boolean }>()
 
 const emit = defineEmits(["update:modelValue"])
 
@@ -30,7 +30,7 @@ const wheelSize = useElementSize(wheel)
 
 const model = defineModel<Color>()
 
-const { hue, sat, val } = useColorProperties(model)
+const { hue, sat, val, alpha } = useColorProperties(model, props.alpha ?? false)
 
 const dotPosition = computed(() => {
 	const hueAngleRad = ((hue.value - 90) * Math.PI) / 180
@@ -75,6 +75,13 @@ function onMouseDown(ev: MouseEvent) {
 	dragging.value = true
 }
 
+function convertToHexAlpha(value: chromatism.ColourModes.Any): Color | undefined {
+	const hex = chromatism.convert(value).hex
+
+	if (!props.alpha) return hex as Color
+	return `${hex}${Math.round(alpha.value).toString(16).padStart(2, "0")}`.toUpperCase() as Color
+}
+
 useEventListener(
 	() => (dragging.value ? window : undefined),
 	"mousemove",
@@ -88,9 +95,7 @@ useEventListener(
 
 		const result = posToHueSat(localX, localY)
 
-		const hex = chromatism.convert({ h: result.hue, s: result.sat, v: val.value }).hex
-		//@ts-ignore
-		model.value = hex
+		model.value = convertToHexAlpha({ h: result.hue, s: result.sat, v: val.value })
 	}
 )
 

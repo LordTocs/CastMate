@@ -14,7 +14,9 @@
 		</div>
 		<drop-down-panel class="p-1" v-model="overlayVisible" :container="container">
 			<!-- <p-color-picker v-model="poundConverter" inline /> -->
-			<c-color-picker v-model="model" />
+			<template v-if="isHexColor(model)">
+				<c-color-picker v-model="model" :alpha="schema.alpha ?? false" />
+			</template>
 		</drop-down-panel>
 	</data-input-base>
 </template>

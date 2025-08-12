@@ -46,6 +46,7 @@ const colorSchema = declareSchema({
 	type: Color,
 	required: true,
 	name: "Font Color",
+	alpha: true,
 })
 
 const model = useModel(props, "modelValue")

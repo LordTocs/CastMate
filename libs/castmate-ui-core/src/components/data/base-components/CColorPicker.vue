@@ -2,7 +2,7 @@
 	<div class="color-picker flex flex-row gap-2">
 		<div class="wheel gap-1">
 			<p class="text-xs m-0">&nbsp;</p>
-			<color-wheel-picker v-model="model" />
+			<color-wheel-picker v-model="model" :alpha="alpha" />
 			<color-hex-edit v-model="model" />
 		</div>
 		<div class="sliders gap-1">
@@ -14,6 +14,9 @@
 			<linear-gradient-picker label="H" :gradient="hueGradient" v-model="hue" :min="0" :max="360" />
 			<linear-gradient-picker label="S" :gradient="satGradient" v-model="sat" :min="0" :max="100" />
 			<linear-gradient-picker label="V" :gradient="valueGradient" v-model="val" :min="0" :max="100" />
+			<template v-if="alpha">
+				<linear-gradient-picker label="A" :gradient="alphaGradient" v-model="alphaVal" :min="0" :max="255" />
+			</template>
 		</div>
 	</div>
 </template>
@@ -30,13 +33,17 @@ import { useColorProperties } from "./color/color-utils"
 
 import * as chromatism from "chromatism2"
 
-const props = defineProps<{
-	localPath?: string
-}>()
+const props = withDefaults(
+	defineProps<{
+		localPath?: string
+		alpha?: boolean
+	}>(),
+	{ alpha: true }
+)
 
 const model = defineModel<Color>()
 
-const { red, green, blue, hue, sat, val } = useColorProperties(model)
+const { red, green, blue, hue, sat, val, alpha: alphaVal } = useColorProperties(model, props.alpha)
 
 const redGradient = computed(
 	() => `linear-gradient(to right, rgb(0, ${green.value}, ${blue.value}), rgb(255, ${green.value}, ${blue.value}))`
@@ -62,6 +69,12 @@ const valueGradient = computed(() => {
 	const maxColor = chromatism.convert({ h: hue.value, s: sat.value, v: 100 }).csshsl
 
 	return `linear-gradient(to right, ${minColor}, ${maxColor})`
+})
+
+const alphaGradient = computed(() => {
+	const minColor = `rgb(${red.value} ${green.value} ${blue.value} / 0)`
+	const maxColor = `rgb(${red.value} ${green.value} ${blue.value} / 1)`
+	return `linear-gradient(to right, ${minColor}, ${maxColor}), repeating-conic-gradient(#808080 0 25%, #0000 0 50%) 50% / 20px 20px`
 })
 
 useDataBinding(() => props.localPath)

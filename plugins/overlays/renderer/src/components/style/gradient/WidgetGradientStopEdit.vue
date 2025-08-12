@@ -2,7 +2,7 @@
 	<div class="gradient-drag" ref="gradientDrag" @mousedown="onMouseDown" @click="onClick"></div>
 	<drop-down-panel class="p-1" v-model="overlayVisible" :container="container">
 		<template v-if="model">
-			<c-color-picker v-model="model.color" />
+			<c-color-picker v-model="model.color" alpha />
 		</template>
 	</drop-down-panel>
 </template>

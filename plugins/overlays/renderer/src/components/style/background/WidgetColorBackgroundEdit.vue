@@ -3,7 +3,7 @@
 		<div class="color-splash" @click="toggle" :style="{ backgroundColor: model?.color }"></div>
 	</div>
 	<drop-down-panel class="p-1" v-model="overlayVisible" :container="container">
-		<c-color-picker v-model="colorModel" />
+		<c-color-picker v-model="colorModel" alpha />
 	</drop-down-panel>
 </template>
 
