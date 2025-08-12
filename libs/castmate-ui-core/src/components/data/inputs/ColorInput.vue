@@ -33,33 +33,19 @@ import CColorPicker from "../base-components/CColorPicker.vue"
 
 const props = defineProps<
 	{
-		modelValue: Color | string | undefined
 		schema: SchemaColor
 	} & SharedDataInputProps
 >()
 
 useDataBinding(() => props.localPath)
 
-const model = useModel(props, "modelValue")
+const model = defineModel<Color | string>()
 
 function isTemplate(value: Color | string | undefined) {
 	return !!(value && !isHexColor(value))
 }
 
 const overlayVisible = ref(false)
-
-const poundConverter = computed<string | undefined>({
-	get() {
-		if (!props.modelValue) return undefined
-		return props.modelValue.slice(1)
-	},
-	set(v: string | undefined) {
-		if (!v) {
-			model.value = v as Color | undefined
-		}
-		model.value = ("#" + v) as Color
-	},
-})
 
 function show() {
 	if (!overlayVisible.value) {
