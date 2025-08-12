@@ -3,6 +3,7 @@
 		<div class="data-group-header">
 			{{ label }}
 		</div>
+		<slot name="before"></slot>
 		<div :class="innerClass">
 			<slot></slot>
 		</div>
@@ -25,8 +26,8 @@ useDataBinding(() => props.localPath)
 
 <style scoped>
 .data-transform-group {
-	padding: 0.5rem;
-	margin-top: 1.5rem;
+	/* padding: 0.5rem; */
+	margin-top: 1rem;
 	border: solid 1px var(--surface-100);
 	border-radius: var(--border-radius);
 }
