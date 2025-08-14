@@ -458,14 +458,14 @@ export async function constructDefault<T extends Schema>(schema: T): Promise<Sch
 			}
 		}
 		return [] as SchemaType<T>
-	} else if (schema.required) {
-		if (schema.default) {
+	} else {
+		if (schema.default != null) {
 			if (isFunction(schema.default)) {
 				return await schema.default()
 			} else {
 				return cloneDeep(schema.default)
 			}
-		} else {
+		} else if (schema.required) {
 			//Special cases for primitives
 			if (schema.type == Number) return 0 as SchemaType<T>
 			if (schema.type == String) return "" as SchemaType<T>
