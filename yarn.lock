@@ -3591,6 +3591,56 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-advss-main@workspace:^, castmate-plugin-advss-main@workspace:plugins/advss/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-advss-main@workspace:plugins/advss/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-advss-shared: "workspace:^"
+    castmate-plugin-obs-main: "workspace:^"
+    castmate-plugin-obs-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-advss-renderer@workspace:plugins/advss/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-advss-renderer@workspace:plugins/advss/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-plugin-advss-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:^34.2.0"
+    nanoid: "npm:^5.0.7"
+    pinia: "npm:^2.1.7"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:^3.5.13"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-advss-shared@workspace:^, castmate-plugin-advss-shared@workspace:plugins/advss/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-advss-shared@workspace:plugins/advss/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-advss@workspace:plugins/advss":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-advss@workspace:plugins/advss"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-bluesky-main@workspace:^, castmate-plugin-bluesky-main@workspace:plugins/bluesky/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-bluesky-main@workspace:plugins/bluesky/main"
@@ -4103,6 +4153,7 @@ __metadata:
     castmate-plugin-obs-shared: "workspace:^"
     castmate-plugin-os-main: "workspace:^"
     castmate-schema: "workspace:^"
+    eventemitter3: "npm:^5.0.1"
     jsqr: "npm:^1.4.0"
     node-screenshots: "npm:^0.2.0"
     obs-websocket-js: "npm:^5.0.6"
@@ -5100,6 +5151,7 @@ __metadata:
     castmate-dashboard-widget-loader: "workspace:^"
     castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
+    castmate-plugin-advss-main: "workspace:^"
     castmate-plugin-bluesky-main: "workspace:^"
     castmate-plugin-bluesky-renderer: "workspace:^"
     castmate-plugin-dashboards-main: "workspace:^"

@@ -16,6 +16,7 @@
 	"dependencies": {
 		"archiver": "^7.0.1",
 		"castmate-core": "workspace:^",
+		"castmate-plugin-advss-main": "workspace:^",
 		"castmate-plugin-bluesky-main": "workspace:^",
 		"castmate-plugin-dashboards-main": "workspace:^",
 		"castmate-plugin-discord-main": "workspace:^",
@@ -54,6 +55,7 @@
 		"castmate-dashboard-widget-loader": "workspace:^",
 		"castmate-overlay-core": "workspace:^",
 		"castmate-overlay-widget-loader": "workspace:^",
+		"castmate-plugin-advss-main": "workspace:^",
 		"castmate-plugin-bluesky-renderer": "workspace:^",
 		"castmate-plugin-dashboards-renderer": "workspace:^",
 		"castmate-plugin-discord-renderer": "workspace:^",

@@ -34,6 +34,8 @@ import remotePlugin from "castmate-plugin-remote-main"
 
 import blueskyPlugin from "castmate-plugin-bluesky-main"
 
+import advssPlugin from "castmate-plugin-advss-main"
+
 import castmatePlugin from "./builtin-plugin"
 import { WebService, Plugin } from "castmate-core"
 import { migratePlugin } from "./migration/old-migration"
@@ -68,6 +70,9 @@ export async function loadPlugins() {
 	]
 
 	await Promise.allSettled(promises)
+
+	const obsDeps = [loadPlugin(advssPlugin)]
+	await Promise.allSettled(obsDeps)
 
 	await loadPlugin(variablesPlugin)
 
