@@ -1,0 +1,21 @@
+.atmi::before {
+	display: inline-block;
+	text-rendering: auto;
+	line-height: inherit;
+}
+
+.atmi.atmi-aitum::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/AitumIcon.svg");
+	-webkit-mask-image: url("../svg/AitumIcon.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+}
+
+.atmi.atmi-aitum {
+	height: 1em;
+}

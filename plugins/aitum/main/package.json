@@ -1,0 +1,22 @@
+{
+	"name": "castmate-plugin-aitum-main",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "*"
+	},
+	"dependencies": {
+		"castmate-core": "workspace:^",
+		"castmate-plugin-aitum-shared": "workspace:^",
+		"castmate-plugin-obs-main": "workspace:^",
+		"castmate-plugin-obs-shared": "workspace:^",
+		"castmate-schema": "workspace:^"
+	}
+}

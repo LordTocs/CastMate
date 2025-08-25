@@ -67,6 +67,9 @@ import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
 
 import { initPlugin as initBlueSkyPlugin } from "castmate-plugin-bluesky-renderer"
 
+import { initPlugin as initAdvssPlugin } from "castmate-plugin-advss-renderer"
+import { initPlugin as initAitumPlugin } from "castmate-plugin-aitum-renderer"
+
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
 import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
 
@@ -221,6 +224,8 @@ async function init() {
 	await initRemotePlugin()
 	await initBlueSkyPlugin()
 
+	await initAdvssPlugin()
+	await initAitumPlugin()
 	await initRandomPlugin()
 
 	await mediaStore.initialize()

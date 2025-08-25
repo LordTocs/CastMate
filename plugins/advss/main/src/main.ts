@@ -17,12 +17,13 @@ export default definePlugin(
 		name: "Advanced Scene Switcher",
 		description: "Integration for Advanced Scene Switcher by WarmUpTill",
 		color: "#256eff",
-		icon: "obsi obsi-obs",
+		icon: "advi advi-advss",
 	},
 	() => {
 		defineAction({
 			id: "AdvSSMessage",
 			name: "Advanced Scene Switcher Message",
+			icon: "advi advi-advss",
 			config: {
 				type: Object,
 				properties: {
@@ -49,6 +50,7 @@ export default definePlugin(
 		const advssEvent = defineTransformTrigger({
 			id: "advssEvent",
 			name: "Advanced Scene Switcher Event",
+			icon: "advi advi-advss",
 			config: {
 				type: Object,
 				properties: {

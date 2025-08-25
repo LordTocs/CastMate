@@ -3604,7 +3604,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-advss-renderer@workspace:plugins/advss/renderer":
+"castmate-plugin-advss-renderer@workspace:^, castmate-plugin-advss-renderer@workspace:plugins/advss/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-advss-renderer@workspace:plugins/advss/renderer"
   dependencies:
@@ -3638,6 +3638,56 @@ __metadata:
 "castmate-plugin-advss@workspace:plugins/advss":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-advss@workspace:plugins/advss"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-aitum-main@workspace:^, castmate-plugin-aitum-main@workspace:plugins/aitum/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-aitum-main@workspace:plugins/aitum/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-aitum-shared: "workspace:^"
+    castmate-plugin-obs-main: "workspace:^"
+    castmate-plugin-obs-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-aitum-renderer@workspace:^, castmate-plugin-aitum-renderer@workspace:plugins/aitum/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-aitum-renderer@workspace:plugins/aitum/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-plugin-aitum-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:^34.2.0"
+    nanoid: "npm:^5.0.7"
+    pinia: "npm:^2.1.7"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:^3.5.13"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-aitum-shared@workspace:^, castmate-plugin-aitum-shared@workspace:plugins/aitum/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-aitum-shared@workspace:plugins/aitum/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-aitum@workspace:plugins/aitum":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-aitum@workspace:plugins/aitum"
   languageName: unknown
   linkType: soft
 
@@ -5152,6 +5202,9 @@ __metadata:
     castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
     castmate-plugin-advss-main: "workspace:^"
+    castmate-plugin-advss-renderer: "workspace:^"
+    castmate-plugin-aitum-main: "workspace:^"
+    castmate-plugin-aitum-renderer: "workspace:^"
     castmate-plugin-bluesky-main: "workspace:^"
     castmate-plugin-bluesky-renderer: "workspace:^"
     castmate-plugin-dashboards-main: "workspace:^"
