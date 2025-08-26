@@ -2,6 +2,7 @@
 	<div
 		class="outer-bar"
 		:style="{
+			flexDirection,
 			...getBorderRadiusCSS(props.config.outerRadius),
 			...getBackgroundCSS(props.config.backgroundStyle, mediaResolver),
 		}"
@@ -9,7 +10,7 @@
 		<div
 			class="inner-bar"
 			:style="{
-				width: `${percentage}%`,
+				...fillPositionStyle,
 				...getBackgroundCSS(props.config.fillStyle, mediaResolver),
 			}"
 		></div>
@@ -24,7 +25,7 @@ import {
 	WidgetBackgroundStyle,
 	WidgetBorderRadius,
 } from "castmate-plugin-overlays-shared"
-import { computed } from "vue"
+import { computed, CSSProperties } from "vue"
 
 const mediaResolver = useMediaResolver()
 
@@ -32,11 +33,45 @@ const props = defineProps<{
 	config: {
 		value: number
 		target: number
+		direction: "Right" | "Left" | "Up" | "Down"
 		outerRadius: WidgetBorderRadius
 		backgroundStyle: WidgetBackgroundStyle
 		fillStyle: WidgetBackgroundStyle
 	}
 }>()
+
+const isVertical = computed(() => props.config.direction == "Up" || props.config.direction == "Down")
+const isReverse = computed(() => props.config.direction == "Left" || props.config.direction == "Up")
+
+const flexDirection = computed(() => {
+	if (isVertical.value) {
+		if (isReverse.value) {
+			return "column-reverse"
+		} else {
+			return "column"
+		}
+	} else {
+		if (isReverse.value) {
+			return "row-reverse"
+		} else {
+			return "row"
+		}
+	}
+})
+
+const fillPositionStyle = computed<CSSProperties>(() => {
+	if (isVertical.value) {
+		return {
+			height: `${percentage.value}%`,
+			width: `100%`,
+		}
+	} else {
+		return {
+			width: `${percentage.value}%`,
+			height: `100%`,
+		}
+	}
+})
 
 const percentage = computed(() => {
 	const valueNorm = props.config.value / props.config.target
@@ -58,6 +93,13 @@ defineOptions({
 			properties: {
 				value: { type: Number, name: "Value", required: true, default: 0, template: true },
 				target: { type: Number, name: "Target", required: true, default: 100, template: true },
+				direction: {
+					type: String,
+					name: "Direction",
+					required: true,
+					default: "Right",
+					enum: ["Right", "Left", "Up", "Down"],
+				},
 				outerRadius: { type: WidgetBorderRadius, name: "Outer Corners", required: true },
 				backgroundStyle: { type: WidgetBackgroundStyle, name: "Background Style", required: true },
 				fillStyle: { type: WidgetBackgroundStyle, name: "Fill Style", required: true },
@@ -74,10 +116,7 @@ defineOptions({
 	height: 100%;
 
 	overflow: hidden;
-}
 
-.inner-bar {
-	height: 100%;
-	background-color: green;
+	display: flex;
 }
 </style>
