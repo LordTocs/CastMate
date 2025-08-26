@@ -18,6 +18,8 @@ import {
 	useDefaultableModel,
 	DropDownPanel,
 	CColorPicker,
+	usePropagationStop,
+	usePropagationImmediateStop,
 } from "castmate-ui-core"
 import { ref, useTemplateRef } from "vue"
 
@@ -53,10 +55,13 @@ function show() {
 function hide() {
 	overlayVisible.value = false
 }
+const stopPropagation = usePropagationStop()
+const stopImmediatePropagation = usePropagationImmediateStop()
+
 function toggle(ev: MouseEvent) {
 	if (ev.button != 0) return
 
-	ev.stopImmediatePropagation()
+	stopImmediatePropagation(ev)
 
 	if (overlayVisible.value) {
 		hide()
@@ -81,6 +86,9 @@ function onMouseDown(ev: MouseEvent) {
 
 	dragStartPos.value = startPos
 	dragStartValue.value = position.value
+
+	ev.preventDefault()
+	stopPropagation(ev)
 }
 
 function calcNewValue(ev: ClientPosition) {

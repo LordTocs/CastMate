@@ -1,7 +1,7 @@
 <template>
 	<div class="background-settings">
 		<data-binding-path local-path="repeat">
-			<label class="setting-label text-color-secondary">Repeat</label>
+			<span class="setting-label text-color-secondary">Repeat</span>
 			<div class="setting-left">
 				<c-select-button
 					v-model="repeatHorizontal"
@@ -29,7 +29,7 @@
 		</data-binding-path>
 
 		<data-binding-path local-path="position">
-			<label class="setting-label text-color-secondary">Position</label>
+			<span class="setting-label text-color-secondary">Position</span>
 			<div class="setting-left">
 				<c-select-button
 					v-model="positionHorizontal"
@@ -57,7 +57,7 @@
 		</data-binding-path>
 
 		<data-binding-path local-path="size">
-			<label class="setting-label text-color-secondary">Size</label>
+			<span class="setting-label text-color-secondary">Size</span>
 			<div class="setting-left">
 				<c-select-button v-model="sizeMode" :options="['contain', 'cover', 'sizing']" size="small">
 					<template #option="slotProps">
@@ -202,14 +202,6 @@ const sizeIcons: Record<string, string> = {
 .background-settings {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-}
-
-.setting-left {
-	/* background-color: red; */
-}
-
-.setting-right {
-	/* background-color: blue; */
 }
 
 .setting-label {

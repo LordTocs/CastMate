@@ -1,27 +1,49 @@
 <template>
-	<div class="border-radius-edit">
-		<div class="corner tl" ref="tl" :class="{ 'edit-drag': tlDragging }">
-			<widget-size-editable v-model="tlLinked" local-path="topLeft" />
+	<label-floater :model="true" v-slot="labelProps" :label="getDataLabel(props)">
+		<div
+			class="p-inputwrapper"
+			:class="{
+				'p-filled': model != null,
+				'p-focused': focused,
+				'p-inputwrapper-filled': model != null,
+				'p-inputwrapper-focused': focused,
+				'p-invalid': errorMessage,
+				'p-inputwrapper-invalid': errorMessage,
+				'p-disabled': disabled == true,
+			}"
+		>
+			<div class="p-inputtext p-component border-radius-edit" style="width: unset; max-width: 100%">
+				<div class="corner tl" ref="tl" :class="{ 'edit-drag': tlDragging }">
+					<widget-size-editable v-model="tlLinked" local-path="topLeft" />
+				</div>
+				<div class="corner tr" ref="tr" :class="{ 'edit-drag': trDragging }">
+					<widget-size-editable v-model="trLinked" local-path="topRight" />
+				</div>
+				<div class="corner bl" ref="bl" :class="{ 'edit-drag': blDragging }">
+					<widget-size-editable v-model="blLinked" local-path="bottomLeft" />
+				</div>
+				<div class="corner br" ref="br" :class="{ 'edit-drag': brDragging }">
+					<widget-size-editable v-model="brLinked" local-path="bottomRight" />
+				</div>
+				<p-button text @click="linked = !linked" class="lock-button">
+					<i v-if="linked" class="pi pi-lock" />
+					<i v-else class="pi pi-lock-open" />
+				</p-button>
+			</div>
 		</div>
-		<div class="corner tr" ref="tr" :class="{ 'edit-drag': trDragging }">
-			<widget-size-editable v-model="trLinked" local-path="topRight" />
-		</div>
-		<div class="corner bl" ref="bl" :class="{ 'edit-drag': blDragging }">
-			<widget-size-editable v-model="blLinked" local-path="bottomLeft" />
-		</div>
-		<div class="corner br" ref="br" :class="{ 'edit-drag': brDragging }">
-			<widget-size-editable v-model="brLinked" local-path="bottomRight" />
-		</div>
-		<p-button @click="linked = !linked">
-			<i v-if="linked" class="pi pi-lock" />
-			<i v-else class="pi pi-lock-open" />
-		</p-button>
-	</div>
+	</label-floater>
 </template>
 
 <script setup lang="ts">
 import { SchemaWidgetBorderRadius, WidgetBorderRadius } from "castmate-plugin-overlays-shared"
-import { SharedDataInputProps, useDataBinding, useDefaultableModel, useDragValue, usePropModel } from "castmate-ui-core"
+import {
+	SharedDataInputProps,
+	useDataBinding,
+	useDefaultableModel,
+	useDragValue,
+	LabelFloater,
+	getDataLabel,
+} from "castmate-ui-core"
 import { computed, onMounted, Ref, ref, watch } from "vue"
 import WidgetSizeEditable from "./WidgetSizeEditable.vue"
 import PButton from "primevue/button"
@@ -31,6 +53,9 @@ const props = defineProps<
 		schema: SchemaWidgetBorderRadius
 	} & SharedDataInputProps
 >()
+
+const focused = false
+const errorMessage = undefined
 
 const model = defineModel<WidgetBorderRadius>()
 
@@ -104,10 +129,15 @@ const brDragging = useDragValue(br, brLinked, {
 .border-radius-edit {
 	position: relative;
 	height: 6rem;
+	width: 100%;
 
 	display: flex;
 	justify-content: center;
 	align-items: center;
+}
+
+.border-radius-edit:hover {
+	/* border-color: var(--p-primary-color); */
 }
 
 .corner {
@@ -120,16 +150,20 @@ const brDragging = useDragValue(br, brLinked, {
 	align-items: center;
 }
 
-.corner .edit-drag {
-	background-color: var(--surface-200) !important;
+.corner.edit-drag {
+	background-color: var(--p-surface-900) !important;
+	border-color: var(--p-primary-color);
 }
 
 .corner:hover {
-	background-color: var(--surface-100);
+	background-color: var(--p-surface-900);
+	border-color: var(--p-primary-color);
 }
 
 .tl {
 	border-top-left-radius: var(--border-radius);
+	/* border-right: solid 1px var(--surface-d);
+	border-bottom: solid 1px var(--surface-d); */
 	left: 0;
 	top: 0;
 	width: 50%;
@@ -140,6 +174,8 @@ const brDragging = useDragValue(br, brLinked, {
 
 .tr {
 	border-top-right-radius: var(--border-radius);
+	/* border-left: solid 1px var(--surface-d);
+	border-bottom: solid 1px var(--surface-d); */
 	left: 50%;
 	top: 0;
 	width: 50%;
@@ -150,6 +186,8 @@ const brDragging = useDragValue(br, brLinked, {
 
 .bl {
 	border-bottom-left-radius: var(--border-radius);
+	/* border-right: solid 1px var(--surface-d);
+	border-top: solid 1px var(--surface-d); */
 	left: 0;
 	top: 50%;
 	width: 50%;
@@ -160,11 +198,21 @@ const brDragging = useDragValue(br, brLinked, {
 
 .br {
 	border-bottom-right-radius: var(--border-radius);
+	/* border-left: solid 1px var(--surface-d);
+	border-top: solid 1px var(--surface-d); */
 	left: 50%;
 	top: 50%;
 	width: 50%;
 	height: 50%;
 
 	cursor: nwse-resize;
+}
+
+.lock-button {
+	background-color: var(--surface-b);
+}
+
+.lock-button:hover {
+	background-color: var(--p-surface-900) !important;
 }
 </style>

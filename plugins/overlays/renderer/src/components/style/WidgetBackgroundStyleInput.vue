@@ -1,26 +1,35 @@
 <template>
-	<div class="widget-background-style">
-		<template v-if="model">
-			<draggable-collection
-				v-model="model.elements"
-				handle-class="drag-handle"
-				data-type="widget-background-style-element"
-				:local-path="localPath"
-			>
-				<template #no-items> </template>
-				<template #item="{ item, index }">
-					<widget-background-element-edit v-model="model.elements[index]" @delete="deleteElement(index)" />
+	<div>
+		<label-floater :model="true" :label="getDataLabel(props)" v-slot="labelProps">
+			<input-box :model="true" v-bind="labelProps" class="w-full">
+				<template v-if="model">
+					<draggable-collection
+						v-model="model.elements"
+						handle-class="drag-handle"
+						data-type="widget-background-style-element"
+						:local-path="localPath"
+					>
+						<template #no-items> </template>
+						<template #item="{ item, index }">
+							<widget-background-element-edit
+								v-model="model.elements[index]"
+								@delete="deleteElement(index)"
+							/>
+						</template>
+					</draggable-collection>
 				</template>
-			</draggable-collection>
-		</template>
-		<div v-if="model?.color != null">
-			<widget-color-background-edit v-model="model" />
-		</div>
-		<div class="flex flex-row">
-			<p-button @click="toggleColor" size="small" text><i class="mdi mdi-format-color-fill" /></p-button>
-			<p-button @click="addGradient" size="small" text><i class="mdi mdi-gradient-horizontal" /></p-button>
-			<p-button @click="addImage" size="small" text><i class="mdi mdi-image" /></p-button>
-		</div>
+				<div v-if="model?.color != null">
+					<widget-color-background-edit v-model="model" />
+				</div>
+				<div class="flex flex-row">
+					<p-button @click="toggleColor" size="small" text><i class="mdi mdi-format-color-fill" /></p-button>
+					<p-button @click="addGradient" size="small" text
+						><i class="mdi mdi-gradient-horizontal"
+					/></p-button>
+					<p-button @click="addImage" size="small" text><i class="mdi mdi-image" /></p-button>
+				</div>
+			</input-box>
+		</label-floater>
 	</div>
 </template>
 
@@ -32,7 +41,15 @@ import {
 	WidgetBackgroundStyle,
 	WidgetBackgroundStyleElement,
 } from "castmate-plugin-overlays-shared"
-import { SharedDataInputProps, useDataBinding, DraggableCollection, useDefaultableModel } from "castmate-ui-core"
+import {
+	SharedDataInputProps,
+	useDataBinding,
+	DraggableCollection,
+	useDefaultableModel,
+	InputBox,
+	LabelFloater,
+	getDataLabel,
+} from "castmate-ui-core"
 import PButton from "primevue/button"
 
 import WidgetBackgroundElementEdit from "./background/WidgetBackgroundElementEdit.vue"
