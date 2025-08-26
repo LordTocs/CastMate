@@ -60,6 +60,13 @@ export interface WidgetSizePercent {
 
 export type WidgetStyleSize = WidgetSizePixels | WidgetSizePercent
 
+export interface WidgetEdgeInfo<T = number> {
+	top: T
+	bottom: T
+	left: T
+	right: T
+}
+
 function isPixelSize(size: WidgetStyleSize): size is WidgetSizePixels {
 	return typeof size == "number"
 }
@@ -446,6 +453,66 @@ export interface SchemaWidgetBackgroundStyle extends SchemaBase<WidgetBackground
 	type: WidgetBackgroundStyleFactory
 }
 
+export interface WidgetOutlineStyle {
+	color: Color
+	style: "solid" | "dotted" | "dashed"
+	width: number
+}
+
+export type WidgetBorderStyle = WidgetEdgeInfo<WidgetOutlineStyle>
+export function getBorderCSS(style: Partial<WidgetBorderStyle> | undefined, scale: number = 1) {
+	const result = createCSS()
+	if (!style) return result
+
+	cssStaticProp(result, "border-top-color", style.top?.color)
+	cssStaticProp(result, "border-top-style", style.top?.style)
+	cssSizeProp(result, "border-top-width", style.top?.width, scale)
+
+	cssStaticProp(result, "border-left-color", style.left?.color)
+	cssStaticProp(result, "border-left-style", style.left?.style)
+	cssSizeProp(result, "border-left-width", style.left?.width, scale)
+
+	cssStaticProp(result, "border-right-color", style.right?.color)
+	cssStaticProp(result, "border-right-style", style.right?.style)
+	cssSizeProp(result, "border-right-width", style.right?.width, scale)
+
+	cssStaticProp(result, "border-bottom-color", style.bottom?.color)
+	cssStaticProp(result, "border-bottom-style", style.bottom?.style)
+	cssSizeProp(result, "border-bottom-width", style.bottom?.width, scale)
+
+	return result
+}
+
+export function getOutlineCSS(style: Partial<WidgetOutlineStyle> | undefined, scale: number = 1) {
+	const result = createCSS()
+	if (!style) return result
+
+	cssSizeProp(result, "outline-width", style.width, scale)
+	cssStaticProp(result, "outline-style", style.style)
+	cssStaticProp(result, "outline-color", style.color)
+
+	return result
+}
+
+const WidgetOutlineStyleSymbol = Symbol()
+export const WidgetOutlineStyle = {
+	factoryCreate(initial?: WidgetOutlineStyle): WidgetOutlineStyle {
+		return initial
+			? _cloneDeep(initial)
+			: {
+					color: "#000000",
+					style: "solid",
+					width: 10,
+			  }
+	},
+	[WidgetOutlineStyleSymbol]: "WidgetOutlineStyle",
+}
+export type WidgetOutlineStyleFactory = typeof WidgetOutlineStyle
+
+export interface SchemaWidgetOutlineStyle extends SchemaBase<WidgetBackgroundStyle> {
+	type: WidgetOutlineStyleFactory
+}
+
 declare module "castmate-schema" {
 	interface SchemaTypeMap {
 		OverlayTextStyle: [SchemaOverlayTextStyle, OverlayTextStyle]
@@ -453,6 +520,7 @@ declare module "castmate-schema" {
 		OverlayTextAlignment: [SchemaOverlayTextAlignment, OverlayTextAlignment]
 		WidgetBorderRadius: [SchemaWidgetBorderRadius, WidgetBorderRadius]
 		WidgetBackgroundStyle: [SchemaWidgetBackgroundStyle, WidgetBackgroundStyle]
+		WidgetOutlineStyle: [SchemaWidgetOutlineStyle, WidgetOutlineStyle]
 	}
 }
 
@@ -474,4 +542,8 @@ registerType("WidgetBorderRadius", {
 
 registerType("WidgetBackgroundStyle", {
 	constructor: WidgetBackgroundStyle,
+})
+
+registerType("WidgetOutlineStyle", {
+	constructor: WidgetOutlineStyle,
 })

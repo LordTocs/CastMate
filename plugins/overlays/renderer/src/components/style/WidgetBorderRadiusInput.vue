@@ -136,10 +136,6 @@ const brDragging = useDragValue(br, brLinked, {
 	align-items: center;
 }
 
-.border-radius-edit:hover {
-	/* border-color: var(--p-primary-color); */
-}
-
 .corner {
 	position: absolute;
 	background-color: var(--surface-b);

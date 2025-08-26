@@ -12,6 +12,9 @@ import {
 	useProjectStore,
 	useResourceStore,
 } from "castmate-ui-core"
+
+import "./css/icons.css"
+
 import _cloneDeep from "lodash/cloneDeep"
 import OverlayEditorPageVue from "./components/OverlayEditorPage.vue"
 import { OverlayEditorView } from "./components/overlay-edit-types"
@@ -24,6 +27,7 @@ import {
 	OverlayWidget,
 	WidgetBackgroundStyle,
 	WidgetBorderRadius,
+	WidgetOutlineStyle,
 } from "castmate-plugin-overlays-shared"
 import OverlayTextStyleInput from "./components/style/OverlayTextStyleInput.vue"
 import OverlayBlockStyleInput from "./components/style/OverlayBlockStyleInput.vue"
@@ -32,6 +36,7 @@ import OverlayWidgetInput from "./components/OverlayWidgetInput.vue"
 import OverlayTransitionAnimationInput from "./components/revealer/OverlayTransitionAnimationInput.vue"
 import WidgetBorderRadiusInput from "./components/style/WidgetBorderRadiusInput.vue"
 import WidgetBackgroundStyleInput from "./components/style/WidgetBackgroundStyleInput.vue"
+import WidgetOutlineStyleInput from "./components/style/border/WidgetOutlineStyleInput.vue"
 
 export function initPlugin(app: App<Element>) {
 	const dataStore = useDataInputStore()
@@ -43,6 +48,7 @@ export function initPlugin(app: App<Element>) {
 	dataStore.registerInputComponent(OverlayTransitionAnimation, OverlayTransitionAnimationInput)
 	dataStore.registerInputComponent(WidgetBorderRadius, WidgetBorderRadiusInput)
 	dataStore.registerInputComponent(WidgetBackgroundStyle, WidgetBackgroundStyleInput)
+	dataStore.registerInputComponent(WidgetOutlineStyle, WidgetOutlineStyleInput)
 
 	const resourceStore = useResourceStore()
 	const documentStore = useDocumentStore()

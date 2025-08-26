@@ -1,0 +1,74 @@
+.ovi::before {
+	display: inline-block;
+	text-rendering: auto;
+	line-height: inherit;
+	vertical-align: middle;
+}
+
+.ovi.ovi-solid-border::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/SolidOutline.svg");
+	-webkit-mask-image: url("../svg/SolidOutline.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+}
+
+.ovi.ovi-solid-border::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/SolidOutline.svg");
+	-webkit-mask-image: url("../svg/SolidOutline.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+}
+
+.ovi.ovi-solid-border::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/SolidOutline.svg");
+	-webkit-mask-image: url("../svg/SolidOutline.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+}
+
+.ovi.ovi-dashed-border::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/DashedOutline.svg");
+	-webkit-mask-image: url("../svg/DashedOutline.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+}
+
+.ovi.ovi-dotted-border::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/DottedOutline.svg");
+	-webkit-mask-image: url("../svg/DottedOutline.svg");
+	-webkit-mask-size: 1em;
+	mask-size: 1em;
+	background-size: 1em;
+	height: 1em;
+	width: 1em;
+}
+
+.ovi {
+	height: 1em;
+}
+
+.obs-blue {
+	color: #256eff;
+}

@@ -5,12 +5,14 @@
 			flexDirection,
 			...getBorderRadiusCSS(props.config.outerRadius),
 			...getBackgroundCSS(props.config.backgroundStyle, mediaResolver),
+			...getOutlineCSS(props.config.outline),
 		}"
 	>
 		<div
 			class="inner-bar"
 			:style="{
 				...fillPositionStyle,
+				...fillLineStyle,
 				...getBackgroundCSS(props.config.fillStyle, mediaResolver),
 			}"
 		></div>
@@ -21,9 +23,13 @@
 import { declareWidgetOptions, useMediaResolver } from "castmate-overlay-core"
 import {
 	getBackgroundCSS,
+	getBorderCSS,
 	getBorderRadiusCSS,
+	getOutlineCSS,
 	WidgetBackgroundStyle,
 	WidgetBorderRadius,
+	WidgetBorderStyle,
+	WidgetOutlineStyle,
 } from "castmate-plugin-overlays-shared"
 import { computed, CSSProperties } from "vue"
 
@@ -36,9 +42,43 @@ const props = defineProps<{
 		direction: "Right" | "Left" | "Up" | "Down"
 		outerRadius: WidgetBorderRadius
 		backgroundStyle: WidgetBackgroundStyle
+		outline: WidgetOutlineStyle
 		fillStyle: WidgetBackgroundStyle
+		fillLine: WidgetOutlineStyle
 	}
 }>()
+
+defineOptions({
+	widget: declareWidgetOptions({
+		id: "bar",
+		name: "Bar",
+		description: "Progress Bar",
+		icon: "mdi mdi-square",
+		defaultSize: {
+			width: 400,
+			height: 90,
+		},
+		config: {
+			type: Object,
+			properties: {
+				value: { type: Number, name: "Value", required: true, default: 0, template: true },
+				target: { type: Number, name: "Target", required: true, default: 100, template: true },
+				direction: {
+					type: String,
+					name: "Direction",
+					required: true,
+					default: "Right",
+					enum: ["Right", "Left", "Up", "Down"],
+				},
+				outerRadius: { type: WidgetBorderRadius, name: "Outer Corners", required: true },
+				backgroundStyle: { type: WidgetBackgroundStyle, name: "Background Style", required: true },
+				outline: { type: WidgetOutlineStyle, name: "Outline" },
+				fillStyle: { type: WidgetBackgroundStyle, name: "Fill Style", required: true },
+				fillLine: { type: WidgetOutlineStyle, name: "Fill Line" },
+			},
+		},
+	}),
+})
 
 const isVertical = computed(() => props.config.direction == "Up" || props.config.direction == "Down")
 const isReverse = computed(() => props.config.direction == "Left" || props.config.direction == "Up")
@@ -73,39 +113,29 @@ const fillPositionStyle = computed<CSSProperties>(() => {
 	}
 })
 
+const fillLineStyle = computed<CSSProperties>(() => {
+	const borderStyle: Partial<WidgetBorderStyle> = {}
+
+	if (isVertical.value) {
+		if (isReverse.value) {
+			borderStyle.top = props.config.fillLine
+		} else {
+			borderStyle.bottom = props.config.fillLine
+		}
+	} else {
+		if (isReverse.value) {
+			borderStyle.left = props.config.fillLine
+		} else {
+			borderStyle.right = props.config.fillLine
+		}
+	}
+
+	return getBorderCSS(borderStyle)
+})
+
 const percentage = computed(() => {
 	const valueNorm = props.config.value / props.config.target
 	return Math.min(1, Math.max(0, valueNorm)) * 100
-})
-
-defineOptions({
-	widget: declareWidgetOptions({
-		id: "bar",
-		name: "Bar",
-		description: "Progress Bar",
-		icon: "mdi mdi-square",
-		defaultSize: {
-			width: 400,
-			height: 90,
-		},
-		config: {
-			type: Object,
-			properties: {
-				value: { type: Number, name: "Value", required: true, default: 0, template: true },
-				target: { type: Number, name: "Target", required: true, default: 100, template: true },
-				direction: {
-					type: String,
-					name: "Direction",
-					required: true,
-					default: "Right",
-					enum: ["Right", "Left", "Up", "Down"],
-				},
-				outerRadius: { type: WidgetBorderRadius, name: "Outer Corners", required: true },
-				backgroundStyle: { type: WidgetBackgroundStyle, name: "Background Style", required: true },
-				fillStyle: { type: WidgetBackgroundStyle, name: "Fill Style", required: true },
-			},
-		},
-	}),
 })
 </script>
 
