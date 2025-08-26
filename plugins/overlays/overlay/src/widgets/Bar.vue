@@ -61,7 +61,7 @@ defineOptions({
 		config: {
 			type: Object,
 			properties: {
-				value: { type: Number, name: "Value", required: true, default: 0, template: true },
+				value: { type: Number, name: "Value", required: true, default: 25, template: true },
 				target: { type: Number, name: "Target", required: true, default: 100, template: true },
 				direction: {
 					type: String,
@@ -71,9 +71,19 @@ defineOptions({
 					enum: ["Right", "Left", "Up", "Down"],
 				},
 				outerRadius: { type: WidgetBorderRadius, name: "Outer Corners", required: true },
-				backgroundStyle: { type: WidgetBackgroundStyle, name: "Background Style", required: true },
+				backgroundStyle: {
+					type: WidgetBackgroundStyle,
+					name: "Background Style",
+					required: true,
+					default: { color: "#FF0000", elements: [] },
+				},
 				outline: { type: WidgetOutlineStyle, name: "Outline" },
-				fillStyle: { type: WidgetBackgroundStyle, name: "Fill Style", required: true },
+				fillStyle: {
+					type: WidgetBackgroundStyle,
+					name: "Fill Style",
+					required: true,
+					default: { color: "#00FF00", elements: [] },
+				},
 				fillLine: { type: WidgetOutlineStyle, name: "Fill Line" },
 			},
 		},
