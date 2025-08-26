@@ -63,10 +63,6 @@ const props = defineProps<
 
 const model = defineModel<WidgetBackgroundStyle>()
 
-const elements = useDefaultableModel(model, "elements", new Array<WidgetBackgroundStyleElement>(), () => ({
-	elements: [],
-}))
-
 function deleteElement(index: number) {
 	if (!model.value) return
 
