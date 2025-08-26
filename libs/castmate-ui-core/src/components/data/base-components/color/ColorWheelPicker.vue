@@ -59,6 +59,7 @@ function posToHueSat(x: number, y: number) {
 	const result = {
 		hue: circleDegrees(90 + (angle * 180) / Math.PI),
 		sat: (dist * 100) / radius,
+		val: val.value == 0 ? 100 : val.value,
 	}
 	return result
 }
@@ -95,7 +96,7 @@ useEventListener(
 
 		const result = posToHueSat(localX, localY)
 
-		model.value = convertToHexAlpha({ h: result.hue, s: result.sat, v: val.value })
+		model.value = convertToHexAlpha({ h: result.hue, s: result.sat, v: result.val })
 	}
 )
 
