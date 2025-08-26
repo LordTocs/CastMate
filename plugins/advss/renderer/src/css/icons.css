@@ -2,6 +2,7 @@
 	display: inline-block;
 	text-rendering: auto;
 	line-height: inherit;
+	vertical-align: baseline;
 }
 
 .advi.advi-advss::before {
@@ -9,13 +10,13 @@
 	background-color: currentColor;
 	mask-image: url("../svg/AdvssIcon.svg");
 	-webkit-mask-image: url("../svg/AdvssIcon.svg");
-	-webkit-mask-size: 1em;
-	mask-size: 1em;
-	background-size: 1em;
-	height: 1em;
-	width: 1em;
+	-webkit-mask-size: 0.8em;
+	mask-size: 0.8em;
+	background-size: 0.8em;
+	height: 0.8em;
+	width: 0.8em;
 }
 
 .advi.advi-advss {
-	height: 1em;
+	height: 0.8em;
 }
