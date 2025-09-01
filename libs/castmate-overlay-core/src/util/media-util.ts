@@ -4,7 +4,7 @@ import { normalizeMediaPath } from "castmate-schema"
 
 export function provideWebMediaResolver() {
 	provide("mediaResolver", (mediaFile: string) => {
-		return `http://${window.location.host}/media/${mediaFile}`
+		return `http://${window.location.host}/media${mediaFile}`
 	})
 }
 
