@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import DataInputBase from "../base-components/DataInputBase.vue"
 
-import { SchemaMediaFile, SchemaBase } from "castmate-schema"
+import { SchemaMediaFile, SchemaBase, normalizeMediaPath } from "castmate-schema"
 import { computed, nextTick, ref, useModel } from "vue"
 import { DropDownPanel, useMediaStore, usePropagationStop } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
@@ -45,7 +45,6 @@ import { useDataBinding, useUndoCommitter } from "../../../util/data-binding"
 const props = defineProps<
 	{
 		schema: SchemaMediaFile & SchemaBase
-		modelValue: string | undefined
 	} & SharedDataInputProps
 >()
 
@@ -53,7 +52,7 @@ useDataBinding(() => props.localPath)
 
 const showAll = computed(() => props.schema.image == null && props.schema.video == null && props.schema.sound == null)
 
-const model = useModel(props, "modelValue")
+const model = defineModel<string>()
 
 const undoModel = useUndoCommitter(model)
 
@@ -84,8 +83,9 @@ function mediaClicked(media: MediaFile) {
 
 const selectedMedia = computed({
 	get() {
-		if (!props.modelValue) return undefined
-		return mediaStore.media[props.modelValue]
+		if (!model.value) return undefined
+		const normalizedFile = normalizeMediaPath(model.value)
+		return mediaStore.media[normalizedFile]
 	},
 	set(v: MediaMetadata | undefined) {
 		undoModel.value = v?.path
