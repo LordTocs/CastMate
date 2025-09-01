@@ -8,8 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import { MediaMetadata } from "castmate-schema"
-import { MaybeRefOrGetter, computed, onMounted, ref, shallowRef, toValue, watch } from "vue"
+import { MediaMetadata, normalizeMediaPath } from "castmate-schema"
+import { ComputedRef, MaybeRefOrGetter, computed, onMounted, ref, shallowRef, toValue, watch } from "vue"
 import * as fs from "fs/promises"
 import { MediaFile } from "castmate-schema"
 import { useMediaStore } from "castmate-ui-core"
@@ -41,7 +41,7 @@ async function getAudioData(media: MediaMetadata) {
 	return channelData
 }
 
-function useAudioData(media: MaybeRefOrGetter<MediaMetadata>) {
+function useAudioData(media: ComputedRef<MediaMetadata | undefined>) {
 	const data = shallowRef<Array<Float32Array>>([])
 
 	async function refreshData() {
@@ -59,7 +59,7 @@ function useAudioData(media: MaybeRefOrGetter<MediaMetadata>) {
 }
 
 const audioMetaData = computed(() => {
-	return mediaStore.media[props.modelValue.sound]
+	return mediaStore.getMedia(props.modelValue.sound)
 })
 const audioData = useAudioData(audioMetaData)
 

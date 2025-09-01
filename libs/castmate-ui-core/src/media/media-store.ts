@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { computed, MaybeRefOrGetter, Ref, ref, toValue } from "vue"
-import { MediaMetadata } from "castmate-schema"
+import { MediaMetadata, normalizeMediaPath } from "castmate-schema"
 import { ProjectItem, handleIpcMessage, useDockingStore, useIpcCaller, useIpcMessage, useProjectStore } from "../main"
 import MediaBrowserPage from "../components/media/MediaBrowserPage.vue"
 import { useFileDragDrop } from "../util/file-drop"
@@ -9,7 +9,7 @@ import path from "path"
 export const useMediaStore = defineStore("media", () => {
 	const mediaMap = ref<Record<string, MediaMetadata>>({})
 
-	const getMedia = useIpcCaller<() => MediaMetadata[]>("media", "getMedia")
+	const getAllMedia = useIpcCaller<() => MediaMetadata[]>("media", "getMedia")
 	const openMediaFolder = useIpcCaller<() => any>("media", "openMediaFolder")
 	const exploreMediaItem = useIpcCaller<(path: string) => any>("media", "exploreMediaItem")
 
@@ -41,7 +41,7 @@ export const useMediaStore = defineStore("media", () => {
 			delete mediaMap.value[path]
 		})
 
-		const existingMedia = await getMedia()
+		const existingMedia = await getAllMedia()
 
 		for (const media of existingMedia) {
 			mediaMap.value[media.path] = media
@@ -58,9 +58,17 @@ export const useMediaStore = defineStore("media", () => {
 		await copyMediaMain(localPath, mediaPath)
 	}
 
+	function getMedia(mediaPath: string | undefined) {
+		if (!mediaPath) return undefined
+		return mediaMap.value[normalizeMediaPath(mediaPath)]
+	}
+
+	const mediaKeys = computed(() => Object.keys(mediaMap.value))
+
 	return {
 		initialize,
-		media: computed(() => mediaMap.value),
+		getMedia,
+		mediaKeys,
 		openMediaFolder,
 		exploreMediaItem,
 		downloadMedia,
@@ -97,9 +105,9 @@ export function useMediaDrop(
 
 				const mediaName = pathParse.base
 
-				const proposedMediaPath = path.join(basepath, mediaName).replaceAll("\\", "/")
+				const proposedMediaPath = normalizeMediaPath(path.join(basepath, mediaName))
 
-				if (mediaStore.media[proposedMediaPath]) {
+				if (mediaStore.getMedia(proposedMediaPath)) {
 					console.log("ALREADY HAS PATH", proposedMediaPath)
 					continue
 				}

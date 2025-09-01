@@ -38,7 +38,7 @@ const items = useMediaFileTree(() => props)
 
 const mediaStore = useMediaStore()
 
-const noItemsAtAll = computed(() => Object.keys(mediaStore.media).length == 0)
+const noItemsAtAll = computed(() => mediaStore.mediaKeys.length > 0)
 const noItemsFilter = computed(() => Object.keys(items.value).length == 0)
 </script>
 

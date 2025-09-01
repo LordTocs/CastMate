@@ -36,21 +36,9 @@ import { useMediaDrop } from "../../media/media-store"
 const filter = ref("")
 
 const mediaStore = useMediaStore()
-const mediaItems = computed(() => {
-	const itemPaths = Object.values(mediaStore.media)
-	itemPaths.sort((a, b) => a.path.localeCompare(b.path))
-	return itemPaths
-})
-const containerDiv = ref<HTMLElement | null>(null)
 
 function openMediaFolder() {
 	mediaStore.openMediaFolder()
-}
-
-function isImagePreview(media: MediaMetadata) {
-	if (media.image) return true
-	const ext = path.extname(media.path)
-	return [".gif", ".webp", ".apng"].includes(ext)
 }
 
 const tabBody = ref<InstanceType<typeof ScrollingTabBody>>()

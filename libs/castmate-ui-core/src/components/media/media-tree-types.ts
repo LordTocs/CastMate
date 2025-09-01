@@ -49,8 +49,9 @@ export function treeifyMediaFile(files: MediaFile[], filtering: MediaFiltering, 
 
 		if (filterLower && !parsed.name.toLocaleLowerCase().includes(filterLower)) continue
 
-		const metadata = mediaStore.media[file]
+		const metadata = mediaStore.getMedia(file)
 
+		if (!metadata) continue
 		if (!matchesTypeFilter(metadata, filtering)) continue
 
 		let itemDict = tree
@@ -98,7 +99,7 @@ export function useMediaFileTree(filtering: MaybeRefOrGetter<MediaFiltering>) {
 	const mediaStore = useMediaStore()
 
 	return computed(() => {
-		const sorted = Object.keys(mediaStore.media).sort((a, b) => a.localeCompare(b))
+		const sorted = [...mediaStore.mediaKeys].sort((a, b) => a.localeCompare(b))
 
 		return treeifyMediaFile(sorted, toValue(filtering), mediaStore)
 	})

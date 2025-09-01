@@ -72,7 +72,7 @@ const mediaStore = useMediaStore()
 const selectedMedia = computed({
 	get() {
 		if (!model.value?.image) return undefined
-		return mediaStore.media[model.value.image]
+		return mediaStore.getMedia(model.value.image)
 	},
 	set(v: MediaMetadata | undefined) {
 		undoModel.value = v?.path ?? ""

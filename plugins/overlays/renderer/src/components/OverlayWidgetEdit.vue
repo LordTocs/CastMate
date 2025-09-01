@@ -64,7 +64,7 @@ provide("isEditor", true)
 const mediaStore = useMediaStore()
 
 provide("mediaResolver", (mediaFile: string) => {
-	const media = mediaStore.media[mediaFile]
+	const media = mediaStore.getMedia(mediaFile)
 	if (!media?.file) return ""
 
 	return pathToFileURL(media.file)

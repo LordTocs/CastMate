@@ -83,9 +83,7 @@ function mediaClicked(media: MediaFile) {
 
 const selectedMedia = computed({
 	get() {
-		if (!model.value) return undefined
-		const normalizedFile = normalizeMediaPath(model.value)
-		return mediaStore.media[normalizedFile]
+		return mediaStore.getMedia(model.value)
 	},
 	set(v: MediaMetadata | undefined) {
 		undoModel.value = v?.path
