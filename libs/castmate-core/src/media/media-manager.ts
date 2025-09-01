@@ -208,7 +208,7 @@ export const MediaManager = Service(
 		}
 
 		getMedia(path: string) {
-			return this.mediaFiles.get(path)
+			return this.mediaFiles.get(normalizeMediaPath(path))
 		}
 
 		private async setupFolderScanner(id: string, path: string) {
