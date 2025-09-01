@@ -1,7 +1,6 @@
-import { ComputedRef, MaybeRefOrGetter, computed, inject, markRaw, provide, ref, toValue } from "vue"
-import { useIsEditor } from "./editor-util"
-import path from "path"
+import { MaybeRefOrGetter, computed, inject, markRaw, provide, ref, toValue } from "vue"
 import { defineStore } from "pinia"
+import { normalizeMediaPath } from "castmate-schema"
 
 export function provideWebMediaResolver() {
 	provide("mediaResolver", (mediaFile: string) => {
@@ -17,14 +16,15 @@ export function useMediaResolver() {
 
 export function useMediaUrl(mediaFile: MaybeRefOrGetter<string | undefined>) {
 	const mediaResolver = useMediaResolver()
-	const isEditor = useIsEditor()
 
 	return computed(() => {
 		const file = toValue(mediaFile)
 
 		if (file == null) return undefined
 
-		return mediaResolver(file)
+		const normFile = normalizeMediaPath(file)
+
+		return mediaResolver(normFile)
 	})
 }
 
