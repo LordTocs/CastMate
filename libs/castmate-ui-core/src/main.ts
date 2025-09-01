@@ -52,6 +52,7 @@ export { default as CCheckBox } from "./components/data/base-components/CCheckBo
 export { default as CSelectButton } from "./components/data/base-components/CSelectButton.vue"
 export { default as CColorPicker } from "./components/data/base-components/CColorPicker.vue"
 export { default as CToggleButton } from "./components/data/base-components/CToggleButton.vue"
+export { default as CAngleInput } from "./components/data/base-components/numerics/CAngleInput.vue"
 export { default as CBooleanExpression } from "./components/data/base-components/CBooleanExpression.vue"
 
 export { default as AutomationEdit } from "./components/automation/AutomationEdit.vue"
@@ -73,6 +74,7 @@ export { default as DataInputBase } from "./components/data/base-components/Data
 export { default as DataInputBaseMenu } from "./components/data/base-components/DataInputBaseMenu.vue"
 export { default as DropListItem } from "./components/data/base-components/DropListItem.vue"
 export { default as FilterInputBox } from "./components/data/base-components/FilterInputBox.vue"
+export { default as MediaDropDown } from "./components/data/base-components/media/MediaDropDown.vue"
 
 export { default as DataBindingDebugger } from "./components/data/binding/DataBindingDebugger.vue"
 
@@ -102,6 +104,7 @@ export * from "./util/generic-login"
 export * from "./util/init-store"
 export * from "./util/events"
 export * from "./util/data-binding"
+export * from "./components/drag/OrderedTemplateRefs"
 
 export * from "./plugins/plugin-store"
 export * from "./project/project-store"

@@ -371,6 +371,36 @@ export function defineSetting<T extends Schema>(id: string, schema: T) {
 	return value
 }
 
+export function getSettingValue<T>(plugin: string, id: string) {
+	const pluginObj = PluginManager.getInstance().getPlugin(plugin)
+	if (!pluginObj) throw new Error()
+
+	const setting = pluginObj.settings.get(id)
+	if (!setting) throw new Error()
+	if (setting.type == "value") {
+		return setting.ref.value as T
+	} else if (setting.type == "secret") {
+		return setting.ref.value as T
+	}
+
+	throw new Error()
+}
+
+export function useSetting<T>(plugin: string, id: string) {
+	const pluginObj = PluginManager.getInstance().getPlugin(plugin)
+	if (!pluginObj) throw new Error()
+
+	const setting = pluginObj.settings.get(id)
+	if (!setting) throw new Error()
+	if (setting.type == "value") {
+		return setting.ref as ReactiveRef<T>
+	} else if (setting.type == "secret") {
+		return setting.ref as ReactiveRef<T>
+	}
+
+	throw new Error()
+}
+
 /**
  * Shows a particular resource in the setting
  */

@@ -42,3 +42,8 @@ export const stillImageFormats = [".png", ".jpg", ".jpeg", ".svg", ".bmp", ".tif
 export const ImageFormats = [".gif", ".png", ".jpg", ".jpeg", ".apng", ".avif", ".webp", ".svg", ".bmp", ".tiff"]
 export const VideoFormats = [".mp4", ".webm", ".ogg"]
 export const SoundFormats = [".mp3", ".wav", ".ogg"]
+
+export function normalizeMediaPath(mediaPath: string) {
+	const slashCorrected = mediaPath.replaceAll("\\", "/")
+	return `${slashCorrected.startsWith("/") ? "" : "/"}${slashCorrected}`
+}

@@ -1,4 +1,4 @@
-import { Arrayable, useEventListener } from "@vueuse/core"
+import { Arrayable, useElementBounding, useEventListener } from "@vueuse/core"
 import { type MaybeRefOrGetter, toValue, onMounted, watch, onUnmounted, ref, Ref, computed } from "vue"
 import { getElementRelativeRect, getInternalMousePos, isChildOfClass, usePropagationStop } from "./dom"
 
@@ -204,9 +204,9 @@ export function useDraggable(
 
 export function useDragValue(
 	element: MaybeRefOrGetter<HTMLElement | undefined>,
-	numRef: Ref<number>,
+	numRef: Ref<number | undefined>,
 	config?: MaybeRefOrGetter<{
-		direction?: "horizontal" | "vertical"
+		direction?: "horizontal" | "vertical" | "up-left" | "up-right" | "down-left" | "down-right"
 		scale?: number
 		invert?: boolean
 		min?: number
@@ -225,7 +225,7 @@ export function useDragValue(
 
 		dragging.value = true
 		dragStart.value = pos
-		dragStartValue.value = numRef.value
+		dragStartValue.value = numRef.value ?? 0
 	})
 
 	function updateNumber(ev: MouseEvent) {
@@ -235,9 +235,21 @@ export function useDragValue(
 		let offset: number
 		if (configValue?.direction == "vertical") {
 			offset = pos.y - dragStart.value.y
-		} else {
+		} else if (configValue?.direction == "horizontal") {
 			//Horizontal
 			offset = pos.x - dragStart.value.x
+		} else {
+			let dx = pos.x - dragStart.value.x
+			let dy = pos.y - dragStart.value.y
+
+			if (configValue?.direction == "up-left" || configValue?.direction == "up-right") {
+				dy = -dy
+			}
+			if (configValue?.direction == "up-left" || configValue?.direction == "down-left") {
+				dx = -dx
+			}
+
+			offset = Math.max(dx, dy)
 		}
 
 		if (configValue?.invert) {
@@ -274,6 +286,71 @@ export function useDragValue(
 			dragging.value = false
 			dragComplete?.()
 			console.log("Drag Value End")
+		}
+	)
+
+	return computed(() => {
+		return dragging.value
+	})
+}
+
+export function useDragAngle(
+	element: MaybeRefOrGetter<HTMLElement | undefined | null>,
+	numRef: Ref<number | undefined>,
+	config?: MaybeRefOrGetter<{
+		min?: number
+		max?: number
+	}>,
+	dragComplete?: () => any
+) {
+	const bounds = useElementBounding(element)
+
+	const dragging = ref(false)
+
+	useEventListener(element, "mousedown", (ev) => {
+		dragging.value = true
+	})
+
+	function updateNumber(ev: MouseEvent) {
+		const mousePos = { x: ev.clientX, y: ev.clientY }
+		const centerPos = {
+			x: (bounds.right.value + bounds.left.value) / 2,
+			y: (bounds.bottom.value + bounds.top.value) / 2,
+		}
+
+		const offset = {
+			x: mousePos.x - centerPos.x,
+			y: mousePos.y - centerPos.y,
+		}
+
+		const angleRad = Math.atan2(offset.y, offset.x)
+		let angleDeg = (angleRad * 180) / Math.PI
+
+		if (ev.shiftKey) {
+			angleDeg = Math.round(angleDeg / 45) * 45
+			if (angleDeg == 360) angleDeg = 0
+		}
+
+		numRef.value = angleDeg
+	}
+
+	useEventListener(
+		() => (dragging.value ? window : undefined),
+		"mousemove",
+		(ev: MouseEvent) => {
+			updateNumber(ev)
+			//console.log("Drag Value Move")
+		}
+	)
+
+	useEventListener(
+		() => (dragging.value ? window : undefined),
+		"mouseup",
+		(ev: MouseEvent) => {
+			updateNumber(ev)
+			dragging.value = false
+			dragComplete?.()
+			//console.log("Drag Value End")
 		}
 	)
 

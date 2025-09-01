@@ -4,11 +4,7 @@
 			<i class="mdi mdi-drag" style="font-size: 2rem"></i>
 		</div>
 		<div class="state-expression-middle">
-			<expression-value-edit
-				v-model="model.lhs"
-				local-path="lhs"
-				class="w-0 flex-grow-1 flex-shrink-0 align-self-stretch"
-			/>
+			<expression-value-edit v-model="model.lhs" local-path="lhs" class="expression-operand" />
 			<value-compare-operator-selector
 				v-model="model.operator"
 				:inequalities="inequalities"
@@ -18,7 +14,7 @@
 				v-model="model.rhs"
 				local-path="rhs"
 				:left-schema="leftSchema"
-				class="w-0 flex-grow-1 flex-shrink-0 align-self-stretch"
+				class="expression-operand"
 			/>
 		</div>
 		<div class="state-expression-right">
@@ -112,6 +108,8 @@ const inequalities = computed(() => {
 	border: solid 2px var(--surface-border);
 
 	border-radius: var(--border-radius);
+
+	container-type: inline-size;
 }
 
 .state-expression-value.selected {
@@ -135,15 +133,32 @@ const inequalities = computed(() => {
 	background-color: var(--true-color);
 }
 
+.expression-operand {
+	flex: 1;
+	width: 0;
+}
+
 .state-expression-middle {
 	flex: 1;
 	display: flex;
 	flex-direction: row;
-	flex-wrap: wrap;
 	align-items: center;
 	justify-content: center;
+	min-width: 0;
 	gap: 0.5rem;
 	background-color: var(--surface-0);
+}
+
+@container (width < 30rem) {
+	.state-expression-middle {
+		position: relative;
+		flex-direction: column;
+	}
+
+	.expression-operand {
+		flex: unset;
+		width: 100%;
+	}
 }
 
 .state-expression-right {

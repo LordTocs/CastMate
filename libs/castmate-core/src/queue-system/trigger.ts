@@ -1,4 +1,4 @@
-import { Color, ExposedSchemaType, ResolvedSchemaType, TriggerData } from "castmate-schema"
+import { Color, ExposedSchemaType, ResolvedSchemaType, SchemaObj, TriggerData } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin-init"
@@ -72,7 +72,7 @@ export interface TriggerDefinition {
 	readonly color: Color
 	readonly version: string
 	readonly config: Schema
-	readonly context: Schema | ((config: any) => Promise<any>)
+	readonly context: SchemaObj | ((config: any) => Promise<any>)
 
 	trigger(context: any): Promise<boolean>
 	registerIPC(path: string): any

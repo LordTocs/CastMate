@@ -1,7 +1,7 @@
 <template>
 	<div class="array-input">
 		<div class="array-header flex flex-row align-items-center">
-			<span class="text-color-secondary text-sm">{{ schema.name }}</span>
+			<span class="text-color-secondary text-sm">{{ getDataLabel(props) }}</span>
 			<div class="flex-grow-1"></div>
 			<p-button icon="pi pi-plus" class="extra-small-button" @click="addItem" size="small"></p-button>
 		</div>
@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { SchemaArray } from "castmate-schema"
-import { SharedDataInputProps } from "../DataInputTypes"
+import { getDataLabel, SharedDataInputProps } from "../DataInputTypes"
 import { useModel } from "vue"
 import DataInput from "../DataInput.vue"
 import PButton from "primevue/button"

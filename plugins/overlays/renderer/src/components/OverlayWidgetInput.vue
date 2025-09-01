@@ -6,6 +6,7 @@
 		:disabled="disabled"
 		:no-float="noFloat"
 		v-slot="inputProps"
+		:local-path="localPath"
 	>
 		<c-autocomplete
 			v-model="modelId"

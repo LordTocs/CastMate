@@ -35,10 +35,11 @@ import {
 import { ComputedRef, computed, inject, markRaw, onMounted, provide, ref, useModel, watch } from "vue"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
 import { useRemoteOverlayConfig } from "../config/overlay-config"
-import { CastMateBridgeImplementation, provideEditorMediaResolver } from "castmate-overlay-core"
+import { CastMateBridgeImplementation } from "castmate-overlay-core"
 
 import { useDialog } from "primevue/usedialog"
 import type { MenuItem } from "primevue/menuitem"
+import { pathToFileURL } from "url"
 
 const isSelected = useIsSelected(() => props.modelValue.id)
 const selection = useDocumentSelection()
@@ -61,12 +62,12 @@ onMounted(() => {
 provide("isEditor", true)
 
 const mediaStore = useMediaStore()
-provideEditorMediaResolver({
-	resolveMedia(file) {
-		const media = mediaStore.media[file]
 
-		return media?.file ?? ""
-	},
+provide("mediaResolver", (mediaFile: string) => {
+	const media = mediaStore.media[mediaFile]
+	if (!media?.file) return ""
+
+	return pathToFileURL(media.file)
 })
 
 const resizable = ref<InstanceType<typeof PanAreaResizable>>()

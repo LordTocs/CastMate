@@ -10,8 +10,9 @@
 			v-bind="labelProps"
 		>
 			<template #selectedItem="{ item }">
-				<i :class="item?.icon" :style="{ color: item?.color }"></i>
-				{{ item?.name }}
+				<span style="white-space: nowrap"
+					><i :class="item?.icon" :style="{ color: item?.color }"></i> {{ item?.name }}</span
+				>
 			</template>
 
 			<template #groupHeader="{ item }">

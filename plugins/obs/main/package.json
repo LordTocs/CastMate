@@ -17,6 +17,7 @@
     "castmate-plugin-obs-shared": "workspace:^",
     "castmate-plugin-os-main": "workspace:^",
     "castmate-schema": "workspace:^",
+    "eventemitter3": "^5.0.1",
     "jsqr": "^1.4.0",
     "node-screenshots": "^0.2.0",
     "obs-websocket-js": "^5.0.6",

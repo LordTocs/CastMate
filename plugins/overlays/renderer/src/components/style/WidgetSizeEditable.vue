@@ -3,7 +3,9 @@
 		{{ model }}
 	</div>
 	<drop-down-panel v-model="editOpen" :container="labelDiv">
-		<number-field v-model="model" :min="0" ref="numField" :allow-empty="false" />
+		<form @submit.prevent="onEnter">
+			<number-field v-model="model" :min="0" ref="numField" :allow-empty="false" />
+		</form>
 	</drop-down-panel>
 </template>
 
@@ -15,7 +17,7 @@ const props = defineProps<{
 	localPath: string
 }>()
 
-const model = defineModel<number>({ required: true })
+const model = defineModel<number>()
 
 useDataBinding(() => props.localPath)
 
@@ -24,6 +26,11 @@ const labelDiv = ref<HTMLElement>()
 const editOpen = ref(false)
 
 const numField = ref<InstanceType<typeof NumberField>>()
+
+function onEnter(ev: Event) {
+	console.log("ENTER!")
+	editOpen.value = false
+}
 
 function labelClick(ev: MouseEvent) {
 	if (ev.button != 0) return
@@ -42,5 +49,7 @@ function labelClick(ev: MouseEvent) {
 	padding: 0.1rem;
 	margin: 0;
 	font-size: 10px;
+	min-height: 1em;
+	min-width: 1em;
 }
 </style>

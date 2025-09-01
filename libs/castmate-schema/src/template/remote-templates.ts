@@ -91,6 +91,30 @@ registerRemoteTemplateResolver(String, (remoteValue, schema, context) => {
 	return resolveRemoteTemplate(remoteValue, context)
 })
 
+registerRemoteTemplateResolver(Number, (remoteValue, schema, context) => {
+	if (isNumber(remoteValue)) return remoteValue
+
+	if (remoteValue.length == 1) {
+		//Special case to resolve single element templates. This is the most common case
+		//This is useful to cast a Timer to a Number without going through a String type.
+		const segment = remoteValue[0]
+		if (isString(segment)) {
+			return Number(segment)
+		} else {
+			const deserializer = remoteDataDeserializers?.[segment.type]
+			if (!deserializer) {
+				console.error("MISSING REMOTE DESERIALIZER", segment.type)
+				return Number.NaN
+			}
+			const deserialized = deserializer(segment, context)
+			return Number(deserialized)
+		}
+	} else {
+		const resolved = resolveRemoteTemplate(remoteValue, context)
+		return Number(resolved)
+	}
+})
+
 ///
 let remoteDataDeserializers: Record<string, RemoteDataDeserializer> = {}
 export function resolveRemoteTemplate(
@@ -105,7 +129,7 @@ export function resolveRemoteTemplate(
 		} else {
 			const deserializer = remoteDataDeserializers?.[segment.type]
 			if (deserializer) {
-				result += deserializer(segment, context)
+				result += String(deserializer(segment, context))
 			} else {
 				console.error("MISSING REMOTE DESERIALIZER", segment.type)
 			}
@@ -122,7 +146,7 @@ export interface RemoteTemplateResolutionContext {
 export type RemoteDataDeserializer = (
 	data: RemoteTemplateIntermediateSubstring,
 	context: RemoteTemplateResolutionContext
-) => string
+) => any
 
 export function registerRemoteDataDeserializer(type: string, deserializer: RemoteDataDeserializer) {
 	remoteDataDeserializers[type] = deserializer

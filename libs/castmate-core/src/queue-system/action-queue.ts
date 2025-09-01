@@ -9,6 +9,8 @@ import {
 	constructDefault,
 	AutomationData,
 	InlineAutomation,
+	addDefaults,
+	isTriggerData,
 } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { Service } from "../util/service"
@@ -257,15 +259,11 @@ export const ActionQueueManager = Service(
 		private testSequences = new Map<string, SequenceRunner>()
 
 		constructor() {
-			defineIPCFunc(
-				"actionQueue",
-				"runTestSequence",
-				(id: string, sequence: Sequence, trigger?: { plugin: string; trigger: string }) => {
-					//sequence is encoded for IPC, change configs to proper types
-					this.runTestSequence(id, sequence, trigger)
-					return id
-				}
-			)
+			defineIPCFunc("actionQueue", "runTestSequence", (id: string, automation: AutomationData) => {
+				//sequence is encoded for IPC, change configs to proper types
+				this.runTestSequence(id, automation)
+				return id
+			})
 
 			defineIPCFunc("actionQueue", "stopTestSequence", (id: string) => {
 				return this.stopTestSequence(id)
@@ -296,24 +294,31 @@ export const ActionQueueManager = Service(
 			}
 		}
 
-		async runTestSequence(id: string, sequence: Sequence, trigger?: { plugin?: string; trigger?: string }) {
+		async runTestSequence(id: string, automation: AutomationData) {
 			if (this.testSequences.has(id)) return
 
 			let context: any = {}
 
-			if (trigger && trigger.trigger && trigger.plugin) {
-				const triggerDef = PluginManager.getInstance().getTrigger(trigger.plugin, trigger.trigger)
-				if (triggerDef && typeof triggerDef.context != "function") {
-					const defaultRunValues = await constructDefault(triggerDef.context)
-					//console.log("Default for test", defaultRunValues)
-					const exposedDefault = await exposeSchema(triggerDef.context, defaultRunValues)
-					//console.log("Exposed for test", exposedDefault)
+			if (isTriggerData(automation) && automation.plugin && automation.trigger) {
+				const triggerDef = PluginManager.getInstance().getTrigger(automation.plugin, automation.trigger)
+				if (triggerDef) {
+					const config = await deserializeSchema(triggerDef.config, automation.config)
+
+					let contextSchema =
+						typeof triggerDef.context != "function" ? triggerDef.context : await triggerDef.context(config)
+					const defaultRunValues = automation.testContext
+						? await deserializeSchema(contextSchema, automation.testContext)
+						: {}
+
+					await addDefaults(contextSchema, defaultRunValues)
+
+					const exposedDefault = await exposeSchema(contextSchema, defaultRunValues)
 					context = exposedDefault
 				}
 			}
 
 			const runner = new SequenceRunner(
-				sequence,
+				automation.sequence,
 				{
 					contextState: context,
 				},

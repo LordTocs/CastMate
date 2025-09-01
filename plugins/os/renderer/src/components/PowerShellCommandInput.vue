@@ -1,5 +1,11 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :toggle-template="false" v-slot="inputProps">
+	<data-input-base
+		v-model="model"
+		:schema="schema"
+		:toggle-template="false"
+		v-slot="inputProps"
+		:local-path="localPath"
+	>
 		<template-toggle
 			v-model="model"
 			:template-mode="schema.template ?? false"

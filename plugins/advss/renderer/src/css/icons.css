@@ -1,0 +1,22 @@
+.advi::before {
+	display: inline-block;
+	text-rendering: auto;
+	line-height: inherit;
+	vertical-align: baseline;
+}
+
+.advi.advi-advss::before {
+	content: "";
+	background-color: currentColor;
+	mask-image: url("../svg/AdvssIcon.svg");
+	-webkit-mask-image: url("../svg/AdvssIcon.svg");
+	-webkit-mask-size: 0.8em;
+	mask-size: 0.8em;
+	background-size: 0.8em;
+	height: 0.8em;
+	width: 0.8em;
+}
+
+.advi.advi-advss {
+	height: 0.8em;
+}

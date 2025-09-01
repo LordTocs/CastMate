@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { MediaFile } from "castmate-schema"
+import { MediaFile, normalizeMediaPath } from "castmate-schema"
 import { computed, ref } from "vue"
 import MediaTree from "./MediaTree.vue"
 import { usePropagationStop } from "../../main"
@@ -53,7 +53,7 @@ function toggleOpen(ev: MouseEvent) {
 }
 
 const fixedRoot = computed(() => {
-	return `${props.folder.root.startsWith("/") ? "" : "/"}${props.folder.root.replace("\\", "/")}`
+	return normalizeMediaPath(props.folder.root)
 })
 
 const folderElement = ref<HTMLElement>()

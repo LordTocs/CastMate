@@ -31,6 +31,6 @@ const model = useModel(props, "modelValue")
 
 <style scoped>
 .obs-transform-enum {
-	margin-top: 1.5rem;
+	margin-top: 0.5rem;
 }
 </style>

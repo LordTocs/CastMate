@@ -8,7 +8,7 @@
 		v-if="propKeys.length > 0"
 	>
 		<div v-if="showLabel" class="flex flex-row">
-			<span class="text-color-secondary text-sm">{{ schema.name }}</span>
+			<span class="text-color-secondary text-sm">{{ getDataLabel(props) }}</span>
 			<div class="flex-grow-1"></div>
 		</div>
 		<data-input
@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { type SchemaObj } from "castmate-schema"
 import DataInput from "../DataInput.vue"
-import { SharedDataInputProps } from "../DataInputTypes"
+import { getDataLabel, SharedDataInputProps } from "../DataInputTypes"
 import { computed } from "vue"
 import { useDataBinding, usePropagationStop } from "../../../main"
 
@@ -46,7 +46,7 @@ const props = defineProps<
 
 useDataBinding(() => props.localPath)
 
-const propKeys = computed(() => Object.keys(props.schema.properties))
+const propKeys = computed(() => Object.keys(props.schema.properties).filter(k => props.schema.properties[k].view !== false))
 
 const emit = defineEmits(["update:modelValue"])
 

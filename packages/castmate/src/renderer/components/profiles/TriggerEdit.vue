@@ -4,29 +4,48 @@
 			<div class="drag-handle">
 				<i class="mdi mdi-drag" style="font-size: 2.5rem; line-height: 2.5rem" />
 			</div>
-			<div class="flex flex-row flex-grow-1 align-items-center" v-if="!open" @dblclick="openTrigger">
-				<span class="trigger-name">
-					<i :class="[trigger?.icon]" />
-					{{ trigger?.name }}
-				</span>
-				<template v-if="trigger?.headerComponent">
-					&nbsp;&nbsp;-&nbsp;&nbsp;
-					<component :is="trigger.headerComponent" :config="modelValue.config" />
-				</template>
+			<div class="flex flex-column flex-grow-1 my-2 gap-1" v-if="!open" @dblclick="openTrigger">
+				<div class="flex flex-row flex-grow-1 align-items-center">
+					<span class="trigger-name">
+						<i :class="[trigger?.icon]" />
+						{{ trigger?.name }}
+					</span>
+					<template v-if="queueResource">
+						&nbsp;&nbsp;-&nbsp;&nbsp;{{ queueResource?.config?.name }}
+					</template>
+					<template v-if="trigger?.headerComponent">
+						&nbsp;&nbsp;-&nbsp;&nbsp;
+						<component :is="trigger.headerComponent" :config="modelValue.config" />
+					</template>
+				</div>
+				<div v-if="modelValue.description">
+					{{ modelValue.description }}
+				</div>
 			</div>
 			<div
-				class="flex flex-row flex-grow-1 align-items-center my-2 mb-1 gap-1 pl-3"
+				class="flex flex-row flex-wrap flex-grow-1 align-items-center my-2 mb-1 gap-1 pl-3"
 				v-else
 				@dblclick="closeTrigger"
 			>
-				<trigger-selector v-model="triggerModel" label="Trigger" style="width: 300px" />
+				<trigger-selector
+					v-model="triggerModel"
+					label="Trigger"
+					style="flex-basis: 200px; flex: 1; min-width: 200px"
+				/>
 				<data-input
 					v-model="modelObj.queue"
 					:schema="{ type: ResourceProxyFactory, resourceType: 'ActionQueue', name: 'Queue' }"
 					local-path="queue"
-					style="width: 300px"
+					style="flex-basis: 200px; flex: 1; min-width: 200px"
 				/>
-				<i class="" />
+				<c-text-input
+					multi-line
+					v-model="modelObj.description"
+					@mousedown="stopPropagation"
+					style="flex: 1; min-width: 300px"
+					placeholder="Description"
+					local-path="description"
+				/>
 			</div>
 			<p-button
 				text
@@ -62,7 +81,7 @@
 <script setup lang="ts">
 import { computed, markRaw, ref, useModel, onMounted, watch, provide } from "vue"
 import PButton from "primevue/button"
-import { type TriggerData, Color } from "castmate-schema"
+import { type TriggerData, ActionQueueConfig, Color, ResourceData } from "castmate-schema"
 import {
 	useTrigger,
 	DataInput,
@@ -81,6 +100,8 @@ import {
 	useDocumentSelection,
 	useDataBinding,
 	useDataUIBinding,
+	CTextInput,
+	useResource,
 } from "castmate-ui-core"
 import isFunction from "lodash/isFunction"
 import { useVModel, asyncComputed } from "@vueuse/core"
@@ -132,6 +153,8 @@ const isSelected = computed(() => {
 
 const cardBody = ref<HTMLElement>()
 
+const queueResource = useResource<ResourceData<ActionQueueConfig>>("ActionQueue", () => modelObj.value.queue)
+
 const open = computed<boolean>({
 	get() {
 		return !!view.value.open
@@ -179,6 +202,13 @@ onMounted(() => {
 			console.log("TRIGGER CHANGED!")
 			const schemaDefaults = await constructDefault(trigger.value.config)
 			modelObj.value.config = schemaDefaults
+
+			const contextSchema =
+				typeof trigger.value.context == "function"
+					? await trigger.value.context(schemaDefaults)
+					: trigger.value.context
+
+			modelObj.value.testContext = await constructDefault(contextSchema)
 		}
 	})
 })

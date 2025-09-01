@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps">
+	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :local-path="localPath">
 		<input-box :model="model" v-bind="inputProps" @click="dirClick" class="clickable-input" ref="inputBoxRef" />
 	</data-input-base>
 </template>

@@ -6,9 +6,17 @@ import * as chromatism from "chromatism2"
 const defaultRGB = () => ({ r: 255, g: 255, b: 255 })
 const defaultHSV = () => ({ h: 0, s: 0, v: 100 })
 
-export function useColorProperties(color: Ref<Color | undefined>) {
+export function useColorProperties(color: Ref<Color | undefined>, withAlpha: boolean = false) {
 	const rgb = ref<{ r: number; g: number; b: number }>(defaultRGB())
 	const hsv = ref<{ h: number; s: number; v: number }>(defaultHSV())
+	const alphaInternal = ref<number>(255)
+
+	function convertToHexAlpha(value: chromatism.ColourModes.Any): Color | undefined {
+		const hex = chromatism.convert(value).hex
+
+		if (!withAlpha) return hex as Color
+		return `${hex}${Math.round(alphaInternal.value).toString(16).padStart(2, "0").toUpperCase()}` as Color
+	}
 
 	tryOnMounted(() => {
 		watch(
@@ -17,6 +25,7 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 				if (!color.value || !isHexColor(color.value)) {
 					rgb.value = defaultRGB()
 					hsv.value = defaultHSV()
+					alphaInternal.value = 1
 					return
 				}
 
@@ -31,6 +40,10 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 				if (hsvHexed != color.value) {
 					hsv.value = converted.hsv
 				}
+
+				if (color.value.length > 7) {
+					alphaInternal.value = parseInt(color.value.slice(7, 10), 16)
+				}
 			},
 			{ immediate: true }
 		)
@@ -43,8 +56,7 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 		set(v) {
 			rgb.value.r = v
 
-			//@ts-ignore
-			color.value = chromatism.convert({ ...rgb.value }).hex
+			color.value = convertToHexAlpha({ ...rgb.value })
 		},
 	})
 
@@ -54,9 +66,7 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 		},
 		set(v) {
 			rgb.value.g = v
-
-			//@ts-ignore
-			color.value = chromatism.convert({ ...rgb.value }).hex
+			color.value = convertToHexAlpha({ ...rgb.value })
 		},
 	})
 
@@ -66,9 +76,7 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 		},
 		set(v) {
 			rgb.value.b = v
-
-			//@ts-ignore
-			color.value = chromatism.convert({ ...rgb.value }).hex
+			color.value = convertToHexAlpha({ ...rgb.value })
 		},
 	})
 
@@ -78,9 +86,7 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 		},
 		set(v) {
 			hsv.value.h = v
-
-			//@ts-ignore
-			color.value = chromatism.convert({ ...hsv.value }).hex
+			color.value = convertToHexAlpha({ ...hsv.value })
 		},
 	})
 
@@ -90,9 +96,7 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 		},
 		set(v) {
 			hsv.value.s = v
-
-			//@ts-ignore
-			color.value = chromatism.convert({ ...hsv.value }).hex
+			color.value = convertToHexAlpha({ ...hsv.value })
 		},
 	})
 
@@ -103,10 +107,19 @@ export function useColorProperties(color: Ref<Color | undefined>) {
 		set(v) {
 			hsv.value.v = v
 
-			//@ts-ignore
-			color.value = chromatism.convert({ ...hsv.value }).hex
+			color.value = convertToHexAlpha({ ...hsv.value })
 		},
 	})
 
-	return { red, green, blue, hue, sat, val }
+	const alpha = computed<number>({
+		get() {
+			return Math.round(alphaInternal.value)
+		},
+		set(v) {
+			alphaInternal.value = v
+			color.value = convertToHexAlpha({ ...rgb.value })
+		},
+	})
+
+	return { red, green, blue, hue, sat, val, alpha }
 }

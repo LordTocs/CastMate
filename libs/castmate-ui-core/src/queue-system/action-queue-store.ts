@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { useIpcCaller, handleIpcMessage } from "../main"
-import { Sequence } from "castmate-schema"
+import { AutomationData, Sequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { MaybeRefOrGetter, computed, ref, toValue, inject, ComputedRef, nextTick } from "vue"
 
@@ -10,9 +10,10 @@ export interface TestSequenceData {
 }
 
 export const useActionQueueStore = defineStore("actionQueues", () => {
-	const runTestSequence = useIpcCaller<
-		(id: string, sequence: Sequence, trigger?: { plugin?: string; trigger?: string }) => void
-	>("actionQueue", "runTestSequence")
+	const runTestSequence = useIpcCaller<(id: string, automation: AutomationData) => void>(
+		"actionQueue",
+		"runTestSequence"
+	)
 	const stopTestSequence = useIpcCaller<(id: string) => void>("actionQueue", "stopTestSequence")
 
 	const activeTestSequences = ref<Record<string, TestSequenceData>>({})
@@ -58,11 +59,11 @@ export const useActionQueueStore = defineStore("actionQueues", () => {
 		})
 	}
 
-	async function testSequence(sequence: Sequence, trigger?: { plugin?: string; trigger?: string }) {
+	async function testSequence(automation: AutomationData) {
 		const id = nanoid()
 
 		//TODO: Transform sequence for ipc??
-		await runTestSequence(id, sequence, trigger)
+		await runTestSequence(id, automation)
 
 		return id
 	}

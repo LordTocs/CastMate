@@ -1,5 +1,12 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :is-template="isTemplate" ref="dataInputBase">
+	<data-input-base
+		v-model="model"
+		:schema="schema"
+		v-slot="inputProps"
+		:is-template="isTemplate"
+		ref="dataInputBase"
+		:local-path="localPath"
+	>
 		<div class="container w-full" ref="container">
 			<input-box v-bind="inputProps" :model="model" @click="toggle" ref="inputBox">
 				<div class="color-splash" :style="{ backgroundColor: model }"></div>
@@ -7,7 +14,9 @@
 		</div>
 		<drop-down-panel class="p-1" v-model="overlayVisible" :container="container">
 			<!-- <p-color-picker v-model="poundConverter" inline /> -->
-			<c-color-picker v-model="model" />
+			<template v-if="isHexColor(model)">
+				<c-color-picker v-model="model" :alpha="schema.alpha ?? false" />
+			</template>
 		</drop-down-panel>
 	</data-input-base>
 </template>
@@ -26,33 +35,19 @@ import CColorPicker from "../base-components/CColorPicker.vue"
 
 const props = defineProps<
 	{
-		modelValue: Color | string | undefined
 		schema: SchemaColor
 	} & SharedDataInputProps
 >()
 
 useDataBinding(() => props.localPath)
 
-const model = useModel(props, "modelValue")
+const model = defineModel<Color | string>()
 
 function isTemplate(value: Color | string | undefined) {
 	return !!(value && !isHexColor(value))
 }
 
 const overlayVisible = ref(false)
-
-const poundConverter = computed<string | undefined>({
-	get() {
-		if (!props.modelValue) return undefined
-		return props.modelValue.slice(1)
-	},
-	set(v: string | undefined) {
-		if (!v) {
-			model.value = v as Color | undefined
-		}
-		model.value = ("#" + v) as Color
-	},
-})
 
 function show() {
 	if (!overlayVisible.value) {
@@ -79,6 +74,15 @@ const inputBox = ref<InstanceType<typeof InputBox>>()
 const dataInputBase = ref<InstanceType<typeof DataInputBase>>()
 
 useDataUIBinding({
+	focus() {
+		inputBox.value?.inputDiv?.focus()
+	},
+	scrollIntoView() {
+		inputBox.value?.inputDiv?.scrollIntoView()
+	},
+})
+
+defineExpose({
 	focus() {
 		inputBox.value?.inputDiv?.focus()
 	},

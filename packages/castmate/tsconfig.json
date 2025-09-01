@@ -29,6 +29,8 @@
 			],
 			"castmate-overlay-core": ["../../libs/castmate-overlay-core/src/overlay-core-main.ts"],
 			//TODO: "castmate-plugin-*-renderer": ["../../plugins/*/renderer/src/main.ts"]
+			"castmate-plugin-advss-renderer": ["../../plugins/advss/renderer/src/main.ts"],
+			"castmate-plugin-aitum-renderer": ["../../plugins/aitum/renderer/src/main.ts"],
 			"castmate-plugin-bluesky-renderer": ["../../plugins/bluesky/renderer/src/main.ts"],
 			"castmate-plugin-dashboards-renderer": ["../../plugins/dashboards/renderer/src/main.ts"],
 			"castmate-plugin-discord-renderer": ["../../plugins/discord/renderer/src/main.ts"],

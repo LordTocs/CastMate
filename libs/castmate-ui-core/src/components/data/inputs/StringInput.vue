@@ -6,6 +6,7 @@
 		:toggle-template="toggleTemplate"
 		v-slot="inputProps"
 		ref="dataInputBase"
+		:local-path="localPath"
 	>
 		<template-toggle
 			v-model="model"
@@ -79,12 +80,18 @@ useTextUndoCommitter(() => inputPassword.value?.$el)
 useTextUndoCommitter(() => textArea.value?.$el)
 useTextUndoCommitter(() => inputText.value?.$el)
 
+function focus() {
+	inputPassword.value?.$el.focus()
+	textArea.value?.$el.focus()
+	inputText.value?.$el.focus()
+}
+
+defineExpose({
+	focus,
+})
+
 useDataUIBinding({
-	focus() {
-		inputPassword.value?.$el.focus()
-		textArea.value?.$el.focus()
-		inputText.value?.$el.focus()
-	},
+	focus,
 	scrollIntoView() {
 		inputPassword.value?.$el.scrollIntoView()
 		textArea.value?.$el.scrollIntoView()

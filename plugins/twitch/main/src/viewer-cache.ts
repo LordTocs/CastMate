@@ -498,13 +498,15 @@ export const ViewerCache = Service(
 
 			for (let i = 0; i < userIds.length; ++i) {
 				const id = userIds[i]
-				const userData = data[i]
+				let userData = data[i]
 
-				logger.log("DATA FOR", id, userData)
+				// logger.log("DATA FOR", id, userData)
 
 				this.unknownViewerData.delete(id)
 
-				if (userData == null) continue
+				if (userData == null) {
+					userData = await ViewerData.getInstance().getDefaultViewerData()
+				}
 
 				const cached = this.getOrCreate(id)
 

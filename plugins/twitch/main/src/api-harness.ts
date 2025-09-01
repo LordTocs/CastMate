@@ -48,6 +48,13 @@ export const TwitchAPIService = Service(
 			(botAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
 		>()
 
+		private onStreamOnline = new EventList<
+			(channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		>()
+		private onStreamOffline = new EventList<
+			(channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		>()
+
 		registerOnChannelReauth(
 			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
 		) {
@@ -78,6 +85,30 @@ export const TwitchAPIService = Service(
 			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
 		) {
 			this.onBotReauthList.unregister(func)
+		}
+
+		registerOnStreamOnline(
+			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		) {
+			this.onStreamOnline.register(func)
+		}
+
+		unregisterOnStreamOnline(
+			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		) {
+			this.onStreamOnline.unregister(func)
+		}
+
+		registerOnStreamOffline(
+			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		) {
+			this.onStreamOffline.register(func)
+		}
+
+		unregisterOnStreamOffline(
+			func: (channelAccount: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any
+		) {
+			this.onStreamOffline.unregister(func)
 		}
 
 		async finalize() {
@@ -142,6 +173,16 @@ export const TwitchAPIService = Service(
 
 			//Restart the bot stuffs since we've changed main channel.
 			await this.onReauthBot()
+
+			if (isCastMate()) {
+				this.eventsub.onStreamOnline(channelAccount.twitchId, async (ev) => {
+					await this.onStreamOnline.run(channelAccount, this)
+				})
+
+				this.eventsub.onStreamOffline(channelAccount.twitchId, async (ev) => {
+					await this.onStreamOffline.run(channelAccount, this)
+				})
+			}
 		}
 	}
 )
@@ -163,5 +204,25 @@ export function onBotAuth(func: (channel: TwitchAccount, service: InstanceType<t
 
 	onUnload(() => {
 		TwitchAPIService.getInstance().unregisterOnBotReauth(func)
+	})
+}
+
+export function onStreamOnline(func: (channel: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any) {
+	onLoad(() => {
+		TwitchAPIService.getInstance().registerOnStreamOnline(func)
+	})
+
+	onUnload(() => {
+		TwitchAPIService.getInstance().unregisterOnStreamOnline(func)
+	})
+}
+
+export function onStreamOffline(func: (channel: TwitchAccount, service: InstanceType<typeof TwitchAPIService>) => any) {
+	onLoad(() => {
+		TwitchAPIService.getInstance().registerOnStreamOffline(func)
+	})
+
+	onUnload(() => {
+		TwitchAPIService.getInstance().unregisterOnStreamOffline(func)
 	})
 }

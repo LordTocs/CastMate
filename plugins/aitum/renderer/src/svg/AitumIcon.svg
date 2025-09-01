@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 24 24"
+   width="24px"
+   height="24px"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="AitumIcon.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="19.65625"
+     inkscape:cx="8.3942766"
+     inkscape:cy="-7.5039746"
+     inkscape:window-width="3840"
+     inkscape:window-height="2089"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <g
+     id="g1"
+     transform="matrix(0.02276971,0,0,0.02276971,11.511362,11.641149)">
+    <polygon
+       class="st0"
+       points="426.47,73.24 926.46,573.22 926.46,73.24 "
+       id="polygon1"
+       style="fill:#000000;fill-opacity:1"
+       transform="translate(-478.54,-484.24)" />
+    <polygon
+       class="st0"
+       points="73.54,719.33 573.53,219.35 73.54,219.35 "
+       id="polygon2"
+       style="fill:#000000;fill-opacity:1"
+       transform="translate(-478.54,-484.24)" />
+    <polygon
+       class="st0"
+       points="926.46,573.22 219.37,573.22 572.92,926.76 "
+       id="polygon3"
+       style="fill:#000000;fill-opacity:1"
+       transform="translate(-478.54,-484.24)" />
+  </g>
+</svg>

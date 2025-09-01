@@ -16,7 +16,7 @@
 			@mousedown="onItemMouseDown(i, $event)"
 			@dragstart="onItemDragStart(i, $event)"
 			@dragend="onItemDragEnd(i, $event)"
-			ref="unorderedDragItemDivs"
+			:ref="(el) => setDataCompRef(i, el as HTMLElement)"
 		>
 			<slot name="item" :item="model[i]" :index="i"> </slot>
 		</div>
@@ -33,16 +33,19 @@ import {
 	useDrop,
 	useDragOver,
 	useDataBinding,
+	usePropagationImmediateStop,
+	useCommitUndo,
 } from "../../main"
+import { useOrderedRefs } from "./OrderedTemplateRefs"
+import _isEqual from "lodash/isEqual"
 
 const props = withDefaults(
 	defineProps<{
-		modelValue: T[] | undefined
-		keyProp: keyof T
+		keyProp?: keyof T
 		direction?: "horizontal" | "vertical"
 		handleClass: string
 		dataType: string
-		localPath: string
+		localPath?: string
 	}>(),
 	{
 		direction: "vertical",
@@ -51,27 +54,35 @@ const props = withDefaults(
 
 useDataBinding(() => props.localPath)
 
-const model = useModel(props, "modelValue")
+const commitUndo = useCommitUndo()
+
+const model = defineModel<T[]>({ default: () => [] })
 
 const dragArea = ref<HTMLElement>()
 
 function getKey(item: T) {
-	return item[props.keyProp]
+	if (props.keyProp) {
+		return item[props.keyProp]
+	}
+}
+
+function getIndex(data: T) {
+	if (props.keyProp) {
+		//@ts-ignore
+		return model.value.findIndex((item) => item[props.keyProp] == data[props.keyProp])
+	} else {
+		return model.value.findIndex((item) => _isEqual(item, data))
+	}
 }
 
 const dragTarget = ref<HTMLElement>()
 const draggingItem = ref(false)
-const droppedLocal = ref(false)
 
-type VueHTMLElement = HTMLElement & {
-	__vnode: VNode
-}
-const unorderedDragItemDivs = ref<VueHTMLElement[]>([])
-const dragItemDivs = computed(() => {
-	return model.value.map((item) => unorderedDragItemDivs.value.find((c) => c.__vnode.key == item[props.keyProp]))
-})
+const { orderedElements: dragItemDivs, setRef: setDataCompRef } = useOrderedRefs<HTMLElement>(() => model.value || [])
 
-//const insertionIndex = ref(0)
+const insertionIndex = ref(0)
+
+const stopImmediatePropagation = usePropagationImmediateStop()
 
 function calculateInsertIndex(ev: ClientPosition) {
 	let result = 0
@@ -109,7 +120,7 @@ function onItemMouseDown(index: number, ev: MouseEvent) {
 
 	const elem = ev.target as HTMLElement
 	if (isChildOfClass(elem, props.handleClass)) {
-		ev.stopPropagation()
+		stopImmediatePropagation(ev)
 		dragTarget.value = elem
 	}
 }
@@ -143,6 +154,8 @@ async function onItemDragEnd(index: number, ev: DragEvent) {
 			//Because of the ordering of dragend and drop we can't modify the v-model here
 			//for when an item is dragged and dropped in the same list
 			model.value.splice(index, 1)
+
+			commitUndo()
 		}
 	}
 
@@ -171,13 +184,19 @@ useDragLeave(
 useDragOver(
 	dragArea,
 	() => props.dataType,
-	(ev) => {}
+	(ev) => {
+		insertionIndex.value = calculateInsertIndex(ev)
+	}
 )
+
+const droppedLocal = ref(false)
 
 useDrop(
 	dragArea,
 	() => props.dataType,
 	async (ev) => {
+		dragHovering.value = false
+
 		const dataStr = ev.dataTransfer.getData(props.dataType)
 
 		let data: T
@@ -188,18 +207,17 @@ useDrop(
 		}
 
 		let insertionIdx = calculateInsertIndex(ev)
-
 		console.log("Inserting At", insertionIdx)
 
 		if (ev.dataTransfer.effectAllowed == "move" && draggingItem.value) {
 			//We're dropping an item from this list which means we both remove and insert the element here.
 			droppedLocal.value = true
 
-			const oldIdx = model.value.findIndex((item) => item[props.keyProp] == data[props.keyProp])
+			const oldIdx = getIndex(data)
 
 			if (oldIdx >= 0) {
-				await model.value.splice(oldIdx, 1)
-				if (oldIdx >= insertionIdx) {
+				model.value.splice(oldIdx, 1)
+				if (oldIdx < insertionIdx) {
 					insertionIdx--
 					console.log("Walking Back", insertionIdx)
 				}
@@ -209,7 +227,9 @@ useDrop(
 		if (ev.dataTransfer.effectAllowed == "move" || ev.dataTransfer.effectAllowed == "copy") {
 			//Just do the insertion
 			console.log("Insert", insertionIdx)
-			await model.value.splice(insertionIdx, 0, data)
+			model.value.splice(insertionIdx, 0, data)
+
+			commitUndo()
 		}
 	}
 )

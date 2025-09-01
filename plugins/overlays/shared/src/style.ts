@@ -1,4 +1,7 @@
 import { Color, SchemaBase, registerType } from "castmate-schema"
+import _cloneDeep from "lodash/cloneDeep"
+
+import { CSSProperties } from "vue"
 
 export interface OverlayStrokeStyle {
 	width: number
@@ -19,6 +22,83 @@ export interface OverlayTextStyle {
 	fontWeight: number
 	stroke?: OverlayStrokeStyle
 	shadow?: OverlayShadowStyle
+}
+
+export function clamp(value: number, min: number, max: number) {
+	return Math.min(Math.max(value, min), max)
+}
+
+function createCSS() {
+	return {} as CSSProperties
+}
+
+export function cssProp<Key extends keyof CSSProperties, T>(
+	obj: CSSProperties,
+	prop: Key,
+	select: T,
+	func: (value: NonNullable<T>) => CSSProperties[Key]
+) {
+	if (select == null) return
+	obj[prop] = func(select)
+}
+
+export function cssStaticProp<Key extends keyof CSSProperties>(
+	obj: CSSProperties,
+	prop: Key,
+	select: CSSProperties[Key] | undefined | null
+) {
+	if (select == null) return
+	obj[prop] = select
+}
+
+export type WidgetSizePixels = number
+
+export interface WidgetSizePercent {
+	unit: "%"
+	amount: number
+}
+
+export type WidgetStyleSize = WidgetSizePixels | WidgetSizePercent
+
+export interface WidgetEdgeInfo<T = number> {
+	top: T
+	bottom: T
+	left: T
+	right: T
+}
+
+function isPixelSize(size: WidgetStyleSize): size is WidgetSizePixels {
+	return typeof size == "number"
+}
+
+function toSizeCSS(size: WidgetStyleSize, scale: number = 1) {
+	if (isPixelSize(size)) {
+		return `${size}px`
+	}
+	return `${size.amount}${size.unit}`
+}
+
+export function createWidetSize(size: number, unit: "px" | "%" = "px") {
+	return {
+		unit,
+		amount: size,
+	} as WidgetStyleSize
+}
+
+type Numberish = string | number
+type KeysMatching<T extends object, V> = {
+	[K in keyof T]-?: V extends T[K] ? K : never
+}[keyof T]
+
+type NumberishCSSProperties = Pick<CSSProperties, KeysMatching<CSSProperties, Numberish>>
+export function cssSizeProp<Key extends keyof NumberishCSSProperties>(
+	obj: CSSProperties,
+	prop: Key,
+	select: WidgetStyleSize | undefined | null,
+	scale: number = 1
+) {
+	if (select == null) return
+	obj[prop] = toSizeCSS(select, scale)
 }
 
 const OverlayTextSymbol = Symbol()
@@ -169,11 +249,278 @@ export interface SchemaOverlayTextAlignment extends SchemaBase<OverlayTextAlignm
 	type: OverlayTextAlignmentFactory
 }
 
+export interface WidgetCornerInfo<T = number> {
+	topLeft: T
+	topRight: T
+	bottomLeft: T
+	bottomRight: T
+}
+
+export interface WidgetCornerInfoBound<T = number> {
+	topLeft: T
+	topRight: T
+	bottomLeft: T
+	bottomRight: T
+}
+
+export function clampCornerInfo(
+	style: Partial<WidgetCornerInfo<WidgetSizePixels>> | undefined,
+	min: WidgetCornerInfoBound<WidgetSizePixels>,
+	max: WidgetCornerInfoBound<WidgetSizePixels>
+) {
+	if (!style) return undefined
+
+	const result: Partial<WidgetCornerInfo<WidgetSizePixels>> = {}
+
+	if (style.topLeft != null) {
+		result.topLeft = clamp(style.topLeft, min.topLeft, max.topLeft)
+	}
+	if (style.bottomLeft != null) {
+		result.bottomLeft = clamp(style.bottomLeft, min.bottomLeft, max.bottomLeft)
+	}
+	if (style.topRight != null) {
+		result.topRight = clamp(style.topRight, min.topRight, max.topRight)
+	}
+	if (style.bottomRight != null) {
+		result.bottomRight = clamp(style.bottomRight, min.bottomRight, max.bottomRight)
+	}
+
+	return result
+}
+
+export type WidgetBorderRadius = Partial<WidgetCornerInfo<WidgetSizePixels>>
+
+export function getBorderRadiusCSS(style: WidgetBorderRadius | undefined, scale: number = 1) {
+	const result = createCSS()
+	if (!style) return result
+
+	cssSizeProp(result, "border-top-left-radius", style.topLeft, scale)
+	cssSizeProp(result, "border-top-right-radius", style.topRight, scale)
+	cssSizeProp(result, "border-bottom-left-radius", style.bottomLeft, scale)
+	cssSizeProp(result, "border-bottom-right-radius", style.bottomRight, scale)
+
+	return result
+}
+
+const WidgetBorderRadiusSymbol = Symbol()
+export const WidgetBorderRadius = {
+	factoryCreate(initial?: WidgetBorderRadius): WidgetBorderRadius {
+		return { ...initial }
+	},
+	[WidgetBorderRadiusSymbol]: "WidgetBorderRadius",
+}
+
+export type WidgetBorderRadiusFactory = typeof WidgetBorderRadius
+
+export interface SchemaWidgetBorderRadius extends SchemaBase<WidgetBorderRadius> {
+	type: WidgetBorderRadiusFactory
+}
+
+//Backgrounds////////////////////////////
+
+export interface WidgetGradientStop {
+	color: Color
+	position: number
+}
+
+export function getGradientStopCSS(stop: WidgetGradientStop) {
+	return `${stop.color} ${stop.position * 100}%`
+}
+
+export interface WidgetGradientStyle {
+	gradientType: "linear" | "radial"
+	angle: number
+	stops: WidgetGradientStop[]
+}
+
+export function getGradientCSS(gradient: WidgetGradientStyle) {
+	if (gradient.gradientType == "linear") {
+		return `linear-gradient(${(gradient.angle ?? 0) + 90}deg, ${gradient.stops
+			.map((s) => getGradientStopCSS(s))
+			.join(", ")})`
+	} else {
+		return `radial-gradient(${gradient.stops.map((s) => getGradientStopCSS(s)).join(", ")})`
+	}
+}
+
+export type WidgetBackgroundRepeat = "repeat" | "no-repeat"
+export type WidgetBackgroundPositionH = "left" | "center" | "right"
+export type WidgetBackgroundPositionV = "top" | "center" | "bottom"
+export type WidgetBackgroundSizeOptions = "contain" | "cover"
+
+interface WidgetBackgroundDimensions<H, V = H> {
+	horizontal: H
+	vertical: V
+}
+
+export interface WidgetBackgroundSettings {
+	repeat?: WidgetBackgroundDimensions<WidgetBackgroundRepeat>
+	position?: WidgetBackgroundDimensions<WidgetBackgroundPositionH, WidgetBackgroundPositionV>
+	size?: WidgetBackgroundDimensions<WidgetSizePixels> | WidgetBackgroundSizeOptions
+}
+
+export function getBackgroundSettingsCSS(style: WidgetBackgroundSettings | undefined, scale: number = 1) {
+	if (!style) return ""
+
+	let result = ""
+
+	if (style.position) {
+		result += `${style.position.horizontal} ${style.position.vertical} `
+	}
+
+	if (style.size) {
+		if (style.position) {
+			result += "/ "
+		}
+
+		if (typeof style.size == "object") {
+			result += `${toSizeCSS(style.size.horizontal, scale)} ${toSizeCSS(style.size.vertical, scale)} `
+		} else if (style.size) {
+			result += `${style.size} `
+		}
+	}
+
+	if (style.repeat) {
+		result += `${style.repeat.horizontal} ${style.repeat.vertical} `
+	}
+
+	return result
+}
+
+export interface WidgetBackgroundImage extends WidgetBackgroundSettings {
+	image: string
+}
+
+export function isWidgetBackgroundImage(value: unknown): value is WidgetBackgroundImage {
+	return value != null && typeof value == "object" && "image" in value
+}
+
+export interface WidgetBackgroundGradient extends WidgetBackgroundSettings {
+	gradient: WidgetGradientStyle
+}
+
+export function isWidgetBackgroundGradient(value: unknown): value is WidgetBackgroundGradient {
+	return value != null && typeof value == "object" && "gradient" in value
+}
+
+export type WidgetBackgroundStyleElement = WidgetBackgroundGradient | WidgetBackgroundImage
+
+export interface WidgetBackgroundStyle {
+	color?: Color
+	elements: WidgetBackgroundStyleElement[]
+}
+
+export function getBackgroundCSS(
+	style: WidgetBackgroundStyle | undefined,
+	resolver: (media: string) => string,
+	scale: number = 1
+) {
+	const result = createCSS()
+	if (!style) return result
+
+	result.background = style.elements
+		.map((bg, index) => {
+			if (!bg) {
+			} else if ("image" in bg) {
+				//TODO: RESOLVE
+				return `${getBackgroundSettingsCSS(bg, scale)}url("${resolver(bg.image)}")`
+			} else if ("gradient" in bg) {
+				return `${getBackgroundSettingsCSS(bg, scale)}${getGradientCSS(bg.gradient)}`
+			}
+		})
+		.join(",")
+
+	if (style.color) {
+		result.background += ` ${style.color}`
+	}
+
+	console.log("Background CSS", result.background)
+
+	return result
+}
+
+const WidgetBackgroundStyleSymbol = Symbol()
+export const WidgetBackgroundStyle = {
+	factoryCreate(initial?: WidgetBackgroundStyle): WidgetBackgroundStyle {
+		return initial ? _cloneDeep(initial) : { elements: [] }
+	},
+	[WidgetBackgroundStyleSymbol]: "WidgetBackgroundStyle",
+}
+
+export type WidgetBackgroundStyleFactory = typeof WidgetBackgroundStyle
+
+export interface SchemaWidgetBackgroundStyle extends SchemaBase<WidgetBackgroundStyle> {
+	type: WidgetBackgroundStyleFactory
+}
+
+export interface WidgetOutlineStyle {
+	color: Color
+	style: "solid" | "dotted" | "dashed"
+	width: number
+}
+
+export type WidgetBorderStyle = WidgetEdgeInfo<WidgetOutlineStyle>
+export function getBorderCSS(style: Partial<WidgetBorderStyle> | undefined, scale: number = 1) {
+	const result = createCSS()
+	if (!style) return result
+
+	cssStaticProp(result, "border-top-color", style.top?.color)
+	cssStaticProp(result, "border-top-style", style.top?.style)
+	cssSizeProp(result, "border-top-width", style.top?.width, scale)
+
+	cssStaticProp(result, "border-left-color", style.left?.color)
+	cssStaticProp(result, "border-left-style", style.left?.style)
+	cssSizeProp(result, "border-left-width", style.left?.width, scale)
+
+	cssStaticProp(result, "border-right-color", style.right?.color)
+	cssStaticProp(result, "border-right-style", style.right?.style)
+	cssSizeProp(result, "border-right-width", style.right?.width, scale)
+
+	cssStaticProp(result, "border-bottom-color", style.bottom?.color)
+	cssStaticProp(result, "border-bottom-style", style.bottom?.style)
+	cssSizeProp(result, "border-bottom-width", style.bottom?.width, scale)
+
+	return result
+}
+
+export function getOutlineCSS(style: Partial<WidgetOutlineStyle> | undefined, scale: number = 1) {
+	const result = createCSS()
+	if (!style) return result
+
+	cssSizeProp(result, "outline-width", style.width, scale)
+	cssStaticProp(result, "outline-style", style.style)
+	cssStaticProp(result, "outline-color", style.color)
+
+	return result
+}
+
+const WidgetOutlineStyleSymbol = Symbol()
+export const WidgetOutlineStyle = {
+	factoryCreate(initial?: WidgetOutlineStyle): WidgetOutlineStyle {
+		return initial
+			? _cloneDeep(initial)
+			: {
+					color: "#000000",
+					style: "solid",
+					width: 10,
+			  }
+	},
+	[WidgetOutlineStyleSymbol]: "WidgetOutlineStyle",
+}
+export type WidgetOutlineStyleFactory = typeof WidgetOutlineStyle
+
+export interface SchemaWidgetOutlineStyle extends SchemaBase<WidgetBackgroundStyle> {
+	type: WidgetOutlineStyleFactory
+}
+
 declare module "castmate-schema" {
 	interface SchemaTypeMap {
 		OverlayTextStyle: [SchemaOverlayTextStyle, OverlayTextStyle]
 		OverlayBlockStyle: [SchemaOverlayBlockStyle, OverlayBlockStyle]
 		OverlayTextAlignment: [SchemaOverlayTextAlignment, OverlayTextAlignment]
+		WidgetBorderRadius: [SchemaWidgetBorderRadius, WidgetBorderRadius]
+		WidgetBackgroundStyle: [SchemaWidgetBackgroundStyle, WidgetBackgroundStyle]
+		WidgetOutlineStyle: [SchemaWidgetOutlineStyle, WidgetOutlineStyle]
 	}
 }
 
@@ -187,4 +534,16 @@ registerType("OverlayBlockStyle", {
 
 registerType("OverlayTextAlignment", {
 	constructor: OverlayTextAlignment,
+})
+
+registerType("WidgetBorderRadius", {
+	constructor: WidgetBorderRadius,
+})
+
+registerType("WidgetBackgroundStyle", {
+	constructor: WidgetBackgroundStyle,
+})
+
+registerType("WidgetOutlineStyle", {
+	constructor: WidgetOutlineStyle,
 })

@@ -1,5 +1,11 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :toggle-template="false" :no-float="noFloat">
+	<data-input-base
+		v-model="model"
+		:schema="schema"
+		:toggle-template="false"
+		:no-float="noFloat"
+		:local-path="localPath"
+	>
 		<template #prepend>
 			<p-button
 				:icon="!pauseModel ? 'mdi mdi-play' : 'mdi mdi-pause'"
@@ -14,6 +20,7 @@
 				v-model="durationModel"
 				@focus="onFocus"
 				@blur="onBlur"
+				@enter="onEnter"
 				v-bind="inputProps"
 				ref="durationField"
 				:emit-undo="false"
@@ -26,7 +33,7 @@
 import { SchemaTimer } from "castmate-schema"
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { Timer, Duration } from "castmate-schema"
-import { computed, onMounted, ref, useModel, watch } from "vue"
+import { computed, onBeforeUnmount, onMounted, ref, useModel, watch } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import PButton from "primevue/button"
 import DurationField from "../base-components/DurationField.vue"
@@ -60,6 +67,12 @@ function onBlur(ev: FocusEvent) {
 	focused.value = false
 	pushDuration()
 	attemptAnimate()
+}
+
+function onEnter() {
+	if (focused.value) {
+		pushDuration()
+	}
 }
 
 const isRunning = computed(() => {
@@ -156,6 +169,15 @@ function updateTimer(timestamp: number) {
 const durationField = ref<InstanceType<typeof DurationField>>()
 
 useDataUIBinding({
+	focus() {
+		durationField.value?.focus()
+	},
+	scrollIntoView() {
+		durationField.value?.scrollIntoView()
+	},
+})
+
+defineExpose({
 	focus() {
 		durationField.value?.focus()
 	},

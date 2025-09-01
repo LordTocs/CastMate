@@ -1,5 +1,5 @@
 import { Service } from "../util/service"
-import { ImageFormats, MediaMetadata, stillImageFormats } from "castmate-schema"
+import { ImageFormats, MediaMetadata, normalizeMediaPath, stillImageFormats } from "castmate-schema"
 import * as fs from "fs/promises"
 import * as fsSync from "fs"
 import path, * as pathTools from "path"
@@ -154,6 +154,10 @@ export const MediaManager = Service(
 			return false
 		}
 
+		isMediaPath(mediaPath: string) {
+			return mediaPath.startsWith("/default")
+		}
+
 		async isMediaFolderPath(mediaPath: string) {
 			try {
 				const realFile = await fs.realpath(mediaPath)
@@ -168,11 +172,13 @@ export const MediaManager = Service(
 		getLocalPath(mediaPath: string) {
 			const baseMediaPath = resolveProjectPath("./media")
 
-			if (!mediaPath.startsWith("/default")) throw new Error(`"${mediaPath}" not a media path`)
+			if (!this.isMediaPath(mediaPath)) throw new Error(`"${mediaPath}" not a media path`)
 
 			const defaultPath = path.relative("/default", mediaPath)
 
 			const localPath = path.join(baseMediaPath, defaultPath)
+
+			console.log(mediaPath, baseMediaPath, defaultPath, localPath)
 
 			return localPath
 		}
@@ -232,15 +238,18 @@ export const MediaManager = Service(
 		private async addMedia(folderId: string, root: string, filepath: string) {
 			const rootRelPath = pathTools.relative(root, filepath)
 			const relPath = pathTools.join(folderId, rootRelPath)
+			const normPath = normalizeMediaPath(relPath)
 			const extension = pathTools.extname(filepath)
 
 			const metadata: MediaMetadata = {
 				folderId,
 				file: filepath,
-				path: relPath,
+				path: normPath,
 				url: "",
 				name: pathTools.basename(filepath),
 			}
+
+			logger.log("New Media", rootRelPath, metadata)
 
 			//Duration
 			try {
@@ -268,15 +277,22 @@ export const MediaManager = Service(
 					}
 				}
 			} catch {}
-			this.mediaFiles.set(relPath, metadata)
+			this.mediaFiles.set(normPath, metadata)
 			addOrUpdateMediaRenderer(metadata)
 		}
 
 		private async removeMedia(folderId: string, root: string, filepath: string) {
 			const rootRelPath = pathTools.relative(root, filepath)
 			const relPath = pathTools.join(folderId, rootRelPath)
-			this.mediaFiles.delete(relPath)
-			removeMediaRenderer(relPath)
+			const normPath = normalizeMediaPath(relPath)
+
+			const mediafile = this.mediaFiles.get(normPath)
+			if (!mediafile) {
+				logger.log("Unable to find media for", normPath)
+			} else {
+				this.mediaFiles.delete(mediafile.path)
+				removeMediaRenderer(mediafile.path)
+			}
 		}
 	}
 )

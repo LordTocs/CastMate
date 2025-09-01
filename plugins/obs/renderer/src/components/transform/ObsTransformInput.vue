@@ -48,6 +48,11 @@
 			label="Size"
 			local-path="scale"
 		>
+			<template #before>
+				<p class="text-color-secondary text-sm m-0">
+					This is <i>not</i> in pixels. It is a multiplier for the default size. (1.0 will be default size)
+				</p>
+			</template>
 			<obs-transform-number-input
 				label="X"
 				v-model="model.scale.x"

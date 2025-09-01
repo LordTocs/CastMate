@@ -1,5 +1,5 @@
 <template>
-	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps">
+	<data-input-base v-model="model" :schema="schema" :no-float="noFloat" v-slot="inputProps" :local-path="localPath">
 		<filter-input-box
 			v-bind="inputProps"
 			v-model="model"

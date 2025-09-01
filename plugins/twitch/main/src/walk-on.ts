@@ -2,7 +2,7 @@ import { defineTrigger, onLoad } from "castmate-core"
 import { TwitchViewer, TwitchViewerGroup, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 import { ViewerCache, onViewerSeen } from "./viewer-cache"
-import { onChannelAuth } from "./api-harness"
+import { onChannelAuth, onStreamOnline } from "./api-harness"
 
 export function setupWalkOns() {
 	let walkedOnViewers = new Set<TwitchViewerUnresolved>()
@@ -46,9 +46,7 @@ export function setupWalkOns() {
 		}
 	})
 
-	onChannelAuth((channel, service) => {
-		service.eventsub.onStreamOnline(channel.twitchId, (ev) => {
-			resetWalkons()
-		})
+	onStreamOnline(() => {
+		resetWalkons()
 	})
 }

@@ -165,7 +165,13 @@ export const WebService = Service(
 			}
 		}
 
+		private internalPort: number
+		get port() {
+			return this.internalPort
+		}
+
 		async startHttp(port: number) {
+			this.internalPort = port
 			this.httpServer.listen(port, () => {
 				logger.log("Internal Webserver Started on port", port)
 			})
@@ -232,6 +238,10 @@ export const WebService = Service(
 
 		unregisterWebsocketProxy(path: string) {
 			delete this.websocketProxies[path]
+		}
+
+		get remoteBaseUrl() {
+			return `http://${getLocalIP()}:${this.internalPort}`
 		}
 	}
 )

@@ -105,6 +105,6 @@ const menuItems = computed<MenuItem[]>(() => {
 
 <style scoped>
 .obs-transform-number {
-	margin-top: 1.5rem;
+	margin-top: 0.5rem;
 }
 </style>

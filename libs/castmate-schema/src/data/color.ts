@@ -17,6 +17,7 @@ export interface SchemaColor extends SchemaBase<Color> {
 	type: ColorFactory
 	template?: boolean
 	enum: Color[]
+	alpha?: boolean
 }
 
 declare module "../schema" {
@@ -32,6 +33,7 @@ registerType("Color", {
 	canBeViewerVariable: true,
 })
 
-export function isHexColor(str: string): str is Color {
+export function isHexColor(str: unknown): str is Color {
+	if (typeof str != "string") return false
 	return /^#(?:(?:[A-F0-9]{2}){3,4}|[A-F0-9]{3})$/i.test(str)
 }

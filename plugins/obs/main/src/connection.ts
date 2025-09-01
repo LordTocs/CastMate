@@ -12,8 +12,9 @@ import {
 	InfoService,
 	defineState,
 	onUnload,
+	Service,
 } from "castmate-core"
-import OBSWebSocket, { OBSWebSocketError } from "obs-websocket-js"
+import OBSWebSocket, { OBSEventTypes, OBSWebSocketError } from "obs-websocket-js"
 import {
 	OBSConnectionConfig,
 	OBSConnectionState,
@@ -33,6 +34,7 @@ import ChildProcess from "node:child_process"
 import { app } from "electron"
 import regedit from "regedit"
 import { nextTick } from "node:process"
+import EventEmitter from "eventemitter3"
 
 class SceneHistory {
 	private history: string[] = []
@@ -105,6 +107,88 @@ function openObs(installDir: string) {
 			console.error("Error Spawning:", err)
 			return reject(err)
 		}
+	})
+}
+
+type MapValueToArgsArray<T extends object> = {
+	[K in keyof T]: T[K] extends void ? [] : [T[K]]
+}
+
+type AddOBSConnectionArg<T extends (...args: any[]) => any> = (
+	obs: OBSConnection,
+	...args: Parameters<T>
+) => ReturnType<T>
+
+type OBSEventName = EventEmitter.EventNames<OBSEventTypes>
+type ValueMappedOBSEvents = MapValueToArgsArray<OBSEventTypes>
+
+export const OBSEventService = Service(
+	class {
+		private handlers = new Map<OBSEventName, Array<(obs: OBSConnection, ...args: any[]) => any>>()
+
+		constructor() {}
+
+		registerOBSHandler<T extends OBSEventName>(
+			event: T,
+			fn: AddOBSConnectionArg<EventEmitter.EventListener<ValueMappedOBSEvents, T>>
+		) {
+			const existing = this.handlers.get(event)
+			if (existing) {
+				existing.push(fn)
+			} else {
+				this.handlers.set(event, [fn])
+
+				//New event type needs new handlers
+				for (const obs of OBSConnection.storage) {
+					this.addEventHandler(obs, event)
+				}
+			}
+		}
+
+		unregisterOBSHandler<T extends OBSEventName>(
+			event: T,
+			fn: AddOBSConnectionArg<EventEmitter.EventListener<ValueMappedOBSEvents, T>>
+		) {
+			const existing = this.handlers.get(event)
+			if (!existing) return
+
+			const idx = existing.findIndex((h) => h === fn)
+			if (idx < 0) return
+
+			existing.splice(idx, 1)
+		}
+
+		private addEventHandler(obs: OBSConnection, eventName: OBSEventName) {
+			obs.connection.on(eventName, async (...args: any[]) => {
+				const eventHandlers = this.handlers.get(eventName)
+				if (!eventHandlers) return
+
+				for (const fn of eventHandlers) {
+					try {
+						await fn(obs, ...args)
+					} catch (err) {}
+				}
+			})
+		}
+
+		addEventHandlers(obs: OBSConnection) {
+			for (const eventName of this.handlers.keys()) {
+				this.addEventHandler(obs, eventName)
+			}
+		}
+	}
+)
+
+export function onOBSWebsocketEvent<T extends OBSEventName>(
+	event: T,
+	fn: AddOBSConnectionArg<EventEmitter.EventListener<ValueMappedOBSEvents, T>>
+) {
+	onLoad(() => {
+		OBSEventService.getInstance().registerOBSHandler(event, fn)
+	})
+
+	onUnload(() => {
+		OBSEventService.getInstance().unregisterOBSHandler(event, fn)
 	})
 }
 
@@ -241,6 +325,14 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 
 			this.queryInitialStateLoop()
 		})
+
+		try {
+			this.connection.on("VendorEvent", (ev) => {
+				logger.log("OBS Vendor Event", ev.vendorName, ev.eventType, ev.eventData)
+			})
+		} catch (err) {}
+
+		OBSEventService.getInstance().addEventHandlers(this)
 	}
 
 	private async queryInitialStateLoop() {
@@ -618,6 +710,8 @@ export function setupRunningPolling() {
 
 export function setupConnections() {
 	onLoad(() => {
+		OBSEventService.initialize()
+
 		if (app.isPackaged) {
 			const loc = regedit.setExternalVBSLocation("resources/regedit/vbs")
 			logger.log("Setting External VBS Location", loc)

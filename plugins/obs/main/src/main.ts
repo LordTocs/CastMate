@@ -15,7 +15,7 @@ import {
 	usePluginLogger,
 } from "castmate-core"
 import { Color, Toggle } from "castmate-schema"
-import { OBSConnection, setupConnections } from "./connection"
+import { OBSConnection, setupConnections, onOBSWebsocketEvent } from "./connection"
 import { setupSources } from "./sources"
 import { setupScenes } from "./scenes"
 import { setupMedia } from "./media"
@@ -163,4 +163,4 @@ export default definePlugin(
 	}
 )
 
-export { OBSConnection, attemptQRReading }
+export { OBSConnection, onOBSWebsocketEvent, attemptQRReading }

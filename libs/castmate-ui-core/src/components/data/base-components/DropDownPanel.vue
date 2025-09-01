@@ -96,7 +96,7 @@ onClickOutside(overlayDiv, (ev) => {
 		let currentElement: HTMLElement | null = targetElement
 		while (currentElement) {
 			const overlayZIndex = currentElement.style.zIndex
-			console.log("z", overlayZIndex)
+			//console.log("z", overlayZIndex)
 
 			if (overlayZIndex > currentZindex) return
 

@@ -1,12 +1,13 @@
 <template>
 	<p-input-text
 		v-model="bufferedNumModel"
-		v-keyfilter.num
+		v-keyfilter="/[\d-.]|Enter/"
 		@focus="onFocus"
 		@blur="onBlur"
 		:placeholder="placeholder"
 		ref="numInput"
 		:suffix="suffix"
+		:size="size"
 	/>
 </template>
 
@@ -27,6 +28,7 @@ const props = withDefaults(
 		suffix?: string
 		showButtons?: boolean
 		allowEmpty?: boolean
+		size?: "small" | "large"
 	}>(),
 	{
 		allowEmpty: true,
