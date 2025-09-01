@@ -63,13 +63,13 @@ export function setupKeyboard(inputInterface: InputInterface) {
 		context: {
 			type: Object,
 			properties: {
-				combo: { type: KeyCombo, name: "Combo", required: true, default: ["LeftControl"] },
+				combo: { type: KeyCombo, name: "Combo", required: true, view: false },
 			},
 		},
 		config: {
 			type: Object,
 			properties: {
-				combo: { type: KeyCombo, name: "Combo", required: true, view: false },
+				combo: { type: KeyCombo, name: "Combo", required: true },
 			},
 		},
 		async handle(config, context) {
