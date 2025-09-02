@@ -13,7 +13,6 @@ import { useMediaStore } from "../../main"
 import { useMediaFileTree } from "./media-tree-types"
 
 import MediaTree from "./MediaTree.vue"
-import path from "path"
 
 const props = withDefaults(
 	defineProps<{
@@ -38,7 +37,7 @@ const items = useMediaFileTree(() => props)
 
 const mediaStore = useMediaStore()
 
-const noItemsAtAll = computed(() => mediaStore.mediaKeys.length > 0)
+const noItemsAtAll = computed(() => mediaStore.mediaKeys.length == 0)
 const noItemsFilter = computed(() => Object.keys(items.value).length == 0)
 </script>
 
