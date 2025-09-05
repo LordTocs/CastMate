@@ -13,10 +13,7 @@
 			</input-box>
 		</div>
 		<drop-down-panel class="p-1" v-model="overlayVisible" :container="container">
-			<!-- <p-color-picker v-model="poundConverter" inline /> -->
-			<template v-if="isHexColor(model)">
-				<c-color-picker v-model="model" :alpha="schema.alpha ?? false" />
-			</template>
+			<c-color-picker v-model="forcedColor" :alpha="schema.alpha ?? false" />
 		</drop-down-panel>
 	</data-input-base>
 </template>
@@ -48,6 +45,16 @@ function isTemplate(value: Color | string | undefined) {
 }
 
 const overlayVisible = ref(false)
+
+const forcedColor = computed({
+	get() {
+		if (isHexColor(model.value) || model.value == null) return model.value
+		return "#FFFFFF"
+	},
+	set(v) {
+		model.value = v
+	},
+})
 
 function show() {
 	if (!overlayVisible.value) {
