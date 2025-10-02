@@ -1,7 +1,7 @@
 import { Service } from "../util/service"
 import express, { Application, Router } from "express"
 import http from "http"
-import ws from "ws"
+import ws, { WebSocket, WebSocketServer } from "ws"
 import { usePluginLogger } from "../logging/logging"
 import { PluginManager } from "../plugins/plugin-manager"
 import { EventList } from "../util/events"
@@ -34,9 +34,9 @@ interface WebSocketExtras {
 	call<T extends (...args: any[]) => any>(name: string, ...args: Parameters<T>): Promise<ReturnType<T>>
 }
 
-export type ExtendedWebsocket = ws.WebSocket & WebSocketExtras
+export type ExtendedWebsocket = WebSocket & WebSocketExtras
 
-export type ExtendedServer = ws.Server & {
+export type ExtendedServer = WebSocketServer & {
 	readonly clients: ExtendedWebsocket[]
 }
 
@@ -70,7 +70,7 @@ export const WebService = Service(
 			this.app.use("/plugins/", this.routes)
 
 			this.httpServer = http.createServer(this.app)
-			this.websocketServer = new ws.Server({ noServer: true }) as ExtendedServer
+			this.websocketServer = new WebSocketServer({ noServer: true }) as ExtendedServer
 
 			this.pingInterval = setInterval(() => {
 				for (const socket of this.websocketServer.clients) {
@@ -148,7 +148,7 @@ export const WebService = Service(
 		}
 
 		removePluginRouter(router: express.Router) {
-			const idx = this.routes.stack.findIndex((layer) => layer == router)
+			const idx = this.routes.stack.findIndex((layer) => layer == (router as unknown))
 			if (idx >= 0) {
 				this.routes.stack.splice(idx, 1)
 			}
@@ -159,7 +159,7 @@ export const WebService = Service(
 		}
 
 		removeRootRouter(router: express.Router) {
-			const idx = this.app.stack.findIndex((layer) => layer == router)
+			const idx = this.app.stack.findIndex((layer) => layer == (router as unknown))
 			if (idx >= 0) {
 				this.app.stack.splice(idx, 1)
 			}
