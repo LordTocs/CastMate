@@ -2,6 +2,8 @@ import {
 	IPCSchema,
 	IPCViewerVariable,
 	Schema,
+	ViewerDataObserver,
+	ViewerDataRow,
 	constructDefault,
 	filterPromiseAll,
 	getTypeByConstructor,
@@ -201,6 +203,8 @@ export const ViewerData = Service(
 		private insertValue: InsertColumnValue
 
 		private _variables: ViewerVariable[] = []
+
+		private observers: ViewerDataObserver[] = []
 
 		get variables() {
 			return this._variables
@@ -403,6 +407,10 @@ export const ViewerData = Service(
 				name,
 				schema: ipcConvertSchema(schema, `viewerData_${name}`),
 			})
+
+			for (const o of this.observers) {
+				o.onNewViewerVariable(vari)
+			}
 		}
 
 		async removeViewerVariable(name: string) {
@@ -422,6 +430,10 @@ export const ViewerData = Service(
 
 			logger.log("Notifying Renderer")
 			rendererColumnRemoved(name)
+
+			for (const o of this.observers) {
+				o.onViewerVariableDeleted(name)
+			}
 		}
 
 		private async updateViewerValue(provider: string, id: string, varname: string, value: any, sqlized: any) {
@@ -440,6 +452,9 @@ export const ViewerData = Service(
 				}
 
 				rendererViewerDataChanged(provider, id, varname, value)
+				for (const o of this.observers) {
+					o.onViewerDataChanged(provider, id, varname, value)
+				}
 			} catch (err) {
 				logger.error("Error Updating Viewer Data", id, varname, value, err)
 			}
@@ -479,6 +494,9 @@ export const ViewerData = Service(
 				defaultValue[varname] = value
 
 				rendererViewerDataAdded(provider, id, defaultValue)
+				for (const o of this.observers) {
+					o.onNewViewerData(provider, id, defaultValue)
+				}
 			} catch (err) {
 				this.updateViewerValue(provider, id, varname, value, sqlized)
 			}
@@ -520,6 +538,10 @@ export const ViewerData = Service(
 				defaultValue[varname] = offsetDefault
 
 				rendererViewerDataAdded(provider, id, defaultValue)
+
+				for (const o of this.observers) {
+					o.onNewViewerData(provider, id, defaultValue as ViewerDataRow)
+				}
 			} catch (err) {
 				try {
 					const value = this.db.transaction<() => number | undefined>(() => {
@@ -544,6 +566,10 @@ export const ViewerData = Service(
 					}
 
 					rendererViewerDataChanged(provider, id, varname, value)
+
+					for (const o of this.observers) {
+						o.onViewerDataChanged(provider, id, varname, value)
+					}
 				} catch (err) {
 					logger.error("Error Offseting Viewer Data", id, varname, offset, err)
 				}
@@ -659,6 +685,19 @@ export const ViewerData = Service(
 				}) as Record<string, any>[]
 				return result
 			}
+		}
+
+		observeViewerData(observer: ViewerDataObserver) {
+			this.observers.push(observer)
+
+			return observer
+		}
+
+		unobserverViewerData(observer: ViewerDataObserver) {
+			const idx = this.observers.findIndex((o) => o === observer)
+			if (idx < 0) return
+
+			this.observers.splice(idx, 1)
 		}
 	}
 )

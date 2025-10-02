@@ -23,6 +23,7 @@ import {
 	TemplateString,
 	TemplateStringRegion,
 	TemplateTypeByConstructor,
+	Timer,
 	Toggle,
 	getTemplateRegionString,
 	getTimeRemaining,
@@ -36,9 +37,19 @@ import escapeRegExp from "lodash/escapeRegExp"
 
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
+const globalTemplateContext: Record<string, any> = {}
+
+export function defineTemplateFunction<Func extends (...args: any[]) => any>(name: string, func: Func) {
+	if (name in globalTemplateContext) {
+		throw new Error(`Template Function ${name} already exists`)
+	}
+
+	globalTemplateContext[name] = func
+}
+
 const logger = usePluginLogger("template")
 export async function evaluateTemplate(template: string, data: object) {
-	let contextObjs = { ...data }
+	let contextObjs = { ...data, ...globalTemplateContext }
 
 	try {
 		let func = new AsyncFunction(...Object.keys(contextObjs), `return (${template})`)
@@ -389,6 +400,10 @@ registerSchemaTemplate(Range, async (value, context, schema) => {
 	}
 
 	return result
+})
+
+defineTemplateFunction("getTimeRemaining", (timer: Timer) => {
+	return getTimeRemaining(timer)
 })
 
 ////

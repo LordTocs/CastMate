@@ -14,6 +14,8 @@ import {
 	onLoad,
 	onUnload,
 	MediaManager,
+	ViewerData,
+	ipcConvertSchema,
 } from "castmate-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { Overlay } from "./overlay-resource"
@@ -21,7 +23,7 @@ import * as express from "express"
 import { app } from "electron"
 import HttpProxy from "http-proxy"
 import { OverlayConfigEvaluator, createOverlayEvaluator } from "./config-evaluation"
-import { MediaFile } from "castmate-schema"
+import { MediaFile, ViewerDataObserver } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 
 const logger = usePluginLogger("overlays")
@@ -47,6 +49,7 @@ export const OverlayWebsocketService = Service(
 		private socketToOverlay = new Map<ExtendedWebsocket, string>()
 
 		private widgetRPCs = new Map<string, WidgetRPCHandler>()
+		private viewerVariableObservers = new Map<ExtendedWebsocket, ViewerDataObserver>()
 
 		async onConnection(socket: ExtendedWebsocket, url: URL) {
 			const overlayId = url.searchParams.get("overlay")
@@ -149,6 +152,46 @@ export const OverlayWebsocketService = Service(
 			updaters[idx].reactiveEffect.dispose()
 
 			updaters.splice(idx, 1)
+		}
+
+		async observeViewerData(socket: ExtendedWebsocket) {
+			if (this.viewerVariableObservers.has(socket)) {
+				return
+			}
+
+			const observer = ViewerData.getInstance().observeViewerData({
+				async onNewViewerData(provider, id, viewerData) {
+					//TODO: Serialize
+					await socket.call("overlays_onNewViewerData", provider, id, viewerData)
+				},
+				async onViewerDataChanged(provider, id, varName, value) {
+					//TODO: Serialize
+					await socket.call("overlays_onViewerDataChanged", provider, id, varName, value)
+				},
+				async onViewerDataRemoved(provider, id) {
+					await socket.call("overlays_onViewerDataRemoved", provider, id)
+				},
+				async onNewViewerVariable(variable) {
+					await socket.call(
+						"overlays_onNewViewerVariable",
+						variable.name,
+						ipcConvertSchema(variable.schema, `viewerdata_${variable.name}`)
+					)
+				},
+				async onViewerVariableDeleted(variable) {
+					await socket.call("overlays_onViewerVariableDeleted", variable)
+				},
+			})
+
+			this.viewerVariableObservers.set(socket, observer)
+		}
+
+		async unobserverViewerData(socket: ExtendedWebsocket) {
+			const observer = this.viewerVariableObservers.get(socket)
+			if (!observer) return
+
+			this.viewerVariableObservers.delete(socket)
+			ViewerData.getInstance().unobserverViewerData(observer)
 		}
 
 		async overlayConfigChanged(id: string) {
@@ -301,6 +344,14 @@ export function setupWebsockets() {
 
 	onWebsocketRPC("overlays_widgetRPC", async (socket, id: string, from: string, ...args: any[]) => {
 		return await OverlayWebsocketService.getInstance().handleWidgetRPCRequest(socket, id, from, ...args)
+	})
+
+	onWebsocketRPC("overlays_observeViewerData", async (socket) => {
+		return await OverlayWebsocketService.getInstance().observeViewerData(socket)
+	})
+
+	onWebsocketRPC("overlays_unobserveViewerData", async (socket) => {
+		return await OverlayWebsocketService.getInstance().unobserverViewerData(socket)
 	})
 
 	const router = useRootHTTPRouter("overlays")
