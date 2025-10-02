@@ -210,6 +210,26 @@ export const OverlayBlockStyle = {
 			alignItems: verticalAlignToCSS(blockStyle.verticalAlign),
 		}
 	},
+	toCSSPadding(blockStyle: OverlayBlockStyle | undefined) {
+		if (!blockStyle) return {}
+
+		return {
+			paddingTop: `${blockStyle.padding.top}px`,
+			paddingLeft: `${blockStyle.padding.left}px`,
+			paddingBottom: `${blockStyle.padding.bottom}px`,
+			paddingRight: `${blockStyle.padding.right}px`,
+		}
+	},
+	toCSSMargin(blockStyle: OverlayBlockStyle | undefined) {
+		if (!blockStyle) return {}
+
+		return {
+			marginTop: `${blockStyle.margin.top}px`,
+			marginLeft: `${blockStyle.margin.left}px`,
+			marginBottom: `${blockStyle.margin.bottom}px`,
+			marginRight: `${blockStyle.margin.right}px`,
+		}
+	},
 }
 
 export type OverlayBlockStyleFactory = typeof OverlayBlockStyle

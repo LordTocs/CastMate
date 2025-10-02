@@ -1,4 +1,4 @@
-import { IPCSchema, Schema } from "../schema"
+import { IPCSchema, registerType, Schema, SchemaBase } from "../schema"
 
 export interface ViewerVariable {
 	name: string
@@ -33,3 +33,31 @@ export interface ViewerDataProvider {
 		sortOrder: number | undefined
 	): Promise<ViewerDataRow[]>
 }
+
+export type ViewerVariableName = string
+
+export const ViewerVariableNameSymbol = Symbol()
+export const ViewerVariableName = {
+	[ViewerVariableNameSymbol]: "ViewerVariableName",
+	factoryCreate() {
+		return ""
+	},
+}
+export type ViewerVariableNameFactory = typeof ViewerVariableName
+
+export interface SchemaViewerVariableName extends SchemaBase<ViewerVariableName> {
+	type: ViewerVariableNameFactory
+}
+
+declare module "../schema" {
+	interface SchemaTypeMap {
+		ViewerVariableName: [SchemaViewerVariableName, ViewerVariableName]
+	}
+}
+
+registerType("ViewerVariableName", {
+	constructor: ViewerVariableName,
+	icon: "mdi mdi-text-short",
+	canBeVariable: false,
+	canBeViewerVariable: false,
+})
