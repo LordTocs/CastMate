@@ -1,29 +1,31 @@
 <template>
-	<table class="table-container">
-		<tr v-for="row in tableData" :key="row.id">
-			<td
-				:style="{
-					...OverlayTextStyle.toCSSProperties(config.nameFont),
-					...OverlayBlockStyle.toCSSPadding(config.nameBlock),
-					...getBackgroundCSS(config.nameBackground, mediaResolver),
-					...OverlayTextAlignment.toCSSProperties(config.nameTextAlign),
-				}"
-			>
-				{{ row.name }}
-			</td>
-			<td
-				v-for="varSpec in props.config.variables"
-				:style="{
-					...OverlayTextStyle.toCSSProperties(varSpec.font),
-					...OverlayBlockStyle.toCSSPadding(varSpec.block),
-					...getBackgroundCSS(varSpec.background, mediaResolver),
-					...OverlayTextAlignment.toCSSProperties(varSpec.textAlign),
-				}"
-			>
-				{{ row[varSpec.variable] }}
-			</td>
-		</tr>
-	</table>
+	<div class="table-container">
+		<table>
+			<tr v-for="row in tableData" :key="row.id">
+				<td
+					:style="{
+						...OverlayTextStyle.toCSSProperties(config.nameFont),
+						...OverlayBlockStyle.toCSSPadding(config.nameBlock),
+						...getBackgroundCSS(config.nameBackground, mediaResolver),
+						...OverlayTextAlignment.toCSSProperties(config.nameTextAlign),
+					}"
+				>
+					{{ row.name }}
+				</td>
+				<td
+					v-for="varSpec in props.config.variables"
+					:style="{
+						...OverlayTextStyle.toCSSProperties(varSpec.font),
+						...OverlayBlockStyle.toCSSPadding(varSpec.block),
+						...getBackgroundCSS(varSpec.background, mediaResolver),
+						...OverlayTextAlignment.toCSSProperties(varSpec.textAlign),
+					}"
+				>
+					{{ row[varSpec.variable] }}
+				</td>
+			</tr>
+		</table>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -173,6 +175,17 @@ const tableData = useViewerDataTable(
 <style scoped>
 .table-container {
 	width: 100%;
+	height: 100%;
+}
+
+.table-container table {
+	width: 100%;
 	max-height: 100%;
+	border-spacing: 0;
+}
+
+.table-container td {
+	border: 0;
+	margin: 0;
 }
 </style>
