@@ -4,7 +4,7 @@ import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { CastMateBridgeImplementation, useOverlaySoundPlayer } from "castmate-overlay-core"
 import { ViewerDataRow, ViewerDataObserver, IPCSchema } from "castmate-schema"
-import { ipcParseSchema } from "castmate-core"
+import { ipcParseSchema } from "./ipc-schema"
 
 export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 	let websocket: WebSocket | undefined = undefined
