@@ -1,20 +1,21 @@
 <template>
 	<div class="table-container">
 		<table>
-			<tr v-for="row in tableData" :key="row.id">
-				<td
-					:style="{
-						...OverlayTextStyle.toCSSProperties(config.nameFont),
-						...OverlayBlockStyle.toCSSPadding(config.nameBlock),
-						...getBackgroundCSS(config.nameBackground, mediaResolver),
-						...OverlayTextAlignment.toCSSProperties(config.nameTextAlign),
-					}"
-				>
-					{{ row.name }}
-				</td>
-				<template v-for="(varSpec, i) in props.config.variables">
+			<template v-for="row in tableData" :key="row.id">
+				<tr v-if="row[config.sortBy] != null">
 					<td
-						v-if="row[varSpec.variable] != null"
+						:style="{
+							...OverlayTextStyle.toCSSProperties(config.nameFont),
+							...OverlayBlockStyle.toCSSPadding(config.nameBlock),
+							...getBackgroundCSS(config.nameBackground, mediaResolver),
+							...OverlayTextAlignment.toCSSProperties(config.nameTextAlign),
+						}"
+					>
+						{{ row.name }}
+					</td>
+
+					<td
+						v-for="(varSpec, i) in props.config.variables"
 						:style="{
 							...OverlayTextStyle.toCSSProperties(varSpec.font),
 							...OverlayBlockStyle.toCSSPadding(varSpec.block),
@@ -25,8 +26,8 @@
 						<schema-span v-if="variables[i]" :value="row[varSpec.variable]" :schema="variables[i].schema" />
 						<span v-else>{{ row[varSpec.variable] }}</span>
 					</td>
-				</template>
-			</tr>
+				</tr>
+			</template>
 		</table>
 	</div>
 </template>

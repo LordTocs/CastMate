@@ -225,6 +225,7 @@ export function useViewerDataTable(
 				const loadTable = async () => {
 					const data = await bridge.queryViewerData(0, newCount, newSortBy, newSortOrder)
 					tableData.value = data
+					console.log(data)
 				}
 
 				const initialQuery = loadTable()

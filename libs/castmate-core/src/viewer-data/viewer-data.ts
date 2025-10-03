@@ -22,6 +22,7 @@ interface SerializedViewerVariableDesc {
 	name: string
 	type: string
 	defaultValue?: any
+	required?: boolean
 }
 
 const logger = usePluginLogger("viewer-data")
@@ -37,6 +38,18 @@ const sqlTypes: Record<string, string> = {
 
 function escapeSql(sql: string) {
 	return sql.replace(/\'/g, "''")
+}
+
+function sqlize(value: any) {
+	if (typeof value == "number") {
+		return String(value)
+	} else if (typeof value == "string") {
+		return `'${escapeSql(value)}'`
+	} else if (value == null) {
+		return "NULL"
+	} else {
+		return `'${escapeSql(JSON.stringify(value))}'`
+	}
 }
 
 export interface ViewerProvider {
@@ -262,6 +275,8 @@ export const ViewerData = Service(
 					schema.default = defaultValue
 				}
 
+				schema.required = varData.required ?? true
+
 				this._variables.push({
 					name: varData.name,
 					schema,
@@ -283,6 +298,7 @@ export const ViewerData = Service(
 				const serializedVar: SerializedViewerVariableDesc = {
 					name: vari.name,
 					type: type.name,
+					required: vari.schema.required,
 				}
 
 				if (vari.schema.default != null) {
@@ -336,15 +352,7 @@ export const ViewerData = Service(
 					if (!vari) return
 
 					const serialized = await serializeSchema(vari.schema, value)
-					let sqlized: string
-					if (typeof serialized == "number") {
-						sqlized = String(serialized)
-					} else if (typeof serialized == "string") {
-						sqlized = `'${escapeSql(serialized)}'`
-					} else {
-						sqlized = `'${escapeSql(JSON.stringify(serialized))}'`
-					}
-
+					const sqlized = sqlize(serialized)
 					await this.updateViewerValue(provider, id, varname, value, sqlized)
 				}
 			)
@@ -465,14 +473,7 @@ export const ViewerData = Service(
 			if (!vari) return
 
 			const serialized = await serializeSchema(vari.schema, value)
-			let sqlized: string
-			if (typeof serialized == "number") {
-				sqlized = String(serialized)
-			} else if (typeof serialized == "string") {
-				sqlized = `'${escapeSql(serialized)}'`
-			} else {
-				sqlized = `'${escapeSql(JSON.stringify(serialized))}'`
-			}
+			const sqlized = sqlize(serialized)
 
 			try {
 				this.insertValue({

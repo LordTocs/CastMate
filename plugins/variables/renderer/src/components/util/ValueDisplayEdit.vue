@@ -82,5 +82,7 @@ function onKeyDown(ev: KeyboardEvent) {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	width: 100%;
+	height: 100%;
 }
 </style>
