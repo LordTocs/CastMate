@@ -354,6 +354,13 @@ export function setupWebsockets() {
 		return await OverlayWebsocketService.getInstance().unobserverViewerData(socket)
 	})
 
+	onWebsocketRPC(
+		"overlays_queryViewerData",
+		async (socket, start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => {
+			return await ViewerData.getInstance().getPagedViewerData(start, end, sortBy, sortOrder)
+		}
+	)
+
 	const router = useRootHTTPRouter("overlays")
 
 	router.get("/:id/config", async (req, res, next) => {
@@ -391,8 +398,28 @@ export function setupWebsockets() {
 		//We can't serve static files, but instead need to forward requests to vite's dev server
 		//That way changes and HMR works through the regular URLs provided to OBS.
 		const devProxy = HttpProxy.createProxyServer({
-			target: "http://localhost:5174/overlays/", //This address is fixed because we set it in mvite
+			target: "http://localhost:5174/", //This address is fixed because we set it in mvite
+			// autoRewrite: true,
+			ws: true,
 		})
+
+		devProxy.on("proxyReqWs", (proxyReq, req, socket, options) => {
+			logger.log("Dev Proxying Websocket!", proxyReq.path)
+		})
+
+		devProxy.on("proxyReq", (proxyReq) => {
+			//logger.log("Dev Proxying Req", proxyReq.path)
+		})
+
+		devProxy.on("proxyRes", (proxyRes, req, res) => {
+			//logger.log("Dev Proxying Res", req.url)
+		})
+
+		devProxy.on("error", (err) => {
+			logger.error("Error Proxying", err)
+		})
+
+		console.log("REACHED PROXY SETUP CALL---------------------------------------")
 
 		defineWebsocketProxy("/overlays/", devProxy)
 
@@ -415,9 +442,16 @@ export function setupWebsockets() {
 
 		router.get("*", (req, res, next) => {
 			//Try to get the file from the dev server
-			devProxy.web(req, res, {}, (err) => {
-				next(err)
-			})
+			devProxy.web(
+				req,
+				res,
+				{
+					target: "http://localhost:5174/overlays/",
+				},
+				(err) => {
+					next(err)
+				}
+			)
 		})
 	}
 }
