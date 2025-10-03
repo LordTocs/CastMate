@@ -256,6 +256,14 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 					sortOrder
 				)) as ViewerDataRow[]
 			},
+			async getViewerVariables() {
+				const serializedVariables = (await rpcs.call("overlays_getViewerVariables", sender)) as {
+					name: string
+					schema: IPCSchema
+				}[]
+
+				return serializedVariables.map((v) => ({ name: v.name, schema: ipcParseSchema(v.schema) }))
+			},
 		}
 	}
 

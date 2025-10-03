@@ -111,6 +111,9 @@ provide<CastMateBridgeImplementation>("castmate-bridge", {
 	async queryViewerData(start, end, sortBy, sortOrder) {
 		return await viewerData.queryViewerData(start, end, sortBy, sortOrder)
 	},
+	async getViewerVariables() {
+		return [...viewerData.variables.values()]
+	},
 	async callRPC(id, ...args) {},
 })
 

@@ -14,7 +14,7 @@ import {
 	watchEffect,
 } from "vue"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
-import { constructDefault, ViewerDataObserver, ViewerDataRow } from "castmate-schema"
+import { constructDefault, Schema, ViewerDataObserver, ViewerDataRow, ViewerVariable } from "castmate-schema"
 import _cloneDeep from "lodash/cloneDeep"
 
 export type BridgeViewerData = ComputedRef<ViewerDataRow[]>
@@ -30,6 +30,7 @@ export interface CastMateBridgeImplementation {
 	unregisterMessage(id: string, func: (...args: any[]) => any): void
 	observeViewerData(observer: ViewerDataObserver): ViewerDataObserver
 	unobserveViewerData(observer: ViewerDataObserver): void
+	getViewerVariables(): Promise<ViewerVariable[]>
 	queryViewerData(
 		start: number,
 		end: number,
@@ -63,6 +64,9 @@ export function useCastMateBridge(): CastMateBridgeImplementation {
 			return observer
 		},
 		unobserveViewerData(observer) {},
+		async getViewerVariables() {
+			return []
+		},
 		async queryViewerData() {
 			return []
 		},
@@ -153,6 +157,43 @@ function sortedIndex<T, V>(array: Array<T>, value: V, compare: (a: T, b: V) => n
 		else high = mid
 	}
 	return low
+}
+
+export function useViewerVariableSchemas(variables: MaybeRefOrGetter<string[]>) {
+	const bridge = useCastMateBridge()
+
+	const schemas = ref<ViewerVariable[]>([])
+
+	const querySchemas = async () => {
+		schemas.value = await bridge.getViewerVariables()
+	}
+
+	let observer: ViewerDataObserver | undefined = undefined
+
+	onMounted(() => {
+		querySchemas()
+
+		observer = bridge.observeViewerData({
+			onNewViewerData(provider, id, viewerData) {},
+			onViewerDataChanged(provider, id, varName, value) {},
+
+			onViewerDataRemoved(provider, id) {},
+			onNewViewerVariable(variable) {
+				schemas.value.push(variable)
+			},
+			onViewerVariableDeleted(variable) {
+				const idx = schemas.value.findIndex((v) => v.name == variable)
+				if (idx < 0) return
+				schemas.value.splice(idx, 1)
+			},
+		})
+	})
+
+	return computed(() => {
+		const varNames = toValue(variables)
+
+		return varNames.map((name) => schemas.value.find((s) => s.name == name))
+	})
 }
 
 export function useViewerDataTable(

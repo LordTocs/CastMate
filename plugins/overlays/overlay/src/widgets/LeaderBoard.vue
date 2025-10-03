@@ -12,24 +12,32 @@
 				>
 					{{ row.name }}
 				</td>
-				<td
-					v-for="varSpec in props.config.variables"
-					:style="{
-						...OverlayTextStyle.toCSSProperties(varSpec.font),
-						...OverlayBlockStyle.toCSSPadding(varSpec.block),
-						...getBackgroundCSS(varSpec.background, mediaResolver),
-						...OverlayTextAlignment.toCSSProperties(varSpec.textAlign),
-					}"
-				>
-					{{ row[varSpec.variable] }}
-				</td>
+				<template v-for="(varSpec, i) in props.config.variables">
+					<td
+						v-if="row[varSpec.variable] != null"
+						:style="{
+							...OverlayTextStyle.toCSSProperties(varSpec.font),
+							...OverlayBlockStyle.toCSSPadding(varSpec.block),
+							...getBackgroundCSS(varSpec.background, mediaResolver),
+							...OverlayTextAlignment.toCSSProperties(varSpec.textAlign),
+						}"
+					>
+						<schema-span v-if="variables[i]" :value="row[varSpec.variable]" :schema="variables[i].schema" />
+						<span v-else>{{ row[varSpec.variable] }}</span>
+					</td>
+				</template>
 			</tr>
 		</table>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { declareWidgetOptions, useMediaResolver, useViewerDataTable } from "castmate-overlay-core"
+import {
+	declareWidgetOptions,
+	useMediaResolver,
+	useViewerDataTable,
+	useViewerVariableSchemas,
+} from "castmate-overlay-core"
 import {
 	getBackgroundCSS,
 	OverlayBlockStyle,
@@ -38,6 +46,8 @@ import {
 	WidgetBackgroundStyle,
 } from "castmate-plugin-overlays-shared"
 import { ViewerVariableName } from "castmate-schema"
+import { computed } from "vue"
+import SchemaSpan from "../components/SchemaSpan.vue"
 
 const mediaResolver = useMediaResolver()
 
@@ -163,9 +173,13 @@ const props = defineProps<{
 	}
 }>()
 
+const variableNames = computed(() => props.config.variables.map((v) => v.variable))
+
+const variables = useViewerVariableSchemas(variableNames)
+
 const tableData = useViewerDataTable(
 	"twitch",
-	() => props.config.variables.map((v) => v.variable),
+	variableNames,
 	() => props.config.sortBy,
 	() => props.config.sortOrder,
 	() => props.config.count

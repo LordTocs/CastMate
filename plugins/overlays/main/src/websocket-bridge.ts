@@ -361,6 +361,13 @@ export function setupWebsockets() {
 		}
 	)
 
+	onWebsocketRPC("overlays_getViewerVariables", async (socket) => {
+		return [...ViewerData.getInstance().variables.values()].map((v) => ({
+			name: v.name,
+			schema: ipcConvertSchema(v.schema, `viewerdata_${v.name}`),
+		}))
+	})
+
 	const router = useRootHTTPRouter("overlays")
 
 	router.get("/:id/config", async (req, res, next) => {
