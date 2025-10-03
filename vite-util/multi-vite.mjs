@@ -36,6 +36,7 @@ async function servePackageSpawn(config, name) {
 	if (config.port) {
 		args.push("--port")
 		args.push(config.port)
+		args.push("--strictPort")
 	}
 	return spawn("node", args, { cwd: dir, stdio: "inherit" })
 }
@@ -56,7 +57,7 @@ async function serve() {
 	}
 
 	const castmateDev = await servePackageSpawn({ port: 5173, ...config }, "castmate")
-	const overlayDev = await servePackageSpawn({ port: 5174, ...config }, "castmate-obs-overlay")
+	const overlayDev = await servePackageSpawn({ port: 5174, host: true, ...config }, "castmate-obs-overlay")
 
 	castmateDev.on("close", () => {
 		overlayDev.kill("SIGTERM")
