@@ -131,7 +131,7 @@ export const WebService = Service(
 					this.onDisconnected.run(expandedSocket)
 				})
 
-				this.onConnection.run(expandedSocket, requestUrl)
+				await this.onConnection.run(expandedSocket, requestUrl)
 			})
 
 			this.httpServer.on("error", (err) => {
@@ -183,13 +183,19 @@ export const WebService = Service(
 
 				const url = new URL(request.url, `http://${request.headers.host}`)
 
+				logger.log("Upgrading Websocket Request", url.pathname, url.hostname, url.port)
+
 				const proxy = this.websocketProxies[url.pathname]
 				if (proxy) {
-					proxy.ws(request, socket, head)
+					logger.log("   Connection To Be Proxied!", url.pathname)
+					proxy.ws(request, socket, head, undefined, (err, req) => {
+						logger.error("    Proxy Error", err, req)
+					})
 					return
 				}
 
 				this.websocketServer.handleUpgrade(request, socket, head, (socket) => {
+					logger.log("    Connection Upgraded", url.pathname)
 					this.websocketServer.emit("connection", socket, request)
 				})
 			})
@@ -233,10 +239,12 @@ export const WebService = Service(
 		}
 
 		registerWebsocketProxy(path: string, proxy: HttpProxy) {
+			logger.log("Registering Proxy", path, proxy)
 			this.websocketProxies[path] = proxy
 		}
 
 		unregisterWebsocketProxy(path: string) {
+			logger.log("Unregistering Proxy", path)
 			delete this.websocketProxies[path]
 		}
 
