@@ -208,6 +208,28 @@ export default definePlugin(
 			for (const donation of donations) {
 				if (donation.donationID != lastDonationId.value) {
 					//HANDLE THIS DONATION
+					await onDonation({
+						donor: donation.displayName ?? "Anonymous",
+						isIncentive: donation.incentiveID != null,
+						donorAvatar: donation.avatarImageURL,
+						amount: donation.amount,
+						message: donation.message ?? "",
+					})
+
+					if (donation.incentiveID) {
+						const incentive = await incentiveCache.get(donation.incentiveID)
+
+						if (incentive) {
+							await onIncentive({
+								incentiveId: donation.incentiveID,
+								incentive: incentive.description,
+								donor: donation.displayName ?? "Anonymous",
+								donorAvatar: donation.avatarImageURL,
+								amount: donation.amount,
+								message: donation.message ?? "",
+							})
+						}
+					}
 				} else {
 					break
 				}
@@ -240,7 +262,7 @@ export default definePlugin(
 			await initialize()
 		})
 
-		defineTrigger({
+		const onDonation = defineTrigger({
 			id: "donation",
 			name: "DonorDrive Donation",
 			description: "Triggers when a donation is given on a DonorDrive campaign.",
@@ -269,7 +291,7 @@ export default definePlugin(
 			},
 		})
 
-		defineTrigger({
+		const onIncentive = defineTrigger({
 			id: "incentive",
 			name: "DonorDrive Incentive",
 			config: {
