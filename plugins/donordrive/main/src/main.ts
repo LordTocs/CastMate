@@ -10,7 +10,12 @@ import {
 	defineSetting,
 	runOnChange,
 	onSettingChanged,
+	usePluginLogger,
+	defineState,
+	AsyncCache,
+	AsyncDictCache,
 } from "castmate-core"
+import { Range } from "castmate-schema"
 
 // SEE: https://github.com/DonorDrive/PublicAPI/tree/master
 // SEE: https://github.com/breadweb/extralife-helper
@@ -50,6 +55,27 @@ interface DonorDriveParticipant {
 	numDonations: number
 }
 
+interface DonorDriveDonation {
+	activityPledgeMaxAmount?: number
+	activityPledgeUnitAmount?: number
+	amount: number
+	avatarImageURL: string
+	createdDateUTC: string
+	displayName: string
+	donationID: string
+	donorID: string
+	donorIsRecipient?: boolean
+	eventID: number
+	incentiveID?: string
+	isRegFee?: boolean
+	links: Record<string, string>
+	message: string
+	participantID: number
+	recipientName: string
+	recipientImageURL: string
+	teamID: number
+}
+
 interface DonorDriveMilestone {
 	fundraisingGoal: number
 	description: string
@@ -86,6 +112,8 @@ export default definePlugin(
 		icon: "mdi mdi-hand-coin",
 	},
 	() => {
+		const logger = usePluginLogger()
+
 		const apiBase = defineSetting("apiBase", {
 			type: String,
 			name: "API Base Url",
@@ -97,46 +125,183 @@ export default definePlugin(
 			name: "Participant ID",
 		})
 
+		async function apiRequest<T extends object>(path: string, opts?: RequestInit) {
+			const resp = await fetch(`${apiBase.value}${path}`, {
+				...(opts ? opts : {}),
+			})
+
+			if (!resp.ok) {
+				const text = await resp.text().catch(() => "")
+				const errText = `HTTP Error ${resp.status}: ${text}`
+				logger.error(errText)
+				return undefined
+			}
+
+			return (await resp.json()) as T
+		}
+
 		let poller: NodeJS.Timer | undefined = undefined
 
 		async function initialize() {
 			if (poller) {
+				//@ts-ignore
 				clearInterval(poller)
 			}
 
 			if (!apiBase.value) return
 			if (!participantId.value) return
+
+			poller = setInterval(async () => {
+				await pollForUpdates()
+			}, 15 * 1000)
+		}
+
+		const eventName = defineState("eventName", { type: String, name: "Event Name" })
+		const goal = defineState("goal", { type: Number, name: "Goal" })
+		const totalRaised = defineState("totalRaised", { type: Number, name: "Total Raised" })
+		const totalDonations = defineState("totalDonations", { type: Number, name: "Total Donations" })
+		const donationCount = defineState("donationCount", { type: Number, name: "Donation Count" })
+		const totalPledges = defineState("totalPledges", { type: Number, name: "Total Pledges" })
+
+		const lastDonationId = defineState(
+			"lastDonationId",
+			{ type: String, required: true, default: "", view: false },
+			true
+		)
+
+		function clearState() {
+			eventName.value = undefined
+			goal.value = undefined
+			totalDonations.value = undefined
+			totalRaised.value = undefined
+			totalPledges.value = undefined
+			donationCount.value = undefined
+		}
+
+		async function pollForUpdates() {
+			const participant = await getParticipant()
+			if (!participant) {
+				clearState()
+				return
+			}
+
+			const currentTotal = totalRaised.value
+			const currentDonationCount = donationCount.value
+
+			eventName.value = participant.eventName
+			goal.value = participant.fundraisingGoal
+			totalRaised.value = participant.sumDonations + participant.sumPledges
+			totalPledges.value = participant.sumPledges
+			totalDonations.value = participant.sumDonations
+
+			donationCount.value = participant.numDonations
+
+			if (currentDonationCount != donationCount.value) {
+				await handleNewDonations()
+			}
+		}
+
+		async function handleNewDonations() {
+			const donations = await apiRequest<DonorDriveDonation[]>(`/participants/${participantId.value}/donations`)
+			if (!donations) return
+
+			for (const donation of donations) {
+				if (donation.donationID != lastDonationId.value) {
+					//HANDLE THIS DONATION
+				} else {
+					break
+				}
+			}
+
+			lastDonationId.value = donations[0].donationID
 		}
 
 		async function getParticipant() {
 			if (!apiBase.value) return undefined
 			if (!participantId.value) return undefined
 
-			const resp = await fetch(`${apiBase.value}/participants/${participantId.value}`, {
-				method: "get",
-			})
-
-			if (resp.ok) return undefined
-
-			return (await resp.json()) as DonorDriveParticipant
+			return await apiRequest<DonorDriveParticipant>(`/participants/${participantId.value}`)
 		}
+
+		const incentiveCache = new AsyncDictCache(getIncentives, "incentiveId")
 
 		async function getIncentives(): Promise<DonorDriveIncentive[]> {
 			if (!apiBase.value) return []
 			if (!participantId.value) return []
 
-			const resp = await fetch(`${apiBase.value}/participants/${participantId.value}/incentives`, {
-				method: "get",
-			})
-
-			if (!resp.ok) return []
-
-			const result = (await resp.json()) as DonorDriveIncentive[]
-			return result
+			return (await apiRequest<DonorDriveIncentive[]>(`/participants/${participantId.value}/incentives`)) ?? []
 		}
 
-		onSettingChanged(apiBase, () => {})
+		onSettingChanged(apiBase, async () => {
+			await initialize()
+		})
 
-		onSettingChanged(participantId, () => {})
+		onSettingChanged(participantId, async () => {
+			await initialize()
+		})
+
+		defineTrigger({
+			id: "donation",
+			name: "DonorDrive Donation",
+			description: "Triggers when a donation is given on a DonorDrive campaign.",
+			config: {
+				type: Object,
+				properties: {
+					amount: { type: Range, name: "Amount" },
+					incentive: { type: Boolean, name: "Run For Incentives", required: true, default: false },
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					isIncentive: { type: Boolean, required: true, view: false, default: false },
+					amount: { type: Number, name: "Amount", required: true, default: 10 },
+					donor: { type: String, name: "Donor", required: true, default: "LordTocs" },
+					donorAvatar: { type: String, name: "Avatar Image" },
+					message: { type: String, name: "Message", default: "Here's a donation!" },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (!Range.inRange(config.amount, context.amount)) return false
+				if (context.isIncentive && !config.incentive) return false
+
+				return true
+			},
+		})
+
+		defineTrigger({
+			id: "incentive",
+			name: "DonorDrive Incentive",
+			config: {
+				type: Object,
+				properties: {
+					incentive: {
+						type: String,
+						enum: async () => {
+							const incentives = await incentiveCache.values()
+							return incentives.map((i) => ({
+								name: i.description,
+								value: i.incentiveId,
+							}))
+						},
+					},
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					incentiveId: { type: String, required: true, view: false },
+					incentive: { type: String, required: true },
+					amount: { type: Number, name: "Amount", required: true, default: 10 },
+					donor: { type: String, name: "Donor", required: true, default: "LordTocs" },
+					donorAvatar: { type: String, name: "Avatar Image" },
+					message: { type: String, name: "Message", default: "Here's a donation!" },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (config.incentive == context.incentiveId) return true
+				return false
+			},
+		})
 	}
 )
