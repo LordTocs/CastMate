@@ -34,6 +34,7 @@
 			"castmate-plugin-bluesky-renderer": ["../../plugins/bluesky/renderer/src/main.ts"],
 			"castmate-plugin-dashboards-renderer": ["../../plugins/dashboards/renderer/src/main.ts"],
 			"castmate-plugin-discord-renderer": ["../../plugins/discord/renderer/src/main.ts"],
+			"castmate-plugin-donordrive-renderer": ["../../plugins/donordrive/renderer/src/main.ts"],
 			"castmate-plugin-http-renderer": ["../../plugins/http/renderer/src/main.ts"],
 			"castmate-plugin-input-renderer": ["../../plugins/input/renderer/src/main.ts"],
 			"castmate-plugin-iot-renderer": ["../../plugins/iot/renderer/src/main.ts"],

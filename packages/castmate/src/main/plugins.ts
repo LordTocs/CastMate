@@ -37,6 +37,8 @@ import blueskyPlugin from "castmate-plugin-bluesky-main"
 import advssPlugin from "castmate-plugin-advss-main"
 import aitumPlugin from "castmate-plugin-aitum-main"
 
+import donorDrivePlugin from "castmate-plugin-donordrive-main"
+
 import castmatePlugin from "./builtin-plugin"
 import { WebService, Plugin } from "castmate-core"
 import { migratePlugin } from "./migration/old-migration"
@@ -91,6 +93,8 @@ export async function loadPlugins() {
 		loadPlugin(goveePlugin),
 		loadPlugin(twinklyPlugin),
 	]
+
+	await loadPlugin(donorDrivePlugin)
 
 	await Promise.allSettled(iotPromises)
 

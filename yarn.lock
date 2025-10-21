@@ -3858,6 +3858,54 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"castmate-plugin-donordrive-main@workspace:^, castmate-plugin-donordrive-main@workspace:plugins/donordrive/main":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-donordrive-main@workspace:plugins/donordrive/main"
+  dependencies:
+    castmate-core: "workspace:^"
+    castmate-plugin-donordrive-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-donordrive-renderer@workspace:^, castmate-plugin-donordrive-renderer@workspace:plugins/donordrive/renderer":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-donordrive-renderer@workspace:plugins/donordrive/renderer"
+  dependencies:
+    "@vitejs/plugin-vue": "npm:*"
+    "@vueuse/core": "npm:*"
+    castmate-plugin-donordrive-shared: "workspace:^"
+    castmate-schema: "workspace:^"
+    castmate-ui-core: "workspace:^"
+    chromatism2: "npm:*"
+    electron: "npm:^34.2.0"
+    nanoid: "npm:^5.0.7"
+    pinia: "npm:^2.1.7"
+    typescript: "npm:*"
+    vite: "npm:*"
+    vue: "npm:^3.5.13"
+    vue-tsc: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-donordrive-shared@workspace:^, castmate-plugin-donordrive-shared@workspace:plugins/donordrive/shared":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-donordrive-shared@workspace:plugins/donordrive/shared"
+  dependencies:
+    axios: "npm:*"
+    castmate-core: "workspace:^"
+    castmate-schema: "workspace:^"
+    typescript: "npm:*"
+  languageName: unknown
+  linkType: soft
+
+"castmate-plugin-donordrive@workspace:plugins/donordrive":
+  version: 0.0.0-use.local
+  resolution: "castmate-plugin-donordrive@workspace:plugins/donordrive"
+  languageName: unknown
+  linkType: soft
+
 "castmate-plugin-elgato-main@workspace:^, castmate-plugin-elgato-main@workspace:plugins/elgato/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-elgato-main@workspace:plugins/elgato/main"
@@ -5211,6 +5259,8 @@ __metadata:
     castmate-plugin-dashboards-renderer: "workspace:^"
     castmate-plugin-discord-main: "workspace:^"
     castmate-plugin-discord-renderer: "workspace:^"
+    castmate-plugin-donordrive-main: "workspace:^"
+    castmate-plugin-donordrive-renderer: "workspace:^"
     castmate-plugin-elgato-main: "workspace:^"
     castmate-plugin-govee-main: "workspace:^"
     castmate-plugin-govee-renderer: "workspace:^"
