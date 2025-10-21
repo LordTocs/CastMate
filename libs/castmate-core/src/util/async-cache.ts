@@ -37,7 +37,7 @@ export class AsyncDictCache<T extends object, K extends keyof T> {
 
 	constructor(private updater: () => Promise<T[]>, private key: K, private cacheTime = 15) {}
 
-	async fetch() {
+	private async fetchInternal() {
 		try {
 			const result = await this.updater()
 			this.data.clear()
@@ -48,10 +48,10 @@ export class AsyncDictCache<T extends object, K extends keyof T> {
 		} catch (err) {}
 	}
 
-	async doFetch() {
+	async fetch() {
 		if (this.fetchPromise) await this.fetchPromise
 		else {
-			this.fetchPromise = this.fetch()
+			this.fetchPromise = this.fetchInternal()
 			await this.fetchPromise
 		}
 	}
@@ -62,15 +62,20 @@ export class AsyncDictCache<T extends object, K extends keyof T> {
 
 	async get(key: T[K]) {
 		if (this.isOutOfDate || !this.data.has(key)) {
-			await this.doFetch()
+			await this.fetch()
 		}
 		return this.data.get(key)
 	}
 
 	async values() {
 		if (this.isOutOfDate) {
-			await this.doFetch()
+			await this.fetch()
 		}
 		return [...this.data.values()]
+	}
+
+	clear() {
+		this.data.clear()
+		this.lastCacheTime = undefined
 	}
 }
