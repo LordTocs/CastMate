@@ -20,6 +20,7 @@ import querystring from "node:querystring"
 import {
 	createEntityPoller,
 	createIncentiveCache,
+	createMilestoneCache,
 	DonorDriveDictCache,
 	DonorDriveEntityProvider,
 	DonorDriveIncentive,
@@ -97,6 +98,7 @@ export default definePlugin(
 		const donationCount = defineState("donationCount", { type: Number, name: "Donation Count" })
 		const totalPledges = defineState("totalPledges", { type: Number, name: "Total Pledges" })
 
+		let currentMilestoneId: string | undefined = undefined
 		const currentMilestone = defineState("currentMilestone", { type: String, name: "Current Milestone" })
 		const currentMilestoneGoal = defineState("currentMilestoneGoal", {
 			type: Number,
@@ -117,11 +119,13 @@ export default definePlugin(
 			totalPledges.value = undefined
 			donationCount.value = undefined
 
+			currentMilestoneId = undefined
 			currentMilestone.value = undefined
 			currentMilestoneGoal.value = undefined
 			currentMilestoneStart.value = undefined
 
 			incentiveCache.clear()
+			milestoneCache.clear()
 		}
 
 		const entityPoller = createEntityPoller(entityProvider, async (participant) => {
@@ -130,7 +134,7 @@ export default definePlugin(
 				return
 			}
 
-			const currentTotal = totalRaised.value ?? 0
+			const currentTotal = totalRaised.value
 			const currentDonationCount = donationCount.value
 
 			eventName.value = participant.eventName
@@ -142,17 +146,61 @@ export default definePlugin(
 			donationCount.value = participant.numDonations
 
 			if (currentDonationCount != donationCount.value) {
+				//Force milestones to update so we have up to date milestone info
+				await milestoneCache.fetch()
 				//Received a donation
-				await handleNewDonations()
+				await handleNewDonations(currentTotal)
 			}
+
+			await updateMilestones()
 		})
 
-		async function handleNewDonations() {
+		const milestoneCache = createMilestoneCache(entityProvider)
+
+		async function updateMilestones() {
+			const rawMilestones = await milestoneCache.values()
+			const milestones = rawMilestones
+				.filter((m) => m.isActive)
+				.sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
+
+			let found = false
+			let lowerBound = 0
+			for (const milestone of milestones) {
+				if (!milestone.isActive) continue
+
+				if (milestone.isComplete) {
+					lowerBound = milestone.fundraisingGoal
+				} else {
+					currentMilestone.value = milestone.description
+					currentMilestoneGoal.value = milestone.fundraisingGoal
+					currentMilestoneStart.value = lowerBound
+					found = true
+					break
+				}
+			}
+
+			if (!found) {
+				currentMilestone.value = undefined
+				currentMilestoneGoal.value = undefined
+				currentMilestoneStart.value = undefined
+			}
+		}
+
+		const incentiveCache = createIncentiveCache(entityProvider)
+
+		async function handleNewDonations(prevTotal: number | undefined) {
 			const lastDonationPollTime = lastDonationTime
 			lastDonationTime = new Date()
 
 			const donations = await queryDonations(entityProvider, lastDonationPollTime)
 			if (!donations) return
+
+			const rawMilestones = await milestoneCache.values()
+			const milestones = rawMilestones
+				.filter((m) => m.isActive)
+				.sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
+
+			let runningAmount = prevTotal
 
 			//We gate donations on the last poll time, so any donations returned by this fetch are new!
 			for (const donation of donations) {
@@ -178,10 +226,30 @@ export default definePlugin(
 						})
 					}
 				}
+
+				if (runningAmount != null) {
+					const beforeAmount = runningAmount
+					const afterAmount = runningAmount + donation.amount
+
+					for (const milestone of milestones) {
+						if (
+							milestone.isComplete &&
+							beforeAmount < milestone.fundraisingGoal &&
+							afterAmount >= milestone.fundraisingGoal
+						) {
+							//This is the donation that crossed the milestones
+							await onMilestone({
+								milestoneId: milestone.milestoneID,
+								milestone: milestone.description,
+								amount: milestone.fundraisingGoal,
+							})
+						}
+					}
+
+					runningAmount = afterAmount
+				}
 			}
 		}
-
-		const incentiveCache = createIncentiveCache(entityProvider)
 
 		onSettingChanged(apiBase, async () => {
 			await initialize()
@@ -198,6 +266,7 @@ export default definePlugin(
 		const onDonation = defineTrigger({
 			id: "donation",
 			name: "DonorDrive Donation",
+			icon: "mdi mdi-hand-coin",
 			description: "Triggers when a donation is given on a DonorDrive campaign.",
 			config: {
 				type: Object,
@@ -227,6 +296,8 @@ export default definePlugin(
 		const onIncentive = defineTrigger({
 			id: "incentive",
 			name: "DonorDrive Incentive",
+			icon: "mdi mdi-hand-coin",
+			description: "Triggered when a donor drive incentive is redeemed",
 			config: {
 				type: Object,
 				properties: {
@@ -255,6 +326,40 @@ export default definePlugin(
 			},
 			async handle(config, context, mapping) {
 				if (config.incentive == context.incentiveId) return true
+				return false
+			},
+		})
+
+		const onMilestone = defineTrigger({
+			id: "milestone",
+			name: "DonorDrive Milestone",
+			icon: "mdi mdi-hand-coin",
+			description: "Triggered when a donor drive milestone is met",
+			config: {
+				type: Object,
+				properties: {
+					milestone: {
+						type: String,
+						enum: async () => {
+							const milestones = await milestoneCache.values()
+							return milestones.map((i) => ({
+								name: i.description,
+								value: i.milestoneID,
+							}))
+						},
+					},
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					milestoneId: { type: String, required: true, view: false },
+					milestone: { type: String, required: true },
+					amount: { type: Number, name: "Amount", required: true, default: 10 },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (config.milestone == context.milestoneId) return true
 				return false
 			},
 		})

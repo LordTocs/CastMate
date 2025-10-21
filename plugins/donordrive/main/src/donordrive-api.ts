@@ -85,9 +85,11 @@ export interface DonorDriveDonation {
 export interface DonorDriveMilestone {
 	fundraisingGoal: number
 	description: string
-	milestoneId: string
+	milestoneID: string
 	isActive: boolean
 	isComplete?: boolean
+	endDateUTC?: string
+	startDateUTC?: string
 }
 
 const logger = usePluginLogger("donordrive")
@@ -114,7 +116,11 @@ async function apiRequest<T extends object>(
 		return undefined
 	}
 
-	return (await resp.json()) as T
+	const data = (await resp.json()) as T
+
+	logger.log("API Data", url, data)
+
+	return data
 }
 
 async function pollApi<T>(
@@ -227,11 +233,23 @@ export function createEntityPoller(
 	return new DonorDriveIntervalPoller<DonorDriveParticipant>(entityProvider, "", onChange, 15)
 }
 
+type DonorDriveDictCacheChangeEvent<T extends object, TK> = (oldCache: Map<TK, T>, newCache: Map<TK, T>) => any
+
+type DonorDriveDictCacheChange<T extends object, TK> =
+	| {
+			type: "no-change"
+	  }
+	| {
+			type: "changed"
+			old: Map<TK, T> | undefined
+			new: Map<TK, T> | undefined
+	  }
+
 export class DonorDriveDictCache<T extends object, K extends keyof T> {
 	private lastCacheTime: number | undefined = undefined
 	private etag: string | undefined
 	private data: Map<T[K], T> = new Map()
-	private fetchPromise: Promise<"error" | "no-change" | "changed"> | undefined = undefined
+	private fetchPromise: Promise<DonorDriveDictCacheChange<T, T[K]> | undefined> | undefined = undefined
 
 	constructor(
 		private entityProvider: DonorDriveEntityProvider,
@@ -240,25 +258,27 @@ export class DonorDriveDictCache<T extends object, K extends keyof T> {
 		private cacheTime = 15
 	) {}
 
-	private async fetchInternal() {
+	private async fetchInternal(): Promise<DonorDriveDictCacheChange<T, T[K]> | undefined> {
 		try {
 			const result = await pollApi<T[]>(this.entityProvider, this.path, this.etag)
 
-			if (!result) return "error"
+			if (!result) return undefined
 
 			if (result.type == "no-change") {
-				return "no-change"
+				return { type: "no-change" }
 			}
 
-			this.data.clear()
+			const old = this.data
+
+			this.data = new Map()
 			for (const obj of result.data) {
 				this.data.set(obj[this.key], obj)
 			}
 			this.etag = result.etag
 			this.lastCacheTime = Date.now()
-			return "changed"
+			return { type: "changed", old, new: this.data }
 		} catch (err) {
-			return "error"
+			return undefined
 		}
 	}
 
@@ -293,11 +313,16 @@ export class DonorDriveDictCache<T extends object, K extends keyof T> {
 	clear() {
 		this.data.clear()
 		this.lastCacheTime = undefined
+		this.etag = undefined
 	}
 }
 
 export function createIncentiveCache(entityProvider: DonorDriveEntityProvider) {
 	return new DonorDriveDictCache<DonorDriveIncentive, "incentiveID">(entityProvider, "/incentives", "incentiveID", 60)
+}
+
+export function createMilestoneCache(entityProvider: DonorDriveEntityProvider) {
+	return new DonorDriveDictCache<DonorDriveMilestone, "milestoneID">(entityProvider, "/milestones", "milestoneID", 60)
 }
 
 export async function queryDonations(entityProvider: DonorDriveEntityProvider, lastPollTime?: Date) {
