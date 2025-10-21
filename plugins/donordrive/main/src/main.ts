@@ -17,105 +17,14 @@ import {
 } from "castmate-core"
 import { Range } from "castmate-schema"
 import querystring from "node:querystring"
-
-// SEE: https://github.com/DonorDrive/PublicAPI/tree/master
-// SEE: https://github.com/breadweb/extralife-helper - NVM outdated
-// SEE: https://github.com/DonorDrive/StreamKit/blob/master/donation-ticker.html
-
-interface DonorDriveIncentive {
-	amount: number
-	description: string
-	incentiveImageUrl?: string
-	quantity: number
-	quantityClaimed: number
-	links?: {
-		[key: string]: string
-	}
-	incentiveId: string
-	isActive: boolean
-	startDate?: string
-	endDate?: string
-}
-
-interface DonorDriveParticipant {
-	displayName: string
-	fundraisingGoal: number
-	eventName: string
-	links: {
-		donate: string
-		page: string
-	}
-	createdDateUTC: string
-	eventId: number
-	sumDonations: number
-	participantId: number
-	teamName: string
-	avatarImageUrl: string
-	teamId: number
-	isTeamCaptain: boolean
-	sumPledges: number
-	numDonations: number
-}
-
-interface ETagPollNoChange {
-	type: "no-change"
-}
-
-interface ETagPollChanged<T> {
-	type: "changed"
-	etag: string
-	data: T
-}
-
-type ETagPollResult<T> = ETagPollNoChange | ETagPollChanged<T>
-
-interface DonorDriveDonation {
-	activityPledgeMaxAmount?: number
-	activityPledgeUnitAmount?: number
-	amount: number
-	avatarImageURL: string
-	createdDateUTC: string
-	displayName: string
-	donationID: string
-	donorID: string
-	donorIsRecipient?: boolean
-	eventID: number
-	incentiveID?: string
-	isRegFee?: boolean
-	links: Record<string, string>
-	message: string
-	participantID: number
-	recipientName: string
-	recipientImageURL: string
-	teamID: number
-}
-
-interface DonorDriveMilestone {
-	fundraisingGoal: number
-	description: string
-	milestoneId: string
-	isActive: boolean
-	isComplete?: boolean
-}
-
-interface DonorDriveActivityBase {
-	message: string
-	title: string
-	imageUrl: string
-	createdDateUTC: string
-}
-
-interface DonorDriveDonationActivity extends DonorDriveActivityBase {
-	amount: number
-	isIncentive?: number
-	type: "donation"
-}
-
-interface DonorDriveBadgeActivity extends DonorDriveActivityBase {
-	type: "participantBadge"
-}
-
-type DonorDriveActivity = DonorDriveDonationActivity | DonorDriveBadgeActivity
+import {
+	createEntityPoller,
+	createIncentiveCache,
+	DonorDriveDictCache,
+	DonorDriveEntityProvider,
+	DonorDriveIncentive,
+	queryDonations,
+} from "./donordrive-api"
 
 export default definePlugin(
 	{
@@ -139,6 +48,17 @@ export default definePlugin(
 			name: "Participant ID",
 		})
 
+		const entityProvider: DonorDriveEntityProvider = () => {
+			if (!apiBase.value) return undefined
+			if (!participantId.value) return undefined
+
+			return {
+				type: "participants",
+				id: participantId.value,
+				apiBase: apiBase.value,
+			}
+		}
+
 		async function apiRequest<T extends object>(path: string, opts?: RequestInit, query?: Record<string, any>) {
 			const qs = querystring.stringify(query)
 			const resp = await fetch(`${apiBase.value}${path}?${qs}`, {
@@ -152,27 +72,22 @@ export default definePlugin(
 				return undefined
 			}
 
+			logger.log("Request Etag", path, resp.headers.get("etag"))
+
 			return (await resp.json()) as T
 		}
 
 		let poller: NodeJS.Timer | undefined = undefined
 
 		async function initialize() {
-			if (poller) {
-				//@ts-ignore
-				clearInterval(poller)
-				clearState()
-			}
+			entityPoller.reset()
 
 			if (!apiBase.value) return
 			if (!participantId.value) return
 
 			lastDonationTime = new Date()
-			lastEtag = undefined
 
-			poller = setInterval(async () => {
-				await pollForUpdates()
-			}, 15 * 1000)
+			entityPoller.start()
 		}
 
 		const eventName = defineState("eventName", { type: String, name: "Event Name" })
@@ -182,16 +97,6 @@ export default definePlugin(
 		const donationCount = defineState("donationCount", { type: Number, name: "Donation Count" })
 		const totalPledges = defineState("totalPledges", { type: Number, name: "Total Pledges" })
 
-		const currentMilestoneComplete = defineState("currentMilestoneComplete", {
-			type: Boolean,
-			name: "Current Milestone Complete",
-			view: false,
-		})
-		const currentMilestoneId = defineState("currentMilestoneId", {
-			type: String,
-			name: "Current Milestone Id",
-			view: false,
-		})
 		const currentMilestone = defineState("currentMilestone", { type: String, name: "Current Milestone" })
 		const currentMilestoneGoal = defineState("currentMilestoneGoal", {
 			type: Number,
@@ -201,12 +106,6 @@ export default definePlugin(
 			type: Number,
 			name: "Current Milestone Goal",
 		})
-
-		const lastDonationId = defineState(
-			"lastDonationId",
-			{ type: String, required: true, default: "", view: false },
-			true
-		)
 
 		let lastDonationTime: Date = new Date()
 
@@ -222,24 +121,14 @@ export default definePlugin(
 			currentMilestoneGoal.value = undefined
 			currentMilestoneStart.value = undefined
 
-			lastDonationId.value = ""
-
-			milestoneCache.clear()
 			incentiveCache.clear()
 		}
 
-		async function pollForUpdates() {
-			const poll = await pollParticipant()
-			if (!poll) {
+		const entityPoller = createEntityPoller(entityProvider, async (participant) => {
+			if (!participant) {
 				clearState()
 				return
 			}
-
-			if (poll.type == "no-change") {
-				return
-			}
-
-			const participant = poll.data
 
 			const currentTotal = totalRaised.value ?? 0
 			const currentDonationCount = donationCount.value
@@ -256,22 +145,13 @@ export default definePlugin(
 				//Received a donation
 				await handleNewDonations()
 			}
-
-			await updateMilestone()
-		}
+		})
 
 		async function handleNewDonations() {
 			const lastDonationPollTime = lastDonationTime
 			lastDonationTime = new Date()
 
-			const donations = await apiRequest<DonorDriveDonation[]>(
-				`/participants/${participantId.value}/donations`,
-				{},
-				{
-					where: `createdDateUTC > ${lastDonationPollTime?.toISOString()}`,
-					orderBy: "createdDateUTC ASC",
-				}
-			)
+			const donations = await queryDonations(entityProvider, lastDonationPollTime)
 			if (!donations) return
 
 			//We gate donations on the last poll time, so any donations returned by this fetch are new!
@@ -299,81 +179,9 @@ export default definePlugin(
 					}
 				}
 			}
-
-			lastDonationId.value = donations[0].donationID
 		}
 
-		async function updateMilestone() {
-			const milestones = await milestoneCache.values()
-			milestones.sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
-
-			let lowerBound = 0
-
-			for (const milestone of milestones) {
-				if (!milestone.isActive) continue
-
-				if (milestone.isComplete) {
-					lowerBound = milestone.fundraisingGoal
-				} else {
-					currentMilestone.value = milestone.description
-					currentMilestoneGoal.value = milestone.fundraisingGoal
-					currentMilestoneStart.value = lowerBound
-					break
-				}
-			}
-		}
-
-		let lastEtag: string | undefined = undefined
-		async function pollParticipant(): Promise<ETagPollResult<DonorDriveParticipant> | undefined> {
-			if (!apiBase.value) return undefined
-			if (!participantId.value) return undefined
-
-			const resp = await fetch(`${apiBase.value}/participants/${participantId.value}`, {
-				headers: {
-					"If-None-Match": lastEtag ?? "",
-				},
-			})
-
-			if (resp.status == 304) {
-				return {
-					type: "no-change",
-				}
-			}
-
-			if (!resp.ok) {
-				const text = await resp.text().catch(() => "")
-				const errText = `HTTP Error ${resp.status}: ${text}`
-				logger.error(errText)
-				return undefined
-			}
-
-			const etag = resp.headers.get("etag") ?? ""
-			lastEtag = etag
-
-			return {
-				type: "changed",
-				etag,
-				data: await resp.json(),
-			}
-		}
-
-		const incentiveCache = new AsyncDictCache(getIncentives, "incentiveId", 60)
-
-		async function getIncentives(): Promise<DonorDriveIncentive[]> {
-			if (!apiBase.value) return []
-			if (!participantId.value) return []
-
-			return (await apiRequest<DonorDriveIncentive[]>(`/participants/${participantId.value}/incentives`)) ?? []
-		}
-
-		const milestoneCache = new AsyncDictCache(getMilestones, "milestoneId", 60)
-
-		async function getMilestones(): Promise<DonorDriveMilestone[]> {
-			if (!apiBase.value) return []
-			if (!participantId.value) return []
-
-			return (await apiRequest<DonorDriveMilestone[]>(`/participants/${participantId.value}/milestones`)) ?? []
-		}
+		const incentiveCache = createIncentiveCache(entityProvider)
 
 		onSettingChanged(apiBase, async () => {
 			await initialize()
@@ -428,7 +236,7 @@ export default definePlugin(
 							const incentives = await incentiveCache.values()
 							return incentives.map((i) => ({
 								name: i.description,
-								value: i.incentiveId,
+								value: i.incentiveID,
 							}))
 						},
 					},
