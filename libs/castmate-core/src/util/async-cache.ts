@@ -53,6 +53,7 @@ export class AsyncDictCache<T extends object, K extends keyof T> {
 		else {
 			this.fetchPromise = this.fetchInternal()
 			await this.fetchPromise
+			this.fetchPromise = undefined
 		}
 	}
 
