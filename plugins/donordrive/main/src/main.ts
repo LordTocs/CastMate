@@ -16,9 +16,11 @@ import {
 	AsyncDictCache,
 } from "castmate-core"
 import { Range } from "castmate-schema"
+import querystring from "node:querystring"
 
 // SEE: https://github.com/DonorDrive/PublicAPI/tree/master
-// SEE: https://github.com/breadweb/extralife-helper
+// SEE: https://github.com/breadweb/extralife-helper - NVM outdated
+// SEE: https://github.com/DonorDrive/StreamKit/blob/master/donation-ticker.html
 
 interface DonorDriveIncentive {
 	amount: number
@@ -55,6 +57,18 @@ interface DonorDriveParticipant {
 	numDonations: number
 }
 
+interface ETagPollNoChange {
+	type: "no-change"
+}
+
+interface ETagPollChanged<T> {
+	type: "changed"
+	etag: string
+	data: T
+}
+
+type ETagPollResult<T> = ETagPollNoChange | ETagPollChanged<T>
+
 interface DonorDriveDonation {
 	activityPledgeMaxAmount?: number
 	activityPledgeUnitAmount?: number
@@ -81,7 +95,7 @@ interface DonorDriveMilestone {
 	description: string
 	milestoneId: string
 	isActive: boolean
-	isComplete: boolean
+	isComplete?: boolean
 }
 
 interface DonorDriveActivityBase {
@@ -125,8 +139,9 @@ export default definePlugin(
 			name: "Participant ID",
 		})
 
-		async function apiRequest<T extends object>(path: string, opts?: RequestInit) {
-			const resp = await fetch(`${apiBase.value}${path}`, {
+		async function apiRequest<T extends object>(path: string, opts?: RequestInit, query?: Record<string, any>) {
+			const qs = querystring.stringify(query)
+			const resp = await fetch(`${apiBase.value}${path}?${qs}`, {
 				...(opts ? opts : {}),
 			})
 
@@ -146,10 +161,14 @@ export default definePlugin(
 			if (poller) {
 				//@ts-ignore
 				clearInterval(poller)
+				clearState()
 			}
 
 			if (!apiBase.value) return
 			if (!participantId.value) return
+
+			lastDonationTime = new Date()
+			lastEtag = undefined
 
 			poller = setInterval(async () => {
 				await pollForUpdates()
@@ -163,11 +182,33 @@ export default definePlugin(
 		const donationCount = defineState("donationCount", { type: Number, name: "Donation Count" })
 		const totalPledges = defineState("totalPledges", { type: Number, name: "Total Pledges" })
 
+		const currentMilestoneComplete = defineState("currentMilestoneComplete", {
+			type: Boolean,
+			name: "Current Milestone Complete",
+			view: false,
+		})
+		const currentMilestoneId = defineState("currentMilestoneId", {
+			type: String,
+			name: "Current Milestone Id",
+			view: false,
+		})
+		const currentMilestone = defineState("currentMilestone", { type: String, name: "Current Milestone" })
+		const currentMilestoneGoal = defineState("currentMilestoneGoal", {
+			type: Number,
+			name: "Current Milestone Goal",
+		})
+		const currentMilestoneStart = defineState("currentMilestoneStart", {
+			type: Number,
+			name: "Current Milestone Goal",
+		})
+
 		const lastDonationId = defineState(
 			"lastDonationId",
 			{ type: String, required: true, default: "", view: false },
 			true
 		)
+
+		let lastDonationTime: Date = new Date()
 
 		function clearState() {
 			eventName.value = undefined
@@ -176,16 +217,31 @@ export default definePlugin(
 			totalRaised.value = undefined
 			totalPledges.value = undefined
 			donationCount.value = undefined
+
+			currentMilestone.value = undefined
+			currentMilestoneGoal.value = undefined
+			currentMilestoneStart.value = undefined
+
+			lastDonationId.value = ""
+
+			milestoneCache.clear()
+			incentiveCache.clear()
 		}
 
 		async function pollForUpdates() {
-			const participant = await getParticipant()
-			if (!participant) {
+			const poll = await pollParticipant()
+			if (!poll) {
 				clearState()
 				return
 			}
 
-			const currentTotal = totalRaised.value
+			if (poll.type == "no-change") {
+				return
+			}
+
+			const participant = poll.data
+
+			const currentTotal = totalRaised.value ?? 0
 			const currentDonationCount = donationCount.value
 
 			eventName.value = participant.eventName
@@ -197,55 +253,111 @@ export default definePlugin(
 			donationCount.value = participant.numDonations
 
 			if (currentDonationCount != donationCount.value) {
+				//Received a donation
 				await handleNewDonations()
 			}
+
+			await updateMilestone()
 		}
 
 		async function handleNewDonations() {
-			const donations = await apiRequest<DonorDriveDonation[]>(`/participants/${participantId.value}/donations`)
+			const lastDonationPollTime = lastDonationTime
+			lastDonationTime = new Date()
+
+			const donations = await apiRequest<DonorDriveDonation[]>(
+				`/participants/${participantId.value}/donations`,
+				{},
+				{
+					where: `createdDateUTC > ${lastDonationPollTime?.toISOString()}`,
+					orderBy: "createdDateUTC ASC",
+				}
+			)
 			if (!donations) return
 
+			//We gate donations on the last poll time, so any donations returned by this fetch are new!
 			for (const donation of donations) {
-				if (donation.donationID != lastDonationId.value) {
-					//HANDLE THIS DONATION
-					await onDonation({
-						donor: donation.displayName ?? "Anonymous",
-						isIncentive: donation.incentiveID != null,
-						donorAvatar: donation.avatarImageURL,
-						amount: donation.amount,
-						message: donation.message ?? "",
-					})
+				await onDonation({
+					donor: donation.displayName ?? "Anonymous",
+					isIncentive: donation.incentiveID != null,
+					donorAvatar: donation.avatarImageURL,
+					amount: donation.amount,
+					message: donation.message ?? "",
+				})
 
-					if (donation.incentiveID) {
-						const incentive = await incentiveCache.get(donation.incentiveID)
+				if (donation.incentiveID) {
+					const incentive = await incentiveCache.get(donation.incentiveID)
 
-						if (incentive) {
-							await onIncentive({
-								incentiveId: donation.incentiveID,
-								incentive: incentive.description,
-								donor: donation.displayName ?? "Anonymous",
-								donorAvatar: donation.avatarImageURL,
-								amount: donation.amount,
-								message: donation.message ?? "",
-							})
-						}
+					if (incentive) {
+						await onIncentive({
+							incentiveId: donation.incentiveID,
+							incentive: incentive.description,
+							donor: donation.displayName ?? "Anonymous",
+							donorAvatar: donation.avatarImageURL,
+							amount: donation.amount,
+							message: donation.message ?? "",
+						})
 					}
-				} else {
-					break
 				}
 			}
 
 			lastDonationId.value = donations[0].donationID
 		}
 
-		async function getParticipant() {
+		async function updateMilestone() {
+			const milestones = await milestoneCache.values()
+			milestones.sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
+
+			let lowerBound = 0
+
+			for (const milestone of milestones) {
+				if (!milestone.isActive) continue
+
+				if (milestone.isComplete) {
+					lowerBound = milestone.fundraisingGoal
+				} else {
+					currentMilestone.value = milestone.description
+					currentMilestoneGoal.value = milestone.fundraisingGoal
+					currentMilestoneStart.value = lowerBound
+					break
+				}
+			}
+		}
+
+		let lastEtag: string | undefined = undefined
+		async function pollParticipant(): Promise<ETagPollResult<DonorDriveParticipant> | undefined> {
 			if (!apiBase.value) return undefined
 			if (!participantId.value) return undefined
 
-			return await apiRequest<DonorDriveParticipant>(`/participants/${participantId.value}`)
+			const resp = await fetch(`${apiBase.value}/participants/${participantId.value}`, {
+				headers: {
+					"If-None-Match": lastEtag ?? "",
+				},
+			})
+
+			if (resp.status == 304) {
+				return {
+					type: "no-change",
+				}
+			}
+
+			if (!resp.ok) {
+				const text = await resp.text().catch(() => "")
+				const errText = `HTTP Error ${resp.status}: ${text}`
+				logger.error(errText)
+				return undefined
+			}
+
+			const etag = resp.headers.get("etag") ?? ""
+			lastEtag = etag
+
+			return {
+				type: "changed",
+				etag,
+				data: await resp.json(),
+			}
 		}
 
-		const incentiveCache = new AsyncDictCache(getIncentives, "incentiveId")
+		const incentiveCache = new AsyncDictCache(getIncentives, "incentiveId", 60)
 
 		async function getIncentives(): Promise<DonorDriveIncentive[]> {
 			if (!apiBase.value) return []
@@ -254,11 +366,24 @@ export default definePlugin(
 			return (await apiRequest<DonorDriveIncentive[]>(`/participants/${participantId.value}/incentives`)) ?? []
 		}
 
+		const milestoneCache = new AsyncDictCache(getMilestones, "milestoneId", 60)
+
+		async function getMilestones(): Promise<DonorDriveMilestone[]> {
+			if (!apiBase.value) return []
+			if (!participantId.value) return []
+
+			return (await apiRequest<DonorDriveMilestone[]>(`/participants/${participantId.value}/milestones`)) ?? []
+		}
+
 		onSettingChanged(apiBase, async () => {
 			await initialize()
 		})
 
 		onSettingChanged(participantId, async () => {
+			await initialize()
+		})
+
+		onLoad(async () => {
 			await initialize()
 		})
 
