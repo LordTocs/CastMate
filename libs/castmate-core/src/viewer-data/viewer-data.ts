@@ -2,6 +2,8 @@ import {
 	IPCSchema,
 	IPCViewerVariable,
 	Schema,
+	ViewerDataObserver,
+	ViewerDataRow,
 	constructDefault,
 	filterPromiseAll,
 	getTypeByConstructor,
@@ -20,6 +22,7 @@ interface SerializedViewerVariableDesc {
 	name: string
 	type: string
 	defaultValue?: any
+	required?: boolean
 }
 
 const logger = usePluginLogger("viewer-data")
@@ -35,6 +38,18 @@ const sqlTypes: Record<string, string> = {
 
 function escapeSql(sql: string) {
 	return sql.replace(/\'/g, "''")
+}
+
+function sqlize(value: any) {
+	if (typeof value == "number") {
+		return String(value)
+	} else if (typeof value == "string") {
+		return `'${escapeSql(value)}'`
+	} else if (value == null) {
+		return "NULL"
+	} else {
+		return `'${escapeSql(JSON.stringify(value))}'`
+	}
 }
 
 export interface ViewerProvider {
@@ -202,6 +217,8 @@ export const ViewerData = Service(
 
 		private _variables: ViewerVariable[] = []
 
+		private observers: ViewerDataObserver[] = []
+
 		get variables() {
 			return this._variables
 		}
@@ -258,6 +275,8 @@ export const ViewerData = Service(
 					schema.default = defaultValue
 				}
 
+				schema.required = varData.required ?? true
+
 				this._variables.push({
 					name: varData.name,
 					schema,
@@ -279,6 +298,7 @@ export const ViewerData = Service(
 				const serializedVar: SerializedViewerVariableDesc = {
 					name: vari.name,
 					type: type.name,
+					required: vari.schema.required,
 				}
 
 				if (vari.schema.default != null) {
@@ -332,15 +352,7 @@ export const ViewerData = Service(
 					if (!vari) return
 
 					const serialized = await serializeSchema(vari.schema, value)
-					let sqlized: string
-					if (typeof serialized == "number") {
-						sqlized = String(serialized)
-					} else if (typeof serialized == "string") {
-						sqlized = `'${escapeSql(serialized)}'`
-					} else {
-						sqlized = `'${escapeSql(JSON.stringify(serialized))}'`
-					}
-
+					const sqlized = sqlize(serialized)
 					await this.updateViewerValue(provider, id, varname, value, sqlized)
 				}
 			)
@@ -403,6 +415,10 @@ export const ViewerData = Service(
 				name,
 				schema: ipcConvertSchema(schema, `viewerData_${name}`),
 			})
+
+			for (const o of this.observers) {
+				o.onNewViewerVariable(vari)
+			}
 		}
 
 		async removeViewerVariable(name: string) {
@@ -422,6 +438,10 @@ export const ViewerData = Service(
 
 			logger.log("Notifying Renderer")
 			rendererColumnRemoved(name)
+
+			for (const o of this.observers) {
+				o.onViewerVariableDeleted(name)
+			}
 		}
 
 		private async updateViewerValue(provider: string, id: string, varname: string, value: any, sqlized: any) {
@@ -440,6 +460,9 @@ export const ViewerData = Service(
 				}
 
 				rendererViewerDataChanged(provider, id, varname, value)
+				for (const o of this.observers) {
+					o.onViewerDataChanged(provider, id, varname, value)
+				}
 			} catch (err) {
 				logger.error("Error Updating Viewer Data", id, varname, value, err)
 			}
@@ -450,14 +473,7 @@ export const ViewerData = Service(
 			if (!vari) return
 
 			const serialized = await serializeSchema(vari.schema, value)
-			let sqlized: string
-			if (typeof serialized == "number") {
-				sqlized = String(serialized)
-			} else if (typeof serialized == "string") {
-				sqlized = `'${escapeSql(serialized)}'`
-			} else {
-				sqlized = `'${escapeSql(JSON.stringify(serialized))}'`
-			}
+			const sqlized = sqlize(serialized)
 
 			try {
 				this.insertValue({
@@ -479,6 +495,9 @@ export const ViewerData = Service(
 				defaultValue[varname] = value
 
 				rendererViewerDataAdded(provider, id, defaultValue)
+				for (const o of this.observers) {
+					o.onNewViewerData(provider, id, defaultValue)
+				}
 			} catch (err) {
 				this.updateViewerValue(provider, id, varname, value, sqlized)
 			}
@@ -520,6 +539,10 @@ export const ViewerData = Service(
 				defaultValue[varname] = offsetDefault
 
 				rendererViewerDataAdded(provider, id, defaultValue)
+
+				for (const o of this.observers) {
+					o.onNewViewerData(provider, id, defaultValue as ViewerDataRow)
+				}
 			} catch (err) {
 				try {
 					const value = this.db.transaction<() => number | undefined>(() => {
@@ -544,6 +567,10 @@ export const ViewerData = Service(
 					}
 
 					rendererViewerDataChanged(provider, id, varname, value)
+
+					for (const o of this.observers) {
+						o.onViewerDataChanged(provider, id, varname, value)
+					}
 				} catch (err) {
 					logger.error("Error Offseting Viewer Data", id, varname, offset, err)
 				}
@@ -659,6 +686,19 @@ export const ViewerData = Service(
 				}) as Record<string, any>[]
 				return result
 			}
+		}
+
+		observeViewerData(observer: ViewerDataObserver) {
+			this.observers.push(observer)
+
+			return observer
+		}
+
+		unobserverViewerData(observer: ViewerDataObserver) {
+			const idx = this.observers.findIndex((o) => o === observer)
+			if (idx < 0) return
+
+			this.observers.splice(idx, 1)
 		}
 	}
 )

@@ -1,6 +1,6 @@
 {
 	"name": "castmate",
-	"version": "0.5.8-beta2",
+	"version": "0.5.8-beta3",
 	"description": "CastMate",
 	"author": "LordTocs",
 	"scripts": {
@@ -21,6 +21,7 @@
 		"castmate-plugin-bluesky-main": "workspace:^",
 		"castmate-plugin-dashboards-main": "workspace:^",
 		"castmate-plugin-discord-main": "workspace:^",
+		"castmate-plugin-donordrive-main": "workspace:^",
 		"castmate-plugin-elgato-main": "workspace:^",
 		"castmate-plugin-govee-main": "workspace:^",
 		"castmate-plugin-http-main": "workspace:^",
@@ -61,6 +62,7 @@
 		"castmate-plugin-bluesky-renderer": "workspace:^",
 		"castmate-plugin-dashboards-renderer": "workspace:^",
 		"castmate-plugin-discord-renderer": "workspace:^",
+		"castmate-plugin-donordrive-renderer": "workspace:^",
 		"castmate-plugin-govee-renderer": "workspace:^",
 		"castmate-plugin-http-renderer": "workspace:^",
 		"castmate-plugin-input-renderer": "workspace:^",

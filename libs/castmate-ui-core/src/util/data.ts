@@ -20,6 +20,7 @@ import {
 	Enumable,
 	isArray,
 	BooleanExpression,
+	ViewerVariableName,
 } from "castmate-schema"
 import { defineStore } from "pinia"
 import {
@@ -78,6 +79,7 @@ import FilePathInputVue from "../components/data/inputs/FilePathInput.vue"
 import ArrayInputVue from "../components/data/inputs/ArrayInput.vue"
 import TimerInputVue from "../components/data/inputs/TimerInput.vue"
 import BooleanExpressionInput from "../components/data/inputs/BooleanExpressionInput.vue"
+import ViewerVariableNameInput from "../components/data/inputs/ViewerVariableNameInput.vue"
 
 export type ResourceProxy = string
 export const ResourceProxyFactory = {
@@ -345,6 +347,7 @@ export function initData() {
 	inputStore.registerInputComponent(FilePath, FilePathInputVue)
 	inputStore.registerInputComponent(Command, CommandInputVue)
 	inputStore.registerInputComponent(BooleanExpression, BooleanExpressionInput)
+	inputStore.registerInputComponent(ViewerVariableName, ViewerVariableNameInput)
 
 	inputStore.registerViewComponent(String, EnumableDataView)
 	inputStore.registerViewComponent(Number, EnumableDataView)

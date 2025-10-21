@@ -1,7 +1,7 @@
 import { Service } from "../util/service"
 import express, { Application, Router } from "express"
 import http from "http"
-import ws from "ws"
+import ws, { WebSocket, WebSocketServer } from "ws"
 import { usePluginLogger } from "../logging/logging"
 import { PluginManager } from "../plugins/plugin-manager"
 import { EventList } from "../util/events"
@@ -34,9 +34,9 @@ interface WebSocketExtras {
 	call<T extends (...args: any[]) => any>(name: string, ...args: Parameters<T>): Promise<ReturnType<T>>
 }
 
-export type ExtendedWebsocket = ws.WebSocket & WebSocketExtras
+export type ExtendedWebsocket = WebSocket & WebSocketExtras
 
-export type ExtendedServer = ws.Server & {
+export type ExtendedServer = WebSocketServer & {
 	readonly clients: ExtendedWebsocket[]
 }
 
@@ -70,7 +70,7 @@ export const WebService = Service(
 			this.app.use("/plugins/", this.routes)
 
 			this.httpServer = http.createServer(this.app)
-			this.websocketServer = new ws.Server({ noServer: true }) as ExtendedServer
+			this.websocketServer = new WebSocketServer({ noServer: true }) as ExtendedServer
 
 			this.pingInterval = setInterval(() => {
 				for (const socket of this.websocketServer.clients) {
@@ -131,7 +131,7 @@ export const WebService = Service(
 					this.onDisconnected.run(expandedSocket)
 				})
 
-				this.onConnection.run(expandedSocket, requestUrl)
+				await this.onConnection.run(expandedSocket, requestUrl)
 			})
 
 			this.httpServer.on("error", (err) => {
@@ -148,7 +148,7 @@ export const WebService = Service(
 		}
 
 		removePluginRouter(router: express.Router) {
-			const idx = this.routes.stack.findIndex((layer) => layer == router)
+			const idx = this.routes.stack.findIndex((layer) => layer == (router as unknown))
 			if (idx >= 0) {
 				this.routes.stack.splice(idx, 1)
 			}
@@ -159,7 +159,7 @@ export const WebService = Service(
 		}
 
 		removeRootRouter(router: express.Router) {
-			const idx = this.app.stack.findIndex((layer) => layer == router)
+			const idx = this.app.stack.findIndex((layer) => layer == (router as unknown))
 			if (idx >= 0) {
 				this.app.stack.splice(idx, 1)
 			}
@@ -183,13 +183,19 @@ export const WebService = Service(
 
 				const url = new URL(request.url, `http://${request.headers.host}`)
 
+				logger.log("Upgrading Websocket Request", url.pathname, url.hostname, url.port)
+
 				const proxy = this.websocketProxies[url.pathname]
 				if (proxy) {
-					proxy.ws(request, socket, head)
+					logger.log("   Connection To Be Proxied!", url.pathname)
+					proxy.ws(request, socket, head, undefined, (err, req) => {
+						logger.error("    Proxy Error", err, req)
+					})
 					return
 				}
 
 				this.websocketServer.handleUpgrade(request, socket, head, (socket) => {
+					logger.log("    Connection Upgraded", url.pathname)
 					this.websocketServer.emit("connection", socket, request)
 				})
 			})
@@ -233,10 +239,12 @@ export const WebService = Service(
 		}
 
 		registerWebsocketProxy(path: string, proxy: HttpProxy) {
+			logger.log("Registering Proxy", path, proxy)
 			this.websocketProxies[path] = proxy
 		}
 
 		unregisterWebsocketProxy(path: string) {
+			logger.log("Unregistering Proxy", path)
 			delete this.websocketProxies[path]
 		}
 

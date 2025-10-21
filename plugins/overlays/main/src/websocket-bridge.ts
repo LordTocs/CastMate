@@ -14,6 +14,8 @@ import {
 	onLoad,
 	onUnload,
 	MediaManager,
+	ViewerData,
+	ipcConvertSchema,
 } from "castmate-core"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { Overlay } from "./overlay-resource"
@@ -21,7 +23,7 @@ import * as express from "express"
 import { app } from "electron"
 import HttpProxy from "http-proxy"
 import { OverlayConfigEvaluator, createOverlayEvaluator } from "./config-evaluation"
-import { MediaFile } from "castmate-schema"
+import { MediaFile, ViewerDataObserver } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 
 const logger = usePluginLogger("overlays")
@@ -47,6 +49,7 @@ export const OverlayWebsocketService = Service(
 		private socketToOverlay = new Map<ExtendedWebsocket, string>()
 
 		private widgetRPCs = new Map<string, WidgetRPCHandler>()
+		private viewerVariableObservers = new Map<ExtendedWebsocket, ViewerDataObserver>()
 
 		async onConnection(socket: ExtendedWebsocket, url: URL) {
 			const overlayId = url.searchParams.get("overlay")
@@ -149,6 +152,46 @@ export const OverlayWebsocketService = Service(
 			updaters[idx].reactiveEffect.dispose()
 
 			updaters.splice(idx, 1)
+		}
+
+		async observeViewerData(socket: ExtendedWebsocket) {
+			if (this.viewerVariableObservers.has(socket)) {
+				return
+			}
+
+			const observer = ViewerData.getInstance().observeViewerData({
+				async onNewViewerData(provider, id, viewerData) {
+					//TODO: Serialize
+					await socket.call("overlays_onNewViewerData", provider, id, viewerData)
+				},
+				async onViewerDataChanged(provider, id, varName, value) {
+					//TODO: Serialize
+					await socket.call("overlays_onViewerDataChanged", provider, id, varName, value)
+				},
+				async onViewerDataRemoved(provider, id) {
+					await socket.call("overlays_onViewerDataRemoved", provider, id)
+				},
+				async onNewViewerVariable(variable) {
+					await socket.call(
+						"overlays_onNewViewerVariable",
+						variable.name,
+						ipcConvertSchema(variable.schema, `viewerdata_${variable.name}`)
+					)
+				},
+				async onViewerVariableDeleted(variable) {
+					await socket.call("overlays_onViewerVariableDeleted", variable)
+				},
+			})
+
+			this.viewerVariableObservers.set(socket, observer)
+		}
+
+		async unobserverViewerData(socket: ExtendedWebsocket) {
+			const observer = this.viewerVariableObservers.get(socket)
+			if (!observer) return
+
+			this.viewerVariableObservers.delete(socket)
+			ViewerData.getInstance().unobserverViewerData(observer)
 		}
 
 		async overlayConfigChanged(id: string) {
@@ -303,6 +346,28 @@ export function setupWebsockets() {
 		return await OverlayWebsocketService.getInstance().handleWidgetRPCRequest(socket, id, from, ...args)
 	})
 
+	onWebsocketRPC("overlays_observeViewerData", async (socket) => {
+		return await OverlayWebsocketService.getInstance().observeViewerData(socket)
+	})
+
+	onWebsocketRPC("overlays_unobserveViewerData", async (socket) => {
+		return await OverlayWebsocketService.getInstance().unobserverViewerData(socket)
+	})
+
+	onWebsocketRPC(
+		"overlays_queryViewerData",
+		async (socket, start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => {
+			return await ViewerData.getInstance().getPagedViewerData(start, end, sortBy, sortOrder)
+		}
+	)
+
+	onWebsocketRPC("overlays_getViewerVariables", async (socket) => {
+		return [...ViewerData.getInstance().variables.values()].map((v) => ({
+			name: v.name,
+			schema: ipcConvertSchema(v.schema, `viewerdata_${v.name}`),
+		}))
+	})
+
 	const router = useRootHTTPRouter("overlays")
 
 	router.get("/:id/config", async (req, res, next) => {
@@ -340,8 +405,28 @@ export function setupWebsockets() {
 		//We can't serve static files, but instead need to forward requests to vite's dev server
 		//That way changes and HMR works through the regular URLs provided to OBS.
 		const devProxy = HttpProxy.createProxyServer({
-			target: "http://localhost:5174/overlays/", //This address is fixed because we set it in mvite
+			target: "http://localhost:5174/", //This address is fixed because we set it in mvite
+			// autoRewrite: true,
+			ws: true,
 		})
+
+		devProxy.on("proxyReqWs", (proxyReq, req, socket, options) => {
+			logger.log("Dev Proxying Websocket!", proxyReq.path)
+		})
+
+		devProxy.on("proxyReq", (proxyReq) => {
+			//logger.log("Dev Proxying Req", proxyReq.path)
+		})
+
+		devProxy.on("proxyRes", (proxyRes, req, res) => {
+			//logger.log("Dev Proxying Res", req.url)
+		})
+
+		devProxy.on("error", (err) => {
+			logger.error("Error Proxying", err)
+		})
+
+		console.log("REACHED PROXY SETUP CALL---------------------------------------")
 
 		defineWebsocketProxy("/overlays/", devProxy)
 
@@ -364,9 +449,16 @@ export function setupWebsockets() {
 
 		router.get("*", (req, res, next) => {
 			//Try to get the file from the dev server
-			devProxy.web(req, res, {}, (err) => {
-				next(err)
-			})
+			devProxy.web(
+				req,
+				res,
+				{
+					target: "http://localhost:5174/overlays/",
+				},
+				(err) => {
+					next(err)
+				}
+			)
 		})
 	}
 }

@@ -3,6 +3,8 @@ import { ComputedRef, MaybeRefOrGetter, computed, ref, toValue } from "vue"
 import { RPCHandler, RPCMessage } from "castmate-ws-rpc"
 import { OverlayConfig } from "castmate-plugin-overlays-shared"
 import { CastMateBridgeImplementation, useOverlaySoundPlayer } from "castmate-overlay-core"
+import { ViewerDataRow, ViewerDataObserver, IPCSchema } from "castmate-schema"
+import { ipcParseSchema } from "./ipc-schema"
 
 export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 	let websocket: WebSocket | undefined = undefined
@@ -19,6 +21,8 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 
 	const widgetRpcs: Record<string, (...args: any) => any> = {}
 	const widgetBroadcastHandlers: Record<string, ((...args: any) => any)[]> = {}
+
+	const viewerDataObservers = new Set<ViewerDataObserver>()
 
 	const overlayId = ref(window.location.href.substring(window.location.href.lastIndexOf("/") + 1))
 
@@ -78,6 +82,38 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 			} catch (err) {
 				console.error(err)
 			}
+		}
+	})
+
+	//VIEWER DATA EVENTS
+	rpcs.handle("overlays_onNewViewerData", (provider: string, id: string, viewerData: ViewerDataRow) => {
+		for (const observer of viewerDataObservers.values()) {
+			observer.onNewViewerData(provider, id, viewerData)
+		}
+	})
+
+	rpcs.handle("overlays_onViewerDataChanged", (provider: string, id: string, varName: string, value: any) => {
+		for (const observer of viewerDataObservers.values()) {
+			observer.onViewerDataChanged(provider, id, varName, value)
+		}
+	})
+
+	rpcs.handle("overlays_onViewerDataRemoved", (provider: string, id: string) => {
+		for (const observer of viewerDataObservers.values()) {
+			observer.onViewerDataRemoved(provider, id)
+		}
+	})
+
+	rpcs.handle("overlays_onNewViewerVariable", (varName: string, ipcSchema: IPCSchema) => {
+		const schema = ipcParseSchema(ipcSchema)
+		for (const observer of viewerDataObservers.values()) {
+			observer.onNewViewerVariable({ name: varName, schema })
+		}
+	})
+
+	rpcs.handle("overlays_onViewerVariableDeleted", (varName: string) => {
+		for (const observer of viewerDataObservers.values()) {
+			observer.onViewerVariableDeleted(varName)
 		}
 	})
 
@@ -186,6 +222,47 @@ export const useWebsocketBridge = defineStore("websocket-bridge", () => {
 			},
 			async callRPC(id, ...args) {
 				return await rpcs.call("overlays_widgetRPC", sender, id, toValue(widget), ...args)
+			},
+			observeViewerData(observer) {
+				if (viewerDataObservers.has(observer)) return observer
+
+				const listening = viewerDataObservers.size != 0
+				viewerDataObservers.add(observer)
+
+				if (!listening) {
+					rpcs.call("overlays_observeViewerData", sender)
+				}
+
+				return observer
+			},
+			async unobserveViewerData(observer) {
+				if (!viewerDataObservers.has(observer)) return
+
+				viewerDataObservers.delete(observer)
+
+				const stillListening = viewerDataObservers.size != 0
+
+				if (!stillListening) {
+					await rpcs.call("overlays_unobserveViewerData", sender)
+				}
+			},
+			async queryViewerData(start, end, sortBy, sortOrder) {
+				return (await rpcs.call(
+					"overlays_queryViewerData",
+					sender,
+					start,
+					end,
+					sortBy,
+					sortOrder
+				)) as ViewerDataRow[]
+			},
+			async getViewerVariables() {
+				const serializedVariables = (await rpcs.call("overlays_getViewerVariables", sender)) as {
+					name: string
+					schema: IPCSchema
+				}[]
+
+				return serializedVariables.map((v) => ({ name: v.name, schema: ipcParseSchema(v.schema) }))
 			},
 		}
 	}

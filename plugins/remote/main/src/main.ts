@@ -47,16 +47,16 @@ export default definePlugin(
 			},
 		})
 
-		handleDashboardWidgetRPC("pressbutton", (dashboard, widgetId, triggerName: string) => {
-			const widget = dashboard.getWidget(widgetId)
-			if (!widget) return
+		// handleDashboardWidgetRPC("pressbutton", (dashboard, widgetId, triggerName: string) => {
+		// 	const widget = dashboard.getWidget(widgetId)
+		// 	if (!widget) return
 
-			const remoteName = "triggerName" in widget.config ? (widget.config.triggerName as string) : undefined
+		// 	const remoteName = "triggerName" in widget.config ? (widget.config.triggerName as string) : undefined
 
-			if (!remoteName) return
+		// 	if (!remoteName) return
 
-			remoteButton({ name: remoteName })
-		})
+		// 	remoteButton({ name: remoteName })
+		// })
 
 		onLoad(() => {
 			httpRoutes.get("/buttons", (req, res, next) => {

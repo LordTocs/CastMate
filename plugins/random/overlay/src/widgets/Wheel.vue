@@ -138,6 +138,7 @@ defineOptions({
 								name: "Click Sound Override",
 								video: false,
 								image: false,
+								sound: true,
 							},
 						},
 					},
@@ -158,7 +159,7 @@ defineOptions({
 								allowMargin: false,
 								allowHorizontalAlign: false,
 							},
-							click: { type: MediaFile, name: "Click Sound", video: false, image: false },
+							click: { type: MediaFile, name: "Click Sound", video: false, image: false, sound: true },
 						},
 					},
 					default: [

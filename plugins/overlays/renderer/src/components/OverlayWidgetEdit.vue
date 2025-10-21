@@ -31,6 +31,7 @@ import {
 	NameDialog,
 	useMediaStore,
 	useDataBinding,
+	useViewerDataStore,
 } from "castmate-ui-core"
 import { ComputedRef, computed, inject, markRaw, onMounted, provide, ref, useModel, watch } from "vue"
 import { useOverlayWidgets } from "castmate-overlay-widget-loader"
@@ -87,6 +88,8 @@ const resolvedConfig = useRemoteOverlayConfig(() => props.modelValue)
 
 const widgetStore = useOverlayWidgets()
 
+const viewerData = useViewerDataStore()
+
 //TODO: Is this bad?
 const state = useFullState()
 
@@ -99,6 +102,18 @@ provide<CastMateBridgeImplementation>("castmate-bridge", {
 	unregisterRPC(id) {},
 	registerMessage(id, func) {},
 	unregisterMessage(id, func) {},
+	observeViewerData(observer) {
+		return viewerData.observeViewers(observer)
+	},
+	unobserveViewerData(observer) {
+		viewerData.unobserveViewers(observer)
+	},
+	async queryViewerData(start, end, sortBy, sortOrder) {
+		return await viewerData.queryViewerData(start, end, sortBy, sortOrder)
+	},
+	async getViewerVariables() {
+		return [...viewerData.variables.values()]
+	},
 	async callRPC(id, ...args) {},
 })
 

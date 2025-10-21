@@ -1,4 +1,4 @@
-import { constructDefault, IPCViewerVariable, ViewerVariable } from "castmate-schema"
+import { constructDefault, IPCViewerVariable, ViewerDataObserver, ViewerDataRow, ViewerVariable } from "castmate-schema"
 import { defineStore } from "pinia"
 import { computed, MaybeRefOrGetter, onBeforeUnmount, onMounted, ref, toValue, watch } from "vue"
 import {
@@ -26,14 +26,6 @@ interface SubscribedViewerData {
 	data: Record<string, any>
 }
 
-interface ViewerObserver {
-	onNewViewerData(provider: string, id: string, viewer: ViewerData): any
-	onViewerDataChanged(provider: string, id: string, varName: string, value: any): any
-	onViewerDataRemoved(provider: string, id: string): any
-	onNewViewerVariable(variable: ViewerVariable): any
-	onViewerVariableDeleted(variable: string): any
-}
-
 export const useViewerDataStore = defineStore("viewer-data", () => {
 	const variables = ref(new Map<string, ViewerVariable>())
 
@@ -51,13 +43,14 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 		(start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => Record<string, any>[]
 	>("viewer-data", "queryPagedData")
 
-	const observers = new Array<ViewerObserver>()
+	const observers = new Array<ViewerDataObserver>()
 
-	function observeViewers(observer: ViewerObserver) {
+	function observeViewers(observer: ViewerDataObserver) {
 		observers.push(observer)
+		return observer
 	}
 
-	function unobserveViewers(observer: ViewerObserver) {
+	function unobserveViewers(observer: ViewerDataObserver) {
 		const idx = observers.findIndex((o) => o == observer)
 		if (idx < 0) return
 		observers.splice(idx, 1)
@@ -101,7 +94,7 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 		handleIpcMessage(
 			"viewer-data",
 			"viewerDataAdded",
-			(event, provider: string, id: string, data: Record<string, any>) => {
+			(event, provider: string, id: string, data: ViewerDataRow) => {
 				for (const o of observers) {
 					o.onNewViewerData(provider, id, data)
 				}
@@ -109,8 +102,7 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 		)
 	}
 
-	async function queryViewersPaged(
-		provider: string,
+	async function queryViewerData(
 		start: number,
 		end: number,
 		sortBy: string | undefined,
@@ -143,7 +135,7 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 	return {
 		initialize,
 		variables: computed(() => variables.value),
-		queryViewersPaged,
+		queryViewerData,
 		observeViewers,
 		unobserveViewers,
 		createViewerVariable,
@@ -192,7 +184,7 @@ export function useLazyViewerQuery(
 	const first = ref(0)
 	const last = ref(0)
 
-	const observer: ViewerObserver = {
+	const observer: ViewerDataObserver = {
 		onNewViewerData(provider, id, viewer) {
 			console.log("New Viewer", provider, id, viewer)
 			const order = toValue(sortOrder)
@@ -373,13 +365,7 @@ export function useLazyViewerQuery(
 		console.log("Loading Viewer Range", start, "->", end)
 
 		loading.value = true
-		const viewers = await viewerDataStore.queryViewersPaged(
-			provider,
-			start,
-			end,
-			toValue(sortField),
-			toValue(sortOrder)
-		)
+		const viewers = await viewerDataStore.queryViewerData(start, end, toValue(sortField), toValue(sortOrder))
 		for (let i = 0; i < viewers.length; ++i) {
 			const inputViewer = viewers[i]
 			const slug = `${provider}-${inputViewer[provider]}`
