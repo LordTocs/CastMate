@@ -207,7 +207,7 @@ export function setupSubscriptions() {
 					lastSubscriber.value = viewer
 				})
 
-			subscription({
+			await subscription({
 				tier,
 				viewer: subInfo.userId,
 				totalMonths: subInfo.months,
@@ -215,6 +215,8 @@ export function setupSubscriptions() {
 				//durationMonths: subInfo..durationMonths,
 				message: subInfo.message ?? "",
 			})
+
+			await ViewerCache.getInstance().userAction(subInfo.userId)
 		})
 
 		service.chatClient.onResub(async (channel, user, subInfo, msg) => {
@@ -248,6 +250,8 @@ export function setupSubscriptions() {
 				//durationMonths: subInfo..durationMonths,
 				message: subInfo.message ?? "",
 			})
+
+			await ViewerCache.getInstance().userAction(subInfo.userId)
 		})
 	})
 }
