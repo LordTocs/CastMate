@@ -1,4 +1,4 @@
-import { ChatClient, ChatMessage, parseEmotePositions } from "@twurple/chat"
+import { ChatClient, ChatMessage, parseEmotePositions, toUserName, UserNotice } from "@twurple/chat"
 import { defineTrigger, defineAction, defineTransformTrigger, usePluginLogger, onLoad, EmoteCache } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onBotAuth, onChannelAuth } from "./api-harness"
@@ -273,6 +273,34 @@ export function setupChat() {
 		},
 	})
 
+	const watchstreak = defineTrigger({
+		id: "watchstreak",
+		name: "Watch Streak",
+		description: "Fires when a viewer shares their watch streak",
+		icon: "twi twi-watchstreak",
+		config: {
+			type: Object,
+			properties: {
+				streak: { type: Range, name: "Streak", required: true, default: {} },
+				group: { type: TwitchViewerGroup, name: "Viewer Group", required: true, default: {}, anonymous: true },
+			},
+		},
+		context: {
+			type: Object,
+			properties: {
+				streak: { type: Number, required: true, default: 3 },
+				viewer: { type: TwitchViewer, required: true, default: "27082158" },
+			},
+		},
+		async handle(config, context, mapping) {
+			if (!Range.inRange(config.streak, context.streak)) return false
+
+			if (!(await inTwitchViewerGroup(context.viewer, config.group, context))) return false
+
+			return true
+		},
+	})
+
 	onBotAuth((account, service) => {
 		service.chatClient.onMessage(async (channel, user, message, msgInfo) => {
 			logger.log("ChatMsg", message)
@@ -295,6 +323,32 @@ export function setupChat() {
 
 			chat(context)
 		})
+
+		service.chatClient.irc.onTypedMessage(
+			UserNotice,
+			(userNotice) => {
+				const { channel, text: message, tags } = userNotice
+				const messageType = tags.get("msg-id")!
+				const broadcasterName = toUserName(channel)
+
+				if (messageType == "viewermilestone") {
+					const category = tags.get("msg-param-category")
+					if (category == "watch-streak" || category == "watch-fk") {
+						const viewerId = tags.get("user-id")
+						const valueStr = tags.get("msg-param-value")
+						const streak = Number.parseInt(valueStr ?? "")
+
+						if (!Number.isNaN(streak) && viewerId != null) {
+							watchstreak({
+								streak,
+								viewer: viewerId,
+							})
+						}
+					}
+				}
+			},
+			"castmate-usernotice-handler"
+		)
 	})
 
 	onChannelAuth((account, service) => {
