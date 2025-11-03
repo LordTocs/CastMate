@@ -2,7 +2,6 @@
 	<flex-scroller ref="scroller" v-model:scroll-y="view.scrollY" v-model:scroll-x="view.scrollX">
 		<div class="profile-edit flex-grow-1">
 			<h1>Triggers</h1>
-
 			<document-data-collection
 				class="trigger-area"
 				v-model="model.triggers"

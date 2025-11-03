@@ -1,22 +1,22 @@
 <template>
 	<template v-if="templateMode">
 		<p-icon-field class="w-full" v-bind="$attrs" ref="container">
-			<p-input-text
+			<!-- <p-input-text
 				v-if="!props.multiLine"
 				class="w-full"
 				style="z-index: inherit"
 				v-model="model"
 				:disabled="disabled"
 				ref="inputText"
-			/>
+			/> -->
 			<p-text-area
-				class="w-full"
-				style="z-index: inherit"
+				class="w-full input-icon-spacing"
+				style="z-index: inherit; min-height: 35px"
 				v-model="model"
 				:disabled="disabled"
 				autoResize
+				:rows="!multiLine ? 1 : undefined"
 				ref="textArea"
-				v-else
 			/>
 			<p-input-icon class="mdi mdi-code-json" @click="suggestionClick" @mousedown="onSuggestionMouseDown" />
 		</p-icon-field>
@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, useModel } from "vue"
+import { computed, nextTick, onMounted, ref, useModel } from "vue"
 import PInputText from "primevue/inputtext"
 import PTextArea from "primevue/textarea"
 import PIconField from "primevue/iconfield"
@@ -40,7 +40,7 @@ import {
 	useTextUndoCommitter,
 	useUndoCommitter,
 } from "../../../main"
-import { VueInstance } from "@vueuse/core"
+import { useEventListener, VueInstance } from "@vueuse/core"
 
 const props = defineProps<{
 	modelValue: any | string | undefined
@@ -138,10 +138,26 @@ function setSelection(start: number, end: number) {
 useTextUndoCommitter(() => inputText.value?.$el)
 useTextUndoCommitter(() => textArea.value?.$el)
 
+//Somewhat sloppy prevention of line break insertions.
+//Technically we can still paste enters in here
+useEventListener(
+	() => (!props.multiLine ? textArea.value?.$el : undefined),
+	"beforeinput",
+	(ev) => {
+		if (ev.inputType == "insertLineBreak") {
+			ev.preventDefault()
+		}
+	}
+)
+
 function focus() {
 	textArea.value?.$el.focus()
 	inputText.value?.$el.focus()
 }
+
+onMounted(() => {
+	console.log("Text Area", textArea.value?.$el, textArea.value?.$el?.scrollHeight, model.value)
+})
 
 function scrollIntoView() {
 	textArea.value?.$el.scrollIntoView()
