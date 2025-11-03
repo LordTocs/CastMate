@@ -75,6 +75,35 @@ export default definePlugin(
 		})
 
 		defineAction({
+			id: "pause",
+			name: "Pause Queue",
+			icon: "mdi mdi-swap-horizontal",
+			config: {
+				type: Object,
+				properties: {
+					queue: { type: ActionQueue, name: "Queue", required: true },
+					paused: {
+						type: Toggle,
+						name: "Paused",
+						required: true,
+						trueIcon: "mdi mdi-pause",
+						falseIcon: "mdi mdi-play",
+						default: true,
+					},
+				},
+			},
+			async invoke(config, contextData, abortSignal) {
+				let newPaused = config.paused as Toggle
+				if (newPaused == "toggle") {
+					newPaused = !config.queue.isPaused
+				}
+				config.queue.applyConfig({
+					paused: newPaused,
+				})
+			},
+		})
+
+		defineAction({
 			id: "profileActivation",
 			name: "Profile Activation",
 			icon: "mdi mdi-cogs",
