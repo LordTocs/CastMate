@@ -7,6 +7,8 @@
 			<docking-area style="flex: 1" v-model="dockingStore.rootDockArea" />
 		</div>
 		<div class="load-row" v-else>
+			<p-input-text v-show="false" />
+			<!--We need p-input-text to be mounted to get their styles loaded-->
 			<h3>Loading CastMate</h3>
 			<p-progress-spinner />
 		</div>
@@ -42,6 +44,7 @@ import { useDialog } from "primevue/usedialog"
 import MigrationDialog from "./components/migration/MigrationDialog.vue"
 import FirstTimeSetupDialog from "./components/setup/FirstTimeSetupDialog.vue"
 import UpdateDialog from "./components/updates/UpdateDialog.vue"
+import PInputText from "primevue/inputtext"
 
 import Toast from "primevue/toast"
 
