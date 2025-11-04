@@ -401,7 +401,6 @@ export const ViewerCache = Service(
 			if (event.isAnonymous) return
 
 			const cached = this.getOrCreate(event.gifterId)
-			this.markSeen(cached)
 			this.updateNameCache(cached, event.gifterDisplayName)
 		}
 

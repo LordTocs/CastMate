@@ -34,11 +34,12 @@
 			<p-text-area
 				v-model="model"
 				v-bind="templateProps"
-				v-else-if="schema.multiLine"
+				:rows="!props.schema.multiLine ? 1 : undefined"
+				v-else
 				autoResize
 				ref="textArea"
 			/>
-			<p-input-text v-model="model" v-bind="templateProps" v-else ref="inputText" />
+			<!-- <p-input-text v-model="model" v-bind="templateProps" v-else ref="inputText" /> -->
 		</template-toggle>
 	</data-input-base>
 </template>
@@ -54,6 +55,7 @@ import EnumInput from "../base-components/EnumInput.vue"
 import { computed, onMounted, ref, useModel } from "vue"
 import PTextArea from "primevue/textarea"
 import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../../util/data-binding"
+import { useEventListener } from "@vueuse/core"
 
 const props = defineProps<
 	{
@@ -74,16 +76,26 @@ const toggleTemplate = computed(() => {
 
 const inputPassword = ref<InstanceType<typeof PPassword> & { $el: HTMLElement }>()
 const textArea = ref<InstanceType<typeof PTextArea> & { $el: HTMLElement }>()
-const inputText = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
+// const inputText = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
+
+useEventListener(
+	() => (!props.schema.multiLine ? textArea.value?.$el : undefined),
+	"beforeinput",
+	(ev) => {
+		if (ev.inputType == "insertLineBreak") {
+			ev.preventDefault()
+		}
+	}
+)
 
 useTextUndoCommitter(() => inputPassword.value?.$el)
 useTextUndoCommitter(() => textArea.value?.$el)
-useTextUndoCommitter(() => inputText.value?.$el)
+// useTextUndoCommitter(() => inputText.value?.$el)
 
 function focus() {
 	inputPassword.value?.$el.focus()
 	textArea.value?.$el.focus()
-	inputText.value?.$el.focus()
+	// inputText.value?.$el.focus()
 }
 
 defineExpose({
@@ -95,7 +107,7 @@ useDataUIBinding({
 	scrollIntoView() {
 		inputPassword.value?.$el.scrollIntoView()
 		textArea.value?.$el.scrollIntoView()
-		inputText.value?.$el.scrollIntoView()
+		// inputText.value?.$el.scrollIntoView()
 	},
 })
 </script>

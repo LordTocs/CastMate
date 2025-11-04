@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useModel, nextTick, watch, onBeforeUnmount } from "vue"
+import { ref, useModel, nextTick, watch, onBeforeUnmount, toValue } from "vue"
 import PPortal from "primevue/portal"
 import vFocusTrap from "primevue/focustrap"
 import { usePrimeVue } from "primevue/config"
@@ -99,6 +99,8 @@ onClickOutside(overlayDiv, (ev) => {
 			//console.log("z", overlayZIndex)
 
 			if (overlayZIndex > currentZindex) return
+
+			if (props.container != null && currentElement == props.container) return
 
 			currentElement = currentElement.parentElement
 		}

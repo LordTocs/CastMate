@@ -140,6 +140,10 @@ function onSelect(item: TwitchCategory) {
 
 //Key Events
 async function onFilterKeyDown(ev: KeyboardEvent) {
+	if (ev.key == "Enter") {
+		await querySuggestions.flush()
+	}
+
 	dropDown.value?.handleKeyEvent(ev)
 }
 
