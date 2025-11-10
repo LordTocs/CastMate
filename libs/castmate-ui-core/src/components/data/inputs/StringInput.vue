@@ -37,6 +37,7 @@
 				:rows="!props.schema.multiLine ? 1 : undefined"
 				v-else
 				autoResize
+				fluid
 				ref="textArea"
 			/>
 			<!-- <p-input-text v-model="model" v-bind="templateProps" v-else ref="inputText" /> -->
