@@ -1,23 +1,22 @@
 {
-  "name": "castmate-plugin-govee-main",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/main.ts",
-  "devMain": "src/main.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "typescript": "*"
-  },
-  "dependencies": {
-    "@j3lte/govee-lan-controller": "^1.0.2",
-    "castmate-core": "workspace:^",
-    "castmate-plugin-govee-shared": "workspace:^",
-    "castmate-plugin-iot-main": "workspace:^",
-    "castmate-plugin-iot-shared": "workspace:^",
-    "castmate-schema": "workspace:^"
-  }
+	"name": "castmate-plugin-govee-main",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "*"
+	},
+	"dependencies": {
+		"castmate-core": "workspace:^",
+		"castmate-plugin-govee-shared": "workspace:^",
+		"castmate-plugin-iot-main": "workspace:^",
+		"castmate-plugin-iot-shared": "workspace:^",
+		"castmate-schema": "workspace:^"
+	}
 }

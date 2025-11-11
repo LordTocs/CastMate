@@ -968,16 +968,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@j3lte/govee-lan-controller@npm:^1.0.2":
-  version: 1.0.5
-  resolution: "@j3lte/govee-lan-controller@npm:1.0.5"
-  dependencies:
-    colord: "npm:^2.9.3"
-    debug: "npm:^4.3.4"
-  checksum: 10/135cec68c957fa1dcfb20a6ec165f0730b23b3f8d58a9e72be9041093cbf57920f5d4812b8fc9cc736de00b635b8516e3c81fe72a0601c883f12f128ccbb3ebe
-  languageName: node
-  linkType: hard
-
 "@joshyour/ffprobe-client@npm:^1.1.7":
   version: 1.1.7
   resolution: "@joshyour/ffprobe-client@npm:1.1.7"
@@ -3959,7 +3949,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-govee-main@workspace:plugins/govee/main"
   dependencies:
-    "@j3lte/govee-lan-controller": "npm:^1.0.2"
     castmate-core: "workspace:^"
     castmate-plugin-govee-shared: "workspace:^"
     castmate-plugin-iot-main: "workspace:^"
@@ -5542,13 +5531,6 @@ __metadata:
     color-convert: "npm:^1.9.3"
     color-string: "npm:^1.6.0"
   checksum: 10/bf70438e0192f4f62f4bfbb303e7231289e8cc0d15ff6b6cbdb722d51f680049f38d4fdfc057a99cb641895cf5e350478c61d98586400b060043afc44285e7ae
-  languageName: node
-  linkType: hard
-
-"colord@npm:^2.9.3":
-  version: 2.9.3
-  resolution: "colord@npm:2.9.3"
-  checksum: 10/907a4506d7307e2f580b471b581e992181ed75ab0c6925ece9ca46d88161d2fc50ed15891cd0556d0d9321237ca75afc9d462e4c050b939ef88428517f047f30
   languageName: node
   linkType: hard
 

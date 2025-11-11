@@ -9,6 +9,8 @@ import {
 	getPluginSetting,
 	onSettingChanged,
 	usePluginLogger,
+	sleep,
+	timeout,
 } from "castmate-core"
 import { LightResource, PlugResource } from "castmate-plugin-iot-main"
 import {
@@ -20,26 +22,26 @@ import {
 	setPowerState,
 } from "./cloud"
 import { LightColor, LightConfig, PlugConfig } from "castmate-plugin-iot-shared"
-import { PollingLight } from "castmate-plugin-iot-main/src/light"
 
 import * as chromatism from "chromatism2"
-import { Toggle } from "castmate-schema"
+import { createDelayedResolver, DelayedResolver, Toggle } from "castmate-schema"
 import { PollingPlug } from "castmate-plugin-iot-main/src/plug"
 
 interface GoveeBulbConfig extends LightConfig {
 	model: string
 	hasCloud: boolean
 	hasLan: boolean
+	ip: string
 }
 
-import * as goveeLan from "@j3lte/govee-lan-controller"
+import { GoveeLan, GoveeLANScan, GoveeLANStatus } from "./lan"
 
 const logger = usePluginLogger("govee")
 
-type GoveeLanState = ReturnType<goveeLan.Device["getState"]>
+const lan = new GoveeLan()
 
-class GoveeBulb extends PollingLight<GoveeBulbConfig> {
-	private lanDevice: goveeLan.Device | undefined = undefined
+class GoveeBulb extends LightResource<GoveeBulbConfig> {
+	private pollResolver: DelayedResolver<void> | undefined
 
 	constructor(mac: string) {
 		super()
@@ -47,6 +49,7 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 
 		this._config = {
 			name: mac,
+			ip: "",
 			model: "",
 			provider: "govee",
 			providerId: mac,
@@ -70,30 +73,58 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 		this.state = {}
 	}
 
-	private parseLanState(state: GoveeLanState) {
-		this.state.on = state.onOff != 0
+	setLANStatus(status: GoveeLANStatus) {
+		this.state.on = status.onOff != 0
 
-		if (state.info.lastChanged == "color") {
-			const hsv = chromatism.convert(state.color).hsv
+		if (status.color.r != 0 || status.color.g != 0 || status.color.b != 0) {
+			const hsv = chromatism.convert(status.color).hsv
 			this.state.color = LightColor.serialize({
 				hue: hsv.h,
 				sat: hsv.s,
-				bri: state.brightness,
+				bri: status.brightness,
 			})
 		} else {
 			this.state.color = LightColor.serialize({
-				kelvin: state.colorTemInKelvin,
-				bri: state.brightness,
+				kelvin: status.colorTemInKelvin,
+				bri: status.brightness,
 			})
+		}
+
+		this.pollResolver?.resolve()
+	}
+
+	async forcePoll() {
+		if (this.config.hasLan) {
+			if (!this.pollResolver) {
+				this.pollResolver = createDelayedResolver()
+			}
+			const raceResolver = Promise.race([this.pollResolver.promise, timeout(1000, "Poll failed!")])
+
+			lan.sendStatusQuery(this.config.ip).catch((err) => {
+				logger.error("Error Sending GOVEE Status Query", err)
+			})
+
+			try {
+				await raceResolver
+			} catch (err) {
+				logger.log(err)
+			} finally {
+				this.pollResolver = undefined
+			}
+		} else {
+			const apiKey = getPluginSetting<string | undefined>("govee", "apiKey")
+			if (!apiKey?.value) return
+			const resp = await getDeviceState(apiKey.value, this.config.providerId, this.config.model)
+			this.parseCloudState(resp)
 		}
 	}
 
-	async setLanDevice(device: goveeLan.Device) {
-		this.lanDevice = device
+	async setLanScan(device: GoveeLANScan) {
 		//The lan api doesn't support device capability queries, because Govee sucks.
 		await this.applyConfig({
 			hasLan: true,
-			model: device.model,
+			ip: device.ip,
+			model: device.device,
 			dimming: {
 				available: true,
 			},
@@ -104,12 +135,6 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 				available: false
 			}*/
 		})
-
-		this.lanDevice.on(goveeLan.GoveeDeviceEventTypes.StateChange, (state) => {
-			this.parseLanState(state)
-		})
-
-		this.startPolling(30)
 	}
 
 	async setCloudDevice(device: GoveeCloudDevice) {
@@ -135,9 +160,6 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 				max: device.properties?.colorTem?.range?.max,
 			},
 		})
-
-		//NEVER POLL for cloud info, we'll get rate limited!
-		//this.startPolling(30)
 	}
 
 	private parseCloudState(resp: GoveeCloudDeviceStateResponse) {
@@ -170,51 +192,36 @@ class GoveeBulb extends PollingLight<GoveeBulbConfig> {
 		}
 	}
 
-	async poll(force?: boolean) {
-		if (this.config.hasLan && this.lanDevice) {
-			if (force) {
-				await this.lanDevice.sync()
-				const deviceState = this.lanDevice.getState()
-				this.parseLanState(deviceState)
-			} else {
-				this.lanDevice.triggerUpdate()
-			}
-		} else if (this.config.hasCloud) {
-			const apiKey = getPluginSetting<string | undefined>("govee", "apiKey")
-			if (!apiKey?.value) return
-			const resp = await getDeviceState(apiKey.value, this.config.providerId, this.config.model)
-			this.parseCloudState(resp)
-		}
-	}
-
 	async setLightState(color: LightColor | undefined, on: Toggle, transition: number) {
-		//logger.log("Setting Govee Light State", color, on)
+		logger.log("Setting Govee Light State", color, on)
 		if (on == "toggle") {
-			await this.poll(true)
+			await this.forcePoll()
 			on = !this.state.on
 		}
 
-		if (this.config.hasLan && this.lanDevice) {
-			//logger.log("Updating Lan!", color, on)
-			if (color) {
-				const parsedColor = LightColor.parse(color)
-				if ("hue" in parsedColor) {
-					await this.lanDevice.setColor({ h: parsedColor.hue, s: parsedColor.sat, v: parsedColor.bri })
-				} else {
-					await Promise.allSettled([
-						this.lanDevice.setColorKelvin(parsedColor.kelvin, true),
-						this.lanDevice.setBrightness(parsedColor.bri),
-					])
+		if (this.config.hasLan) {
+			logger.log("Updating Lan!", color, on)
+			if (on) {
+				if (color) {
+					const parsedColor = LightColor.parse(color)
+					if ("hue" in parsedColor) {
+						const rgb = chromatism.convert({ h: parsedColor.hue, s: parsedColor.sat, v: 100 }).rgb
+						await Promise.allSettled([
+							lan.sendColorRGB(this.config.ip, rgb),
+							lan.sendBrightness(this.config.ip, parsedColor.bri),
+						])
+					} else {
+						await Promise.allSettled([
+							lan.sendColorTemp(this.config.ip, parsedColor.kelvin),
+							lan.sendBrightness(this.config.ip, parsedColor.bri),
+						])
+					}
 				}
 			}
 
-			if (on) {
-				await this.lanDevice.turnOn()
-			} else {
-				await this.lanDevice.turnOff()
-			}
+			await lan.sendOnOff(this.config.ip, on)
 		} else if (this.config.hasCloud) {
-			//logger.log("Updating Cloud!", color, on)
+			logger.log("Updating Cloud!", color, on)
 			const apiKey = getPluginSetting<string | undefined>("govee", "apiKey")
 			if (!apiKey?.value) return
 			await Promise.allSettled([
@@ -315,49 +322,73 @@ export default definePlugin(
 			name: "Govee API Key",
 		})
 
-		let lan: goveeLan.Govee
-		let poller: NodeJS.Timer | undefined
+		let cloudPoller: NodeJS.Timer | undefined
+		let lanPoller: NodeJS.Timer | undefined
 
 		async function shutdown() {
 			await removeAllSubResource(GoveeBulb)
-			if (poller) {
+			if (cloudPoller) {
 				//@ts-ignore
-				clearInterval(poller)
-				poller = undefined
+				clearInterval(cloudPoller)
+				cloudPoller = undefined
+			}
+
+			if (lanPoller) {
+				//@ts-ignore
+				clearInterval(lanPoller)
+				lanPoller = undefined
 			}
 		}
 
 		async function initialize() {
 			await shutdown()
 
-			lan = new goveeLan.Govee({
-				//listenTo: "192.168.1.25",
-				discover: false,
-				// debug: true,
-			})
+			await lan.initialize()
 
-			lan.on(goveeLan.GoveeEventTypes.Error, (err) => {
-				logger.error("Govee Lan Error", err)
-			})
-
-			lan.on(goveeLan.GoveeEventTypes.NewDevice, async (device) => {
-				const existing = LightResource.storage.getById(`govee.${device.id}`) as GoveeBulb | undefined
+			lan.on("device-scan", async (ip, scan) => {
+				const existing = LightResource.storage.getById(`govee.${scan.device}`) as GoveeBulb | undefined
 				if (existing) {
-					await existing.setLanDevice(device)
+					await existing.setLanScan(scan)
 				} else {
-					const newBulb = new GoveeBulb(device.id)
-					await newBulb.setLanDevice(device)
+					const newBulb = new GoveeBulb(scan.device)
+					await newBulb.setLanScan(scan)
 					await LightResource.storage.inject(newBulb)
 				}
 			})
 
-			poller = setInterval(async () => {
-				await cloudPoll()
-				lanPoll()
-			}, 5 * 60 * 1000) //Poll every 5 minutes to conserve daily rate limit. (We get 10000 every 24hours! This is 288)
+			lan.on("device-status", (ip, status) => {
+				for (const light of LightResource.storage) {
+					if ("ip" in light.config && light.config.ip == ip) {
+						const goveeLight = light as GoveeBulb
+						goveeLight.setLANStatus(status)
+					}
+				}
+			})
 
-			await cloudPoll()
-			lanPoll()
+			// lan = new goveeLan.Govee({
+			// 	//listenTo: "192.168.1.25",
+			// 	discover: false,
+			// 	debug: true,
+			// })
+
+			// lan.on(goveeLan.GoveeEventTypes.Error, (err) => {
+			// 	logger.error("Govee Lan Error", err)
+			// })
+
+			// lan.on(goveeLan.GoveeEventTypes.NewDevice, async (device) => {
+			// 	logger.log("Govee LAN New Device", device.id, device.name, device)
+			// 	const existing = LightResource.storage.getById(`govee.${device.id}`) as GoveeBulb | undefined
+			// 	if (existing) {
+			// 		await existing.setLanDevice(device)
+			// 	} else {
+			// 		const newBulb = new GoveeBulb(device.id)
+			// 		await newBulb.setLanDevice(device)
+			// 		await LightResource.storage.inject(newBulb)
+			// 	}
+			// })
+
+			startLanPolling()
+			await startCloudPolling()
 		}
 
 		onLoad(async () => {
@@ -377,6 +408,7 @@ export default definePlugin(
 
 			try {
 				const devices = await getDevices(apiKey.value)
+				// logger.log("Govee Cloud Poll", devices)
 
 				for (const cloudBulb of devices.bulbs) {
 					const existing = LightResource.storage.getById(`govee.${cloudBulb.device}`) as GoveeBulb | undefined
@@ -404,8 +436,24 @@ export default definePlugin(
 			}
 		}
 
-		function lanPoll() {
-			lan.discover()
+		async function startCloudPolling() {
+			cloudPoller = setInterval(async () => {
+				await cloudPoll()
+			}, 5 * 60 * 1000) //Poll every 5 minutes to conserve daily rate limit. (We get 10000 every 24hours! This is 288)
+
+			await cloudPoll()
+		}
+
+		function startLanPolling() {
+			lanPoll()
+			lanPoller = setInterval(() => {
+				lanPoll()
+			}, 10 * 1000)
+		}
+
+		async function lanPoll() {
+			logger.log("Govee LAN Poll")
+			lan.poll()
 		}
 	}
 )
