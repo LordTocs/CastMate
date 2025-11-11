@@ -1,43 +1,46 @@
 <template>
 	<div class="container">
-		<p-data-table
-			:value="memberUsers"
-			style="width: 100%; max-height: 100%"
-			scrollable
-			data-key="id"
-			sort-field="displayName"
-		>
-			<template #header>
-				<div class="flex">
-					<div style="width: 20rem">
-						<twitch-viewer-input
-							v-model="memberAdder"
-							:schema="{ type: TwitchViewer, name: 'Add Member' }"
-						/>
-					</div>
-					<div class="flex-grow-1"></div>
-					<!-- <span class="p-input-icon-left">
+		<div class="inner-container">
+			<p-data-table
+				class="flex flex-column"
+				:value="memberUsers"
+				style="width: 100%; max-height: 100%"
+				scrollable
+				data-key="id"
+				sort-field="displayName"
+			>
+				<template #header>
+					<div class="flex">
+						<div style="width: 20rem">
+							<twitch-viewer-input
+								v-model="memberAdder"
+								:schema="{ type: TwitchViewer, name: 'Add Member' }"
+							/>
+						</div>
+						<div class="flex-grow-1"></div>
+						<!-- <span class="p-input-icon-left">
 						<i class="pi pi-search" />
 						<p-input-text v-model="filters['global'].value" placeholder="Search" />
 					</span> -->
-				</div>
-			</template>
-
-			<p-column header="Viewer" field="id">
-				<template #body="{ data }: { data: TwitchViewerDisplayData }">
-					<img class="twitch-avatar" :src="data.profilePicture" />
-					<span :style="{ color: data.color }"> {{ data.displayName }}</span>
-				</template>
-			</p-column>
-
-			<p-column class="column-fit-width">
-				<template #body="{ data }: { data: TwitchViewerDisplayData }">
-					<div class="flex flex-row">
-						<p-button icon="mdi mdi-delete" severity="error" text @click="tryDelete(data)"></p-button>
 					</div>
 				</template>
-			</p-column>
-		</p-data-table>
+
+				<p-column header="Viewer" field="id">
+					<template #body="{ data }: { data: TwitchViewerDisplayData }">
+						<img class="twitch-avatar" :src="data.profilePicture" />
+						<span :style="{ color: data.color }"> {{ data.displayName }}</span>
+					</template>
+				</p-column>
+
+				<p-column class="column-fit-width">
+					<template #body="{ data }: { data: TwitchViewerDisplayData }">
+						<div class="flex flex-row">
+							<p-button icon="mdi mdi-delete" severity="error" text @click="tryDelete(data)"></p-button>
+						</div>
+					</template>
+				</p-column>
+			</p-data-table>
+		</div>
 	</div>
 </template>
 
@@ -135,5 +138,18 @@ watch(
 	display: inline-block;
 	height: 1em;
 	margin-right: 0.5em;
+}
+
+.container {
+	position: relative;
+}
+
+.inner-container {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: hidden;
 }
 </style>
