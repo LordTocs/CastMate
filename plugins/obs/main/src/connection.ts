@@ -514,9 +514,19 @@ export class OBSConnection extends FileResource<OBSConnectionConfig, OBSConnecti
 	}
 
 	async getSceneSource(sceneName: string, itemId: number): Promise<OBSWSSceneItem | undefined> {
-		const resp = await this.connection.call("GetSceneItemList", { sceneName })
-		const items = resp.sceneItems as unknown as OBSWSSceneItem[]
-		return items.find((i) => i.sceneItemId == itemId)
+		try {
+			const resp = await this.connection.call("GetSceneItemList", { sceneName })
+			const items = resp.sceneItems as unknown as OBSWSSceneItem[]
+			return items.find((i) => i.sceneItemId == itemId)
+		} catch (err) {
+			try {
+				const resp = await this.connection.call("GetGroupSceneItemList", { sceneName })
+				const items = resp.sceneItems as unknown as OBSWSSceneItem[]
+				return items.find((i) => i.sceneItemId == itemId)
+			} catch (err) {
+				return undefined
+			}
+		}
 	}
 
 	async createNewSource(sourceKind: string, sourceName: string, sceneName: string, settings: any) {
