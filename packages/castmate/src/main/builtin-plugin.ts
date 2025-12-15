@@ -18,6 +18,7 @@ import {
 	evaluateBooleanExpression,
 	defineFlowAction,
 	globalLogger,
+	usePluginLogger,
 } from "castmate-core"
 import { getExpressionHash } from "castmate-core/src/util/boolean-helpers"
 
@@ -36,6 +37,8 @@ export default definePlugin(
 		description: "Builtin Actions and Triggers",
 	},
 	() => {
+		const logger = usePluginLogger()
+
 		const port = defineSetting("port", {
 			type: Number,
 			required: true,
@@ -205,14 +208,19 @@ export default definePlugin(
 				if (mapping.triggerId != context.triggerId) return false
 				return true
 			},
-			runWrapper(inner, mapping) {
-				const key = `${mapping.profileId}.${mapping.triggerId}`
+			async runWrapper(inner, mapping) {
+				const key = `${mapping.id}.${mapping.subId}`
 				const runner = autoRunners.get(key)
 
-				if (runner) {
-					forceRunWithEffect(runner.effect, inner)
-				} else {
-					return inner()
+				try {
+					//logger.log("AutoRun Starting")
+					if (runner) {
+						await forceRunWithEffect(runner.effect, inner)
+					} else {
+						return await inner()
+					}
+				} finally {
+					//logger.log("AutoRun Ending")
 				}
 			},
 		})
@@ -225,12 +233,15 @@ export default definePlugin(
 					const existing = autoRunners.get(key)
 					const hash = getSequenceHash(trigger.sequence)
 					if (!existing) {
-						const effect = new ReactiveEffect(() => {
-							autoRun({
+						const effect = new ReactiveEffect(async () => {
+							logger.log("RUN!")
+							await autoRun({
 								profileId: profile.id,
 								triggerId: trigger.id,
 							})
 						})
+						//effect.debug = true
+						//effect.debugName = `roc:${profile.id}.${trigger.id}`
 						autoRunners.set(key, {
 							triggerHash: hash,
 							effect,

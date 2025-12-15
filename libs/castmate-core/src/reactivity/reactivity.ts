@@ -140,12 +140,13 @@ interface PendingTrigger {
 }
 
 export async function forceRunWithEffect(effect: ReactiveEffect, func: () => any) {
-	await activeEffectStorage.run(effect, func)
+	return await effect.runFunc(func)
 }
 
 export class ReactiveEffect<T = any> {
 	private dependencies = new Set<ReactiveDependency>()
 	private pendingRun = false
+	private runningStack = 0
 	public debug = false
 	public debugName: string | undefined = undefined
 	public futureTrigger?: PendingTrigger
@@ -167,10 +168,25 @@ export class ReactiveEffect<T = any> {
 		this.removeFutureTrigger()
 	}
 
+	async runFunc(func: () => any) {
+		try {
+			if (this.debug) logger.log("Running Effect", this.debugName)
+			this.runningStack += 1
+			await activeEffectStorage.run(this, async () => {
+				try {
+					await func()
+				} finally {
+					activeEffectStorage.disable()
+				}
+			})
+		} finally {
+			if (this.debug) logger.log("Finished Effect", this.debugName)
+			this.runningStack -= 1
+		}
+	}
+
 	async run() {
-		if (this.debug) logger.log("Running Effect", this.debugName)
-		await activeEffectStorage.run(this, this.func)
-		if (this.debug) logger.log("Finished Effect", this.debugName)
+		return await this.runFunc(this.func)
 	}
 
 	trigger() {
@@ -178,7 +194,14 @@ export class ReactiveEffect<T = any> {
 			logger.log("Reactive Triggered", this.debugName)
 		}
 
-		if (this.pendingRun) return
+		if (this.runningStack > 0) {
+			if (this.debug) logger.log("Blocked Infinite Trigger", this.debugName)
+			return
+		}
+		if (this.pendingRun) {
+			if (this.debug) logger.log("Blocked Double Trigger", this.debugName)
+			return
+		}
 
 		this.pendingRun = true
 		process.nextTick(async () => {
