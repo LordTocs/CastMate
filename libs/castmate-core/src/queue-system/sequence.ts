@@ -21,6 +21,7 @@ import {
 	Schema,
 	InlineAutomation,
 	hashString,
+	SequenceSource,
 } from "castmate-schema"
 import { ActionInvokeContextData } from "./action"
 import { globalLogger } from "../logging/logging"
@@ -216,7 +217,7 @@ export function getSequenceHash(sequence: Sequence) {
 interface SequenceResolverImpl {
 	getAutomation(id: string, subId?: string): InlineAutomation | undefined
 	getContextSchema(id: string, subId?: string): Promise<Schema | undefined>
-	getRunWrapper(id: string, subId?: string): (inner: () => any) => any
+	getRunWrapper(id: string, subId?: string): (inner: () => any, mapping: SequenceSource) => Promise<any>
 }
 
 export const SequenceResolvers = Service(

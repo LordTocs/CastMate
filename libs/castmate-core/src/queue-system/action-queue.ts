@@ -166,6 +166,7 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 
 		const automation = resolver.getAutomation(seqItem.source.id, seqItem.source.subId)
 		const contextSchema = await resolver.getContextSchema(seqItem.source.id, seqItem.source.subId)
+		const wrapper = resolver.getRunWrapper(seqItem.source.id, seqItem.source.subId)
 
 		if (!automation) return
 		if (!contextSchema) return
@@ -179,7 +180,7 @@ export class ActionQueue extends FileResource<ActionQueueConfig, ActionQueueStat
 
 		const doRun = async () => {
 			try {
-				await this.runner?.run()
+				await wrapper(async () => await this.runner?.run(), seqItem.source)
 			} finally {
 				this.lastCompletion = Date.now()
 				this.runner = null
@@ -276,6 +277,9 @@ export const ActionQueueManager = Service(
 
 			const automation = resolver.getAutomation(id, subId)
 			const contextSchema = await resolver.getContextSchema(id, subId)
+			logger.log("QUEUE OR RUN", type, id, subId)
+			const wrapper = resolver.getRunWrapper(id, subId)
+
 			if (!automation) return
 			if (!contextSchema) return
 
@@ -290,7 +294,8 @@ export const ActionQueueManager = Service(
 				const sequenceRunner = new SequenceRunner(automation.sequence, {
 					contextState: finalContext,
 				})
-				await sequenceRunner.run()
+
+				await wrapper(async () => await sequenceRunner.run(), { type, id, subId })
 			}
 		}
 

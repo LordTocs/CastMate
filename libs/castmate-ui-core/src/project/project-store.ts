@@ -136,6 +136,8 @@ export function getResourceAsProjectGroup<TData extends ResourceData>(
 				resourceItems = resourceItems.filter((r) => _isMatch(r.config, config.filter as object))
 			}
 
+			resourceItems.sort((a, b) => (a.config.name ?? a.id).localeCompare(b.config.name ?? b.id))
+
 			items = resourceItems.map(
 				(r) =>
 					({

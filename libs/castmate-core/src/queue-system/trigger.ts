@@ -1,4 +1,4 @@
-import { Color, ExposedSchemaType, ResolvedSchemaType, SchemaObj, TriggerData } from "castmate-schema"
+import { Color, ExposedSchemaType, ResolvedSchemaType, SchemaObj, SequenceSource, TriggerData } from "castmate-schema"
 import { SemanticVersion } from "../util/type-helpers"
 import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin-init"
@@ -44,7 +44,7 @@ interface TriggerDefinitionSpec<ConfigSchema extends Schema, ContextDataSchema e
 		context: SchemaType<ContextDataSchema>,
 		mapping: TriggerMapping
 	): Promise<boolean>
-	runWrapper?(inner: () => any, mapping: TriggerMapping): any
+	runWrapper?(inner: () => any, mapping: SequenceSource): any
 }
 
 //A transform trigger is a trigger that outputs a different context schema than it is triggered on.
@@ -77,7 +77,7 @@ export interface TriggerDefinition {
 	trigger(context: any): Promise<boolean>
 	registerIPC(path: string): any
 	toIPC(path: string): IPCTriggerDefinition
-	runWrapper?(inner: () => any): any
+	runWrapper?(inner: () => any): Promise<any>
 }
 
 function isTransformSpec<
@@ -141,6 +141,11 @@ class TriggerImplementation<
 		return this.spec.context
 	}
 
+	get runWrapper() {
+		//@ts-ignore
+		return this.spec.runWrapper
+	}
+
 	get isTransform() {
 		return "invokeContext" in this.spec
 	}
@@ -182,7 +187,7 @@ class TriggerImplementation<
 		if (resolvedContext == null) return false
 
 		//Get the context our resolved data is using
-		ActionQueueManager.getInstance().queueOrRun("profile", profile.id, trigger.id, resolvedContext)
+		await ActionQueueManager.getInstance().queueOrRun("profile", profile.id, trigger.id, resolvedContext)
 
 		return true
 	}

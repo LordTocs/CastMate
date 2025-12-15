@@ -256,7 +256,7 @@ export function setupStreamPlans() {
 			return { type: Object, properties: {} }
 		},
 		getRunWrapper(id, subId) {
-			return (inner) => inner()
+			return async (inner) => await inner()
 		},
 	})
 }

@@ -37,8 +37,8 @@
 								<div class="flex-1">
 									<h3 class="my-0">Other Channel Point Rewards</h3>
 									<h4 class="my-0">
-										These rewards aren't can't be enabled and disabled with CastMate profiles. But
-										you can still use them in triggers.
+										These rewards can't be enabled and disabled with CastMate profiles. But you can
+										still use them in triggers.
 									</h4>
 								</div>
 								<a

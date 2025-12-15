@@ -16,7 +16,8 @@ import { ProfileManager } from "./profile-system"
 import { TriggerFunc } from "../queue-system/trigger"
 import { PluginManager } from "../plugins/plugin-manager"
 import { SequenceResolvers } from "../queue-system/sequence"
-import { isFunction } from "lodash"
+import { isFunction, now } from "lodash"
+import { usePluginLogger } from "../logging/logging"
 
 export class Profile extends FileResource<ProfileConfig, ProfileState> {
 	static resourceDirectory: string = "./profiles"
@@ -132,6 +133,8 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> {
 	}
 }
 
+const logger = usePluginLogger("profiles")
+
 export async function setupProfiles() {
 	await Profile.initialize()
 
@@ -174,22 +177,42 @@ export async function setupProfiles() {
 		},
 
 		getRunWrapper(id, subId) {
-			const noWrap = (inner: () => any) => inner()
+			const noWrap = async (inner: () => any) => await inner()
 
 			if (!subId) return noWrap
 
 			const profile = Profile.storage.getById(id)
-			if (!profile) return noWrap
+			if (!profile) {
+				//logger.log("Failed RunWrapper, MISSING PROFILE")
+				return noWrap
+			}
 
 			const trigger = profile.config.triggers.find((t) => t.id == subId)
-			if (!trigger) return noWrap
-			if (!trigger.trigger) return noWrap
-			if (!trigger.plugin) return noWrap
+			if (!trigger) {
+				//logger.log("Failed RunWrapper, MISSING TRIGGER", subId)
+				return noWrap
+			}
+			if (!trigger.trigger) {
+				//logger.log("Failed RunWrapper, MISSING TRIGGER DATA")
+				return noWrap
+			}
+			if (!trigger.plugin) {
+				//logger.log("Failed RunWrapper, MISSING PROFILE DATA")
+				return noWrap
+			}
 
 			const triggerDef = PluginManager.getInstance().getTrigger(trigger.plugin, trigger.trigger)
-			if (!triggerDef) return noWrap
+			if (!triggerDef) {
+				//logger.log("Failed RunWrapper, MISSING TRIGGER DEF")
+				return noWrap
+			}
 
-			return triggerDef.runWrapper ?? noWrap
+			if (!triggerDef.runWrapper) {
+				//logger.log("Failed RunWrapper, TriggerDef has no runwrapper", triggerDef.id)
+				return noWrap
+			}
+
+			return triggerDef.runWrapper
 		},
 	})
 }
