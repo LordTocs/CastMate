@@ -452,7 +452,7 @@ export default definePlugin(
 		}
 
 		async function lanPoll() {
-			logger.log("Govee LAN Poll")
+			// logger.log("Govee LAN Poll")
 			lan.poll()
 		}
 	}
