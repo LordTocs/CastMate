@@ -188,7 +188,7 @@ export class ReactiveEffect<T = any> {
 					await func()
 				} finally {
 					if (this.debug) logger.log("Exiting Effect", this.debugName)
-					activeEffectStorage.disable()
+					//activeEffectStorage.disable()
 				}
 			})
 		} finally {
