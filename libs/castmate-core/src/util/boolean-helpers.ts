@@ -19,6 +19,7 @@ import { PluginManager } from "../plugins/plugin-manager"
 import { unexposeSchema } from "./ipc-schema"
 import { templateSchema } from "../templates/template"
 import { usePluginLogger } from "../logging/logging"
+import { ignoreReactivity } from "../reactivity/reactivity"
 
 const logger = usePluginLogger("booleans")
 
@@ -50,10 +51,11 @@ async function getExpressionValueAndSchema(
 	context?: object
 ): Promise<{ value: any; schema: Schema } | undefined> {
 	if (expression.type == "state") {
-		if (!expression.plugin) return undefined
-		if (!expression.state) return undefined
-
-		const state = PluginManager.getInstance().getState(expression.plugin, expression.state)
+		const state = await ignoreReactivity(() => {
+			if (!expression.plugin) return undefined
+			if (!expression.state) return undefined
+			return PluginManager.getInstance().getState(expression.plugin, expression.state)
+		})
 		if (!state) return undefined
 		const schema = state.schema
 		let value = state.ref.value
@@ -167,7 +169,7 @@ async function evaluateValueRange(expression: BooleanRangeExpression, context?: 
 async function evaluateGroupExpression(expression: BooleanExpressionGroup, context?: object) {
 	if (expression.operands.length == 0) return true
 
-	logger.log("Evaluating", expression)
+	//logger.log("Evaluating", expression)
 
 	const results = (
 		await Promise.allSettled(
@@ -200,10 +202,10 @@ async function evaluateGroupExpression(expression: BooleanExpressionGroup, conte
 }
 
 export async function evaluateBooleanExpression(expression: BooleanExpression, additionalContext?: object) {
-	const fullContext = {
+	const fullContext = await ignoreReactivity(() => ({
 		...additionalContext,
 		...PluginManager.getInstance().state,
-	}
+	}))
 
 	return await evaluateGroupExpression(expression, fullContext)
 }

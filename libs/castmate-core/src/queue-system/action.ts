@@ -216,10 +216,10 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 	async invoke(config: SchemaType<ConfigSchema>, contextData: ActionInvokeContextData, abortSignal: AbortSignal) {
 		if (abortSignal.aborted) return
 
-		const templateContext = {
+		const templateContext = await ignoreReactivity(() => ({
 			...contextData.contextState,
 			...PluginManager.getInstance().state,
-		}
+		}))
 
 		const resolvedConfig: ResolvedSchemaType<ConfigSchema> = await templateSchema(
 			config,
@@ -227,13 +227,15 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 			templateContext
 		)
 
-		AnalyticsService.getInstance().track("action", {
-			plugin: this.plugin.id,
-			action: this.id,
-			data: resolvedConfig,
-		})
+		return await ignoreReactivity(async () => {
+			AnalyticsService.getInstance().track("action", {
+				plugin: this.plugin.id,
+				action: this.id,
+				data: resolvedConfig,
+			})
 
-		return await ignoreReactivity(async () => await this.spec.invoke(resolvedConfig, contextData, abortSignal))
+			await this.spec.invoke(resolvedConfig, contextData, abortSignal)
+		})
 	}
 
 	registerIPC(path: string) {
@@ -384,10 +386,10 @@ class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends S
 		contextData: ActionInvokeContextData,
 		abortSignal: AbortSignal
 	): Promise<string | undefined> {
-		const templateContext = {
+		const templateContext = await ignoreReactivity(() => ({
 			...contextData.contextState,
 			...PluginManager.getInstance().state,
-		}
+		}))
 
 		const resolveConfig: ResolvedSchemaType<ConfigSchema> = await templateSchema(
 			config,
