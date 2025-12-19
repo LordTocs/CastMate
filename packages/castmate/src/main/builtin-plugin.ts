@@ -240,8 +240,8 @@ export default definePlugin(
 								triggerId: trigger.id,
 							})
 						})
-						//effect.debug = true
-						//effect.debugName = `roc:${profile.id}.${trigger.id}`
+						effect.debug = true
+						effect.debugName = `autorun:${profile.id}.${trigger.id}`
 						autoRunners.set(key, {
 							triggerHash: hash,
 							effect,

@@ -155,7 +155,9 @@ export class ReactiveEffect<T = any> {
 
 	added(dep: ReactiveDependency) {
 		if (this.debug && !this.dependencies.has(dep)) {
+			const stackTrace = Error().stack
 			logger.log("Added Dep", dep.debugName, "to", this.debugName)
+			logger.log(stackTrace)
 		}
 		this.dependencies.add(dep)
 	}
@@ -176,6 +178,7 @@ export class ReactiveEffect<T = any> {
 				try {
 					await func()
 				} finally {
+					if (this.debug) logger.log("Exiting Effect", this.debugName)
 					activeEffectStorage.disable()
 				}
 			})
