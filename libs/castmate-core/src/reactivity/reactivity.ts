@@ -140,7 +140,12 @@ interface PendingTrigger {
 }
 
 export async function forceRunWithEffect(effect: ReactiveEffect, func: () => any) {
-	return await effect.runFunc(func)
+	const activeEffect = getActiveEffect()
+	if (activeEffect === effect) {
+		return await func()
+	} else {
+		return await effect.runFunc(func)
+	}
 }
 
 export class ReactiveEffect<T = any> {
@@ -172,7 +177,11 @@ export class ReactiveEffect<T = any> {
 
 	async runFunc(func: () => any) {
 		try {
-			if (this.debug) logger.log("Running Effect", this.debugName)
+			if (this.debug) {
+				logger.log("Running Effect", this.debugName)
+				const stackTrace = Error().stack
+				logger.log(stackTrace)
+			}
 			this.runningStack += 1
 			await activeEffectStorage.run(this, async () => {
 				try {
