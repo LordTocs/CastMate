@@ -234,7 +234,7 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 				data: resolvedConfig,
 			})
 
-			await this.spec.invoke(resolvedConfig, contextData, abortSignal)
+			return await this.spec.invoke(resolvedConfig, contextData, abortSignal)
 		})
 	}
 
