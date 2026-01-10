@@ -284,6 +284,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 					required: true,
 					async enum(context: { obs: OBSConnection }) {
 						const obs = context?.obs?.connection
+						if (!context?.obs?.state.connected) return []
 						if (!obs) return []
 
 						const textInputs = await context.obs.getInputs(["text_gdiplus_v2", "text_gdiplus_v3"])
@@ -301,6 +302,7 @@ export function setupSources(obsDefault: ReactiveRef<OBSConnection>) {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
+			if (!config.obs?.state.connected) return
 			await config.obs.connection.call("SetInputSettings", {
 				inputName: config.sourceName,
 				inputSettings: {
