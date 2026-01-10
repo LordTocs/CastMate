@@ -189,15 +189,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@d-fischer/cross-fetch@npm:^5.0.1":
-  version: 5.0.5
-  resolution: "@d-fischer/cross-fetch@npm:5.0.5"
-  dependencies:
-    node-fetch: "npm:^2.6.12"
-  checksum: 10/ba14244588b0ce1c5ad1bc20ae1e9ebb8baec7f58724354b63baf418901a3f4b2477ab939ca8ac30a432e9b41d2daf255429bd976672e6743863eb52a6dbf291
-  languageName: node
-  linkType: hard
-
 "@d-fischer/deprecate@npm:^2.0.2":
   version: 2.0.2
   resolution: "@d-fischer/deprecate@npm:2.0.2"
@@ -236,13 +227,6 @@ __metadata:
     "@d-fischer/shared-utils": "npm:^3.2.0"
     tslib: "npm:^2.0.3"
   checksum: 10/c2a016dbccb85f32a7f322275614e15e4d169fd94a8ff1c8256904689bb8cc8c85e204d7b577267e7eed1a12175814ae5f7ea2cb41e7ad095ea37347d571dfea
-  languageName: node
-  linkType: hard
-
-"@d-fischer/qs@npm:^7.0.2":
-  version: 7.0.2
-  resolution: "@d-fischer/qs@npm:7.0.2"
-  checksum: 10/bf00a9f0544ec0c08fc266551204a5c7350bc2f9ab852280053e85e406d2e2df0ac04445db58c27d737bd6ebd2b1bb4cd17ffef7cc8e4474d7d384dd8baf869d
   languageName: node
   linkType: hard
 
@@ -1732,57 +1716,54 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@twurple/api-call@npm:7.3.0, @twurple/api-call@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@twurple/api-call@npm:7.3.0"
+"@twurple/api-call@npm:8.0.2, @twurple/api-call@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@twurple/api-call@npm:8.0.2"
   dependencies:
-    "@d-fischer/cross-fetch": "npm:^5.0.1"
-    "@d-fischer/qs": "npm:^7.0.2"
     "@d-fischer/shared-utils": "npm:^3.6.1"
-    "@twurple/common": "npm:7.3.0"
+    "@twurple/common": "npm:8.0.2"
     tslib: "npm:^2.0.3"
-  checksum: 10/3ed9e52c94894b27ca85304becd271b8d6a331fff2e15cdef895e5536df7f88e0c6f2a4701cc307902863df9ce836af9275f3ae47f19de541ed896df9a531954
+  checksum: 10/7c310728fa48a3e439350aa9dab87e06aa1114cbbca08d8c8ea34ad94a303509419c758799c0289dff047f5909a14317736cf23bc2a07bc66cf77e5d7d265b95
   languageName: node
   linkType: hard
 
-"@twurple/api@npm:7.3.0, @twurple/api@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@twurple/api@npm:7.3.0"
+"@twurple/api@npm:8.0.2, @twurple/api@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@twurple/api@npm:8.0.2"
   dependencies:
     "@d-fischer/cache-decorators": "npm:^4.0.0"
-    "@d-fischer/cross-fetch": "npm:^5.0.1"
     "@d-fischer/detect-node": "npm:^3.0.1"
     "@d-fischer/logger": "npm:^4.2.1"
     "@d-fischer/rate-limiter": "npm:^1.1.0"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.1"
-    "@twurple/api-call": "npm:7.3.0"
-    "@twurple/common": "npm:7.3.0"
+    "@twurple/api-call": "npm:8.0.2"
+    "@twurple/common": "npm:8.0.2"
     retry: "npm:^0.13.1"
     tslib: "npm:^2.0.3"
   peerDependencies:
-    "@twurple/auth": 7.3.0
-  checksum: 10/60de7480e1f664993e43ff04b698586565b2ac862b52ea16d6ce2e0120ee11c2d0dc67c45916f909f0dbd7e8819e46e093f8d2d54f2e681fa2b8d9731e36961f
+    "@twurple/auth": 8.0.2
+  checksum: 10/ca169e74f7c7b3add0dd70d4d6af6d54f872a7910112d70cce333f123695d589f907735e08fc54ac437504c4ffa3f5979b79132e2674b22585df287815d27258
   languageName: node
   linkType: hard
 
-"@twurple/auth@npm:7.3.0, @twurple/auth@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@twurple/auth@npm:7.3.0"
+"@twurple/auth@npm:8.0.2, @twurple/auth@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@twurple/auth@npm:8.0.2"
   dependencies:
     "@d-fischer/logger": "npm:^4.2.1"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.1"
-    "@twurple/api-call": "npm:7.3.0"
-    "@twurple/common": "npm:7.3.0"
+    "@twurple/api-call": "npm:8.0.2"
+    "@twurple/common": "npm:8.0.2"
     tslib: "npm:^2.0.3"
-  checksum: 10/5c80d5a81de0429d64db81908ba7de41a97408cae30ede25315d1361d8fb59b335f1f43000d8e8cff7a6e30b5cc80f9f06e5ce608e1f85e5792a335296d7d0d2
+  checksum: 10/5a9bf736f2ae2776635d316f091f1d3e5b3c20b34ee9888732d22bc35868ddb3304c7de0a41a4f9d2765eeff736ae595ff787205625a3bceb49e9ea38b99a70d
   languageName: node
   linkType: hard
 
-"@twurple/chat@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@twurple/chat@npm:7.3.0"
+"@twurple/chat@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@twurple/chat@npm:8.0.2"
   dependencies:
     "@d-fischer/cache-decorators": "npm:^4.0.0"
     "@d-fischer/deprecate": "npm:^2.0.2"
@@ -1790,56 +1771,56 @@ __metadata:
     "@d-fischer/rate-limiter": "npm:^1.1.0"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.0"
-    "@twurple/common": "npm:7.3.0"
+    "@twurple/common": "npm:8.0.2"
     ircv3: "npm:^0.33.0"
     tslib: "npm:^2.0.3"
   peerDependencies:
-    "@twurple/auth": 7.3.0
-  checksum: 10/c1b6bae495e4dab3ee1d3ec44e52940b7dc6b2e3a4c7c05921b1462edb28e8776ea2e521d6cef9cfe206da6a0cc1a1f741c50f76f04816de43df55b1889117b3
+    "@twurple/auth": 8.0.2
+  checksum: 10/2da7817c8792c9ca9affd07bc7e8ccdf90776d39f09d5d3b299d2486d4ab59d1604d9a3a835cb1cb194de13c212b6e079ae85737c840798ceb0d4c77ddcbcf67
   languageName: node
   linkType: hard
 
-"@twurple/common@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@twurple/common@npm:7.3.0"
+"@twurple/common@npm:8.0.2":
+  version: 8.0.2
+  resolution: "@twurple/common@npm:8.0.2"
   dependencies:
     "@d-fischer/shared-utils": "npm:^3.6.1"
     klona: "npm:^2.0.4"
     tslib: "npm:^2.0.3"
-  checksum: 10/3107f33ed4e1b679e3f5873f5b93d6c94488c75551c7c5848dfa3e5e8c02b4123a784de5cadb0308dd9caa56b6e2af39a2704e7b781517133f0a31db7b9fd46b
+  checksum: 10/b203900a94868a1d69c36daca63640d441a62c2b8de2132f20901b56199b22e47d18710c80f63c6a7ac29d19255ac5281dd52bb0c745f42671bd21f1a289a708
   languageName: node
   linkType: hard
 
-"@twurple/eventsub-base@npm:7.3.0, @twurple/eventsub-base@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@twurple/eventsub-base@npm:7.3.0"
+"@twurple/eventsub-base@npm:8.0.2, @twurple/eventsub-base@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@twurple/eventsub-base@npm:8.0.2"
   dependencies:
     "@d-fischer/logger": "npm:^4.2.1"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.0"
-    "@twurple/api": "npm:7.3.0"
-    "@twurple/auth": "npm:7.3.0"
-    "@twurple/common": "npm:7.3.0"
+    "@twurple/api": "npm:8.0.2"
+    "@twurple/auth": "npm:8.0.2"
+    "@twurple/common": "npm:8.0.2"
     tslib: "npm:^2.0.3"
-  checksum: 10/33647b2c6f027e01db49608a4e26834ac3d7b366fefee6c6a9a95a18fb29690157788acbb9a6f8b25e665aca4acae8ee50e6dd5e01ed865e18d2ab4666142ca4
+  checksum: 10/b2b9a885e18ebbfc2650bacfeff4e24dc94ed4dc8ba36809f7eaaf372124edb7782517df1e5f712c42069831e96483eb07b792c00bcd6b529c447339a8fc9e72
   languageName: node
   linkType: hard
 
-"@twurple/eventsub-ws@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@twurple/eventsub-ws@npm:7.3.0"
+"@twurple/eventsub-ws@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@twurple/eventsub-ws@npm:8.0.2"
   dependencies:
     "@d-fischer/connection": "npm:^9.0.0"
     "@d-fischer/logger": "npm:^4.2.1"
     "@d-fischer/shared-utils": "npm:^3.6.1"
     "@d-fischer/typed-event-emitter": "npm:^3.3.0"
-    "@twurple/auth": "npm:7.3.0"
-    "@twurple/common": "npm:7.3.0"
-    "@twurple/eventsub-base": "npm:7.3.0"
+    "@twurple/auth": "npm:8.0.2"
+    "@twurple/common": "npm:8.0.2"
+    "@twurple/eventsub-base": "npm:8.0.2"
     tslib: "npm:^2.0.3"
   peerDependencies:
-    "@twurple/api": 7.3.0
-  checksum: 10/ed32e74fd9389bb00f6d26de0bc6c00488bf600412807e161bdbe2afa1ae12d6e02532e7adb9992fffa1157c41680b711b8f28caf8e8398de2b434765ceb8393
+    "@twurple/api": 8.0.2
+  checksum: 10/530aef269e2102da67a46f35a1f05592f330fac3a2b38d90b4dac171fd291ce599aa9cfe8b00322fe76080a85ab601b4587a2cad06fd895e292153106d78cd23
   languageName: node
   linkType: hard
 
@@ -4923,12 +4904,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twitch-main@workspace:plugins/twitch/main"
   dependencies:
-    "@twurple/api": "npm:^7.3.0"
-    "@twurple/api-call": "npm:^7.3.0"
-    "@twurple/auth": "npm:^7.3.0"
-    "@twurple/chat": "npm:^7.3.0"
-    "@twurple/eventsub-base": "npm:^7.3.0"
-    "@twurple/eventsub-ws": "npm:^7.3.0"
+    "@twurple/api": "npm:^8.0.2"
+    "@twurple/api-call": "npm:^8.0.2"
+    "@twurple/auth": "npm:^8.0.2"
+    "@twurple/chat": "npm:^8.0.2"
+    "@twurple/eventsub-base": "npm:^8.0.2"
+    "@twurple/eventsub-ws": "npm:^8.0.2"
     castmate-core: "workspace:^"
     castmate-plugin-overlays-main: "workspace:^"
     castmate-plugin-twitch-shared: "workspace:^"
@@ -8966,20 +8947,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.12":
-  version: 2.7.0
-  resolution: "node-fetch@npm:2.7.0"
-  dependencies:
-    whatwg-url: "npm:^5.0.0"
-  peerDependencies:
-    encoding: ^0.1.0
-  peerDependenciesMeta:
-    encoding:
-      optional: true
-  checksum: 10/b24f8a3dc937f388192e59bcf9d0857d7b6940a2496f328381641cb616efccc9866e89ec43f2ec956bbd6c3d3ee05524ce77fe7b29ccd34692b3a16f237d6676
-  languageName: node
-  linkType: hard
-
 "node-gyp@npm:8.x":
   version: 8.4.1
   resolution: "node-gyp@npm:8.4.1"
@@ -11040,13 +11007,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tr46@npm:~0.0.3":
-  version: 0.0.3
-  resolution: "tr46@npm:0.0.3"
-  checksum: 10/8f1f5aa6cb232f9e1bdc86f485f916b7aa38caee8a778b378ffec0b70d9307873f253f5cbadbe2955ece2ac5c83d0dc14a77513166ccd0a0c7fe197e21396695
-  languageName: node
-  linkType: hard
-
 "triple-beam@npm:^1.3.0":
   version: 1.4.1
   resolution: "triple-beam@npm:1.4.1"
@@ -11612,23 +11572,6 @@ __metadata:
   dependencies:
     defaults: "npm:^1.0.3"
   checksum: 10/182ebac8ca0b96845fae6ef44afd4619df6987fe5cf552fdee8396d3daa1fb9b8ec5c6c69855acb7b3c1231571393bd1f0a4cdc4028d421575348f64bb0a8817
-  languageName: node
-  linkType: hard
-
-"webidl-conversions@npm:^3.0.0":
-  version: 3.0.1
-  resolution: "webidl-conversions@npm:3.0.1"
-  checksum: 10/b65b9f8d6854572a84a5c69615152b63371395f0c5dcd6729c45789052296df54314db2bc3e977df41705eacb8bc79c247cee139a63fa695192f95816ed528ad
-  languageName: node
-  linkType: hard
-
-"whatwg-url@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "whatwg-url@npm:5.0.0"
-  dependencies:
-    tr46: "npm:~0.0.3"
-    webidl-conversions: "npm:^3.0.0"
-  checksum: 10/f95adbc1e80820828b45cc671d97da7cd5e4ef9deb426c31bcd5ab00dc7103042291613b3ef3caec0a2335ed09e0d5ed026c940755dbb6d404e2b27f940fdf07
   languageName: node
   linkType: hard
 
