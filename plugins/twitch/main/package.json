@@ -13,12 +13,12 @@
 		"typescript": "*"
 	},
 	"dependencies": {
-		"@twurple/api": "^7.3.0",
-		"@twurple/api-call": "^7.3.0",
-		"@twurple/auth": "^7.3.0",
-		"@twurple/chat": "^7.3.0",
-		"@twurple/eventsub-base": "^7.3.0",
-		"@twurple/eventsub-ws": "^7.3.0",
+		"@twurple/api": "^8.0.2",
+		"@twurple/api-call": "^8.0.2",
+		"@twurple/auth": "^8.0.2",
+		"@twurple/chat": "^8.0.2",
+		"@twurple/eventsub-base": "^8.0.2",
+		"@twurple/eventsub-ws": "^8.0.2",
 		"castmate-core": "workspace:^",
 		"castmate-plugin-overlays-main": "workspace:^",
 		"castmate-plugin-twitch-shared": "workspace:^",

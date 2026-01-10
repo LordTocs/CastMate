@@ -122,7 +122,7 @@ export function setupHypeTrains() {
 	onChannelAuth(async (channel, service) => {
 		const perf = startPerfTime(`HypeTrains`)
 
-		service.eventsub.onChannelHypeTrainBegin(channel.twitchId, (event) => {
+		service.eventsub.onChannelHypeTrainBeginV2(channel.twitchId, (event) => {
 			hypeTrainLevel.value = event.level
 			hypeTrainProgress.value = event.progress
 			hypeTrainGoal.value = event.goal
@@ -137,7 +137,7 @@ export function setupHypeTrains() {
 			})
 		})
 
-		service.eventsub.onChannelHypeTrainEnd(channel.twitchId, (event) => {
+		service.eventsub.onChannelHypeTrainEndV2(channel.twitchId, (event) => {
 			const progress = hypeTrainProgress.value
 			const goal = hypeTrainGoal.value
 
@@ -155,7 +155,7 @@ export function setupHypeTrains() {
 			})
 		})
 
-		service.eventsub.onChannelHypeTrainProgress(channel.twitchId, (event) => {
+		service.eventsub.onChannelHypeTrainProgressV2(channel.twitchId, (event) => {
 			const levelUp = event.level > hypeTrainLevel.value
 
 			hypeTrainLevel.value = event.level
@@ -173,19 +173,21 @@ export function setupHypeTrains() {
 			}
 		})
 
-		const hypeTrain = await channel.apiClient.hypeTrain.getHypeTrainEventsForBroadcaster(channel.twitchId)
+		const hypeTrain = await channel.apiClient.hypeTrain.getHypeTrainStatusForBroadcaster(channel.twitchId)
 
-		const event = hypeTrain.data[0]
-
-		if (event) {
-			if (event.expiryDate > new Date()) {
-				//Hypetrain is running
-				hypeTrainLevel.value = event.level
-				hypeTrainTotal.value = event.total
-				hypeTrainGoal.value = event.goal
-				//hypeTrainProgress.value = event.TWITCH NEEDS TO FIX THIS
-				hypeTrainExists.value = true
-			}
+		if (hypeTrain.current) {
+			//Hypetrain is running
+			hypeTrainLevel.value = hypeTrain.current.level
+			hypeTrainTotal.value = hypeTrain.current.total
+			hypeTrainGoal.value = hypeTrain.current.goal
+			hypeTrainProgress.value = hypeTrain.current.progress
+			hypeTrainExists.value = true
+		} else {
+			hypeTrainLevel.value = 0
+			hypeTrainProgress.value = 0
+			hypeTrainGoal.value = 0
+			hypeTrainTotal.value = 0
+			hypeTrainExists.value = false
 		}
 
 		perf.stop(logger)
