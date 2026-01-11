@@ -1,5 +1,6 @@
 import {
 	Service,
+	createTriggerScheduler,
 	defineAction,
 	defineState,
 	defineTrigger,
@@ -13,6 +14,7 @@ import { TwitchAccount } from "./twitch-auth"
 import { CommercialLength } from "@twurple/api"
 import { onChannelAuth, onStreamOnline } from "./api-harness"
 import { Duration, Timer, getTimeRemaining, isTimerStarted } from "castmate-schema"
+import _isEqual from "lodash/isEqual"
 
 export function setupAds() {
 	const logger = usePluginLogger("twitch-ad")
@@ -89,6 +91,83 @@ export function setupAds() {
 		required: true,
 	})
 
+	let snoozeQueryTimeout: NodeJS.Timeout | undefined = undefined
+
+	const adStarted = defineTrigger({
+		id: "adStarted",
+		name: "Ad Started",
+		description: "An ad break has started",
+		icon: "mdi mdi-advertisements",
+		config: {
+			type: Object,
+			properties: {},
+		},
+		context: {
+			type: Object,
+			properties: {
+				duration: { type: Duration, required: true },
+			},
+		},
+		async handle(config, context, mapping) {
+			return true
+		},
+	})
+
+	const adEnded = defineTrigger({
+		id: "adEnded",
+		name: "Ad Ended",
+		description: "An ad break has finished",
+		icon: "mdi mdi-advertisements",
+		config: {
+			type: Object,
+			properties: {},
+		},
+		context: {
+			type: Object,
+			properties: {
+				duration: { type: Duration, required: true },
+			},
+		},
+		async handle(config, context, mapping) {
+			return true
+		},
+	})
+
+	const adSchedule = defineTrigger({
+		id: "adSchedule",
+		name: "Ad Schedule",
+		description: "Runs in advance of an scheduled ad.",
+		icon: "mdi mdi-advertisements",
+		config: {
+			type: Object,
+			properties: {
+				advance: { type: Duration, name: "Advance", required: true, default: 60 },
+			},
+		},
+		context: {
+			type: Object,
+			properties: {
+				advance: { type: Duration, required: true, view: false },
+			},
+		},
+		async handle(config, context, mapping) {
+			return config.advance == context.advance
+		},
+	})
+
+	const scheduler = createTriggerScheduler({
+		name: "AdScheduler",
+		timer: nextAdTimer,
+		trigger: adSchedule,
+		async validationQuery() {
+			await queryAdSchedule()
+			return false
+		},
+		getContext() {
+			return {}
+		},
+	})
+
 	const queryAdSchedule = measurePerfFunc(async function (validation = false) {
 		try {
 			logger.log("Starting Ad Schedule Query", validation, new Date().toLocaleString())
@@ -106,7 +185,12 @@ export function setupAds() {
 			)
 
 			nextAdDuration.value = schedule.duration
-			nextAdTimer.value = schedule.nextAdDate ? Timer.fromDate(schedule.nextAdDate) : Timer.factoryCreate()
+			const nextTimer = schedule.nextAdDate ? Timer.fromDate(schedule.nextAdDate) : Timer.factoryCreate()
+
+			//Reactivity doesn't check to see if values actually change, so we don't want to trigger a reschedule if it's not different.
+			if (!_isEqual(nextAdTimer.value, nextTimer)) {
+				nextAdTimer.value = nextTimer
+			}
 
 			if (schedule.prerollFreeTime <= 0) {
 				prerollFreeTime.value = Timer.factoryCreate()
@@ -139,7 +223,8 @@ export function setupAds() {
 					logger.log("SNOOZE DETECTED, REQUERY")
 				}
 
-				scheduleAdTriggers(scheduledAdTriggers)
+				//scheduleAdTriggers(scheduledAdTriggers)
+				//scheduler.reschedule() I don't think we need this now that reschedules are triggered by reactive state updates.
 			}
 
 			logger.log("Finished Ad Schedule Query")
@@ -148,15 +233,15 @@ export function setupAds() {
 		}
 	}, "queryAdSchedule")
 
-	interface ScheduledAdTrigger {
-		advance: Duration
-		timeout?: NodeJS.Timeout | undefined
-	}
+	// interface ScheduledAdTrigger {
+	// 	advance: Duration
+	// 	timeout?: NodeJS.Timeout | undefined
+	// }
 
-	let scheduledAdTriggers: ScheduledAdTrigger[] = []
-	let validationTimeout: NodeJS.Timeout | undefined = undefined
-	let snoozeQueryTimeout: NodeJS.Timeout | undefined = undefined
+	// let scheduledAdTriggers: ScheduledAdTrigger[] = []
+	//let validationTimeout: NodeJS.Timeout | undefined = undefined
 
+	/*
 	onProfilesChanged((activeProfiles, inactiveProfiles) => {
 		const scheduledTriggers: ScheduledAdTrigger[] = []
 
@@ -269,7 +354,7 @@ export function setupAds() {
 
 		logger.log("Finished Ad Scheduling")
 	}
-
+*/
 	defineAction({
 		id: "snoozeAds",
 		name: "Snooze Ads",
@@ -285,68 +370,6 @@ export function setupAds() {
 
 			await TwitchAccount.channel.apiClient.channels.snoozeNextAd(TwitchAccount.channel.twitchId)
 			await queryAdSchedule()
-		},
-	})
-
-	const adStarted = defineTrigger({
-		id: "adStarted",
-		name: "Ad Started",
-		description: "An ad break has started",
-		icon: "mdi mdi-advertisements",
-		config: {
-			type: Object,
-			properties: {},
-		},
-		context: {
-			type: Object,
-			properties: {
-				duration: { type: Duration, required: true },
-			},
-		},
-		async handle(config, context, mapping) {
-			return true
-		},
-	})
-
-	const adEnded = defineTrigger({
-		id: "adEnded",
-		name: "Ad Ended",
-		description: "An ad break has finished",
-		icon: "mdi mdi-advertisements",
-		config: {
-			type: Object,
-			properties: {},
-		},
-		context: {
-			type: Object,
-			properties: {
-				duration: { type: Duration, required: true },
-			},
-		},
-		async handle(config, context, mapping) {
-			return true
-		},
-	})
-
-	const adSchedule = defineTrigger({
-		id: "adSchedule",
-		name: "Ad Schedule",
-		description: "Runs in advance of an scheduled ad.",
-		icon: "mdi mdi-advertisements",
-		config: {
-			type: Object,
-			properties: {
-				advance: { type: Duration, name: "Advance", required: true, default: 60 },
-			},
-		},
-		context: {
-			type: Object,
-			properties: {
-				advance: { type: Duration, required: true, view: false },
-			},
-		},
-		async handle(config, context, mapping) {
-			return config.advance == context.advance
 		},
 	})
 
