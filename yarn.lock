@@ -1840,15 +1840,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/fluent-ffmpeg@npm:^2.1.21":
-  version: 2.1.27
-  resolution: "@types/fluent-ffmpeg@npm:2.1.27"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10/270e428381b18b2049f5bbd77deeaae3ca80cca95006e998596c5403c7fcaabeb5f93958f423e6d27dd6709ce9d2b8c32541e49cbec73f7a9d9e74648509fe82
-  languageName: node
-  linkType: hard
-
 "@types/fs-extra@npm:9.0.13, @types/fs-extra@npm:^9.0.11":
   version: 9.0.13
   resolution: "@types/fs-extra@npm:9.0.13"
@@ -2820,13 +2811,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async@npm:^0.2.9":
-  version: 0.2.10
-  resolution: "async@npm:0.2.10"
-  checksum: 10/b3b92bd0257dafc1b8c4b87dcf36aea70ed36fd179797d725d564b5deec07246d4afa222c3d5f1b6009e579aeab0a6aa03b56869906a7e8ff46e7d33e4f2e879
-  languageName: node
-  linkType: hard
-
 "async@npm:^3.2.3, async@npm:^3.2.4":
   version: 3.2.6
   resolution: "async@npm:3.2.6"
@@ -3300,7 +3284,6 @@ __metadata:
     "@types/better-sqlite3": "npm:^7.6.12"
     "@types/cors": "npm:^2.8.17"
     "@types/express": "npm:^4.17.21"
-    "@types/fluent-ffmpeg": "npm:^2.1.21"
     "@types/http-proxy": "npm:^1.17.14"
     "@types/lodash": "npm:^4.14.192"
     "@types/node": "npm:*"
@@ -3313,7 +3296,6 @@ __metadata:
     electron: "npm:34.2.0"
     electron-updater: "npm:6.1.8"
     express: "npm:^4.18.2"
-    fluent-ffmpeg: "npm:^2.1.2"
     lodash: "npm:^4.17.21"
     mixpanel: "npm:^0.18.0"
     nanoid: "npm:^5.0.7"
@@ -6704,16 +6686,6 @@ __metadata:
   version: 3.3.3
   resolution: "flatted@npm:3.3.3"
   checksum: 10/8c96c02fbeadcf4e8ffd0fa24983241e27698b0781295622591fc13585e2f226609d95e422bcf2ef044146ffacb6b68b1f20871454eddf75ab3caa6ee5f4a1fe
-  languageName: node
-  linkType: hard
-
-"fluent-ffmpeg@npm:^2.1.2":
-  version: 2.1.3
-  resolution: "fluent-ffmpeg@npm:2.1.3"
-  dependencies:
-    async: "npm:^0.2.9"
-    which: "npm:^1.1.1"
-  checksum: 10/db43272039c31043ea390be67eed10b7348d987b71855a22c51235e79f45d3d0b63639b8057efb6a6e862c3094a220c42cea29536d08d351859d14f327f5b489
   languageName: node
   linkType: hard
 
@@ -11393,17 +11365,6 @@ __metadata:
   dependencies:
     defaults: "npm:^1.0.3"
   checksum: 10/182ebac8ca0b96845fae6ef44afd4619df6987fe5cf552fdee8396d3daa1fb9b8ec5c6c69855acb7b3c1231571393bd1f0a4cdc4028d421575348f64bb0a8817
-  languageName: node
-  linkType: hard
-
-"which@npm:^1.1.1":
-  version: 1.3.1
-  resolution: "which@npm:1.3.1"
-  dependencies:
-    isexe: "npm:^2.0.0"
-  bin:
-    which: ./bin/which
-  checksum: 10/549dcf1752f3ee7fbb64f5af2eead4b9a2f482108b7de3e85c781d6c26d8cf6a52d37cfbe0642a155fa6470483fe892661a859c03157f24c669cf115f3bbab5e
   languageName: node
   linkType: hard
 
