@@ -19,6 +19,8 @@ const defaultScopes = [
 
 	"channel:read:hype_train", //Eventsub Hypetrain... eventually
 
+	"channel:manage:raids", //Start / Cancel Raids
+
 	"channel:read:subscriptions", //Sub notifications
 
 	"channel:read:polls", //Read the current poll / poll eventsub ... eventually
@@ -36,8 +38,15 @@ const defaultScopes = [
 	"channel:manage:vips",
 
 	"moderation:read",
-	"channel:manage:moderators",
 	"moderator:manage:banned_users",
+	"moderator:read:blocked_terms", //Moderation eventsub
+	"moderator:read:chat_settings", //Moderation eventsub
+	"moderator:read:unban_requests", //Moderation eventsub
+	"moderator:read:banned_users", //Moderation eventsub
+	"moderator:read:chat_messages", //Moderation eventsub
+	"moderator:read:warnings", //Moderation eventsub
+	"moderator:read:moderators", //Moderation eventsub
+	"moderator:read:vips", //Moderation eventsub
 
 	"channel:read:ads", //Get ad schedule
 	"channel:manage:ads", //Snooze ad
