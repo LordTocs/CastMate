@@ -23,6 +23,9 @@ export default defineConfig({
 			entry: "src/main/background.ts",
 			vite: {
 				plugins: [nodeResolve()],
+				esbuild: {
+					format: "esm",
+				},
 				build: {
 					outDir: path.join(dist, "dist-electron"),
 					minify: false,
@@ -33,7 +36,6 @@ export default defineConfig({
 							"@twurple/api-call",
 							"@twurple/chat",
 							"@twurple/eventsub-ws",
-							"@twurple/pubsub",
 							"ws",
 							"discord.js",
 							"castmate-plugin-sound-native",
@@ -43,10 +45,14 @@ export default defineConfig({
 							"@azure/web-pubsub-client",
 						],
 					},
+					// commonjsOptions: {
+					// 	esmExternals: true,
+					// 	requireReturnsDefault: "auto",
+					// },
 				},
 				resolve: {
 					alias: {
-						"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
+						//"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
 					},
 				},
 			},
@@ -61,11 +67,11 @@ export default defineConfig({
 	],
 	build: {
 		//outDir: path.join(dist, "electron/renderer"),
+		target: "esnext",
 		minify: false,
 		rollupOptions: {
 			input: {
 				main: resolve(dirname, "html", "index.html"),
-				//updater: resolve(dirname, "updater.html"),
 			},
 			output: {
 				manualChunks: {

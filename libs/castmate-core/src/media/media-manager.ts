@@ -3,8 +3,6 @@ import { ImageFormats, MediaMetadata, normalizeMediaPath, stillImageFormats } fr
 import * as fs from "fs/promises"
 import * as fsSync from "fs"
 import path, * as pathTools from "path"
-import * as rra from "recursive-readdir-async"
-import * as ffmpeg from "fluent-ffmpeg"
 import * as chokidar from "chokidar"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { ensureDirectory, resolveProjectPath } from "../io/file-system"
@@ -13,6 +11,7 @@ import { globalLogger, usePluginLogger } from "../logging/logging"
 import { WebService } from "../webserver/internal-webserver"
 import express, { Application, NextFunction, Request, Response, response, Router } from "express"
 import { coreAxios } from "../util/request-utils"
+import { ffprobe, setupFFMpegPaths } from "./ffmpeg"
 //require("@ffmpeg-installer/win32-x64")
 //require("@ffprobe-installer/win32-x64")
 //Thumbnails?
@@ -21,15 +20,7 @@ import { coreAxios } from "../util/request-utils"
 const logger = usePluginLogger("media")
 
 export function probeMedia(file: string) {
-	return new Promise<ffmpeg.FfprobeData>((resolve, reject) => {
-		ffmpeg.ffprobe(file, (err, data) => {
-			if (err) {
-				return reject(err)
-			}
-
-			return resolve(data)
-		})
-	})
+	return ffprobe(file)
 }
 
 const addOrUpdateMediaRenderer = defineCallableIPC<(metadata: MediaMetadata) => void>("media", "addMedia")
@@ -298,24 +289,7 @@ export const MediaManager = Service(
 )
 
 export function setupMedia() {
-	let ffprobePath = ""
-	let ffmpegPath = ""
-	if (app.isPackaged) {
-		const binPath = path.join(__dirname, "../../../", "ffmpeg/bin")
+	setupFFMpegPaths()
 
-		ffprobePath = path.resolve(binPath, "ffprobe.exe")
-		ffmpegPath = path.resolve(binPath, "ffmpeg.exe")
-	} else {
-		const nodeModulesPath = path.join(__dirname, "../../../../", "node_modules")
-
-		ffprobePath = path.resolve(nodeModulesPath, "@ffprobe-installer/win32-x64/ffprobe.exe")
-		ffmpegPath = path.resolve(nodeModulesPath, "@ffmpeg-installer/win32-x64/ffmpeg.exe")
-	}
-
-	logger.log("ffmpeg path", ffmpegPath)
-	logger.log("ffprobe path", ffprobePath)
-
-	ffmpeg.setFfmpegPath(ffmpegPath)
-	ffmpeg.setFfprobePath(ffprobePath)
 	MediaManager.initialize()
 }

@@ -25,7 +25,7 @@
 		"@vitejs/plugin-vue": "4.6.2",
 		"ts-toolbelt": "*",
 		"typescript": "*",
-		"vite": "^5.2.9",
+		"vite": "^7.3.1",
 		"vue-tsc": "*"
 	}
 }

@@ -45,7 +45,7 @@ export default defineConfig({
 				},
 				resolve: {
 					alias: {
-						"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
+						//"./lib-cov/fluent-ffmpeg": "./lib/fluent-ffmpeg", // This line
 					},
 				},
 			},

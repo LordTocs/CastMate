@@ -4,7 +4,9 @@ import path from "path"
 
 const viteDevURL = `http://${process.env["VITE_DEV_SERVER_HOSTNAME"]}:${process.env["VITE_DEV_SERVER_PORT"]}`
 
-const iconPath = app.isPackaged ? path.join(__dirname, "../..", "renderer/assets/icons/") : "src/renderer/assets/icons/"
+const iconPath = app.isPackaged
+	? path.join(import.meta.dirname, "../..", "renderer/assets/icons/")
+	: "src/renderer/assets/icons/"
 
 const logger = usePluginLogger("system")
 
@@ -34,7 +36,7 @@ export function createWindow(
 		const params = new URLSearchParams(urlQuery)
 		win.loadURL(`${url}?${params}`)
 	} else {
-		const url = path.join(__dirname, `../../dist/html/${htmlFile}`)
+		const url = path.join(import.meta.dirname, `../../dist/html/${htmlFile}`)
 		win.loadFile(url, {
 			query: urlQuery,
 		})

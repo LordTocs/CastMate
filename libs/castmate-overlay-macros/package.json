@@ -10,7 +10,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"vite": "^5.2.9"
+		"vite": "^7.3.1"
 	},
 	"devDependencies": {
 		"@vue-macros/common": "^1.10.1",
