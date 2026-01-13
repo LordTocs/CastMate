@@ -1,11 +1,17 @@
 import { defineState, defineTrigger, startPerfTime, usePluginLogger } from "castmate-core"
 import { Range } from "castmate-schema"
 import { onChannelAuth } from "./api-harness"
-import { EventSubBase, EventSubChannelHypeTrainEndV2Event, EventSubSubscription } from "@twurple/eventsub-base"
+import {
+	EventSubBase,
+	EventSubChannelHypeTrainEndV2Event,
+	EventSubChannelHypeTrainProgressV2Event,
+	EventSubSubscription,
+} from "@twurple/eventsub-base"
 import { rawDataSymbol } from "@twurple/common"
 import { HelixEventSubSubscription, extractUserId } from "@twurple/api"
 
 type EventSubChannelHypeTrainEndV2EventData = EventSubChannelHypeTrainEndV2Event[typeof rawDataSymbol]
+type EventSubChannelHypeTrainProgressV2EventData = EventSubChannelHypeTrainProgressV2Event[typeof rawDataSymbol]
 
 class HypeTrainEndV2WorkAround extends EventSubSubscription<EventSubChannelHypeTrainEndV2Event> {
 	/** @protected */ readonly _cliName = "hype-train-end"
@@ -31,6 +37,38 @@ class HypeTrainEndV2WorkAround extends EventSubSubscription<EventSubChannelHypeT
 
 	protected async _subscribe(): Promise<HelixEventSubSubscription> {
 		return await this._client._apiClient.eventSub.subscribeToChannelHypeTrainEndV2Events(
+			this._userId,
+			await this._getTransportOptions()
+		)
+	}
+}
+
+class HypeTrainProgressV2WorkAround extends EventSubSubscription<EventSubChannelHypeTrainProgressV2Event> {
+	/** @protected */ readonly _cliName = "hype-train-progress"
+	constructor(
+		handler: (data: EventSubChannelHypeTrainProgressV2Event) => void,
+		client: EventSubBase,
+		private readonly _userId: string
+	) {
+		//@ts-ignore - Ignore us using an internal constructor
+		super(handler, client)
+	}
+	get id(): string {
+		return `channel.hype_train.end.v2.${this._userId}`
+	}
+	get authUserId(): string | null {
+		return this._userId
+	}
+	protected transformData(
+		data: EventSubChannelHypeTrainProgressV2EventData
+	): EventSubChannelHypeTrainProgressV2Event {
+		//@ts-ignore - Ignore us using an internal constructor
+		const result = new EventSubChannelHypeTrainProgressV2Event(data, this._client._apiClient)
+		return result
+	}
+
+	protected async _subscribe(): Promise<HelixEventSubSubscription> {
+		return await this._client._apiClient.eventSub.subscribeToChannelHypeTrainProgressV2Events(
 			this._userId,
 			await this._getTransportOptions()
 		)
@@ -214,7 +252,31 @@ export function setupHypeTrains() {
 			})
 		})*/
 
-		service.eventsub.onChannelHypeTrainProgressV2(channel.twitchId, (event) => {
+		//@ts-ignore
+		service.eventsub._genericSubscribe(
+			HypeTrainProgressV2WorkAround,
+			(event) => {
+				const levelUp = event.level > hypeTrainLevel.value
+
+				hypeTrainLevel.value = event.level
+				hypeTrainProgress.value = event.progress
+				hypeTrainGoal.value = event.goal
+				hypeTrainTotal.value = event.total
+
+				if (levelUp) {
+					hypeTrainLevelUp({
+						level: event.level,
+						progress: event.progress,
+						goal: event.goal,
+						total: event.total,
+					})
+				}
+			},
+			service.eventsub,
+			extractUserId(channel.twitchId)
+		)
+
+		/*service.eventsub.onChannelHypeTrainProgressV2(channel.twitchId, (event) => {
 			const levelUp = event.level > hypeTrainLevel.value
 
 			hypeTrainLevel.value = event.level
@@ -230,7 +292,7 @@ export function setupHypeTrains() {
 					total: event.total,
 				})
 			}
-		})
+		})*/
 
 		const hypeTrain = await channel.apiClient.hypeTrain.getHypeTrainStatusForBroadcaster(channel.twitchId)
 
