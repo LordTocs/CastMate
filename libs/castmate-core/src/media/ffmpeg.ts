@@ -73,7 +73,7 @@ export async function ffprobe(file: string): Promise<FFProbeOutput> {
 	const resolvedFile = path.resolve(file)
 	const execPromise = new Promise<string>((resolve, reject) => {
 		childProcess.exec(
-			`${ffprobePath} -i "${resolvedFile}" -v quiet -print_format json -show_format -show_streams`,
+			`"${ffprobePath}" -i "${resolvedFile}" -v quiet -print_format json -show_format -show_streams`,
 			{},
 			(err, stdout, stderr) => {
 				if (err) return reject(err)

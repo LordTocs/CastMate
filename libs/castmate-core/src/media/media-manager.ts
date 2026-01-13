@@ -267,7 +267,9 @@ export const MediaManager = Service(
 						}
 					}
 				}
-			} catch {}
+			} catch (err) {
+				logger.error("ERROR PROBING MEDIA", err)
+			}
 			this.mediaFiles.set(normPath, metadata)
 			addOrUpdateMediaRenderer(metadata)
 		}
