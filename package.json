@@ -24,7 +24,7 @@
 	"license": "AGPL",
 	"electronVersion": "20.0.1",
 	"devDependencies": {
-		"@electron/rebuild": "^3.7.1",
+		"@electron/rebuild": "^4.0.2",
 		"@types/node": "^20.4.8",
 		"@vitejs/plugin-vue": "4.6.2",
 		"@vue/tsconfig": "^0.4.0",
