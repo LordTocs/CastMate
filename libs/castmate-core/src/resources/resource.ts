@@ -2,7 +2,7 @@ import _cloneDeep from "lodash/cloneDeep"
 import { ReactiveEffect, ReactiveGet, ReactiveSet, autoRerun, rawify } from "../reactivity/reactivity"
 import { ResourceRegistry } from "./resource-registry"
 import { defineCallableIPC } from "../util/electron"
-import { ResourceData } from "castmate-schema"
+import { ResourceData, SchemaObj, SchemaType } from "castmate-schema"
 import { isObject } from "../util/type-helpers"
 import { globalLogger } from "../logging/logging"
 
@@ -215,30 +215,62 @@ export async function removeAllSubResource<T extends ResourceConstructor>(resour
 	await Promise.allSettled(ids.map((id) => resourceConstructor.storage.remove(id)))
 }
 
-/*
-interface LightConfig {
-	brand: string
-	supportsColor: boolean
-	supportsColorTemp: boolean
-	minColorTemp?: number
-	maxColorTemp?: number
+interface Resource2 {
+	readonly id: string
 }
 
-interface LightState {
-	color: string
+interface Resource2Spec<StateSchema extends SchemaObj, ConfigSchema extends SchemaObj> {
+	typeId: string
+	stateSchema: StateSchema
+	configSchema: ConfigSchema
 }
 
+type Resource2Constructor = {
+	new (...args: any[]): Resource2
+	spec: any
+}
 
-@RegisterResource
-class Light extends Resource<LightConfig, LightState> {
-	static async load() {
-		super.load()
+function Resource2Base<StateSchema extends SchemaObj, ConfigSchema extends SchemaObj>(
+	spec: Resource2Spec<StateSchema, ConfigSchema>
+) {
+	return class ResourceBase2 {
+		private _id: string = ""
+
+		get id() {
+			return this._id
+		}
+
+		static spec = spec
+		private internalState: SchemaType<StateSchema>
+		get state() {
+			return this.internalState
+		}
 	}
 }
 
-class BrandLight extends Light {
-	static async load() {}
-
-	static async unload() {}
+class TestResource extends Resource2Base({
+	typeId: "Test",
+	stateSchema: {
+		type: Object,
+		properties: {
+			a: { type: Number },
+			b: { type: Number },
+		},
+	},
+	configSchema: {
+		type: Object,
+		properties: {
+			a: { type: String },
+		},
+	},
+}) {
+	constructor() {
+		super()
+	}
 }
-*/
+
+const t = new TestResource()
+
+function ResourceSubType<Constructor extends Resource2Constructor>(constructor: Constructor) {
+	return class extends constructor {}
+}
