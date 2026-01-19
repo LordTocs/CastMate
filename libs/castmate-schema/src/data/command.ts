@@ -13,21 +13,21 @@ export interface CommandArgument {
 }
 
 export interface CommandModeCommand {
-	match: string
+	matches: string[]
 	mode: "command"
 	arguments: CommandArgument[]
 	hasMessage: boolean
 }
 
 export interface StringModeCommand {
-	match: string
+	matches: string[]
 	mode: "string"
 	leftBoundary: boolean
 	rightBoundary: boolean
 }
 
 export interface RegexModeCommand {
-	match: string
+	matches: string[]
 	mode: "regex"
 }
 
@@ -44,7 +44,7 @@ export const Command: CommandFactory = {
 	factoryCreate(): Command {
 		return {
 			mode: "command",
-			match: "",
+			matches: [""],
 			arguments: [],
 			hasMessage: false,
 		} satisfies CommandModeCommand
@@ -70,7 +70,7 @@ export function getCommandInfoString(command: Command | undefined) {
 	if (command == null) return ""
 
 	if (command.mode == "command") {
-		let result = command.match
+		let result = command.matches[0]
 
 		if (command.arguments.length > 0) {
 			result +=
@@ -87,9 +87,9 @@ export function getCommandInfoString(command: Command | undefined) {
 
 		return result
 	} else if (command.mode == "string") {
-		return `...${command.leftBoundary ? " " : ""}${command.match}${command.rightBoundary ? " " : ""}...`
+		return `...${command.leftBoundary ? " " : ""}${command.matches[0]}${command.rightBoundary ? " " : ""}...`
 	} else if (command.mode == "regex") {
-		return `RegEx: ${command.match}`
+		return `RegEx: ${command.matches[0]}`
 	}
 }
 
@@ -190,10 +190,21 @@ export async function matchAndParseCommand(
 	command: Command
 ): Promise<Record<string, any> | undefined> {
 	if (command.mode == "command") {
-		const commandLower = command.match.toLocaleLowerCase().trim()
-		if (!message || !message.toLocaleLowerCase().startsWith(commandLower)) return undefined
+		const commandLowers = command.matches.map((m) => m.toLocaleLowerCase().trim())
 
-		let parse: ParseContext = { index: commandLower.length }
+		if (!message) return undefined
+
+		const messageLower = message.toLocaleLowerCase()
+		let parse: ParseContext = { index: 0 }
+
+		let hasCommandMatch = false
+		for (const commandLower of commandLowers) {
+			if (messageLower.startsWith(commandLower)) {
+				hasCommandMatch = true
+				parse.index = commandLower.length
+				break
+			}
+		}
 
 		if (!expectWhitespace(message, parse)) {
 			return undefined
@@ -212,21 +223,26 @@ export async function matchAndParseCommand(
 
 		return argValues
 	} else if (command.mode == "string") {
-		const regexp = new RegExp(
-			`${command.leftBoundary ? "\\b" : ""}${escapeRegExp(command.match.trim())}${
-				command.rightBoundary ? "\\b" : ""
-			}`,
-			"ig"
-		)
-		if (message.match(regexp)) {
-			return {}
+		for (const match of command.matches) {
+			const regexp = new RegExp(
+				`${command.leftBoundary ? "\\b" : ""}${escapeRegExp(match.trim())}${
+					command.rightBoundary ? "\\b" : ""
+				}`,
+				"ig"
+			)
+			if (message.match(regexp)) {
+				return {}
+			}
 		}
+
 		return undefined
 	} else if (command.mode == "regex") {
-		const regexp = new RegExp(command.match)
-		const matchResult = message.match(regexp)
-		if (matchResult != null) {
-			return matchResult
+		for (const match of command.matches) {
+			const regexp = new RegExp(match)
+			const matchResult = message.match(regexp)
+			if (matchResult != null) {
+				return matchResult
+			}
 		}
 		return undefined
 	}
