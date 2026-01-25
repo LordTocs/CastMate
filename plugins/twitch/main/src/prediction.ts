@@ -172,12 +172,29 @@ export function setupPredictions() {
 		name: "Prediction Point Total",
 	})
 
+	const predictionChoiceNames = defineState("predictionChoiceNames", {
+		type: Array,
+		items: { type: String, required: true },
+		required: true,
+		name: "Prediction Choice Names",
+	})
+
+	const predictionChoiceTotals = defineState("predictionChoiceTotals", {
+		type: Array,
+		items: { type: Number, required: true },
+		required: true,
+		name: "Prediction Choice Totals",
+	})
+
 	onChannelAuth((channel, service) => {
 		service.eventsub.onChannelPredictionBegin(channel.twitchId, (event) => {
 			predictionTitle.value = event.title
 			predictionExists.value = true
 			predictionId.value = event.id
 			predictionTotal.value = 0
+
+			predictionChoiceNames.value = event.outcomes.map((o) => o.title)
+			predictionChoiceTotals.value = []
 
 			predictionStarted({
 				title: event.title,
@@ -191,14 +208,12 @@ export function setupPredictions() {
 			predictionId.value = undefined
 			predictionTotal.value = 0
 
-			let total = 0
-			for (let o of event.outcomes) {
-				total += o.channelPoints
-			}
+			predictionChoiceNames.value = []
+			predictionChoiceTotals.value = []
 
 			predictionSettled({
 				title: event.title,
-				total,
+				total: 0,
 				outcomes: event.outcomes.map((o) => ({ title: o.title, color: o.color, points: o.channelPoints })),
 			})
 		})
@@ -210,6 +225,9 @@ export function setupPredictions() {
 			}
 
 			predictionTotal.value = total
+
+			predictionChoiceTotals.value = event.outcomes.map((o) => o.channelPoints)
+			predictionChoiceNames.value = event.outcomes.map((o) => o.title)
 
 			predictionLocked({
 				title: event.title,
@@ -224,6 +242,8 @@ export function setupPredictions() {
 				total += o.channelPoints
 			}
 			predictionTotal.value = total
+			predictionChoiceTotals.value = event.outcomes.map((o) => o.channelPoints)
+			predictionChoiceNames.value = event.outcomes.map((o) => o.title)
 		})
 	})
 }
