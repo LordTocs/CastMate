@@ -1,4 +1,4 @@
-import { S, Schema, SchemaBaseOptions, SchemaBase } from "./schema-base"
+import { S, Schema, SchemaBaseOptions, SchemaBase, defineSchemaType } from "./schema-base"
 import { UnresolvedSchemaType, ResolvedSchemaType } from "./schema-typing"
 
 export interface SchemaArrayOptions<TItem extends Schema> extends SchemaBaseOptions {
@@ -24,6 +24,18 @@ declare module "./schema-base" {
 		function Array<TItem extends Schema>(items: TItem, options?: SchemaArrayOptions<TItem>): SchemaArray<TItem>
 	}
 }
+
+defineSchemaType<SchemaArray>({
+	type: "Array",
+	name(schema) {
+		return `${getSchemaTypeName(schema.items)} Array`
+	},
+	color: "#000000",
+	icon: "mdi mdi-array",
+	factory(schema) {
+		return []
+	},
+})
 
 S.Array = <TItem extends Schema>(items: TItem, options?: SchemaArrayOptions<TItem>) => {
 	return {

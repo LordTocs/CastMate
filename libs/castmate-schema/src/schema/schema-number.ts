@@ -1,4 +1,4 @@
-import { S, Enumable, Schema, SchemaBaseOptions, defineSchemaComparison } from "./schema-base"
+import { S, Enumable, Schema, SchemaBaseOptions, defineSchemaComparison, defineSchemaType } from "./schema-base"
 
 export interface SchemaNumberOptions extends SchemaBaseOptions, Enumable<number> {
 	min?: number
@@ -36,5 +36,20 @@ S.Number = (options) => {
 		...options,
 	}
 }
+
+defineSchemaType<SchemaNumber>({
+	type: "Number",
+	name: "Number",
+	color: "#000000",
+	icon: "mdi mdi-number",
+	traits: {
+		canBeVariable: true,
+		canBeViewerVariable: true,
+		canBeCommandArg: true,
+	},
+	factory() {
+		return 0
+	},
+})
 
 defineSchemaComparison("Number", "Number")

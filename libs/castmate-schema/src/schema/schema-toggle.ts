@@ -1,4 +1,12 @@
-import { SchemaBaseOptions, Schema, Enumable, S, isSchemaType, defineSchemaComparison } from "./schema-base"
+import {
+	SchemaBaseOptions,
+	Schema,
+	Enumable,
+	S,
+	isSchemaType,
+	defineSchemaComparison,
+	defineSchemaType,
+} from "./schema-base"
 
 export type Toggle = boolean | "toggle"
 
@@ -20,7 +28,7 @@ declare module "./schema-base" {
 	}
 
 	interface SchemaTypeMap {
-		Toggle: SchemaMapping<SchemaToggle, string>
+		Toggle: SchemaMapping<SchemaToggle, Toggle>
 	}
 }
 
@@ -30,6 +38,21 @@ S.Toggle = (options) => {
 		...options,
 	}
 }
+
+defineSchemaType<SchemaToggle>({
+	type: "Toggle",
+	name: "Toggle",
+	color: "#000000",
+	icon: "mdi mdi-swap",
+	traits: {
+		canBeVariable: true,
+		canBeViewerVariable: false,
+		canBeCommandArg: true,
+	},
+	factory() {
+		return false
+	},
+})
 
 defineSchemaComparison("Toggle", "Toggle", {
 	equality(lhs, rhs) {

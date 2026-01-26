@@ -1,5 +1,13 @@
 import { ExpressionNode } from "../expression/expression"
-import { SchemaBaseOptions, Schema, Enumable, S, isSchemaType, defineSchemaComparison } from "./schema-base"
+import {
+	SchemaBaseOptions,
+	Schema,
+	Enumable,
+	S,
+	isSchemaType,
+	defineSchemaComparison,
+	defineSchemaType,
+} from "./schema-base"
 
 export interface SchemaStringOptions extends SchemaBaseOptions, Enumable<string> {
 	maxLength?: number
@@ -32,5 +40,20 @@ S.String = (options) => {
 		...options,
 	}
 }
+
+defineSchemaType<SchemaString>({
+	type: "String",
+	name: "String",
+	color: "#000000",
+	icon: "mdi mdi-text",
+	traits: {
+		canBeVariable: true,
+		canBeViewerVariable: true,
+		canBeCommandArg: true,
+	},
+	factory() {
+		return ""
+	},
+})
 
 defineSchemaComparison("String", "String")

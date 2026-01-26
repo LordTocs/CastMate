@@ -70,17 +70,9 @@ export interface SchemaMapping<TSchema extends Schema = any, ResolvedType = any,
 export interface SchemaTypeMap {}
 
 export interface SchemaTypeTraits {
-	canBeVariable: boolean
-	canBeViewerVariable: boolean
+	canBeVariable?: boolean
+	canBeViewerVariable?: boolean
 	canBeCommandArg?: boolean
-}
-
-export interface SchemaTypeConfig<TSchema extends Schema = Schema> {
-	type: TSchema["type"]
-	name: string
-	color: string
-	icon: string
-	traits: SchemaTypeTraits
 }
 
 export interface SchemaTypeComparison<
@@ -115,6 +107,15 @@ export function getJSCompare() {
 	}
 }
 
+export interface SchemaTypeConfig<TSchema extends Schema = Schema> {
+	type: TSchema["type"]
+	name: string | ((schema: TSchema) => string)
+	color: string
+	icon: string
+	traits: SchemaTypeTraits
+	factory: (schema: TSchema) => ResolvedSchemaType<TSchema>
+}
+
 export interface SchemaTypeMetaData<TSchema extends Schema = Schema> extends SchemaTypeConfig<TSchema> {
 	comparison: Partial<Record<keyof SchemaTypeMap, SchemaTypeComparison<TSchema, keyof SchemaTypeMap>>>
 	convertFromString?: (str: string) => MaybePromise<ResolvedSchemaType<TSchema>>
@@ -123,10 +124,10 @@ export interface SchemaTypeMetaData<TSchema extends Schema = Schema> extends Sch
 
 const typeRegistry = new Map<string, SchemaTypeMetaData>()
 export function defineSchemaType<TSchema extends Schema>(meta: SchemaTypeConfig<TSchema>) {
-	typeRegistry.set(meta.name, { ...meta, comparison: {} })
+	typeRegistry.set(meta.type, { ...meta, comparison: {} } as SchemaTypeMetaData)
 }
 
-export function getSchemaType<TypeName extends keyof SchemaTypeMap>(
+export function getSchemaMetaData<TypeName extends keyof SchemaTypeMap>(
 	type: TypeName
 ): SchemaTypeMetaData<SchemaByName<TypeName>> {
 	const result = typeRegistry.get(type)
@@ -136,6 +137,18 @@ export function getSchemaType<TypeName extends keyof SchemaTypeMap>(
 	return result as SchemaTypeMetaData<SchemaByName<TypeName>>
 }
 
+export function getSchemaTypeName<TSchema extends Schema>(schema: TSchema) {
+	//@ts-ignore TODO: FIX TYPING HERE
+	const metaData = getSchemaMetaData(schema.type)
+
+	if (typeof metaData.name == "string") {
+		return metaData.name
+	} else {
+		//@ts-ignore
+		return metaData.name(schema)
+	}
+}
+
 export function defineSchemaStringConversion<TypeName extends keyof SchemaTypeMap>(
 	type: TypeName,
 	conversions: {
@@ -143,7 +156,7 @@ export function defineSchemaStringConversion<TypeName extends keyof SchemaTypeMa
 		convertToString?: (value: ResolvedSchemaTypeByName<TypeName>) => MaybePromise<string>
 	}
 ) {
-	const metaData = getSchemaType(type)
+	const metaData = getSchemaMetaData(type)
 	Object.assign(metaData, conversions)
 }
 
@@ -162,7 +175,7 @@ export function defineSchemaComparison<LeftType extends keyof SchemaTypeMap, Rig
 		): MaybePromise<boolean>
 	} = getJSCompare()
 ) {
-	const metaData = getSchemaType(lhs)
+	const metaData = getSchemaMetaData(lhs)
 
 	if (metaData.comparison[rhs]) {
 		Object.assign(metaData.comparison[rhs], config)

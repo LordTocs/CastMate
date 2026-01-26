@@ -1,4 +1,12 @@
-import { S, isSchemaType, SchemaBaseOptions, Schema } from "./schema-base"
+import {
+	S,
+	isSchemaType,
+	SchemaBaseOptions,
+	Schema,
+	defineSchemaType,
+	getSchemaMetaData,
+	getSchemaTypeName,
+} from "./schema-base"
 import { ResolvedSchemaType, UnresolvedSchemaType } from "./schema-typing"
 
 export interface SchemaRangeOptions extends SchemaBaseOptions {}
@@ -43,6 +51,20 @@ declare module "./schema-base" {
 		function Range<TLimit extends Schema>(limit: TLimit, options?: SchemaRangeOptions): SchemaRange<TLimit>
 	}
 }
+
+defineSchemaType<SchemaRange>({
+	type: "Range",
+	name(schema) {
+		//@ts-ignore
+		const innerName = getSchemaTypeName(schema.limit)
+		return `${innerName} Range`
+	},
+	color: "#000000",
+	icon: "mdi mdi-range",
+	factory(schema) {
+		return {}
+	},
+})
 
 S.Range = <TLimit extends Schema>(limit: TLimit, options: SchemaRangeOptions) => {
 	return {
