@@ -222,17 +222,19 @@ export const ViewerCache = Service(
 
 			if (isSatellite()) return
 
-			const [vips, mods] = await Promise.all([
-				TwitchAccount.channel.apiClient.channels.getVipsPaginated(TwitchAccount.channel.twitchId).getAll(),
-				TwitchAccount.channel.apiClient.moderation
-					.getModeratorsPaginated(TwitchAccount.channel.twitchId)
-					.getAll(),
-			])
-			for (const vip of vips) {
-				this.vips.add(vip.id)
-			}
-			for (const mod of mods) {
-				this.mods.add(mod.userId)
+			if (TwitchAccount.channel.isAuthenticated) {
+				const [vips, mods] = await Promise.all([
+					TwitchAccount.channel.apiClient.channels.getVipsPaginated(TwitchAccount.channel.twitchId).getAll(),
+					TwitchAccount.channel.apiClient.moderation
+						.getModeratorsPaginated(TwitchAccount.channel.twitchId)
+						.getAll(),
+				])
+				for (const vip of vips) {
+					this.vips.add(vip.id)
+				}
+				for (const mod of mods) {
+					this.mods.add(mod.userId)
+				}
 			}
 
 			if (this.chatterQueryTimer) {
@@ -247,6 +249,9 @@ export const ViewerCache = Service(
 		//@measurePerf
 		private async updateChatterList() {
 			if (isSatellite()) return
+
+			if (!TwitchAccount.channel.isAuthenticated) return
+
 			return await measurePerfFunc(async () => {
 				const newChatters = new Map<string, CachedTwitchViewer>()
 
@@ -310,6 +315,8 @@ export const ViewerCache = Service(
 			const perf1 = startPerfTime("Query Color User Gather")
 			const ids = getNValues(this.unknownColors, userIds, 100)
 			perf1.stop(logger)
+
+			if (!TwitchAccount.channel.isAuthenticated) return
 
 			try {
 				const perf2 = startPerfTime(`Run Query Color ${ids.length}`)
@@ -398,7 +405,7 @@ export const ViewerCache = Service(
 		}
 
 		cacheGiftSubEvent(event: EventSubChannelSubscriptionGiftEvent) {
-			if (event.isAnonymous) return
+			if (event.isAnonymous || event.gifterId == null || event.gifterDisplayName == null) return
 
 			const cached = this.getOrCreate(event.gifterId)
 			this.updateNameCache(cached, event.gifterDisplayName)
@@ -431,6 +438,8 @@ export const ViewerCache = Service(
 		private async queryFollowing(...userIds: string[]) {
 			try {
 				userIds = userIds.filter((id) => id != "anonymous")
+
+				if (!TwitchAccount.channel.isAuthenticated) return
 
 				const perf1 = startPerfTime("Running Follow Queries")
 
@@ -546,6 +555,8 @@ export const ViewerCache = Service(
 			const ids = getNValues(this.unknownSubInfo, userIds, 100)
 			perf1.stop(logger)
 
+			if (!TwitchAccount.channel.isAuthenticated) return
+
 			try {
 				const perf2 = startPerfTime(`Run Query Subs ${ids.length}`)
 				const subs = await TwitchAccount.channel.apiClient.subscriptions.getSubscriptionsForUsers(
@@ -610,6 +621,9 @@ export const ViewerCache = Service(
 			const perf1 = startPerfTime("Query User Gather")
 			const ids = getNValues(this.unknownUserInfo, userIds, 100)
 			perf1.stop(logger)
+
+			if (!TwitchAccount.channel.isAuthenticated) return
+
 			try {
 				const perf2 = startPerfTime(`Run Get Users Query ${ids.length}`)
 				const users = await TwitchAccount.channel.apiClient.users.getUsersByIds(ids)

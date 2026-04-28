@@ -138,13 +138,17 @@ export class Account<
 	async load() {
 		await this.loadSecrets()
 		await this.loadConfig()
-		if (!(await this.checkCachedCreds())) {
-			if (!(await this.refreshCreds())) {
-				this.state.authenticated = false
-				return
+		try {
+			if (!(await this.checkCachedCreds())) {
+				if (!(await this.refreshCreds())) {
+					this.state.authenticated = false
+					return
+				}
 			}
+			this.state.authenticated = true
+		} catch (err) {
+			this.state.authenticated = false
 		}
-		this.state.authenticated = true
 	}
 
 	get isAuthenticated() {

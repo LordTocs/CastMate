@@ -74,6 +74,12 @@ const REDIRECT_URL = `http://localhost/auth/channel/redirect` //Note we don't ac
 
 const logger = usePluginLogger("twitch")
 
+function timeout(ms: number, err?: string) {
+	return new Promise<void>((resolve, reject) => {
+		setTimeout(() => reject(new Error(err ?? "Timed Out")), ms)
+	})
+}
+
 export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountConfig> implements AuthProvider {
 	static storage = new ResourceStorage<TwitchAccount>("TwitchAccount")
 	static accountDirectory: string = "twitch"
@@ -133,18 +139,26 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 	//Then if we go to the auth page again and the cookies/session are still valid
 	//We'll get a new token
 	async refreshCreds(): Promise<boolean> {
-		const accessToken = await this.tryCookies() //TODO Timeout?
-		if (accessToken) {
-			if (await this.checkToken(accessToken)) {
-				await this.setSecrets({
-					accessToken,
-				})
+		try {
+			logger.log(`Refreshing ${this.config.name} creds from cookies...`)
+			const accessToken = await Promise.race([this.tryCookies(), timeout(30000, "Cookies never resolved")])
+			if (accessToken) {
+				if (await this.checkToken(accessToken)) {
+					await this.setSecrets({
+						accessToken,
+					})
 
-				await this.finishAuth()
-				return true
+					await this.finishAuth()
+					return true
+				}
 			}
+			return false
+		} catch (err) {
+			logger.error("Error refreshing creds", err)
+			return false
+		} finally {
+			logger.log(`Done Refreshing ${this.config.name} Creds`)
 		}
-		return false
 	}
 
 	private tryCookies() {
@@ -412,6 +426,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 	}
 
 	static async initialize(): Promise<void> {
+		logger.log("Initializing Twitch Accounts")
 		await super.initialize()
 
 		const channel = new TwitchAccount()
@@ -436,6 +451,7 @@ export class TwitchAccount extends Account<TwitchAccountSecrets, TwitchAccountCo
 			logger.error("Failed to auth Bot", err)
 		}
 		await this.storage.inject(bot)
+		logger.log("Finished Initializing Twitch Accounts")
 	}
 
 	static async uninitialize(): Promise<void> {

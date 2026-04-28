@@ -112,6 +112,8 @@ export const CategoryCache = Service(
 
 			if (cached) return cached
 
+			if (!TwitchAccount.channel.isAuthenticated) return undefined
+
 			const game = await TwitchAccount.channel.apiClient.games.getGameById(id)
 
 			if (game) {
@@ -126,6 +128,8 @@ export const CategoryCache = Service(
 		async getCategoryByName(name: string) {
 			const cached = this.nameLookup.get(name)
 			if (cached) return cached
+
+			if (!TwitchAccount.channel.isAuthenticated) return undefined
 
 			const game = await TwitchAccount.channel.apiClient.games.getGameByName(name)
 
