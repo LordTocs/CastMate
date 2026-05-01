@@ -6,12 +6,14 @@ import {
 	defineSchemaType,
 	getSchemaMetaData,
 	getSchemaTypeName,
+	Defaultable,
+	getDefault,
 } from "./schema-base"
-import { ResolvedSchemaType, UnresolvedSchemaType } from "./schema-typing"
+import { SchemaType, ExpressedSchemaType } from "./schema-typing"
 
 export interface SchemaRangeOptions extends SchemaBaseOptions {}
 
-export interface SchemaRange<TLimit extends Schema = Schema> {
+export interface SchemaRange<TLimit extends Schema = Schema> extends Defaultable<Range<SchemaType<TLimit>>> {
 	type: "Range"
 	limit: TLimit
 }
@@ -27,8 +29,8 @@ export interface Range<T> {
 
 export const Range = {
 	inRange<TLimit extends Schema>(
-		value: ResolvedSchemaType<TLimit>,
-		range: Range<ResolvedSchemaType<TLimit>>,
+		value: SchemaType<TLimit>,
+		range: Range<SchemaType<TLimit>>,
 		schema: TLimit
 	): boolean {
 		//TODO: Use Schema Comparison
@@ -36,14 +38,14 @@ export const Range = {
 	},
 }
 
-export type UnresolvedSchemaRangeType<
+export type ExpressedSchemaRangeType<
 	TRange extends SchemaRange,
-	Result extends unknown = Range<UnresolvedSchemaType<TRange["limit"]>>
+	Result extends unknown = Range<ExpressedSchemaType<TRange["limit"]>>
 > = Result
 
-export type ResolvedSchemaRangeType<
+export type SchemaRangeType<
 	TRange extends SchemaRange,
-	Result extends unknown = Range<ResolvedSchemaType<TRange["limit"]>>
+	Result extends unknown = Range<SchemaType<TRange["limit"]>>
 > = Result
 
 declare module "./schema-base" {
@@ -61,12 +63,15 @@ defineSchemaType<SchemaRange>({
 	},
 	color: "#000000",
 	icon: "mdi mdi-range",
-	factory(schema) {
-		return {}
+	traits: {
+		canBeVariable: true,
+	},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? {}) as SchemaType<typeof schema>
 	},
 })
 
-S.Range = <TLimit extends Schema>(limit: TLimit, options: SchemaRangeOptions) => {
+S.Range = <TLimit extends Schema>(limit: TLimit, options?: SchemaRangeOptions) => {
 	return {
 		type: "Range",
 		limit,

@@ -1,6 +1,16 @@
-import { S, Enumable, Schema, SchemaBaseOptions, defineSchemaComparison, defineSchemaType } from "./schema-base"
+import {
+	S,
+	Enumable,
+	Schema,
+	SchemaBaseOptions,
+	defineSchemaComparison,
+	defineSchemaType,
+	Defaultable,
+	getDefault,
+} from "./schema-base"
+import { SchemaType } from "./schema-typing"
 
-export interface SchemaNumberOptions extends SchemaBaseOptions, Enumable<number> {
+export interface SchemaNumberOptions extends SchemaBaseOptions, Enumable<number>, Defaultable<number> {
 	min?: number
 	max?: number
 	step?: number
@@ -47,8 +57,8 @@ defineSchemaType<SchemaNumber>({
 		canBeViewerVariable: true,
 		canBeCommandArg: true,
 	},
-	factory() {
-		return 0
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? 0) as SchemaType<typeof schema>
 	},
 })
 

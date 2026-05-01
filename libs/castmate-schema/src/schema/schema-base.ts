@@ -1,6 +1,6 @@
 import { InequalityOperator } from "../expression/nodes/comparison-expression"
 import { MaybePromise } from "../util/type-helpers"
-import { ResolvedSchemaType, ResolvedSchemaTypeByName, SchemaByName } from "./schema-typing"
+import { SchemaType, SchemaTypeByName, SchemaByName } from "./schema-typing"
 
 export interface Schema extends SchemaBaseOptions {
 	type: string
@@ -8,6 +8,15 @@ export interface Schema extends SchemaBaseOptions {
 
 export interface Defaultable<T> {
 	default?: T | (() => MaybePromise<T>)
+}
+
+export async function getDefault<T>(defaultable: Defaultable<T>): Promise<T | undefined> {
+	if (!defaultable.default) return undefined
+	if (typeof defaultable.default == "function") {
+		//@ts-ignore
+		return await defaultable.default()
+	}
+	return defaultable.default
 }
 
 export interface EnumPair<T> {
@@ -46,6 +55,11 @@ export namespace S {
 		}
 	}
 
+	/**
+	 * Prevent expressions from being used for this data.
+	 * @param schema
+	 * @returns
+	 */
 	export function InExpressable<TSchema extends SchemaBase>(schema: TSchema): InexpressableSchema<TSchema> {
 		return {
 			...schema,
@@ -61,13 +75,15 @@ export function isSchemaType<Type extends string>(schema: unknown, type: Type): 
 	return schema.type == type
 }
 
-export interface SchemaMapping<TSchema extends Schema = any, ResolvedType = any, UnresolvedType = never> {
+export interface SchemaMapping<TSchema extends Schema = any, Type = any, ExpressedType = never> {
 	schema: TSchema
-	resolvedType: ResolvedType
-	unresolvedType: UnresolvedType
+	type: Type
+	expressedType: ExpressedType
 }
 
 export interface SchemaTypeMap {}
+
+type SchemaTypeNames = keyof SchemaTypeMap
 
 export interface SchemaTypeTraits {
 	canBeVariable?: boolean
@@ -79,10 +95,10 @@ export interface SchemaTypeComparison<
 	TSchema extends Schema = Schema,
 	OtherType extends keyof SchemaTypeMap = keyof SchemaTypeMap
 > {
-	equality?(lhs: ResolvedSchemaType<TSchema>, rhs: ResolvedSchemaTypeByName<OtherType>): MaybePromise<boolean>
+	equality?(lhs: SchemaType<TSchema>, rhs: SchemaTypeByName<OtherType>): MaybePromise<boolean>
 	inequality?(
-		lhs: ResolvedSchemaType<TSchema>,
-		rhs: ResolvedSchemaTypeByName<OtherType>,
+		lhs: SchemaType<TSchema>,
+		rhs: SchemaTypeByName<OtherType>,
 		inequality: InequalityOperator
 	): MaybePromise<boolean>
 }
@@ -113,21 +129,22 @@ export interface SchemaTypeConfig<TSchema extends Schema = Schema> {
 	color: string
 	icon: string
 	traits: SchemaTypeTraits
-	factory: (schema: TSchema) => ResolvedSchemaType<TSchema>
+	constructDefault: <TTSchema extends TSchema>(schema: TTSchema) => Promise<SchemaType<TTSchema>>
 }
 
 export interface SchemaTypeMetaData<TSchema extends Schema = Schema> extends SchemaTypeConfig<TSchema> {
 	comparison: Partial<Record<keyof SchemaTypeMap, SchemaTypeComparison<TSchema, keyof SchemaTypeMap>>>
-	convertFromString?: (str: string) => MaybePromise<ResolvedSchemaType<TSchema>>
-	convertToString?: (value: ResolvedSchemaType<TSchema>) => MaybePromise<string>
+	convertFromString?: (str: string) => MaybePromise<SchemaType<TSchema>>
+	convertToString?: (value: SchemaType<TSchema>) => MaybePromise<string>
 }
 
 const typeRegistry = new Map<string, SchemaTypeMetaData>()
 export function defineSchemaType<TSchema extends Schema>(meta: SchemaTypeConfig<TSchema>) {
-	typeRegistry.set(meta.type, { ...meta, comparison: {} } as SchemaTypeMetaData)
+	//@ts-expect-error
+	typeRegistry.set(meta.type, { ...meta, comparison: {} })
 }
 
-export function getSchemaMetaData<TypeName extends keyof SchemaTypeMap>(
+export function getSchemaMetaData<TypeName extends SchemaTypeNames>(
 	type: TypeName
 ): SchemaTypeMetaData<SchemaByName<TypeName>> {
 	const result = typeRegistry.get(type)
@@ -152,8 +169,8 @@ export function getSchemaTypeName<TSchema extends Schema>(schema: TSchema) {
 export function defineSchemaStringConversion<TypeName extends keyof SchemaTypeMap>(
 	type: TypeName,
 	conversions: {
-		convertFromString?: (str: string) => MaybePromise<ResolvedSchemaTypeByName<TypeName>>
-		convertToString?: (value: ResolvedSchemaTypeByName<TypeName>) => MaybePromise<string>
+		convertFromString?: (str: string) => MaybePromise<SchemaTypeByName<TypeName>>
+		convertToString?: (value: SchemaTypeByName<TypeName>) => MaybePromise<string>
 	}
 ) {
 	const metaData = getSchemaMetaData(type)
@@ -164,13 +181,10 @@ export function defineSchemaComparison<LeftType extends keyof SchemaTypeMap, Rig
 	lhs: LeftType,
 	rhs: RightType,
 	config: {
-		equality?(
-			lhs: ResolvedSchemaTypeByName<LeftType>,
-			rhs: ResolvedSchemaTypeByName<RightType>
-		): MaybePromise<boolean>
+		equality?(lhs: SchemaTypeByName<LeftType>, rhs: SchemaTypeByName<RightType>): MaybePromise<boolean>
 		inequality?(
-			lhs: ResolvedSchemaTypeByName<LeftType>,
-			rhs: ResolvedSchemaTypeByName<RightType>,
+			lhs: SchemaTypeByName<LeftType>,
+			rhs: SchemaTypeByName<RightType>,
 			inequality: InequalityOperator
 		): MaybePromise<boolean>
 	} = getJSCompare()

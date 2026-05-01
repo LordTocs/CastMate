@@ -1,3 +1,4 @@
+import { Defaultable } from "../schema"
 import {
 	SchemaBaseOptions,
 	Schema,
@@ -6,11 +7,14 @@ import {
 	isSchemaType,
 	defineSchemaComparison,
 	defineSchemaType,
+	getDefault,
 } from "./schema-base"
+
+import { SchemaType } from "./schema-typing"
 
 export type Toggle = boolean | "toggle"
 
-export interface SchemaToggleOptions extends SchemaBaseOptions, Enumable<string> {
+export interface SchemaToggleOptions extends SchemaBaseOptions, Enumable<string>, Defaultable<Toggle> {
 	trueIcon?: string
 	falseIcon?: string
 	toggleIcon?: string
@@ -49,8 +53,8 @@ defineSchemaType<SchemaToggle>({
 		canBeViewerVariable: false,
 		canBeCommandArg: true,
 	},
-	factory() {
-		return false
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? false) as SchemaType<typeof schema>
 	},
 })
 

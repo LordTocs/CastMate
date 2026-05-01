@@ -9,7 +9,10 @@ import {
 	isSchemaType,
 	defineSchemaComparison,
 	defineSchemaType,
+	getDefault,
+	Defaultable,
 } from "./schema-base"
+import { SchemaType } from "./schema-typing"
 
 export interface SchemaTimerOptions extends SchemaBaseOptions {}
 export interface SchemaDurationOptions extends SchemaBaseOptions {
@@ -17,11 +20,11 @@ export interface SchemaDurationOptions extends SchemaBaseOptions {
 	max?: Duration
 }
 
-export interface SchemaTimer extends Schema, SchemaTimerOptions {
+export interface SchemaTimer extends Schema, SchemaTimerOptions, Defaultable<Timer> {
 	type: "Timer"
 }
 
-export interface SchemaDuration extends Schema, SchemaTimerOptions {
+export interface SchemaDuration extends Schema, SchemaTimerOptions, Defaultable<Duration> {
 	type: "Duration"
 }
 
@@ -49,8 +52,8 @@ defineSchemaType<SchemaTimer>({
 	traits: {
 		canBeVariable: true,
 	},
-	factory() {
-		return Timer.factoryCreate()
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? Timer.factoryCreate()) as SchemaType<typeof schema>
 	},
 })
 
@@ -69,8 +72,8 @@ defineSchemaType<SchemaDuration>({
 	traits: {
 		canBeVariable: true,
 	},
-	factory() {
-		return 0
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? 0) as SchemaType<typeof schema>
 	},
 })
 

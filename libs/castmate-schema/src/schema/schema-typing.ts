@@ -1,13 +1,8 @@
 import { ExpressionNode } from "../expression/expression"
-import { SchemaArray, ResolvedSchemaArrayType, UnresolvedSchemaArrayType } from "./schema-array"
+import { SchemaArray, SchemaArrayType, ExpressedSchemaArrayType } from "./schema-array"
 import { Schema, SchemaMapping, SchemaTypeMap } from "./schema-base"
-import { SchemaObject, UnresolvedSchemaObjectType, ResolvedSchemaObjectType } from "./schema-object"
-
-type ExtractSchemaTypes<T extends SchemaMapping> = T["schema"]
-
-type SchemaTypeMapping = {
-	[key: PropertyKey]: SchemaMapping<any, any, any>
-}
+import { SchemaObject, ExpressedSchemaObjectType, SchemaObjectType } from "./schema-object"
+import { ExpressedSchemaRangeType, SchemaRange, SchemaRangeType } from "./schema-range"
 
 type GetTypeMapping<
 	T extends Schema,
@@ -18,27 +13,42 @@ type Fallback<T, F> = T extends never ? F : T
 
 export type SchemaByName<Name extends keyof SchemaTypeMap> = SchemaTypeMap[Name]["schema"]
 
-export type UnresolvedSchemaTypeByName<T extends keyof SchemaTypeMap> = Fallback<
-	SchemaTypeMap[T]["unresolvedType"],
-	SchemaTypeMap[T]["resolvedType"] | ExpressionNode
+export type ExpressedSchemaTypeByName<T extends keyof SchemaTypeMap> = Fallback<
+	SchemaTypeMap[T]["expressedType"],
+	SchemaTypeMap[T]["type"] | ExpressionNode
 >
 
-export type UnresolvedSchemaType<TSchema extends Schema> = TSchema extends SchemaObject
-	? UnresolvedSchemaObjectType<TSchema>
+export type ExpressedSchemaType<TSchema extends Schema> = TSchema extends SchemaObject
+	? ExpressedSchemaObjectType<TSchema>
 	: TSchema extends SchemaArray
-	? UnresolvedSchemaArrayType<TSchema>
+	? ExpressedSchemaArrayType<TSchema>
+	: TSchema extends SchemaRange
+	? ExpressedSchemaRangeType<TSchema>
 	: Fallback<
-			GetTypeMapping<TSchema, SchemaTypeMap>["unresolvedType"],
-			GetTypeMapping<TSchema, SchemaTypeMap>["resolvedType"] | ExpressionNode
+			GetTypeMapping<TSchema, SchemaTypeMap>["expressedType"],
+			GetTypeMapping<TSchema, SchemaTypeMap>["type"] | ExpressionNode
 	  >
 
-export type ResolvedSchemaType<TSchema extends Schema> = TSchema extends SchemaObject
-	? ResolvedSchemaObjectType<TSchema>
+export type SchemaType<TSchema extends Schema> = TSchema extends SchemaObject
+	? SchemaObjectType<TSchema>
 	: TSchema extends SchemaArray
-	? ResolvedSchemaArrayType<TSchema>
-	: GetTypeMapping<TSchema, SchemaTypeMap>["resolvedType"]
+	? SchemaArrayType<TSchema>
+	: TSchema extends SchemaRange
+	? SchemaRangeType<TSchema>
+	: GetTypeMapping<TSchema, SchemaTypeMap>["type"]
 
-export type ResolvedSchemaTypeByName<T extends keyof SchemaTypeMap> = SchemaTypeMap[T]["resolvedType"]
+// export type SchemaType<
+// 	TSchema extends Schema,
+// 	Result extends unknown = TSchema extends SchemaObject
+// 		? SchemaObjectType<TSchema>
+// 		: TSchema extends SchemaArray
+// 		? SchemaArrayType<TSchema>
+// 		: TSchema extends SchemaRange
+// 		? SchemaRangeType<TSchema>
+// 		: GetTypeMapping<TSchema, SchemaTypeMap>["type"]
+// > = Result
+
+export type SchemaTypeByName<T extends keyof SchemaTypeMap> = SchemaTypeMap[T]["type"]
 
 /////
 

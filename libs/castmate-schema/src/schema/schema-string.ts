@@ -7,9 +7,12 @@ import {
 	isSchemaType,
 	defineSchemaComparison,
 	defineSchemaType,
+	getDefault,
+	Defaultable,
 } from "./schema-base"
+import { SchemaType } from "./schema-typing"
 
-export interface SchemaStringOptions extends SchemaBaseOptions, Enumable<string> {
+export interface SchemaStringOptions extends SchemaBaseOptions, Enumable<string>, Defaultable<string> {
 	maxLength?: number
 	secret?: boolean
 	multiLine?: boolean
@@ -51,8 +54,8 @@ defineSchemaType<SchemaString>({
 		canBeViewerVariable: true,
 		canBeCommandArg: true,
 	},
-	factory() {
-		return ""
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? 0) as SchemaType<typeof schema>
 	},
 })
 

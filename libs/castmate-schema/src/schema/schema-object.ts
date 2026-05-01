@@ -1,5 +1,7 @@
-import { S, SchemaBaseOptions, SchemaBase, isSchemaType, Schema } from "./schema-base"
-import { ResolvedSchemaType, UnresolvedSchemaType } from "./schema-typing"
+import { SchemaObj } from "../schema"
+import { S, SchemaBaseOptions, SchemaBase, isSchemaType, Schema, defineSchemaType } from "./schema-base"
+import { SchemaData } from "./schema-data"
+import { SchemaType, ExpressedSchemaType } from "./schema-typing"
 
 export type TSchemaProperties = Record<string, Schema>
 
@@ -23,37 +25,35 @@ type SchemaRequiredKeys<Properties extends Record<string, Schema>> = keyof Omit<
 	SchemaOptionalKeys<Properties>
 >
 
-type UnresolvedSchemaPropertiesModified<Properties extends TSchemaProperties> = {
-	[Property in SchemaRequiredKeys<Properties>]: UnresolvedSchemaType<Properties[Property]>
+type ExpressedSchemaPropertiesModified<Properties extends TSchemaProperties> = {
+	[Property in SchemaRequiredKeys<Properties>]: ExpressedSchemaType<Properties[Property]>
 } & {
-	[Property in SchemaOptionalKeys<Properties>]?: UnresolvedSchemaType<Properties[Property]>
+	[Property in SchemaOptionalKeys<Properties>]?: ExpressedSchemaType<Properties[Property]>
 }
 
-type UnresolvedSchemaPropertiesObject<
+type ExpressedSchemaPropertiesObject<
 	Properties extends TSchemaProperties,
-	PropsModified extends Record<string, unknown> = UnresolvedSchemaPropertiesModified<Properties>,
+	PropsModified extends Record<string, unknown> = ExpressedSchemaPropertiesModified<Properties>,
 	Result extends Record<string, unknown> = { [Key in keyof PropsModified]: PropsModified[Key] }
 > = Result
 
-export type UnresolvedSchemaObjectType<TObject extends SchemaObject> = UnresolvedSchemaPropertiesObject<
+export type ExpressedSchemaObjectType<TObject extends SchemaObject> = ExpressedSchemaPropertiesObject<
 	TObject["properties"]
 >
 
-type ResolvedSchemaPropertiesModified<Properties extends TSchemaProperties> = {
-	[Property in SchemaRequiredKeys<Properties>]: ResolvedSchemaType<Properties[Property]>
+type SchemaPropertiesModified<Properties extends TSchemaProperties> = {
+	[Property in SchemaRequiredKeys<Properties>]: SchemaType<Properties[Property]>
 } & {
-	[Property in SchemaOptionalKeys<Properties>]?: ResolvedSchemaType<Properties[Property]>
+	[Property in SchemaOptionalKeys<Properties>]?: SchemaType<Properties[Property]>
 }
 
-type ResolvedSchemaPropertiesObject<
+type SchemaPropertiesObject<
 	Properties extends TSchemaProperties,
-	PropsModified extends Record<string, unknown> = ResolvedSchemaPropertiesModified<Properties>,
+	PropsModified extends Record<string, unknown> = SchemaPropertiesModified<Properties>,
 	Result extends Record<string, unknown> = { [Key in keyof PropsModified]: PropsModified[Key] }
 > = Result
 
-export type ResolvedSchemaObjectType<TObject extends SchemaObject> = ResolvedSchemaPropertiesObject<
-	TObject["properties"]
->
+export type SchemaObjectType<TObject extends SchemaObject> = SchemaPropertiesObject<TObject["properties"]>
 
 export function isObjectSchema(schema: unknown): schema is SchemaObject {
 	if (!isSchemaType(schema, "Object")) return false
@@ -69,7 +69,39 @@ declare module "./schema-base" {
 			options?: SchemaObjectOptions<Properties>
 		): SchemaObject<Properties>
 	}
+
+	interface SchemaTypeMap {
+		Object: SchemaMapping<SchemaObject, object>
+	}
 }
+
+defineSchemaType<SchemaObject>({
+	type: "Object",
+	name: "Object",
+	traits: {},
+	color: "#000000",
+	icon: "mdi mdi-code",
+	async constructDefault(schema) {
+		const result: Record<string, any> = {}
+
+		const promises = new Array<Promise<any>>()
+
+		for (const key in schema.properties) {
+			const prop = schema.properties[key]
+
+			const isOptional = "optional" in prop ? prop.optional != false : false
+			const hasDefault = "default" in prop ? prop.default != null : false
+
+			if (!isOptional || hasDefault) {
+				promises.push(SchemaData.constructDefault(prop).then((v) => (result[key] = v)))
+			}
+		}
+
+		await Promise.all(promises)
+
+		return result as SchemaType<typeof schema>
+	},
+})
 
 S.Object = <Properties extends Record<string, Schema>>(
 	properties: Properties,
