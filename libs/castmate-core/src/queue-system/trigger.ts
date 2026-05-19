@@ -64,6 +64,10 @@ interface TransformTriggerDefinitionSpec<
 	): Promise<ResolvedSchemaType<ContextDataSchema> | undefined>
 }
 
+export interface TriggerResult {
+	completionPromise?: Promise<any>
+}
+
 export interface TriggerDefinition {
 	readonly id: string
 	readonly name: string
@@ -74,7 +78,7 @@ export interface TriggerDefinition {
 	readonly config: Schema
 	readonly context: SchemaObj | ((config: any) => Promise<any>)
 
-	trigger(context: any): Promise<boolean>
+	trigger(context: any): Promise<TriggerResult | undefined>
 	registerIPC(path: string): any
 	toIPC(path: string): IPCTriggerDefinition
 	runWrapper?(inner: () => any): Promise<any>
@@ -184,12 +188,10 @@ class TriggerImplementation<
 		}
 
 		//The handle function indicated this trigger isn't a match, so don't do anything
-		if (resolvedContext == null) return false
+		if (resolvedContext == null) return undefined
 
 		//Get the context our resolved data is using
-		await ActionQueueManager.getInstance().queueOrRun("profile", profile.id, trigger.id, resolvedContext)
-
-		return true
+		return await ActionQueueManager.getInstance().queueOrRun("profile", profile.id, trigger.id, resolvedContext)
 	}
 
 	async trigger(context: ResolvedSchemaType<InvokeContextDataSchema>) {
@@ -197,13 +199,20 @@ class TriggerImplementation<
 		let triggered = false
 		//Check all the active profiles to see if they have any triggers of this type
 
+		let completionPromises = new Array<Promise<any>>()
+
 		for (const profile of activeProfiles) {
 			for (const trigger of profile.config.triggers) {
 				if (trigger.plugin != this.pluginId || trigger.trigger != this.id) continue
 
 				try {
-					if (await this.triggerForData(context, profile, trigger)) {
+					const triggerResult = await this.triggerForData(context, profile, trigger)
+					if (triggerResult) {
 						triggered = true
+
+						if (triggerResult.completionPromise) {
+							completionPromises.push(triggerResult.completionPromise)
+						}
 
 						if (trigger.stop) {
 							break
@@ -224,9 +233,15 @@ class TriggerImplementation<
 				trigger: this.id,
 				context: context,
 			})
-		}
 
-		return triggered
+			if (completionPromises.length > 0) {
+				return {
+					completionPromise: Promise.all(completionPromises),
+				} as TriggerResult
+			} else {
+				return {}
+			}
+		}
 	}
 
 	registerIPC(path: string) {

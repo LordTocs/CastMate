@@ -61,7 +61,9 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 			await component.onDeactivate?.(segment.id, segment.components[componentTypeId])
 		}
 
-		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `${segment.id}.deactivation`, {})
+		await (
+			await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `${segment.id}.deactivation`, {})
+		)?.completionPromise
 	}
 
 	async activateSegment(id: string) {
@@ -87,7 +89,9 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 			await component.onActivate?.(segment.id, segment.components[componentTypeId])
 		}
 
-		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `${segment.id}.activation`, {})
+		await (
+			await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `${segment.id}.activation`, {})
+		)?.completionPromise
 	}
 
 	async activate() {
@@ -97,7 +101,9 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 			name: this.config.name,
 		})
 
-		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `activation`, {})
+		await (
+			await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `activation`, {})
+		)?.completionPromise
 
 		const segment = this.config.segments[0]
 		if (!segment) return
@@ -119,7 +125,9 @@ export class StreamPlan extends FileResource<StreamPlanConfig, StreamPlanState> 
 			this.state.activeSegment = undefined
 		}
 
-		await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `deactivation`, {})
+		await (
+			await ActionQueueManager.getInstance().queueOrRun("stream-plan", this.id, `deactivation`, {})
+		)?.completionPromise
 
 		this.state.active = false
 	}

@@ -22,6 +22,7 @@ import { ResourceRegistry } from "../resources/resource-registry"
 import { deserializeSchema, exposeSchema, serializeSchema } from "../util/ipc-schema"
 import { PluginManager } from "../plugins/plugin-manager"
 import { usePluginLogger } from "../logging/logging"
+import { TriggerResult } from "./trigger"
 
 const logger = usePluginLogger("queues")
 
@@ -271,7 +272,12 @@ export const ActionQueueManager = Service(
 			})
 		}
 
-		async queueOrRun(type: string, id: string, subId: string | undefined, contextData: object) {
+		async queueOrRun(
+			type: string,
+			id: string,
+			subId: string | undefined,
+			contextData: object
+		): Promise<TriggerResult | undefined> {
 			const resolver = SequenceResolvers.getInstance().getResolver(type)
 			if (!resolver) return
 
@@ -289,13 +295,17 @@ export const ActionQueueManager = Service(
 				if (!queue) return
 
 				queue.enqueue({ type, id, subId }, serializeSchema(contextSchema, contextData))
+				return {}
 			} else {
 				const finalContext = await exposeSchema(contextSchema, contextData)
 				const sequenceRunner = new SequenceRunner(automation.sequence, {
 					contextState: finalContext,
 				})
 
-				await wrapper(async () => await sequenceRunner.run(), { type, id, subId })
+				const completionPromise = wrapper(async () => await sequenceRunner.run(), { type, id, subId })
+				return {
+					completionPromise,
+				}
 			}
 		}
 
