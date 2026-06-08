@@ -6,6 +6,7 @@ import { BrowserWindow, IpcMainInvokeEvent, ipcMain, safeStorage } from "electro
 import { defineIPCFunc } from "../util/electron"
 
 import { dialog } from "electron"
+import { Schema, SchemaType } from "castmate-schema"
 
 let activeProjectDirectory: string = ""
 
@@ -41,12 +42,26 @@ export async function ensureYAML<T = any>(defaultData: T, ...paths: string[]) {
 	}
 }
 
-export async function loadYAML<T = any>(...paths: string[]) {
-	const fullPath = resolveProjectPath(...paths)
+export async function loadYAMLAbsolute(fullPath: string) {
 	const strData = await fs.readFile(fullPath, "utf-8")
 	const data = YAML.parse(strData)
+	return data
+}
 
-	return data as T
+export async function loadYAML<T = any>(...paths: string[]) {
+	const fullPath = resolveProjectPath(...paths)
+
+	return (await loadYAMLAbsolute(fullPath)) as T
+}
+
+export async function loadYAMLSchema<TSchema extends Schema>(schema: TSchema, ...paths: string[]) {
+	const rawData = await loadYAML(...paths)
+
+	//TODO: Deserialize / Unexpose
+
+	//TODO: Construct Default if missing!
+
+	return rawData as SchemaType<TSchema>
 }
 
 export async function writeYAML<T = any>(data: T, ...paths: string[]) {
@@ -58,6 +73,16 @@ export async function loadSecretYAML<T = any>(...paths: string[]) {
 	const buffer = await fs.readFile(fullPath)
 	const strData = safeStorage.decryptString(buffer)
 	return YAML.parse(strData) as T
+}
+
+export async function loadSecretYAMLSchema<TSchema extends Schema>(schema: TSchema, ...paths: string[]) {
+	const rawData = await loadSecretYAML(...paths)
+
+	//TODO: Deserialize / Unexpose
+
+	//TODO: Construct default if missing!
+
+	return rawData as SchemaType<TSchema>
 }
 
 export async function writeSecretYAML<T = any>(data: T, ...paths: string[]) {
