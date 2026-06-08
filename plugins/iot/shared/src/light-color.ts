@@ -1,4 +1,14 @@
-import { Color, SchemaBase, registerType } from "castmate-schema"
+import {
+	Color,
+	Defaultable,
+	Schema,
+	S,
+	SchemaBaseOptions,
+	SchemaMapping,
+	defineSchemaType,
+	getDefault,
+	SchemaType,
+} from "castmate-schema"
 import * as chromatism from "chromatism2"
 /**
  * hsb(hue(0-360),sat(0,100), bri(0,100))
@@ -93,23 +103,41 @@ export const LightColor = {
 	},
 }
 
-type LightColorFactory = typeof LightColor
-export interface SchemaLightcolor extends SchemaBase<LightColor> {
-	type: LightColorFactory
-	template?: boolean
+export interface SchemaLightColorOptions extends SchemaBaseOptions, Defaultable<LightColor> {}
+
+export interface SchemaLightColor extends Schema, SchemaLightColorOptions {
+	type: "LightColor"
 }
 
 declare module "castmate-schema" {
+	namespace S {
+		function LightColor(options?: SchemaLightColorOptions): SchemaLightColor
+	}
+
 	interface SchemaTypeMap {
-		LightColor: [SchemaLightcolor, LightColor]
+		LightColor: SchemaMapping<SchemaLightColor, LightColor>
 	}
 }
 
-registerType("LightColor", {
-	constructor: LightColor,
-	icon: "mdi mdi-lightbulb-outline",
-	canBeVariable: true,
-	canBeViewerVariable: true,
+S.LightColor = (options) => {
+	return {
+		type: "LightColor",
+		...options,
+	}
+}
+
+defineSchemaType<SchemaLightColor>({
+	type: "LightColor",
+	name: "Light Color",
+	color: "#000000",
+	icon: "mdi mdi-switch",
+	traits: {
+		canBeVariable: true,
+		canBeViewerVariable: true,
+	},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? false) as SchemaType<typeof schema>
+	},
 })
 
 function clamp(value: number, min: number, max: number) {

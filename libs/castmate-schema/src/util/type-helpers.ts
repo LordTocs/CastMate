@@ -90,6 +90,19 @@ export function hashString(str: string, seed = 0) {
 	return 4294967296 * (2097151 & h2) + (h1 >>> 0)
 }
 
+export function removeKeys<T extends Record<PropertyKey, any>, K extends PropertyKey[]>(
+	o: T,
+	keys: [...K]
+): Omit<T, K[number]> {
+	const result = { ...o }
+	for (const k of keys) {
+		if (k in result) {
+			delete result[k]
+		}
+	}
+	return result
+}
+
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>
 
 export type MapToUnion<T> = T[keyof T]
