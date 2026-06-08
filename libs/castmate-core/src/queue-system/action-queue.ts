@@ -14,7 +14,7 @@ import {
 } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { Service } from "../util/service"
-import { SequenceDebugger, SequenceResolvers, SequenceRunner } from "./sequence"
+import { SequenceDebugger, SequenceReference, SequenceResolvers, SequenceRunner } from "./sequence"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Profile } from "../profile/profile"
 import { FileResource } from "../resources/file-resource"
@@ -271,14 +271,14 @@ export const ActionQueueManager = Service(
 			})
 		}
 
-		async queueOrRun(type: string, id: string, subId: string | undefined, contextData: object) {
-			const resolver = SequenceResolvers.getInstance().getResolver(type)
+		async queueOrRun(ref: SequenceReference, contextData: object) {
+			const resolver = SequenceResolvers.getInstance().getResolver(ref)
 			if (!resolver) return
 
-			const automation = resolver.getAutomation(id, subId)
-			const contextSchema = await resolver.getContextSchema(id, subId)
-			logger.log("QUEUE OR RUN", type, id, subId)
-			const wrapper = resolver.getRunWrapper(id, subId)
+			const automation = resolver.getAutomation(ref)
+			const contextSchema = await resolver.getContextSchema(ref)
+			logger.log("QUEUE OR RUN", ref)
+			const wrapper = resolver.getRunWrapper(ref)
 
 			if (!automation) return
 			if (!contextSchema) return

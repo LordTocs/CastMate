@@ -1,3 +1,5 @@
+import { Schema, SchemaBaseOptions, S, defineSchemaType } from "../schema/schema-base"
+import { SchemaType } from "../schema/schema-typing"
 import {
 	ActionStack,
 	AnyAction,
@@ -29,6 +31,41 @@ export function createInlineAutomation(): InlineAutomation {
 export interface AutomationConfig extends AutomationData {
 	name: string
 }
+
+export interface SchemaInlineAutomationOptions extends SchemaBaseOptions {}
+export interface SchemaInlineAutomation extends Schema, SchemaInlineAutomationOptions {
+	type: "InlineAutomation"
+}
+
+declare module "../schema/schema-base" {
+	namespace S {
+		function InlineAutomation(options?: SchemaInlineAutomationOptions): SchemaInlineAutomation
+	}
+
+	interface SchemaTypeMap {
+		InlineAutomation: SchemaMapping<SchemaInlineAutomation, InlineAutomation>
+	}
+}
+
+S.InlineAutomation = (options) => {
+	return {
+		type: "InlineAutomation",
+		...options,
+	}
+}
+
+defineSchemaType<SchemaInlineAutomation>({
+	type: "InlineAutomation",
+	name: "Inline Automation",
+	color: "#000000",
+	icon: "mdi mdi-switch",
+	traits: {},
+	async constructDefault(schema) {
+		return createInlineAutomation() as SchemaType<typeof schema>
+	},
+})
+
+//////////////////////////////////
 
 export function findActionById(id: string, automation: AutomationData) {
 	let action: AnyAction | ActionStack | undefined = undefined

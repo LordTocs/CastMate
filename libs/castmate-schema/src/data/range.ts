@@ -1,87 +1,79 @@
-import { isNumber } from "lodash"
-import { registerType, Schema, SchemaBase } from "../schema"
+import {
+	S,
+	isSchemaType,
+	SchemaBaseOptions,
+	Schema,
+	defineSchemaType,
+	getSchemaTypeName,
+	Defaultable,
+	getDefault,
+} from "../schema/schema-base"
+import { SchemaType, ExpressedSchemaType } from "../schema/schema-typing"
 
-export interface TemplateRange {
-	min?: number | string
-	max?: number | string
+export interface SchemaRangeOptions extends SchemaBaseOptions {}
+
+export interface SchemaRange<TLimit extends Schema = Schema> extends Defaultable<Range<SchemaType<TLimit>>> {
+	type: "Range"
+	limit: TLimit
 }
 
-export interface Range {
-	min?: number
-	max?: number
+export function isRangeSchema(schema: unknown): schema is SchemaRange {
+	return isSchemaType(schema, "Range")
+}
+
+export interface Range<T> {
+	min?: T
+	max?: T
 }
 
 export const Range = {
-	factoryCreate(): Range {
-		return {}
-	},
-
-	inRange(range: Range | undefined, num: number) {
-		if (!range) return true //Empty range is considered all numbers
-		//if (!isNumber(range.min) || !isNumber(range.max)) return false
-
-		if (range.min != null) {
-			if (!isNumber(range.min)) return false
-			if (range.min > num) {
-				return false
-			}
-		}
-
-		if (range.max != null) {
-			if (!isNumber(range.max)) return false
-			if (range.max < num) {
-				return false
-			}
-		}
-		return true
-	},
-
-	clamp(range: Range | undefined, value: number) {
-		if (!range) return value
-
-		if (range.min != null) {
-			if (value < range.min) {
-				return range.min
-			}
-		}
-
-		if (range.max != null) {
-			if (value > range.max) {
-				return range.max
-			}
-		}
-
-		return value
-	},
-
-	random(range: Range) {
-		const r = Math.random()
-
-		const min = range.min ?? 0
-
-		const max = range.max ?? Math.max(1, min)
-
-		return min + (max - min) * r
+	inRange<TLimit extends Schema>(
+		value: SchemaType<TLimit>,
+		range: Range<SchemaType<TLimit>>,
+		schema: TLimit
+	): boolean {
+		//TODO: Use Schema Comparison
+		return false
 	},
 }
 
-export type RangeFactory = typeof Range
+export type ExpressedSchemaRangeType<
+	TRange extends SchemaRange,
+	Result extends unknown = Range<ExpressedSchemaType<TRange["limit"]>>
+> = Result
 
-export interface SchemaRange extends SchemaBase<Range> {
-	type: RangeFactory
-	template?: boolean
-}
+export type SchemaRangeType<
+	TRange extends SchemaRange,
+	Result extends unknown = Range<SchemaType<TRange["limit"]>>
+> = Result
 
-declare module "../schema" {
-	interface SchemaTypeMap {
-		Range: [SchemaRange, Range]
-	}
-
-	interface TemplateSchemaTypeMap {
-		Range: [SchemaRange, TemplateRange]
+declare module "../schema/schema-base" {
+	namespace S {
+		function Range<TLimit extends Schema>(limit: TLimit, options?: SchemaRangeOptions): SchemaRange<TLimit>
 	}
 }
 
-registerType("Range", {
-	constructor: Range,
+defineSchemaType<SchemaRange>({
+	type: "Range",
+	name(schema) {
+		//@ts-ignore
+		const innerName = getSchemaTypeName(schema.limit)
+		return `${innerName} Range`
+	},
+	color: "#000000",
+	icon: "mdi mdi-range",
+	traits: {
+		canBeVariable: true,
+	},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? {}) as SchemaType<typeof schema>
+	},
 })
+
+S.Range = <TLimit extends Schema>(limit: TLimit, options?: SchemaRangeOptions) => {
+	return {
+		type: "Range",
+		limit,
+		...options,
+	}
+}

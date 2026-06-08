@@ -2,7 +2,7 @@ import { ExpressionNode } from "../expression/expression"
 import { SchemaArray, SchemaArrayType, ExpressedSchemaArrayType } from "./schema-array"
 import { Schema, SchemaMapping, SchemaTypeMap } from "./schema-base"
 import { SchemaObject, ExpressedSchemaObjectType, SchemaObjectType } from "./schema-object"
-import { ExpressedSchemaRangeType, SchemaRange, SchemaRangeType } from "./schema-range"
+import { ExpressedSchemaRangeType, SchemaRange, SchemaRangeType } from "../data/range"
 
 type GetTypeMapping<
 	T extends Schema,
@@ -49,6 +49,20 @@ export type SchemaType<TSchema extends Schema> = TSchema extends SchemaObject
 // > = Result
 
 export type SchemaTypeByName<T extends keyof SchemaTypeMap> = SchemaTypeMap[T]["type"]
+
+export type SchemaArgTypes<TArgs extends Schema[]> = TArgs extends [
+	infer TFirst extends Schema,
+	...infer TRest extends Schema[]
+]
+	? [SchemaType<TFirst>, ...SchemaArgTypes<TRest>]
+	: []
+
+export type ExpressedSchemaArgTypes<TArgs extends Schema[]> = TArgs extends [
+	infer TFirst extends Schema,
+	...infer TRest extends Schema[]
+]
+	? [ExpressedSchemaType<TFirst>, ...ExpressedSchemaArgTypes<TRest>]
+	: []
 
 /////
 

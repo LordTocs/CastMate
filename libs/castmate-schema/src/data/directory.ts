@@ -1,28 +1,47 @@
-import { SchemaBase, registerType } from "../schema"
+import { Defaultable, SchemaBaseOptions, Schema, S, defineSchemaType, getDefault } from "../schema/schema-base"
+import { SchemaType } from "../schema/schema-typing"
 
 export type Directory = string
 
-export type DirectoryFactory = { factoryCreate(): Directory; directoryDiff(): void }
+export type DirectoryFactory = { factoryCreate(): Directory }
 export const Directory: DirectoryFactory = {
 	factoryCreate() {
 		return undefined as unknown as Directory
 	},
-	directoryDiff() {},
 }
 
-export interface SchemaDirectory extends SchemaBase<Directory> {
-	type: DirectoryFactory
-	template?: boolean
-	//max?
-	//min?
+export interface SchemaDirectoryOptions extends SchemaBaseOptions, Defaultable<Directory> {}
+
+export interface SchemaDirectory extends Schema, SchemaDirectoryOptions {
+	type: "Directory"
 }
 
-declare module "../schema" {
+declare module "../schema/schema-base" {
+	namespace S {
+		function Directory(options?: SchemaDirectoryOptions): SchemaDirectory
+	}
+
 	interface SchemaTypeMap {
-		Directory: [SchemaDirectory, Directory]
+		Directory: SchemaMapping<SchemaDirectory, Directory>
 	}
 }
 
-registerType("Directory", {
-	constructor: Directory,
+S.Directory = (options) => {
+	return {
+		type: "Directory",
+		...options,
+	}
+}
+
+defineSchemaType<SchemaDirectory>({
+	type: "Directory",
+	name: "Directory",
+	color: "#000000",
+	icon: "mdi mdi-star",
+	traits: {
+		canBeVariable: true,
+	},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? "") as SchemaType<typeof schema>
+	},
 })

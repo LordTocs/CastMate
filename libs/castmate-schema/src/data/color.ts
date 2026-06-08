@@ -1,4 +1,5 @@
-import { SchemaBase, registerType } from "../schema"
+import { Defaultable, SchemaBaseOptions, Schema, S, defineSchemaType, getDefault } from "../schema/schema-base"
+import { SchemaType } from "../schema/schema-typing"
 
 type RGB = `rgb(${number}, ${number}, ${number})`
 type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`
@@ -13,24 +14,43 @@ export const Color: ColorFactory = {
 	},
 }
 
-export interface SchemaColor extends SchemaBase<Color> {
-	type: ColorFactory
-	template?: boolean
-	enum: Color[]
+export interface SchemaColorOptions extends SchemaBaseOptions, Defaultable<Color> {
 	alpha?: boolean
 }
 
-declare module "../schema" {
+export interface SchemaColor extends Schema, SchemaColorOptions {
+	type: "Color"
+}
+
+declare module "../schema/schema-base" {
+	namespace S {
+		function Color(options?: SchemaColorOptions): SchemaColor
+	}
+
 	interface SchemaTypeMap {
-		Color: [SchemaColor, Color]
+		Color: SchemaMapping<SchemaColor, Color>
 	}
 }
 
-registerType("Color", {
-	constructor: Color,
-	icon: "mdi mdi-palette",
-	canBeVariable: true,
-	canBeViewerVariable: true,
+S.Color = (options) => {
+	return {
+		type: "Color",
+		...options,
+	}
+}
+
+defineSchemaType<SchemaColor>({
+	type: "Color",
+	name: "Color",
+	color: "#000000",
+	icon: "mdi mdi-color",
+	traits: {
+		canBeVariable: true,
+		canBeViewerVariable: true,
+	},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? Color.factoryCreate()) as SchemaType<typeof schema>
+	},
 })
 
 export function isHexColor(str: unknown): str is Color {

@@ -1,4 +1,5 @@
-import { SchemaBase, registerType } from "../schema"
+import { Defaultable, SchemaBaseOptions, Schema, S, defineSchemaType, getDefault } from "../schema/schema-base"
+import { SchemaType } from "../schema/schema-typing"
 
 export type Duration = number
 
@@ -10,35 +11,44 @@ export const Duration: DurationFactory = {
 	foobar() {},
 }
 
-export interface SchemaDuration extends SchemaBase<Duration> {
-	type: DurationFactory
-	template?: boolean
-	//max?
-	//min?
+export interface SchemaDurationOptions extends SchemaBaseOptions {
+	min?: Duration
+	max?: Duration
 }
 
-declare module "../schema" {
+export interface SchemaDuration extends Schema, SchemaDurationOptions, Defaultable<Duration> {
+	type: "Duration"
+}
+
+declare module "../schema/schema-base" {
+	namespace S {
+		function Duration(options?: SchemaDuration): SchemaDuration
+	}
+
 	interface SchemaTypeMap {
-		Duration: [SchemaDuration, Duration]
+		Duration: SchemaMapping<SchemaDuration, Duration>
 	}
 }
 
-registerType("Duration", {
-	constructor: Duration,
-	icon: "mdi mdi-clock-time-eight-outline",
-	comparisonTypes: [
-		{
-			otherType: Duration,
-			inequalities: true,
-		},
-		{
-			otherType: Number,
-			inequalities: true,
-		},
-	],
-	canBeVariable: true,
-	canBeViewerVariable: true,
+defineSchemaType<SchemaDuration>({
+	type: "Duration",
+	name: "Duration",
+	color: "#000000",
+	icon: "mdi mdi-timer",
+	traits: {
+		canBeVariable: true,
+	},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? 0) as SchemaType<typeof schema>
+	},
 })
+
+S.Duration = (options) => {
+	return {
+		type: "Duration",
+		...options,
+	}
+}
 
 const HOUR_DUR = 60 * 60
 const MINUTE_DUR = 60

@@ -1,29 +1,35 @@
-import { SchemaBase, registerType } from "../schema"
+import { Defaultable, SchemaBaseOptions, Schema, S, defineSchemaType, getDefault } from "../schema/schema-base"
+import { SchemaType } from "../schema/schema-typing"
 
 export type FilePath = string
 
-const FilePathDataSymbol = Symbol()
-
-export type FilePathFactory = { factoryCreate(): FilePath; [FilePathDataSymbol]: "FilePath" }
-export const FilePath: FilePathFactory = {
-	factoryCreate() {
-		return undefined as unknown as FilePath
-	},
-	[FilePathDataSymbol]: "FilePath",
-}
-
-export interface SchemaFilePath extends SchemaBase<FilePath> {
-	type: FilePathFactory
+export interface SchemaFilePathOptions extends SchemaBaseOptions {
 	extensions?: string[]
-	template?: boolean
 }
 
-declare module "../schema" {
+export interface SchemaFilePath extends Schema, SchemaFilePathOptions, Defaultable<FilePath> {
+	type: "FilePath"
+}
+
+declare module "../schema/schema-base" {
+	namespace S {
+		function FilePath(options?: SchemaFilePathOptions): SchemaFilePath
+	}
+
 	interface SchemaTypeMap {
-		FilePath: [SchemaFilePath, FilePath]
+		FilePath: SchemaMapping<SchemaFilePath, FilePath>
 	}
 }
 
-registerType("FilePath", {
-	constructor: FilePath,
+defineSchemaType<SchemaFilePath>({
+	type: "FilePath",
+	name: "File Path",
+	color: "#000000",
+	icon: "mdi mdi-file",
+	traits: {
+		canBeVariable: true,
+	},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? "") as SchemaType<typeof schema>
+	},
 })

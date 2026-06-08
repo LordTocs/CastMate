@@ -7,6 +7,11 @@ import {
 	IPCDurationConfig,
 	MaybePromise,
 	mapKeys,
+	ActionDesc,
+	TSchemaProperties,
+	SchemaObject,
+	testActionDesc,
+	ActionSpecification,
 } from "castmate-schema"
 import { AnalyticsService, ignoreReactivity, PluginManager } from "../index"
 import { Color } from "castmate-schema"
@@ -122,7 +127,7 @@ interface FlowActionDefinition extends BaseActionDefinition {
 
 export type ActionDefinition = RegularActionDefinition | FlowActionDefinition
 
-class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>
+class ActionImplementationOld<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>
 	implements RegularActionDefinition
 {
 	constructor(private spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>, private plugin: Plugin) {}
@@ -282,7 +287,7 @@ class ActionImplementation<ConfigSchema extends Schema, ResultSchema extends Sch
 	}
 }
 
-export function defineAction<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>(
+export function defineActionOld<ConfigSchema extends Schema, ResultSchema extends Schema | undefined>(
 	spec: ActionDefinitionSpec<ConfigSchema, ResultSchema>
 ) {
 	if (!initingPlugin) {
@@ -315,7 +320,9 @@ interface ResolvedFlows<FlowSchema extends Schema> {
 	[id: string]: ResolvedSchemaType<FlowSchema>
 }
 
-class FlowActionImplementation<ConfigSchema extends Schema, FlowSchema extends Schema> implements FlowActionDefinition {
+class FlowActionImplementationOld<ConfigSchema extends Schema, FlowSchema extends Schema>
+	implements FlowActionDefinition
+{
 	constructor(private spec: FlowActionSpec<ConfigSchema, FlowSchema>, private plugin: Plugin) {}
 
 	get type(): "flow" {
@@ -451,3 +458,43 @@ export function defineFlowAction<ConfigSchema extends Schema, FlowSchema extends
 
 	return impl
 }
+
+interface ActionImplDesc<
+	ConfigProperties extends TSchemaProperties,
+	ResultProperties extends TSchemaProperties | undefined
+> {
+	handle(
+		config: SchemaType<SchemaObject<ConfigProperties>>
+	): Promise<ResultProperties extends TSchemaProperties ? SchemaType<SchemaObject<ResultProperties>> : void>
+}
+
+export interface ActionImplementation<
+	ConfigProperties extends TSchemaProperties,
+	ResultProperties extends TSchemaProperties | undefined
+> {
+	spec: ActionSpecification<ConfigProperties, ResultProperties>
+	handle(
+		config: SchemaType<SchemaObject<ConfigProperties>>
+	): Promise<ResultProperties extends TSchemaProperties ? SchemaType<SchemaObject<ResultProperties>> : void>
+}
+
+export function implementAction<
+	ConfigProperties extends TSchemaProperties,
+	ResultProperties extends TSchemaProperties | undefined
+>(
+	spec: ActionSpecification<ConfigProperties, ResultProperties>,
+	impl: ActionImplDesc<ConfigProperties, ResultProperties>
+): ActionImplementation<ConfigProperties, ResultProperties> {
+	return {
+		spec,
+		...impl,
+	}
+}
+
+implementAction(testActionDesc, {
+	async handle(config) {
+		return {
+			c: "hello",
+		}
+	},
+})

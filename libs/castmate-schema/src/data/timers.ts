@@ -1,5 +1,14 @@
 import { Duration, formatDuration } from "../data/duration"
-import { SchemaBase, registerType } from "../schema"
+import {
+	Defaultable,
+	SchemaBaseOptions,
+	Schema,
+	S,
+	defineSchemaType,
+	getDefault,
+	isSchemaType,
+} from "../schema/schema-base"
+import { SchemaType } from "../schema/schema-typing"
 import { registerRemoteDataDeserializer } from "../template/remote-templates"
 
 interface TimerBase {
@@ -29,12 +38,13 @@ type TimerData = RunningTimerData | PausedTimerData
 export type Timer = RunningTimer | PausedTimer
 
 const TimerSymbol = Symbol()
+type TimeoutType = ReturnType<typeof setTimeout>
 export type TimerFactory = {
 	factoryCreate(): Timer
 	[TimerSymbol]: "Timer"
 	fromDate(date: Date): Timer
 	fromDuration(duration: Duration, paused?: boolean): Timer
-	scheduleFunc(timer: Timer, func: () => any, advance?: number): NodeJS.Timeout | undefined
+	scheduleFunc(timer: Timer, func: () => any, advance?: number): TimeoutType | undefined
 }
 
 function timerToPrimitive(hint: "default" | "string" | "number", timer: Timer) {
@@ -149,41 +159,70 @@ export function isTimer(value: any): value is Timer {
 	return false
 }
 
-export interface SchemaTimer extends SchemaBase<Timer> {
-	type: TimerFactory
+export interface SchemaTimerOptions extends SchemaBaseOptions {}
+
+export interface SchemaTimer extends Schema, SchemaTimerOptions, Defaultable<Timer> {
+	type: "Timer"
 }
 
-declare module "../schema" {
+export function isTimerSchema(schema: unknown): schema is SchemaTimer {
+	return isSchemaType(schema, "Timer")
+}
+
+declare module "../schema/schema-base" {
+	namespace S {
+		function Timer(options?: SchemaTimerOptions): SchemaTimer
+	}
+
 	interface SchemaTypeMap {
-		Timer: [SchemaTimer, Timer]
+		Timer: SchemaMapping<SchemaTimer, Timer>
 	}
 }
 
-registerType("Timer", {
-	constructor: Timer,
+defineSchemaType<SchemaTimer>({
+	type: "Timer",
+	name: "Timer",
+	color: "#000000",
 	icon: "mdi mdi-timer-outline",
-	canBeVariable: true,
-	async deserialize(value, schema): Promise<Timer> {
-		if (isTimer(value)) {
-			if ("endTime" in value) {
-				return wrapTimerData({
-					endTime: value.endTime,
-				})
-			} else if ("remainingTime" in value) {
-				return wrapTimerData({
-					remainingTime: value.remainingTime,
-				})
-			}
-		}
-		return Timer.factoryCreate()
+	traits: {
+		canBeVariable: true,
 	},
-	comparisonTypes: [
-		{
-			otherType: Duration,
-			inequalities: true,
-		},
-	],
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? Timer.factoryCreate()) as SchemaType<typeof schema>
+	},
 })
+
+S.Timer = (options) => {
+	return {
+		type: "Timer",
+		...options,
+	}
+}
+
+// 	constructor: Timer,
+// 	icon: "mdi mdi-timer-outline",
+// 	canBeVariable: true,
+// 	async deserialize(value, schema): Promise<Timer> {
+// 		if (isTimer(value)) {
+// 			if ("endTime" in value) {
+// 				return wrapTimerData({
+// 					endTime: value.endTime,
+// 				})
+// 			} else if ("remainingTime" in value) {
+// 				return wrapTimerData({
+// 					remainingTime: value.remainingTime,
+// 				})
+// 			}
+// 		}
+// 		return Timer.factoryCreate()
+// 	},
+// 	comparisonTypes: [
+// 		{
+// 			otherType: Duration,
+// 			inequalities: true,
+// 		},
+// 	],
+// })
 
 function wrapTimerData(data: TimerData): Timer {
 	return {

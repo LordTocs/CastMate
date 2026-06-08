@@ -40,7 +40,7 @@ export type SchemaInternalOptions = {
 	inExpressable?: boolean
 }
 
-export interface SchemaBase<Type extends string = string, ResultType = any> extends SchemaInternalOptions {
+export interface SchemaBase<Type extends string = string> extends SchemaInternalOptions {
 	type: Type
 }
 
@@ -68,6 +68,12 @@ export namespace S {
 	}
 }
 
+export namespace SchemaMeta {
+	export function isExpressable<TSchema extends SchemaBase>(schema: TSchema): schema is InexpressableSchema<TSchema> {
+		return !schema.inExpressable
+	}
+}
+
 export function isSchemaType<Type extends string>(schema: unknown, type: Type): schema is { type: Type } {
 	if (!schema) return false
 	if (typeof schema != "object") return false
@@ -83,7 +89,8 @@ export interface SchemaMapping<TSchema extends Schema = any, Type = any, Express
 
 export interface SchemaTypeMap {}
 
-type SchemaTypeNames = keyof SchemaTypeMap
+export type SchemaTypeNames = keyof SchemaTypeMap
+export type ValueSchema = SchemaTypeMap[SchemaTypeNames]["schema"]
 
 export interface SchemaTypeTraits {
 	canBeVariable?: boolean
@@ -93,7 +100,7 @@ export interface SchemaTypeTraits {
 
 export interface SchemaTypeComparison<
 	TSchema extends Schema = Schema,
-	OtherType extends keyof SchemaTypeMap = keyof SchemaTypeMap
+	OtherType extends SchemaTypeNames = SchemaTypeNames
 > {
 	equality?(lhs: SchemaType<TSchema>, rhs: SchemaTypeByName<OtherType>): MaybePromise<boolean>
 	inequality?(
@@ -103,11 +110,16 @@ export interface SchemaTypeComparison<
 	): MaybePromise<boolean>
 }
 
-export function getJSCompare() {
+export function getJSEquality() {
 	return {
 		equality(lhs: any, rhs: any) {
 			return lhs === rhs
 		},
+	}
+}
+
+export function getJSInequality() {
+	return {
 		inequality(lhs: any, rhs: any, inequality: InequalityOperator) {
 			if (inequality == "lessThan") {
 				return lhs < rhs
@@ -120,6 +132,13 @@ export function getJSCompare() {
 			}
 			return false
 		},
+	}
+}
+
+export function getJSCompare() {
+	return {
+		...getJSEquality(),
+		...getJSInequality(),
 	}
 }
 

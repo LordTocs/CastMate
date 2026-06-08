@@ -1,4 +1,5 @@
-import { SchemaBase, registerType } from "../schema"
+import { Defaultable, SchemaBaseOptions, Schema, S, defineSchemaType, getDefault } from "../schema/schema-base"
+import { SchemaType } from "../schema/schema-typing"
 
 export type MediaFile = string
 
@@ -9,22 +10,45 @@ export const MediaFile: MediaFileFactory = {
 	},
 }
 
-export interface SchemaMediaFile extends SchemaBase<MediaFile> {
-	type: MediaFileFactory
+export interface SchemaMediaFileOptions extends SchemaBaseOptions, Defaultable<MediaFile> {
 	sound?: boolean
 	image?: boolean
 	video?: boolean
 }
 
-declare module "../schema" {
+export interface SchemaMediaFile extends Schema, SchemaMediaFileOptions {
+	type: "MediaFile"
+}
+
+declare module "../schema/schema-base" {
+	namespace S {
+		function MediaFile(options?: SchemaMediaFileOptions): SchemaMediaFile
+	}
+
 	interface SchemaTypeMap {
-		MediaFile: [SchemaMediaFile, MediaFile]
+		MediaFile: SchemaMapping<SchemaMediaFile, MediaFile>
 	}
 }
 
-registerType("MediaFile", {
-	constructor: MediaFile,
+defineSchemaType<SchemaMediaFile>({
+	type: "MediaFile",
+	name: "Media File",
+	color: "#000000",
+	icon: "mdi mdi-media",
+	traits: {
+		canBeVariable: true,
+	},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? "") as SchemaType<typeof schema>
+	},
 })
+
+S.MediaFile = (options) => {
+	return {
+		type: "MediaFile",
+		...options,
+	}
+}
 
 export interface MediaMetadata {
 	image?: boolean

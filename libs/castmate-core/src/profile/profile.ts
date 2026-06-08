@@ -6,8 +6,10 @@ import {
 	Schema,
 	SchemaType,
 	createInlineAutomation,
+	ProfileResourceSpec,
+	SchemaMeta,
 } from "castmate-schema"
-import { Resource, ResourceStorage } from "../resources/resource"
+import { implementResource, Resource, ResourceStorage } from "../resources/resource"
 import { FileResource } from "../resources/file-resource"
 import { nanoid } from "nanoid/non-secure"
 import { evaluateBooleanExpression } from "../util/boolean-helpers"
@@ -18,131 +20,146 @@ import { PluginManager } from "../plugins/plugin-manager"
 import { SequenceResolvers } from "../queue-system/sequence"
 import { isFunction, now } from "lodash"
 import { usePluginLogger } from "../logging/logging"
+import { SchemaData } from "castmate-schema/src/schema/schema-data"
 
-export class Profile extends FileResource<ProfileConfig, ProfileState> {
-	static resourceDirectory: string = "./profiles"
-	static storage = new ResourceStorage<Profile>("Profile")
-
-	private stateEffect: ReactiveEffect | undefined
-
-	constructor(name?: string) {
-		super()
-
-		if (name) {
-			this._id = nanoid()
-		}
-
-		this._config = {
-			name: name ?? "",
-			activationMode: "toggle",
-			triggers: [],
-			activationCondition: {
-				type: "group",
-				operator: "or",
-				operands: [],
+export const Profiles = implementResource(ProfileResourceSpec, {
+	async create(name: string) {
+		return {
+			id: nanoid(),
+			name,
+			config: await SchemaData.constructDefault(ProfileResourceSpec.config),
+			state: {
+				active: false,
 			},
-			activationAutomation: createInlineAutomation(),
-			deactivationAutomation: createInlineAutomation(),
 		}
+	},
+	functions: {},
+})
 
-		this.state = {
-			active: false,
-		}
-	}
+// export class Profile extends FileResource<ProfileConfig, ProfileState> {
+// 	static resourceDirectory: string = "./profiles"
+// 	static storage = new ResourceStorage<Profile>("Profile")
 
-	async load(savedConfig: object): Promise<boolean> {
-		const result = await super.load(savedConfig)
-		await this.setupReactivity()
-		return result
-	}
+// 	private stateEffect: ReactiveEffect | undefined
 
-	async setConfig(config: ProfileConfig): Promise<boolean> {
-		const result = await super.setConfig(config)
-		await this.setupReactivity()
-		return result
-	}
+// 	constructor(name?: string) {
+// 		super()
 
-	async applyConfig(config: Partial<ProfileConfig>): Promise<boolean> {
-		const result = await super.applyConfig(config)
-		await this.setupReactivity()
-		return result
-	}
+// 		if (name) {
+// 			this._id = nanoid()
+// 		}
 
-	static async onCreate(profile: Profile) {
-		await super.onCreate(profile)
-		await profile.setupReactivity()
-		ProfileManager.getInstance().signalProfilesChanged()
-	}
+// 		this._config = {
+// 			name: name ?? "",
+// 			activationMode: "toggle",
+// 			triggers: [],
+// 			activationCondition: {
+// 				type: "group",
+// 				operator: "or",
+// 				operands: [],
+// 			},
+// 			activationAutomation: createInlineAutomation(),
+// 			deactivationAutomation: createInlineAutomation(),
+// 		}
 
-	static async onDelete(profile: Profile) {
-		await super.onDelete(profile)
-		profile.stopAutoActivate()
-		ProfileManager.getInstance().signalProfilesChanged()
-	}
+// 		this.state = {
+// 			active: false,
+// 		}
+// 	}
 
-	async forceActivationRecompute() {
-		await this.setupReactivity()
-	}
+// 	async load(savedConfig: object): Promise<boolean> {
+// 		const result = await super.load(savedConfig)
+// 		await this.setupReactivity()
+// 		return result
+// 	}
 
-	private stopAutoActivate() {
-		if (this.stateEffect) {
-			this.stateEffect.dispose()
-			this.stateEffect = undefined
-		}
-	}
+// 	async setConfig(config: ProfileConfig): Promise<boolean> {
+// 		const result = await super.setConfig(config)
+// 		await this.setupReactivity()
+// 		return result
+// 	}
 
-	private async setupReactivity() {
-		this.stopAutoActivate()
+// 	async applyConfig(config: Partial<ProfileConfig>): Promise<boolean> {
+// 		const result = await super.applyConfig(config)
+// 		await this.setupReactivity()
+// 		return result
+// 	}
 
-		this.stateEffect = await autoRerun(async () => {
-			if (this.config.activationMode == "toggle") {
-				const activationResult = await evaluateBooleanExpression(this.config.activationCondition)
-				this.state.active = activationResult
-			} else {
-				this.state.active = this.config.activationMode
-			}
-			ProfileManager.getInstance()?.signalProfilesChanged()
-		})
-	}
+// 	static async onCreate(profile: Profile) {
+// 		await super.onCreate(profile)
+// 		await profile.setupReactivity()
+// 		ProfileManager.getInstance().signalProfilesChanged()
+// 	}
 
-	getSequence(id: string): Sequence | undefined {
-		if (id == "activation") return this.config.activationAutomation.sequence
-		if (id == "deactivation") return this.config.deactivationAutomation.sequence
+// 	static async onDelete(profile: Profile) {
+// 		await super.onDelete(profile)
+// 		profile.stopAutoActivate()
+// 		ProfileManager.getInstance().signalProfilesChanged()
+// 	}
 
-		const trigger = this.config.triggers.find((t) => t.id == id)
-		if (trigger) {
-			return trigger.sequence
-		}
-		return undefined
-	}
+// 	async forceActivationRecompute() {
+// 		await this.setupReactivity()
+// 	}
 
-	getTrigger(id: string) {
-		const triggerData = this.config.triggers.find((t) => t.id == id)
-		if (!triggerData?.plugin || !triggerData?.trigger) return undefined
-		return PluginManager.getInstance().getPlugin(triggerData.plugin)?.triggers?.get(triggerData.trigger)
-	}
+// 	private stopAutoActivate() {
+// 		if (this.stateEffect) {
+// 			this.stateEffect.dispose()
+// 			this.stateEffect = undefined
+// 		}
+// 	}
 
-	*iterTriggers<Config extends Schema, ContextData extends Schema, InvokeContextData extends Schema>(
-		trigger: TriggerFunc<Config, ContextData, InvokeContextData>
-	): IterableIterator<TriggerData<SchemaType<Config>>> {
-		for (const t of this.config.triggers) {
-			if (t.plugin == trigger.triggerDef.pluginId && t.trigger == trigger.triggerDef.id) {
-				yield t as TriggerData<SchemaType<Config>>
-			}
-		}
-	}
-}
+// 	private async setupReactivity() {
+// 		this.stopAutoActivate()
+
+// 		this.stateEffect = await autoRerun(async () => {
+// 			if (this.config.activationMode == "toggle") {
+// 				const activationResult = await evaluateBooleanExpression(this.config.activationCondition)
+// 				this.state.active = activationResult
+// 			} else {
+// 				this.state.active = this.config.activationMode
+// 			}
+// 			ProfileManager.getInstance()?.signalProfilesChanged()
+// 		})
+// 	}
+
+// 	getSequence(id: string): Sequence | undefined {
+// 		if (id == "activation") return this.config.activationAutomation.sequence
+// 		if (id == "deactivation") return this.config.deactivationAutomation.sequence
+
+// 		const trigger = this.config.triggers.find((t) => t.id == id)
+// 		if (trigger) {
+// 			return trigger.sequence
+// 		}
+// 		return undefined
+// 	}
+
+// 	getTrigger(id: string) {
+// 		const triggerData = this.config.triggers.find((t) => t.id == id)
+// 		if (!triggerData?.plugin || !triggerData?.trigger) return undefined
+// 		return PluginManager.getInstance().getPlugin(triggerData.plugin)?.triggers?.get(triggerData.trigger)
+// 	}
+
+// 	*iterTriggers<Config extends Schema, ContextData extends Schema, InvokeContextData extends Schema>(
+// 		trigger: TriggerFunc<Config, ContextData, InvokeContextData>
+// 	): IterableIterator<TriggerData<SchemaType<Config>>> {
+// 		for (const t of this.config.triggers) {
+// 			if (t.plugin == trigger.triggerDef.pluginId && t.trigger == trigger.triggerDef.id) {
+// 				yield t as TriggerData<SchemaType<Config>>
+// 			}
+// 		}
+// 	}
+// }
 
 const logger = usePluginLogger("profiles")
 
 export async function setupProfiles() {
-	await Profile.initialize()
+	// await Profile.initialize()
 
 	SequenceResolvers.getInstance().registerResolver("profile", {
 		getAutomation(id, subId) {
 			if (!subId) return undefined
 
-			const profile = Profile.storage.getById(id)
+			const profile = Profiles.getById(id)
 
 			if (!profile) return undefined
 
@@ -155,7 +172,7 @@ export async function setupProfiles() {
 		async getContextSchema(id, subId) {
 			if (!subId) return undefined
 
-			const profile = Profile.storage.getById(id)
+			const profile = Profiles.getById(id)
 			if (!profile) return undefined
 
 			if (subId == "activation") return { type: Object, properties: {} }
@@ -181,7 +198,7 @@ export async function setupProfiles() {
 
 			if (!subId) return noWrap
 
-			const profile = Profile.storage.getById(id)
+			const profile = Profiles.getById(id)
 			if (!profile) {
 				//logger.log("Failed RunWrapper, MISSING PROFILE")
 				return noWrap

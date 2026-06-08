@@ -1,5 +1,12 @@
 import { initingPlugin, setInitingPlugin } from "./plugin-init"
-import { ExposedSchemaType, ResolvedSchemaType } from "castmate-schema"
+import {
+	ExposedSchemaType,
+	PluginSpecification,
+	ResolvedSchemaType,
+	SchemaObject,
+	testPlugin,
+	TSchemaProperties,
+} from "castmate-schema"
 import { Profile } from "./../profile/profile"
 import {
 	Color,
@@ -27,7 +34,16 @@ import {
 	reactiveRef,
 	runOnChange,
 } from "../reactivity/reactivity"
-import { ensureYAML, loadSecretYAML, loadYAML, pathExists, writeSecretYAML, writeYAML } from "../io/file-system"
+import {
+	ensureYAML,
+	loadSecretYAML,
+	loadSecretYAMLSchema,
+	loadYAML,
+	loadYAMLSchema,
+	pathExists,
+	writeSecretYAML,
+	writeYAML,
+} from "../io/file-system"
 import _debounce from "lodash/debounce"
 import {
 	deserializeSchema,
@@ -42,6 +58,7 @@ import { PluginManager } from "./plugin-manager"
 import { Logger, globalLogger, usePluginLogger } from "../logging/logging"
 import { startPerfTime } from "../util/time-utils"
 import { isSatellite } from "../util/init-mode"
+import { SchemaData } from "castmate-schema/src/schema/schema-data"
 
 interface PluginSpec {
 	id: string
@@ -775,3 +792,55 @@ export class Plugin {
 		rendererDeleteStateDef(this.id, id)
 	}
 }
+
+//----------
+
+export interface PluginImplementation<
+	TSettings extends TSchemaProperties,
+	TSecrets extends TSchemaProperties,
+	TState extends TSchemaProperties
+> {
+	spec: PluginSpecification<TSettings, TSecrets, TState>
+	settings: SchemaType<SchemaObject<TSettings>>
+	secrets: SchemaType<SchemaObject<TSecrets>>
+	state: SchemaType<SchemaObject<TState>>
+	initFunc: () => any
+}
+
+export function implementPlugin<
+	TSettings extends TSchemaProperties,
+	TSecrets extends TSchemaProperties,
+	TState extends TSchemaProperties
+>(plugin: PluginSpecification<TSettings, TSecrets, TState>, init: () => any) {
+	//Do we return this or just put it in a registry
+	const newPlugin: PluginImplementation<TSettings, TSecrets, TState> = {
+		spec: plugin,
+		initFunc: init,
+		//@ts-expect-error
+		settings: {}, //Do settins load at load time
+		//@ts-expect-error
+		secrets: {}, //Do secrets load at load time
+		//@ts-expect-error
+		state: {}, //Do state init at load time
+	}
+
+	const initPlugin = async () => {
+		//fill up defaults
+		newPlugin.settings = await loadYAMLSchema(newPlugin.spec.settings, "settings", `${newPlugin.spec.id}.yaml`)
+		newPlugin.secrets = await loadSecretYAMLSchema(newPlugin.spec.secrets, "settings", `${newPlugin.spec.id}.syaml`)
+		newPlugin.state = reactify(await SchemaData.constructDefault(newPlugin.spec.state))
+
+		try {
+			//TODO set initing function
+			await newPlugin.initFunc()
+		} catch (err) {
+		} finally {
+		}
+	}
+
+	const loadPlugin = async () => {}
+}
+
+implementPlugin(testPlugin, () => {
+	onLoad(() => {})
+})

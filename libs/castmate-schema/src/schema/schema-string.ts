@@ -55,7 +55,7 @@ defineSchemaType<SchemaString>({
 		canBeCommandArg: true,
 	},
 	async constructDefault(schema) {
-		return ((await getDefault(schema)) ?? 0) as SchemaType<typeof schema>
+		return ((await getDefault(schema)) ?? "") as SchemaType<typeof schema>
 	},
 })
 

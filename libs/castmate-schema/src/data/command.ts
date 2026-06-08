@@ -1,5 +1,18 @@
-import { IPCSchema, Schema, SchemaBase, SchemaObj, getTypeByName, registerType } from "../schema"
+//import { IPCSchema, Schema, SchemaBase, SchemaObj, getTypeByName, registerType } from "../schema"
 import { escapeRegExp } from "../util/substring-helper"
+
+import {
+	Defaultable,
+	SchemaBaseOptions,
+	Schema,
+	S,
+	defineSchemaType,
+	getDefault,
+	getSchemaMetaData,
+	SchemaTypeNames,
+} from "../schema/schema-base"
+import { SchemaType } from "../schema/schema-typing"
+import { TSchemaProperties } from "../schema/schema-object"
 
 export type CommandMode = "command" | "string" | "regex"
 
@@ -52,18 +65,37 @@ export const Command: CommandFactory = {
 	[CommandSymbol]: true,
 }
 
-export interface SchemaCommand extends SchemaBase<Command> {
-	type: CommandFactory
+export interface SchemaCommandOptions extends SchemaBaseOptions, Defaultable<Command> {}
+
+export interface SchemaCommand extends Schema, SchemaCommandOptions {
+	type: "Command"
 }
 
-declare module "../schema" {
+declare module "../schema/schema-base" {
+	namespace S {
+		function Command(options?: SchemaCommandOptions): SchemaCommand
+	}
 	interface SchemaTypeMap {
-		Command: [SchemaCommand, Command]
+		Command: SchemaMapping<SchemaCommand, Command>
 	}
 }
 
-registerType("Command", {
-	constructor: Command,
+S.Command = (options) => {
+	return {
+		type: "Command",
+		...options,
+	}
+}
+
+defineSchemaType<SchemaCommand>({
+	type: "Command",
+	name: "Command",
+	color: "#000000",
+	icon: "mdi mdi-star",
+	traits: {},
+	async constructDefault(schema) {
+		return ((await getDefault(schema)) ?? Command.factoryCreate()) as SchemaType<typeof schema>
+	},
 })
 
 export function getCommandInfoString(command: Command | undefined) {
@@ -164,10 +196,10 @@ export async function parseArgs(
 
 		if (localString.length == 0) return undefined
 
-		const dataType = getTypeByName(arg.schema.type)
+		const dataType = getSchemaMetaData(arg.schema.type as SchemaTypeNames)
 		if (!dataType) return undefined
 
-		const parsed = await dataType?.fromString?.(localString)
+		const parsed = await dataType?.convertFromString?.(localString)
 		if (parsed == undefined) return undefined
 
 		result[arg.name] = parsed
@@ -251,39 +283,29 @@ export async function matchAndParseCommand(
 	throw new Error(`Unknown Command Mode ${command.mode}`)
 }
 
-export function getCommandDataSchema(command: Command): SchemaObj {
-	if (command.mode == "string") return { type: Object, properties: {} }
+export function getCommandDataSchema(command: Command): TSchemaProperties {
+	if (command.mode == "string") return {}
 	if (command.mode == "regex") {
 		return {
-			type: Object,
-			properties: {
-				matches: { type: Array, items: { type: String, required: true }, required: true },
-			},
+			matches: S.Array(S.String()),
 		}
 	}
 	if (command.mode == "command") {
-		const result: SchemaObj = {
-			type: Object,
-			properties: {},
-		}
+		const result: TSchemaProperties = {}
 
 		for (const arg of command.arguments) {
-			const type = getTypeByName(arg.schema.type)
+			const type = getSchemaMetaData(arg.schema.type as SchemaTypeNames)
 
 			if (!type) continue
 
-			result.properties[arg.name] = {
+			result[arg.name] = {
 				...arg.schema,
-				type: type?.constructor,
-				required: true,
+				type: type?.type,
 			} as unknown as Schema
 		}
 
 		if (command.hasMessage) {
-			result.properties.commandMessage = {
-				type: String,
-				required: true,
-			}
+			result.commandMessage = S.String()
 		}
 
 		return result

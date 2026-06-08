@@ -1,27 +1,29 @@
+import { ProfileResource } from "castmate-schema"
 import { globalLogger } from "../logging/logging"
 import { PluginManager } from "../plugins/plugin-manager"
 import { ActionQueueManager } from "../queue-system/action-queue"
 import { ignoreReactivity } from "../reactivity/reactivity"
 import { Service } from "../util/service"
-import { Profile } from "./profile"
+import { Profiles } from "./profile"
+// import { Profile } from "./profile"
 
 export const ProfileManager = Service(
 	class {
-		private _activeProfiles: Profile[] = []
-		private _inactiveProfiles: Profile[] = []
+		private _activeProfiles: ProfileResource[] = []
+		private _inactiveProfiles: ProfileResource[] = []
 
-		get activeProfiles(): readonly Profile[] {
+		get activeProfiles(): readonly ProfileResource[] {
 			return this._activeProfiles
 		}
 
-		get inactiveProfiles(): readonly Profile[] {
+		get inactiveProfiles(): readonly ProfileResource[] {
 			return this._inactiveProfiles
 		}
 
 		private inited: boolean = false
 
 		async finishSetup() {
-			await Promise.all(Array.from(Profile.storage).map((p) => p.forceActivationRecompute()))
+			await Promise.all(Array.from(Profiles).map((p) => p.forceActivationRecompute()))
 
 			this.inited = true
 
@@ -42,10 +44,10 @@ export const ProfileManager = Service(
 		private recomputeActiveProfiles() {
 			if (!this.inited) return
 
-			const active: Profile[] = []
-			const inactive: Profile[] = []
+			const active: ProfileResource[] = []
+			const inactive: ProfileResource[] = []
 
-			for (const profile of Profile.storage) {
+			for (const profile of Profiles) {
 				if (profile.state.active) {
 					active.push(profile)
 				} else {
@@ -66,11 +68,11 @@ export const ProfileManager = Service(
 
 			globalLogger.log(
 				"Active Profiles",
-				active.map((p) => p.config.name)
+				active.map((p) => p.name)
 			)
 			globalLogger.log(
 				"Inactive Profiles",
-				inactive.map((p) => p.config.name)
+				inactive.map((p) => p.name)
 			)
 
 			this._activeProfiles = active
