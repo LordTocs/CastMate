@@ -1,4 +1,4 @@
-import { BooleanExpression, constructDefault, Toggle } from "castmate-schema"
+import { BooleanExpression, CastMateBuiltInPlugin, constructDefault, Toggle } from "castmate-schema"
 import {
 	ActionQueue,
 	Automation,
@@ -19,6 +19,8 @@ import {
 	defineFlowAction,
 	globalLogger,
 	usePluginLogger,
+	implementPlugin,
+	implementAction,
 } from "castmate-core"
 import { getExpressionHash } from "castmate-core/src/util/boolean-helpers"
 
@@ -27,6 +29,10 @@ interface ConditionalTrigger {
 	lastEval: boolean | undefined
 	effect: ReactiveEffect
 }
+
+implementPlugin(CastMateBuiltInPlugin, () => {})
+
+implementAction()
 
 export default definePlugin(
 	{
