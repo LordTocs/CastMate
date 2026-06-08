@@ -17,7 +17,6 @@ import {
 	isTimeAction,
 	isFlowAction,
 	SequenceContext,
-	mapRecord,
 	Schema,
 	InlineAutomation,
 	hashString,
@@ -214,21 +213,28 @@ export function getSequenceHash(sequence: Sequence) {
 	return hashString(JSON.stringify(sequence))
 }
 
-interface SequenceResolverImpl {
-	getAutomation(id: string, subId?: string): InlineAutomation | undefined
-	getContextSchema(id: string, subId?: string): Promise<Schema | undefined>
-	getRunWrapper(id: string, subId?: string): (inner: () => any, mapping: SequenceSource) => Promise<any>
+export interface SequenceReference<Type extends string = string> {
+	type: Type
+}
+
+interface SequenceResolverImpl<Type extends string, ReferenceType extends SequenceReference<Type>> {
+	getAutomation(sequence: ReferenceType): InlineAutomation | undefined
+	getContextSchema(sequence: ReferenceType): Promise<Schema | undefined>
+	getRunWrapper(sequence: ReferenceType): (inner: () => any, mapping: SequenceSource) => Promise<any>
 }
 
 export const SequenceResolvers = Service(
 	class {
-		private lookup = new Map<string, SequenceResolverImpl>()
+		private lookup = new Map<string, SequenceResolverImpl<string, any>>()
 
-		getResolver(type: string) {
-			return this.lookup.get(type)
+		getResolver(ref: SequenceReference) {
+			return this.lookup.get(ref.type)
 		}
 
-		registerResolver(type: string, resolver: SequenceResolverImpl) {
+		registerResolver<Type extends string, ReferenceType extends SequenceReference<Type>>(
+			type: Type,
+			resolver: SequenceResolverImpl<Type, ReferenceType>
+		) {
 			this.lookup.set(type, resolver)
 		}
 	}
