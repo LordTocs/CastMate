@@ -1,5 +1,8 @@
 <template>
-	<span v-if="schema.type == Duration">{{ formatDuration(value, 2) }}</span>
+	<span
+		v-if="schema.type && 'factoryCreate' in schema.type && schema.type?.factoryCreate == Duration.factoryCreate"
+		>{{ formatDuration(value, 2) }}</span
+	>
 	<span v-else>{{ value }}</span>
 </template>
 

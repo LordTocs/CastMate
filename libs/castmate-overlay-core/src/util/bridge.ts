@@ -165,7 +165,12 @@ export function useViewerVariableSchemas(variables: MaybeRefOrGetter<string[]>) 
 	const schemas = ref<ViewerVariable[]>([])
 
 	const querySchemas = async () => {
-		schemas.value = await bridge.getViewerVariables()
+		try {
+			schemas.value = await bridge.getViewerVariables()
+		} catch (err) {
+			console.error("ERROR GETTING VIEWER VARIABLES!", err)
+		}
+		console.log("GOT VARIABLES", schemas.value)
 	}
 
 	let observer: ViewerDataObserver | undefined = undefined
