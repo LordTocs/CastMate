@@ -25,6 +25,7 @@ import {
 	TemplateTypeByConstructor,
 	Timer,
 	Toggle,
+	formatDuration,
 	getTemplateRegionString,
 	getTimeRemaining,
 	getTypeByConstructor,
@@ -404,6 +405,10 @@ registerSchemaTemplate(Range, async (value, context, schema) => {
 
 defineTemplateFunction("getTimeRemaining", (timer: Timer) => {
 	return getTimeRemaining(timer)
+})
+
+defineTemplateFunction("formatDuration", (duration: Duration) => {
+	return formatDuration(duration)
 })
 
 ////
