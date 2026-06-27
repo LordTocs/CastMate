@@ -407,8 +407,8 @@ defineTemplateFunction("getTimeRemaining", (timer: Timer) => {
 	return getTimeRemaining(timer)
 })
 
-defineTemplateFunction("formatDuration", (duration: Duration) => {
-	return formatDuration(duration)
+defineTemplateFunction("formatDuration", (duration: Duration, decimalPlaces: number = 4) => {
+	return formatDuration(duration, decimalPlaces)
 })
 
 ////
