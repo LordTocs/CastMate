@@ -1,6 +1,9 @@
 import { defineAction } from "castmate-core"
 import { TwitchAccount } from "./twitch-auth"
 import { TwitchAPIService, onChannelAuth } from "./api-harness"
+import { Duration } from "castmate-schema"
+import _clamp from "lodash/clamp"
+import _round from "lodash/round"
 
 export function setupClips() {
 	defineAction({
@@ -10,7 +13,10 @@ export function setupClips() {
 		icon: "mdi mdi-filmstrip",
 		config: {
 			type: Object,
-			properties: {},
+			properties: {
+				title: { name: "Clip Title", type: String, template: true },
+				duration: { name: "Clip Duration", type: Duration, required: true, default: 30, template: true },
+			},
 		},
 		result: {
 			type: Object,
@@ -19,9 +25,12 @@ export function setupClips() {
 			},
 		},
 		async invoke(config, contextData, abortSignal) {
+			const duration = _round(_clamp(config.duration ?? 30, 5, 60), 1)
+
 			const clipId = await TwitchAccount.channel.apiClient.clips.createClip({
 				channel: TwitchAccount.channel.twitchId,
-				createAfterDelay: true,
+				title: config.title,
+				duration,
 			})
 			return { clipId }
 		},
