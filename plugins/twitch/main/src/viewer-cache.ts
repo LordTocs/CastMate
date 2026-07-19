@@ -36,7 +36,7 @@ import {
 	TwitchViewerDisplayData,
 	TwitchViewerUnresolved,
 } from "castmate-plugin-twitch-shared"
-import { HelixChannelFollower, HelixPaginatedResultWithTotal } from "@twurple/api"
+import { HelixChannelFollower, HelixPaginatedResultWithTotal, HelixUser } from "@twurple/api"
 
 const logger = usePluginLogger("twitch")
 
@@ -162,6 +162,15 @@ registerTypeFromString(TwitchViewer, async (value) => {
 function isDefinitelyNotTwitchId(maybeId: string) {
 	const nonDigits = /\D/g
 	return maybeId.match(nonDigits) != null
+}
+//Gets the first character valid (possibly a real account) username out of the string,
+//undefined if the string doesn't cotnain a valid twitch username
+//Will ignore the @, whitespace, etc.
+function extractTwitchUsername(maybeUsername: string) {
+	//Usernames are restricted to ascii alphabet, 25 characters long, no leading underscore
+	const userNameRegex = /\b[a-zA-Z0-9][a-zA-Z0-9_]{0,24}/g
+	const result = maybeUsername.match(userNameRegex)
+	return result?.[0] ?? undefined
 }
 
 export const ViewerCache = Service(
@@ -854,14 +863,19 @@ export const ViewerCache = Service(
 		}
 
 		async getUserId(name: string) {
-			if (name.startsWith("@")) {
-				name = name.substring(1)
-			}
-			const nameLower = name.toLowerCase()
+			const extractedName = extractTwitchUsername(name)
+			if (!extractedName) return undefined
+			const nameLower = extractedName.toLowerCase()
 			let existing = this.nameLookup.get(nameLower)
 			if (existing) return existing.id
 
-			const user = await TwitchAccount.channel.apiClient.users.getUserByName(name)
+			let user: HelixUser | null
+			try {
+				user = await TwitchAccount.channel.apiClient.users.getUserByName(nameLower)
+			} catch (err) {
+				logger.error("Error Getting User By Name")
+				return undefined
+			}
 
 			if (user == null) return undefined
 			existing = this.getOrCreate(user.id)
