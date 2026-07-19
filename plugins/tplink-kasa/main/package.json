@@ -1,22 +1,25 @@
 {
-  "name": "castmate-plugin-tplink-kasa-main",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/main.ts",
-  "devMain": "src/main.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "typescript": "*"
-  },
-  "dependencies": {
-    "castmate-core": "workspace:^",
-    "castmate-plugin-iot-main": "workspace:^",
-    "castmate-plugin-iot-shared": "workspace:^",
-    "castmate-schema": "workspace:^",
-    "tplink-smarthome-api": "^5.0.0"
-  }
+	"name": "castmate-plugin-tplink-kasa-main",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/main.ts",
+	"devMain": "src/main.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "*"
+	},
+	"dependencies": {
+		"async-mutex": "^0.5.0",
+		"castmate-core": "workspace:^",
+		"castmate-plugin-iot-main": "workspace:^",
+		"castmate-plugin-iot-shared": "workspace:^",
+		"castmate-plugin-tplink-kasa-shared": "workspace:^",
+		"castmate-schema": "workspace:^",
+		"crc": "^4.3.2",
+		"tplink-smarthome-api": "^5.0.0"
+	}
 }

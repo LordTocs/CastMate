@@ -32,11 +32,11 @@ export async function awaitKeys<V>(map: Record<string | symbol | number, MaybePr
 	return result
 }
 
-export function mapKeys<V, T>(
-	map: Record<string | symbol | number, V>,
-	mapFunc: (key: string | symbol | number, value: V) => T
-): Record<string | number | symbol, T> {
-	const result: Record<string | symbol | number, T> = {}
+export function mapKeys<K extends PropertyKey, V, T>(
+	map: Record<K, V>,
+	mapFunc: (key: K, value: V) => T
+): Record<K, T> {
+	const result = {} as Record<K, T>
 
 	for (let key in map) {
 		result[key] = mapFunc(key, map[key])

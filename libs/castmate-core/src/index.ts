@@ -23,6 +23,7 @@ export * from "./util/ipc-schema"
 export * from "./util/electron"
 export * from "./util/request-utils"
 export * from "./util/boolean-helpers"
+export * from "./util/http-utils"
 
 export * from "./io/file-system"
 

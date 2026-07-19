@@ -1,5 +1,6 @@
 import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, defineSetting } from "castmate-core"
 import { setupLights } from "./resources"
+import { setupAccount } from "./accounts/kasa-account"
 
 export default definePlugin(
 	{
@@ -12,9 +13,11 @@ export default definePlugin(
 		const subnetMask = defineSetting("subnetMask", {
 			type: String,
 			required: true,
-			name: "TP-Link Kasa Subnet Mask",
+			name: "TP-Link Kasa Broadcast Address",
 			default: "255.255.255.255",
 		})
+
+		setupAccount()
 
 		setupLights(subnetMask)
 	}

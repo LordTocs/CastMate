@@ -1,127 +1,137 @@
-import { ReactiveRef, onLoad, onSettingChanged, removeAllSubResource, usePluginLogger } from "castmate-core"
-import { LightResource, PlugResource } from "castmate-plugin-iot-main"
+import {
+	ReactiveRef,
+	onAccountAuth,
+	onLoad,
+	onSettingChanged,
+	removeAllSubResource,
+	usePluginLogger,
+} from "castmate-core"
+import { LightResource, PlugResource, PollingPlug } from "castmate-plugin-iot-main"
 import { LightColor } from "castmate-plugin-iot-shared"
 import { Toggle } from "castmate-schema"
 import _clamp from "lodash/clamp"
 
-import { Client, Plug, LightState, LightStateInput, Bulb } from "tplink-smarthome-api"
+import { createKasaDiscoverer, KasaDiscoverer } from "./discovery/base-discovery"
 
-class KasaLight extends LightResource {
-	constructor(private kasaBulb: Bulb, initialState: LightState) {
-		super()
+import assert from "node:assert"
+import { KasaAccount } from "./accounts/kasa-account"
+import { extractKasaRelayState, getKasaSysInfo, KasaDevice, setKasaRelayState } from "./lan-api"
 
-		this._id = `kasa.${kasaBulb.id}`
+// class KasaLight extends LightResource {
+// 	constructor(private kasaBulb: Bulb, initialState: LightState) {
+// 		super()
 
-		this._config = {
-			name: kasaBulb.name,
-			provider: "kasa",
-			providerId: kasaBulb.id,
-			rgb: {
-				available: kasaBulb.supportsColor,
-			},
-			kelvin: {
-				available: kasaBulb.supportsColorTemperature,
-			},
-			dimming: {
-				available: kasaBulb.supportsBrightness,
-			},
-			transitions: {
-				available: true,
-			},
-		}
+// 		this._id = `kasa.${kasaBulb.id}`
 
-		if (kasaBulb.supportsColorTemperature) {
-			this._config.kelvin.max = kasaBulb.colorTemperatureRange?.max
-			this._config.kelvin.min = kasaBulb.colorTemperatureRange?.min
-		}
+// 		this._config = {
+// 			name: kasaBulb.name,
+// 			provider: "kasa",
+// 			providerId: kasaBulb.id,
+// 			rgb: {
+// 				available: kasaBulb.supportsColor,
+// 			},
+// 			kelvin: {
+// 				available: kasaBulb.supportsColorTemperature,
+// 			},
+// 			dimming: {
+// 				available: kasaBulb.supportsBrightness,
+// 			},
+// 			transitions: {
+// 				available: true,
+// 			},
+// 		}
 
-		//@ts-ignore
-		this.state = {}
-		this.parseLightState(initialState)
+// 		if (kasaBulb.supportsColorTemperature) {
+// 			this._config.kelvin.max = kasaBulb.colorTemperatureRange?.max
+// 			this._config.kelvin.min = kasaBulb.colorTemperatureRange?.min
+// 		}
 
-		kasaBulb.on("lightstate-change", (lightState) => {
-			this.parseLightState(lightState)
-		})
+// 		//@ts-ignore
+// 		this.state = {}
+// 		this.parseLightState(initialState)
 
-		//kasaBulb.(30000)
-	}
+// 		kasaBulb.on("lightstate-change", (lightState) => {
+// 			this.parseLightState(lightState)
+// 		})
 
-	private parseLightState(state: LightState) {
-		this.state.on = state.on_off == 1
+// 		//kasaBulb.(30000)
+// 	}
 
-		const brightness = state.brightness ?? 100
-		if (state.color_temp) {
-			this.state.color = `kb(${state.color_temp}, ${brightness})`
-		} else if (state.hue && state.saturation) {
-			this.state.color = `hsb(${state.hue}, ${state.saturation}, ${brightness})`
-		}
-	}
+// 	private parseLightState(state: LightState) {
+// 		this.state.on = state.on_off == 1
 
-	async setLightState(color: LightColor | undefined, on: Toggle, transition: number): Promise<void> {
-		if (on == "toggle") {
-			const powerState = await this.kasaBulb.getPowerState()
-			on = !powerState
-		}
+// 		const brightness = state.brightness ?? 100
+// 		if (state.color_temp) {
+// 			this.state.color = `kb(${state.color_temp}, ${brightness})`
+// 		} else if (state.hue && state.saturation) {
+// 			this.state.color = `hsb(${state.hue}, ${state.saturation}, ${brightness})`
+// 		}
+// 	}
 
-		const update: LightStateInput = {
-			on_off: on ? 1 : 0,
-		}
+// 	async setLightState(color: LightColor | undefined, on: Toggle, transition: number): Promise<void> {
+// 		if (on == "toggle") {
+// 			const powerState = await this.kasaBulb.getPowerState()
+// 			on = !powerState
+// 		}
 
-		if (color) {
-			const parsedColor = LightColor.parse(color)
+// 		const update: LightStateInput = {
+// 			on_off: on ? 1 : 0,
+// 		}
 
-			update.brightness = parsedColor.bri
-			if ("kelvin" in parsedColor) {
-				update.color_temp = Math.ceil(parsedColor.kelvin)
-				update.hue = 0
-				update.saturation = 0
-			} else {
-				update.hue = Math.floor(parsedColor.hue)
-				update.saturation = Math.ceil(parsedColor.sat)
-				update.color_temp = 0
-			}
-		}
+// 		if (color) {
+// 			const parsedColor = LightColor.parse(color)
 
-		update.transition_period = Math.round(transition * 1000)
+// 			update.brightness = parsedColor.bri
+// 			if ("kelvin" in parsedColor) {
+// 				update.color_temp = Math.ceil(parsedColor.kelvin)
+// 				update.hue = 0
+// 				update.saturation = 0
+// 			} else {
+// 				update.hue = Math.floor(parsedColor.hue)
+// 				update.saturation = Math.ceil(parsedColor.sat)
+// 				update.color_temp = 0
+// 			}
+// 		}
 
-		await this.kasaBulb.lighting.setLightState(update)
-	}
-}
+// 		update.transition_period = Math.round(transition * 1000)
 
-class KasaPlug extends PlugResource {
-	constructor(private kasaPlug: Plug, initialPower: boolean) {
+// 		await this.kasaBulb.lighting.setLightState(update)
+// 	}
+// }
+
+class KasaPlug extends PollingPlug {
+	constructor(private kasaPlug: KasaDevice) {
 		super()
 
 		this._id = `kasa.${kasaPlug.id}`
 
 		this._config = {
-			name: kasaPlug.name,
+			name: kasaPlug.sysInfo?.alias ?? "UNKNOWN DEVICE",
 			provider: "kasa",
 			providerId: kasaPlug.id,
 		}
 
 		this.state = {
-			on: initialPower,
+			on: kasaPlug.sysInfo ? extractKasaRelayState(kasaPlug.sysInfo) : false,
 		}
+	}
 
-		kasaPlug.on("power-update", (powerState: boolean) => {
-			this.state.on = powerState
-		})
-
-		//TODO: Why is this deprecated?
-		//kasaPlug.startPolling(30000)
+	async poll(): Promise<void> {
+		await this.updateState()
 	}
 
 	private async updateState() {
-		this.state.on = await this.kasaPlug.getPowerState()
+		const sysInfo = await getKasaSysInfo(this.kasaPlug)
+		this.state.on = extractKasaRelayState(sysInfo)
 	}
 
 	async setPlugState(on: Toggle): Promise<void> {
 		if (on == "toggle") {
-			await this.kasaPlug.togglePowerState()
-		} else {
-			await this.kasaPlug.setPowerState(on)
+			await this.updateState()
+			on = !this.state.on
 		}
+
+		await setKasaRelayState(this.kasaPlug, on)
 
 		await this.updateState()
 	}
@@ -130,56 +140,52 @@ class KasaPlug extends PlugResource {
 const logger = usePluginLogger("tplink-kasa")
 
 export function setupLights(subnetMask: ReactiveRef<string>) {
-	let client: Client
+	let client: KasaDiscoverer | undefined
 
 	async function clearResources() {
 		await removeAllSubResource(KasaPlug)
-		await removeAllSubResource(KasaLight)
+		//await removeAllSubResource(KasaLight)
 	}
 
-	function setupClient() {
-		client = new Client()
+	async function setupClient() {
+		try {
+			client = await createKasaDiscoverer(subnetMask.value)
 
-		client.on("plug-new", async (plug: Plug) => {
-			const powerState = await plug.getPowerState()
-			const resource = new KasaPlug(plug, powerState)
-
-			PlugResource.storage.inject(resource)
-		})
-
-		client.on("bulb-new", async (bulb: Bulb) => {
-			const lightState = await bulb.lighting.getLightState()
-			const resource = new KasaLight(bulb, lightState)
-
-			LightResource.storage.inject(resource)
-		})
-
-		client.on("error", async (err) => {
-			logger.error("TP-Link Kasa Error", err)
-		})
-
-		client.on("discovery-invalid", (err) => {
-			logger.error("Kasa Discovery Invalid?", err)
-		})
+			client.on("device-discovered", (device) => {
+				//if (device.deviceType == "plug or something")
+				logger.log("Kasa Device Discovered!", device.id)
+				const plug = new KasaPlug(device)
+				KasaPlug.storage.inject(plug)
+			})
+		} catch (err) {
+			logger.log("ERROR CREATING DISCOVERER!", err)
+		}
 	}
 
 	async function setupDiscovery() {
-		logger.log("Starting TP-Link Kasa Discovery", subnetMask.value)
-		client.startDiscovery({
-			breakoutChildren: true,
-			broadcast: subnetMask.value.trim(),
-		})
+		assert(client)
+		client.startDiscovery()
 	}
 
-	onLoad(() => {
-		setupClient()
-		setupDiscovery()
+	async function rediscoverLights() {
+		client?.close()
+		await clearResources()
+		await setupClient()
+		await setupDiscovery()
+	}
+
+	onAccountAuth(KasaAccount, "main", async (account) => {
+		await rediscoverLights()
+	})
+
+	onLoad(async () => {
+		//Start discovery for non-authed lights, skip if we're authenticated since onAccountAuth will have already kicked it off
+		if (!KasaAccount.main.isAuthenticated) {
+			await rediscoverLights()
+		}
 	})
 
 	onSettingChanged(subnetMask, async () => {
-		client.stopDiscovery()
-		await clearResources()
-		setupClient()
-		setupDiscovery()
+		await rediscoverLights()
 	})
 }

@@ -2785,6 +2785,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"async-mutex@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "async-mutex@npm:0.5.0"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  checksum: 10/4c6bfce1cc9cd43f723c4d96403ac5f4757f885c953b839cde6956ec8817ff39623b82d67614de10c7933e21626925882fb9bac367db7d15d7cb4f84228722c9
+  languageName: node
+  linkType: hard
+
 "async@npm:^3.2.3, async@npm:^3.2.4":
   version: 3.2.6
   resolution: "async@npm:3.2.6"
@@ -4634,10 +4643,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "castmate-plugin-tplink-kasa-main@workspace:plugins/tplink-kasa/main"
   dependencies:
+    async-mutex: "npm:^0.5.0"
     castmate-core: "workspace:^"
     castmate-plugin-iot-main: "workspace:^"
     castmate-plugin-iot-shared: "workspace:^"
     castmate-schema: "workspace:^"
+    crc: "npm:^4.3.2"
     tplink-smarthome-api: "npm:^5.0.0"
     typescript: "npm:*"
   languageName: unknown
@@ -5519,6 +5530,18 @@ __metadata:
     crc-32: "npm:^1.2.0"
     readable-stream: "npm:^4.0.0"
   checksum: 10/e6edc2f81bc387daef6d18b2ac18c2ffcb01b554d3b5c7d8d29b177505aafffba574658fdd23922767e8dab1183d1962026c98c17e17fb272794c33293ef607c
+  languageName: node
+  linkType: hard
+
+"crc@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "crc@npm:4.3.2"
+  peerDependencies:
+    buffer: ">=6.0.3"
+  peerDependenciesMeta:
+    buffer:
+      optional: true
+  checksum: 10/daa5c340de4ccb0d248ad579d1ca1317efe89d2b3f68a124850a140e9afc17d595cdfc058bd14ea78325c0a706ac73ad94962c1efede6a2a1abf58a48ebbb9da
   languageName: node
   linkType: hard
 

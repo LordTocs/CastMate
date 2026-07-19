@@ -13,6 +13,9 @@ import { EventList } from "../util/events"
 import util, { InspectOptions } from "util"
 
 import { AccountConfig, AccountSecrets, AccountState } from "castmate-schema"
+import { usePluginLogger } from "../logging/logging"
+
+const logger = usePluginLogger("accounts")
 
 export interface AccountConstructor extends ResourceConstructor {
 	new (...args: any[]): any
@@ -81,8 +84,11 @@ export class Account<
 	}
 
 	async applyConfig(config: Partial<CustomAccountConfig>): Promise<boolean> {
+		logger.log("Applying Config")
 		await super.applyConfig(config)
+		logger.log("Applied Config... Saving")
 		await this.save()
+		logger.log("Saved.")
 		return true
 	}
 
