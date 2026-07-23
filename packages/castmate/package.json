@@ -45,6 +45,7 @@
 		"castmate-plugin-twitch-main": "workspace:^",
 		"castmate-plugin-variables-main": "workspace:^",
 		"castmate-plugin-voicemod-main": "workspace:^",
+		"castmate-plugin-wyoming-main": "workspace:^",
 		"castmate-plugin-wyze-main": "workspace:^",
 		"castmate-schema": "workspace:^"
 	},
@@ -85,6 +86,7 @@
 		"castmate-plugin-twitch-renderer": "workspace:^",
 		"castmate-plugin-variables-renderer": "workspace:^",
 		"castmate-plugin-voicemod-renderer": "workspace:^",
+		"castmate-plugin-wyoming-renderer": "workspace:^",
 		"castmate-plugin-wyze-renderer": "workspace:^",
 		"castmate-ui-core": "workspace:^",
 		"castmate-vite": "workspace:^",

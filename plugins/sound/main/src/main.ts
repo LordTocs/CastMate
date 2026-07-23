@@ -12,7 +12,7 @@ import { Duration, MediaFile } from "castmate-schema"
 import { RendererSoundPlayer } from "./renderer-sound-player"
 import { AudioDeviceInterface } from "castmate-plugin-sound-native"
 import { SoundOutput, setupOutput } from "./output"
-import { TTSVoice, setupTTS } from "./tts"
+import { TTSVoice, TTSVoiceProvider, setupTTS } from "./tts"
 import { setupSplitters } from "./splitter"
 
 export default definePlugin(
@@ -153,4 +153,4 @@ export default definePlugin(
 	}
 )
 
-export { SoundOutput }
+export { SoundOutput, TTSVoice, TTSVoiceProvider }

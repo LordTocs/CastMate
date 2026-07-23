@@ -2982,6 +2982,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"async-mutex@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "async-mutex@npm:0.5.0"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  checksum: 10/4c6bfce1cc9cd43f723c4d96403ac5f4757f885c953b839cde6956ec8817ff39623b82d67614de10c7933e21626925882fb9bac367db7d15d7cb4f84228722c9
+  languageName: node
+  linkType: hard
+
 "async@npm:^3.2.3, async@npm:^3.2.4":
   version: 3.2.6
   resolution: "async@npm:3.2.6"
@@ -5088,18 +5097,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-wyoming-main@workspace:plugins/wyoming/main":
+"castmate-plugin-wyoming-main@workspace:^, castmate-plugin-wyoming-main@workspace:plugins/wyoming/main":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-wyoming-main@workspace:plugins/wyoming/main"
   dependencies:
+    async-mutex: "npm:^0.5.0"
     castmate-core: "workspace:^"
+    castmate-plugin-sound-main: "workspace:^"
     castmate-plugin-wyoming-shared: "workspace:^"
     castmate-schema: "workspace:^"
     typescript: "npm:*"
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-wyoming-renderer@workspace:plugins/wyoming/renderer":
+"castmate-plugin-wyoming-renderer@workspace:^, castmate-plugin-wyoming-renderer@workspace:plugins/wyoming/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-wyoming-renderer@workspace:plugins/wyoming/renderer"
   dependencies:
@@ -5358,6 +5369,8 @@ __metadata:
     castmate-plugin-variables-renderer: "workspace:^"
     castmate-plugin-voicemod-main: "workspace:^"
     castmate-plugin-voicemod-renderer: "workspace:^"
+    castmate-plugin-wyoming-main: "workspace:^"
+    castmate-plugin-wyoming-renderer: "workspace:^"
     castmate-plugin-wyze-main: "workspace:^"
     castmate-plugin-wyze-renderer: "workspace:^"
     castmate-schema: "workspace:^"

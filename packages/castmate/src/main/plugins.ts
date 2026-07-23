@@ -29,6 +29,8 @@ import overlayPlugin from "castmate-plugin-overlays-main"
 
 import dashboardPlugin from "castmate-plugin-dashboards-main"
 
+import wyomingPlugin from "castmate-plugin-wyoming-main"
+
 import randomPlugin from "castmate-plugin-random-main"
 import remotePlugin from "castmate-plugin-remote-main"
 
@@ -73,6 +75,8 @@ export async function loadPlugins() {
 	]
 
 	await Promise.allSettled(promises)
+
+	await loadPlugin(wyomingPlugin)
 
 	const obsDeps = [loadPlugin(advssPlugin), loadPlugin(aitumPlugin)]
 	await Promise.allSettled(obsDeps)
