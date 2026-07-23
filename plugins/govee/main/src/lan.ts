@@ -50,17 +50,21 @@ function createMulticastSocket() {
 
 			const networks = networkInterfaces()
 			for (const netKey of Object.keys(networks)) {
-				const network = networks[netKey]
-				if (!network) continue
+				try {
+					const network = networks[netKey]
+					if (!network) continue
 
-				for (const iface of network) {
-					if (iface.family == "IPv4" && !iface.internal) {
-						logger.log("   - Adding Multicast Network", netKey, iface.address)
-						socket.addMembership(GOVEE_MULTICAST_ADDRESS, iface.address)
+					for (const iface of network) {
+						if (iface.family == "IPv4" && !iface.internal) {
+							logger.log("   - Adding Multicast Network", netKey, iface.address)
+							socket.addMembership(GOVEE_MULTICAST_ADDRESS, iface.address)
+						}
 					}
-				}
 
-				socket.setMulticastLoopback(false)
+					socket.setMulticastLoopback(false)
+				} catch (err) {
+					reject(err)
+				}
 			}
 
 			resolve(socket)
