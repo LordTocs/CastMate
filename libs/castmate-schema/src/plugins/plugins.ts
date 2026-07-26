@@ -5,6 +5,7 @@ import { SchemaObject, TSchemaProperties } from "../schema/schema-object"
 export interface PluginBaseSpecification {
 	id: string
 	color: Color
+	dependencies: PluginDependency[]
 }
 
 export interface PluginSpecification<
@@ -27,7 +28,11 @@ export interface PluginDesc<
 	settings: TSettings
 	secrets: TSecrets
 	state: TState
+	dependencies?: PluginDependency[]
 }
+
+//TODO: Maybe make this versioned?
+export type PluginDependency = string
 
 export function definePlugin<
 	TSettings extends TSchemaProperties,
@@ -40,6 +45,7 @@ export function definePlugin<
 		settings: S.Object(desc.settings),
 		secrets: S.Object(desc.secrets),
 		state: S.Object(desc.state),
+		dependencies: desc.dependencies ?? [],
 	}
 }
 
