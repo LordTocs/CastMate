@@ -44,3 +44,37 @@ export const testActionDesc = defineAction(testPlugin, {
 		b: S.String(),
 	},
 })
+
+export interface FlowActionSpecification<
+	ConfigProperties extends TSchemaProperties,
+	FlowConfigProperties extends TSchemaProperties
+> {
+	id: string
+	config: SchemaObject<ConfigProperties>
+	flowConfig: SchemaObject<FlowConfigProperties>
+	plugin: string
+}
+
+export interface FlowActionDesc<
+	ConfigProperties extends TSchemaProperties,
+	FlowConfigProperties extends TSchemaProperties
+> {
+	id: string
+	config: ConfigProperties
+	flowConfig: FlowConfigProperties
+}
+
+export function defineFlowAction<
+	ConfigProperties extends TSchemaProperties,
+	FlowConfigProperties extends TSchemaProperties
+>(
+	plugin: PluginBaseSpecification,
+	spec: FlowActionDesc<ConfigProperties, FlowConfigProperties>
+): FlowActionSpecification<ConfigProperties, FlowConfigProperties> {
+	return {
+		plugin: plugin.id,
+		id: spec.id,
+		config: S.Object(spec.config),
+		flowConfig: S.Object(spec.flowConfig),
+	}
+}

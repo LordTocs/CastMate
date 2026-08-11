@@ -1,8 +1,6 @@
 import {
 	IPCActionDefinition,
 	isKey,
-	ResolvedSchemaType,
-	SchemaPaths,
 	Duration,
 	IPCDurationConfig,
 	MaybePromise,
@@ -12,6 +10,7 @@ import {
 	SchemaObject,
 	testActionDesc,
 	ActionSpecification,
+	FlowActionSpecification,
 } from "castmate-schema"
 import { AnalyticsService, ignoreReactivity, PluginManager } from "../index"
 import { Color } from "castmate-schema"
@@ -23,7 +22,7 @@ import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema } from "../util/
 import { defineIPCFunc } from "../util/electron"
 import { templateSchema } from "../templates/template"
 import { globalLogger, usePluginLogger } from "../logging/logging"
-
+/*
 interface ActionMetaData {
 	id: string
 	name: string
@@ -126,7 +125,7 @@ interface FlowActionDefinition extends BaseActionDefinition {
 }
 
 export type ActionDefinition = RegularActionDefinition | FlowActionDefinition
-
+*/
 interface ActionImplDesc<
 	ConfigProperties extends TSchemaProperties,
 	ResultProperties extends TSchemaProperties | undefined
@@ -162,3 +161,33 @@ export function implementAction<
 implementAction(testActionDesc, {
 	async handle(config) {},
 })
+
+export type FlowId = string
+
+interface FlowActionImplDesc<
+	ConfigProperties extends TSchemaProperties,
+	FlowConfigProperties extends TSchemaProperties
+> {
+	handle(
+		config: SchemaType<SchemaObject<ConfigProperties>>,
+		flows: SchemaType<SchemaObject<FlowConfigProperties>>[]
+	): Promise<FlowId>
+}
+
+export interface FlowActionImplementation<
+	ConfigProperties extends TSchemaProperties,
+	FlowConfigProperties extends TSchemaProperties
+> {}
+
+export function implementFlowAction<
+	ConfigProperties extends TSchemaProperties,
+	FlowConfigProperties extends TSchemaProperties
+>(
+	spec: FlowActionSpecification<ConfigProperties, FlowConfigProperties>,
+	impl: FlowActionImplDesc<ConfigProperties, FlowConfigProperties>
+): FlowActionImplementation<ConfigProperties, FlowConfigProperties> {
+	return {
+		spec,
+		...impl,
+	}
+}
