@@ -1,4 +1,5 @@
 import { defineAction } from "../automation/actions"
+import { ProfileResourceSpec } from "../automation/profile"
 import { S } from "../schema/schema-base"
 import { definePlugin } from "./plugins"
 
@@ -15,6 +16,8 @@ export const CastMateBuiltInPlugin = definePlugin({
 export const toggleProfileAction = defineAction(CastMateBuiltInPlugin, {
 	id: "toggleProfileActivation",
 	config: {
-		profile: S.Boolean(),
+		profile: S.Resource({
+			resource: ProfileResourceSpec,
+		}),
 	},
 })

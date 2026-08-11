@@ -1,4 +1,4 @@
-import { BooleanExpression, CastMateBuiltInPlugin, Toggle } from "castmate-schema"
+import { BooleanExpression, CastMateBuiltInPlugin, Toggle, toggleProfileAction } from "castmate-schema"
 import {
 	ActionQueue,
 	Automation,
@@ -14,7 +14,6 @@ import {
 	getSequenceHash,
 	runOnChange,
 	evaluateBooleanExpression,
-	defineFlowAction,
 	globalLogger,
 	usePluginLogger,
 	implementPlugin,
@@ -29,6 +28,12 @@ interface ConditionalTrigger {
 }
 
 implementPlugin(CastMateBuiltInPlugin, () => {})
+
+implementAction(toggleProfileAction, {
+	async handle(config) {
+		config.profile.state.active = !config.profile.state.active
+	},
+})
 
 /*
 export default definePlugin(
