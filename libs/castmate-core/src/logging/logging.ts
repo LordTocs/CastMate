@@ -99,7 +99,7 @@ export function usePluginLogger(pluginId?: string) {
 	}
 
 	if (initingPlugin && pluginId == null) {
-		pluginId = initingPlugin.id
+		pluginId = initingPlugin.spec.id
 	}
 
 	const finalPluginId = pluginId
