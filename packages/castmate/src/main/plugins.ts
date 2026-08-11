@@ -1,4 +1,6 @@
 import { PluginManager } from "castmate-core/src/plugins/plugin-manager"
+
+/*
 import discordPlugin from "castmate-plugin-discord-main"
 import httpPlugin from "castmate-plugin-http-main"
 import inputPlugin from "castmate-plugin-input-main"
@@ -38,8 +40,8 @@ import advssPlugin from "castmate-plugin-advss-main"
 import aitumPlugin from "castmate-plugin-aitum-main"
 
 import donorDrivePlugin from "castmate-plugin-donordrive-main"
-
-import castmatePlugin from "./builtin-plugin"
+*/
+//import castmatePlugin from "./builtin-plugin"
 import { WebService, Plugin } from "castmate-core"
 import { migratePlugin } from "./migration/old-migration"
 
@@ -51,52 +53,52 @@ export async function loadPlugin(plugin: Plugin) {
 export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
 
-	await loadPlugin(castmatePlugin)
-	await loadPlugin(randomPlugin)
-	await loadPlugin(soundPlugin)
-	await loadPlugin(overlayPlugin)
-	//await loadPlugin(dashboardPlugin)
+	// await loadPlugin(castmatePlugin)
+	// await loadPlugin(randomPlugin)
+	// await loadPlugin(soundPlugin)
+	// await loadPlugin(overlayPlugin)
+	// //await loadPlugin(dashboardPlugin)
 
-	const promises = [
-		loadPlugin(timePlugin),
-		loadPlugin(twitchPlugin),
-		loadPlugin(discordPlugin),
-		loadPlugin(obsPlugin),
-		loadPlugin(iotPlugin),
-		loadPlugin(osPlugin),
-		loadPlugin(httpPlugin),
-		loadPlugin(inputPlugin),
-		loadPlugin(voicemodPlugin),
-		loadPlugin(minecraftPlugin),
-		loadPlugin(remotePlugin),
-		loadPlugin(blueskyPlugin),
-	]
+	// const promises = [
+	// 	loadPlugin(timePlugin),
+	// 	loadPlugin(twitchPlugin),
+	// 	loadPlugin(discordPlugin),
+	// 	loadPlugin(obsPlugin),
+	// 	loadPlugin(iotPlugin),
+	// 	loadPlugin(osPlugin),
+	// 	loadPlugin(httpPlugin),
+	// 	loadPlugin(inputPlugin),
+	// 	loadPlugin(voicemodPlugin),
+	// 	loadPlugin(minecraftPlugin),
+	// 	loadPlugin(remotePlugin),
+	// 	loadPlugin(blueskyPlugin),
+	// ]
 
-	await Promise.allSettled(promises)
+	// await Promise.allSettled(promises)
 
-	const obsDeps = [loadPlugin(advssPlugin), loadPlugin(aitumPlugin)]
-	await Promise.allSettled(obsDeps)
+	// const obsDeps = [loadPlugin(advssPlugin), loadPlugin(aitumPlugin)]
+	// await Promise.allSettled(obsDeps)
 
-	await loadPlugin(variablesPlugin)
+	// await loadPlugin(variablesPlugin)
 
-	await loadPlugin(spellcastPlugin)
+	// await loadPlugin(spellcastPlugin)
 
-	await loadPlugin(streamPlanPlugin)
+	// await loadPlugin(streamPlanPlugin)
 
-	//iot
-	const iotPromises = [
-		loadPlugin(huePlugin),
-		loadPlugin(kasaPlugin),
-		loadPlugin(elgatoPlugin),
-		loadPlugin(lifxPlugin),
-		loadPlugin(wyzePlugin),
-		loadPlugin(goveePlugin),
-		loadPlugin(twinklyPlugin),
-	]
+	// //iot
+	// const iotPromises = [
+	// 	loadPlugin(huePlugin),
+	// 	loadPlugin(kasaPlugin),
+	// 	loadPlugin(elgatoPlugin),
+	// 	loadPlugin(lifxPlugin),
+	// 	loadPlugin(wyzePlugin),
+	// 	loadPlugin(goveePlugin),
+	// 	loadPlugin(twinklyPlugin),
+	// ]
 
-	await loadPlugin(donorDrivePlugin)
+	// await loadPlugin(donorDrivePlugin)
 
-	await Promise.allSettled(iotPromises)
+	// await Promise.allSettled(iotPromises)
 
 	await WebService.getInstance().startWebsockets()
 }

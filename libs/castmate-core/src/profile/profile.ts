@@ -1,33 +1,21 @@
-import {
-	ProfileState,
-	ProfileConfig,
-	Sequence,
-	TriggerData,
-	Schema,
-	SchemaType,
-	createInlineAutomation,
-	ProfileResourceSpec,
-	SchemaMeta,
-} from "castmate-schema"
-import { implementResource, Resource, ResourceStorage } from "../resources/resource"
-import { FileResource } from "../resources/file-resource"
+import { ProfileResourceSpec } from "castmate-schema"
+import { implementResource } from "../resources/resource"
+// import { FileResource } from "../resources/file-resource"
 import { nanoid } from "nanoid/non-secure"
-import { evaluateBooleanExpression } from "../util/boolean-helpers"
-import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
-import { ProfileManager } from "./profile-system"
-import { TriggerFunc } from "../queue-system/trigger"
-import { PluginManager } from "../plugins/plugin-manager"
-import { SequenceResolvers } from "../queue-system/sequence"
-import { isFunction, now } from "lodash"
+// import { evaluateBooleanExpression } from "../util/boolean-helpers"
+// import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
+// import { ProfileManager } from "./profile-system"
+// import { TriggerFunc } from "../queue-system/trigger"
+// import { PluginManager } from "../plugins/plugin-manager"
+// import { SequenceResolvers } from "../queue-system/sequence"
+// import { isFunction, now } from "lodash"
 import { usePluginLogger } from "../logging/logging"
 import { SchemaData } from "castmate-schema/src/schema/schema-data"
+import { implementDocumentResource } from "../resources/file-resource"
 
-export const Profiles = implementResource(ProfileResourceSpec, {
-	async create(name: string) {
+export const Profiles = implementDocumentResource(ProfileResourceSpec, {
+	async create(id, name, config) {
 		return {
-			id: nanoid(),
-			name,
-			config: await SchemaData.constructDefault(ProfileResourceSpec.config),
 			state: {
 				active: false,
 			},
@@ -154,7 +142,7 @@ const logger = usePluginLogger("profiles")
 
 export async function setupProfiles() {
 	// await Profile.initialize()
-
+	/*
 	SequenceResolvers.getInstance().registerResolver("profile", {
 		getAutomation(id, subId) {
 			if (!subId) return undefined
@@ -231,5 +219,5 @@ export async function setupProfiles() {
 
 			return triggerDef.runWrapper
 		},
-	})
+	})*/
 }
