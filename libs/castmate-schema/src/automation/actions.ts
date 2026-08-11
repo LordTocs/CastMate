@@ -21,7 +21,10 @@ export interface ActionDesc<
 	result?: ResultProperties
 }
 
-export function defineAction<ConfigProperties extends TSchemaProperties, ResultProperties extends TSchemaProperties>(
+export function defineAction<
+	ConfigProperties extends TSchemaProperties,
+	ResultProperties extends TSchemaProperties | undefined = undefined
+>(
 	plugin: PluginBaseSpecification,
 	spec: ActionDesc<ConfigProperties, ResultProperties>
 ): ActionSpecification<ConfigProperties, ResultProperties> {
@@ -39,8 +42,5 @@ export const testActionDesc = defineAction(testPlugin, {
 	config: {
 		a: S.Number(),
 		b: S.String(),
-	},
-	result: {
-		c: S.FilePath(),
 	},
 })
