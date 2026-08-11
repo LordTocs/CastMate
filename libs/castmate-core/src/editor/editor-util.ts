@@ -2,6 +2,7 @@ import {
 	EditorEventSpec,
 	EditorFunctionSpec,
 	MaybePromise,
+	Schema,
 	SchemaArgTypes,
 	SchemaFunction,
 	SchemaType,
@@ -35,6 +36,11 @@ const EditorService = Service(
 	class {
 		private editors = new Map<string, EditorCommunicator>()
 		private functions = new Map<string, EditorFunctionSpec>()
+
+		get allEditors() {
+			//TODO: Enable the new range map()?
+			return [...this.editors.values()]
+		}
 
 		registerEditor(editor: EditorCommunicator) {
 			if (this.editors.has(editor.id)) {
@@ -86,4 +92,26 @@ export function implementEditorFunction<TEditorFunc extends EditorFunctionSpec>(
 	EditorService.getInstance().registerEditorFunc(func)
 }
 
-export function useEditorEvent<TEditorEvent extends EditorEventSpec>(spec: TEditorEvent) {}
+type EditorEventCallerFunc<TEditorEvent extends EditorEventSpec<Schema[]>> = (...args: SchemaArgTypes<TEditorEvent["schema"]>) => Promise<void> 
+
+type EditorEventCaller<TEditorEvent extends EditorEventSpec<Schema[]>> = EditorEventCallerFunc<TEditorEvent> & {
+	send(comm: EditorCommunicator, ...args: SchemaArgTypes<TEditorEvent["schema"]>): Promise<void>
+}
+
+export function useEditorEvent<TEditorEvent extends EditorEventSpec<Schema[]>(spec: TEditorEvent) : EditorEventCaller<TEditorEvent> {
+	const result = async (...args: SchemaArgTypes<TEditorEvent["schema"]>) => {
+		const promises = EditorService.getInstance().allEditors.map((comm) => {
+			//TODO: Serialize args
+			return comm.sendEvent(spec.plugin, spec.id, ...args)
+		})
+
+		await Promise.allSettled(promises)
+	}
+
+	result.send = async (comm: EditorCommunicator, ...args: SchemaArgTypes<TEditorEvent["schema"]>) => {
+		await comm.sendEvent(spec.plugin, spec.id, ...args)
+	}
+
+	return result
+
+}
