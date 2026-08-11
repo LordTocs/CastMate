@@ -1,65 +1,18 @@
 import { initingPlugin, setInitingPlugin } from "./plugin-init"
+import { SchemaData } from "castmate-schema/src/schema/schema-data"
+import { timeout } from "../util/abort-utils"
 import {
-	ExposedSchemaType,
+	PluginBaseSpecification,
 	PluginSpecification,
-	ResolvedSchemaType,
 	SchemaObject,
-	testPlugin,
+	SchemaType,
 	TSchemaProperties,
 } from "castmate-schema"
-import { Profile } from "./../profile/profile"
-import {
-	Color,
-	Schema,
-	constructDefault,
-	SchemaType,
-	IPCActionDefinition,
-	IPCPluginDefinition,
-	mapRecord,
-	awaitKeys,
-	IPCSettingsDefinition,
-	IPCStateDefinition,
-} from "castmate-schema"
-import { ActionDefinition, defineAction } from "../queue-system/action"
-import { TriggerDefinition, defineTrigger } from "../queue-system/trigger"
-import { defineCallableIPC, defineIPCFunc } from "../util/electron"
-import { EventList } from "../util/events"
-import { SemanticVersion } from "../util/type-helpers"
-import {
-	ReactiveEffect,
-	ReactiveRef,
-	aliasReactiveValue,
-	reactify,
-	reactiveComputed,
-	reactiveRef,
-	runOnChange,
-} from "../reactivity/reactivity"
-import {
-	ensureYAML,
-	loadSecretYAML,
-	loadSecretYAMLSchema,
-	loadYAML,
-	loadYAMLSchema,
-	pathExists,
-	writeSecretYAML,
-	writeYAML,
-} from "../io/file-system"
-import _debounce from "lodash/debounce"
-import {
-	deserializeSchema,
-	exposeSchema,
-	ipcConvertSchema,
-	ipcRegisterSchema,
-	serializeSchema,
-	unexposeSchema,
-} from "../util/ipc-schema"
-import { ResourceBase, ResourceConstructor } from "../resources/resource"
-import { PluginManager } from "./plugin-manager"
-import { Logger, globalLogger, usePluginLogger } from "../logging/logging"
-import { startPerfTime } from "../util/time-utils"
-import { isSatellite } from "../util/init-mode"
-import { SchemaData } from "castmate-schema/src/schema/schema-data"
+import { usePluginLogger } from "../logging/logging"
+import { loadSecretYAMLSchema, loadYAMLSchema } from "../io/file-system"
+import { reactify } from "../reactivity/reactivity"
 
+/*
 interface PluginSpec {
 	id: string
 	name: string
@@ -418,9 +371,6 @@ export function useSetting<T>(plugin: string, id: string) {
 	throw new Error()
 }
 
-/**
- * Shows a particular resource in the setting
- */
 export function defineResourceSetting<T extends ResourceBase>(
 	resourceType: ResourceConstructor<T>,
 	name: string,
@@ -792,19 +742,23 @@ export class Plugin {
 		rendererDeleteStateDef(this.id, id)
 	}
 }
-
+*/
 //----------
+export interface Plugin {
+	spec: PluginBaseSpecification
+	initialized: boolean
+	load: () => Promise<any>
+}
 
 export interface PluginImplementation<
 	TSettings extends TSchemaProperties,
 	TSecrets extends TSchemaProperties,
 	TState extends TSchemaProperties
-> {
+> extends Plugin {
 	spec: PluginSpecification<TSettings, TSecrets, TState>
 	settings: SchemaType<SchemaObject<TSettings>>
 	secrets: SchemaType<SchemaObject<TSecrets>>
 	state: SchemaType<SchemaObject<TState>>
-	initFunc: () => any
 }
 
 export function implementPlugin<
@@ -815,32 +769,62 @@ export function implementPlugin<
 	//Do we return this or just put it in a registry
 	const newPlugin: PluginImplementation<TSettings, TSecrets, TState> = {
 		spec: plugin,
-		initFunc: init,
 		//@ts-expect-error
 		settings: {}, //Do settins load at load time
 		//@ts-expect-error
 		secrets: {}, //Do secrets load at load time
 		//@ts-expect-error
 		state: {}, //Do state init at load time
+		initialized: false,
+		async load() {
+			if (this.initialized) return
+
+			//TODO: Dep check here!
+
+			await loadPlugin()
+
+			await initPlugin()
+		},
 	}
 
-	const initPlugin = async () => {
-		//fill up defaults
-		newPlugin.settings = await loadYAMLSchema(newPlugin.spec.settings, "settings", `${newPlugin.spec.id}.yaml`)
-		newPlugin.secrets = await loadSecretYAMLSchema(newPlugin.spec.secrets, "settings", `${newPlugin.spec.id}.syaml`)
-		newPlugin.state = reactify(await SchemaData.constructDefault(newPlugin.spec.state))
+	const logger = usePluginLogger(plugin.id)
 
+	const initPlugin = async () => {
 		try {
 			//TODO set initing function
-			await newPlugin.initFunc()
+
+			//Race the plugin init incase there's a never resolved promise
+			await Promise.race([init(), timeout(180000)])
+
+			newPlugin.initialized = true
 		} catch (err) {
+			logger.error("Failed to initialize", plugin.id, err)
 		} finally {
 		}
 	}
 
-	const loadPlugin = async () => {}
-}
+	const loadPlugin = async () => {
+		//fill up defaults
+		try {
+			newPlugin.settings = await loadYAMLSchema(newPlugin.spec.settings, "settings", `${newPlugin.spec.id}.yaml`)
+		} catch (err) {
+			logger.error("Failed to load", plugin.id, "settings", err)
+		}
 
-implementPlugin(testPlugin, () => {
-	onLoad(() => {})
-})
+		try {
+			newPlugin.secrets = await loadSecretYAMLSchema(
+				newPlugin.spec.secrets,
+				"secrets",
+				`${newPlugin.spec.id}.syaml`
+			)
+		} catch (err) {
+			logger.error("Failed to load", plugin.id, "secrets", err)
+		}
+
+		try {
+			newPlugin.state = reactify(await SchemaData.constructDefault(newPlugin.spec.state))
+		} catch (err) {
+			logger.error("Failed to construct default state for", plugin.id)
+		}
+	}
+}
