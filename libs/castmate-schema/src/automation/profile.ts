@@ -18,6 +18,6 @@ export const ProfileResourceSpec = defineResource(CastMateBuiltInPlugin, {
 	},
 })
 
-export type ProfileResource = Resource<typeof ProfileResourceSpec>
-export type ProfileConfig = ProfileResource["config"]
-export type ProfileState = ProfileResource["state"]
+export type Profile = Resource<typeof ProfileResourceSpec>
+export type ProfileConfig = Profile["config"]
+export type ProfileState = Profile["state"]

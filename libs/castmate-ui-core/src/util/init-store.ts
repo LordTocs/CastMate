@@ -5,8 +5,8 @@ import { defineStore } from "pinia"
 import { computed, ref, markRaw } from "vue"
 
 export const useInitStore = defineStore("init", () => {
-	const mainProcessInited = ref(false)
-	const mainProcessInitialInited = ref(false)
+	const mainProcessInited = ref(true)
+	const mainProcessInitialInited = ref(true)
 
 	const mainProcessInitResolver = createDelayedResolver()
 	const mainProcessInitialInitResolver = createDelayedResolver()
@@ -16,27 +16,30 @@ export const useInitStore = defineStore("init", () => {
 	async function initialize(appMode: "castmate" | "satellite") {
 		mode.value = appMode
 
-		const isInited = await ipcInvoke("castmate_isSetupFinished")
-		if (isInited) {
-			mainProcessInited.value = true
-			mainProcessInitResolver.resolve()
-		}
+		mainProcessInitResolver.resolve()
+		mainProcessInitialInitResolver.resolve()
 
-		const isInitialInited = await ipcInvoke("castmate_isInitialSetupFinished")
-		if (isInitialInited) {
-			mainProcessInitialInited.value = true
-			mainProcessInitialInitResolver.resolve()
-		}
-		//Check for init
-		ipcRenderer.on("castmate_setupFinished", () => {
-			mainProcessInited.value = true
-			mainProcessInitResolver.resolve()
-		})
+		// const isInited = await ipcInvoke("castmate_isSetupFinished")
+		// if (isInited) {
+		// 	mainProcessInited.value = true
+		// 	mainProcessInitResolver.resolve()
+		// }
 
-		ipcRenderer.on("castmate_initialSetupFinished", () => {
-			mainProcessInitialInited.value = true
-			mainProcessInitialInitResolver.resolve()
-		})
+		// const isInitialInited = await ipcInvoke("castmate_isInitialSetupFinished")
+		// if (isInitialInited) {
+		// 	mainProcessInitialInited.value = true
+		// 	mainProcessInitialInitResolver.resolve()
+		// }
+		// //Check for init
+		// ipcRenderer.on("castmate_setupFinished", () => {
+		// 	mainProcessInited.value = true
+		// 	mainProcessInitResolver.resolve()
+		// })
+
+		// ipcRenderer.on("castmate_initialSetupFinished", () => {
+		// 	mainProcessInitialInited.value = true
+		// 	mainProcessInitialInitResolver.resolve()
+		// })
 	}
 
 	function waitForInit() {

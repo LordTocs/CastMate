@@ -128,21 +128,21 @@ const TestRes2 = implementResource(testRes, {
 	},
 })
 
-const t2 = TestRes2.getById("")
+// const t2 = TestRes2.getById("")
 
-const t3 = await TestRes2.create("BLORG")
+// const t3 = await TestRes2.create("BLORG")
 
-t3.testFunc(10, "")
+// t3.testFunc(10, "")
 
-interface ITest {
-	a: string
-	b: number
-}
+// interface ITest {
+// 	a: string
+// 	b: number
+// }
 
-function testF<T extends ITest>(f: T) {}
+// function testF<T extends ITest>(f: T) {}
 
-testF({
-	a: "hello",
-	b: 10,
-	hello: false,
-})
+// testF({
+// 	a: "hello",
+// 	b: 10,
+// 	hello: false,
+// })

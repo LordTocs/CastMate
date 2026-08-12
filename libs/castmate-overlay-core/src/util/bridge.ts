@@ -14,8 +14,9 @@ import {
 	watchEffect,
 } from "vue"
 import { OverlayConfig, OverlayWidgetConfig } from "castmate-plugin-overlays-shared"
-import { constructDefault, Schema, ViewerDataObserver, ViewerDataRow, ViewerVariable } from "castmate-schema"
+import { Schema, ViewerDataObserver, ViewerDataRow, ViewerVariable } from "castmate-schema"
 import _cloneDeep from "lodash/cloneDeep"
+import { SchemaData } from "castmate-schema/src/schema/schema-data"
 
 export type BridgeViewerData = ComputedRef<ViewerDataRow[]>
 
@@ -248,7 +249,7 @@ export function useViewerDataTable(
 						}
 					},
 					async onNewViewerVariable(variable) {
-						const defaultValue = await constructDefault(variable.schema)
+						const defaultValue = await SchemaData.constructDefault(variable.schema)
 						for (const viewer of tableData.value) {
 							viewer[variable.name] = _cloneDeep(defaultValue)
 						}

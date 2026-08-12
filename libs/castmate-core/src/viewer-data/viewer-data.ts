@@ -1,22 +1,20 @@
 import {
-	IPCSchema,
-	IPCViewerVariable,
 	Schema,
+	SchemaTypeMap,
 	ViewerDataObserver,
 	ViewerDataRow,
-	constructDefault,
 	filterPromiseAll,
-	getTypeByConstructor,
-	getTypeByName,
+	getSchemaMetaData,
+	isNumberSchema,
 } from "castmate-schema"
 import { Service } from "../util/service"
 import sqlite from "better-sqlite3"
 import { ensureDirectory, ensureYAML, loadYAML, resolveProjectPath, writeYAML } from "../io/file-system"
-import { deserializeSchema, exposeSchema, ipcConvertSchema, ipcParseSchema, serializeSchema } from "../util/ipc-schema"
 import { usePluginLogger } from "../logging/logging"
 import { ViewerVariable } from "castmate-schema"
 import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { startPerfTime } from "../util/time-utils"
+import { SchemaData } from "castmate-schema/src/schema/schema-data"
 
 interface SerializedViewerVariableDesc {
 	name: string
@@ -195,8 +193,8 @@ const rendererViewerDataAdded = defineCallableIPC<(provider: string, id: string,
 	"viewerDataAdded"
 )
 
-const rendererColumnAdded = defineCallableIPC<(ipcDef: IPCViewerVariable) => void>("viewer-data", "columnAdded")
-const rendererColumnRemoved = defineCallableIPC<(name: string) => void>("viewer-data", "columnRemoved")
+//const rendererColumnAdded = defineCallableIPC<(ipcDef: IPCViewerVariable) => void>("viewer-data", "columnAdded")
+//const rendererColumnRemoved = defineCallableIPC<(name: string) => void>("viewer-data", "columnRemoved")
 
 export const ViewerData = Service(
 	class {
@@ -236,13 +234,13 @@ export const ViewerData = Service(
 
 		private async ensureColumn(variable: ViewerVariable) {
 			try {
-				const schemaType = getTypeByConstructor(variable.schema.type)
+				const schemaType = getSchemaMetaData(variable.schema.type as keyof SchemaTypeMap)
 				if (!schemaType) return
 
-				const sqlType = sqlTypes[schemaType.name] ?? "BLOB"
+				const sqlType = sqlTypes[schemaType.type] ?? "BLOB"
 
-				const defaultValue = await constructDefault(variable.schema)
-				const serializedDefault = await serializeSchema(variable.schema, defaultValue)
+				const defaultValue = await SchemaData.constructDefault(variable.schema)
+				const serializedDefault = defaultValue //await serializeSchema(variable.schema, defaultValue)
 
 				this.addColumnStatement({
 					columnName: variable.name,
@@ -258,29 +256,23 @@ export const ViewerData = Service(
 			const data: SerializedViewerVariableDesc[] = await loadYAML("viewer-data", "variables.yaml")
 
 			for (const varData of data) {
-				const type = getTypeByName(varData.type)
-
-				if (!type) {
-					logger.error("Missing Viewer Var Type", varData.type)
-					continue
-				}
-
-				const schema: Schema = {
-					type: type.constructor,
-				}
-
-				if (varData.defaultValue != null) {
-					const defaultValue = await deserializeSchema(schema, varData.defaultValue)
-
-					schema.default = defaultValue
-				}
-
-				schema.required = varData.required ?? true
-
-				this._variables.push({
-					name: varData.name,
-					schema,
-				})
+				// const type = getTypeByName(varData.type)
+				// if (!type) {
+				// 	logger.error("Missing Viewer Var Type", varData.type)
+				// 	continue
+				// }
+				// const schema: Schema = {
+				// 	type: type.constructor,
+				// }
+				// if (varData.defaultValue != null) {
+				// 	const defaultValue = varData.defaultValue //await deserializeSchema(schema, varData.defaultValue)
+				// 	//schema.default = defaultValue
+				// }
+				// //schema.required = varData.required ?? true
+				// this._variables.push({
+				// 	name: varData.name,
+				// 	schema,
+				// })
 			}
 
 			for (const vari of this.variables) {
@@ -291,22 +283,22 @@ export const ViewerData = Service(
 		private async saveVariables() {
 			const data = new Array<SerializedViewerVariableDesc>()
 
-			for (const vari of this.variables) {
-				const type = getTypeByConstructor(vari.schema.type)
-				if (!type) continue
+			// for (const vari of this.variables) {
+			// 	const type = getTypeByConstructor(vari.schema.type)
+			// 	if (!type) continue
 
-				const serializedVar: SerializedViewerVariableDesc = {
-					name: vari.name,
-					type: type.name,
-					required: vari.schema.required,
-				}
+			// 	const serializedVar: SerializedViewerVariableDesc = {
+			// 		name: vari.name,
+			// 		type: type.name,
+			// 		required: vari.schema.required,
+			// 	}
 
-				if (vari.schema.default != null) {
-					serializedVar.defaultValue = await serializeSchema(vari.schema, vari.schema.default)
-				}
+			// 	if (vari.schema.default != null) {
+			// 		serializedVar.defaultValue = await serializeSchema(vari.schema, vari.schema.default)
+			// 	}
 
-				data.push(serializedVar)
-			}
+			// 	data.push(serializedVar)
+			// }
 
 			await writeYAML(data, "viewer-data", "variables.yaml")
 		}
@@ -337,39 +329,39 @@ export const ViewerData = Service(
 
 			await this.loadVariables()
 
-			defineIPCFunc("viewer-data", "getVariables", () => {
-				return this.variables.map((vari) => ({
-					name: vari.name,
-					schema: ipcConvertSchema(vari.schema, `viewerData_${vari.name}`),
-				}))
-			})
+			// defineIPCFunc("viewer-data", "getVariables", () => {
+			// 	return this.variables.map((vari) => ({
+			// 		name: vari.name,
+			// 		schema: ipcConvertSchema(vari.schema, `viewerData_${vari.name}`),
+			// 	}))
+			// })
 
-			defineIPCFunc(
-				"viewer-data",
-				"setVariable",
-				async (provider: string, id: string, varname: string, value: any) => {
-					const vari = this.getVariable(varname)
-					if (!vari) return
+			// defineIPCFunc(
+			// 	"viewer-data",
+			// 	"setVariable",
+			// 	async (provider: string, id: string, varname: string, value: any) => {
+			// 		const vari = this.getVariable(varname)
+			// 		if (!vari) return
 
-					const serialized = await serializeSchema(vari.schema, value)
-					const sqlized = sqlize(serialized)
-					await this.updateViewerValue(provider, id, varname, value, sqlized)
-				}
-			)
+			// 		const serialized = await serializeSchema(vari.schema, value)
+			// 		const sqlized = sqlize(serialized)
+			// 		await this.updateViewerValue(provider, id, varname, value, sqlized)
+			// 	}
+			// )
 
-			defineIPCFunc(
-				"viewer-data",
-				"queryPagedData",
-				async (start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => {
-					return await this.getPagedViewerData(start, end, sortBy, sortOrder)
-				}
-			)
+			// defineIPCFunc(
+			// 	"viewer-data",
+			// 	"queryPagedData",
+			// 	async (start: number, end: number, sortBy: string | undefined, sortOrder: number | undefined) => {
+			// 		return await this.getPagedViewerData(start, end, sortBy, sortOrder)
+			// 	}
+			// )
 
-			defineIPCFunc("viewer-data", "createVariable", async (ipcVarDesc: IPCViewerVariable) => {
-				const schema = ipcParseSchema(ipcVarDesc.schema)
+			// defineIPCFunc("viewer-data", "createVariable", async (ipcVarDesc: IPCViewerVariable) => {
+			// 	const schema = ipcParseSchema(ipcVarDesc.schema)
 
-				await this.addViewerVariable(ipcVarDesc.name, schema)
-			})
+			// 	await this.addViewerVariable(ipcVarDesc.name, schema)
+			// })
 
 			defineIPCFunc("viewer-data", "deleteVariable", async (variableName: string) => {
 				return await this.removeViewerVariable(variableName)
@@ -399,22 +391,22 @@ export const ViewerData = Service(
 			const existing = this.getVariable(name)
 			if (existing) throw new Error(`Viewer Variable with name ${name} already exists`)
 
-			const defaultValue = await constructDefault(schema)
+			const defaultValue = await SchemaData.constructDefault(schema)
 
 			await this.ensureColumn(vari)
 			this.variables.push(vari)
 			await this.saveVariables()
 
-			const exposedDefault = await exposeSchema(schema, defaultValue)
+			const exposedDefault = defaultValue //await exposeSchema(schema, defaultValue)
 
 			for (const provider of this.providers.values()) {
 				provider.onColumnAdded(name, exposedDefault)
 			}
 
-			rendererColumnAdded({
-				name,
-				schema: ipcConvertSchema(schema, `viewerData_${name}`),
-			})
+			// rendererColumnAdded({
+			// 	name,
+			// 	schema: ipcConvertSchema(schema, `viewerData_${name}`),
+			// })
 
 			for (const o of this.observers) {
 				o.onNewViewerVariable(vari)
@@ -437,7 +429,7 @@ export const ViewerData = Service(
 			}
 
 			logger.log("Notifying Renderer")
-			rendererColumnRemoved(name)
+			// rendererColumnRemoved(name)
 
 			for (const o of this.observers) {
 				o.onViewerVariableDeleted(name)
@@ -472,7 +464,7 @@ export const ViewerData = Service(
 			const vari = this.getVariable(varname)
 			if (!vari) return
 
-			const serialized = await serializeSchema(vari.schema, value)
+			const serialized = value //await serializeSchema(vari.schema, value)
 			const sqlized = sqlize(serialized)
 
 			try {
@@ -506,7 +498,7 @@ export const ViewerData = Service(
 		async offsetViewerValue(provider: string, id: string, displayName: string, varname: string, offset: number) {
 			const vari = this.getVariable(varname)
 			if (!vari) return
-			if (vari.schema.type != Number) {
+			if (!isNumberSchema(vari)) {
 				throw new Error("Can't offset a variable that's not a number!")
 			}
 			if (typeof offset != "number") {
@@ -517,7 +509,7 @@ export const ViewerData = Service(
 			}
 
 			try {
-				const defaultNumber = await constructDefault(vari.schema)
+				const defaultNumber = await SchemaData.constructDefault(vari.schema)
 				const offsetDefault = (defaultNumber ?? 0) + offset
 
 				this.insertValue({
@@ -581,8 +573,8 @@ export const ViewerData = Service(
 			let result: Record<string, any> = {}
 
 			for (const vari of this.variables) {
-				const value = await constructDefault(vari.schema)
-				const exposed = await exposeSchema(vari.schema, value)
+				const value = await SchemaData.constructDefault(vari.schema)
+				const exposed = value //await exposeSchema(vari.schema, value)
 				result[vari.name] = exposed
 			}
 
@@ -598,8 +590,8 @@ export const ViewerData = Service(
 				const result: Record<string, any> = {}
 
 				for (const vari of this.variables) {
-					const deserialized = await deserializeSchema(vari.schema, data[vari.name])
-					const exposed = await exposeSchema(vari.schema, deserialized)
+					const deserialized = data[vari.name] //await deserializeSchema(vari.schema, data[vari.name])
+					const exposed = deserialized //await exposeSchema(vari.schema, deserialized)
 					result[vari.name] = exposed
 				}
 

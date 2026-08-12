@@ -1,7 +1,7 @@
-import { ProfileResource } from "castmate-schema"
+import { Profile } from "castmate-schema"
 import { globalLogger } from "../logging/logging"
 import { PluginManager } from "../plugins/plugin-manager"
-import { ActionQueueManager } from "../queue-system/action-queue"
+// import { ActionQueueManager } from "../queue-system/action-queue"
 import { ignoreReactivity } from "../reactivity/reactivity"
 import { Service } from "../util/service"
 import { Profiles } from "./profile"
@@ -9,21 +9,21 @@ import { Profiles } from "./profile"
 
 export const ProfileManager = Service(
 	class {
-		private _activeProfiles: ProfileResource[] = []
-		private _inactiveProfiles: ProfileResource[] = []
+		private _activeProfiles: Profile[] = []
+		private _inactiveProfiles: Profile[] = []
 
-		get activeProfiles(): readonly ProfileResource[] {
+		get activeProfiles(): readonly Profile[] {
 			return this._activeProfiles
 		}
 
-		get inactiveProfiles(): readonly ProfileResource[] {
+		get inactiveProfiles(): readonly Profile[] {
 			return this._inactiveProfiles
 		}
 
 		private inited: boolean = false
 
 		async finishSetup() {
-			await Promise.all(Array.from(Profiles).map((p) => p.forceActivationRecompute()))
+			//await Promise.all(Array.from(Profiles).map((p) => p.forceActivationRecompute()))
 
 			this.inited = true
 
@@ -44,8 +44,8 @@ export const ProfileManager = Service(
 		private recomputeActiveProfiles() {
 			if (!this.inited) return
 
-			const active: ProfileResource[] = []
-			const inactive: ProfileResource[] = []
+			const active: Profile[] = []
+			const inactive: Profile[] = []
 
 			for (const profile of Profiles) {
 				if (profile.state.active) {
@@ -59,11 +59,11 @@ export const ProfileManager = Service(
 			const newInactive = inactive.filter((p) => !this.inactiveProfiles.includes(p))
 
 			for (const newlyActive of newActive) {
-				ActionQueueManager.getInstance().queueOrRun("profile", newlyActive.id, "activation", {})
+				// ActionQueueManager.getInstance().queueOrRun("profile", newlyActive.id, "activation", {})
 			}
 
 			for (const newlyInactive of newInactive) {
-				ActionQueueManager.getInstance().queueOrRun("profile", newlyInactive.id, "deactivation", {})
+				// ActionQueueManager.getInstance().queueOrRun("profile", newlyInactive.id, "deactivation", {})
 			}
 
 			globalLogger.log(
@@ -78,7 +78,7 @@ export const ProfileManager = Service(
 			this._activeProfiles = active
 			this._inactiveProfiles = inactive
 
-			PluginManager.getInstance().onProfilesChanged(this._activeProfiles, this._inactiveProfiles)
+			// PluginManager.getInstance().onProfilesChanged(this._activeProfiles, this._inactiveProfiles)
 
 			this.activeProfileChange = false
 		}

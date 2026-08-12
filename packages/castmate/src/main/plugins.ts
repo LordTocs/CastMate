@@ -43,10 +43,10 @@ import donorDrivePlugin from "castmate-plugin-donordrive-main"
 */
 //import castmatePlugin from "./builtin-plugin"
 import { WebService, Plugin } from "castmate-core"
-import { migratePlugin } from "./migration/old-migration"
+// import { migratePlugin } from "./migration/old-migration"
 
 export async function loadPlugin(plugin: Plugin) {
-	await migratePlugin(plugin.id)
+	// await migratePlugin(plugin.id)
 	await PluginManager.getInstance().registerPlugin(plugin)
 }
 

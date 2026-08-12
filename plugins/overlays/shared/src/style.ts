@@ -1,4 +1,4 @@
-import { Color, SchemaBase, registerType } from "castmate-schema"
+import { Color, SchemaBase } from "castmate-schema"
 import _cloneDeep from "lodash/cloneDeep"
 
 import { CSSProperties } from "vue"
@@ -144,10 +144,10 @@ export const OverlayTextStyle = {
 }
 export type OverlayTextStyleFactory = typeof OverlayTextStyle
 
-export interface SchemaOverlayTextStyle extends SchemaBase<OverlayTextStyle> {
-	type: OverlayTextStyleFactory
-	template?: boolean
-}
+// export interface SchemaOverlayTextStyle extends SchemaBase<OverlayTextStyle> {
+// 	type: OverlayTextStyleFactory
+// 	template?: boolean
+// }
 
 export interface OverlayEdgeInfo<T = number> {
 	top: T
@@ -234,14 +234,14 @@ export const OverlayBlockStyle = {
 
 export type OverlayBlockStyleFactory = typeof OverlayBlockStyle
 
-export interface SchemaOverlayBlockStyle extends SchemaBase<OverlayBlockStyle> {
-	type: OverlayBlockStyleFactory
-	template?: boolean
-	allowMargin?: boolean
-	allowPadding?: boolean
-	allowVerticalAlign?: boolean
-	allowHorizontalAlign?: boolean
-}
+// export interface SchemaOverlayBlockStyle extends SchemaBase<OverlayBlockStyle> {
+// 	type: OverlayBlockStyleFactory
+// 	template?: boolean
+// 	allowMargin?: boolean
+// 	allowPadding?: boolean
+// 	allowVerticalAlign?: boolean
+// 	allowHorizontalAlign?: boolean
+// }
 
 export interface OverlayTextAlignment {
 	textAlign: "left" | "center" | "right" | "justify"
@@ -265,9 +265,9 @@ export const OverlayTextAlignment = {
 
 export type OverlayTextAlignmentFactory = typeof OverlayTextAlignment
 
-export interface SchemaOverlayTextAlignment extends SchemaBase<OverlayTextAlignment> {
-	type: OverlayTextAlignmentFactory
-}
+// export interface SchemaOverlayTextAlignment extends SchemaBase<OverlayTextAlignment> {
+// 	type: OverlayTextAlignmentFactory
+// }
 
 export interface WidgetCornerInfo<T = number> {
 	topLeft: T
@@ -332,9 +332,9 @@ export const WidgetBorderRadius = {
 
 export type WidgetBorderRadiusFactory = typeof WidgetBorderRadius
 
-export interface SchemaWidgetBorderRadius extends SchemaBase<WidgetBorderRadius> {
-	type: WidgetBorderRadiusFactory
-}
+// export interface SchemaWidgetBorderRadius extends SchemaBase<WidgetBorderRadius> {
+// 	type: WidgetBorderRadiusFactory
+// }
 
 //Backgrounds////////////////////////////
 
@@ -469,9 +469,9 @@ export const WidgetBackgroundStyle = {
 
 export type WidgetBackgroundStyleFactory = typeof WidgetBackgroundStyle
 
-export interface SchemaWidgetBackgroundStyle extends SchemaBase<WidgetBackgroundStyle> {
-	type: WidgetBackgroundStyleFactory
-}
+// export interface SchemaWidgetBackgroundStyle extends SchemaBase<WidgetBackgroundStyle> {
+// 	type: WidgetBackgroundStyleFactory
+// }
 
 export interface WidgetOutlineStyle {
 	color: Color
@@ -529,41 +529,41 @@ export const WidgetOutlineStyle = {
 }
 export type WidgetOutlineStyleFactory = typeof WidgetOutlineStyle
 
-export interface SchemaWidgetOutlineStyle extends SchemaBase<WidgetBackgroundStyle> {
-	type: WidgetOutlineStyleFactory
-}
+// export interface SchemaWidgetOutlineStyle extends SchemaBase<WidgetBackgroundStyle> {
+// 	type: WidgetOutlineStyleFactory
+// }
 
-declare module "castmate-schema" {
-	interface SchemaTypeMap {
-		OverlayTextStyle: [SchemaOverlayTextStyle, OverlayTextStyle]
-		OverlayBlockStyle: [SchemaOverlayBlockStyle, OverlayBlockStyle]
-		OverlayTextAlignment: [SchemaOverlayTextAlignment, OverlayTextAlignment]
-		WidgetBorderRadius: [SchemaWidgetBorderRadius, WidgetBorderRadius]
-		WidgetBackgroundStyle: [SchemaWidgetBackgroundStyle, WidgetBackgroundStyle]
-		WidgetOutlineStyle: [SchemaWidgetOutlineStyle, WidgetOutlineStyle]
-	}
-}
+// declare module "castmate-schema" {
+// 	interface SchemaTypeMap {
+// 		OverlayTextStyle: [SchemaOverlayTextStyle, OverlayTextStyle]
+// 		OverlayBlockStyle: [SchemaOverlayBlockStyle, OverlayBlockStyle]
+// 		OverlayTextAlignment: [SchemaOverlayTextAlignment, OverlayTextAlignment]
+// 		WidgetBorderRadius: [SchemaWidgetBorderRadius, WidgetBorderRadius]
+// 		WidgetBackgroundStyle: [SchemaWidgetBackgroundStyle, WidgetBackgroundStyle]
+// 		WidgetOutlineStyle: [SchemaWidgetOutlineStyle, WidgetOutlineStyle]
+// 	}
+// }
 
-registerType("OverlayTextStyle", {
-	constructor: OverlayTextStyle,
-})
+// registerType("OverlayTextStyle", {
+// 	constructor: OverlayTextStyle,
+// })
 
-registerType("OverlayBlockStyle", {
-	constructor: OverlayBlockStyle,
-})
+// registerType("OverlayBlockStyle", {
+// 	constructor: OverlayBlockStyle,
+// })
 
-registerType("OverlayTextAlignment", {
-	constructor: OverlayTextAlignment,
-})
+// registerType("OverlayTextAlignment", {
+// 	constructor: OverlayTextAlignment,
+// })
 
-registerType("WidgetBorderRadius", {
-	constructor: WidgetBorderRadius,
-})
+// registerType("WidgetBorderRadius", {
+// 	constructor: WidgetBorderRadius,
+// })
 
-registerType("WidgetBackgroundStyle", {
-	constructor: WidgetBackgroundStyle,
-})
+// registerType("WidgetBackgroundStyle", {
+// 	constructor: WidgetBackgroundStyle,
+// })
 
-registerType("WidgetOutlineStyle", {
-	constructor: WidgetOutlineStyle,
-})
+// registerType("WidgetOutlineStyle", {
+// 	constructor: WidgetOutlineStyle,
+// })

@@ -7,7 +7,7 @@ import { createWindow } from "./electron/electron-helpers"
 import { initializeCastMate, finializeCastMateSetup, loadAutomations, setupCastMateDirectories } from "castmate-core"
 import { finishInitDashboards } from "castmate-plugin-dashboards-main"
 import { loadPlugins } from "./plugins"
-import { checkMigration, finishMigration, migrateAllOldAutomations } from "./migration/old-migration"
+// import { checkMigration, finishMigration, migrateAllOldAutomations } from "./migration/old-migration"
 
 const isDevelopment = false //!app.isPackaged // true //TODO: import.meta.env.DEV
 
@@ -74,16 +74,16 @@ app.whenReady().then(async () => {
 	await initializeCastMate()
 
 	//Check if we need to migrate
-	await checkMigration()
+	// await checkMigration()
 
 	//Load plugins (migrating settings as we go)
 	await loadPlugins()
 
-	await migrateAllOldAutomations()
+	// await migrateAllOldAutomations()
 
 	await loadAutomations()
 
-	await finishMigration()
+	// await finishMigration()
 
 	await finializeCastMateSetup()
 

@@ -2,16 +2,14 @@
 	<div class="app" @keydown="onKeyDown" tabindex="-1">
 		<system-bar title="Hello World"></system-bar>
 		<toast position="bottom-left" style="width: 17rem" />
-		<div class="app-row" v-if="initStore.inited">
-			<project-view />
-			<docking-area style="flex: 1" v-model="dockingStore.rootDockArea" />
-		</div>
-		<div class="load-row" v-else>
-			<p-input-text v-show="false" />
-			<!--We need p-input-text to be mounted to get their styles loaded-->
+		<!--We need p-input-text to be mounted to get their styles loaded-->
+		<p-input-text v-show="false" />
+		<main-layout />
+		<!-- <div class="load-row" v-else>
+		
 			<h3>Loading CastMate</h3>
 			<p-progress-spinner />
-		</div>
+		</div> -->
 		<!-- <p-dynamic-dialog /> -->
 		<cancellable-dynamic-dialog />
 		<p-confirm-dialog />
@@ -21,10 +19,6 @@
 <script setup lang="ts">
 import SystemBar from "./components/system/SystemBar.vue"
 import {
-	useDocumentStore,
-	useDockingStore,
-	DockingArea,
-	type DockedArea,
 	useIpcCaller,
 	CancellableDynamicDialog,
 	useIpcMessage,
@@ -32,87 +26,86 @@ import {
 	useSaveAllTabs,
 	useUndoActiveTab,
 } from "castmate-ui-core"
-import ProjectView from "./components/project/ProjectView.vue"
 
-import PProgressSpinner from "primevue/progressspinner"
+//import PProgressSpinner from "primevue/progressspinner"
 
 import PConfirmDialog from "primevue/confirmdialog"
 
 import { setupGenericLoginService, useInitStore } from "castmate-ui-core"
 import { onMounted } from "vue"
 import { useDialog } from "primevue/usedialog"
-import MigrationDialog from "./components/migration/MigrationDialog.vue"
-import FirstTimeSetupDialog from "./components/setup/FirstTimeSetupDialog.vue"
-import UpdateDialog from "./components/updates/UpdateDialog.vue"
+// import MigrationDialog from "./components/migration/MigrationDialog.vue"
+// import FirstTimeSetupDialog from "./components/setup/FirstTimeSetupDialog.vue"
+// import UpdateDialog from "./components/updates/UpdateDialog.vue"
 import PInputText from "primevue/inputtext"
 
 import Toast from "primevue/toast"
 
 const initStore = useInitStore()
-const dockingStore = useDockingStore()
+// const dockingStore = useDockingStore()
 
 setupGenericLoginService()
 
 const dialog = useDialog()
 
-function startMigration() {
-	dialog.open(MigrationDialog, {
-		props: {
-			style: {
-				width: "75vw",
-			},
-			modal: true,
-			closable: false,
-		},
-		onClose(options) {
-			if (!options?.data) {
-			}
-		},
-	})
-}
+// function startMigration() {
+// 	dialog.open(MigrationDialog, {
+// 		props: {
+// 			style: {
+// 				width: "75vw",
+// 			},
+// 			modal: true,
+// 			closable: false,
+// 		},
+// 		onClose(options) {
+// 			if (!options?.data) {
+// 			}
+// 		},
+// 	})
+// }
 
-function startFirstTimeSetup() {
-	dialog.open(FirstTimeSetupDialog, {
-		props: {
-			style: {
-				width: "75vw",
-			},
-			showHeader: false,
-			modal: true,
-			closable: true,
-		},
-		onClose(options) {
-			if (!options?.data) {
-			}
-		},
-	})
-}
+// function startFirstTimeSetup() {
+// 	dialog.open(FirstTimeSetupDialog, {
+// 		props: {
+// 			style: {
+// 				width: "75vw",
+// 			},
+// 			showHeader: false,
+// 			modal: true,
+// 			closable: true,
+// 		},
+// 		onClose(options) {
+// 			if (!options?.data) {
+// 			}
+// 		},
+// 	})
+// }
 
-function openUpdateDialog() {
-	dialog.open(UpdateDialog, {
-		props: {
-			style: {
-				width: "75vw",
-			},
-			showHeader: false,
-			modal: true,
-			closable: false,
-		},
-		onClose(options) {
-			if (!options?.data) {
-			}
-		},
-	})
-}
+// function openUpdateDialog() {
+// 	dialog.open(UpdateDialog, {
+// 		props: {
+// 			style: {
+// 				width: "75vw",
+// 			},
+// 			showHeader: false,
+// 			modal: true,
+// 			closable: false,
+// 		},
+// 		onClose(options) {
+// 			if (!options?.data) {
+// 			}
+// 		},
+// 	})
+// }
 
-const needsMigrate = useIpcCaller<() => boolean>("oldMigration", "needsMigrate")
+// const needsMigrate = useIpcCaller<() => boolean>("oldMigration", "needsMigrate")
 
-useIpcMessage("oldMigration", "needsMigrate", () => {
-	startMigration()
-})
+// useIpcMessage("oldMigration", "needsMigrate", () => {
+// 	startMigration()
+// })
 
-const isFirstTimeStartup = useIpcCaller<() => boolean>("info", "isFirstTimeStartup")
-const hasUpdate = useIpcCaller<() => boolean>("info", "hasUpdate")
+// const isFirstTimeStartup = useIpcCaller<() => boolean>("info", "isFirstTimeStartup")
+// const hasUpdate = useIpcCaller<() => boolean>("info", "hasUpdate")
 
 onMounted(async () => {
 	const queryString = window.location.search
@@ -128,19 +121,19 @@ onMounted(async () => {
 	}
 
 	let migrated = false
-	if (await needsMigrate()) {
-		migrated = true
-		startMigration()
-	}
+	// if (await needsMigrate()) {
+	// 	migrated = true
+	// 	startMigration()
+	// }
 
 	await initStore.waitForInit()
-	if (!migrated) {
-		if (await isFirstTimeStartup()) {
-			startFirstTimeSetup()
-		} else if (await hasUpdate()) {
-			openUpdateDialog()
-		}
-	}
+	// if (!migrated) {
+	// 	if (await isFirstTimeStartup()) {
+	// 		startFirstTimeSetup()
+	// 	} else if (await hasUpdate()) {
+	// 		openUpdateDialog()
+	// 	}
+	// }
 })
 
 const saveActiveTab = useSaveActiveTab()

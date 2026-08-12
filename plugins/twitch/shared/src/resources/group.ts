@@ -1,4 +1,4 @@
-import { ExpressionValue, SchemaBase, ValueCompareOperator, registerType } from "castmate-schema"
+import { ExpressionValue, SchemaBase, ValueCompareOperator } from "castmate-schema"
 
 export interface TwitchViewerGroupConfig {
 	name: string

@@ -1,4 +1,4 @@
-import { SchemaBase, registerType } from "castmate-schema"
+import { SchemaBase } from "castmate-schema"
 
 export interface OverlayWidget {
 	overlayId: string
@@ -20,17 +20,17 @@ export interface WidgetTypeId {
 	widget: string
 }
 
-export interface SchemaOverlayWidget extends SchemaBase<OverlayWidget> {
-	type: OverlayWidgetFactory
-	widgetType?: WidgetTypeId | WidgetTypeId[]
-}
+// export interface SchemaOverlayWidget extends SchemaBase<OverlayWidget> {
+// 	type: OverlayWidgetFactory
+// 	widgetType?: WidgetTypeId | WidgetTypeId[]
+// }
 
-declare module "castmate-schema" {
-	interface SchemaTypeMap {
-		OverlayWidget: [SchemaOverlayWidget, OverlayWidget]
-	}
-}
+// declare module "castmate-schema" {
+// 	interface SchemaTypeMap {
+// 		OverlayWidget: [SchemaOverlayWidget, OverlayWidget]
+// 	}
+// }
 
-registerType("OverlayWidget", {
-	constructor: OverlayWidget,
-})
+// registerType("OverlayWidget", {
+// 	constructor: OverlayWidget,
+// })

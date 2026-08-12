@@ -4,7 +4,7 @@ import { usePluginLogger } from "../logging/logging"
 import axios from "axios"
 import { isObject } from "castmate-schema"
 import { EventList } from "../util/events"
-import { onLoad, onUnload } from "../plugins/plugin"
+// import { onLoad, onUnload } from "../plugins/plugin"
 import { initingPlugin } from "../plugins/plugin-init"
 import { ReactiveEffect, autoRerun } from "../reactivity/reactivity"
 import { isCastMate } from "../util/init-mode"
@@ -222,71 +222,63 @@ export function onCloudPubSubMessage<T extends object>(
 	activeFunc: () => boolean,
 	func: (data: T) => any
 ) {
-	if (!initingPlugin) throw new Error()
-	const pluginId = initingPlugin.id
-
-	const handler = async (plugin: string, event: string, context: object) => {
-		if (plugin != pluginId) return
-		if (event != eventName) return
-
-		return await func(context as T)
-	}
-
-	let registered = false
-	let registrationWatcher: ReactiveEffect | undefined = undefined
-
-	onLoad(async () => {
-		registrationWatcher = await autoRerun(() => {
-			if (activeFunc()) {
-				if (!registered) {
-					registered = true
-					//logger.log("Registering", pluginId, eventName)
-					PubSubManager.getInstance().registerOnMessage(handler)
-				}
-			} else {
-				if (registered) {
-					registered = false
-					//logger.log("Unregistering", pluginId, eventName)
-					PubSubManager.getInstance().unregisterOnMessage(handler)
-				}
-			}
-		})
-	})
-
-	onUnload(() => {
-		if (registered) {
-			PubSubManager.getInstance().unregisterOnMessage(handler)
-			registrationWatcher?.dispose()
-			registered = false
-		}
-	})
+	// if (!initingPlugin) throw new Error()
+	// const pluginId = initingPlugin.id
+	// const handler = async (plugin: string, event: string, context: object) => {
+	// 	if (plugin != pluginId) return
+	// 	if (event != eventName) return
+	// 	return await func(context as T)
+	// }
+	// let registered = false
+	// let registrationWatcher: ReactiveEffect | undefined = undefined
+	// onLoad(async () => {
+	// 	registrationWatcher = await autoRerun(() => {
+	// 		if (activeFunc()) {
+	// 			if (!registered) {
+	// 				registered = true
+	// 				//logger.log("Registering", pluginId, eventName)
+	// 				PubSubManager.getInstance().registerOnMessage(handler)
+	// 			}
+	// 		} else {
+	// 			if (registered) {
+	// 				registered = false
+	// 				//logger.log("Unregistering", pluginId, eventName)
+	// 				PubSubManager.getInstance().unregisterOnMessage(handler)
+	// 			}
+	// 		}
+	// 	})
+	// })
+	// onUnload(() => {
+	// 	if (registered) {
+	// 		PubSubManager.getInstance().unregisterOnMessage(handler)
+	// 		registrationWatcher?.dispose()
+	// 		registered = false
+	// 	}
+	// })
 }
 
 export function onCloudPubSubConnect(func: () => any) {
-	onLoad(() => {
-		PubSubManager.getInstance().registerOnConnect(func)
-	})
-
-	onUnload(() => {
-		PubSubManager.getInstance().unregisterOnConnect(func)
-	})
+	// onLoad(() => {
+	// 	PubSubManager.getInstance().registerOnConnect(func)
+	// })
+	// onUnload(() => {
+	// 	PubSubManager.getInstance().unregisterOnConnect(func)
+	// })
 }
 
 export function onCloudPubSubBeforeDisconnect(func: () => any) {
-	onLoad(() => {
-		PubSubManager.getInstance().registerOnBeforeDisconnect(func)
-	})
-
-	onUnload(() => {
-		PubSubManager.getInstance().unregisterOnBeforeDisconnect(func)
-	})
+	// onLoad(() => {
+	// 	PubSubManager.getInstance().registerOnBeforeDisconnect(func)
+	// })
+	// onUnload(() => {
+	// 	PubSubManager.getInstance().unregisterOnBeforeDisconnect(func)
+	// })
 }
 
 export function useSendCloudPubSubMessage<T extends object>(eventName: string) {
-	if (!initingPlugin) throw new Error()
-	const pluginId = initingPlugin.id
-
-	return async (data: T) => {
-		return await PubSubManager.getInstance().send(pluginId, eventName, data)
-	}
+	// if (!initingPlugin) throw new Error()
+	// const pluginId = initingPlugin.id
+	// return async (data: T) => {
+	// 	return await PubSubManager.getInstance().send(pluginId, eventName, data)
+	// }
 }

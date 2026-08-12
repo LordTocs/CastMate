@@ -7,17 +7,18 @@ import {
 	ExpressionValue,
 	Schema,
 	ValueCompareOperator,
-	getTypeByConstructor,
+	// getTypeByConstructor,
 	isBooleanGroup,
 	isBooleanValueExpr,
 	Range,
 	isBooleanRangeExpr,
-	getTypeByName,
+	// getTypeByName,
 	hashString,
+	getSchemaMetaData,
 } from "castmate-schema"
 import { PluginManager } from "../plugins/plugin-manager"
-import { unexposeSchema } from "./ipc-schema"
-import { templateSchema } from "../templates/template"
+// import { unexposeSchema } from "./ipc-schema"
+// import { templateSchema } from "../templates/template"
 import { usePluginLogger } from "../logging/logging"
 import { ignoreReactivity } from "../reactivity/reactivity"
 
@@ -46,42 +47,42 @@ function getExpressionSchema(expression: ExpressionValue): Schema | undefined {
 	}
 }
 
-async function getExpressionValueAndSchema(
-	expression: ExpressionValue,
-	context?: object
-): Promise<{ value: any; schema: Schema } | undefined> {
-	if (expression.type == "state") {
-		const state = await ignoreReactivity(() => {
-			if (!expression.plugin) return undefined
-			if (!expression.state) return undefined
-			return PluginManager.getInstance().getState(expression.plugin, expression.state)
-		})
-		if (!state) return undefined
-		const schema = state.schema
-		let value = state.ref.value
+// async function getExpressionValueAndSchema(
+// 	expression: ExpressionValue,
+// 	context?: object
+// ): Promise<{ value: any; schema: Schema } | undefined> {
+// 	if (expression.type == "state") {
+// 		const state = await ignoreReactivity(() => {
+// 			if (!expression.plugin) return undefined
+// 			if (!expression.state) return undefined
+// 			return PluginManager.getInstance().getState(expression.plugin, expression.state)
+// 		})
+// 		if (!state) return undefined
+// 		const schema = state.schema
+// 		let value = state.ref.value
 
-		//logger.log("State Value", expression.plugin, expression.state, value)
-		value = await unexposeSchema(schema, value)
-		//logger.log("Unexposed", value)
+// 		//logger.log("State Value", expression.plugin, expression.state, value)
+// 		value = await unexposeSchema(schema, value)
+// 		//logger.log("Unexposed", value)
 
-		return { value, schema: state.schema }
-	} else if (expression.type == "value") {
-		const type = getTypeByName(expression.schemaType)
-		if (!type) return undefined
+// 		return { value, schema: state.schema }
+// 	} else if (expression.type == "value") {
+// 		const type = getTypeByName(expression.schemaType)
+// 		if (!type) return undefined
 
-		const schema = { type: type.constructor, template: true, required: true }
+// 		const schema = { type: type.constructor, template: true, required: true }
 
-		//logger.log("Value Value", expression.schemaType, expression.value)
+// 		//logger.log("Value Value", expression.schemaType, expression.value)
 
-		let value = await templateSchema(expression.value, schema, context ?? PluginManager.getInstance().state)
+// 		let value = await templateSchema(expression.value, schema, context ?? PluginManager.getInstance().state)
 
-		//logger.log("Templated", value)
+// 		//logger.log("Templated", value)
 
-		return { value, schema }
-	}
+// 		return { value, schema }
+// 	}
 
-	return undefined
-}
+// 	return undefined
+// }
 
 function baseCompare(left: any, right: any, operator: ValueCompareOperator) {
 	if (operator == "equal") {
@@ -101,8 +102,9 @@ function baseCompare(left: any, right: any, operator: ValueCompareOperator) {
 }
 
 async function evaluateValueExpression(expression: BooleanValueExpression, context?: object) {
-	const left = await getExpressionValueAndSchema(expression.lhs, context)
-	return await evaluateHalfBooleanExpression(left, expression.rhs, expression.operator, context)
+	// const left = await getExpressionValueAndSchema(expression.lhs, context)
+	// return await evaluateHalfBooleanExpression(left, expression.rhs, expression.operator, context)
+	return false
 }
 
 export async function evaluateHalfBooleanExpression(
@@ -111,60 +113,61 @@ export async function evaluateHalfBooleanExpression(
 	operator: ValueCompareOperator,
 	context?: object
 ) {
-	const right = await getExpressionValueAndSchema(rhs, context)
+	// const right = await getExpressionValueAndSchema(rhs, context)
 
-	let compareFunc = baseCompare
+	// let compareFunc = baseCompare
 
-	let leftValue = left?.value
-	let rightValue = right?.value
+	// let leftValue = left?.value
+	// let rightValue = right?.value
 
-	if (left?.schema) {
-		const meta = getTypeByConstructor(left.schema.type)
-		if (meta?.compare) {
-			compareFunc = meta.compare
-		}
-	}
+	// if (left?.schema) {
+	// 	const meta = getSchemaMetaData(left?.schema)//getTypeByConstructor(left.schema.type)
+	// 	if (meta?.compare) {
+	// 		compareFunc = meta.compare
+	// 	}
+	// }
 
-	logger.log("Comparing", leftValue, rightValue, operator)
+	// logger.log("Comparing", leftValue, rightValue, operator)
 
-	return compareFunc(leftValue, rightValue, operator)
+	// return compareFunc(leftValue, rightValue, operator)
+	return false
 }
 
-function inRangeCompare(
-	range: Range | undefined,
-	value: any,
-	compareFunc: (lhs: any, rhs: any, operator: ValueCompareOperator) => boolean
-) {
-	if (!range) return true //Empty range is considered all numbers
+// function inRangeCompare(
+// 	range: Range | undefined,
+// 	value: any,
+// 	compareFunc: (lhs: any, rhs: any, operator: ValueCompareOperator) => boolean
+// ) {
+// 	if (!range) return true //Empty range is considered all numbers
 
-	if (range.min != null) {
-		if (compareFunc(value, range.min, "lessThan")) {
-			return false
-		}
-	}
+// 	if (range.min != null) {
+// 		if (compareFunc(value, range.min, "lessThan")) {
+// 			return false
+// 		}
+// 	}
 
-	if (range.max != null) {
-		if (compareFunc(value, range.max, "greaterThan")) {
-			return false
-		}
-	}
-	return true
-}
+// 	if (range.max != null) {
+// 		if (compareFunc(value, range.max, "greaterThan")) {
+// 			return false
+// 		}
+// 	}
+// 	return true
+// }
 
-async function evaluateValueRange(expression: BooleanRangeExpression, context?: object) {
-	const left = await getExpressionValueAndSchema(expression.lhs, context)
+// async function evaluateValueRange(expression: BooleanRangeExpression, context?: object) {
+// 	const left = await getExpressionValueAndSchema(expression.lhs, context)
 
-	let compareFunc = baseCompare
+// 	let compareFunc = baseCompare
 
-	if (left?.schema) {
-		const meta = getTypeByConstructor(left.schema.type)
-		if (meta?.compare) {
-			compareFunc = meta.compare
-		}
-	}
+// 	if (left?.schema) {
+// 		const meta = getTypeByConstructor(left.schema.type)
+// 		if (meta?.compare) {
+// 			compareFunc = meta.compare
+// 		}
+// 	}
 
-	return inRangeCompare(expression.range, left?.value, compareFunc)
-}
+// 	return inRangeCompare(expression.range, left?.value, compareFunc)
+// }
 
 async function evaluateGroupExpression(expression: BooleanExpressionGroup, context?: object) {
 	if (expression.operands.length == 0) return true
@@ -178,9 +181,10 @@ async function evaluateGroupExpression(expression: BooleanExpressionGroup, conte
 					return await evaluateGroupExpression(o, context)
 				} else if (isBooleanValueExpr(o)) {
 					return await evaluateValueExpression(o, context)
-				} else if (isBooleanRangeExpr(o)) {
-					return await evaluateValueRange(o, context)
 				}
+				// else if (isBooleanRangeExpr(o)) {
+				// 	return await evaluateValueRange(o, context)
+				// }
 			})
 		)
 	).map((r) => {

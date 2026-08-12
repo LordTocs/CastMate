@@ -127,9 +127,9 @@ export const PluginManager = Service(
 		// 	return this.plugins.get(plugin)?.triggers?.get(trigger)
 		// }
 
-		// getState(plugin: string, state: string) {
-		// 	return this.plugins.get(plugin)?.state?.get(state)
-		// }
+		getState(plugin: string, state: string) {
+			return undefined as any //this.plugins.get(plugin)?.state?.get(state)
+		}
 
 		getPlugin(id: string) {
 			return this.plugins.get(id)

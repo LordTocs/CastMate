@@ -305,7 +305,7 @@ export function defineWebsocketProxy(path: string, proxy: HttpProxy) {
 }
 
 export function useHTTPRouter(baseRoute?: string): Router {
-	const routeName = baseRoute ?? initingPlugin?.id
+	const routeName = baseRoute ?? initingPlugin?.spec.id
 
 	if (!routeName) throw new Error("Supply a route name!")
 

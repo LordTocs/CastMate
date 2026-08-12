@@ -18,9 +18,9 @@ import { Schema, SchemaType } from "castmate-schema"
 import { initingPlugin } from "../plugins/plugin-init"
 import { type Plugin } from "../plugins/plugin"
 import { SemanticVersion, isArray } from "../util/type-helpers"
-import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
+// import { deserializeSchema, ipcConvertSchema, ipcRegisterSchema } from "../util/ipc-schema"
 import { defineIPCFunc } from "../util/electron"
-import { templateSchema } from "../templates/template"
+// import { templateSchema } from "../templates/template"
 import { globalLogger, usePluginLogger } from "../logging/logging"
 /*
 interface ActionMetaData {
@@ -126,6 +126,10 @@ interface FlowActionDefinition extends BaseActionDefinition {
 
 export type ActionDefinition = RegularActionDefinition | FlowActionDefinition
 */
+export type ActionInvokeContextData = {
+	contextState: Record<PropertyKey, any>
+}
+
 interface ActionImplDesc<
 	ConfigProperties extends TSchemaProperties,
 	ResultProperties extends TSchemaProperties | undefined

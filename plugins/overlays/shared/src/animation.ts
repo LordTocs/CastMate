@@ -1,28 +1,28 @@
-import { Duration, SchemaBase, registerType } from "castmate-schema"
+import { Duration, SchemaBase } from "castmate-schema"
 
 export interface OverlayTransitionAnimation {
 	duration: Duration
 	preset?: string
 }
 
-const OverlayTransitionSymbol = Symbol()
-export const OverlayTransitionAnimation = {
-	factoryCreate(): OverlayTransitionAnimation {
-		return { duration: 1, preset: "Fade" }
-	},
-	[OverlayTransitionSymbol]: "OverlayTransitionAnimation",
-}
+// const OverlayTransitionSymbol = Symbol()
+// export const OverlayTransitionAnimation = {
+// 	factoryCreate(): OverlayTransitionAnimation {
+// 		return { duration: 1, preset: "Fade" }
+// 	},
+// 	[OverlayTransitionSymbol]: "OverlayTransitionAnimation",
+// }
 
-export type OverlayTransitionAnimationFactory = typeof OverlayTransitionAnimation
+// export type OverlayTransitionAnimationFactory = typeof OverlayTransitionAnimation
 
-export interface SchemaOverlayTransitionAnimation extends SchemaBase<OverlayTransitionAnimation> {
-	type: OverlayTransitionAnimationFactory
-}
+// export interface SchemaOverlayTransitionAnimation extends SchemaBase<OverlayTransitionAnimation> {
+// 	type: OverlayTransitionAnimationFactory
+// }
 
-registerType("OverlayTransitionAnimation", { constructor: OverlayTransitionAnimation })
+// registerType("OverlayTransitionAnimation", { constructor: OverlayTransitionAnimation })
 
-declare module "castmate-schema" {
-	interface SchemaTypeMap {
-		OverlayTransitionAnimation: [SchemaOverlayTransitionAnimation, OverlayTransitionAnimation]
-	}
-}
+// declare module "castmate-schema" {
+// 	interface SchemaTypeMap {
+// 		OverlayTransitionAnimation: [SchemaOverlayTransitionAnimation, OverlayTransitionAnimation]
+// 	}
+// }

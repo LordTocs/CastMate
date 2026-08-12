@@ -36,39 +36,39 @@ import "primeflex/primeflex.css"
 import "@mdi/font/css/materialdesignicons.css"
 
 import { createPinia } from "pinia"
-import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
-import AutomationEditPageVue from "./components/automation/AutomationEditPage.vue"
-import { initData, StreamPlanEditorPage, useSatelliteResourceStore } from "castmate-ui-core"
+// import ProfileEditorVue from "./components/profiles/ProfileEditor.vue"
+// import AutomationEditPageVue from "./components/automation/AutomationEditPage.vue"
+import { initData } from "castmate-ui-core"
 
-import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
-import { initPlugin as initVariablesPlugin } from "castmate-plugin-variables-renderer"
-import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
-import { initPlugin as initObsPlugin } from "castmate-plugin-obs-renderer"
-import { initPlugin as initDiscordPlugin } from "castmate-plugin-discord-renderer"
-import { initPlugin as initInputPlugin } from "castmate-plugin-input-renderer"
-import { initPlugin as initTimePlugin } from "castmate-plugin-time-renderer"
-import { initPlugin as initMinecraftPlugin } from "castmate-plugin-minecraft-renderer"
-import { initPlugin as initIoTPlugin } from "castmate-plugin-iot-renderer"
-import { initPlugin as initTwinklyPlugin } from "castmate-plugin-twinkly-renderer"
-import { initPlugin as initHuePlugin } from "castmate-plugin-philips-hue-renderer"
-import { initPlugin as initWyzePlugin } from "castmate-plugin-wyze-renderer"
-import { initPlugin as initLifxPlugin } from "castmate-plugin-lifx-renderer"
-import { initPlugin as initGoveePlugin } from "castmate-plugin-govee-renderer"
-import { initPlugin as initKasaPlugin } from "castmate-plugin-tplink-kasa-renderer"
-import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
-import { initPlugin as initOverlaysPlugin } from "castmate-plugin-overlays-renderer"
-import { initPlugin as initSpellCastPlugin } from "castmate-plugin-spellcast-renderer"
+// import { initPlugin as initSoundPlugin } from "castmate-plugin-sound-renderer"
+// import { initPlugin as initVariablesPlugin } from "castmate-plugin-variables-renderer"
+// import { initPlugin as initTwitchPlugin } from "castmate-plugin-twitch-renderer"
+// import { initPlugin as initObsPlugin } from "castmate-plugin-obs-renderer"
+// import { initPlugin as initDiscordPlugin } from "castmate-plugin-discord-renderer"
+// import { initPlugin as initInputPlugin } from "castmate-plugin-input-renderer"
+// import { initPlugin as initTimePlugin } from "castmate-plugin-time-renderer"
+// import { initPlugin as initMinecraftPlugin } from "castmate-plugin-minecraft-renderer"
+// import { initPlugin as initIoTPlugin } from "castmate-plugin-iot-renderer"
+// import { initPlugin as initTwinklyPlugin } from "castmate-plugin-twinkly-renderer"
+// import { initPlugin as initHuePlugin } from "castmate-plugin-philips-hue-renderer"
+// import { initPlugin as initWyzePlugin } from "castmate-plugin-wyze-renderer"
+// import { initPlugin as initLifxPlugin } from "castmate-plugin-lifx-renderer"
+// import { initPlugin as initGoveePlugin } from "castmate-plugin-govee-renderer"
+// import { initPlugin as initKasaPlugin } from "castmate-plugin-tplink-kasa-renderer"
+// import { initPlugin as initOsPlugin } from "castmate-plugin-os-renderer"
+// import { initPlugin as initOverlaysPlugin } from "castmate-plugin-overlays-renderer"
+// import { initPlugin as initSpellCastPlugin } from "castmate-plugin-spellcast-renderer"
 
-import { initPlugin as initDashboardPlugin } from "castmate-plugin-dashboards-renderer"
+// import { initPlugin as initDashboardPlugin } from "castmate-plugin-dashboards-renderer"
 
-import { initPlugin as initRandomPlugin } from "castmate-plugin-random-renderer"
+// import { initPlugin as initRandomPlugin } from "castmate-plugin-random-renderer"
 
-import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
+// import { initPlugin as initRemotePlugin } from "castmate-plugin-remote-renderer"
 
-import { initPlugin as initBlueSkyPlugin } from "castmate-plugin-bluesky-renderer"
+// import { initPlugin as initBlueSkyPlugin } from "castmate-plugin-bluesky-renderer"
 
-import { initPlugin as initAdvssPlugin } from "castmate-plugin-advss-renderer"
-import { initPlugin as initAitumPlugin } from "castmate-plugin-aitum-renderer"
+// import { initPlugin as initAdvssPlugin } from "castmate-plugin-advss-renderer"
+// import { initPlugin as initAitumPlugin } from "castmate-plugin-aitum-renderer"
 
 import { loadOverlayWidgets } from "castmate-overlay-widget-loader"
 import { loadDashboardWidgets } from "castmate-dashboard-widget-loader"
@@ -156,14 +156,14 @@ const pluginStore = usePluginStore()
 const projecStore = useProjectStore()
 const documentStore = useDocumentStore()
 const resourceStore = useResourceStore()
-const actionQueueStore = useActionQueueStore()
-const mainPageStore = useMainPageStore()
-const mediaStore = useMediaStore()
-const planStore = useStreamPlanStore()
+// const actionQueueStore = useActionQueueStore()
+// const mainPageStore = useMainPageStore()
+// const mediaStore = useMediaStore()
+// const planStore = useStreamPlanStore()
 
-const satelliteStore = useSatelliteConnection()
-const satelliteResources = useSatelliteResourceStore()
-const satelliteMedia = useSatelliteMedia()
+// const satelliteStore = useSatelliteConnection()
+// const satelliteResources = useSatelliteResourceStore()
+// const satelliteMedia = useSatelliteMedia()
 
 const uiLoadComplete = useIpcCaller("plugins", "uiLoadComplete")
 
@@ -181,68 +181,68 @@ async function init() {
 
 	await initStore.waitForInit()
 
-	await actionQueueStore.initialize()
-	await mainPageStore.initialize()
-	await planStore.initialize()
+	// await actionQueueStore.initialize()
+	// await mainPageStore.initialize()
+	// await planStore.initialize()
 
 	await initializeProfiles(app)
-	await initializeAutomations(app)
-	await initializeStreamPlans(app)
+	// await initializeAutomations(app)
+	// await initializeStreamPlans(app)
 
-	documentStore.registerDocumentComponent("profile", ProfileEditorVue)
-	documentStore.registerDocumentComponent("automation", AutomationEditPageVue)
-	documentStore.registerDocumentComponent("streamplan", StreamPlanEditorPage)
+	// documentStore.registerDocumentComponent("profile", ProfileEditorVue)
+	// documentStore.registerDocumentComponent("automation", AutomationEditPageVue)
+	// documentStore.registerDocumentComponent("streamplan", StreamPlanEditorPage)
 
 	initSettingsDocuments()
 
 	initializeQueues()
 
-	await initOverlaysPlugin(app)
+	// await initOverlaysPlugin(app)
 
-	//await initDashboardPlugin(app)
+	// //await initDashboardPlugin(app)
 
-	await initVariablesPlugin()
-	await initTwitchPlugin(app)
-	await initSpellCastPlugin(app)
+	// await initVariablesPlugin()
+	// await initTwitchPlugin(app)
+	// await initSpellCastPlugin(app)
 
-	//TODO: This init function is bonkers, we should formalize initing these plugins after their main process side gets inited.
+	// //TODO: This init function is bonkers, we should formalize initing these plugins after their main process side gets inited.
 
-	await initSoundPlugin(app)
-	await initTimePlugin()
-	await initObsPlugin()
-	await initDiscordPlugin()
-	await initInputPlugin()
-	await initOsPlugin()
-	await initIoTPlugin()
-	await initMinecraftPlugin()
-	await initTwinklyPlugin()
-	await initHuePlugin()
-	await initWyzePlugin()
-	await initLifxPlugin()
-	await initGoveePlugin()
-	await initKasaPlugin()
-	await initRemotePlugin()
-	await initBlueSkyPlugin()
+	// await initSoundPlugin(app)
+	// await initTimePlugin()
+	// await initObsPlugin()
+	// await initDiscordPlugin()
+	// await initInputPlugin()
+	// await initOsPlugin()
+	// await initIoTPlugin()
+	// await initMinecraftPlugin()
+	// await initTwinklyPlugin()
+	// await initHuePlugin()
+	// await initWyzePlugin()
+	// await initLifxPlugin()
+	// await initGoveePlugin()
+	// await initKasaPlugin()
+	// await initRemotePlugin()
+	// await initBlueSkyPlugin()
 
-	await initAdvssPlugin()
-	await initAitumPlugin()
-	await initRandomPlugin()
+	// await initAdvssPlugin()
+	// await initAitumPlugin()
+	// await initRandomPlugin()
 
-	await mediaStore.initialize()
+	// await mediaStore.initialize()
 
-	await satelliteStore.initialize()
-	await satelliteResources.initialize()
-	await satelliteMedia.initialize()
+	// await satelliteStore.initialize()
+	// await satelliteResources.initialize()
+	// await satelliteMedia.initialize()
 
-	loadOverlayWidgets()
-	loadDashboardWidgets()
+	//loadOverlayWidgets()
+	//loadDashboardWidgets()
 
-	sendOverlaysToMain()
+	//sendOverlaysToMain()
 	//sendDashboardsToMain()
 
 	await uiLoadComplete()
 
-	mainPageStore.openMain()
+	// mainPageStore.openMain()
 }
 
 init()

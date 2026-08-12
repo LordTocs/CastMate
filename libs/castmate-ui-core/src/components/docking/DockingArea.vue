@@ -6,7 +6,6 @@
 </template>
 
 <script setup lang="ts">
-import { useVModel } from "@vueuse/core"
 import { type DockedArea } from "../../util/docking"
 import DockingSplit from "./DockingSplit.vue"
 import { provide, useModel } from "vue"

@@ -3,7 +3,7 @@
 
 import { AsyncLocalStorage } from "node:async_hooks"
 import { isArray, isObject, isString, isSymbol } from "../util/type-helpers"
-import { isResource } from "../resources/resource"
+// import { isResource } from "../resources/resource"
 import { usePluginLogger } from "../logging/logging"
 
 import util from "util"
@@ -490,7 +490,8 @@ export function ReactiveGet<T extends any>(getValue: T, self: any, prop: Propert
 		DependencyStorage.getPropDependency(self, prop).track()
 	}
 
-	if (isObject(getValue) && !isResource(getValue)) {
+	if (isObject(getValue)) {
+		// && !isResource(getValue)) {
 		getValue = reactify(getValue)
 	}
 

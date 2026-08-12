@@ -1,14 +1,14 @@
-import { Profile, setupProfiles } from "./profile/profile"
-import { ActionQueue, ActionQueueManager } from "./queue-system/action-queue"
+import { setupProfiles } from "./profile/profile"
+// import { ActionQueue, ActionQueueManager } from "./queue-system/action-queue"
 import { ResourceRegistry } from "./resources/resource-registry"
 import { PluginManager } from "./plugins/plugin-manager"
 import { ensureDirectory, resolveProjectPath, setProjectDirectory, initializeFileSystem } from "./io/file-system"
 import { MediaManager, setupMedia } from "./media/media-manager"
 import { ProfileManager } from "./profile/profile-system"
 import { defineCallableIPC, defineIPCFunc } from "./util/electron"
-import { Automation } from "./automation/automation"
+// import { Automation } from "./automation/automation"
 import util from "util"
-import { finishSettingUpStreamPlans, setupStreamPlans } from "./stream-plan/stream-plan"
+// import { finishSettingUpStreamPlans, setupStreamPlans } from "./stream-plan/stream-plan"
 import { globalLogger, initializeLogging } from "./logging/logging"
 import { WebService } from "./webserver/internal-webserver"
 import { PubSubManager } from "./pubsub/pubsub-service"
@@ -21,9 +21,9 @@ import path from "path"
 import { InfoService } from "./info/info-manager"
 import { AnalyticsService } from "./analytics/analytics-manager"
 import { ViewerData } from "./viewer-data/viewer-data"
-import { SatelliteService } from "./satellite/satellite-service"
-import { SatelliteResources } from "./satellite/satellite-resource"
-import { SatelliteMedia } from "./satellite/satellite-media"
+// import { SatelliteService } from "./satellite/satellite-service"
+// import { SatelliteResources } from "./satellite/satellite-resource"
+// import { SatelliteMedia } from "./satellite/satellite-media"
 import { setAppMode } from "./util/init-mode"
 
 /*
@@ -95,11 +95,11 @@ export async function initializeCastMate() {
 	setupMedia()
 	ResourceRegistry.initialize()
 	PubSubManager.initialize()
-	SatelliteService.initialize()
-	SatelliteResources.initialize()
+	// SatelliteService.initialize()
+	// SatelliteResources.initialize()
 	SequenceResolvers.initialize()
 	EmoteCache.initialize()
-	setupStreamPlans()
+	// setupStreamPlans()
 	ViewerData.initialize()
 	await ViewerData.getInstance().initialize()
 
@@ -113,15 +113,15 @@ export async function initializeCastMate() {
 const notifyRendererSetupFinished = defineCallableIPC<() => void>("castmate", "setupFinished")
 
 export async function loadAutomations() {
-	await Automation.initialize()
+	// await Automation.initialize()
 }
 
 export async function finializeCastMateSetup() {
 	globalLogger.log("Finalizing Init")
 	await setupProfiles()
-	await finishSettingUpStreamPlans()
-	await ActionQueue.initialize()
-	ActionQueueManager.initialize()
+	// await finishSettingUpStreamPlans()
+	// await ActionQueue.initialize()
+	// ActionQueueManager.initialize()
 	ProfileManager.initialize()
 	await ProfileManager.getInstance().finishSetup()
 	await EmoteCache.getInstance().initialize()
@@ -147,11 +147,11 @@ export async function initializeCastMateSatellite() {
 	//setupMedia()
 	ResourceRegistry.initialize()
 	PubSubManager.initialize()
-	SatelliteService.initialize()
-	SatelliteResources.initialize()
-	SatelliteService.getInstance().startListening()
-	SatelliteMedia.initialize()
-	await SatelliteMedia.getInstance().initialize()
+	// SatelliteService.initialize()
+	// SatelliteResources.initialize()
+	// SatelliteService.getInstance().startListening()
+	// SatelliteMedia.initialize()
+	// await SatelliteMedia.getInstance().initialize()
 	//SequenceResolvers.initialize()
 	//EmoteCache.initialize()
 	//setupStreamPlans()

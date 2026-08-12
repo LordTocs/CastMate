@@ -1,7 +1,6 @@
 import { PluginManager } from "../plugins/plugin-manager"
 import { reactify } from "../reactivity/reactivity"
 import { setAbortableTimeout } from "../util/abort-utils"
-import { deserializeSchema } from "../util/ipc-schema"
 import { SemanticVersion } from "../util/type-helpers"
 
 import {
@@ -25,7 +24,7 @@ import {
 import { ActionInvokeContextData } from "./action"
 import { globalLogger } from "../logging/logging"
 import { Service } from "../util/service"
-import { templateSchema } from "../templates/template"
+// import { templateSchema } from "../templates/template"
 
 export interface SequenceDebugger {
 	sequenceStarted(): void
@@ -63,30 +62,31 @@ export class SequenceRunner {
 	private async runActionBase(action: ActionInfo) {
 		this.dbg?.markStart(action.id)
 		try {
-			const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
-			if (!actionDef || actionDef.type != "regular") {
-				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
-			}
-			const deserializedConfig = await deserializeSchema(actionDef.configSchema, action.config)
-			//Todo construct action context
-			const actionContext: ActionInvokeContextData = this.context
-			const result = await actionDef.invoke(deserializedConfig, actionContext, this.abortController.signal)
-			this.dbg?.logResult(action.id, result)
+			// const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
+			// if (!actionDef || actionDef.type != "regular") {
+			// 	throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
+			// }
+			// const deserializedConfig = await deserializeSchema(actionDef.configSchema, action.config)
+			// //Todo construct action context
+			// const actionContext: ActionInvokeContextData = this.context
+			// const result = await actionDef.invoke(deserializedConfig, actionContext, this.abortController.signal)
+			// this.dbg?.logResult(action.id, result)
 
-			let resultMapped: Record<string, any> = {}
+			// let resultMapped: Record<string, any> = {}
 
-			if (action.resultMapping) {
-				for (const key in action.resultMapping) {
-					resultMapped[action.resultMapping[key]] = result[key]
-				}
-			}
+			// if (action.resultMapping) {
+			// 	for (const key in action.resultMapping) {
+			// 		resultMapped[action.resultMapping[key]] = result[key]
+			// 	}
+			// }
 
-			this.context.contextState = {
-				...this.context.contextState,
-				...resultMapped,
-			}
+			// this.context.contextState = {
+			// 	...this.context.contextState,
+			// 	...resultMapped,
+			// }
 
-			return result
+			// return result
+			return undefined
 		} catch (err) {
 			globalLogger.error("Error ", action.plugin, action.action, err)
 			this.dbg?.logError(action.id, err)
@@ -100,33 +100,27 @@ export class SequenceRunner {
 		if (this.aborted) return
 		this.dbg?.markStart(action.id)
 		try {
-			const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
-			if (!actionDef || actionDef.type != "flow") {
-				throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
-			}
-
-			const deserializedConfig = await deserializeSchema(actionDef.configSchema, action.config)
-
-			const flows: Record<string, any> = {}
-
-			for (const flow of action.subFlows) {
-				flows[flow.id] = actionDef.flowSchema
-					? await deserializeSchema(actionDef.flowSchema, flow.config)
-					: null
-			}
-
-			const subFlowId = await actionDef.invoke(
-				deserializedConfig,
-				flows,
-				this.context,
-				this.abortController.signal
-			)
-
-			const subFlow = action.subFlows.find((f) => f.id == subFlowId)
-
-			if (subFlow) {
-				await this.runSequence(subFlow)
-			}
+			// const actionDef = PluginManager.getInstance().getAction(action.plugin, action.action)
+			// if (!actionDef || actionDef.type != "flow") {
+			// 	throw new Error(`Unknown Action: ${action.plugin}:${action.action}`)
+			// }
+			// const deserializedConfig = await deserializeSchema(actionDef.configSchema, action.config)
+			// const flows: Record<string, any> = {}
+			// for (const flow of action.subFlows) {
+			// 	flows[flow.id] = actionDef.flowSchema
+			// 		? await deserializeSchema(actionDef.flowSchema, flow.config)
+			// 		: null
+			// }
+			// const subFlowId = await actionDef.invoke(
+			// 	deserializedConfig,
+			// 	flows,
+			// 	this.context,
+			// 	this.abortController.signal
+			// )
+			// const subFlow = action.subFlows.find((f) => f.id == subFlowId)
+			// if (subFlow) {
+			// 	await this.runSequence(subFlow)
+			// }
 		} catch (err) {
 			this.dbg?.logError(action.id, err)
 		} finally {
