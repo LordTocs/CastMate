@@ -1,11 +1,6 @@
-import { IPCPluginDefinition } from "castmate-schema"
-import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 import { Service } from "../util/service"
 import { Plugin } from "./plugin"
-import { deserializeSchema } from "../util/ipc-schema"
 
-import { aliasReactiveValue, reactify } from "../reactivity/reactivity"
-import { globalLogger, usePluginLogger } from "../logging/logging"
 import assert from "node:assert"
 
 // const rendererRegisterPlugin = defineCallableIPC<(plugin: IPCPluginDefinition) => void>("plugins", "registerPlugin")

@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid/non-secure"
 import { Color } from "../data/color"
 import { PluginBaseSpecification, testPlugin } from "../plugins/plugins"
-import { defineSchemaType, S, Schema, SchemaBaseOptions } from "../schema/schema-base"
+import { defineSchemaType, S, Schema, SchemaBaseOptions } from "../schema/schema-index"
 import { SchemaObject, TSchemaProperties } from "../schema/schema-object"
 import { SchemaType } from "../schema/schema-typing"
 import { AutomationData, InlineAutomation } from "./automations"
@@ -150,7 +150,7 @@ export const testTriggerSpec2 = defineTransformTrigger(testPlugin, {
 
 ///
 
-interface TriggerAutomation<ConfigType = any> extends InlineAutomation {
+export interface TriggerAutomation<ConfigType = any> extends InlineAutomation {
 	id: string
 	plugin: string
 	trigger: string
@@ -163,35 +163,3 @@ export function isTriggerAutomation(obj: AutomationData): obj is TriggerAutomati
 	if ("trigger" in obj) return true
 	return false
 }
-
-export interface SchemaTriggerOptions extends SchemaBaseOptions {}
-export interface SchemaTrigger extends Schema, SchemaTriggerOptions {
-	type: "Trigger"
-}
-
-declare module "../schema/schema-base" {
-	namespace S {
-		function Trigger(options?: SchemaTriggerOptions): SchemaTrigger
-	}
-
-	interface SchemaTypeMap {
-		Trigger: SchemaMapping<SchemaTrigger, TriggerAutomation>
-	}
-}
-
-defineSchemaType<SchemaTrigger>({
-	type: "Trigger",
-	name: "Trigger",
-	color: "#000000",
-	icon: "mdi mdi-switch",
-	traits: {},
-	async constructDefault(schema) {
-		return {
-			id: nanoid(),
-			plugin: "",
-			trigger: "",
-			stop: false,
-			config: undefined,
-		} as SchemaType<typeof schema>
-	},
-})

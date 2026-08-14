@@ -1,7 +1,7 @@
 import { LightColor, LightConfig, LightResource, LightResourceSpec, LightState } from "castmate-plugin-iot-shared"
-import { Service, implementResource, isSatellite, registerSchemaTemplate, template } from "castmate-core"
+import { Service, implementResource } from "castmate-core"
 import { Duration, Toggle, Resource } from "castmate-schema"
-import { SatelliteResourceSymbol } from "castmate-core"
+// import { SatelliteResourceSymbol } from "castmate-core"
 
 // export class LightResource<
 // 	Config extends LightConfig = LightConfig,

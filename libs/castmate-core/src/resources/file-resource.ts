@@ -222,13 +222,13 @@ export function implementDocumentResource<
 	return baseResource
 }
 
-implementDocumentResource(testRes3, {
-	async create(id, name, config) {
-		return {
-			state: {
-				a: 10,
-			},
-		}
-	},
-	functions: {},
-})
+// implementDocumentResource(testRes3, {
+// 	async create(id, name, config) {
+// 		return {
+// 			state: {
+// 				a: 10,
+// 			},
+// 		}
+// 	},
+// 	functions: {},
+// })

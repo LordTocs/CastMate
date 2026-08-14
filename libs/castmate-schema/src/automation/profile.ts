@@ -1,6 +1,7 @@
 import { CastMateBuiltInPlugin } from "../plugins/builtin-plugin"
 import { defineResource, Resource } from "../plugins/resources"
-import { S } from "../schema/schema-base"
+import { S } from "../schema/schema-index"
+import { defineAction } from "./actions"
 
 export const ProfileResourceSpec = defineResource(CastMateBuiltInPlugin, {
 	id: "Profile",
@@ -21,3 +22,12 @@ export const ProfileResourceSpec = defineResource(CastMateBuiltInPlugin, {
 export type Profile = Resource<typeof ProfileResourceSpec>
 export type ProfileConfig = Profile["config"]
 export type ProfileState = Profile["state"]
+
+export const toggleProfileAction = defineAction(CastMateBuiltInPlugin, {
+	id: "toggleProfileActivation",
+	config: {
+		profile: S.Resource({
+			resource: ProfileResourceSpec,
+		}),
+	},
+})

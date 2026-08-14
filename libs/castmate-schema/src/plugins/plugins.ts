@@ -1,5 +1,5 @@
 import { Color } from "../data/color"
-import { S } from "../schema/schema-base"
+import { S } from "../schema/schema-index"
 import { SchemaObject, TSchemaProperties } from "../schema/schema-object"
 
 export interface PluginBaseSpecification {

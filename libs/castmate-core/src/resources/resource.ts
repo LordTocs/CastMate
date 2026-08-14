@@ -19,7 +19,10 @@ import {
 	TSchemaProperties,
 } from "castmate-schema"
 import { isObject } from "../util/type-helpers"
-import { globalLogger } from "../logging/logging"
+import { globalLogger, usePluginLogger } from "../logging/logging"
+import { onLoad } from "../plugins/plugin"
+import { PluginManager } from "../plugins/plugin-manager"
+import assert from "node:assert"
 
 export interface ResourceImplementation<
 	TState extends TSchemaProperties,
@@ -67,6 +70,10 @@ export function implementResource<
 	spec: ResourceSpecification<TState, TConfig, TFunctions>,
 	impl: ResourceImplementationDesc<TState, TConfig, TFunctions, TCreateArgs>
 ): ResourceImplementation<TState, TConfig, TFunctions, TCreateArgs> {
+	const logger = usePluginLogger(spec.plugin)
+	//logger.log("Implementing Resource", spec.id)
+	console.log("Implementing Resource", spec.id)
+
 	const storage = new Map<string, Resource<TState, TConfig, TFunctions>>()
 
 	const result = {
@@ -100,33 +107,38 @@ export function implementResource<
 		},
 	} as ResourceImplementation<TState, TConfig, TFunctions, TCreateArgs>
 
-	//@ts-expect-error
-	ResourceRegistry.getInstance().registerResource(result)
+	const plugin = PluginManager.getInstance().getPlugin(spec.plugin)
+	assert(plugin)
+
+	onLoad(() => {
+		//@ts-expect-error
+		ResourceRegistry.getInstance().registerResource(result)
+	}, plugin)
 
 	return result
 }
 
-const TestRes2 = implementResource(testRes, {
-	async create(value: string) {
-		return {
-			id: "blah",
-			name: "blarg",
-			state: {
-				a: 10,
-			},
-			config: {
-				b: "string",
-			},
-			blah: 10,
-		}
-	},
-	async onDelete(resource) {},
-	functions: {
-		async testFunc(a, b) {
-			return ""
-		},
-	},
-})
+// const TestRes2 = implementResource(testRes, {
+// 	async create(value: string) {
+// 		return {
+// 			id: "blah",
+// 			name: "blarg",
+// 			state: {
+// 				a: 10,
+// 			},
+// 			config: {
+// 				b: "string",
+// 			},
+// 			blah: 10,
+// 		}
+// 	},
+// 	async onDelete(resource) {},
+// 	functions: {
+// 		async testFunc(a, b) {
+// 			return ""
+// 		},
+// 	},
+// })
 
 // const t2 = TestRes2.getById("")
 

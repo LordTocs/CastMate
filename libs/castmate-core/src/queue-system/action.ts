@@ -162,9 +162,9 @@ export function implementAction<
 	}
 }
 
-implementAction(testActionDesc, {
-	async handle(config) {},
-})
+// implementAction(testActionDesc, {
+// 	async handle(config) {},
+// })
 
 export type FlowId = string
 

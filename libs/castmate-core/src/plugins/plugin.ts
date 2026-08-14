@@ -13,6 +13,8 @@ import { usePluginLogger } from "../logging/logging"
 import { loadSecretYAMLSchema, loadYAMLSchema } from "../io/file-system"
 import { reactify } from "../reactivity/reactivity"
 import { EventList } from "../util/events"
+import { PluginManager } from "./plugin-manager"
+import assert from "node:assert"
 
 // interface PluginSpec {
 // 	id: string
@@ -720,6 +722,8 @@ import { EventList } from "../util/events"
 // 	}
 // }
 //----------
+const outerLogger = usePluginLogger("plugins")
+
 export interface Plugin {
 	spec: PluginBaseSpecification
 	initialized: boolean
@@ -748,14 +752,14 @@ export interface PluginImplementation<
 	state: SchemaType<SchemaObject<TState>>
 }
 
-export function onLoad(loadFunc: PluginCallback) {
-	if (!initingPlugin) throw new Error()
-	initingPlugin.events.loader.register(loadFunc)
+export function onLoad(loadFunc: PluginCallback, plugin: Plugin | undefined = initingPlugin) {
+	assert(plugin)
+	plugin.events.loader.register(loadFunc)
 }
 
-export function onUnload(unloadFunc: PluginCallback) {
-	if (!initingPlugin) throw new Error()
-	initingPlugin.events.unloader.register(unloadFunc)
+export function onUnload(unloadFunc: PluginCallback, plugin: Plugin | undefined = initingPlugin) {
+	assert(plugin)
+	plugin.events.unloader.register(unloadFunc)
 }
 
 export function onProfilesChanged(profilesChanged: ProfilesChangedCallback) {
@@ -768,6 +772,9 @@ export function implementPlugin<
 	TSecrets extends TSchemaProperties,
 	TState extends TSchemaProperties
 >(plugin: PluginSpecification<TSettings, TSecrets, TState>, init: () => any) {
+	const logger = usePluginLogger(plugin.id)
+	console.log("Implementing", plugin.id)
+
 	//Do we return this or just put it in a registry
 	const newPlugin: PluginImplementation<TSettings, TSecrets, TState> = {
 		spec: plugin,
@@ -794,8 +801,6 @@ export function implementPlugin<
 			await initPlugin()
 		},
 	}
-
-	const logger = usePluginLogger(plugin.id)
 
 	const initPlugin = async () => {
 		try {
@@ -835,4 +840,8 @@ export function implementPlugin<
 			logger.error("Failed to construct default state for", plugin.id)
 		}
 	}
+
+	PluginManager.getInstance().registerPlugin(newPlugin)
+
+	return newPlugin
 }

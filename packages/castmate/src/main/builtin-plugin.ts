@@ -1,24 +1,5 @@
 import { BooleanExpression, CastMateBuiltInPlugin, Toggle, toggleProfileAction } from "castmate-schema"
-import {
-	ActionQueue,
-	Automation,
-	//Profile,
-	ReactiveEffect,
-	SequenceRunner,
-	WebService,
-	//defineAction,
-	//definePlugin,
-	//defineSetting,
-	//defineTrigger,
-	//forceRunWithEffect,
-	getSequenceHash,
-	runOnChange,
-	evaluateBooleanExpression,
-	globalLogger,
-	usePluginLogger,
-	implementPlugin,
-	implementAction,
-} from "castmate-core"
+import { ReactiveEffect, implementPlugin, implementAction } from "castmate-core"
 import { getExpressionHash } from "castmate-core/src/util/boolean-helpers"
 
 interface ConditionalTrigger {
@@ -27,13 +8,15 @@ interface ConditionalTrigger {
 	effect: ReactiveEffect
 }
 
-implementPlugin(CastMateBuiltInPlugin, () => {})
+const CastMateBuiltInPluginImpl = implementPlugin(CastMateBuiltInPlugin, () => {})
 
 implementAction(toggleProfileAction, {
 	async handle(config) {
 		config.profile.state.active = !config.profile.state.active
 	},
 })
+
+export default CastMateBuiltInPluginImpl
 
 /*
 export default definePlugin(
