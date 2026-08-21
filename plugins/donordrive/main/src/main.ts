@@ -401,6 +401,7 @@ export default definePlugin(
 					await onTeamDonation({
 						donor: donation.displayName ?? "Anonymous",
 						isIncentive: donation.incentiveID != null,
+						participantId: String(donation.participantID),
 						donorAvatar: donation.avatarImageURL,
 						amount: donation.amount,
 						message: donation.message ?? "",
