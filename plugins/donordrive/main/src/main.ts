@@ -25,7 +25,16 @@ import {
 	DonorDriveEntityProvider,
 	DonorDriveIncentive,
 	queryDonations,
+	setupEntityPolling,
 } from "./donordrive-api"
+import assert from "node:assert"
+
+function removeTrailingSlash(path: string) {
+	if (path.endsWith("/") || path.endsWith("\\")) {
+		return path.substring(0, path.length - 1)
+	}
+	return path
+}
 
 export default definePlugin(
 	{
@@ -49,46 +58,31 @@ export default definePlugin(
 			name: "Participant ID",
 		})
 
-		const entityProvider: DonorDriveEntityProvider = () => {
+		const teamId = defineSetting("teamId", {
+			type: String,
+			name: "Team ID",
+		})
+
+		const participantEntityProvider: DonorDriveEntityProvider = () => {
 			if (!apiBase.value) return undefined
 			if (!participantId.value) return undefined
 
 			return {
 				type: "participants",
 				id: participantId.value,
-				apiBase: apiBase.value,
+				apiBase: removeTrailingSlash(apiBase.value),
 			}
 		}
 
-		async function apiRequest<T extends object>(path: string, opts?: RequestInit, query?: Record<string, any>) {
-			const qs = querystring.stringify(query)
-			const resp = await fetch(`${apiBase.value}${path}?${qs}`, {
-				...(opts ? opts : {}),
-			})
+		const teamEntityProvider: DonorDriveEntityProvider = () => {
+			if (!apiBase.value) return undefined
+			if (!teamId.value) return undefined
 
-			if (!resp.ok) {
-				const text = await resp.text().catch(() => "")
-				const errText = `HTTP Error ${resp.status}: ${text}`
-				logger.error(errText)
-				return undefined
+			return {
+				type: "teams",
+				id: teamId.value,
+				apiBase: removeTrailingSlash(apiBase.value),
 			}
-
-			logger.log("Request Etag", path, resp.headers.get("etag"))
-
-			return (await resp.json()) as T
-		}
-
-		let poller: NodeJS.Timer | undefined = undefined
-
-		async function initialize() {
-			entityPoller.reset()
-
-			if (!apiBase.value) return
-			if (!participantId.value) return
-
-			lastDonationTime = new Date()
-
-			entityPoller.start()
 		}
 
 		const eventName = defineState("eventName", { type: String, name: "Event Name" })
@@ -98,7 +92,6 @@ export default definePlugin(
 		const donationCount = defineState("donationCount", { type: Number, name: "Donation Count" })
 		const totalPledges = defineState("totalPledges", { type: Number, name: "Total Pledges" })
 
-		let currentMilestoneId: string | undefined = undefined
 		const currentMilestone = defineState("currentMilestone", { type: String, name: "Current Milestone" })
 		const currentMilestoneGoal = defineState("currentMilestoneGoal", {
 			type: Number,
@@ -109,158 +102,24 @@ export default definePlugin(
 			name: "Current Milestone Goal",
 		})
 
-		let lastDonationTime: Date = new Date()
+		const teamEventName = defineState("teamEventName", { type: String, name: "Team Event Name" })
+		const teamGoal = defineState("teamGoal", { type: Number, name: "Team Goal" })
+		const teamTotalRaised = defineState("teamTotalRaised", { type: Number, name: "Team Total Raised" })
+		const teamTotalDonations = defineState("teamTotalDonations", { type: Number, name: "Team Total Donations" })
+		const teamDonationCount = defineState("teamDonationCount", { type: Number, name: "Team Donation Count" })
+		const teamTotalPledges = defineState("teamTotalPledges", { type: Number, name: "Team Total Pledges" })
 
-		function clearState() {
-			eventName.value = undefined
-			goal.value = undefined
-			totalDonations.value = undefined
-			totalRaised.value = undefined
-			totalPledges.value = undefined
-			donationCount.value = undefined
-
-			currentMilestoneId = undefined
-			currentMilestone.value = undefined
-			currentMilestoneGoal.value = undefined
-			currentMilestoneStart.value = undefined
-
-			incentiveCache.clear()
-			milestoneCache.clear()
-		}
-
-		const entityPoller = createEntityPoller(entityProvider, async (participant) => {
-			if (!participant) {
-				clearState()
-				return
-			}
-
-			const currentTotal = totalRaised.value
-			const currentDonationCount = donationCount.value
-
-			eventName.value = participant.eventName
-			goal.value = participant.fundraisingGoal
-			totalRaised.value = participant.sumDonations + participant.sumPledges
-			totalPledges.value = participant.sumPledges
-			totalDonations.value = participant.sumDonations
-
-			donationCount.value = participant.numDonations
-
-			if (currentDonationCount != donationCount.value) {
-				//Force milestones to update so we have up to date milestone info
-				await milestoneCache.fetch()
-				//Received a donation
-				await handleNewDonations(currentTotal)
-			}
-
-			await updateMilestones()
+		const teamCurrentMilestone = defineState("teamCurrentMilestone", {
+			type: String,
+			name: "Team Current Milestone",
 		})
-
-		const milestoneCache = createMilestoneCache(entityProvider)
-
-		async function updateMilestones() {
-			const rawMilestones = await milestoneCache.values()
-			const milestones = rawMilestones
-				.filter((m) => m.isActive)
-				.sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
-
-			let found = false
-			let lowerBound = 0
-			for (const milestone of milestones) {
-				if (!milestone.isActive) continue
-
-				if (milestone.isComplete) {
-					lowerBound = milestone.fundraisingGoal
-				} else {
-					currentMilestone.value = milestone.description
-					currentMilestoneGoal.value = milestone.fundraisingGoal
-					currentMilestoneStart.value = lowerBound
-					found = true
-					break
-				}
-			}
-
-			if (!found) {
-				currentMilestone.value = undefined
-				currentMilestoneGoal.value = undefined
-				currentMilestoneStart.value = undefined
-			}
-		}
-
-		const incentiveCache = createIncentiveCache(entityProvider)
-
-		async function handleNewDonations(prevTotal: number | undefined) {
-			const lastDonationPollTime = lastDonationTime
-			lastDonationTime = new Date()
-
-			const donations = await queryDonations(entityProvider, lastDonationPollTime)
-			if (!donations) return
-
-			const rawMilestones = await milestoneCache.values()
-			const milestones = rawMilestones
-				.filter((m) => m.isActive)
-				.sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
-
-			let runningAmount = prevTotal
-
-			//We gate donations on the last poll time, so any donations returned by this fetch are new!
-			for (const donation of donations) {
-				await onDonation({
-					donor: donation.displayName ?? "Anonymous",
-					isIncentive: donation.incentiveID != null,
-					donorAvatar: donation.avatarImageURL,
-					amount: donation.amount,
-					message: donation.message ?? "",
-				})
-
-				if (donation.incentiveID) {
-					const incentive = await incentiveCache.get(donation.incentiveID)
-
-					if (incentive) {
-						await onIncentive({
-							incentiveId: donation.incentiveID,
-							incentive: incentive.description,
-							donor: donation.displayName ?? "Anonymous",
-							donorAvatar: donation.avatarImageURL,
-							amount: donation.amount,
-							message: donation.message ?? "",
-						})
-					}
-				}
-
-				if (runningAmount != null) {
-					const beforeAmount = runningAmount
-					const afterAmount = runningAmount + donation.amount
-
-					for (const milestone of milestones) {
-						if (
-							milestone.isComplete &&
-							beforeAmount < milestone.fundraisingGoal &&
-							afterAmount >= milestone.fundraisingGoal
-						) {
-							//This is the donation that crossed the milestones
-							await onMilestone({
-								milestoneId: milestone.milestoneID,
-								milestone: milestone.description,
-								amount: milestone.fundraisingGoal,
-							})
-						}
-					}
-
-					runningAmount = afterAmount
-				}
-			}
-		}
-
-		onSettingChanged(apiBase, async () => {
-			await initialize()
+		const teamCurrentMilestoneGoal = defineState("teamCurrentMilestoneGoal", {
+			type: Number,
+			name: "Team Current Milestone Goal",
 		})
-
-		onSettingChanged(participantId, async () => {
-			await initialize()
-		})
-
-		onLoad(async () => {
-			await initialize()
+		const teamCurrentMilestoneStart = defineState("teamCurrentMilestoneStart", {
+			type: Number,
+			name: "Team Current Milestone Goal",
 		})
 
 		const onDonation = defineTrigger({
@@ -304,7 +163,7 @@ export default definePlugin(
 					incentive: {
 						type: String,
 						enum: async () => {
-							const incentives = await incentiveCache.values()
+							const incentives = await participantPoller.incentiveCache.values()
 							return incentives.map((i) => ({
 								name: i.description,
 								value: i.incentiveID,
@@ -341,7 +200,7 @@ export default definePlugin(
 					milestone: {
 						type: String,
 						enum: async () => {
-							const milestones = await milestoneCache.values()
+							const milestones = await participantPoller.milestoneCache.values()
 							return milestones.map((i) => ({
 								name: i.description,
 								value: i.milestoneID,
@@ -363,5 +222,237 @@ export default definePlugin(
 				return false
 			},
 		})
+
+		const onTeamDonation = defineTrigger({
+			id: "teamDonation",
+			name: "DonorDrive Team Donation",
+			icon: "mdi mdi-hand-coin",
+			description: "Triggers when a donation is given to your Team on a DonorDrive campaign.",
+			config: {
+				type: Object,
+				properties: {
+					amount: { type: Range, name: "Amount" },
+					incentive: { type: Boolean, name: "Run For Incentives", required: true, default: false },
+					ignoreSelf: {
+						type: Boolean,
+						name: "Ignore Current Participant Donations",
+						required: true,
+						default: true,
+					},
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					isIncentive: { type: Boolean, required: true, view: false, default: false },
+					participantId: { type: String, required: true, view: false },
+					amount: { type: Number, name: "Amount", required: true, default: 10 },
+					donor: { type: String, name: "Donor", required: true, default: "LordTocs" },
+					donorAvatar: { type: String, name: "Avatar Image" },
+					message: { type: String, name: "Message", default: "Here's a donation!" },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (config.ignoreSelf && participantId.value == context.participantId) return false
+				if (!Range.inRange(config.amount, context.amount)) return false
+				if (context.isIncentive && !config.incentive) return false
+
+				return true
+			},
+		})
+
+		const onTeamIncentive = defineTrigger({
+			id: "teamIncentive",
+			name: "DonorDrive Team Incentive",
+			icon: "mdi mdi-hand-coin",
+			description: "Triggered when a donor drive team incentive is redeemed",
+			config: {
+				type: Object,
+				properties: {
+					incentive: {
+						type: String,
+						enum: async () => {
+							const incentives = await teamPoller.incentiveCache.values()
+							return incentives.map((i) => ({
+								name: i.description,
+								value: i.incentiveID,
+							}))
+						},
+					},
+					ignoreSelf: {
+						type: Boolean,
+						name: "Ignore Current Participant Donations",
+						required: true,
+						default: true,
+					},
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					incentiveId: { type: String, required: true, view: false },
+					incentive: { type: String, required: true },
+					participantId: { type: String, required: true, view: false },
+					amount: { type: Number, name: "Amount", required: true, default: 10 },
+					donor: { type: String, name: "Donor", required: true, default: "LordTocs" },
+					donorAvatar: { type: String, name: "Avatar Image" },
+					message: { type: String, name: "Message", default: "Here's a donation!" },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (config.ignoreSelf && participantId.value == context.participantId) return false
+				if (config.incentive == context.incentiveId) return true
+				return false
+			},
+		})
+
+		const onTeamMilestone = defineTrigger({
+			id: "milestone",
+			name: "DonorDrive Team Milestone",
+			icon: "mdi mdi-hand-coin",
+			description: "Triggered when a donor drive team milestone is met",
+			config: {
+				type: Object,
+				properties: {
+					milestone: {
+						type: String,
+						enum: async () => {
+							const milestones = await teamPoller.milestoneCache.values()
+							return milestones.map((i) => ({
+								name: i.description,
+								value: i.milestoneID,
+							}))
+						},
+					},
+				},
+			},
+			context: {
+				type: Object,
+				properties: {
+					milestoneId: { type: String, required: true, view: false },
+					milestone: { type: String, required: true },
+					amount: { type: Number, name: "Amount", required: true, default: 10 },
+				},
+			},
+			async handle(config, context, mapping) {
+				if (config.milestone == context.milestoneId) return true
+				return false
+			},
+		})
+
+		const participantPoller = setupEntityPolling(
+			participantEntityProvider,
+			{
+				eventName,
+				goal,
+				totalRaised,
+				totalDonations,
+				totalPledges,
+				donationCount,
+				currentMilestone,
+				currentMilestoneGoal,
+				currentMilestoneStart,
+			},
+			{
+				async onDonation(donation) {
+					await onDonation({
+						donor: donation.displayName ?? "Anonymous",
+						isIncentive: donation.incentiveID != null,
+						donorAvatar: donation.avatarImageURL,
+						amount: donation.amount,
+						message: donation.message ?? "",
+					})
+				},
+				async onIncentive(donation, incentive) {
+					await onIncentive({
+						incentiveId: incentive.incentiveID,
+						incentive: incentive.description,
+						donor: donation.displayName ?? "Anonymous",
+						donorAvatar: donation.avatarImageURL,
+						amount: donation.amount,
+						message: donation.message ?? "",
+					})
+				},
+				async onMilestone(milestone) {
+					await onMilestone({
+						milestoneId: milestone.milestoneID,
+						milestone: milestone.description,
+						amount: milestone.fundraisingGoal,
+					})
+				},
+			}
+		)
+
+		const teamPoller = setupEntityPolling(
+			teamEntityProvider,
+			{
+				eventName: teamEventName,
+				goal: teamGoal,
+				totalRaised: teamTotalRaised,
+				totalDonations: teamTotalDonations,
+				totalPledges: teamTotalPledges,
+				donationCount: teamDonationCount,
+				currentMilestone: teamCurrentMilestone,
+				currentMilestoneGoal: teamCurrentMilestoneGoal,
+				currentMilestoneStart: teamCurrentMilestoneStart,
+			},
+			{
+				async onDonation(donation) {
+					await onTeamDonation({
+						donor: donation.displayName ?? "Anonymous",
+						isIncentive: donation.incentiveID != null,
+						donorAvatar: donation.avatarImageURL,
+						amount: donation.amount,
+						message: donation.message ?? "",
+					})
+				},
+				async onIncentive(donation, incentive) {
+					await onTeamIncentive({
+						incentiveId: incentive.incentiveID,
+						incentive: incentive.description,
+						participantId: String(donation.participantID),
+						donor: donation.displayName ?? "Anonymous",
+						donorAvatar: donation.avatarImageURL,
+						amount: donation.amount,
+						message: donation.message ?? "",
+					})
+				},
+				async onMilestone(milestone) {
+					await onTeamMilestone({
+						milestoneId: milestone.milestoneID,
+						milestone: milestone.description,
+						amount: milestone.fundraisingGoal,
+					})
+				},
+			}
+		)
+
+		onSettingChanged(apiBase, async () => {
+			initializeParticipant()
+			initializeTeam()
+		})
+
+		onSettingChanged(participantId, async () => {
+			initializeParticipant()
+		})
+
+		onSettingChanged(teamId, async () => {
+			initializeTeam()
+		})
+
+		onLoad(async () => {
+			initializeParticipant()
+			initializeTeam()
+		})
+
+		function initializeParticipant() {
+			participantPoller.reset()
+			participantPoller.start()
+		}
+
+		function initializeTeam() {
+			teamPoller.reset()
+			teamPoller.start()
+		}
 	}
 )
