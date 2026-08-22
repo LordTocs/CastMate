@@ -2,9 +2,10 @@ import {
 	FileResource,
 	Resource,
 	ResourceStorage,
-	defineAction,
 	definePluginResource,
+	defineRendererCallable,
 	ensureDirectory,
+	ipcConvertSchema,
 	onLoad,
 	usePluginLogger,
 } from "castmate-core"
@@ -149,6 +150,17 @@ export function setupTTS() {
 			await OSTTSVoiceProvider.storage.inject(provider)
 		}
 	}
+
+	defineRendererCallable("getVoiceProviderConfigSchema", async (voiceProviderId: string) => {
+		const provider = TTSVoiceProvider.storage.getById(voiceProviderId)
+		if (!provider) throw new Error("Unknown Voice Provider ID")
+
+		const schema = provider.getVoiceConfigSchema()
+		if (!schema) return undefined
+
+		const ipcSchema = ipcConvertSchema(schema, "sound_ttsprovider_config")
+		return ipcSchema
+	})
 
 	onLoad(async () => {
 		ensureDirectory(path.join(app.getPath("temp"), "castmate-tts"))

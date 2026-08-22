@@ -14,25 +14,54 @@
 					required: true,
 				}"
 			/>
+			<data-input v-if="configSchema" v-model="model.providerConfig" :schema="configSchema" />
 		</div>
 	</scrolling-tab-body>
 </template>
 
 <script setup lang="ts">
 import { TTSVoiceConfig } from "castmate-plugin-sound-shared"
-import { ScrollingTabBody, DataInput, ResourceProxyFactory } from "castmate-ui-core"
+import { ScrollingTabBody, DataInput, ResourceProxyFactory, useIpcCaller, ipcParseSchema } from "castmate-ui-core"
 import { TTSVoiceView } from "./tts-types"
-import { ref, useModel } from "vue"
+import { onBeforeMount, ref, useModel, watch } from "vue"
 import PInputText from "primevue/inputtext"
 import PButton from "primevue/button"
+import { IPCSchema, Schema } from "castmate-schema"
+
+const model = defineModel<TTSVoiceConfig>({ required: true })
 
 const props = defineProps<{
-	modelValue: TTSVoiceConfig
 	view: TTSVoiceView
 }>()
 
-const model = useModel(props, "modelValue")
 const view = useModel(props, "view")
 
 const testMessage = ref("This is a test of text to speech.")
+
+const getVoiceProviderConfigSchema = useIpcCaller<(voiceProviderId: string) => IPCSchema>(
+	"sound",
+	"getVoiceProviderConfigSchema"
+)
+
+const configSchema = ref<Schema>()
+
+onBeforeMount(() => {
+	watch(
+		() => model.value?.voiceProvider,
+		async (newValue, oldValue) => {
+			if (newValue) {
+				configSchema.value = undefined
+				try {
+					const ipcSchema = await getVoiceProviderConfigSchema(newValue)
+					configSchema.value = ipcParseSchema(ipcSchema)
+				} catch (err) {
+					console.error("Error Getting VoiceConfigSchema", err)
+				}
+			} else {
+				configSchema.value = undefined
+			}
+		},
+		{ immediate: true }
+	)
+})
 </script>
