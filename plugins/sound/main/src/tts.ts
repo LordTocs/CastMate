@@ -89,6 +89,8 @@ const OSTTSVoiceConfigSchema = declareSchema({
 })
 type OSTTSVoiceConfigData = SchemaType<typeof OSTTSVoiceConfigSchema>
 
+const logger = usePluginLogger("ostts")
+
 export class OSTTSVoiceProvider extends TTSVoiceProvider {
 	constructor(osvoice: OsTTSVoice, private os_interface: OsTTSInterface) {
 		super()
@@ -115,13 +117,13 @@ export class OSTTSVoiceProvider extends TTSVoiceProvider {
 
 	async generate(text: string, voiceConfig: OSTTSVoiceConfigData, filename: string) {
 		const SAPIXml = `<rate absspeed="${voiceConfig.rate ?? 0}">
-		<pitch absmiddle="${voiceConfig.pitch ?? 0}>
+		<pitch absmiddle="${voiceConfig.pitch ?? 0}">
 			${escapeXml(text)}
 		</pitch>
 		</rate>
 		`
 
-		await this.speakToFile(text, filename, this.config.providerId)
+		await this.speakToFile(SAPIXml, filename, this.config.providerId)
 	}
 
 	getVoiceConfigSchema(): Schema | undefined {
