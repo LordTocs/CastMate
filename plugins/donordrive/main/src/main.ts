@@ -307,7 +307,7 @@ export default definePlugin(
 		})
 
 		const onTeamMilestone = defineTrigger({
-			id: "milestone",
+			id: "teamMilestone",
 			name: "DonorDrive Team Milestone",
 			icon: "mdi mdi-hand-coin",
 			description: "Triggered when a donor drive team milestone is met",
