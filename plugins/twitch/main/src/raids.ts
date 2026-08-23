@@ -2,9 +2,10 @@ import { createTriggerScheduler, defineAction, defineState, defineTrigger, onPro
 import { Duration, Range, Timer } from "castmate-schema"
 import { onChannelAuth } from "./api-harness"
 import { ViewerCache } from "./viewer-cache"
-import { TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+import { TwitchCategory, TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { inTwitchViewerGroup } from "./group"
 import { TwitchAccount } from "./twitch-auth"
+import { CategoryCache } from "./category-cache"
 
 export function setupRaids() {
 	const raid = defineTrigger({
@@ -29,6 +30,8 @@ export function setupRaids() {
 			properties: {
 				raider: { type: TwitchViewer, required: true, default: "27082158" },
 				raiders: { type: Number, required: true, default: 15 },
+				raiderStreamTitle: { type: String, default: "Test Stream Title!" },
+				raiderStreamGame: { type: TwitchCategory },
 			},
 		},
 		async handle(config, context) {
@@ -209,9 +212,13 @@ export function setupRaids() {
 		})
 
 		service.eventsub.onChannelRaidTo(channel.twitchId, async (event) => {
+			const stream = await TwitchAccount.channel.apiClient.streams.getStreamByUserId(event.raidingBroadcasterId)
+
 			raid({
 				raider: event.raidingBroadcasterId,
 				raiders: event.viewers,
+				raiderStreamTitle: stream?.title,
+				raiderStreamGame: stream?.gameId,
 			})
 		})
 

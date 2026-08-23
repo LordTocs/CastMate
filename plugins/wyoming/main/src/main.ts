@@ -6,6 +6,8 @@ import {
 	definePlugin,
 	usePluginLogger,
 	defineSetting,
+	onSettingChanged,
+	removeAllSubResource,
 } from "castmate-core"
 import {
 	closeWyomingConnection,
@@ -107,8 +109,9 @@ export default definePlugin(
 	{
 		id: "wyoming",
 		name: "Wyoming Protocol",
+		color: "#62894F",
 		description: "Connects to the Wyoming Protocol Docker Container",
-		icon: "mdi-pencil",
+		icon: "mdi mdi-account-voice",
 	},
 	() => {
 		const wyomingHost = defineSetting("wyomingHost", {
@@ -122,7 +125,7 @@ export default definePlugin(
 			default: 10200,
 		})
 
-		async function connectToWyoming() {
+		async function disconnectWyoming() {
 			try {
 				if (socket) {
 					await closeWyomingConnection(socket)
@@ -131,23 +134,39 @@ export default definePlugin(
 				socket = undefined
 			}
 
+			await removeAllSubResource(WyomingTTSVoiceProvider)
+		}
+
+		async function connectToWyoming() {
+			await disconnectWyoming()
+
 			if (!wyomingHost.value) return
 			if (!wyomingPort.value) return
 
-			socket = await connectToWyomingServer(wyomingHost.value, wyomingPort.value)
+			socket = await connectToWyomingServer(wyomingHost.value, wyomingPort.value, async (connection) => {
+				await removeAllSubResource(WyomingTTSVoiceProvider)
 
-			const info = await getWyomingDescription(socket)
+				const info = await getWyomingDescription(connection)
 
-			for (const tts of info.tts) {
-				for (const voice of tts.voices) {
-					const voiceProvider = new WyomingTTSVoiceProvider(voice)
-					if (voice.speakers) {
-						logger.log("Creating Voice for", voice)
+				for (const tts of info.tts) {
+					for (const voice of tts.voices) {
+						const voiceProvider = new WyomingTTSVoiceProvider(voice)
+						if (voice.speakers) {
+							logger.log("Creating Voice for", voice)
+						}
+						await TTSVoiceProvider.storage.inject(voiceProvider)
 					}
-					await TTSVoiceProvider.storage.inject(voiceProvider)
 				}
-			}
+			})
 		}
+
+		onSettingChanged(wyomingHost, async () => {
+			await connectToWyoming()
+		})
+
+		onSettingChanged(wyomingPort, async () => {
+			await connectToWyoming()
+		})
 
 		//Plugin Intiialization
 		onLoad(async () => {

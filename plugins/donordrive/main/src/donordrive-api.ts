@@ -1,4 +1,4 @@
-import { usePluginLogger } from "castmate-core"
+import { ReactiveRef, usePluginLogger } from "castmate-core"
 import querystring from "node:querystring"
 import { clearInterval } from "node:timers"
 
@@ -337,4 +337,164 @@ export async function queryDonations(entityProvider: DonorDriveEntityProvider, l
 	)
 
 	return result
+}
+
+interface DonorDriveEntityStateSet {
+	eventName: ReactiveRef<string | undefined>
+	goal: ReactiveRef<number | undefined>
+	totalDonations: ReactiveRef<number | undefined>
+	totalRaised: ReactiveRef<number | undefined>
+	totalPledges: ReactiveRef<number | undefined>
+	donationCount: ReactiveRef<number | undefined>
+
+	currentMilestone: ReactiveRef<string | undefined>
+	currentMilestoneGoal: ReactiveRef<number | undefined>
+	currentMilestoneStart: ReactiveRef<number | undefined>
+}
+
+type OnDonationFunc = (donation: DonorDriveDonation) => any
+type OnIncentiveFunc = (donation: DonorDriveDonation, incentive: DonorDriveIncentive) => any
+type OnMilestoneFunc = (milestone: DonorDriveMilestone) => any
+
+interface DonorDriveEntityTriggerSet {
+	onDonation: OnDonationFunc
+	onIncentive: OnIncentiveFunc
+	onMilestone: OnMilestoneFunc
+}
+
+export function setupEntityPolling(
+	entityProvider: DonorDriveEntityProvider,
+	state: DonorDriveEntityStateSet,
+	triggers: DonorDriveEntityTriggerSet
+) {
+	let currentMilestoneId: string | undefined = undefined
+	let lastDonationTime: Date = new Date()
+
+	const incentiveCache = createIncentiveCache(entityProvider)
+	const milestoneCache = createMilestoneCache(entityProvider)
+
+	const clearState = () => {
+		state.eventName.value = undefined
+		state.goal.value = undefined
+		state.totalDonations.value = undefined
+		state.totalRaised.value = undefined
+		state.totalPledges.value = undefined
+		state.donationCount.value = undefined
+
+		currentMilestoneId = undefined
+		state.currentMilestone.value = undefined
+		state.currentMilestoneGoal.value = undefined
+		state.currentMilestoneStart.value = undefined
+	}
+
+	const updateMilestones = async () => {
+		const rawMilestones = await milestoneCache.values()
+		const milestones = rawMilestones.filter((m) => m.isActive).sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
+
+		let found = false
+		let lowerBound = 0
+		for (const milestone of milestones) {
+			if (!milestone.isActive) continue
+
+			if (milestone.isComplete) {
+				lowerBound = milestone.fundraisingGoal
+			} else {
+				state.currentMilestone.value = milestone.description
+				state.currentMilestoneGoal.value = milestone.fundraisingGoal
+				state.currentMilestoneStart.value = lowerBound
+				found = true
+				break
+			}
+		}
+
+		if (!found) {
+			state.currentMilestone.value = undefined
+			state.currentMilestoneGoal.value = undefined
+			state.currentMilestoneStart.value = undefined
+		}
+	}
+
+	const handleNewDonations = async (prevTotal: number | undefined) => {
+		const lastDonationPollTime = lastDonationTime
+		lastDonationTime = new Date()
+
+		const donations = await queryDonations(entityProvider, lastDonationPollTime)
+		if (!donations) return
+
+		const rawMilestones = await milestoneCache.values()
+		const milestones = rawMilestones.filter((m) => m.isActive).sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
+
+		let runningAmount = prevTotal
+
+		//We gate donations on the last poll time, so any donations returned by this fetch are new!
+		for (const donation of donations) {
+			await triggers.onDonation(donation)
+
+			if (donation.incentiveID) {
+				const incentive = await incentiveCache.get(donation.incentiveID)
+
+				if (incentive) {
+					await triggers.onIncentive(donation, incentive)
+				}
+			}
+
+			if (runningAmount != null) {
+				const beforeAmount = runningAmount
+				const afterAmount = runningAmount + donation.amount
+
+				for (const milestone of milestones) {
+					if (
+						milestone.isComplete &&
+						beforeAmount < milestone.fundraisingGoal &&
+						afterAmount >= milestone.fundraisingGoal
+					) {
+						//This is the donation that crossed the milestones
+						await triggers.onMilestone(milestone)
+					}
+				}
+
+				runningAmount = afterAmount
+			}
+		}
+	}
+
+	const entityPoller = createEntityPoller(entityProvider, async (entity) => {
+		if (!entity) {
+			clearState()
+			return
+		}
+
+		const currentTotal = state.totalRaised.value
+		const currentDonationCount = state.donationCount.value
+
+		state.eventName.value = entity.eventName
+		state.goal.value = entity.fundraisingGoal
+		state.totalRaised.value = entity.sumDonations + entity.sumPledges
+		state.totalPledges.value = entity.sumPledges
+		state.totalDonations.value = entity.sumDonations
+
+		state.donationCount.value = entity.numDonations
+
+		if (currentDonationCount != state.donationCount.value) {
+			await milestoneCache.fetch()
+
+			await handleNewDonations(currentTotal)
+		}
+
+		await updateMilestones()
+	})
+
+	return {
+		entityPoller,
+		milestoneCache,
+		incentiveCache,
+		start() {
+			entityPoller.start()
+		},
+		reset() {
+			entityPoller.reset()
+			lastDonationTime = new Date()
+			clearState()
+		},
+	}
 }

@@ -1,4 +1,4 @@
-import { usePluginLogger } from "castmate-core"
+import { EventList, RetryTimer, usePluginLogger } from "castmate-core"
 import * as net from "node:net"
 import { Mutex } from "async-mutex"
 import assert from "node:assert"
@@ -6,8 +6,11 @@ import assert from "node:assert"
 const logger = usePluginLogger("wyoming")
 
 export interface WyomingConnection {
-	socket: net.Socket
+	socket: net.Socket | undefined
 	requestMutex: Mutex
+	retry: RetryTimer
+	ending: boolean
+	onConnected: EventList<(connection: WyomingConnection) => any>
 }
 
 export interface WyomingEvent {
@@ -16,43 +19,69 @@ export interface WyomingEvent {
 	payload?: Buffer
 }
 
-export function connectToWyomingServer(host: string, port: number) {
-	const connectPromise = new Promise<WyomingConnection>((resolve, reject) => {
-		const socket = new net.Socket({
-			readable: true,
-			writable: true,
-		})
+export async function connectToWyomingServer(
+	host: string,
+	port: number,
+	onConnection: (connection: WyomingConnection) => any
+) {
+	let connection: WyomingConnection = {
+		socket: undefined,
+		requestMutex: new Mutex(),
+		onConnected: new EventList(),
+		ending: false,
+		retry: new RetryTimer(async () => {
+			logger.log("Trying to connect to Wyoming", host, port, "...")
+			const connectPromise = new Promise<void>((resolve, reject) => {
+				const socket = new net.Socket({
+					readable: true,
+					writable: true,
+				})
 
-		socket.once("error", (err) => {
-			logger.log("WYOMING ERROR!", err)
-			reject(err)
-		})
+				socket.once("error", (err) => {
+					logger.log("WYOMING ERROR!", err)
+					reject(err)
+				})
 
-		socket.on("connect", () => {
-			logger.log("Connected to", host, port)
-			socket.setNoDelay()
-			resolve({ socket, requestMutex: new Mutex() })
-		})
+				socket.on("connect", async () => {
+					logger.log("Wyoming Connected to", host, port)
+					socket.setNoDelay()
+					connection.socket = socket
+					resolve()
+				})
 
-		socket.on("end", () => {
-			logger.log("Wyoming Socket Ended :(")
-		})
+				socket.on("close", (hadError) => {
+					connection.socket = undefined
+					if (connection.ending) {
+						logger.log("Wyoming Connection Ended")
+					} else {
+						logger.error("Wyoming Connection Lost... Retrying")
+						connection.retry.tryAgain()
+					}
+				})
 
-		// socket.on("data", (data) => {
-		// 	logger.log("DATA RECEIVED", data.toString())
-		// })
+				socket.connect({
+					host,
+					port,
+				})
+			})
 
-		socket.connect({
-			host,
-			port,
-		})
-	})
+			await connectPromise
+			await connection.onConnected.run(connection)
+		}, 60),
+	}
 
-	return connectPromise
+	connection.onConnected.register(onConnection)
+
+	await connection.retry.tryNow()
+
+	return connection
 }
 
 export async function closeWyomingConnection(connection: WyomingConnection) {
-	await socketEnd(connection.socket)
+	if (connection.socket) {
+		connection.ending = true
+		await socketEnd(connection.socket)
+	}
 }
 
 function socketEnd(socket: net.Socket) {
@@ -78,18 +107,10 @@ export function writeData(socket: net.Socket, data: Buffer) {
 function waitData(socket: net.Socket) {
 	return new Promise<void>((resolve, reject) => {
 		socket.once("readable", () => {
-			logger.log("Wyoming Data Readable", socket.readableLength)
+			//logger.log("Wyoming Data Readable", socket.readableLength)
 			resolve()
 		})
 	})
-}
-
-async function waitForData(socket: net.Socket, bytes: number) {
-	while (socket.readableLength < bytes) {
-		logger.log("Readable", socket.readableLength, "under", bytes)
-		await waitData(socket)
-		logger.log("WAITED!", socket.readableLength)
-	}
 }
 
 async function blockingRead(socket: net.Socket, bytes: number): Promise<Buffer> {
@@ -120,6 +141,7 @@ async function readLine(socket: net.Socket) {
 }
 
 export async function sendWyomingEvent(connection: WyomingConnection, event: WyomingEvent) {
+	assert(connection.socket)
 	logger.log("Sending Wyoming Event", event)
 	const finalJsonData: Record<string, any> = {
 		type: event.type,
@@ -153,6 +175,7 @@ export async function sendWyomingEvent(connection: WyomingConnection, event: Wyo
 }
 
 export async function readWyomingEvent(connection: WyomingConnection) {
+	assert(connection.socket)
 	const jsonLine = await readLine(connection.socket)
 	logger.log("Read JSON line", jsonLine)
 	const json = JSON.parse(jsonLine)

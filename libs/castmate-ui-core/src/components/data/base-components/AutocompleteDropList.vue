@@ -80,15 +80,6 @@ function isCurrentItem(item: ItemType) {
 	return props.currentId == item.id
 }
 
-onMounted(() => {
-	watch(model, (val, oldVal) => {
-		if (val && !oldVal) {
-			//Clear the focused id when the dropdown opens
-			focusedId.value = undefined
-		}
-	})
-})
-
 function close() {
 	model.value = false
 	emit("closed")

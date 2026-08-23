@@ -2,9 +2,10 @@ import {
 	FileResource,
 	Resource,
 	ResourceStorage,
-	defineAction,
 	definePluginResource,
+	defineRendererCallable,
 	ensureDirectory,
+	ipcConvertSchema,
 	onLoad,
 	usePluginLogger,
 } from "castmate-core"
@@ -88,6 +89,8 @@ const OSTTSVoiceConfigSchema = declareSchema({
 })
 type OSTTSVoiceConfigData = SchemaType<typeof OSTTSVoiceConfigSchema>
 
+const logger = usePluginLogger("ostts")
+
 export class OSTTSVoiceProvider extends TTSVoiceProvider {
 	constructor(osvoice: OsTTSVoice, private os_interface: OsTTSInterface) {
 		super()
@@ -114,13 +117,13 @@ export class OSTTSVoiceProvider extends TTSVoiceProvider {
 
 	async generate(text: string, voiceConfig: OSTTSVoiceConfigData, filename: string) {
 		const SAPIXml = `<rate absspeed="${voiceConfig.rate ?? 0}">
-		<pitch absmiddle="${voiceConfig.pitch ?? 0}>
+		<pitch absmiddle="${voiceConfig.pitch ?? 0}">
 			${escapeXml(text)}
 		</pitch>
 		</rate>
 		`
 
-		await this.speakToFile(text, filename, this.config.providerId)
+		await this.speakToFile(SAPIXml, filename, this.config.providerId)
 	}
 
 	getVoiceConfigSchema(): Schema | undefined {
@@ -149,6 +152,17 @@ export function setupTTS() {
 			await OSTTSVoiceProvider.storage.inject(provider)
 		}
 	}
+
+	defineRendererCallable("getVoiceProviderConfigSchema", async (voiceProviderId: string) => {
+		const provider = TTSVoiceProvider.storage.getById(voiceProviderId)
+		if (!provider) throw new Error("Unknown Voice Provider ID")
+
+		const schema = provider.getVoiceConfigSchema()
+		if (!schema) return undefined
+
+		const ipcSchema = ipcConvertSchema(schema, "sound_ttsprovider_config")
+		return ipcSchema
+	})
 
 	onLoad(async () => {
 		ensureDirectory(path.join(app.getPath("temp"), "castmate-tts"))

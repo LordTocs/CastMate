@@ -95,8 +95,8 @@ const dropDownOpen = ref(false)
 function show() {
 	if (!dropDownOpen.value) {
 		console.log("Opening")
-		dropDownOpen.value = true
 		focusedId.value = model.value
+		dropDownOpen.value = true
 		emit("open")
 	}
 }

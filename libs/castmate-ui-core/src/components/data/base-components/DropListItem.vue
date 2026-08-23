@@ -55,7 +55,8 @@ onMounted(() => {
 			if (props.focused) {
 				li.value?.scrollIntoView({ block: "nearest" })
 			}
-		}
+		},
+		{ immediate: true }
 	)
 })
 </script>
