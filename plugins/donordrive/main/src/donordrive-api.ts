@@ -303,8 +303,8 @@ export class DonorDriveDictCache<T extends object, K extends keyof T> {
 		return this.data.get(key)
 	}
 
-	async values() {
-		if (this.isOutOfDate) {
+	async values(force: boolean = false) {
+		if (force || this.isOutOfDate) {
 			await this.fetch()
 		}
 		return [...this.data.values()]
@@ -421,7 +421,7 @@ export function setupEntityPolling(
 		const donations = await queryDonations(entityProvider, lastDonationPollTime)
 		if (!donations) return
 
-		const rawMilestones = await milestoneCache.values()
+		const rawMilestones = await milestoneCache.values(true)
 		const milestones = rawMilestones.filter((m) => m.isActive).sort((a, b) => a.fundraisingGoal - b.fundraisingGoal)
 
 		let runningAmount = prevTotal
