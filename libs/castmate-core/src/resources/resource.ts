@@ -107,13 +107,10 @@ export function implementResource<
 		},
 	} as ResourceImplementation<TState, TConfig, TFunctions, TCreateArgs>
 
-	const plugin = PluginManager.getInstance().getPlugin(spec.plugin)
-	assert(plugin)
-
 	onLoad(() => {
 		//@ts-expect-error
 		ResourceRegistry.getInstance().registerResource(result)
-	}, plugin)
+	}, spec.plugin)
 
 	return result
 }
