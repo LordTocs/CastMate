@@ -11,10 +11,6 @@ export * from "./data/directory"
 export * from "./data/filepath"
 export * from "./data/timers"
 
-export * from "./ipc/action"
-export * from "./ipc/trigger"
-export * from "./ipc/plugin"
-
 export * from "./editor/editor"
 
 export * from "./automation/profile"

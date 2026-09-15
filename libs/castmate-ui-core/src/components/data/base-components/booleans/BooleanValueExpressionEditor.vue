@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { BooleanValueExpression } from "castmate-schema"
+import { BooleanValueExpression, getSchemaMetaData } from "castmate-schema"
 import { computed, ref, useModel } from "vue"
 import StateSelector from "../state/StateSelector.vue"
 import ValueCompareOperatorSelector from "./ValueCompareOperatorSelector.vue"
@@ -33,11 +33,7 @@ import PButton from "primevue/button"
 import { useBooleanExpressionEvaluator } from "./boolean-helpers"
 
 import ExpressionValueEdit from "./ExpressionValueEdit.vue"
-import { isStateValueExpr } from "castmate-schema"
-import { isValueValueExpr } from "castmate-schema"
-import { getTypeByName } from "castmate-schema"
-import { Schema } from "castmate-schema"
-import { getTypeByConstructor } from "castmate-schema"
+import { isStateValueExpr, isValueValueExpr, SchemaMeta, Schema } from "castmate-schema"
 
 const props = defineProps<{
 	modelValue: BooleanValueExpression
@@ -59,11 +55,9 @@ const leftSchema = computed<Schema | undefined>(() => {
 		const state = pluginStore.pluginMap.get(model.value.lhs.plugin)?.state?.[model.value.lhs?.state]
 		return state?.schema
 	} else if (isValueValueExpr(model.value.lhs)) {
-		const constructor = getTypeByName(model.value.lhs.schemaType)?.constructor
+		const constructor = getSchemaMetaData(model.value.lhs.schemaType)?.constructor
 		if (!constructor) return undefined
-		return {
-			type: constructor,
-		}
+		return undefined
 	}
 })
 
@@ -75,26 +69,24 @@ const rightSchema = computed<Schema | undefined>(() => {
 		const state = pluginStore.pluginMap.get(model.value.rhs.plugin)?.state?.[model.value.rhs?.state]
 		return state?.schema
 	} else if (isValueValueExpr(model.value.rhs)) {
-		const constructor = getTypeByName(model.value.rhs.schemaType)?.constructor
+		const constructor = getSchemaMetaData(model.value.rhs.schemaType)?.constructor
 		if (!constructor) return undefined
-		return {
-			type: constructor,
-		}
+		return undefined
 	}
 })
 
 const inequalities = computed(() => {
 	if (!leftSchema.value) return false
 	if (!rightSchema.value) return false
-	const leftMetaData = getTypeByConstructor(leftSchema.value.type)
+	const leftMetaData = getSchemaMetaData(leftSchema.value.type)
 	if (!leftMetaData) return false
-	const rightMetaData = getTypeByConstructor(rightSchema.value.type)
+	const rightMetaData = getSchemaMetaData(rightSchema.value.type)
 	if (!rightMetaData) return false
 
-	const comparison = leftMetaData.comparisonTypes.find(
-		(ct) => rightSchema.value && ct.otherType == rightSchema.value.type
-	)
-	return comparison?.inequalities ?? false
+	// const comparison = leftMetaData.comparisonTypes.find(
+	// 	(ct) => rightSchema.value && ct.otherType == rightSchema.value.type
+	// )
+	return false
 })
 </script>
 

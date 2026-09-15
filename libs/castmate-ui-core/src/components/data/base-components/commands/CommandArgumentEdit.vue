@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import type { MenuItem } from "primevue/menuitem"
 import { computed, useModel } from "vue"
-import { getAllCommandArgTypes, CommandArgument } from "castmate-schema"
+import { CommandArgument } from "castmate-schema"
 import PDropdown from "primevue/dropdown"
 import LabelFloater from "../LabelFloater.vue"
 import VariableNameInput from "../VariableNameInput.vue"
@@ -48,7 +48,7 @@ const model = useModel(props, "modelValue")
 const emit = defineEmits(["update:modelValue", "delete"])
 
 const argTypes = computed(() => {
-	return getAllCommandArgTypes().map((t) => t.name)
+	return [] //getAllCommandArgTypes().map((t) => t.name)
 })
 
 const argTypeOptions = computed<MenuItem[]>(() => {

@@ -44,7 +44,7 @@ import { useModel } from "vue"
 import DataInput from "../DataInput.vue"
 import PButton from "primevue/button"
 import _cloneDeep from "lodash/cloneDeep"
-import { constructDefault } from "castmate-schema"
+import { SchemaData } from "castmate-schema"
 import { useCommitUndo, useDataBinding } from "../../../main"
 
 const props = defineProps<
@@ -74,14 +74,14 @@ function deleteItem(idx: number) {
 	commitUndo()
 	model.value?.splice(idx, 1)
 
-	if (model.value?.length == 0 && !props.schema.required) {
+	if (model.value?.length == 0 && props.schema.optional) {
 		model.value = undefined
 	}
 }
 
 async function addItem() {
 	commitUndo()
-	const newItem = await constructDefault(props.schema.items)
+	const newItem = await SchemaData.constructDefault(props.schema.items)
 
 	if (model.value == null) {
 		model.value = [newItem]

@@ -44,7 +44,15 @@
 </template>
 
 <script setup lang="ts">
-import { Schema, ExpressionValue, isStateValueExpr, isValueValueExpr, FullDataTypeMetaData } from "castmate-schema"
+import {
+	Schema,
+	ExpressionValue,
+	isStateValueExpr,
+	isValueValueExpr,
+	FullDataTypeMetaData,
+	SchemaTypeMetaData,
+	SchemaTypeMap,
+} from "castmate-schema"
 import PTabs from "primevue/tabs"
 import PTab from "primevue/tab"
 import PTabList from "primevue/tablist"
@@ -54,12 +62,10 @@ import PTabPanel from "primevue/tabpanel"
 import StateSelector from "../state/StateSelector.vue"
 import DataInput from "../../DataInput.vue"
 import { computed, useModel, watch } from "vue"
-import { getTypeByName } from "castmate-schema"
+import { getSchemaMetaData } from "castmate-schema"
 
 import type { MenuItem } from "primevue/menuitem"
 import CDropdown from "../CDropdown.vue"
-import { getAllVariableTypes } from "castmate-schema"
-import { getTypeByConstructor } from "castmate-schema"
 import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{
@@ -101,17 +107,14 @@ const valueSchema = computed<Schema | undefined>(() => {
 		return undefined
 	}
 
-	const type = getTypeByName(model.value.schemaType)
+	const type = getSchemaMetaData(model.value.schemaType)
 	if (!type) return undefined
 
-	let baseSchema = props.leftSchema?.type == type.constructor ? props.leftSchema : {}
+	let baseSchema = props.leftSchema?.type == model.value.schemaType ? props.leftSchema : {}
 
 	const result: Schema = {
 		...baseSchema,
-		type: type.constructor,
-		required: true,
-		name: undefined,
-		template: true,
+		type: model.value.schemaType,
 	}
 
 	return result
@@ -189,13 +192,13 @@ function validMetaData(meta: FullDataTypeMetaData<any> | undefined): meta is Ful
 
 const valueSchemaTypes = computed(() => {
 	if (!props.leftSchema) {
-		return getAllVariableTypes()
+		return []
 	} else {
-		const metaData = getTypeByConstructor(props.leftSchema.type)
+		const metaData = getSchemaMetaData(props.leftSchema.type)
 		if (!metaData) return []
-		const comparisonTypes = metaData.comparisonTypes
+		const comparisonTypes = Object.keys(metaData.comparison) as (keyof SchemaTypeMap)[]
 
-		const comparisonTypeMetaDatas = comparisonTypes.map((t) => getTypeByConstructor(t.otherType))
+		const comparisonTypeMetaDatas = comparisonTypes.map((t) => getSchemaMetaData(t))
 		const filteredComparisonMetaDatas = comparisonTypeMetaDatas.filter(validMetaData)
 
 		return filteredComparisonMetaDatas
