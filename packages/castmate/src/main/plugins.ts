@@ -41,7 +41,7 @@ import aitumPlugin from "castmate-plugin-aitum-main"
 
 import donorDrivePlugin from "castmate-plugin-donordrive-main"
 */
-//import castmatePlugin from "./builtin-plugin"
+import castmatePlugin from "./builtin-plugin"
 import { WebService, Plugin } from "castmate-core"
 // import { migratePlugin } from "./migration/old-migration"
 
@@ -52,53 +52,7 @@ export async function loadPlugin(plugin: Plugin) {
 
 export async function loadPlugins() {
 	const pluginManager = PluginManager.getInstance()
-
-	// await loadPlugin(castmatePlugin)
-	// await loadPlugin(randomPlugin)
-	// await loadPlugin(soundPlugin)
-	// await loadPlugin(overlayPlugin)
-	// //await loadPlugin(dashboardPlugin)
-
-	// const promises = [
-	// 	loadPlugin(timePlugin),
-	// 	loadPlugin(twitchPlugin),
-	// 	loadPlugin(discordPlugin),
-	// 	loadPlugin(obsPlugin),
-	// 	loadPlugin(iotPlugin),
-	// 	loadPlugin(osPlugin),
-	// 	loadPlugin(httpPlugin),
-	// 	loadPlugin(inputPlugin),
-	// 	loadPlugin(voicemodPlugin),
-	// 	loadPlugin(minecraftPlugin),
-	// 	loadPlugin(remotePlugin),
-	// 	loadPlugin(blueskyPlugin),
-	// ]
-
-	// await Promise.allSettled(promises)
-
-	// const obsDeps = [loadPlugin(advssPlugin), loadPlugin(aitumPlugin)]
-	// await Promise.allSettled(obsDeps)
-
-	// await loadPlugin(variablesPlugin)
-
-	// await loadPlugin(spellcastPlugin)
-
-	// await loadPlugin(streamPlanPlugin)
-
-	// //iot
-	// const iotPromises = [
-	// 	loadPlugin(huePlugin),
-	// 	loadPlugin(kasaPlugin),
-	// 	loadPlugin(elgatoPlugin),
-	// 	loadPlugin(lifxPlugin),
-	// 	loadPlugin(wyzePlugin),
-	// 	loadPlugin(goveePlugin),
-	// 	loadPlugin(twinklyPlugin),
-	// ]
-
-	// await loadPlugin(donorDrivePlugin)
-
-	// await Promise.allSettled(iotPromises)
+	PluginManager.getInstance().loadPlugins()
 
 	await WebService.getInstance().startWebsockets()
 }
