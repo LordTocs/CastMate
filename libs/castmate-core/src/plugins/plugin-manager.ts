@@ -1,5 +1,7 @@
-import { Service } from "../util/service"
-import { Plugin } from "./plugin"
+import { timeout } from "../util/abort-utils"
+import { EventList } from "../util/events"
+import { DefaultService, Service } from "../util/service"
+import { Plugin, PluginEventHandlers } from "./plugin"
 
 import assert from "node:assert"
 
@@ -45,9 +47,10 @@ interface PluginLoader {
 	didLoad: boolean
 }
 
-export const PluginManager = Service(
+export const PluginManager = DefaultService(
 	class {
 		private plugins: Map<string, Plugin> = new Map()
+		private pluginEvents: Map<string, PluginEventHandlers> = new Map()
 		private uiLoaded: boolean = false
 
 		constructor() {
@@ -130,6 +133,19 @@ export const PluginManager = Service(
 			return this.plugins.get(id)
 		}
 
+		getPluginEvents(id: string) {
+			const existing = this.pluginEvents.get(id)
+			if (existing) return existing
+			const events: PluginEventHandlers = {
+				loader: new EventList(),
+				unloader: new EventList(),
+				uiloader: new EventList(),
+				profilesChanged: new EventList(),
+			}
+			this.pluginEvents.set(id, events)
+			return events
+		}
+
 		async loadPlugins() {
 			const loaders = new Map<string, PluginLoader>()
 
@@ -166,7 +182,7 @@ export const PluginManager = Service(
 			const doLoad = async (loader: PluginLoader) => {
 				assert(loader.dependenciesRemaining == 0)
 				try {
-					await loader.plugin.load()
+					await Promise.race([loader.plugin.load(), timeout(180000)])
 				} finally {
 					loader.didLoad = true
 				}

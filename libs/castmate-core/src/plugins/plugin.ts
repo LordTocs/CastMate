@@ -752,14 +752,14 @@ export interface PluginImplementation<
 	state: SchemaType<SchemaObject<TState>>
 }
 
-export function onLoad(loadFunc: PluginCallback, plugin: Plugin | undefined = initingPlugin) {
-	assert(plugin)
-	plugin.events.loader.register(loadFunc)
+export function onLoad(loadFunc: PluginCallback, pluginId: string | undefined = initingPlugin?.spec.id) {
+	assert(pluginId)
+	PluginManager.getInstance().getPluginEvents(pluginId).loader.register(loadFunc)
 }
 
-export function onUnload(unloadFunc: PluginCallback, plugin: Plugin | undefined = initingPlugin) {
-	assert(plugin)
-	plugin.events.unloader.register(unloadFunc)
+export function onUnload(unloadFunc: PluginCallback, pluginId: string | undefined = initingPlugin?.spec.id) {
+	assert(pluginId)
+	PluginManager.getInstance().getPluginEvents(pluginId).unloader.register(unloadFunc)
 }
 
 export function onProfilesChanged(profilesChanged: ProfilesChangedCallback) {
@@ -785,18 +785,11 @@ export function implementPlugin<
 		//@ts-expect-error
 		state: {}, //Do state init at load time
 		initialized: false,
-		events: {
-			loader: new EventList(),
-			unloader: new EventList(),
-			uiloader: new EventList(),
-			profilesChanged: new EventList(),
-		},
 		async load() {
 			if (this.initialized) return
 
 			//TODO: Dep check here!
-
-			await loadPlugin()
+			await loadPluginSettings()
 
 			await initPlugin()
 		},
@@ -807,7 +800,9 @@ export function implementPlugin<
 			//TODO set initing function
 
 			//Race the plugin init incase there's a never resolved promise
-			await Promise.race([init(), timeout(180000)])
+			await init()
+
+			await PluginManager.getInstance().getPluginEvents(newPlugin.spec.id).loader.run()
 
 			newPlugin.initialized = true
 		} catch (err) {
@@ -816,7 +811,7 @@ export function implementPlugin<
 		}
 	}
 
-	const loadPlugin = async () => {
+	const loadPluginSettings = async () => {
 		//fill up defaults
 		try {
 			newPlugin.settings = await loadYAMLSchema(newPlugin.spec.settings, "settings", `${newPlugin.spec.id}.yaml`)
