@@ -163,6 +163,7 @@ export function defineSchemaType<TSchema extends Schema>(meta: SchemaTypeConfig<
 	typeRegistry.set(meta.type, { ...meta, comparison: {} })
 }
 
+export function getSchemaMetaData(type: string): SchemaTypeMetaData<Schema>
 export function getSchemaMetaData<TypeName extends SchemaTypeNames>(
 	type: TypeName
 ): SchemaTypeMetaData<SchemaByName<TypeName>> {
@@ -174,7 +175,6 @@ export function getSchemaMetaData<TypeName extends SchemaTypeNames>(
 }
 
 export function getSchemaTypeName<TSchema extends Schema>(schema: TSchema) {
-	//@ts-ignore TODO: FIX TYPING HERE
 	const metaData = getSchemaMetaData(schema.type)
 
 	if (typeof metaData.name == "string") {
