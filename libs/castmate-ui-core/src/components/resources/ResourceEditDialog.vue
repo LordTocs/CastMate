@@ -26,7 +26,7 @@ import { computed, onMounted, ref } from "vue"
 import { provideScrollAttachable, useDialogRef, useResourceData } from "../../main"
 import PButton from "primevue/button"
 import PInputText from "primevue/inputtext"
-import { constructDefault } from "castmate-schema"
+import { SchemaData } from "castmate-schema"
 import PInputGroup from "primevue/inputgroup"
 import PFloatLabel from "primevue/floatlabel"
 
@@ -63,7 +63,7 @@ onMounted(async () => {
 	if (dialogData.initialConfig) {
 		config.value = dialogData.initialConfig
 	} else if (resource.value?.configSchema) {
-		config.value = await constructDefault(resource.value.configSchema)
+		config.value = await SchemaData.constructDefault(resource.value.configSchema)
 	}
 })
 

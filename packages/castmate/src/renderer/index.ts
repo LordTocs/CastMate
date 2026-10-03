@@ -240,7 +240,7 @@ async function init() {
 	//sendOverlaysToMain()
 	//sendDashboardsToMain()
 
-	await uiLoadComplete()
+	//await uiLoadComplete()
 
 	// mainPageStore.openMain()
 }

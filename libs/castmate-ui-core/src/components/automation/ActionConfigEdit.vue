@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { AnyAction, constructDefault, isFlowAction, getSequenceResultVariables } from "castmate-schema"
+import { AnyAction, SchemaData, isFlowAction, getSequenceResultVariables } from "castmate-schema"
 import { useAction, DataInput, useDataBinding } from "../../main"
 import { computed, inject, provide, useModel } from "vue"
 import PButton from "primevue/button"
@@ -80,7 +80,7 @@ async function addFlow() {
 	if (!isFlowAction(model.value) || actionInfo.value?.type != "flow") return
 	const flow: SubFlow = {
 		id: nanoid(),
-		config: actionInfo.value.flowConfig ? await constructDefault(actionInfo.value.flowConfig) : {},
+		config: actionInfo.value.flowConfig ? await SchemaData.constructDefault(actionInfo.value.flowConfig) : {},
 		actions: [],
 	}
 	model.value.subFlows.push(flow)

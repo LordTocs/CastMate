@@ -1,18 +1,15 @@
-import { Color, ResolvedSchemaType, Schema, SchemaType, declareSchema } from "castmate-schema"
+import { Color, S, Schema, SchemaType } from "castmate-schema"
 
-export const ChannelPointRewardSchema = declareSchema({
-	type: Object,
-	properties: {
-		title: { type: String, name: "Title", required: true, template: true, default: "", maxLength: 45 },
-		prompt: { type: String, name: "Description", template: true, maxLength: 200 },
-		backgroundColor: { type: Color, name: "Color", template: true },
-		userInputRequired: { type: Boolean, name: "Require User Input" },
-		cost: { type: Number, name: "Cost", template: true, min: 1, default: 1, required: true },
-		cooldown: { type: Number, name: "Cooldown", template: true },
-		maxRedemptionsPerStream: { type: Number, name: "Max Redemptions Per Stream", template: true },
-		maxRedemptionsPerUserPerStream: { type: Number, name: "Max Redemptions Per User Per Stream" },
-		skipQueue: { type: Boolean, name: "Skip Queue", required: true, default: false },
-	},
+export const ChannelPointRewardSchema = S.Object({
+	title: S.String({ maxLength: 45 }),
+	prompt: S.Optional(S.String({ maxLength: 200 })),
+	backgroundColor: S.Optional(S.Color()),
+	userInputRequired: S.Boolean({ default: false }),
+	cost: S.Number({ min: 1 }),
+	cooldown: S.Optional(S.Duration()),
+	maxRedeptionsPerStream: S.Optional(S.Number()),
+	maxRedemptionsPerUserPerStream: S.Optional(S.Number()),
+	skipQueue: S.Boolean({ default: false }),
 })
 
 export type ChannelPointRewardTemplate = SchemaType<typeof ChannelPointRewardSchema>

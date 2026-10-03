@@ -78,7 +78,7 @@ export { default as MediaDropDown } from "./components/data/base-components/medi
 
 export { default as DataBindingDebugger } from "./components/data/binding/DataBindingDebugger.vue"
 
-export { default as StreamPlanDashboardWidget } from "./components/stream-plan/StreamPlanDashboardWidget.vue"
+//export { default as StreamPlanDashboardWidget } from "./components/stream-plan/StreamPlanDashboardWidget.vue"
 
 export { default as CancellableDynamicDialog } from "./components/dialogs/CancellableDynamicDialog.vue"
 
@@ -118,6 +118,8 @@ export * from "./queue-system/action-queue-store"
 export * from "./components/stream-plan/stream-plan-types"
 
 export * from "./viewer-data/viewer-data-store"
+
+export * from "./editor/editor-ui-util.ts"
 
 export * from "./satellite/satellite-connection"
 export * from "./satellite/satellite-resources"

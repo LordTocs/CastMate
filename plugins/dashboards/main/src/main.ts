@@ -1,4 +1,4 @@
-import { defineAction, defineTrigger, onLoad, onUnload, definePlugin, defineSatellitePlugin } from "castmate-core"
+import { onLoad, onUnload } from "castmate-core"
 import { Dashboard, setupDashboardResources } from "./dashboard-resource"
 import { DashboardWidgetManager } from "./dashboard-widgets"
 import { setupConfigEval } from "./dashboard-config-eval"
@@ -24,17 +24,17 @@ export async function finishInitDashboards() {
 	await Dashboard.finishInitResourceSlots()
 }
 
-export const dashboardSatellite = defineSatellitePlugin(
-	{
-		id: "dashboards",
-		name: "Dashboards",
-		description: "DASHBOARDS",
-		icon: "mdi mdi-pencil",
-	},
-	() => {
-		onLoad(() => {
-			DashboardWidgetManager.initialize()
-			DashboardAccessService.initialize()
-		})
-	}
-)
+// export const dashboardSatellite = defineSatellitePlugin(
+// 	{
+// 		id: "dashboards",
+// 		name: "Dashboards",
+// 		description: "DASHBOARDS",
+// 		icon: "mdi mdi-pencil",
+// 	},
+// 	() => {
+// 		onLoad(() => {
+// 			DashboardWidgetManager.initialize()
+// 			DashboardAccessService.initialize()
+// 		})
+// 	}
+// )

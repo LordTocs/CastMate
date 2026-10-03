@@ -1,29 +1,18 @@
 <template>
 	<scrolling-tab-body ref="body">
-		<div class="flex flex-row">
+		<!-- <div class="flex flex-row">
 			<div style="width: 50%; flex-shrink: 0">
 				<c-color-picker v-model="color" />
 
 				<data-input :schema="baseTestSchema" v-model="baseDataBinding.rootData" local-path="" />
 			</div>
 			<data-binding-debugger :binding="baseDataBinding" />
-		</div>
+		</div> -->
 	</scrolling-tab-body>
 </template>
 
 <script setup lang="ts">
-import {
-	Color,
-	Duration,
-	Timer,
-	FilePath,
-	Range,
-	Directory,
-	Toggle,
-	declareSchema,
-	MediaFile,
-	constructDefault,
-} from "castmate-schema"
+import { Color, Duration, Timer, FilePath, Range, Directory, Toggle, MediaFile } from "castmate-schema"
 import {
 	ScrollingTabBody,
 	useDataInputStore,
@@ -38,7 +27,7 @@ import {
 } from "castmate-ui-core"
 import { onBeforeMount, onMounted, ref } from "vue"
 import util from "util"
-import { TwitchCategory, TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
+//import { TwitchCategory, TwitchViewer, TwitchViewerGroup } from "castmate-plugin-twitch-shared"
 import { LightColor } from "castmate-plugin-iot-shared"
 import { KeyCombo, KeyboardKey } from "castmate-plugin-input-shared"
 
@@ -47,7 +36,7 @@ import PButton from "primevue/button"
 import { Command } from "castmate-schema"
 import { PowerShellCommand } from "castmate-plugin-os-shared"
 import { OBSSourceTransform } from "castmate-plugin-obs-shared"
-
+/*
 const testSchema = declareSchema({
 	type: String,
 	name: "New Base Test",
@@ -106,6 +95,7 @@ const baseTestSchema = declareSchema({
 })
 
 const body = ref<InstanceType<typeof ScrollingTabBody>>()
+*/
 </script>
 
 <style scoped></style>

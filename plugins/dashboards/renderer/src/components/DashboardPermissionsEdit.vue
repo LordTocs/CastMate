@@ -5,9 +5,9 @@
 </template>
 
 <script setup lang="ts">
-import { declareSchema } from "castmate-schema"
+//import { declareSchema } from "castmate-schema"
 import { DataInput } from "castmate-ui-core"
-import { TwitchViewer, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
+//import { TwitchViewer, TwitchViewerUnresolved } from "castmate-plugin-twitch-shared"
 import { useModel } from "vue"
 
 const editSchema = declareSchema({

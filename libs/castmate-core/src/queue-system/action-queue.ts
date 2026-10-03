@@ -18,7 +18,6 @@ import { defineCallableIPC, defineIPCFunc } from "../util/electron"
 // import { Profile } from "../profile/profile"
 // import { FileResource } from "../resources/file-resource"
 import { ResourceRegistry } from "../resources/resource-registry"
-import { deserializeSchema, exposeSchema, serializeSchema } from "../util/ipc-schema"
 import { PluginManager } from "../plugins/plugin-manager"
 import { usePluginLogger } from "../logging/logging"
 

@@ -46,7 +46,7 @@ import PMenu from "primevue/menu"
 import { OverlayWidgetInfo, useOverlayWidgets } from "castmate-overlay-widget-loader"
 import type { MenuItem } from "primevue/menuitem"
 import { nanoid } from "nanoid/non-secure"
-import { constructDefault } from "castmate-schema"
+import { SchemaData } from "castmate-schema"
 import _cloneDeep from "lodash/cloneDeep"
 import OverlayWidgetListItem from "./OverlayWidgetListItem.vue"
 
@@ -86,7 +86,7 @@ async function addWidget(widget: OverlayWidgetInfo) {
 		id: nanoid(),
 		plugin: widget.plugin,
 		widget: widget.component.widget.id,
-		config: await constructDefault(widget.component.widget.config),
+		config: {}, //await SchemaData.constructDefault(widget.component.widget.config),
 		size,
 		position: {
 			x: 0,

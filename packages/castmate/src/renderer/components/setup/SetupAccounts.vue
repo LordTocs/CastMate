@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { TwitchAccountConfig } from "castmate-plugin-twitch-shared"
+//import { TwitchAccountConfig } from "castmate-plugin-twitch-shared"
 import { AccountState, ResourceData } from "castmate-schema"
 
 import { AccountWidget, useResourceArray, useResourceStore } from "castmate-ui-core"

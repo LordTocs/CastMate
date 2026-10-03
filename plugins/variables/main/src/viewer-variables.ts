@@ -1,4 +1,4 @@
-import { defineAction, usePluginLogger, ViewerData } from "castmate-core"
+import { usePluginLogger } from "castmate-core"
 import { TwitchViewer } from "castmate-plugin-twitch-shared"
 import { DynamicType } from "castmate-schema"
 import { ViewerCache as TwitchViewerCache } from "castmate-plugin-twitch-main"

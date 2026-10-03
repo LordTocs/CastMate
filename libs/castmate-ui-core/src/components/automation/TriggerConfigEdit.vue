@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { addDefaults, constructDefault, isObjectSchema, TriggerData } from "castmate-schema"
+import { SchemaData, isObjectSchema } from "castmate-schema"
 import { useTrigger, DataInput, injectDataContextSchema } from "../../main"
 import { useModel, watch } from "vue"
 
@@ -41,9 +41,9 @@ const contextSchema = injectDataContextSchema()
 
 watch(contextSchema, async (newSchema, oldSchema) => {
 	if (!model.value.testContext) {
-		model.value.testContext = await constructDefault(newSchema)
+		model.value.testContext = await SchemaData.constructDefault(newSchema)
 	} else if (isObjectSchema(newSchema)) {
-		await addDefaults(newSchema, model.value.testContext)
+		//await addDefaults(newSchema, model.value.testContext)
 	}
 })
 </script>

@@ -1,23 +1,8 @@
-import { constructDefault, IPCViewerVariable, ViewerDataObserver, ViewerDataRow, ViewerVariable } from "castmate-schema"
+import { SchemaData, ViewerDataObserver, ViewerDataRow, ViewerVariable } from "castmate-schema"
 import { defineStore } from "pinia"
 import { computed, MaybeRefOrGetter, onBeforeUnmount, onMounted, ref, toValue, watch } from "vue"
-import {
-	handleIpcMessage,
-	ipcConvertSchema,
-	ipcParseSchema,
-	ProjectItem,
-	useDockingStore,
-	useIpcCaller,
-	useProjectStore,
-} from "../main"
+import { handleIpcMessage, ProjectItem, useDockingStore, useIpcCaller, useProjectStore } from "../main"
 import _cloneDeep from "lodash/cloneDeep"
-
-function parseDefinition(def: IPCViewerVariable): ViewerVariable {
-	return {
-		name: def.name,
-		schema: ipcParseSchema(def.schema),
-	}
-}
 
 type ViewerData = Record<string, any>
 
@@ -32,7 +17,7 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 	const dockingStore = useDockingStore()
 	const projectStore = useProjectStore()
 
-	const getVariables = useIpcCaller<() => IPCViewerVariable[]>("viewer-data", "getVariables")
+	const getVariables = useIpcCaller<() => any[]>("viewer-data", "getVariables")
 	const setVariable = useIpcCaller<(provider: string, id: string, varname: string, value: any) => void>(
 		"viewer-data",
 		"setVariable"
@@ -267,7 +252,7 @@ export function useLazyViewerQuery(
 			lazyViewers.value.length = totalDataRows.value
 		},
 		async onNewViewerVariable(variable) {
-			const defaultValue = await constructDefault(variable.schema)
+			const defaultValue = await SchemaData.constructDefault(variable.schema)
 
 			for (let i = first.value; i < last.value; ++i) {
 				const viewer = lazyViewers.value[i]

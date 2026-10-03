@@ -3,16 +3,16 @@ import {
 	coreAxios,
 	defineIPCFunc,
 	onLoad,
-	onSatelliteConnection,
-	onSatelliteDisconnect,
-	onSatelliteRPC,
+	// onSatelliteConnection,
+	// onSatelliteDisconnect,
+	// onSatelliteRPC,
 	onUnload,
 	PluginManager,
 	ReactiveEffect,
 	Service,
 	usePluginLogger,
 } from "castmate-core"
-import { SatelliteService } from "castmate-core"
+//import { SatelliteService } from "castmate-core"
 import { TwitchAccount, ViewerCache } from "castmate-plugin-twitch-main"
 import { SatelliteConnectionOption } from "castmate-schema"
 import { nanoid } from "nanoid"
