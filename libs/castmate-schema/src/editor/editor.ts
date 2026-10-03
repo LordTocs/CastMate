@@ -34,3 +34,27 @@ export function defineEditorEvent<TArgs extends Schema[]>(plugin: string, id: st
 		schema: args,
 	} as EditorEventSpec<TArgs>
 }
+
+export interface RawEditorEventSpec<TFunc extends (...args: any[]) => void> {
+	plugin: string
+	id: string
+}
+
+export function defineRawEditorEvent<TFunc extends (...args: any[]) => void>(plugin: string, id: string) {
+	return {
+		plugin,
+		id,
+	} as RawEditorEventSpec<TFunc>
+}
+
+export interface RawEditorFunctionSpec<TFunc extends (...args: any[]) => any> {
+	plugin: string
+	id: string
+}
+
+export function defineRawEditorFunction<TFunc extends (...args: any[]) => any>(plugin: string, id: string) {
+	return {
+		plugin,
+		id,
+	} as RawEditorFunctionSpec<TFunc>
+}

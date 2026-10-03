@@ -23,6 +23,8 @@ export * from "./util/electron"
 export * from "./util/request-utils"
 export * from "./util/boolean-helpers"
 
+export * from "./editor/editor-util"
+
 export * from "./io/file-system"
 
 export * from "./logging/logging"

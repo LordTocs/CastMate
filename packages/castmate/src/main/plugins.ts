@@ -42,17 +42,16 @@ import aitumPlugin from "castmate-plugin-aitum-main"
 import donorDrivePlugin from "castmate-plugin-donordrive-main"
 */
 import castmatePlugin from "./builtin-plugin"
-import { WebService, Plugin } from "castmate-core"
+import { WebService, Plugin, getService } from "castmate-core"
 // import { migratePlugin } from "./migration/old-migration"
 
 export async function loadPlugin(plugin: Plugin) {
 	// await migratePlugin(plugin.id)
-	await PluginManager.getInstance().registerPlugin(plugin)
+	await getService(PluginManager).registerPlugin(plugin)
 }
 
 export async function loadPlugins() {
-	const pluginManager = PluginManager.getInstance()
-	PluginManager.getInstance().loadPlugins()
+	getService(PluginManager).loadPlugins()
 
 	await WebService.getInstance().startWebsockets()
 }

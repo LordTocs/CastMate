@@ -25,6 +25,7 @@ import { ViewerData } from "./viewer-data/viewer-data"
 // import { SatelliteResources } from "./satellite/satellite-resource"
 // import { SatelliteMedia } from "./satellite/satellite-media"
 import { setAppMode } from "./util/init-mode"
+import { EditorService } from "./editor/editor-util"
 
 /*
 //This shit is dynamic and vite hates it.
@@ -81,6 +82,7 @@ const notifyRendererInitialSetupFinished = defineCallableIPC<() => void>("castma
 export async function initializeCastMate() {
 	setAppMode("castmate")
 	globalLogger.log("Initing Castmate")
+	EditorService.initialize()
 	AnalyticsService.initialize()
 	await AnalyticsService.getInstance().initialize()
 	await ensureDirectory(resolveProjectPath("settings"))

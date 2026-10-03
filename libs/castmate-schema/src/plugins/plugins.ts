@@ -1,4 +1,5 @@
 import { Color } from "../data/color"
+import { defineEditorEvent, defineRawEditorEvent, defineRawEditorFunction } from "../editor/editor"
 import { S } from "../schema/schema-index"
 import { SchemaObject, TSchemaProperties } from "../schema/schema-object"
 
@@ -6,6 +7,9 @@ export interface PluginBaseSpecification {
 	id: string
 	color: Color
 	dependencies: PluginDependency[]
+	settings: SchemaObject<TSchemaProperties>
+	secrets: SchemaObject<TSchemaProperties>
+	state: SchemaObject<TSchemaProperties>
 }
 
 export interface PluginSpecification<
@@ -48,6 +52,28 @@ export function definePlugin<
 		dependencies: desc.dependencies ?? [],
 	}
 }
+
+export const updatePluginStateEvent = defineRawEditorEvent<
+	(plugin: string, settingPath: string, settingValue: any) => void
+>("plugins", "updateSetting")
+
+export const updatePluginSettingEvent = defineRawEditorEvent<
+	(plugin: string, settingPath: string, settingValue: any) => void
+>("plugins", "updateSetting")
+
+export const initPluginDataEvent = defineRawEditorEvent<
+	(plugin: string, settings: Record<string, any>, secrets: Record<string, any>, state: Record<string, any>) => void
+>("plugins", "init")
+
+export interface LoadedPluginInfo {
+	[id: string]: {
+		settings: Record<string, any>
+		secrets: Record<string, any>
+		state: Record<string, any>
+	}
+}
+
+export const getLoadedPluginsFunc = defineRawEditorFunction<() => LoadedPluginInfo>("plugins", "getLoadedPlugins")
 
 export const testPlugin = definePlugin({
 	id: "test",

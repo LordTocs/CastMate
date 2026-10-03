@@ -2,19 +2,24 @@ import { initingPlugin } from "./plugin-init"
 import { SchemaData } from "castmate-schema/src/schema/schema-data"
 import { timeout } from "../util/abort-utils"
 import {
+	initPluginDataEvent,
 	PluginBaseSpecification,
 	PluginSpecification,
 	Profile,
 	SchemaObject,
 	SchemaType,
 	TSchemaProperties,
+	updatePluginSettingEvent,
+	updatePluginStateEvent,
 } from "castmate-schema"
 import { usePluginLogger } from "../logging/logging"
 import { loadSecretYAMLSchema, loadYAMLSchema } from "../io/file-system"
-import { reactify } from "../reactivity/reactivity"
+import { reactify, runOnChange } from "../reactivity/reactivity"
 import { EventList } from "../util/events"
 import { PluginManager } from "./plugin-manager"
 import assert from "node:assert"
+import { useEditorEvent, useEditorRawEvent } from "../editor/editor-util"
+import { getService } from "../util/service"
 
 // interface PluginSpec {
 // 	id: string
@@ -754,18 +759,22 @@ export interface PluginImplementation<
 
 export function onLoad(loadFunc: PluginCallback, pluginId: string | undefined = initingPlugin?.spec.id) {
 	assert(pluginId)
-	PluginManager.getInstance().getPluginEvents(pluginId).loader.register(loadFunc)
+	getService(PluginManager).getPluginEvents(pluginId).loader.register(loadFunc)
 }
 
 export function onUnload(unloadFunc: PluginCallback, pluginId: string | undefined = initingPlugin?.spec.id) {
 	assert(pluginId)
-	PluginManager.getInstance().getPluginEvents(pluginId).unloader.register(unloadFunc)
+	getService(PluginManager).getPluginEvents(pluginId).unloader.register(unloadFunc)
 }
 
 export function onProfilesChanged(profilesChanged: ProfilesChangedCallback) {
 	if (!initingPlugin) throw new Error()
 	initingPlugin.events.profilesChanged.register(profilesChanged)
 }
+
+const updatePluginState = useEditorRawEvent(updatePluginStateEvent)
+const updatePluginSetting = useEditorRawEvent(updatePluginSettingEvent)
+const initPluginData = useEditorRawEvent(initPluginDataEvent)
 
 export function implementPlugin<
 	TSettings extends TSchemaProperties,
@@ -802,7 +811,7 @@ export function implementPlugin<
 			//Race the plugin init incase there's a never resolved promise
 			await init()
 
-			await PluginManager.getInstance().getPluginEvents(newPlugin.spec.id).loader.run()
+			await getService(PluginManager).getPluginEvents(newPlugin.spec.id).loader.run()
 
 			newPlugin.initialized = true
 		} catch (err) {
@@ -834,9 +843,24 @@ export function implementPlugin<
 		} catch (err) {
 			logger.error("Failed to construct default state for", plugin.id)
 		}
+
+		await setupStateReactivity()
 	}
 
-	PluginManager.getInstance().registerPlugin(newPlugin)
+	const setupStateReactivity = async () => {
+		for (const stateKey of Object.keys(newPlugin.spec.state.properties)) {
+			runOnChange(
+				() => newPlugin.state[stateKey as keyof typeof newPlugin.state],
+				() => {
+					const value = newPlugin.state[stateKey as keyof typeof newPlugin.state]
+
+					updatePluginState(newPlugin.spec.id, stateKey, value)
+				}
+			)
+		}
+	}
+
+	getService(PluginManager).registerPlugin(newPlugin)
 
 	return newPlugin
 }

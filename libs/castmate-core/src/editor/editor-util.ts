@@ -2,6 +2,8 @@ import {
 	EditorEventSpec,
 	EditorFunctionSpec,
 	MaybePromise,
+	RawEditorEventSpec,
+	RawEditorFunctionSpec,
 	Schema,
 	SchemaArgTypes,
 	SchemaFunction,
@@ -32,10 +34,11 @@ function getIpcEditorCommunicator(window: BrowserWindow): IPCEditorCommunicator 
 	}
 }
 
-const EditorService = Service(
+export const EditorService = Service(
 	class {
 		private editors = new Map<string, EditorCommunicator>()
-		private functions = new Map<string, EditorFunctionSpec>()
+		private functions = new Map<string, EditorFunctionImpl>()
+		private rawFunctions = new Map<string, RawEditorFunctionImpl>()
 
 		get allEditors() {
 			//TODO: Enable the new range map()?
@@ -59,11 +62,25 @@ const EditorService = Service(
 			if (this.functions.has(slug)) {
 				throw new Error(`${func.spec.plugin}'s ${func.spec.id} editor function already exists.`)
 			}
+			this.functions.set(slug, func)
 		}
 
 		unregisterEditorFunc(func: EditorFunctionImpl) {
 			const slug = `${func.spec.plugin}_${func.spec.id}`
 			this.functions.delete(slug)
+		}
+
+		registerRawEditorFunc(func: RawEditorFunctionImpl) {
+			const slug = `${func.spec.plugin}_${func.spec.id}`
+			if (this.functions.has(slug)) {
+				throw new Error(`${func.spec.plugin}'s ${func.spec.id} editor function already exists.`)
+			}
+			this.rawFunctions.set(slug, func)
+		}
+
+		unregisterRawEditorFunc(func: RawEditorFunctionImpl) {
+			const slug = `${func.spec.plugin}_${func.spec.id}`
+			this.rawFunctions.delete(slug)
 		}
 	}
 )
@@ -92,13 +109,36 @@ export function implementEditorFunction<TEditorFunc extends EditorFunctionSpec>(
 	EditorService.getInstance().registerEditorFunc(func)
 }
 
-type EditorEventCallerFunc<TEditorEvent extends EditorEventSpec<Schema[]>> = (...args: SchemaArgTypes<TEditorEvent["schema"]>) => Promise<void> 
+type EditorEventCallerFunc<TEditorEvent extends EditorEventSpec<Schema[]>> = (
+	...args: SchemaArgTypes<TEditorEvent["schema"]>
+) => Promise<void>
 
 type EditorEventCaller<TEditorEvent extends EditorEventSpec<Schema[]>> = EditorEventCallerFunc<TEditorEvent> & {
 	send(comm: EditorCommunicator, ...args: SchemaArgTypes<TEditorEvent["schema"]>): Promise<void>
 }
 
-export function useEditorEvent<TEditorEvent extends EditorEventSpec<Schema[]>(spec: TEditorEvent) : EditorEventCaller<TEditorEvent> {
+interface RawEditorFunctionImpl<TFunc extends (...args: any[]) => any = (...args: any[]) => any> {
+	spec: RawEditorEventSpec<TFunc>
+	handler: (...args: Parameters<TFunc>) => MaybePromise<ReturnType<TFunc>>
+}
+
+export function implementRawEditorFunc<TFunc extends (...args: any[]) => any>(
+	spec: RawEditorEventSpec<TFunc>,
+	handler: (...args: Parameters<TFunc>) => MaybePromise<ReturnType<TFunc>>
+) {
+	const func = {
+		spec,
+		handler,
+	} as RawEditorFunctionImpl
+
+	//TODO: onLoad() and onUnload()????
+
+	EditorService.getInstance().registerRawEditorFunc(func)
+}
+
+export function useEditorEvent<TEditorEvent extends EditorEventSpec<Schema[]>>(
+	spec: TEditorEvent
+): EditorEventCaller<TEditorEvent> {
 	const result = async (...args: SchemaArgTypes<TEditorEvent["schema"]>) => {
 		const promises = EditorService.getInstance().allEditors.map((comm) => {
 			//TODO: Serialize args
@@ -113,5 +153,21 @@ export function useEditorEvent<TEditorEvent extends EditorEventSpec<Schema[]>(sp
 	}
 
 	return result
+}
 
+export function useEditorRawEvent<TFunc extends (...args: any[]) => void>(spec: RawEditorEventSpec<TFunc>) {
+	const result = async (...args: Parameters<TFunc>) => {
+		const promises = EditorService.getInstance().allEditors.map((comm) => {
+			//TODO: Serialize args
+			return comm.sendEvent(spec.plugin, spec.id, ...args)
+		})
+
+		await Promise.allSettled(promises)
+	}
+
+	result.send = async (comm: EditorCommunicator, ...args: Parameters<TFunc>) => {
+		await comm.sendEvent(spec.plugin, spec.id, ...args)
+	}
+
+	return result
 }

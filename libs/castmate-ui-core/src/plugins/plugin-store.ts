@@ -1,9 +1,6 @@
 import { defineStore } from "pinia"
 
 import {
-	IPCActionDefinition,
-	IPCPluginDefinition,
-	IPCTriggerDefinition,
 	Schema,
 	Color,
 	mapKeys,
@@ -12,197 +9,22 @@ import {
 	FlowAction,
 	AnyAction,
 	ActionInfo,
-	IPCDurationConfig,
-	IPCSettingsDefinition,
-	IPCStateDefinition,
+	TSchemaProperties,
+	SchemaObject,
+	SchemaType,
+	PluginSpecification,
+	PluginBaseSpecification,
+	updatePluginStateEvent,
+	updatePluginSettingEvent,
+	getSchemaMetaData,
+	initPluginDataEvent,
 } from "castmate-schema"
 
 import { computed, ref, unref, type MaybeRefOrGetter, toValue, Component, markRaw, onMounted, onUnmounted } from "vue"
 
 import * as chromatism from "chromatism2"
-import { handleIpcMessage, useIpcCaller } from "../util/electron"
-import { ipcParseDynamicSchema, ipcParseSchema } from "../util/data"
 import { nanoid } from "nanoid/non-secure"
-
-interface BaseActionDefinition {
-	id: string
-	name: string
-	description?: string
-	icon?: string
-	color?: Color
-}
-
-interface RegularActionDefinition extends BaseActionDefinition {
-	type: "regular"
-	actionComponent?: Component
-	componentExtraProps?: any
-	duration: IPCDurationConfig
-	config: Schema
-	result?: SchemaObj
-}
-
-interface FlowActionDefinition extends BaseActionDefinition {
-	type: "flow"
-	config: Schema
-	flowConfig?: Schema
-	flowComponent?: Component
-	flowComponentExtraProps?: any
-}
-
-export type ActionDefinition = RegularActionDefinition | FlowActionDefinition
-
-function ipcParseActionDefinition(def: IPCActionDefinition): ActionDefinition {
-	if (def.type == "flow") {
-		return {
-			type: "flow",
-			id: def.id,
-			name: def.name,
-			description: def.description,
-			color: def.color,
-			icon: def.icon,
-			config: ipcParseSchema(def.config),
-			...(def.flowConfig ? { flowConfig: ipcParseSchema(def.flowConfig) } : {}),
-		}
-	} else if (def.type == "regular") {
-		const resultSchema = def.result ? ipcParseSchema(def.result) : undefined
-
-		if (resultSchema && !(resultSchema.type == Object && "properties" in resultSchema)) {
-			throw new Error("Results Must be Objects")
-		}
-
-		return {
-			type: "regular",
-			id: def.id,
-			name: def.name,
-			description: def.description,
-			color: def.color,
-			icon: def.icon,
-			config: ipcParseSchema(def.config),
-			duration: def.duration,
-			...(resultSchema ? { result: resultSchema } : {}),
-		}
-	}
-	throw new Error("Parse Error?")
-}
-
-interface TriggerDefinition {
-	readonly id: string
-	readonly name: string
-	readonly description?: string
-	readonly icon?: string
-	readonly color: Color
-	readonly version: string
-	config: Schema
-	context: Schema | ((config: any) => Promise<Schema>)
-	headerComponent?: Component
-}
-
-function ipcParseTriggerDefinition(def: IPCTriggerDefinition): TriggerDefinition {
-	const triggerDef: TriggerDefinition = {
-		id: def.id,
-		name: def.name,
-		description: def.description,
-		icon: def.icon,
-		color: def.color,
-		version: def.version,
-		config: ipcParseSchema(def.config),
-		context: ipcParseDynamicSchema(def.context),
-	}
-
-	return triggerDef
-}
-
-export interface SettingValue {
-	type: "value"
-	schema: Schema
-	value: any
-}
-
-export interface SettingSecret {
-	type: "secret"
-	schema: Schema
-	value: any
-}
-
-export interface ResourceSetting {
-	type: "resource"
-	resourceId: string
-	name: string
-	description?: string
-}
-
-export interface ComponentSetting {
-	type: "component"
-	component?: Component
-}
-
-export type SettingDefinition = SettingValue | ResourceSetting | SettingSecret | ComponentSetting
-
-function ipcParseSettingsDefinition(def: IPCSettingsDefinition): SettingDefinition {
-	if (def.type == "resource") {
-		return def
-	} else if (def.type == "value") {
-		return {
-			type: "value",
-			schema: ipcParseSchema(def.schema),
-			value: def.value,
-		}
-	} else if (def.type == "secret") {
-		return {
-			type: "secret",
-			schema: ipcParseSchema(def.schema),
-			value: def.value,
-		}
-	} else if (def.type == "component") {
-		return {
-			type: "component",
-		}
-	}
-	throw new Error()
-}
-
-export interface StateDefinition {
-	schema: Schema
-	value: any
-}
-
-function ipcParseStateDefinition(def: IPCStateDefinition): StateDefinition {
-	return {
-		schema: ipcParseSchema(def.schema),
-		value: def.value,
-	}
-}
-
-interface PluginDefinition {
-	readonly id: string
-	readonly name: string
-	readonly description?: string
-	readonly icon: string
-	readonly color: Color
-	readonly version: string
-
-	actions: Record<string, ActionDefinition>
-	triggers: Record<string, TriggerDefinition>
-	settings: Record<string, SettingDefinition>
-	state: Record<string, StateDefinition>
-}
-
-function ipcParsePluginDefinition(def: IPCPluginDefinition): PluginDefinition {
-	const pluginDef = {
-		id: def.id,
-		name: def.name,
-		description: def.description,
-		icon: def.icon,
-		color: def.color,
-		version: def.version,
-		actions: mapKeys(def.actions, (key, value) => ipcParseActionDefinition(value)),
-		triggers: mapKeys(def.triggers, (key, value) => ipcParseTriggerDefinition(value)),
-		settings: mapKeys(def.settings, (key, value) => ipcParseSettingsDefinition(value)),
-		state: mapKeys(def.state, (key, value) => ipcParseStateDefinition(value)),
-	}
-
-	return pluginDef
-}
+import { handleEditorEvent, handleRawEditorEvent } from "../editor/editor-ui-util"
 
 export interface SettingsChange {
 	pluginId: string
@@ -210,213 +32,262 @@ export interface SettingsChange {
 	value: any
 }
 
+interface RendererPluginBase {
+	spec: PluginBaseSpecification
+	settings: Record<string, any>
+	secrets: Record<string, any>
+	state: Record<string, any>
+	loaded: boolean
+}
+
+interface RendererPlugin<
+	TSettings extends TSchemaProperties,
+	TSecrets extends TSchemaProperties,
+	TState extends TSchemaProperties
+> extends RendererPluginBase {
+	spec: PluginSpecification<TSettings, TSecrets, TState>
+	settings: SchemaType<SchemaObject<TSettings>>
+	secrets: SchemaType<SchemaObject<TSecrets>>
+	state: SchemaType<SchemaObject<TState>>
+}
+
 export type SettingUpdateWatcher = (plugin: string, setting: string, value: any) => any
 
 export const usePluginStore = defineStore("plugins", () => {
-	const pluginMap = ref<Map<string, PluginDefinition>>(new Map())
-
-	const getPluginIds = useIpcCaller<() => string[]>("plugins", "getPluginIds")
-	const getPlugin = useIpcCaller<(id: string) => IPCPluginDefinition>("plugins", "getPlugin")
-	const doSettingsUpdate = useIpcCaller<(changes: SettingsChange[]) => boolean>("plugins", "updateSettings")
+	const pluginMap = ref<Map<string, RendererPluginBase>>(new Map())
 
 	const settingsUpdateWatchers = new Array<SettingUpdateWatcher>()
 
 	async function initialize() {
-		handleIpcMessage("plugins", "registerPlugin", (event, plugin: IPCPluginDefinition) => {
-			//console.log("Registering Late Plugin", plugin.id)
-			pluginMap.value.set(plugin.id, ipcParsePluginDefinition(plugin))
-		})
+		// handleIpcMessage("plugins", "updateSettings", (event, id: string, settingId: string, value: any) => {
+		// 	const plugin = pluginMap.value.get(id)
+		// 	if (plugin) {
+		// 		const setting = plugin.settings[settingId]
+		// 		if (setting?.type == "value" || setting?.type == "secret") {
+		// 			setting.value = value
+		// 			for (const watcher of settingsUpdateWatchers) {
+		// 				watcher(id, settingId, value)
+		// 			}
+		// 		}
+		// 	}
+		// })
+		handleRawEditorEvent(initPluginDataEvent, async (pluginId, settings, secrets, state) => {
+			const plugin = pluginMap.value.get(pluginId)
 
-		handleIpcMessage("plugins", "unregisterPlugin", (event, id: string) => {
-			pluginMap.value.delete(id)
-		})
+			if (!plugin) return
 
-		handleIpcMessage("plugins", "updateSettings", (event, id: string, settingId: string, value: any) => {
-			const plugin = pluginMap.value.get(id)
-			if (plugin) {
-				const setting = plugin.settings[settingId]
-				if (setting?.type == "value" || setting?.type == "secret") {
-					setting.value = value
-					for (const watcher of settingsUpdateWatchers) {
-						watcher(id, settingId, value)
-					}
-				}
+			for (const settingKey of Object.keys(plugin.spec.settings.properties)) {
+				const settingType = getSchemaMetaData(plugin.spec.settings.properties[settingKey].type)
+				//DESERIALIZE
+				plugin.settings[settingKey] = settings[settingKey]
 			}
+
+			plugin.loaded = true
 		})
 
-		handleIpcMessage("plugins", "updateState", (event, id: string, stateId: string, value: any) => {
-			const plugin = pluginMap.value.get(id)
+		handleRawEditorEvent(updatePluginStateEvent, async (pluginId, stateId, value) => {
+			const plugin = pluginMap.value.get(pluginId)
 			if (plugin) {
 				const state = plugin.state[stateId]
+				const stateType = getSchemaMetaData(plugin.spec.state.properties[stateId].type)
+
+				//TODO: Deserialize
+
 				if (state) {
 					state.value = value
 				}
 			}
 		})
 
-		handleIpcMessage(
-			"plugins",
-			"setStateDef",
-			(event, pluginId: string, stateId: string, stateDef: IPCStateDefinition) => {
-				const plugin = pluginMap.value.get(pluginId)
-				if (plugin) {
-					plugin.state[stateId] = ipcParseStateDefinition(stateDef)
-				}
-			}
-		)
-
-		handleIpcMessage("plugins", "deleteStateDef", (event, pluginId: string, stateId: string) => {
+		handleRawEditorEvent(updatePluginSettingEvent, async (pluginId, settingId, value) => {
 			const plugin = pluginMap.value.get(pluginId)
 			if (plugin) {
-				delete plugin.state[stateId]
+				const state = plugin.settings[settingId]
+				if (state) {
+					state.value = value
+				}
 			}
 		})
 
-		const ids = await getPluginIds()
-		console.log("Received Plugin Ids", ids)
+		// handleIpcMessage(
+		// 	"plugins",
+		// 	"setStateDef",
+		// 	(event, pluginId: string, stateId: string, stateDef: IPCStateDefinition) => {
+		// 		const plugin = pluginMap.value.get(pluginId)
+		// 		if (plugin) {
+		// 			plugin.state[stateId] = ipcParseStateDefinition(stateDef)
+		// 		}
+		// 	}
+		// )
 
-		const plugins = await Promise.allSettled(ids.map((id) => getPlugin(id)))
-
-		for (let i = 0; i < ids.length; ++i) {
-			const pluginResult = plugins[i]
-			if (pluginResult.status == "fulfilled") {
-				pluginMap.value.set(ids[i], ipcParsePluginDefinition(pluginResult.value))
-			} else {
-				console.error("Failed Loading ", ids[i])
-				console.error(pluginResult.reason)
-			}
-		}
-
-		console.log("Loaded All Plugins", JSON.stringify(ids))
+		// handleIpcMessage("plugins", "deleteStateDef", (event, pluginId: string, stateId: string) => {
+		// 	const plugin = pluginMap.value.get(pluginId)
+		// 	if (plugin) {
+		// 		delete plugin.state[stateId]
+		// 	}
+		// })
 	}
 
-	function getAction(selection: ActionSelection): ActionDefinition | undefined {
-		if (!selection.plugin || !selection.action) return undefined
-		return pluginMap.value.get(selection.plugin)?.actions?.[selection.action]
+	function registerPlugin<
+		TSettings extends TSchemaProperties,
+		TSecrets extends TSchemaProperties,
+		TState extends TSchemaProperties
+	>(spec: PluginSpecification<TSettings, TSecrets, TState>) {
+		const plugin: RendererPlugin<TSettings, TSecrets, TState> = {
+			spec,
+			//@ts-ignore - filled in by load
+			settings: {},
+			//@ts-ignore - filled in by load
+			secrets: {},
+			//@ts-ignore - filled in by load
+			state: {},
+			loaded: false,
+		}
+
+		pluginMap.value.set(spec.id, plugin)
 	}
 
-	async function createAction(selection: ActionSelection): Promise<AnyAction | undefined> {
-		if (!selection.plugin || !selection.action) return undefined
-		const action = getAction(selection)
-		if (!action) return undefined
+	function getRendererPlugin<
+		TSettings extends TSchemaProperties,
+		TSecrets extends TSchemaProperties,
+		TState extends TSchemaProperties
+	>(spec: PluginSpecification<TSettings, TSecrets, TState>) {
+		const plugin = pluginMap.value.get(spec.id)
 
-		const result: Record<string, any> = {
-			id: nanoid(),
-			plugin: selection.plugin,
-			action: selection.action,
-			config: await constructDefault(action.config),
+		if (!plugin) {
+			throw new Error("Unknown plugin")
 		}
 
-		if (action.type == "flow") {
-			result.subFlows = [
-				{
-					id: nanoid(),
-					config: action.flowConfig ? await constructDefault(action.flowConfig) : {},
-					actions: [],
-				},
-				{
-					id: nanoid(),
-					config: action.flowConfig ? await constructDefault(action.flowConfig) : {},
-					actions: [],
-				},
-			]
-		}
-
-		if (action.type == "regular" && action.result) {
-			result.resultMapping = {} as Record<string, string>
-
-			for (const prop of Object.keys(action.result.properties)) {
-				result.resultMapping[prop] = prop
-			}
-		}
-
-		// if (action.type == "time" || action.type == "time-indefinite") {
-		// 	result.offsets = []
-		// }
-
-		return result as AnyAction
+		return plugin as RendererPlugin<TSettings, TSecrets, TState>
 	}
 
-	function setActionComponent<Props, C extends Component<Props>>(
-		plugin: string,
-		action: string,
-		component: C,
-		extraProps?: Partial<Props>
-	) {
-		const pluginDef = pluginMap.value.get(plugin)
-		if (!pluginDef) {
-			console.error(`Unknown plugin ${plugin}`)
-			return
-		}
-		const actionDef = pluginDef.actions[action]
-		if (!actionDef) {
-			console.error(`Unknown action ${plugin}:${action}`)
-			return
-		}
-		if (actionDef.type != "regular") return
-		actionDef.actionComponent = markRaw(component)
-		actionDef.componentExtraProps = extraProps
-		console.log("Set Action Component", plugin, action, component)
-	}
+	// function getAction(selection: ActionSelection): ActionDefinition | undefined {
+	// 	if (!selection.plugin || !selection.action) return undefined
+	// 	return pluginMap.value.get(selection.plugin)?.actions?.[selection.action]
+	// }
 
-	function setFlowActionComponent<Props, C extends Component<Props>>(
-		plugin: string,
-		action: string,
-		component: C,
-		extraProps?: Partial<Props>
-	) {
-		const pluginDef = pluginMap.value.get(plugin)
-		if (!pluginDef) {
-			console.error(`Unknown plugin ${plugin}`)
-			return
-		}
-		const actionDef = pluginDef.actions[action]
-		if (!actionDef) {
-			console.error(`Unknown action ${plugin}:${action}`)
-			return
-		}
-		if (actionDef.type != "flow") return
-		actionDef.flowComponent = markRaw(component)
-		actionDef.flowComponentExtraProps = extraProps
-		console.log("Set Flow Action Component", plugin, action, component)
-	}
+	// async function createAction(selection: ActionSelection): Promise<AnyAction | undefined> {
+	// 	if (!selection.plugin || !selection.action) return undefined
+	// 	const action = getAction(selection)
+	// 	if (!action) return undefined
 
-	function setTriggerHeaderComponent(plugin: string, trigger: string, component: Component) {
-		const pluginDef = pluginMap.value.get(plugin)
-		if (!pluginDef) {
-			console.error(`Unknown plugin ${plugin}`)
-			return
-		}
-		const triggerDef = pluginDef.triggers[trigger]
-		if (!triggerDef) {
-			console.error(`Unknown trigger ${plugin}:${trigger}`)
-			return
-		}
-		triggerDef.headerComponent = markRaw(component)
-	}
+	// 	const result: Record<string, any> = {
+	// 		id: nanoid(),
+	// 		plugin: selection.plugin,
+	// 		action: selection.action,
+	// 		config: await constructDefault(action.config),
+	// 	}
 
-	function setSettingComponent(plugin: string, key: string, component: Component) {
-		const pluginDef = pluginMap.value.get(plugin)
-		if (!pluginDef) {
-			console.error(`Unknown plugin ${plugin}`)
-			return
-		}
+	// 	if (action.type == "flow") {
+	// 		result.subFlows = [
+	// 			{
+	// 				id: nanoid(),
+	// 				config: action.flowConfig ? await constructDefault(action.flowConfig) : {},
+	// 				actions: [],
+	// 			},
+	// 			{
+	// 				id: nanoid(),
+	// 				config: action.flowConfig ? await constructDefault(action.flowConfig) : {},
+	// 				actions: [],
+	// 			},
+	// 		]
+	// 	}
 
-		const settingDef = pluginDef.settings[key]
-		if (settingDef?.type != "component") {
-			console.error(`${key} is not a component setting`)
-			return
-		}
+	// 	if (action.type == "regular" && action.result) {
+	// 		result.resultMapping = {} as Record<string, string>
 
-		console.log("Setting Component", plugin, key, component)
-		settingDef.component = markRaw(component)
-	}
+	// 		for (const prop of Object.keys(action.result.properties)) {
+	// 			result.resultMapping[prop] = prop
+	// 		}
+	// 	}
 
-	///
+	// 	// if (action.type == "time" || action.type == "time-indefinite") {
+	// 	// 	result.offsets = []
+	// 	// }
 
-	async function updateSettings(changes: SettingsChange[]) {
-		await doSettingsUpdate(changes)
-	}
+	// 	return result as AnyAction
+	// }
+
+	// function setActionComponent<Props, C extends Component<Props>>(
+	// 	plugin: string,
+	// 	action: string,
+	// 	component: C,
+	// 	extraProps?: Partial<Props>
+	// ) {
+	// 	const pluginDef = pluginMap.value.get(plugin)
+	// 	if (!pluginDef) {
+	// 		console.error(`Unknown plugin ${plugin}`)
+	// 		return
+	// 	}
+	// 	const actionDef = pluginDef.actions[action]
+	// 	if (!actionDef) {
+	// 		console.error(`Unknown action ${plugin}:${action}`)
+	// 		return
+	// 	}
+	// 	if (actionDef.type != "regular") return
+	// 	actionDef.actionComponent = markRaw(component)
+	// 	actionDef.componentExtraProps = extraProps
+	// 	console.log("Set Action Component", plugin, action, component)
+	// }
+
+	// function setFlowActionComponent<Props, C extends Component<Props>>(
+	// 	plugin: string,
+	// 	action: string,
+	// 	component: C,
+	// 	extraProps?: Partial<Props>
+	// ) {
+	// 	const pluginDef = pluginMap.value.get(plugin)
+	// 	if (!pluginDef) {
+	// 		console.error(`Unknown plugin ${plugin}`)
+	// 		return
+	// 	}
+	// 	const actionDef = pluginDef.actions[action]
+	// 	if (!actionDef) {
+	// 		console.error(`Unknown action ${plugin}:${action}`)
+	// 		return
+	// 	}
+	// 	if (actionDef.type != "flow") return
+	// 	actionDef.flowComponent = markRaw(component)
+	// 	actionDef.flowComponentExtraProps = extraProps
+	// 	console.log("Set Flow Action Component", plugin, action, component)
+	// }
+
+	// function setTriggerHeaderComponent(plugin: string, trigger: string, component: Component) {
+	// 	const pluginDef = pluginMap.value.get(plugin)
+	// 	if (!pluginDef) {
+	// 		console.error(`Unknown plugin ${plugin}`)
+	// 		return
+	// 	}
+	// 	const triggerDef = pluginDef.triggers[trigger]
+	// 	if (!triggerDef) {
+	// 		console.error(`Unknown trigger ${plugin}:${trigger}`)
+	// 		return
+	// 	}
+	// 	triggerDef.headerComponent = markRaw(component)
+	// }
+
+	// function setSettingComponent(plugin: string, key: string, component: Component) {
+	// 	const pluginDef = pluginMap.value.get(plugin)
+	// 	if (!pluginDef) {
+	// 		console.error(`Unknown plugin ${plugin}`)
+	// 		return
+	// 	}
+
+	// 	const settingDef = pluginDef.settings[key]
+	// 	if (settingDef?.type != "component") {
+	// 		console.error(`${key} is not a component setting`)
+	// 		return
+	// 	}
+
+	// 	console.log("Setting Component", plugin, key, component)
+	// 	settingDef.component = markRaw(component)
+	// }
+
+	// ///
+
+	// async function updateSettings(changes: SettingsChange[]) {
+	// 	await doSettingsUpdate(changes)
+	// }
 
 	function registerSettingWatcher(watcher: SettingUpdateWatcher) {
 		settingsUpdateWatchers.push(watcher)
@@ -431,13 +302,13 @@ export const usePluginStore = defineStore("plugins", () => {
 	return {
 		pluginMap: computed(() => pluginMap.value),
 		initialize,
-		createAction,
-		getAction,
-		setActionComponent,
-		setFlowActionComponent,
-		setSettingComponent,
-		setTriggerHeaderComponent,
-		updateSettings,
+		// createAction,
+		// getAction,
+		// setActionComponent,
+		// setFlowActionComponent,
+		// setSettingComponent,
+		// setTriggerHeaderComponent,
+		// updateSettings,
 		registerSettingWatcher,
 		unregisterSettingWatcher,
 	}
@@ -646,13 +517,13 @@ export function useFullSettings() {
 	return computed(() => {
 		const fullSettings: Record<string, Record<string, any>> = {}
 
-		for (const plugin of pluginStore.pluginMap.values()) {
-			fullSettings[plugin.id] = {}
+		// for (const plugin of pluginStore.pluginMap.values()) {
+		// 	fullSettings[plugin.id] = {}
 
-			for (const [key, state] of Object.entries(plugin.settings)) {
-				if (state.type == "value" || state.type == "secret") fullSettings[plugin.id][key] = state.value
-			}
-		}
+		// 	for (const [key, state] of Object.entries(plugin.settings)) {
+		// 		if (state.type == "value" || state.type == "secret") fullSettings[plugin.id][key] = state.value
+		// 	}
+		// }
 
 		return fullSettings
 	})

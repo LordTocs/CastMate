@@ -21,6 +21,7 @@ import { PluginManager } from "../plugins/plugin-manager"
 // import { templateSchema } from "../templates/template"
 import { usePluginLogger } from "../logging/logging"
 import { ignoreReactivity } from "../reactivity/reactivity"
+import { getService } from "./service"
 
 const logger = usePluginLogger("booleans")
 
@@ -29,7 +30,7 @@ function getExpressionValue(expression: ExpressionValue) {
 		if (!expression.plugin) return undefined
 		if (!expression.state) return undefined
 
-		const state = PluginManager.getInstance().getState(expression.plugin, expression.state)
+		const state = getService(PluginManager).getState(expression.plugin, expression.state)
 		return state?.ref.value
 	} else if (expression.type == "value") {
 		return expression.value
@@ -42,7 +43,7 @@ function getExpressionSchema(expression: ExpressionValue): Schema | undefined {
 		if (!expression.plugin) return undefined
 		if (!expression.state) return undefined
 
-		const state = PluginManager.getInstance().getState(expression.plugin, expression.state)
+		const state = getService(PluginManager).getState(expression.plugin, expression.state)
 		return state?.schema
 	}
 }
