@@ -5,8 +5,8 @@ import {
 	autoRerun,
 	defineIPCFunc,
 	defineIPCFuncRaw,
+	getService,
 	ignoreReactivity,
-	remoteTemplateSchema,
 	usePluginLogger,
 } from "castmate-core"
 import { DashboardWidgetManager } from "./dashboard-widgets"
@@ -61,7 +61,7 @@ export async function createDashboardConfigEvaluator(
 												config: await remoteTemplateSchema(
 													w.config,
 													widgetType.options.config,
-													PluginManager.getInstance().state
+													getService(PluginManager).state
 												),
 											}
 										})
