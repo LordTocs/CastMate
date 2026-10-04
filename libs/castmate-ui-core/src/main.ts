@@ -91,7 +91,6 @@ export { default as SatelliteResourceSlotBindingEdit } from "./components/satell
 
 export * from "./components/data/DataInputTypes"
 
-export * from "./util/diff"
 export * from "./util/docking"
 export * from "./util/document"
 export * from "./util/data"

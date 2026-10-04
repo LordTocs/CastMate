@@ -38,6 +38,7 @@ export * from "./util/type-helpers"
 export * from "./util/promise-helpers"
 export * from "./util/substring-helper"
 export * from "./util/object-helpers"
+export * from "./util/diff"
 
 export * from "./template/template-utils"
 export * from "./template/remote-templates"

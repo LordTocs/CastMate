@@ -2,7 +2,7 @@ import { isObject } from "@vueuse/core"
 import _cloneDeep from "lodash/cloneDeep"
 import _isEqual from "lodash/isEqual"
 import { DiffOpCode, iterDiff } from "./myers-diff"
-import { joinDataPath } from "./data-binding"
+import { joinDataPath } from "../data/data-paths"
 
 export type DataDiff = GenericDiff<any> | ArrayDiff | ObjectDiff
 
