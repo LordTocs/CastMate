@@ -11,7 +11,7 @@ import { SchemaDuration } from "castmate-schema"
 import DurationField from "../base-components/DurationField.vue"
 import { ref, useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{

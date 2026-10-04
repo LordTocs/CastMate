@@ -26,7 +26,7 @@ import { computed, onMounted, ref, useModel, watch } from "vue"
 import PColorPicker, { ColorPickerChangeEvent } from "primevue/colorpicker"
 import { SharedDataInputProps } from "../DataInputTypes"
 import DropDownPanel from "../base-components/DropDownPanel.vue"
-import { useDataBinding, useDataUIBinding } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding } from "../../../editor/data-binding.ts"
 
 import CColorPicker from "../base-components/CColorPicker.vue"
 

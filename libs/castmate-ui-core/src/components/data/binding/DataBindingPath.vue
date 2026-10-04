@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { useSlots } from "vue"
-import { provideLocalPath } from "../../../util/data-binding"
+import { provideLocalPath } from "../../../editor/data-binding"
 
 const props = defineProps<{
 	localPath?: string

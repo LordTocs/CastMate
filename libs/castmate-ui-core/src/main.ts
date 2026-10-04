@@ -102,7 +102,7 @@ export * from "./util/arrays"
 export * from "./util/generic-login"
 export * from "./util/init-store"
 export * from "./util/events"
-export * from "./util/data-binding"
+
 export * from "./components/drag/OrderedTemplateRefs"
 
 export * from "./plugins/plugin-store"
@@ -119,6 +119,7 @@ export * from "./components/stream-plan/stream-plan-types"
 export * from "./viewer-data/viewer-data-store"
 
 export * from "./editor/editor-ui-util.ts"
+export * from "./editor/data-binding.ts"
 
 export * from "./satellite/satellite-connection"
 export * from "./satellite/satellite-resources"

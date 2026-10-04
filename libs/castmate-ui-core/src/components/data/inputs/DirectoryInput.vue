@@ -11,7 +11,7 @@ import { SharedDataInputProps } from "../DataInputTypes"
 import { InputBox, useIpcCaller, usePropagationStop } from "../../../main"
 import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{

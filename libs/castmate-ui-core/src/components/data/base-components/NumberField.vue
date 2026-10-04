@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue"
-import { useCommitUndo, useDataUIBinding, useTextUndoCommitter } from "../../../util/data-binding"
+import { useCommitUndo, useDataUIBinding, useTextUndoCommitter } from "../../../editor/data-binding"
 
 import PInputText from "primevue/inputtext"
 

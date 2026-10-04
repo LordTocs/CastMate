@@ -47,7 +47,7 @@ import { type SchemaBase, type SchemaNumber } from "castmate-schema"
 import { computed, ref, onMounted, useModel, watch, useTemplateRef } from "vue"
 import EnumInput from "../base-components/EnumInput.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { useCommitUndo, useDataBinding } from "../../../util/data-binding"
+import { useCommitUndo, useDataBinding } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{

@@ -66,7 +66,6 @@ import { useClickDragRect, usePropagationStop } from "../../../util/dom"
 import { emit } from "process"
 import InputBox from "./InputBox.vue"
 import { useEventListener } from "@vueuse/core"
-import { useDataUIBinding } from "../../../util/data-binding"
 
 const props = defineProps<{
 	modelValue: Duration | undefined

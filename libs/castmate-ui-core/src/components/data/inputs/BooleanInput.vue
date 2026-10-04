@@ -12,7 +12,7 @@ import PCheckBox from "primevue/checkbox"
 import PInputGroup from "primevue/inputgroup"
 import { ref, useModel } from "vue"
 import { getDataLabel, hasDataLabel, SharedDataInputProps } from "../DataInputTypes"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{

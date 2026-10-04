@@ -40,7 +40,7 @@ import FilterInputBox from "../base-components/FilterInputBox.vue"
 
 import MediaDropDown from "../base-components/media/MediaDropDown.vue"
 import { MediaFile } from "castmate-schema"
-import { useDataBinding, useUndoCommitter } from "../../../util/data-binding"
+import { useDataBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{

@@ -55,7 +55,7 @@ import { TemplateToggle } from "../../../main"
 import EnumInput from "../base-components/EnumInput.vue"
 import { computed, onMounted, ref, useModel } from "vue"
 import PTextArea from "primevue/textarea"
-import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../../editor/data-binding.ts"
 import { useEventListener } from "@vueuse/core"
 
 const props = defineProps<

@@ -39,7 +39,7 @@ import { SharedDataInputProps, defaultStringIsTemplate, getDataLabel, hasDataLab
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import DataInputBaseMenu from "../base-components/DataInputBaseMenu.vue"
 import PInputGroup from "primevue/inputgroup"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../util/data-binding"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{
