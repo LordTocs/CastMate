@@ -4,7 +4,7 @@
 		<toast position="bottom-left" style="width: 17rem" />
 		<!--We need p-input-text to be mounted to get their styles loaded-->
 		<p-input-text v-show="false" />
-		<main-layout />
+		<main-app />
 		<!-- <div class="load-row" v-else>
 		
 			<h3>Loading CastMate</h3>
@@ -31,6 +31,7 @@ import {
 
 import PConfirmDialog from "primevue/confirmdialog"
 
+import MainApp from "./components/scaffold/MainApp.vue"
 import { setupGenericLoginService, useInitStore } from "castmate-ui-core"
 import { onMounted } from "vue"
 import { useDialog } from "primevue/usedialog"
