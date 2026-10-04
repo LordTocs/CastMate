@@ -3,7 +3,6 @@
 		:is="documentComponent"
 		v-if="documentComponent && document"
 		v-model="documentData"
-		v-model:view="documentView"
 		tabindex="-1"
 		:pageData="pageData"
 	/>
@@ -11,35 +10,28 @@
 
 <script setup lang="ts">
 import { computed, watch } from "vue"
-import {
-	provideBaseDataBinding,
-	provideDocument,
-	useDocument,
-	useDocumentComponent,
-	useDocumentStore,
-} from "../../main"
+import { provideBaseDataBinding, useDocument, useDocumentComponent } from "../../main"
 
 const props = defineProps<{
 	pageData: { documentId: string; documentType: string } & Record<string, any>
 }>()
 
 const document = useDocument(() => props.pageData.documentId)
-const documentStore = useDocumentStore()
-const documentComponent = useDocumentComponent(document.value?.type)
-provideDocument(() => props.pageData.documentId)
+const documentComponent = useDocumentComponent(document.value?.plugin, document.value?.type)
+//provideDocument(() => props.pageData.documentId)
 
-provideBaseDataBinding(() => document.value?.view)
+provideBaseDataBinding(() => document.value)
 
 const documentData = computed({
 	get() {
-		return document.value?.data
+		return document.value?.documentData
 	},
 	set(data) {
 		if (!document.value) return
 		if (!data) return
 
 		document.value.dirty = true
-		document.value.data = data
+		document.value.documentData = data
 	},
 })
 
@@ -52,17 +44,4 @@ watch(
 	},
 	{ deep: true }
 )
-
-const documentView = computed({
-	get() {
-		return document.value?.viewData
-	},
-	set(data) {
-		if (!document.value) return
-
-		if (!data) return
-
-		document.value.viewData = data
-	},
-})
 </script>

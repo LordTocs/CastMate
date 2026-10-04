@@ -10,7 +10,7 @@ import { nanoid } from "nanoid/non-secure"
 // import { SequenceResolvers } from "../queue-system/sequence"
 // import { isFunction, now } from "lodash"
 import { usePluginLogger } from "../logging/logging"
-import { SchemaData } from "castmate-schema/src/schema/schema-data"
+import { SchemaData } from "castmate-schema"
 import { implementDocumentResource } from "../resources/file-resource"
 
 export const Profiles = implementDocumentResource(ProfileResourceSpec, {

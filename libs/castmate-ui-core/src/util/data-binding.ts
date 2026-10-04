@@ -16,10 +16,17 @@ import {
 	queuePostFlushCb,
 } from "vue"
 import { provideLocal, injectLocal, useEventListener, toReactive } from "@vueuse/core"
-import { applyDataDiff, applyInvDataDiff, computeDataDiff, DataDiff, getInvDataDiffPath } from "./diff"
 import { nanoid } from "nanoid/non-secure"
 
 import _cloneDeep from "lodash/cloneDeep"
+import {
+	DataEditor,
+	joinDataPath,
+	applyDataDiff,
+	applyInvDataDiff,
+	computeDataDiff,
+	getInvDataDiffPath,
+} from "castmate-schema"
 ///////////////////////////////////////
 ///////////////////////////////////////
 ///////////////////////////////////////
@@ -27,22 +34,6 @@ import _cloneDeep from "lodash/cloneDeep"
 //Handles document pathing like a.b[2].c
 function parsePath(path: string) {
 	return path.split(/\.|\[|\]\.?/i).filter((v) => v.length > 0)
-}
-
-export function joinDataPath(...paths: (string | undefined)[]) {
-	let result = ""
-	for (const path of paths) {
-		if (!path) {
-			continue
-		}
-		if (result.length > 0 && !path.startsWith("[")) {
-			const separator = "."
-			result += separator
-		}
-		result += path
-	}
-
-	return result
 }
 
 export function useParentDataPath() {
@@ -83,67 +74,56 @@ export interface DataUIBinding {
 	onChildScrollIntoView?(parsedPath: string[]): any
 }
 
-export interface DataPathView {
-	data: Record<PropertyKey, any>
-	subPaths: Record<PropertyKey, DataPathView>
+export interface DataPathBinding {
+	subPaths: Record<PropertyKey, DataPathBinding>
 	uiBindings: DataUIBinding[]
 	refCount: number
 }
 
-function registerDataUiBinding(pathView: DataPathView, binding: DataUIBinding) {
+function registerDataUiBinding(pathView: DataPathBinding, binding: DataUIBinding) {
 	pathView.uiBindings.push(binding)
 }
 
-function unregisterDataUiBinding(pathView: DataPathView, binding: DataUIBinding) {
+function unregisterDataUiBinding(pathView: DataPathBinding, binding: DataUIBinding) {
 	const idx = pathView.uiBindings.findIndex((uib) => uib === binding)
 	if (idx < 0) return
 	pathView.uiBindings.splice(idx, 1)
 }
 
-export interface UndoStack<T = any> {
-	stack: DataDiff[]
-	snapshot: T
-	redo: DataDiff[]
-}
-export function createUndoStack<T = any>(initialValue: T): UndoStack {
-	return {
-		stack: [],
-		snapshot: initialValue,
-		redo: [],
-	}
-}
-export interface DataBinding {
+export interface RootDataBinding {
 	id: string
-	rootData: any
-	rootView: DataPathView
-	undoStack: UndoStack
 	delayedCommit: boolean
+	rootPath: DataPathBinding
+	editor: DataEditor
 }
 
-export function createDataBinding(rootData: any): DataBinding {
+export function createRootDataBinding(editor: DataEditor): RootDataBinding {
 	return {
 		id: nanoid(),
-		rootData,
-		rootView: { data: {}, subPaths: {}, uiBindings: [], refCount: 1 },
-		undoStack: createUndoStack(_cloneDeep(rootData)),
 		delayedCommit: false,
+		editor,
+		rootPath: {
+			subPaths: {},
+			uiBindings: [],
+			refCount: 0,
+		},
 	}
 }
 
 ///
 
-function commitDataView(dataBinding: DataBinding) {
-	const newData = dataBinding.rootData
-	const diff = computeDataDiff(dataBinding.undoStack.snapshot, newData)
+function commitDataView(dataBinding: RootDataBinding) {
+	const newData = dataBinding.editor.data
+	const diff = computeDataDiff(dataBinding.rootPath.snapshot, newData)
 
 	if (diff == undefined) return
 
 	//const caller = new Error().stack?.split("\n")[2]?.trim().split(" ")[1]
 	//console.log("   - Commiting Undo", new Error().stack, caller, diff)
 
-	dataBinding.undoStack.stack.push(diff)
-	dataBinding.undoStack.snapshot = _cloneDeep(newData)
-	dataBinding.undoStack.redo = []
+	dataBinding.editor.editStack.undoStack.push(diff)
+	dataBinding.editor.editStack.snapshot = _cloneDeep(newData)
+	dataBinding.editor.editStack.redoStack = []
 }
 
 export function useCommitUndo() {
@@ -170,26 +150,26 @@ export function useDelayedCommitUndo() {
 export function viewRef<T>(id: string): Ref<T | undefined>
 export function viewRef<T = any>(id: string, value: T): Ref<T>
 export function viewRef(id: string, value?: any) {
-	const dataBinding = useLocalDataBinding()
+	const viewData = useLocalViewData()
 
 	const backup = ref(value)
 
 	onMounted(() => {
-		if (!dataBinding.value) return
-		if (id in dataBinding.value.data) return
+		if (!viewData.value) return
+		if (id in viewData.value.data) return
 
-		dataBinding.value.data[id] = value
+		viewData.value.data[id] = value
 	})
 
 	return computed({
 		get() {
-			if (!dataBinding.value?.data) return backup.value
-			if (id in dataBinding.value.data) return dataBinding.value.data[id]
+			if (!viewData.value?.data) return backup.value
+			if (id in viewData.value.data) return viewData.value.data[id]
 			return backup.value
 		},
 		set(v) {
-			if (dataBinding.value) {
-				dataBinding.value.data[id] = v
+			if (viewData.value) {
+				viewData.value.data[id] = v
 			} else {
 				backup.value = v
 			}
@@ -262,19 +242,26 @@ export function useTextUndoCommitter(inputElement: MaybeRefOrGetter<HTMLElement 
 	})
 }
 
-export function provideBaseDataBinding(binding: MaybeRefOrGetter<DataBinding | undefined>) {
-	provideLocal("ui-data-binding", toReactive(computed(() => toValue(binding) ?? createDataBinding(undefined))))
+export function provideBaseDataBinding(binding: MaybeRefOrGetter<RootDataBinding | undefined>) {
+	provideLocal("ui-data-binding", toReactive(computed(() => toValue(binding) ?? createRootDataBinding(undefined))))
 }
 
 export function useBaseDataBinding() {
-	return injectLocal<DataBinding>("ui-data-binding", createDataBinding(undefined))
+	return injectLocal<RootDataBinding>("ui-data-binding", createRootDataBinding(undefined))
 }
 
 export function useLocalDataBinding() {
 	const baseBinding = useBaseDataBinding()
 	const path = useDataPath()
 
-	return computed(() => getDataViewByPath(baseBinding.rootView, path.value))
+	return computed(() => getDataBindingByPath(baseBinding, path.value))
+}
+
+export function useLocalViewData() {
+	const baseBinding = useBaseDataBinding()
+	const path = useDataPath()
+
+	return computed(() => getViewDataByPath(baseBinding, path.value))
 }
 
 export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>, debug?: MaybeRefOrGetter<string>) {
@@ -322,13 +309,13 @@ export function useDataBinding(localPath: MaybeRefOrGetter<string | undefined>) 
 			(value, oldValue) => {
 				if (oldValue) {
 					const oldPath = joinDataPath(parentPath.value, oldValue)
-					deleteDataView(baseBinding.rootView, oldPath)
+					deleteDataBinding(baseBinding, oldPath)
 					//TODO: Should this be some sort of move?
 				}
 
 				if (value) {
 					const newPath = joinDataPath(parentPath.value, value)
-					ensureDataView(baseBinding.rootView, newPath)
+					ensureDataBinding(baseBinding, newPath)
 				}
 			},
 			{ immediate: true }
@@ -338,7 +325,7 @@ export function useDataBinding(localPath: MaybeRefOrGetter<string | undefined>) 
 	onBeforeUnmount(() => {
 		const local = toValue(localPath)
 		if (local) {
-			deleteDataView(baseBinding.rootView, fullPath.value)
+			deleteDataBinding(baseBinding, fullPath.value)
 		}
 	})
 }
@@ -355,12 +342,12 @@ function nextTickAsync() {
 	})
 }
 
-export async function focusDataByPath(root: DataPathView, path: string) {
+export async function focusDataByPath(root: RootDataBinding, path: string) {
 	const parsedPath = parsePath(path)
 
 	console.log("FOCUS PATH", parsedPath)
 
-	let base = root
+	let base = root.rootPath
 
 	for (let i = 0; i < parsedPath.length; ++i) {
 		const trace = parsedPath[i]
@@ -388,10 +375,10 @@ export async function focusDataByPath(root: DataPathView, path: string) {
 	}
 }
 
-export async function scrollIntoViewDataByPath(root: DataPathView, path: string) {
+export async function scrollIntoViewDataByPath(root: RootDataBinding, path: string) {
 	const parsedPath = parsePath(path)
 
-	let base = root
+	let base = root.rootPath
 	for (let i = 0; i < parsedPath.length; ++i) {
 		const trace = parsedPath[i]
 
@@ -414,10 +401,10 @@ export async function scrollIntoViewDataByPath(root: DataPathView, path: string)
 ///////////////////////////////////////
 ///////////////////////////////////////
 
-export function getDataViewByPath(root: DataPathView, path: string) {
+export function getDataBindingByPath(root: RootDataBinding, path: string) {
 	const pathParsed = parsePath(path)
 
-	let base = root
+	let base = root.rootPath
 	for (const trace of pathParsed) {
 		if (base == null) return undefined
 
@@ -426,21 +413,32 @@ export function getDataViewByPath(root: DataPathView, path: string) {
 	return base
 }
 
-function createEmptyPathData(): DataPathView {
+export function getViewDataByPath(root: RootDataBinding, path: string) {
+	const pathParsed = parsePath(path)
+
+	let base = root.editor.view
+	for (const trace of pathParsed) {
+		if (base == null) return undefined
+
+		base = base.subPaths[trace]
+	}
+	return base
+}
+
+function createEmptyPathData(): DataPathBinding {
 	return {
-		data: {},
 		subPaths: {},
 		uiBindings: [],
 		refCount: 0,
 	}
 }
 
-function ensureDataView(root: DataPathView, path: string, pathData?: DataPathView) {
+function ensureDataBinding(root: RootDataBinding, path: string, pathData?: DataPathBinding) {
 	const parsed = parsePath(path)
 
-	const data: DataPathView = pathData ?? createEmptyPathData()
+	const data: DataPathBinding = pathData ?? createEmptyPathData()
 
-	let base = root
+	let base = root.rootPath
 	//console.log("Ensuring", root, parsed)
 	for (let i = 0; i < parsed.length; ++i) {
 		const trace = parsed[i]
@@ -458,10 +456,10 @@ function ensureDataView(root: DataPathView, path: string, pathData?: DataPathVie
 	return base
 }
 
-function deleteDataView(root: DataPathView, path: string) {
+function deleteDataBinding(root: RootDataBinding, path: string) {
 	const pathParsed = parsePath(path)
 
-	let base = root
+	let base = root.rootPath
 	for (let i = 0; i < pathParsed.length - 1; ++i) {
 		if (!base) return
 
@@ -482,31 +480,31 @@ function deleteDataView(root: DataPathView, path: string) {
 
 //TODO: moveDataView() - What to do about refCount > 1
 
-export async function undoDataView(baseDataBinding: DataBinding) {
-	const top = baseDataBinding.undoStack.stack.pop()
+export async function undoDataView(dataBinding: RootDataBinding) {
+	const top = dataBinding.editor.editStack.undoStack.pop()
 
 	if (!top) return
 
 	const invPath = getInvDataDiffPath(top)
 
-	console.log("From", baseDataBinding.rootData, getInvDataDiffPath(top))
-	applyInvDataDiff(baseDataBinding, "rootData", top)
-	console.log("To", baseDataBinding.rootData)
+	console.log("From", dataBinding.editor.data, getInvDataDiffPath(top))
+	applyInvDataDiff(dataBinding.editor, "data", top)
+	console.log("To", dataBinding.editor.data)
 
-	baseDataBinding.undoStack.redo.push(top)
+	dataBinding.editor.editStack.redoStack.push(top)
 
-	baseDataBinding.undoStack.snapshot = _cloneDeep(baseDataBinding.rootData)
+	dataBinding.editor.editStack.undoStack.snapshot = _cloneDeep(dataBinding.editor.data)
 
-	await focusDataByPath(baseDataBinding.rootView, invPath)
+	await focusDataByPath(dataBinding, invPath)
 }
 
-export function redoDataView(baseDataBinding: DataBinding) {
-	const top = baseDataBinding.undoStack.redo.pop()
+export function redoDataView(dataBinding: RootDataBinding) {
+	const top = dataBinding.editor.editStack.redoStack.pop()
 
 	if (!top) return
 
-	applyDataDiff(baseDataBinding, "rootData", top)
-	baseDataBinding.undoStack.stack.push(top)
+	applyDataDiff(dataBinding.editor, "data", top)
+	dataBinding.editor.editStack.undoStack.push(top)
 
-	baseDataBinding.undoStack.snapshot = _cloneDeep(baseDataBinding.rootData)
+	dataBinding.editor.editStack.snapshot = _cloneDeep(dataBinding.editor.data)
 }

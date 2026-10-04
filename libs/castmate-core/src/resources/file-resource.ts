@@ -1,7 +1,6 @@
 // import { Resource, ResourceBase, ResourceStorage, ResourceStorageBase } from "./resource"
 import * as fs from "fs/promises"
 import * as fsSync from "fs"
-import * as path from "path"
 import * as YAML from "yaml"
 import { ensureDirectory, loadYAMLAbsolute, resolveProjectPath, writeYAML } from "../io/file-system"
 import { globalLogger, usePluginLogger } from "../logging/logging"
@@ -16,7 +15,6 @@ import {
 	ResourceSpecification,
 	SchemaObject,
 	SchemaType,
-	testRes3,
 	TSchemaFunctionSet,
 	TSchemaProperties,
 } from "castmate-schema"
@@ -53,29 +51,6 @@ export type DocumentResourceData<
 	TFunctions extends TSchemaFunctionSet
 > = ResourceData<TState, TConfig, TFunctions> & {
 	projectPath: string
-}
-
-export interface ParsedDocumentPath {
-	fullPath: string
-	id: string
-	slug: string
-	ext: string
-}
-
-export function parseDocumentPath(filepath: string) {
-	const parsedPath = path.parse(filepath)
-	const parsedName = parsedPath.name.split(".")
-	if (parsedName.length == 2) {
-		const [id, slug] = parsedName
-		//invoke slug from document resource registry
-		return {
-			fullPath: filepath,
-			id,
-			slug,
-			ext: parsedPath.ext,
-		} as ParsedDocumentPath
-	}
-	return undefined
 }
 
 export async function loadDocumentYAML<TConfig extends TSchemaProperties>(

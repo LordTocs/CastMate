@@ -1,15 +1,6 @@
 import { AutomationConfig, ResourceData } from "castmate-schema"
 import { App, computed, markRaw } from "vue"
-import {
-	AutomationView,
-	ProjectGroup,
-	ProjectItem,
-	useDockingStore,
-	useDocumentStore,
-	useProjectStore,
-	useResourceData,
-	useResourceStore,
-} from "../main"
+import { AutomationView, useDockingStore, useResourceData, useResourceStore } from "../main"
 import NameDialogVue from "../components/dialogs/NameDialog.vue"
 
 export interface AutomationResourceView {

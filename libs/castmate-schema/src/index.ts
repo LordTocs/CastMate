@@ -10,8 +10,10 @@ export * from "./data/dynamic-type"
 export * from "./data/directory"
 export * from "./data/filepath"
 export * from "./data/timers"
+export * from "./data/data-paths"
 
 export * from "./editor/editor"
+export * from "./editor/documents"
 
 export * from "./automation/profile"
 export * from "./automation/sequence"

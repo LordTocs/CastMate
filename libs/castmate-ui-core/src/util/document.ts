@@ -1,140 +1,23 @@
-import { getByPath } from "castmate-schema"
-import { nanoid } from "nanoid/non-secure"
+import { DataEditUser, ProjectTreeNode, ViewData } from "castmate-schema"
 import { defineStore } from "pinia"
-import {
-	type MaybeRefOrGetter,
-	computed,
-	ref,
-	unref,
-	type Component,
-	shallowReactive,
-	toValue,
-	markRaw,
-	provide,
-	inject,
-	WritableComputedRef,
-	ComputedRef,
-	Directive,
-	Ref,
-	onMounted,
-	onBeforeUnmount,
-	onUnmounted,
-} from "vue"
-import { createDataBinding, DataBinding, DataPathView, joinDataPath, useDataPath } from "./data-binding"
+import { type MaybeRefOrGetter, computed, ref, type Component, toValue, markRaw } from "vue"
 import { useToast } from "primevue/usetoast"
+import { useBaseDataBinding } from "./data-binding"
 
-export type NamedData = {
-	name?: string
-} & Record<string | symbol, any>
-
-export type Selection = string[]
-
-export interface DocumentSelection {
-	items: Selection
-	container: string
-}
-
-export type ViewData = {
-	selection: DocumentSelection
-} & Record<string | symbol, any>
-
-export interface DocumentView extends DataBinding {
-	selection: DocumentSelection
-}
-
-function createDocumentView(rootData: any): DocumentView {
-	const result = createDataBinding(rootData) as DocumentView
-	result.selection = { items: [], container: "" }
-	return result
-}
-
-export interface Document {
-	id: string
-	type: string
-	dirty: boolean
-	data: NamedData
-	viewData: ViewData
-	view: DocumentView
-}
-
-export interface DocumentData {
-	id: string
-}
-
-type DocumentSaveFunction = (doc: Document) => any
-
-export const useDocumentStore = defineStore("documents", () => {
-	const documents = ref<Map<string, Document>>(new Map())
-	const documentComponents = ref<Map<string, Component>>(new Map())
-	const saveFunctions = ref<Map<string, DocumentSaveFunction>>(new Map())
-
-	const toast = useToast()
-
-	function addDocument(id: string, data: NamedData, view: any, type: string) {
-		if (documents.value.has(id)) {
-			throw new Error("Document ID already in use")
-		}
-
-		documents.value.set(id, {
-			id,
-			type,
-			dirty: false,
-			data,
-			viewData: view,
-			view: createDocumentView(data),
-		})
-
-		const document = documents.value.get(id)
-		if (!document) throw Error("How did we get here?")
-		return document
-	}
-
-	function removeDocument(id: string) {
-		documents.value.delete(id)
-	}
-
-	function registerDocumentComponent(type: string, component: Component) {
-		documentComponents.value.set(type, markRaw(component))
-	}
-
-	function registerSaveFunction(type: string, save: DocumentSaveFunction) {
-		saveFunctions.value.set(type, save)
-	}
-
-	async function saveDocument(id: string) {
-		const doc = documents.value.get(id)
-		if (!doc) return
-
-		const save = saveFunctions.value.get(doc.type)
-		if (!save) return
-
-		if (!doc.dirty) return
-
-		await save(doc)
-		toast.add({ severity: "success", summary: `Saved ${doc.data.name ?? doc.id}`, life: 1000 })
-		doc.dirty = false
-	}
-
-	return {
-		documents,
-		documentComponents,
-		addDocument,
-		registerDocumentComponent,
-		registerSaveFunction,
-		saveDocument,
-		removeDocument,
-	}
-})
-
-export function useDocumentComponent(type: MaybeRefOrGetter<string | undefined>) {
+export function useDocumentComponent(
+	plugin: MaybeRefOrGetter<string | undefined>,
+	type: MaybeRefOrGetter<string | undefined>
+) {
 	const documentStore = useDocumentStore()
 
 	return computed(() => {
-		const typeActual = toValue(type)
-		if (!typeActual) {
-			return undefined
-		}
-		return documentStore.documentComponents?.get(typeActual)
+		const pluginValue = toValue(plugin)
+		const typeValue = toValue(type)
+
+		if (!typeValue) return undefined
+		if (!pluginValue) return undefined
+
+		return documentStore.getDocumentEditorComponent(pluginValue, typeValue)
 	})
 }
 
@@ -144,160 +27,83 @@ export function useDocument(id: MaybeRefOrGetter<string | undefined>) {
 	return computed(() => {
 		const idValue = toValue(id)
 		if (!idValue) return undefined
-		return documentStore.documents?.get(idValue)
+		return documentStore.openDocuments.get(idValue)
 	})
 }
 
-export function useDocumentId() {
-	return inject<ComputedRef<string>>(
-		"documentId",
-		computed(() => "")
-	)
+export function useDocumentSelection() {
+	const dataBinding = useBaseDataBinding()
+	return dataBinding.editor.editingUsers.get("local")
 }
 
-export function provideDocument(id: MaybeRefOrGetter<string>) {
-	const documentStore = useDocumentStore()
-
-	provide(
-		"documentId",
-		computed(() => toValue(id))
-	)
-
-	provide(
-		"documentSelection",
-		computed({
-			get() {
-				return (
-					documentStore.documents.get(toValue(id))?.viewData.selection ?? {
-						items: [],
-						container: "",
-					}
-				)
-			},
-			set(v) {
-				const doc = documentStore.documents.get(toValue(id))
-				if (doc && v) {
-					doc.viewData.selection = v
-				}
-			},
-		})
-	)
+export interface DocumentInfo {
+	plugin: string
+	type: string
+	id: string
+	path: string
 }
 
-export function useRawDocumentSelection() {
-	return inject<WritableComputedRef<DocumentSelection>>(
-		"documentSelection",
-		computed({
-			get() {
-				return {
-					items: [],
-					container: "",
-				}
-			},
-			set(v) {},
-		})
-	)
+export interface OpenDocumentEditor {
+	plugin: string
+	type: string
+	id: string
+	dirty: boolean
+	documentData: object
+	viewData: ViewData
+	editorStates: Map<string, DataEditUser>
 }
 
-export function useIsSelected(id: MaybeRefOrGetter<string>, localPath?: MaybeRefOrGetter<string | undefined>) {
-	const selection = useRawDocumentSelection()
-	const path = useDataPath()
+export const useDocumentStore = defineStore("documents2", () => {
+	const items = ref<DocumentInfo[]>([])
+	const tree = ref<ProjectTreeNode[]>([])
 
-	return computed(() => {
-		const selectionPath = joinDataPath(toValue(path), toValue(localPath))
-		const selectionId = toValue(id)
+	const documentEditorComponents = ref<Map<string, Component>>(new Map())
 
-		if (!selectionPath) return false
-		if (!selection || !selection.value) return false
-		if (selection.value.container != selectionPath) return false
+	const openDocumentEditors = ref<Map<string, OpenDocumentEditor>>(new Map())
 
-		return selection.value.items.includes(selectionId)
-	})
-}
-
-export function useDocumentSelection(localPath?: MaybeRefOrGetter<string | undefined>) {
-	const selection = useRawDocumentSelection()
-	const path = useDataPath()
-
-	function getSelectionPath() {
-		const rootPath = toValue(path)
-		return joinDataPath(rootPath, toValue(localPath))
+	function registerDocumentEditorComponent(plugin: string, type: string, editor: Component) {
+		documentEditorComponents.value.set(`${plugin}_${type}`, markRaw(editor))
 	}
 
-	return computed({
-		get() {
-			const selectionPath = getSelectionPath()
+	function getDocumentEditorComponent(plugin: string, type: string): Component | undefined {
+		return documentEditorComponents.value.get(`${plugin}_${type}`)
+	}
 
-			if (!selectionPath) return []
-			if (!selection || !selection.value) return []
-
-			if (selection.value.container != selectionPath) {
-				return []
-			}
-
-			return selection.value.items
-		},
-		set(v) {
-			const selectionPath = getSelectionPath()
-
-			if (!selectionPath) return
-			if (!selection) return
-
-			selection.value = {
-				container: selectionPath,
-				items: v,
-			}
-		},
-	})
-}
-
-/*
-export function viewRef<T>(key: PropertyKey, initialValue: T): Ref<T> {
-	const documentView = useDocumentView()
-
-	const fallback = ref(initialValue)
-
-	onMounted(() => {
-		if (documentView.value) {
-			if (!(key in documentView.value.data)) {
-				documentView.value.data[key] = initialValue
-			}
+	async function openDocument(id: string) {
+		const existing = openDocumentEditors.value.get(id)
+		if (existing != null) {
+			return existing
 		}
-	})
 
-	onUnmounted(() => {
-		if (documentView.value) {
-			if (key in documentView.value.data) {
-				delete documentView.value.data[key]
-			}
+		const newEditor: OpenDocumentEditor = {
+			plugin: "",
+			type: "",
+			id: id,
+			dirty: false,
+			documentData: {},
+			viewData: {
+				data: {},
+				subPaths: {},
+			},
+			editorStates: new Map(),
 		}
-	})
 
-	return computed<T>({
-		get() {
-			if (documentView.value) {
-				return documentView.value.data[key]
-			}
-			return fallback.value
-		},
-		set(v) {
-			if (documentView.value) {
-				documentView.value.data[key] = v
-			}
-			fallback.value = v
-		},
-	})
-}
+		newEditor.editorStates.set("local", {
+			focusPath: "",
+			selection: { type: "range", startIndex: 0, length: 0 },
+		})
 
-export const vPathFocus: Directive = {
-	mounted(el, binding, vnode) {
-		const documentView = useDocumentView()
-		if (documentView.value && binding.instance && "focus" in binding.instance) {
-			documentView.value.focusable = binding.instance as DocumentFocusable
-		}
-	},
-	beforeUnmount(el, binding, vnode) {
-		const documentView = useDocumentView()
-	},
-}
-*/
+		openDocumentEditors.value.set(id, newEditor)
+
+		return newEditor
+	}
+
+	return {
+		items: computed(() => items.value),
+		tree: computed(() => tree.value),
+		openDocuments: openDocumentEditors,
+		openDocument,
+		registerDocumentEditorComponent,
+		getDocumentEditorComponent,
+	}
+})

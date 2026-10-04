@@ -1,5 +1,6 @@
 import { Schema } from "../schema/schema-base"
 import { SchemaFunction } from "../schema/schema-function"
+import { DataDiff } from "../util/diff"
 
 export interface EditorFunctionSpec<TFunction extends SchemaFunction = SchemaFunction> {
 	plugin: string
@@ -57,4 +58,39 @@ export function defineRawEditorFunction<TFunc extends (...args: any[]) => any>(p
 		plugin,
 		id,
 	} as RawEditorFunctionSpec<TFunc>
+}
+
+export interface ViewData {
+	data: Record<PropertyKey, any>
+	subPaths: Record<PropertyKey, ViewData>
+}
+
+export interface EditStack {
+	undoStack: DataDiff[]
+	redoStack: DataDiff[]
+}
+
+export interface DataListSelection {
+	type: "list"
+	ids: string
+}
+
+export interface DataRangeSelection {
+	type: "range"
+	startIndex: number
+	length: number
+}
+
+export type DocumentSelection = DataListSelection | DataRangeSelection
+
+export interface DataEditUser {
+	focusPath: string
+	selection: DocumentSelection
+}
+
+export interface DataEditor {
+	data: Record<PropertyKey, any>
+	view: ViewData
+	editStack: EditStack
+	editingUsers: Map<string, DataEditUser>
 }
