@@ -13,9 +13,10 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue"
-import { useCommitUndo, useDataUIBinding, useTextUndoCommitter } from "../../../editor/data-binding"
+import { useDataUIBinding } from "../../../editor/data-binding"
 
 import PInputText from "primevue/inputtext"
+import { useCommitUndo } from "../../../main"
 
 const model = defineModel<number>()
 
@@ -40,8 +41,6 @@ const numInput = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
 const numEditModel = ref("")
 
 const focused = ref(false)
-
-//useTextUndoCommitter(() => numInput.value?.$el)
 
 defineExpose({
 	focus() {
@@ -98,7 +97,7 @@ function roundToStep(value: number, step: number) {
 	return Math.round(value / step) * step
 }
 
-const commitUndo = useCommitUndo()
+const commitUndo = useCommitUndo(model)
 
 function onFocus() {
 	focused.value = true

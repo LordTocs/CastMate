@@ -65,7 +65,7 @@ const emit = defineEmits(["update:modelValue"])
 const model = useModel(props, "modelValue")
 const undoModel = useUndoCommitter(model)
 
-const commitUndo = useCommitUndo()
+const commitUndo = useCommitUndo(model)
 
 const stopPropagation = usePropagationStop()
 
@@ -135,8 +135,8 @@ function setSelection(start: number, end: number) {
 	}
 }
 
-useTextUndoCommitter(() => inputText.value?.$el)
-useTextUndoCommitter(() => textArea.value?.$el)
+useTextUndoCommitter(() => inputText.value?.$el, model)
+useTextUndoCommitter(() => textArea.value?.$el, model)
 
 //Somewhat sloppy prevention of line break insertions.
 //Technically we can still paste enters in here

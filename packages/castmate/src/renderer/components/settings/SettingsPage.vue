@@ -53,9 +53,7 @@ import {
 	usePluginStore,
 	DataInput,
 	useResourceStore,
-	SettingDefinition,
 	useSettingWatcher,
-	useDocumentId,
 	useDocument,
 } from "castmate-ui-core"
 import { computed, ref, useModel, watch } from "vue"
@@ -73,15 +71,15 @@ const view = useModel(props, "view")
 const pluginStore = usePluginStore()
 const resourceStore = useResourceStore()
 
-const documentId = useDocumentId()
+// const documentId = useDocumentId()
 
-const document = useDocument(() => documentId.value)
+// const document = useDocument(() => documentId.value)
 
 useSettingWatcher((plugin, setting, value) => {
-	if (!document.value) return
-	if (!document.value.data.settings) return
-	if (!document.value.data.settings[plugin]) return
-	document.value.data.settings[plugin][setting] = value
+	// if (!document.value) return
+	// if (!document.value.data.settings) return
+	// if (!document.value.data.settings[plugin]) return
+	// document.value.data.settings[plugin][setting] = value
 })
 
 const filteredSettings = computed(() => {

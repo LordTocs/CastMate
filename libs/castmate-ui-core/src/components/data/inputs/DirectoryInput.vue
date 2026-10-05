@@ -8,10 +8,10 @@
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { Directory, SchemaDirectory } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { InputBox, useIpcCaller, usePropagationStop } from "../../../main"
+import { InputBox, useIpcCaller, usePropagationStop, useUndoCommitter } from "../../../main"
 import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
+import { useDataBinding, useDataUIBinding } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{

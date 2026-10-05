@@ -31,7 +31,7 @@ const model = defineModel<string>()
 const textInput = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
 const textAreaInput = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
 
-useTextUndoCommitter(() => textInput.value?.$el ?? textAreaInput.value?.$el)
+useTextUndoCommitter(() => textInput.value?.$el ?? textAreaInput.value?.$el, model)
 
 useDataUIBinding({
 	focus() {

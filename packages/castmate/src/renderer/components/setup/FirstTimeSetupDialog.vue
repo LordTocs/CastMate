@@ -1,4 +1,5 @@
-<template>
+<template></template>
+<!-- <template>
 	<div class="setup-dialog">
 		<div class="setup-step" v-if="step == 'twitch'">
 			<setup-accounts v-model:ready="ready" />
@@ -30,15 +31,7 @@ import SetupDone from "./SetupDone.vue"
 import PButton from "primevue/button"
 import PDivider from "primevue/divider"
 import { ref } from "vue"
-import {
-	createProfileViewData,
-	useDialogRef,
-	useDockingStore,
-	useOpenProfileDocument,
-	useResource,
-	useResourceArray,
-	useResourceStore,
-} from "castmate-ui-core"
+import { useDialogRef, useDockingStore, useResource, useResourceArray, useResourceStore } from "castmate-ui-core"
 import { ProfileConfig } from "castmate-schema"
 import { ResourceData } from "castmate-schema"
 
@@ -58,7 +51,7 @@ function moveNextStep() {
 const dialogRef = useDialogRef()
 
 const resourceStore = useResourceStore()
-const profiles = useResourceArray<ResourceData<ProfileConfig>>("Profile")
+// const profiles = useResourceArray<ResourceData<ProfileConfig>>("Profile")
 
 const mainProfileId = ref<string>()
 
@@ -75,7 +68,7 @@ async function ensureMainProfile() {
 
 const dockingStore = useDockingStore()
 
-const openProfile = useOpenProfileDocument()
+//const openProfile = useOpenProfileDocument()
 
 function openMainProfile() {
 	if (!mainProfileId.value) return
@@ -91,4 +84,4 @@ function done() {
 <style scoped>
 .setup-step {
 }
-</style>
+</style> -->

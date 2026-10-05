@@ -31,11 +31,11 @@ const props = withDefaults(
 
 const hiddenInput = ref<HTMLInputElement>()
 
-useTextUndoCommitter(() => (props.emitUndo ? hiddenInput.value : undefined))
-
 const model = useModel(props, "modelValue")
 const selection = useModel(props, "selection")
 const focused = useModel(props, "focused")
+
+useTextUndoCommitter(() => (props.emitUndo ? hiddenInput.value : undefined), model)
 
 const emit = defineEmits(["blur", "update:modelValue", "update:selection", "update:focused"])
 

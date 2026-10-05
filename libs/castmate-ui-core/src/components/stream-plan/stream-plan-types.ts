@@ -2,12 +2,9 @@ import { App, Component, computed, markRaw, ref } from "vue"
 import {
 	InlineAutomationView,
 	createInlineAutomationView,
-	getResourceAsProjectGroup,
 	handleIpcMessage,
 	useDocumentStore,
 	useIpcCaller,
-	useProjectStore,
-	useResource,
 	useResourceArray,
 	useResourceData,
 	useResourceStore,
@@ -15,7 +12,6 @@ import {
 import { ResourceData, StreamPlanConfig, StreamPlanState, StreamPlanSegment } from "castmate-schema"
 import { defineStore } from "pinia"
 import _cloneDeep from "lodash/cloneDeep"
-import { StreamPlan } from "castmate-core"
 import { useDialog } from "primevue"
 import StreamPlanSegmentEditDialog from "./StreamPlanSegmentEditDialog.vue"
 
@@ -44,30 +40,29 @@ export interface StreamPlanView {
 export function initializeStreamPlans(app: App<Element>) {
 	const documentStore = useDocumentStore()
 	const resourceStore = useResourceStore()
-	const projectStore = useProjectStore()
 
-	documentStore.registerSaveFunction("streamplan", async (doc) => {
-		const dataCopy = _cloneDeep(doc.data)
-		await resourceStore.setResourceConfig("StreamPlan", doc.id, dataCopy)
-	})
+	// documentStore.registerSaveFunction("streamplan", async (doc) => {
+	// 	const dataCopy = _cloneDeep(doc.data)
+	// 	await resourceStore.setResourceConfig("StreamPlan", doc.id, dataCopy)
+	// })
 
-	projectStore.registerProjectGroupItem(
-		getResourceAsProjectGroup<ResourceData<StreamPlanConfig>>(app, {
-			resourceType: "StreamPlan",
-			resourceName: "Stream Plans",
-			documentType: "streamplan",
-			groupIcon: "mdi mdi-view-agenda",
-			createView(resource) {
-				return {
-					scrollX: 0,
-					scrollY: 0,
-					activationAutomation: createInlineAutomationView(),
-					deactivationAutomation: createInlineAutomationView(),
-					segments: resource.config.segments.map((s) => createStreamPlanSegmentView(s)),
-				} as StreamPlanView
-			},
-		})
-	)
+	// projectStore.registerProjectGroupItem(
+	// 	getResourceAsProjectGroup<ResourceData<StreamPlanConfig>>(app, {
+	// 		resourceType: "StreamPlan",
+	// 		resourceName: "Stream Plans",
+	// 		documentType: "streamplan",
+	// 		groupIcon: "mdi mdi-view-agenda",
+	// 		createView(resource) {
+	// 			return {
+	// 				scrollX: 0,
+	// 				scrollY: 0,
+	// 				activationAutomation: createInlineAutomationView(),
+	// 				deactivationAutomation: createInlineAutomationView(),
+	// 				segments: resource.config.segments.map((s) => createStreamPlanSegmentView(s)),
+	// 			} as StreamPlanView
+	// 		},
+	// 	})
+	// )
 }
 
 const setActivePlan = useIpcCaller<(planId: string | undefined) => any>("stream-plan", "setActivePlan")

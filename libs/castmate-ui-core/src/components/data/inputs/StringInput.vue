@@ -51,11 +51,11 @@ import PInputText from "primevue/inputtext"
 import PPassword from "primevue/password"
 import { type SchemaString, type SchemaBase } from "castmate-schema"
 import { SharedDataInputProps, defaultStringIsTemplate } from "../DataInputTypes"
-import { TemplateToggle } from "../../../main"
+import { TemplateToggle, useTextUndoCommitter } from "../../../main"
 import EnumInput from "../base-components/EnumInput.vue"
 import { computed, onMounted, ref, useModel } from "vue"
 import PTextArea from "primevue/textarea"
-import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../../editor/data-binding.ts"
+import { useDataBinding, useDataUIBinding } from "../../../editor/data-binding.ts"
 import { useEventListener } from "@vueuse/core"
 
 const props = defineProps<
@@ -89,9 +89,8 @@ useEventListener(
 	}
 )
 
-useTextUndoCommitter(() => inputPassword.value?.$el)
-useTextUndoCommitter(() => textArea.value?.$el)
-// useTextUndoCommitter(() => inputText.value?.$el)
+useTextUndoCommitter(() => inputPassword.value?.$el, model)
+useTextUndoCommitter(() => textArea.value?.$el, model)
 
 function focus() {
 	inputPassword.value?.$el.focus()

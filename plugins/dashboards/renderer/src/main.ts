@@ -1,4 +1,4 @@
-import { getResourceAsProjectGroup, useDocumentStore, useProjectStore, useResourceStore } from "castmate-ui-core"
+import { useDocumentStore, useResourceStore } from "castmate-ui-core"
 import { App } from "vue"
 import DashboardEditor from "./components/DashboardEditor.vue"
 
@@ -13,43 +13,43 @@ export function initPlugin(app: App<Element>) {
 
 	const resourceStore = useResourceStore()
 
-	documentStore.registerDocumentComponent("dashboard", DashboardEditor)
-	documentStore.registerSaveFunction("dashboard", async (doc) => {
-		const docDataCopy = _cloneDeep(doc.data)
-		delete docDataCopy.name
-		await resourceStore.applyResourceConfig("Dashboard", doc.id, docDataCopy)
-	})
+	// documentStore.registerDocumentComponent("dashboard", DashboardEditor)
+	// documentStore.registerSaveFunction("dashboard", async (doc) => {
+	// 	const docDataCopy = _cloneDeep(doc.data)
+	// 	delete docDataCopy.name
+	// 	await resourceStore.applyResourceConfig("Dashboard", doc.id, docDataCopy)
+	// })
 
-	const projectStore = useProjectStore()
+	// const projectStore = useProjectStore()
 
-	const dashboardGroup = getResourceAsProjectGroup(app, {
-		resourceType: "Dashboard",
-		resourceName: "Dashboards",
-		groupIcon: "mdi mdi-view-dashboard",
-		documentType: "dashboard",
-		createView(resource: ResourceData<DashboardConfig>): DashboardView {
-			return {
-				scrollX: 0,
-				scrollY: 0,
-				pages: resource.config.pages.map((p) => {
-					return {
-						id: p.id,
-						sections: p.sections.map((s) => {
-							return {
-								id: s.id,
-								widgets: s.widgets.map((w) => {
-									return {
-										id: w.id,
-									}
-								}),
-							}
-						}),
-					}
-				}),
-				slots: resource.config.resourceSlots.map((s) => ({ id: s.id })),
-			}
-		},
-	})
+	// const dashboardGroup = getResourceAsProjectGroup(app, {
+	// 	resourceType: "Dashboard",
+	// 	resourceName: "Dashboards",
+	// 	groupIcon: "mdi mdi-view-dashboard",
+	// 	documentType: "dashboard",
+	// 	createView(resource: ResourceData<DashboardConfig>): DashboardView {
+	// 		return {
+	// 			scrollX: 0,
+	// 			scrollY: 0,
+	// 			pages: resource.config.pages.map((p) => {
+	// 				return {
+	// 					id: p.id,
+	// 					sections: p.sections.map((s) => {
+	// 						return {
+	// 							id: s.id,
+	// 							widgets: s.widgets.map((w) => {
+	// 								return {
+	// 									id: w.id,
+	// 								}
+	// 							}),
+	// 						}
+	// 					}),
+	// 				}
+	// 			}),
+	// 			slots: resource.config.resourceSlots.map((s) => ({ id: s.id })),
+	// 		}
+	// 	},
+	// })
 
 	projectStore.registerProjectGroupItem(dashboardGroup)
 

@@ -26,7 +26,6 @@
 				@slideend="onSlideEnd"
 			/>
 		</div>
-
 		<enum-input
 			v-else
 			:schema="schema"
@@ -47,7 +46,8 @@ import { type SchemaBase, type SchemaNumber } from "castmate-schema"
 import { computed, ref, onMounted, useModel, watch, useTemplateRef } from "vue"
 import EnumInput from "../base-components/EnumInput.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { useCommitUndo, useDataBinding } from "../../../editor/data-binding.ts"
+import { useDataBinding } from "../../../editor/data-binding.ts"
+import { useCommitUndo } from "../../../main.ts"
 
 const props = defineProps<
 	{

@@ -32,7 +32,7 @@ import DataInputBase from "../base-components/DataInputBase.vue"
 
 import { SchemaMediaFile, SchemaBase, normalizeMediaPath } from "castmate-schema"
 import { computed, nextTick, ref, useModel } from "vue"
-import { DropDownPanel, useMediaStore, usePropagationStop } from "../../../main"
+import { DropDownPanel, useMediaStore, usePropagationStop, useUndoCommitter } from "../../../main"
 import { MediaMetadata } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
 
@@ -40,7 +40,7 @@ import FilterInputBox from "../base-components/FilterInputBox.vue"
 
 import MediaDropDown from "../base-components/media/MediaDropDown.vue"
 import { MediaFile } from "castmate-schema"
-import { useDataBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
+import { useDataBinding } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{

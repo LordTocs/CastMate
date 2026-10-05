@@ -53,5 +53,5 @@ function onBlur(ev: FocusEvent) {
 
 const hexInput = ref<InstanceType<typeof PInputText> & { $el: HTMLElement }>()
 
-useTextUndoCommitter(() => hexInput.value?.$el)
+useTextUndoCommitter(() => hexInput.value?.$el, model)
 </script>

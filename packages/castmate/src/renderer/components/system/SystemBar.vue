@@ -42,7 +42,6 @@ import {
 	isDev,
 	NameDialog,
 	useResourceStore,
-	useOpenProfileDocument,
 	useOpenAutomationDocument,
 	useSaveActiveTab,
 	useSaveAllTabs,
@@ -100,7 +99,7 @@ const dialog = useDialog()
 
 const resourceStore = useResourceStore()
 
-const openProfile = useOpenProfileDocument()
+//const openProfile = useOpenProfileDocument()
 const openAutomation = useOpenAutomationDocument()
 
 const dockingManager = useDockingStore()
@@ -122,7 +121,7 @@ function tryCreateProfile() {
 				return
 			}
 			const id = await resourceStore.createResource("Profile", options.data)
-			openProfile(id)
+			//openProfile(id)
 		},
 	})
 }
@@ -141,7 +140,7 @@ function tryCreateAutomation() {
 				return
 			}
 			const id = await resourceStore.createResource("Automation", options.data)
-			openAutomation(id)
+			//openAutomation(id)
 		},
 	})
 }

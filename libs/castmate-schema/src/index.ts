@@ -6,13 +6,14 @@ export * from "./data/media"
 export * from "./data/command"
 export * from "./data/duration"
 export * from "./data/boolean-expression"
-export * from "./data/dynamic-type"
+// export * from "./data/dynamic-type"
 export * from "./data/directory"
 export * from "./data/filepath"
 export * from "./data/timers"
 export * from "./data/data-paths"
 
 export * from "./editor/editor"
+export * from "./editor/data-binding"
 export * from "./editor/documents"
 
 export * from "./automation/profile"
@@ -43,6 +44,6 @@ export * from "./util/object-helpers"
 export * from "./util/diff"
 
 export * from "./template/template-utils"
-export * from "./template/remote-templates"
+// export * from "./template/remote-templates"
 
 export * from "./satellite/satellite-types"

@@ -71,7 +71,6 @@ import ActionPalette from "./ActionPalette.vue"
 import { FloatingSequence } from "castmate-schema"
 import { nanoid } from "nanoid/non-secure"
 import { automationTimeScale } from "./automation-shared"
-import { constructDefault } from "castmate-schema"
 import SelectDummy from "../util/SelectDummy.vue"
 import { assignNewIds } from "castmate-schema"
 

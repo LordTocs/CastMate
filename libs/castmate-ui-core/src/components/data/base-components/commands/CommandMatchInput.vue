@@ -25,7 +25,7 @@ const props = defineProps<{
 
 const matchInput = ref<{ $el: HTMLElement }>()
 
-useTextUndoCommitter(() => matchInput.value?.$el)
+useTextUndoCommitter(() => matchInput.value?.$el, model)
 
 useDataUIBinding({
 	focus() {

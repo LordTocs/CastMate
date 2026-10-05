@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { computed, MaybeRefOrGetter, Ref, ref, toValue } from "vue"
 import { MediaMetadata, normalizeMediaPath } from "castmate-schema"
-import { ProjectItem, handleIpcMessage, useDockingStore, useIpcCaller, useIpcMessage, useProjectStore } from "../main"
+import { handleIpcMessage, useDockingStore, useIpcCaller, useIpcMessage } from "../main"
 import MediaBrowserPage from "../components/media/MediaBrowserPage.vue"
 import { useFileDragDrop } from "../util/file-drop"
 import path from "path"
@@ -16,19 +16,19 @@ export const useMediaStore = defineStore("media", () => {
 	const downloadMediaMain = useIpcCaller<(url: string, mediaPath: string) => any>("media", "downloadMedia")
 	const copyMediaMain = useIpcCaller<(localPath: string, mediaPath: string) => any>("media", "copyMedia")
 
-	const projectStore = useProjectStore()
+	//const projectStore = useProjectStore()
 	const dockingStore = useDockingStore()
 
-	const projectItem = computed<ProjectItem>(() => {
-		return {
-			id: "media",
-			title: "Media",
-			icon: "mdi mdi-multimedia",
-			open() {
-				dockingStore.openPage("media", "Media", "mdi mdi-multimedia", MediaBrowserPage)
-			},
-		}
-	})
+	// const projectItem = computed<ProjectItem>(() => {
+	// 	return {
+	// 		id: "media",
+	// 		title: "Media",
+	// 		icon: "mdi mdi-multimedia",
+	// 		open() {
+	// 			dockingStore.openPage("media", "Media", "mdi mdi-multimedia", MediaBrowserPage)
+	// 		},
+	// 	}
+	// })
 
 	async function initialize() {
 		handleIpcMessage("media", "addMedia", (event, metadata: MediaMetadata) => {
@@ -47,7 +47,7 @@ export const useMediaStore = defineStore("media", () => {
 			mediaMap.value[media.path] = media
 		}
 
-		projectStore.registerProjectGroupItem(projectItem)
+		// projectStore.registerProjectGroupItem(projectItem)
 	}
 
 	async function downloadMedia(path: string, mediaPath: string) {

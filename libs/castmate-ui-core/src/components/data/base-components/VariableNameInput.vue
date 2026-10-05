@@ -65,7 +65,7 @@ onBeforeUnmount(() => {
 
 const varInput = ref<{ $el: HTMLElement }>()
 
-useTextUndoCommitter(() => varInput.value?.$el)
+useTextUndoCommitter(() => varInput.value?.$el, model)
 
 useDataUIBinding({
 	focus() {

@@ -1,4 +1,3 @@
-import { DataFactory, SchemaBase, SchemaTypeConstructorFactories, registerType } from "../schema"
 import { Range } from "./range"
 
 export type ValueCompareOperator = "lessThan" | "lessThanEq" | "equal" | "notEqual" | "greaterThan" | "greaterThanEq"
@@ -75,23 +74,23 @@ export function isBooleanRangeExpr(expr: BooleanSubExpression): expr is BooleanR
 }
 
 export type BooleanExpression = BooleanExpressionGroup
-export type BooleanExpressionFactory = DataFactory<BooleanExpression>
-export const BooleanExpression: BooleanExpressionFactory = {
-	factoryCreate() {
-		return { type: "group", operator: "and", operands: [] } as BooleanExpression
-	},
-}
+// export type BooleanExpressionFactory = DataFactory<BooleanExpression>
+// export const BooleanExpression: BooleanExpressionFactory = {
+// 	factoryCreate() {
+// 		return { type: "group", operator: "and", operands: [] } as BooleanExpression
+// 	},
+// }
 
-export interface SchemaBooleanExpression extends SchemaBase<BooleanExpression> {
-	type: BooleanExpressionFactory
-}
+// export interface SchemaBooleanExpression extends SchemaBase<BooleanExpression> {
+// 	type: BooleanExpressionFactory
+// }
 
-declare module "../schema" {
-	interface SchemaTypeMap {
-		BooleanExpression: [SchemaBooleanExpression, BooleanExpression]
-	}
-}
+// declare module "../schema" {
+// 	interface SchemaTypeMap {
+// 		BooleanExpression: [SchemaBooleanExpression, BooleanExpression]
+// 	}
+// }
 
-registerType("BooleanExpression", {
-	constructor: BooleanExpression,
-})
+// registerType("BooleanExpression", {
+// 	constructor: BooleanExpression,
+// })

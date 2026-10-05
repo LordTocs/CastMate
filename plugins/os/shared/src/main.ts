@@ -1,4 +1,4 @@
-import { SchemaBase, registerType } from "castmate-schema"
+import { SchemaBase } from "castmate-schema"
 
 export type PowerShellCommand = string
 
@@ -22,6 +22,6 @@ declare module "castmate-schema" {
 	}
 }
 
-registerType("PowerShellCommand", {
-	constructor: PowerShellCommand,
-})
+// registerType("PowerShellCommand", {
+// 	constructor: PowerShellCommand,
+// })

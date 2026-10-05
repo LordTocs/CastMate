@@ -120,42 +120,42 @@ export function setupViewerCache() {
 	})
 }
 
-registerSchemaExpose(TwitchViewer, async (value: TwitchViewerUnresolved) => {
-	return await ViewerCache.getInstance().getResolvedViewer(value)
-})
+// registerSchemaExpose(TwitchViewer, async (value: TwitchViewerUnresolved) => {
+// 	return await ViewerCache.getInstance().getResolvedViewer(value)
+// })
 
-registerSchemaUnexpose(TwitchViewer, async (value: TwitchViewer) => {
-	return value?.id
-})
+// registerSchemaUnexpose(TwitchViewer, async (value: TwitchViewer) => {
+// 	return value?.id
+// })
 
-registerSchemaTemplate(
-	TwitchViewer,
-	async (value: TwitchViewerUnresolved, context: any, schema: SchemaTwitchViewer) => {
-		if (isDefinitelyNotTwitchId(value)) {
-			//We know this is a template string, so template the value to a name and then get the userId from it
-			const resultName = await template(value, context)
-			return await ViewerCache.getInstance().getUserId(resultName)
-		}
+// registerSchemaTemplate(
+// 	TwitchViewer,
+// 	async (value: TwitchViewerUnresolved, context: any, schema: SchemaTwitchViewer) => {
+// 		if (isDefinitelyNotTwitchId(value)) {
+// 			//We know this is a template string, so template the value to a name and then get the userId from it
+// 			const resultName = await template(value, context)
+// 			return await ViewerCache.getInstance().getUserId(resultName)
+// 		}
 
-		if (await ViewerCache.getInstance().validateUserId(value)) {
-			return value
-		} else {
-			return await ViewerCache.getInstance().getUserId(value)
-		}
-	}
-)
+// 		if (await ViewerCache.getInstance().validateUserId(value)) {
+// 			return value
+// 		} else {
+// 			return await ViewerCache.getInstance().getUserId(value)
+// 		}
+// 	}
+// )
 
-registerTypeFromString(TwitchViewer, async (value) => {
-	if (isDefinitelyNotTwitchId(value)) {
-		return await ViewerCache.getInstance().getUserId(value)
-	}
+// registerTypeFromString(TwitchViewer, async (value) => {
+// 	if (isDefinitelyNotTwitchId(value)) {
+// 		return await ViewerCache.getInstance().getUserId(value)
+// 	}
 
-	if (await ViewerCache.getInstance().validateUserId(value)) {
-		return value
-	} else {
-		return await ViewerCache.getInstance().getUserId(value)
-	}
-})
+// 	if (await ViewerCache.getInstance().validateUserId(value)) {
+// 		return value
+// 	} else {
+// 		return await ViewerCache.getInstance().getUserId(value)
+// 	}
+// })
 
 //Twitch IDs only contain numbers, so if it has any non-number it must be a username.
 //BUT a twitch username CAN be only numbers. So we can't write an isTwitchId() without running an API query

@@ -9,7 +9,7 @@ import {
 	isSchemaType,
 } from "../schema/schema-base"
 import { SchemaType } from "../schema/schema-typing"
-import { registerRemoteDataDeserializer } from "../template/remote-templates"
+// import { registerRemoteDataDeserializer } from "../template/remote-templates"
 
 interface TimerBase {
 	[Symbol.toPrimitive](hint: "default" | "string" | "number"): any
@@ -233,13 +233,13 @@ function wrapTimerData(data: TimerData): Timer {
 	}
 }
 
-registerRemoteDataDeserializer("Timer", (data, context) => {
-	const timer = wrapTimerData(data.data as TimerData)
+// registerRemoteDataDeserializer("Timer", (data, context) => {
+// 	const timer = wrapTimerData(data.data as TimerData)
 
-	if (isTimerStarted(timer)) {
-		const remaining = getTimeRemaining(timer)
-		context.scheduleReEval(Math.min(remaining - Math.floor(remaining), 0.1))
-	}
+// 	if (isTimerStarted(timer)) {
+// 		const remaining = getTimeRemaining(timer)
+// 		context.scheduleReEval(Math.min(remaining - Math.floor(remaining), 0.1))
+// 	}
 
-	return timer
-})
+// 	return timer
+// })

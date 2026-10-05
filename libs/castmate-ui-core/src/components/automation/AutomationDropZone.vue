@@ -11,9 +11,6 @@
 import { Ref, inject, onMounted, ref, computed, onBeforeUnmount } from "vue"
 import { useAutomationEditState, type DropZone } from "../../util/automation-dragdrop"
 import { nanoid } from "nanoid/non-secure"
-import { useCommitUndo } from "../../main"
-
-const commitUndo = useCommitUndo()
 
 const props = withDefaults(
 	defineProps<{

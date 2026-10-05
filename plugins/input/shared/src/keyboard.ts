@@ -389,10 +389,10 @@ declare module "castmate-schema" {
 	}
 }
 
-registerType("KeyboardKey", {
-	constructor: KeyboardKey,
-})
+// registerType("KeyboardKey", {
+// 	constructor: KeyboardKey,
+// })
 
-registerType("KeyCombo", {
-	constructor: KeyCombo,
-})
+// registerType("KeyCombo", {
+// 	constructor: KeyCombo,
+// })

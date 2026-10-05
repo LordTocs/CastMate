@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { Toggle } from "castmate-schema"
+import { S, SchemaMeta, Toggle } from "castmate-schema"
 import { computed, onMounted, ref, useModel } from "vue"
 import ToggleSwitch from "../base-components/ToggleSwitch.vue"
 import { SchemaToggle } from "castmate-schema"
@@ -39,7 +39,8 @@ import { SharedDataInputProps, defaultStringIsTemplate, getDataLabel, hasDataLab
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import DataInputBaseMenu from "../base-components/DataInputBaseMenu.vue"
 import PInputGroup from "primevue/inputgroup"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
+import { useDataBinding, useDataUIBinding } from "../../../editor/data-binding.ts"
+import { useUndoCommitter } from "../../../main.ts"
 
 const props = defineProps<
 	{
@@ -56,8 +57,8 @@ const toggleModel = useUndoCommitter(model)
 
 const templateMode = ref(false)
 
-const canClear = computed(() => !props.schema.required)
-const canTemplate = computed(() => !!props.schema.template)
+const canClear = computed(() => !SchemaMeta.isOptional(props.schema))
+const canTemplate = computed(() => true)
 
 const inputMenu = ref<InstanceType<typeof DataInputBaseMenu>>()
 

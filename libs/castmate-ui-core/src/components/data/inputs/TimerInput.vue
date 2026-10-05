@@ -41,7 +41,8 @@ import { getTimeRemaining } from "castmate-schema"
 import { isTimerStarted } from "castmate-schema"
 import { pauseTimer } from "castmate-schema"
 import { startTimer } from "castmate-schema"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
+import { useDataBinding, useDataUIBinding } from "../../../editor/data-binding.ts"
+import { useUndoCommitter } from "../../../main.ts"
 
 const props = defineProps<
 	{

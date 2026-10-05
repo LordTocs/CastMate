@@ -3,7 +3,6 @@ import {
 	initializeAutomations,
 	useDocumentStore,
 	usePluginStore,
-	useProjectStore,
 	useResourceStore,
 	useMediaStore,
 	useActionQueueStore,
@@ -153,7 +152,6 @@ app.use(pinia)
 
 const initStore = useInitStore()
 const pluginStore = usePluginStore()
-const projecStore = useProjectStore()
 const documentStore = useDocumentStore()
 const resourceStore = useResourceStore()
 // const actionQueueStore = useActionQueueStore()
@@ -177,7 +175,7 @@ async function init() {
 	await initData()
 	await pluginStore.initialize()
 	await resourceStore.initialize()
-	await projecStore.initialize()
+	// await projecStore.initialize()
 
 	await initStore.waitForInit()
 

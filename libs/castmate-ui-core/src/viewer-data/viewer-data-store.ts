@@ -1,7 +1,7 @@
 import { SchemaData, ViewerDataObserver, ViewerDataRow, ViewerVariable } from "castmate-schema"
 import { defineStore } from "pinia"
 import { computed, MaybeRefOrGetter, onBeforeUnmount, onMounted, ref, toValue, watch } from "vue"
-import { handleIpcMessage, ProjectItem, useDockingStore, useIpcCaller, useProjectStore } from "../main"
+import { handleIpcMessage, useDockingStore, useIpcCaller } from "../main"
 import _cloneDeep from "lodash/cloneDeep"
 
 type ViewerData = Record<string, any>
@@ -15,7 +15,7 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 	const variables = ref(new Map<string, ViewerVariable>())
 
 	const dockingStore = useDockingStore()
-	const projectStore = useProjectStore()
+	// const projectStore = useProjectStore()
 
 	const getVariables = useIpcCaller<() => any[]>("viewer-data", "getVariables")
 	const setVariable = useIpcCaller<(provider: string, id: string, varname: string, value: any) => void>(
@@ -44,47 +44,47 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 	async function initialize() {
 		const vars = await getVariables()
 
-		for (const column of vars) {
-			variables.value.set(column.name, parseDefinition(column))
-		}
+		// for (const column of vars) {
+		// 	variables.value.set(column.name, parseDefinition(column))
+		// }
 
-		handleIpcMessage("viewer-data", "columnAdded", (event, ipcDef: IPCViewerVariable) => {
-			const newDef = parseDefinition(ipcDef)
+		// handleIpcMessage("viewer-data", "columnAdded", (event, ipcDef: IPCViewerVariable) => {
+		// 	const newDef = parseDefinition(ipcDef)
 
-			variables.value.set(ipcDef.name, newDef)
+		// 	variables.value.set(ipcDef.name, newDef)
 
-			for (const o of observers) {
-				o.onNewViewerVariable(newDef)
-			}
-		})
+		// 	for (const o of observers) {
+		// 		o.onNewViewerVariable(newDef)
+		// 	}
+		// })
 
-		handleIpcMessage("viewer-data", "columnRemoved", (event, name: string) => {
-			variables.value.delete(name)
+		// handleIpcMessage("viewer-data", "columnRemoved", (event, name: string) => {
+		// 	variables.value.delete(name)
 
-			for (const o of observers) {
-				o.onViewerVariableDeleted(name)
-			}
-		})
+		// 	for (const o of observers) {
+		// 		o.onViewerVariableDeleted(name)
+		// 	}
+		// })
 
-		handleIpcMessage(
-			"viewer-data",
-			"viewerDataChanged",
-			(event, provider: string, id: string, varName: string, value: any) => {
-				for (const o of observers) {
-					o.onViewerDataChanged(provider, id, varName, value)
-				}
-			}
-		)
+		// handleIpcMessage(
+		// 	"viewer-data",
+		// 	"viewerDataChanged",
+		// 	(event, provider: string, id: string, varName: string, value: any) => {
+		// 		for (const o of observers) {
+		// 			o.onViewerDataChanged(provider, id, varName, value)
+		// 		}
+		// 	}
+		// )
 
-		handleIpcMessage(
-			"viewer-data",
-			"viewerDataAdded",
-			(event, provider: string, id: string, data: ViewerDataRow) => {
-				for (const o of observers) {
-					o.onNewViewerData(provider, id, data)
-				}
-			}
-		)
+		// handleIpcMessage(
+		// 	"viewer-data",
+		// 	"viewerDataAdded",
+		// 	(event, provider: string, id: string, data: ViewerDataRow) => {
+		// 		for (const o of observers) {
+		// 			o.onNewViewerData(provider, id, data)
+		// 		}
+		// 	}
+		// )
 	}
 
 	async function queryViewerData(
@@ -96,15 +96,14 @@ export const useViewerDataStore = defineStore("viewer-data", () => {
 		return await queryPagedViewerData(start, end, sortBy, sortOrder)
 	}
 
-	const createViewerVariableIPC = useIpcCaller<(varDesc: IPCViewerVariable) => void>("viewer-data", "createVariable")
+	// const createViewerVariableIPC = useIpcCaller<(varDesc: IPCViewerVariable) => void>("viewer-data", "createVariable")
 
 	async function createViewerVariable(variableDesc: ViewerVariable) {
-		const ipcSchema = ipcConvertSchema(variableDesc.schema, "viewer-variable")
-
-		await createViewerVariableIPC({
-			name: variableDesc.name,
-			schema: ipcSchema,
-		})
+		// const ipcSchema = ipcConvertSchema(variableDesc.schema, "viewer-variable")
+		// await createViewerVariableIPC({
+		// 	name: variableDesc.name,
+		// 	schema: ipcSchema,
+		// })
 	}
 
 	async function editViewerVariable(id: string, desc: ViewerVariable) {}

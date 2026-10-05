@@ -1,15 +1,12 @@
 import { computed, App } from "vue"
 import {
-	ProjectGroup,
 	ResourceSchemaEdit,
-	getResourceAsProjectGroup,
 	handleIpcMessage,
 	handleIpcRpc,
 	useDataInputStore,
 	useDocumentStore,
 	useIpcCaller,
 	usePluginStore,
-	useProjectStore,
 	useResourceStore,
 } from "castmate-ui-core"
 
@@ -41,71 +38,71 @@ import WidgetOutlineStyleInput from "./components/style/border/WidgetOutlineStyl
 export function initPlugin(app: App<Element>) {
 	const dataStore = useDataInputStore()
 
-	dataStore.registerInputComponent(OverlayTextStyle, OverlayTextStyleInput)
-	dataStore.registerInputComponent(OverlayBlockStyle, OverlayBlockStyleInput)
-	dataStore.registerInputComponent(OverlayTextAlignment, OverlayTextAlignInput)
-	dataStore.registerInputComponent(OverlayWidget, OverlayWidgetInput)
-	dataStore.registerInputComponent(OverlayTransitionAnimation, OverlayTransitionAnimationInput)
-	dataStore.registerInputComponent(WidgetBorderRadius, WidgetBorderRadiusInput)
-	dataStore.registerInputComponent(WidgetBackgroundStyle, WidgetBackgroundStyleInput)
-	dataStore.registerInputComponent(WidgetOutlineStyle, WidgetOutlineStyleInput)
+	// dataStore.registerInputComponent(OverlayTextStyle, OverlayTextStyleInput)
+	// dataStore.registerInputComponent(OverlayBlockStyle, OverlayBlockStyleInput)
+	// dataStore.registerInputComponent(OverlayTextAlignment, OverlayTextAlignInput)
+	// dataStore.registerInputComponent(OverlayWidget, OverlayWidgetInput)
+	// dataStore.registerInputComponent(OverlayTransitionAnimation, OverlayTransitionAnimationInput)
+	// dataStore.registerInputComponent(WidgetBorderRadius, WidgetBorderRadiusInput)
+	// dataStore.registerInputComponent(WidgetBackgroundStyle, WidgetBackgroundStyleInput)
+	// dataStore.registerInputComponent(WidgetOutlineStyle, WidgetOutlineStyleInput)
 
 	const resourceStore = useResourceStore()
 	const documentStore = useDocumentStore()
 
 	const configStore = useOverlayRemoteConfigStore()
 
-	documentStore.registerDocumentComponent("overlay", OverlayEditorPageVue)
-	documentStore.registerSaveFunction("overlay", async (doc) => {
-		const docDataCopy = _cloneDeep(doc.data)
-		delete docDataCopy.name
-		await resourceStore.applyResourceConfig("Overlay", doc.id, docDataCopy)
-	})
+	// documentStore.registerDocumentComponent("overlay", OverlayEditorPageVue)
+	// documentStore.registerSaveFunction("overlay", async (doc) => {
+	// 	const docDataCopy = _cloneDeep(doc.data)
+	// 	delete docDataCopy.name
+	// 	await resourceStore.applyResourceConfig("Overlay", doc.id, docDataCopy)
+	// })
 
-	const projectStore = useProjectStore()
-	const overlayGroup = getResourceAsProjectGroup(app, {
-		resourceType: "Overlay",
-		resourceName: "Overlays",
-		groupIcon: "mdi mdi-picture-in-picture-top-right",
-		documentType: "overlay",
-		createView(resource): OverlayEditorView {
-			return {
-				editView: {
-					panState: {
-						zoomX: 1,
-						zoomY: 1,
-						panX: 0,
-						panY: 0,
-						panning: false,
-					},
-				},
-				obsId: undefined,
-			}
-		},
-	})
+	// const projectStore = useProjectStore()
+	// const overlayGroup = getResourceAsProjectGroup(app, {
+	// 	resourceType: "Overlay",
+	// 	resourceName: "Overlays",
+	// 	groupIcon: "mdi mdi-picture-in-picture-top-right",
+	// 	documentType: "overlay",
+	// 	createView(resource): OverlayEditorView {
+	// 		return {
+	// 			editView: {
+	// 				panState: {
+	// 					zoomX: 1,
+	// 					zoomY: 1,
+	// 					panX: 0,
+	// 					panY: 0,
+	// 					panning: false,
+	// 				},
+	// 			},
+	// 			obsId: undefined,
+	// 		}
+	// 	},
+	// })
 
-	resourceStore.registerConfigSchema("Overlay", {
-		type: Object,
-		properties: {
-			name: { type: String, name: "Overlay Name", required: true, default: "Overlay" },
-			size: {
-				name: "Size",
-				type: Object,
-				properties: {
-					width: { type: Number, required: true, name: "Width", default: 1920 },
-					height: { type: Number, required: true, name: "Height", default: 1080 },
-				},
-			},
-		},
-	})
+	// resourceStore.registerConfigSchema("Overlay", {
+	// 	type: Object,
+	// 	properties: {
+	// 		name: { type: String, name: "Overlay Name", required: true, default: "Overlay" },
+	// 		size: {
+	// 			name: "Size",
+	// 			type: Object,
+	// 			properties: {
+	// 				width: { type: Number, required: true, name: "Width", default: 1920 },
+	// 				height: { type: Number, required: true, name: "Height", default: 1080 },
+	// 			},
+	// 		},
+	// 	},
+	// })
 
-	resourceStore.registerEditComponent("Overlay", ResourceSchemaEdit, async (id, data: any) => {
-		await resourceStore.applyResourceConfig("Overlay", id, data)
-	})
+	// resourceStore.registerEditComponent("Overlay", ResourceSchemaEdit, async (id, data: any) => {
+	// 	await resourceStore.applyResourceConfig("Overlay", id, data)
+	// })
 
-	resourceStore.registerCreateComponent("Overlay", ResourceSchemaEdit)
+	// resourceStore.registerCreateComponent("Overlay", ResourceSchemaEdit)
 
-	projectStore.registerProjectGroupItem(overlayGroup)
+	// projectStore.registerProjectGroupItem(overlayGroup)
 
 	configStore.initialize()
 }

@@ -8,12 +8,12 @@
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { FilePath, SchemaFilePath } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { InputBox, LabelFloater, useIpcCaller, usePropagationStop } from "../../../main"
+import { InputBox, LabelFloater, useIpcCaller, usePropagationStop, useUndoCommitter } from "../../../main"
 import TemplateToggle from "../base-components/TemplateToggle.vue"
 import { ref, useModel } from "vue"
 import { useValidator } from "../../../util/validation"
 import PButton from "primevue/button"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
+import { useDataBinding, useDataUIBinding } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{
