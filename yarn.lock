@@ -2067,6 +2067,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^26.6.4":
+  version: 26.6.4
+  resolution: "@types/node@npm:26.6.4"
+  dependencies:
+    undici-types: "npm:~8.9.0"
+  checksum: 10/649173a03497020b8d3624a5149e0286bd175baf6d1df070c538637ccb256ce5554a76c5b63b454bda2cdb1821fa457e074477a75c3c78fc8f562d5c4a31cba8
+  languageName: node
+  linkType: hard
+
 "@types/plist@npm:^3.0.1":
   version: 3.0.5
   resolution: "@types/plist@npm:3.0.5"
@@ -3609,7 +3618,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-advss-renderer@workspace:^, castmate-plugin-advss-renderer@workspace:plugins/advss/renderer":
+"castmate-plugin-advss-renderer@workspace:plugins/advss/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-advss-renderer@workspace:plugins/advss/renderer"
   dependencies:
@@ -3659,7 +3668,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-aitum-renderer@workspace:^, castmate-plugin-aitum-renderer@workspace:plugins/aitum/renderer":
+"castmate-plugin-aitum-renderer@workspace:plugins/aitum/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-aitum-renderer@workspace:plugins/aitum/renderer"
   dependencies:
@@ -3708,7 +3717,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-bluesky-renderer@workspace:^, castmate-plugin-bluesky-renderer@workspace:plugins/bluesky/renderer":
+"castmate-plugin-bluesky-renderer@workspace:plugins/bluesky/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-bluesky-renderer@workspace:plugins/bluesky/renderer"
   dependencies:
@@ -3778,7 +3787,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-dashboards-renderer@workspace:^, castmate-plugin-dashboards-renderer@workspace:plugins/dashboards/renderer":
+"castmate-plugin-dashboards-renderer@workspace:plugins/dashboards/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-dashboards-renderer@workspace:plugins/dashboards/renderer"
   dependencies:
@@ -3828,7 +3837,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-discord-renderer@workspace:^, castmate-plugin-discord-renderer@workspace:plugins/discord/renderer":
+"castmate-plugin-discord-renderer@workspace:plugins/discord/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-discord-renderer@workspace:plugins/discord/renderer"
   dependencies:
@@ -3874,7 +3883,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-donordrive-renderer@workspace:^, castmate-plugin-donordrive-renderer@workspace:plugins/donordrive/renderer":
+"castmate-plugin-donordrive-renderer@workspace:plugins/donordrive/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-donordrive-renderer@workspace:plugins/donordrive/renderer"
   dependencies:
@@ -3973,7 +3982,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-govee-renderer@workspace:^, castmate-plugin-govee-renderer@workspace:plugins/govee/renderer":
+"castmate-plugin-govee-renderer@workspace:plugins/govee/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-govee-renderer@workspace:plugins/govee/renderer"
   dependencies:
@@ -4020,7 +4029,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-http-renderer@workspace:^, castmate-plugin-http-renderer@workspace:plugins/http/renderer":
+"castmate-plugin-http-renderer@workspace:plugins/http/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-http-renderer@workspace:plugins/http/renderer"
   dependencies:
@@ -4066,7 +4075,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-input-renderer@workspace:^, castmate-plugin-input-renderer@workspace:plugins/input/renderer":
+"castmate-plugin-input-renderer@workspace:plugins/input/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-input-renderer@workspace:plugins/input/renderer"
   dependencies:
@@ -4114,7 +4123,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-iot-renderer@workspace:^, castmate-plugin-iot-renderer@workspace:plugins/iot/renderer":
+"castmate-plugin-iot-renderer@workspace:plugins/iot/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-iot-renderer@workspace:plugins/iot/renderer"
   dependencies:
@@ -4164,7 +4173,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-lifx-renderer@workspace:^, castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer":
+"castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-lifx-renderer@workspace:plugins/lifx/renderer"
   dependencies:
@@ -4212,7 +4221,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-minecraft-renderer@workspace:^, castmate-plugin-minecraft-renderer@workspace:plugins/minecraft/renderer":
+"castmate-plugin-minecraft-renderer@workspace:plugins/minecraft/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-minecraft-renderer@workspace:plugins/minecraft/renderer"
   dependencies:
@@ -4311,7 +4320,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-os-renderer@workspace:^, castmate-plugin-os-renderer@workspace:plugins/os/renderer":
+"castmate-plugin-os-renderer@workspace:plugins/os/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-os-renderer@workspace:plugins/os/renderer"
   dependencies:
@@ -4386,7 +4395,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-overlays-renderer@workspace:^, castmate-plugin-overlays-renderer@workspace:plugins/overlays/renderer":
+"castmate-plugin-overlays-renderer@workspace:plugins/overlays/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-overlays-renderer@workspace:plugins/overlays/renderer"
   dependencies:
@@ -4442,7 +4451,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-philips-hue-renderer@workspace:^, castmate-plugin-philips-hue-renderer@workspace:plugins/philips-hue/renderer":
+"castmate-plugin-philips-hue-renderer@workspace:plugins/philips-hue/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-philips-hue-renderer@workspace:plugins/philips-hue/renderer"
   dependencies:
@@ -4511,7 +4520,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-random-renderer@workspace:^, castmate-plugin-random-renderer@workspace:plugins/random/renderer":
+"castmate-plugin-random-renderer@workspace:plugins/random/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-random-renderer@workspace:plugins/random/renderer"
   dependencies:
@@ -4581,7 +4590,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-remote-renderer@workspace:^, castmate-plugin-remote-renderer@workspace:plugins/remote/renderer":
+"castmate-plugin-remote-renderer@workspace:plugins/remote/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-remote-renderer@workspace:plugins/remote/renderer"
   dependencies:
@@ -4690,7 +4699,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-spellcast-renderer@workspace:^, castmate-plugin-spellcast-renderer@workspace:plugins/spellcast/renderer":
+"castmate-plugin-spellcast-renderer@workspace:plugins/spellcast/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-spellcast-renderer@workspace:plugins/spellcast/renderer"
   dependencies:
@@ -4739,7 +4748,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-stream-plans-renderer@workspace:^, castmate-plugin-stream-plans-renderer@workspace:plugins/stream-plans/renderer":
+"castmate-plugin-stream-plans-renderer@workspace:plugins/stream-plans/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-stream-plans-renderer@workspace:plugins/stream-plans/renderer"
   dependencies:
@@ -4788,7 +4797,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-time-renderer@workspace:^, castmate-plugin-time-renderer@workspace:plugins/time/renderer":
+"castmate-plugin-time-renderer@workspace:plugins/time/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-time-renderer@workspace:plugins/time/renderer"
   dependencies:
@@ -4837,7 +4846,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-tplink-kasa-renderer@workspace:^, castmate-plugin-tplink-kasa-renderer@workspace:plugins/tplink-kasa/renderer":
+"castmate-plugin-tplink-kasa-renderer@workspace:plugins/tplink-kasa/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-tplink-kasa-renderer@workspace:plugins/tplink-kasa/renderer"
   dependencies:
@@ -4883,7 +4892,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-twinkly-renderer@workspace:^, castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer":
+"castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-twinkly-renderer@workspace:plugins/twinkly/renderer"
   dependencies:
@@ -5013,7 +5022,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-variables-renderer@workspace:^, castmate-plugin-variables-renderer@workspace:plugins/variables/renderer":
+"castmate-plugin-variables-renderer@workspace:plugins/variables/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-variables-renderer@workspace:plugins/variables/renderer"
   dependencies:
@@ -5061,7 +5070,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-voicemod-renderer@workspace:^, castmate-plugin-voicemod-renderer@workspace:plugins/voicemod/renderer":
+"castmate-plugin-voicemod-renderer@workspace:plugins/voicemod/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-voicemod-renderer@workspace:plugins/voicemod/renderer"
   dependencies:
@@ -5100,7 +5109,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"castmate-plugin-wyze-renderer@workspace:^, castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer":
+"castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer":
   version: 0.0.0-use.local
   resolution: "castmate-plugin-wyze-renderer@workspace:plugins/wyze/renderer"
   dependencies:
@@ -5190,6 +5199,7 @@ __metadata:
   resolution: "castmate-schema@workspace:libs/castmate-schema"
   dependencies:
     "@types/lodash": "npm:^4.14.192"
+    "@types/node": "npm:^26.6.4"
     lodash: "npm:^4.17.21"
     ts-toolbelt: "npm:*"
     typescript: "npm:*"
@@ -5254,62 +5264,34 @@ __metadata:
     castmate-overlay-core: "workspace:^"
     castmate-overlay-widget-loader: "workspace:^"
     castmate-plugin-advss-main: "workspace:^"
-    castmate-plugin-advss-renderer: "workspace:^"
     castmate-plugin-aitum-main: "workspace:^"
-    castmate-plugin-aitum-renderer: "workspace:^"
     castmate-plugin-bluesky-main: "workspace:^"
-    castmate-plugin-bluesky-renderer: "workspace:^"
     castmate-plugin-dashboards-main: "workspace:^"
-    castmate-plugin-dashboards-renderer: "workspace:^"
     castmate-plugin-discord-main: "workspace:^"
-    castmate-plugin-discord-renderer: "workspace:^"
     castmate-plugin-donordrive-main: "workspace:^"
-    castmate-plugin-donordrive-renderer: "workspace:^"
     castmate-plugin-elgato-main: "workspace:^"
     castmate-plugin-govee-main: "workspace:^"
-    castmate-plugin-govee-renderer: "workspace:^"
     castmate-plugin-http-main: "workspace:^"
-    castmate-plugin-http-renderer: "workspace:^"
     castmate-plugin-input-main: "workspace:^"
-    castmate-plugin-input-renderer: "workspace:^"
     castmate-plugin-iot-main: "workspace:^"
-    castmate-plugin-iot-renderer: "workspace:^"
     castmate-plugin-lifx-main: "workspace:^"
-    castmate-plugin-lifx-renderer: "workspace:^"
     castmate-plugin-minecraft-main: "workspace:^"
-    castmate-plugin-minecraft-renderer: "workspace:^"
     castmate-plugin-obs-main: "workspace:^"
-    castmate-plugin-obs-renderer: "workspace:^"
     castmate-plugin-os-main: "workspace:^"
-    castmate-plugin-os-renderer: "workspace:^"
-    castmate-plugin-overlays-renderer: "workspace:^"
     castmate-plugin-overlays-shared: "workspace:^"
     castmate-plugin-philips-hue-main: "workspace:^"
-    castmate-plugin-philips-hue-renderer: "workspace:^"
     castmate-plugin-random-main: "workspace:^"
-    castmate-plugin-random-renderer: "workspace:^"
     castmate-plugin-remote-main: "workspace:^"
-    castmate-plugin-remote-renderer: "workspace:^"
     castmate-plugin-sound-main: "workspace:^"
-    castmate-plugin-sound-renderer: "workspace:^"
     castmate-plugin-spellcast-main: "workspace:^"
-    castmate-plugin-spellcast-renderer: "workspace:^"
     castmate-plugin-stream-plans-main: "workspace:^"
-    castmate-plugin-stream-plans-renderer: "workspace:^"
     castmate-plugin-time-main: "workspace:^"
-    castmate-plugin-time-renderer: "workspace:^"
     castmate-plugin-tplink-kasa-main: "workspace:^"
-    castmate-plugin-tplink-kasa-renderer: "workspace:^"
     castmate-plugin-twinkly-main: "workspace:^"
-    castmate-plugin-twinkly-renderer: "workspace:^"
     castmate-plugin-twitch-main: "workspace:^"
-    castmate-plugin-twitch-renderer: "workspace:^"
     castmate-plugin-variables-main: "workspace:^"
-    castmate-plugin-variables-renderer: "workspace:^"
     castmate-plugin-voicemod-main: "workspace:^"
-    castmate-plugin-voicemod-renderer: "workspace:^"
     castmate-plugin-wyze-main: "workspace:^"
-    castmate-plugin-wyze-renderer: "workspace:^"
     castmate-schema: "workspace:^"
     castmate-ui-core: "workspace:^"
     castmate-vite: "workspace:^"
@@ -11197,6 +11179,13 @@ __metadata:
   version: 6.20.0
   resolution: "undici-types@npm:6.20.0"
   checksum: 10/583ac7bbf4ff69931d3985f4762cde2690bb607844c16a5e2fbb92ed312fe4fa1b365e953032d469fa28ba8b224e88a595f0b10a449332f83fa77c695e567dbe
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~8.9.0":
+  version: 8.9.0
+  resolution: "undici-types@npm:8.9.0"
+  checksum: 10/8785591929de2b71d281c684e915c4a8c41becc225adbf42a3e89148f8b384724a21533494c30a1cbb85b4cbccd088d020788ff4f2d605013eb2863cd47a1639
   languageName: node
   linkType: hard
 
