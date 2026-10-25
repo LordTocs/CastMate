@@ -51,6 +51,8 @@ export class Profile extends FileResource<ProfileConfig, ProfileState> {
 	}
 
 	async load(savedConfig: object): Promise<boolean> {
+		if (!("activationMode" in savedConfig)) return false
+
 		const result = await super.load(savedConfig)
 		await this.setupReactivity()
 		return result

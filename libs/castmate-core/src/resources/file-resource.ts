@@ -25,6 +25,9 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 	}
 
 	async load(savedConfig: object): Promise<boolean> {
+		if (!savedConfig) return false
+		if (typeof savedConfig != "object") return false
+
 		await super.applyConfig(savedConfig) //Intentially call super here to avoid triggering a save
 		return true
 	}
@@ -52,6 +55,9 @@ export class FileResource<ConfigType extends object, StateType extends object = 
 	}
 
 	async save() {
+		if (!this.savedConfig) throw new Error("Config corrupted! Not saving!")
+		if (typeof this.savedConfig != "object") throw new Error("Config corrupted! Not Saving!")
+
 		await writeYAML(this.savedConfig, this.filepath)
 	}
 
@@ -107,6 +113,10 @@ export async function loadFileResources<T extends FileIshConstructor>(resourceCo
 
 		try {
 			const data = await loadYAML(fullFile)
+
+			if (!data) return undefined
+			if (typeof data != "object") return undefined
+
 			const resource = new resourceConstructor()
 			//@ts-ignore
 			resource._id = id
