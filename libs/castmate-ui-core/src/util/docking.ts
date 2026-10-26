@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid/non-secure"
 import { ComputedRef, inject, MaybeRefOrGetter, ref, Ref, type Component } from "vue"
 import { useDocumentStore } from "./document"
-import { useDockingStore, iterTabs, useSaveAskDialog, undoDataView } from "../main"
+import { useDockingStore, iterTabs, useSaveAskDialog, undoEditorAction } from "../main"
 import { useConfirm, useDialog } from "primevue"
 import { config } from "process"
 import SaveAskDialog from "../components/dialogs/SaveAskDialog.vue"
@@ -85,7 +85,7 @@ export function useSaveActiveTab() {
 		if (!tab) return
 		if (!tab.pageData?.documentId) return
 
-		documentStore.saveDocument(tab.pageData.documentId)
+		//documentStore.saveDocument(tab.pageData.documentId)
 	}
 }
 
@@ -101,10 +101,10 @@ export function useUndoActiveTab() {
 		if (!tab) return
 		if (!tab.pageData?.documentId) return
 
-		const doc = documentStore.documents.get(tab.pageData.documentId)
+		const doc = documentStore.openDocuments.get(tab.pageData.documentId)
 		if (!doc) return
 
-		await undoDataView(doc.view)
+		//await undoEditorAction(doc.editor)
 	}
 }
 
@@ -115,7 +115,7 @@ export function useSaveAllTabs() {
 	return () => {
 		for (const t of iterTabs(dockingStore.rootDockArea)) {
 			if (!t.pageData?.documentId) continue
-			documentStore.saveDocument(t.pageData.documentId)
+			//documentStore.saveDocument(t.pageData.documentId)
 		}
 	}
 }
