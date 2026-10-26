@@ -29,7 +29,7 @@
 import PInputText from "primevue/inputtext"
 import PPassword from "primevue/password"
 import PButton from "primevue/button"
-import LabelFloater from "../data/base-components/LabelFloater.vue"
+import LabelFloater from "../ui/base-components/common/LabelFloater.vue"
 import { ref } from "vue"
 import { useDialogRef } from "../../main"
 

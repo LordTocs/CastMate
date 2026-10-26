@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import DropDownPanel from "../DropDownPanel.vue"
+import DropDownPanel from "../../../ui/base-components/autocomplete/DropDownPanel.vue"
 
 import MediaTreeRoot from "../../../media/MediaTreeRoot.vue"
 import { usePropagationStop } from "../../../../main"

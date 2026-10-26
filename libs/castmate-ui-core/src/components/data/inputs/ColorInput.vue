@@ -20,15 +20,15 @@
 
 <script setup lang="ts">
 import DataInputBase from "../base-components/DataInputBase.vue"
-import InputBox from "../base-components/InputBox.vue"
+import InputBox from "../../ui/base-components/common/InputBox.vue"
 import { Color, isHexColor, SchemaColor } from "castmate-schema"
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import PColorPicker, { ColorPickerChangeEvent } from "primevue/colorpicker"
 import { SharedDataInputProps } from "../DataInputTypes"
-import DropDownPanel from "../base-components/DropDownPanel.vue"
+import DropDownPanel from "../../ui/base-components/autocomplete/DropDownPanel.vue"
 import { useDataBinding, useDataUIBinding } from "../../../editor/data-binding.ts"
 
-import CColorPicker from "../base-components/CColorPicker.vue"
+import CColorPicker from "../../ui/CColorPicker.vue"
 
 const props = defineProps<
 	{

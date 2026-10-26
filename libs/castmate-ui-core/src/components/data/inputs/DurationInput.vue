@@ -8,7 +8,7 @@
 import DataInputBase from "../base-components/DataInputBase.vue"
 import { Duration } from "castmate-schema"
 import { SchemaDuration } from "castmate-schema"
-import DurationField from "../base-components/DurationField.vue"
+import DurationField from "../../ui/base-components/fields/DurationField.vue"
 import { ref, useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"

@@ -59,12 +59,12 @@
 <script setup lang="ts">
 import { Duration, parseDurationParts } from "castmate-schema"
 import { computed, onMounted, ref, useModel, watch } from "vue"
-import FakeInputString from "../../fake-input/FakeInputString.vue"
-import FakeInputBackbone from "../../fake-input/FakeInputBackbone.vue"
-import { InputSelection, PartialSelectionResult, useCombinedPartialSelects } from "../../fake-input/FakeInputTypes"
-import { useClickDragRect, usePropagationStop } from "../../../util/dom"
+import FakeInputString from "../fake-input/FakeInputString.vue"
+import FakeInputBackbone from "../fake-input/FakeInputBackbone.vue"
+import { InputSelection, PartialSelectionResult, useCombinedPartialSelects } from "../fake-input/FakeInputTypes.ts"
+import { useClickDragRect, usePropagationStop } from "../../../../util/dom.ts"
 import { emit } from "process"
-import InputBox from "./InputBox.vue"
+import InputBox from "../common/InputBox.vue"
 import { useEventListener } from "@vueuse/core"
 
 const props = defineProps<{

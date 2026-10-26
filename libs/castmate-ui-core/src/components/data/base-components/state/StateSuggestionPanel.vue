@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { ComputedRef, computed, inject, ref, useModel } from "vue"
-import DropDownPanel from "../DropDownPanel.vue"
+import DropDownPanel from "../../../ui/base-components/autocomplete/DropDownPanel.vue"
 import { usePluginStore, TriggerSelection, injectDataContextSchema } from "../../../../main"
 import StateListItem from "../state/StateListItem.vue"
 
@@ -62,7 +62,7 @@ const suggestions = computed(() => {
 
 	const contextSchema = dataContext.value
 
-	if (contextSchema.type == Object && "properties" in contextSchema) {
+	if (contextSchema.type == "Object" && "properties" in contextSchema) {
 		for (const propKey in contextSchema.properties) {
 			const prop = contextSchema.properties[propKey]
 			result.push({
@@ -82,9 +82,9 @@ const suggestions = computed(() => {
 	for (const plugin of pluginStore.pluginMap.values()) {
 		for (const key in plugin.state) {
 			result.push({
-				id: `${plugin.id}.${key}`,
+				id: `${plugin.spec.id}.${key}`,
 				state: key,
-				plugin: plugin.id,
+				plugin: plugin.spec.id,
 			})
 		}
 	}

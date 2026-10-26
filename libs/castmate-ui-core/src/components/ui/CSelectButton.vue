@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import PSelectButton from "primevue/selectbutton"
-import { useDataBinding, useUndoCommitter } from "../../../main"
+import { useDataBinding, useUndoCommitter } from "../../main"
 
 const props = defineProps<{
 	localPath?: string

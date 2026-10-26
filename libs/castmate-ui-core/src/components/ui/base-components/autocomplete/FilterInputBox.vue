@@ -48,7 +48,7 @@
 import { computed, nextTick, ref, useModel } from "vue"
 
 import PInputText from "primevue/inputtext"
-import { useDataUIBinding, usePropagationStop } from "../../../main"
+import { useDataUIBinding, usePropagationStop } from "../../../../main"
 
 const props = withDefaults(
 	defineProps<{

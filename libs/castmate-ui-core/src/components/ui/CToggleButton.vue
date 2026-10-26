@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import PButton from "primevue/button"
-import { useDataBinding, useDataUIBinding, usePropagationStop, useUndoCommitter } from "../../../main"
+import { useDataBinding, useDataUIBinding, usePropagationStop, useUndoCommitter } from "../../main"
 import { ref } from "vue"
 
 const props = defineProps<{

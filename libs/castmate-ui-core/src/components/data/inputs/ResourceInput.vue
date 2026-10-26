@@ -50,7 +50,7 @@ import _clamp from "lodash/clamp"
 import _isMatch from "lodash/isMatch"
 import { getDataLabel, SharedDataInputProps } from "../DataInputTypes"
 
-import CAutocomplete from "../base-components/CAutocomplete.vue"
+import CAutocomplete from "../../ui/CAutocomplete.vue"
 
 const props = defineProps<
 	{

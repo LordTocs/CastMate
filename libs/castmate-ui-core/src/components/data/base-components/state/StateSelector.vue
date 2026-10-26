@@ -15,7 +15,7 @@
 			</template>
 
 			<template #groupHeader="{ item }">
-				<li
+				<!-- <li
 					class="header text-center mb-1 pb-2"
 					:style="{ borderBottom: `solid 2px ${pluginStore.pluginMap.get(item.plugin)?.color}` }"
 				>
@@ -26,7 +26,7 @@
 						:style="{ color: pluginStore.pluginMap.get(item.plugin)?.color }"
 					></i
 					>{{ pluginStore.pluginMap.get(item.plugin)?.name }}
-				</li>
+				</li> -->
 			</template>
 
 			<template #item="{ item, focused, highlighted, onClick }">
@@ -45,11 +45,11 @@
 
 <script setup lang="ts">
 import { computed, useModel } from "vue"
-import CAutocomplete from "../CAutocomplete.vue"
+import CAutocomplete from "../../../ui/CAutocomplete.vue"
 import { usePluginStore } from "../../../../plugins/plugin-store"
 import StateListItem from "./StateListItem.vue"
-import LabelFloater from "../LabelFloater.vue"
-import DropListItem from "../DropListItem.vue"
+import LabelFloater from "../../../ui/base-components/common/LabelFloater.vue"
+import DropListItem from "../../../ui/base-components/autocomplete/DropListItem.vue"
 import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{
@@ -90,8 +90,8 @@ const items = computed(() => {
 	for (const plugin of pluginStore.pluginMap.values()) {
 		for (const stateKey in plugin.state) {
 			result.push({
-				id: `${plugin.id}.${stateKey}`,
-				plugin: plugin.id,
+				id: `${plugin.spec.id}.${stateKey}`,
+				plugin: plugin.spec.id,
 				state: stateKey,
 			})
 		}

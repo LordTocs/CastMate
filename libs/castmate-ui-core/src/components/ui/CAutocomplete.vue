@@ -57,13 +57,13 @@ import { ref, useModel, nextTick, watch, computed } from "vue"
 import PButton from "primevue/button"
 import PInputGroup from "primevue/inputgroup"
 import PChevronDownIcon from "@primevue/icons/chevrondown"
-import { usePropagationStop } from "../../../util/dom"
-import { getItemText, ItemType, AutocompleteItemProps, groupFilteredItems } from "../../../util/autocomplete-helpers"
+import { usePropagationStop } from "../../util/dom.ts"
+import { getItemText, ItemType, AutocompleteItemProps, groupFilteredItems } from "../../util/autocomplete-helpers.ts"
 
 import _clamp from "lodash/clamp"
-import FilterInputBox from "./FilterInputBox.vue"
-import AutocompleteDropList from "./AutocompleteDropList.vue"
-import { useUndoCommitter } from "../../../main"
+import FilterInputBox from "./base-components/autocomplete/FilterInputBox.vue"
+import AutocompleteDropList from "./base-components/autocomplete/AutocompleteDropList.vue"
+import { useUndoCommitter } from "../../main.ts"
 
 const props = withDefaults(
 	defineProps<

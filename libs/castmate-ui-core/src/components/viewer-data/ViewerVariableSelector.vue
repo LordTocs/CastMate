@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 import { useViewerDataStore } from "../../viewer-data/viewer-data-store"
-import CAutocomplete from "../data/base-components/CAutocomplete.vue"
+import CAutocomplete from "../ui/CAutocomplete.vue"
 import { computed, useModel } from "vue"
 
 const props = withDefaults(

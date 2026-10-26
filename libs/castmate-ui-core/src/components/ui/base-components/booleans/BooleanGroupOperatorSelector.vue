@@ -10,7 +10,7 @@ import PDropdown from "primevue/dropdown"
 import type { MenuItem } from "primevue/menuitem"
 import { injectScrollAttachable } from "../../../../main"
 
-import CDropdown from "../CDropdown.vue"
+import CDropdown from "../../../ui/CDropdown.vue"
 
 const props = defineProps<{
 	modelValue: "and" | "or"

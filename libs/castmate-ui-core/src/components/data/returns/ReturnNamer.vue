@@ -14,14 +14,14 @@
 </template>
 
 <script setup lang="ts">
-import { SchemaObj } from "castmate-schema"
+import { SchemaObject } from "castmate-schema"
 import { computed, useModel } from "vue"
-import VariableNameInput from "../base-components/VariableNameInput.vue"
-import LabelFloater from "../base-components/LabelFloater.vue"
+import VariableNameInput from "../../ui/base-components/fields/VariableNameField.vue"
+import LabelFloater from "../../ui/base-components/common/LabelFloater.vue"
 
 const props = defineProps<{
 	modelValue: Record<string, string> | undefined
-	resultSchema: SchemaObj
+	resultSchema: SchemaObject
 }>()
 
 interface ReturnNamePair {

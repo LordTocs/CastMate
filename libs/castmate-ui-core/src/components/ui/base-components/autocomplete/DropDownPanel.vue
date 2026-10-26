@@ -21,7 +21,7 @@ import { ref, useModel, nextTick, watch, onBeforeUnmount, toValue } from "vue"
 import PPortal from "primevue/portal"
 import vFocusTrap from "primevue/focustrap"
 import { usePrimeVue } from "primevue/config"
-import { injectScrollAttachable, positionPortal, stopPropagation, useArtificialScrollAttach } from "../../../main"
+import { injectScrollAttachable, positionPortal, stopPropagation, useArtificialScrollAttach } from "../../../../main"
 import { onClickOutside, useEventListener, useResizeObserver, useScroll } from "@vueuse/core"
 
 import { ZIndex } from "@primeuix/utils/zindex"

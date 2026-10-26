@@ -79,7 +79,6 @@ import PButton from "primevue/button"
 import PInputGroup from "primevue/inputgroup"
 import { Command, CommandMode, SchemaCommand, StringModeCommand, getCommandInfoString } from "castmate-schema"
 import { computed, ref, useModel } from "vue"
-import LabelFloater from "../base-components/LabelFloater.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import CommandArgumentEdit from "../base-components/commands/CommandArgumentEdit.vue"
 import {
@@ -90,7 +89,7 @@ import {
 	useUndoCommitter,
 } from "../../../main"
 import { nanoid } from "nanoid/non-secure"
-import CCheckBox from "../base-components/CCheckBox.vue"
+import CCheckBox from "../../ui/CCheckBox.vue"
 
 import CommandMatchInput from "../base-components/commands/CommandMatchInput.vue"
 

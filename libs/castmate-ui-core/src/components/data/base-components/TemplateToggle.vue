@@ -65,7 +65,7 @@ const emit = defineEmits(["update:modelValue"])
 const model = useModel(props, "modelValue")
 const undoModel = useUndoCommitter(model)
 
-const commitUndo = useCommitUndo(model)
+const commitUndo = useCommitUndo()
 
 const stopPropagation = usePropagationStop()
 

@@ -48,8 +48,8 @@ import {
 	getPrevItem,
 	findItem,
 	groupItems,
-} from "../../../util/autocomplete-helpers"
-import { usePropagationStop } from "../../../main"
+} from "../../../../util/autocomplete-helpers.ts"
+import { usePropagationStop } from "../../../../main.ts"
 import DropListItem from "./DropListItem.vue"
 
 const props = defineProps<

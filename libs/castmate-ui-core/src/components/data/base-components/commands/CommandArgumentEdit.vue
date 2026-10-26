@@ -30,10 +30,10 @@ import type { MenuItem } from "primevue/menuitem"
 import { computed, useModel } from "vue"
 import { CommandArgument } from "castmate-schema"
 import PDropdown from "primevue/dropdown"
-import LabelFloater from "../LabelFloater.vue"
-import VariableNameInput from "../VariableNameInput.vue"
+import LabelFloater from "../../../ui/base-components/common/LabelFloater.vue"
+import VariableNameInput from "../../../ui/base-components/fields/VariableNameField.vue"
 import PButton from "primevue/button"
-import CDropdown from "../CDropdown.vue"
+import CDropdown from "../../../ui/CDropdown.vue"
 import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{

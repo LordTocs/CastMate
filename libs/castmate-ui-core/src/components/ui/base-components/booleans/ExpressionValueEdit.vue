@@ -1,6 +1,6 @@
 <template>
 	<div class="boolean-expression">
-		<p-tabs v-model:value="tabModel">
+		<!-- <p-tabs v-model:value="tabModel">
 			<p-tab-list>
 				<p-tab value="0" class="small-tab">State</p-tab>
 				<p-tab value="1" class="small-tab">Value</p-tab>
@@ -39,7 +39,7 @@
 					</div>
 				</p-tab-panel>
 			</p-tab-panels>
-		</p-tabs>
+		</p-tabs> -->
 	</div>
 </template>
 
@@ -49,7 +49,7 @@ import {
 	ExpressionValue,
 	isStateValueExpr,
 	isValueValueExpr,
-	FullDataTypeMetaData,
+	// FullDataTypeMetaData,
 	SchemaTypeMetaData,
 	SchemaTypeMap,
 } from "castmate-schema"
@@ -59,13 +59,13 @@ import PTabList from "primevue/tablist"
 import PTabPanels from "primevue/tabpanels"
 import PTabPanel from "primevue/tabpanel"
 
-import StateSelector from "../state/StateSelector.vue"
-import DataInput from "../../DataInput.vue"
+// import StateSelector from "../state/StateSelector.vue"
+//import DataInput from "../../DataInput.vue"
 import { computed, useModel, watch } from "vue"
 import { getSchemaMetaData } from "castmate-schema"
 
 import type { MenuItem } from "primevue/menuitem"
-import CDropdown from "../CDropdown.vue"
+import CDropdown from "../../../ui/CDropdown.vue"
 import { useDataBinding } from "../../../../main"
 
 const props = defineProps<{

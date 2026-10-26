@@ -17,7 +17,7 @@ import { Enumable, EnumItem, Schema } from "castmate-schema"
 import { computed, onMounted, ref, useModel } from "vue"
 import _isFunction from "lodash/isFunction"
 import { isObject } from "@vueuse/core"
-import CAutocomplete from "./CAutocomplete.vue"
+import CAutocomplete from "../../ui/CAutocomplete.vue"
 
 const props = defineProps<{
 	modelValue: any

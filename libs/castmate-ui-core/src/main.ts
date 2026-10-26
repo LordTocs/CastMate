@@ -30,30 +30,30 @@ export { default as AccountSettingList } from "./components/account/AccountSetti
 export { default as ResourceSettingList } from "./components/resources/ResourceSettingList.vue"
 export { default as ResourceSchemaEdit } from "./components/resources/ResourceSchemaEdit.vue"
 
-export { default as InputBox } from "./components/data/base-components/InputBox.vue"
-export { default as LabelFloater } from "./components/data/base-components/LabelFloater.vue"
+export { default as InputBox } from "./components/ui/base-components/common/InputBox.vue"
+export { default as LabelFloater } from "./components/ui/base-components/common/LabelFloater.vue"
 export { default as TemplateToggle } from "./components/data/base-components/TemplateToggle.vue"
 
-export { default as AutocompleteDropList } from "./components/data/base-components/AutocompleteDropList.vue"
+export { default as AutocompleteDropList } from "./components/ui/base-components/autocomplete/AutocompleteDropList.vue"
 export { default as EnumInput } from "./components/data/base-components/EnumInput.vue"
 export { default as DataBindingPath } from "./components/data/binding/DataBindingPath.vue"
 export { default as BooleanExpressionInput } from "./components/data/inputs/BooleanExpressionInput.vue"
-export { default as DropDownPanel } from "./components/data/base-components/DropDownPanel.vue"
+export { default as DropDownPanel } from "./components/ui/base-components/autocomplete/DropDownPanel.vue"
 
-export { default as DurationField } from "./components/data/base-components/DurationField.vue"
-export { default as NumberField } from "./components/data/base-components/NumberField.vue"
+export { default as DurationField } from "./components/ui/base-components/fields/DurationField.vue"
+export { default as NumberField } from "./components/ui/base-components/fields/NumberField.vue"
 
-export { default as CTextInput } from "./components/data/base-components/CTextInput.vue"
-export { default as CAutocomplete } from "./components/data/base-components/CAutocomplete.vue"
-export { default as CDurationInput } from "./components/data/base-components/CDurationInput.vue"
-export { default as CNumberInput } from "./components/data/base-components/CNumberInput.vue"
-export { default as CDropdown } from "./components/data/base-components/CDropdown.vue"
-export { default as CCheckBox } from "./components/data/base-components/CCheckBox.vue"
-export { default as CSelectButton } from "./components/data/base-components/CSelectButton.vue"
-export { default as CColorPicker } from "./components/data/base-components/CColorPicker.vue"
-export { default as CToggleButton } from "./components/data/base-components/CToggleButton.vue"
-export { default as CAngleInput } from "./components/data/base-components/numerics/CAngleInput.vue"
-export { default as CBooleanExpression } from "./components/data/base-components/CBooleanExpression.vue"
+export { default as CTextInput } from "./components/ui/CTextInput.vue"
+export { default as CAutocomplete } from "./components/ui/CAutocomplete.vue"
+export { default as CDurationInput } from "./components/ui/CDurationInput.vue"
+export { default as CNumberInput } from "./components/ui/CNumberInput.vue"
+export { default as CDropdown } from "./components/ui/CDropdown.vue"
+export { default as CCheckBox } from "./components/ui/CCheckBox.vue"
+export { default as CSelectButton } from "./components/ui/CSelectButton.vue"
+export { default as CColorPicker } from "./components/ui/CColorPicker.vue"
+export { default as CToggleButton } from "./components/ui/CToggleButton.vue"
+export { default as CAngleInput } from "./components/ui/CAngleInput.vue"
+export { default as CBooleanExpression } from "./components/ui/CBooleanExpression.vue"
 
 export { default as AutomationEdit } from "./components/automation/AutomationEdit.vue"
 export { default as InlineAutomationEdit } from "./components/automation/InlineAutomation.vue"
@@ -68,12 +68,12 @@ export { default as DashboardStat } from "./components/main-page/DashboardStat.v
 
 export { default as StreamPlanEditorPage } from "./components/stream-plan/StreamPlanEditorPage.vue"
 
-export { default as VariableNameInput } from "./components/data/base-components/VariableNameInput.vue"
+export { default as VariableNameInput } from "./components/ui/base-components/fields/VariableNameField.vue"
 
 export { default as DataInputBase } from "./components/data/base-components/DataInputBase.vue"
 export { default as DataInputBaseMenu } from "./components/data/base-components/DataInputBaseMenu.vue"
-export { default as DropListItem } from "./components/data/base-components/DropListItem.vue"
-export { default as FilterInputBox } from "./components/data/base-components/FilterInputBox.vue"
+export { default as DropListItem } from "./components/ui/base-components/autocomplete/DropListItem.vue"
+export { default as FilterInputBox } from "./components/ui/base-components/autocomplete/FilterInputBox.vue"
 export { default as MediaDropDown } from "./components/data/base-components/media/MediaDropDown.vue"
 
 export { default as DataBindingDebugger } from "./components/data/binding/DataBindingDebugger.vue"
@@ -82,8 +82,8 @@ export { default as DataBindingDebugger } from "./components/data/binding/DataBi
 
 export { default as CancellableDynamicDialog } from "./components/dialogs/CancellableDynamicDialog.vue"
 
-export { default as ValueCompareOperatorSelector } from "./components/data/base-components/booleans/ValueCompareOperatorSelector.vue"
-export { default as BooleanExpressionValueEdit } from "./components/data/base-components/booleans/ExpressionValueEdit.vue"
+// export { default as ValueCompareOperatorSelector } from "./components/data/base-components/booleans/ValueCompareOperatorSelector.vue"
+// export { default as BooleanExpressionValueEdit } from "./components/data/base-components/booleans/ExpressionValueEdit.vue"
 
 export { default as ViewerVariableSelector } from "./components/viewer-data/ViewerVariableSelector.vue"
 

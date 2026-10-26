@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import NumberField from "../NumberField.vue"
+import NumberField from "../../../ui/base-components/fields/NumberField.vue"
 import CContextMenu from "../../../util/CContextMenu.vue"
 import { ref } from "vue"
 import { useDataBinding, useDataUIBinding } from "../../../../main"

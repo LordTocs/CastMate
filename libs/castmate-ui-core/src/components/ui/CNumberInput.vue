@@ -10,8 +10,8 @@
 </template>
 
 <script setup lang="ts">
-import { useDataBinding } from "../../../main"
-import NumberField from "./NumberField.vue"
+import { useDataBinding } from "../../main.ts"
+import NumberField from "./base-components/fields/NumberField.vue"
 
 const model = defineModel<number>()
 

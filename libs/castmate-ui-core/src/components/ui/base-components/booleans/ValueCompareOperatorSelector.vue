@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { ValueCompareOperator } from "castmate-schema"
 import { computed, onMounted, useModel, watch } from "vue"
-import CDropdown from "../CDropdown.vue"
+import CDropdown from "../../../ui/CDropdown.vue"
 import type { MenuItem } from "primevue/menuitem"
 
 const props = defineProps<{

@@ -43,8 +43,8 @@
 import { computed, ref } from "vue"
 import { usePluginStore } from "../../plugins/plugin-store"
 import { LabelFloater, useDataBinding, useTrigger } from "../../main"
-import CAutocomplete from "../data/base-components/CAutocomplete.vue"
-import DropListItem from "../data/base-components/DropListItem.vue"
+import CAutocomplete from "../ui/CAutocomplete.vue"
+import DropListItem from "../ui/base-components/autocomplete/DropListItem.vue"
 
 const pluginStore = usePluginStore()
 

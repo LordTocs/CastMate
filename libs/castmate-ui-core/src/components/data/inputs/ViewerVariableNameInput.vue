@@ -1,5 +1,5 @@
 <template>
-	<data-input-base
+	<!-- <data-input-base
 		v-model="model"
 		:schema="schema"
 		:no-float="noFloat"
@@ -16,42 +16,42 @@
 			v-bind="inputProps"
 			ref="autocomplete"
 		></c-autocomplete>
-	</data-input-base>
+	</data-input-base> -->
 </template>
 
 <script setup lang="ts">
-import { SchemaViewerVariableName, ViewerVariableName } from "castmate-schema"
+import {} from "castmate-schema"
 import DataInputBase from "../base-components/DataInputBase.vue"
 import EnumInput from "../base-components/EnumInput.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import { useDataBinding, useDataUIBinding, useViewerDataStore } from "../../../main"
-import CAutocomplete from "../base-components/CAutocomplete.vue"
+import CAutocomplete from "../../ui/CAutocomplete.vue"
 import { computed, useTemplateRef } from "vue"
 
-const props = defineProps<
-	{
-		schema: SchemaViewerVariableName
-	} & SharedDataInputProps
->()
+// const props = defineProps<
+// 	{
+// 		schema: SchemaViewerVariableName
+// 	} & SharedDataInputProps
+// >()
 
-useDataBinding(() => props.localPath)
+// useDataBinding(() => props.localPath)
 
-const model = defineModel<ViewerVariableName | undefined>()
+// const model = defineModel<ViewerVariableName | undefined>()
 
-const viewerData = useViewerDataStore()
+// const viewerData = useViewerDataStore()
 
-const items = computed<{ id: any; name: string }[]>(() => {
-	return [...viewerData.variables.values()].map((v) => ({ id: v.name, name: v.name }))
-})
+// const items = computed<{ id: any; name: string }[]>(() => {
+// 	return [...viewerData.variables.values()].map((v) => ({ id: v.name, name: v.name }))
+// })
 
-const autocomplete = useTemplateRef("autocomplete")
+// const autocomplete = useTemplateRef("autocomplete")
 
-useDataUIBinding({
-	focus() {
-		autocomplete.value?.focus()
-	},
-	scrollIntoView() {
-		autocomplete.value?.scrollIntoView()
-	},
-})
+// useDataUIBinding({
+// 	focus() {
+// 		autocomplete.value?.focus()
+// 	},
+// 	scrollIntoView() {
+// 		autocomplete.value?.scrollIntoView()
+// 	},
+// })
 </script>

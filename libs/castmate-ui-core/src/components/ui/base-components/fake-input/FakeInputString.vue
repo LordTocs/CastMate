@@ -13,8 +13,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useModel, watch } from "vue"
 import FakeCursor from "./FakeCursor.vue"
-import { InputSelection, PartialSelectionResult } from "./FakeInputTypes"
-import { getElementRelativeRect, rectangleOverlaps, usePropagationStop } from "../../main"
+import { InputSelection, PartialSelectionResult } from "./FakeInputTypes.ts"
+import { getElementRelativeRect, rectangleOverlaps, usePropagationStop } from "../../../../main.ts"
 
 const props = defineProps<{
 	text: string

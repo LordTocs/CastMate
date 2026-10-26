@@ -1,26 +1,26 @@
 <template>
-	<div class="boolean-expression-input" tabindex="-1">
+	<!-- <div class="boolean-expression-input" tabindex="-1">
 		<span class="text-color-secondary text-sm">{{ getDataLabel(props) }}</span>
 		<boolean-group-expression v-model="model" :show-drag="false" :selected-ids="[]" />
-	</div>
+	</div> -->
 </template>
 
 <script setup lang="ts">
-import { BooleanExpression, SchemaBooleanExpression } from "castmate-schema"
-import { ref, useModel } from "vue"
-import BooleanGroupExpression from "../base-components/booleans/BooleanGroupExpression.vue"
-import { getDataLabel, SharedDataInputProps, useDataBinding } from "../../../main"
-const props = defineProps<
-	{
-		modelValue: BooleanExpression | undefined
-		localPath?: string
-		schema: SchemaBooleanExpression
-	} & SharedDataInputProps
->()
+// import { BooleanExpression } from "castmate-schema"
+// import { ref, useModel } from "vue"
+// // import BooleanGroupExpression from "../base-components/booleans/BooleanGroupExpression.vue"
+// import { getDataLabel, SharedDataInputProps, useDataBinding } from "../../../main"
+// const props = defineProps<
+// 	{
+// 		modelValue: BooleanExpression | undefined
+// 		localPath?: string
+// 		schema: SchemaBooleanExpression
+// 	} & SharedDataInputProps
+// >()
 
-useDataBinding(() => props.localPath)
+// useDataBinding(() => props.localPath)
 
-const model = useModel(props, "modelValue")
+// const model = useModel(props, "modelValue")
 </script>
 
 <style scoped>

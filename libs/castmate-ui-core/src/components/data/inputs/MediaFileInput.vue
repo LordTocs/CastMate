@@ -36,7 +36,7 @@ import { DropDownPanel, useMediaStore, usePropagationStop, useUndoCommitter } fr
 import { MediaMetadata } from "castmate-schema"
 import { SharedDataInputProps } from "../DataInputTypes"
 
-import FilterInputBox from "../base-components/FilterInputBox.vue"
+import FilterInputBox from "../../ui/base-components/autocomplete/FilterInputBox.vue"
 
 import MediaDropDown from "../base-components/media/MediaDropDown.vue"
 import { MediaFile } from "castmate-schema"

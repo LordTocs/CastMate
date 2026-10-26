@@ -23,13 +23,13 @@
 
 <script setup lang="ts">
 import { Color } from "castmate-schema"
-import { useDataBinding } from "../../../main"
+import { useDataBinding } from "../../main.ts"
 
-import LinearGradientPicker from "./color/LinearGradientPicker.vue"
-import ColorWheelPicker from "./color/ColorWheelPicker.vue"
-import ColorHexEdit from "./color/ColorHexEdit.vue"
+import LinearGradientPicker from "./base-components/color/LinearGradientPicker.vue"
+import ColorWheelPicker from "./base-components/color/ColorWheelPicker.vue"
+import ColorHexEdit from "./base-components/color/ColorHexEdit.vue"
 import { computed } from "vue"
-import { useColorProperties } from "./color/color-utils"
+import { useColorProperties } from "./base-components/color/color-utils.ts"
 
 import * as chromatism from "chromatism2"
 

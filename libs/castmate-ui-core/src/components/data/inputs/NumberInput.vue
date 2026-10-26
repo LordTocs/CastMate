@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import DataInputBase from "../base-components/DataInputBase.vue"
-import NumberField from "../base-components/NumberField.vue"
+import NumberField from "../../ui/base-components/fields/NumberField.vue"
 import PSlider from "primevue/slider"
 import { type SchemaBase, type SchemaNumber } from "castmate-schema"
 import { computed, ref, onMounted, useModel, watch, useTemplateRef } from "vue"

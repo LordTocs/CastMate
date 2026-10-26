@@ -7,8 +7,8 @@
 <script setup lang="ts">
 import { BooleanExpression } from "castmate-schema"
 import { ref, useModel } from "vue"
-import BooleanGroupExpression from "../base-components/booleans/BooleanGroupExpression.vue"
-import { useDataBinding } from "../../../main"
+import BooleanGroupExpression from "./base-components/booleans/BooleanGroupExpression.vue"
+import { useDataBinding } from "../../main.ts"
 const props = defineProps<{
 	modelValue: BooleanExpression | undefined
 	localPath?: string

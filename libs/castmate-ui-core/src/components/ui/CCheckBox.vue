@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import PCheckBox from "primevue/checkbox"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../main"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../main"
 import { ref } from "vue"
 
 const model = defineModel<boolean>()

@@ -43,7 +43,7 @@ import { StreamPlanSegment } from "castmate-schema"
 import { StreamPlanSegmentView, useStreamPlanStore } from "./stream-plan-types"
 import { computed, useModel } from "vue"
 import { InlineAutomationEdit, useDataBinding, usePropagationStop, DataBindingPath } from "../../main"
-import CTextInput from "../data/base-components/CTextInput.vue"
+import CTextInput from "../ui/CTextInput.vue"
 
 const props = defineProps<{
 	modelValue: StreamPlanSegment

@@ -4,8 +4,8 @@
 
 <script setup lang="ts">
 import { Duration } from "castmate-schema"
-import DurationField from "./DurationField.vue"
-import { useDataBinding } from "../../../main"
+import DurationField from "./base-components/fields/DurationField.vue"
+import { useDataBinding } from "../../main.ts"
 
 const model = defineModel<Duration | undefined>()
 

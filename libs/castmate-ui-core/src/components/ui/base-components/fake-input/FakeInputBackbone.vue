@@ -15,7 +15,7 @@
 import { useEventListener } from "@vueuse/core"
 import { useModel, ref, watch, toValue, HTMLAttributes } from "vue"
 import { InputSelection } from "./FakeInputTypes.ts"
-import { useTextUndoCommitter, useUndoCommitter } from "../../main.ts"
+import { useTextUndoCommitter, useUndoCommitter } from "../../../../main.ts"
 
 const props = withDefaults(
 	defineProps<{

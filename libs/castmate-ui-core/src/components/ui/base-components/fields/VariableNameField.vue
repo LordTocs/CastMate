@@ -12,7 +12,7 @@
 import PInputText from "primevue/inputtext"
 import { computed, onBeforeUnmount, onMounted, ref, useModel, watch } from "vue"
 import { isValidJSName } from "castmate-schema"
-import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../../main"
+import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../../../main"
 
 const props = defineProps<{
 	modelValue: string | undefined

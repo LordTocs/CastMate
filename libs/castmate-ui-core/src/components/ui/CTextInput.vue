@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import PInputText from "primevue/inputtext"
 import PTextArea from "primevue/textarea"
-import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../../main"
+import { useDataBinding, useDataUIBinding, useTextUndoCommitter } from "../../main"
 import { ref } from "vue"
 
 const props = defineProps<{

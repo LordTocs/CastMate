@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { useTemplateRef } from "vue"
-import { useDragAngle } from "../../../../main"
+import { useDragAngle } from "../../main"
 
 const model = defineModel<number>()
 const props = defineProps<{}>()

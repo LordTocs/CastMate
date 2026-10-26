@@ -22,8 +22,8 @@
 <script setup lang="ts">
 import PSelect from "primevue/select"
 import { MenuItem } from "primevue/menuitem"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../main"
-import LabelFloater from "./LabelFloater.vue"
+import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../main.ts"
+import LabelFloater from "./base-components/common/LabelFloater.vue"
 import { ref } from "vue"
 
 const model = defineModel<any>()
