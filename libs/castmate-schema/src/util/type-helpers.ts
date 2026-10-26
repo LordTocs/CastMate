@@ -103,6 +103,10 @@ export function removeKeys<T extends Record<PropertyKey, any>, K extends Propert
 	return result
 }
 
+export function isObject(value: unknown): value is object {
+	return typeof value === "object"
+}
+
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>
 
 export type MapToUnion<T> = T[keyof T]
