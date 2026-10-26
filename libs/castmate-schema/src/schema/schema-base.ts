@@ -72,6 +72,14 @@ export namespace SchemaMeta {
 	export function isExpressable<TSchema extends SchemaBase>(schema: TSchema): schema is InexpressableSchema<TSchema> {
 		return !schema.inExpressable
 	}
+
+	export function isOptional<TSchema extends SchemaBase>(schema: TSchema) {
+		return schema.optional
+	}
+
+	export function isRequired<TSchema extends SchemaBase>(schema: TSchema) {
+		return !schema.optional
+	}
 }
 
 export function isSchemaType<Type extends string>(schema: unknown, type: Type): schema is { type: Type } {
