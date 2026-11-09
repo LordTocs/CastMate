@@ -3,9 +3,11 @@
 		<flex-scroller class="nav-content">
 			<nav-panel-section>
 				<template #header>
-					<img src="../../assets/castmate/logo-dark.svg" style="height: 1em; padding-left: 1rem" />CastMate
+					<img src="../../assets/castmate/logo-dark.svg" style="height: 1em" />CastMate
 				</template>
-				<template #default> WOAH </template>
+				<template #default>
+					<nav-project-item v-for="item in documents.tree" :info="item" />
+				</template>
 			</nav-panel-section>
 			<nav-panel-section>
 				<template #header> Twitch </template>
@@ -25,15 +27,18 @@
 
 <script setup lang="ts">
 import { ref, useTemplateRef } from "vue"
-import { ExpanderSlider } from "castmate-ui-core"
+import { ExpanderSlider, useDocumentStore } from "castmate-ui-core"
 import { FlexScroller } from "castmate-ui-core"
 import NavPanelSection from "./NavPanelSection.vue"
 import NavPanelItem from "./NavPanelItem.vue"
+import NavProjectItem from "./NavProjectItem.vue"
 
 const expandedSize = ref<number>(300)
 const expanded = ref(true)
 
 const navBody = useTemplateRef("navBody")
+
+const documents = useDocumentStore()
 </script>
 
 <style scoped>

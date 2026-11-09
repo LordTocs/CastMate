@@ -19,30 +19,30 @@ export function initSettingsDocuments() {
 	const documentStore = useDocumentStore()
 	const pluginStore = usePluginStore()
 
-	documentStore.registerDocumentComponent("settings", SettingsPageVue)
-	documentStore.registerSaveFunction("settings", async (doc) => {
-		const changes: SettingsChange[] = []
+	// documentStore.registerDocumentComponent("settings", SettingsPageVue)
+	// documentStore.registerSaveFunction("settings", async (doc) => {
+	// 	const changes: SettingsChange[] = []
 
-		for (const plugin of pluginStore.pluginMap.values()) {
-			for (const settingId in plugin.settings) {
-				const setting = plugin.settings[settingId]
-				if (setting.type != "value" && setting.type != "secret") continue
-				const newValue = doc.data.settings[plugin.id][settingId]
-				const oldValue = setting.value
-				if (newValue != oldValue) {
-					changes.push({
-						pluginId: plugin.id,
-						settingId,
-						value: newValue,
-					})
-				}
-			}
-		}
+	// 	for (const plugin of pluginStore.pluginMap.values()) {
+	// 		for (const settingId in plugin.settings) {
+	// 			const setting = plugin.settings[settingId]
+	// 			if (setting.type != "value" && setting.type != "secret") continue
+	// 			const newValue = doc.data.settings[plugin.id][settingId]
+	// 			const oldValue = setting.value
+	// 			if (newValue != oldValue) {
+	// 				changes.push({
+	// 					pluginId: plugin.id,
+	// 					settingId,
+	// 					value: newValue,
+	// 				})
+	// 			}
+	// 		}
+	// 	}
 
-		console.log("Update Changes", changes)
+	// 	console.log("Update Changes", changes)
 
-		await pluginStore.updateSettings(changes)
-	})
+	// 	await pluginStore.updateSettings(changes)
+	// })
 }
 
 export function useOpenSettings() {

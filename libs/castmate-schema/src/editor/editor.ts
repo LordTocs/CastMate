@@ -67,12 +67,21 @@ export interface ViewData {
 
 export interface EditStack {
 	undoStack: DataDiff[]
+	snapshot: any
 	redoStack: DataDiff[]
+}
+
+export function createEmptyEditStack() {
+	return {
+		undoStack: [],
+		snapshot: undefined,
+		redoStack: [],
+	} as EditStack
 }
 
 export interface DataListSelection {
 	type: "list"
-	ids: string
+	ids: string[]
 }
 
 export interface DataRangeSelection {
@@ -85,12 +94,19 @@ export type DocumentSelection = DataListSelection | DataRangeSelection
 
 export interface DataEditUser {
 	focusPath: string
-	selection: DocumentSelection
+	selection: DocumentSelection | undefined
 }
 
 export interface DataEditor {
-	data: Record<PropertyKey, any>
 	view: ViewData
 	editStack: EditStack
 	editingUsers: Map<string, DataEditUser>
+}
+
+export function createDataEditor(): DataEditor {
+	return {
+		view: { data: {}, subPaths: {} },
+		editStack: createEmptyEditStack(),
+		editingUsers: new Map(),
+	}
 }

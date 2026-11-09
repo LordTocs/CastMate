@@ -1,8 +1,10 @@
-import { DataEditUser, ProjectTreeNode, ViewData } from "castmate-schema"
+import { createDataEditor, DataEditor, DataEditUser, joinDataPath, ProjectTreeNode, ViewData } from "castmate-schema"
 import { defineStore } from "pinia"
 import { type MaybeRefOrGetter, computed, ref, type Component, toValue, markRaw } from "vue"
 import { useToast } from "primevue/usetoast"
-import { useBaseDataBinding } from "./data-binding"
+import { useBaseDataBinding, useDataPath } from "../editor/data-binding"
+import { useDataEditor, useLocalDataEditUser } from "../main"
+import { nanoid } from "nanoid"
 
 export function useDocumentComponent(
 	plugin: MaybeRefOrGetter<string | undefined>,
@@ -31,9 +33,55 @@ export function useDocument(id: MaybeRefOrGetter<string | undefined>) {
 	})
 }
 
-export function useDocumentSelection() {
+export function useDocumentSelection(localPath?: MaybeRefOrGetter<string | undefined>) {
 	const dataBinding = useBaseDataBinding()
-	return dataBinding.editor.editingUsers.get("local")
+	const dataPath = useDataPath()
+	const user = useLocalDataEditUser()
+
+	function getSelectionPath() {
+		const basePath = toValue(dataPath)
+		return joinDataPath(basePath, toValue(localPath))
+	}
+
+	return computed<string[]>({
+		get() {
+			const selectionPath = getSelectionPath()
+			if (!selectionPath) return []
+			if (user.value.selection?.type != "list") {
+				return []
+			}
+
+			return user.value.selection.ids
+		},
+		set(v) {
+			const selectionPath = getSelectionPath()
+
+			if (!selectionPath) return
+
+			user.value.selection = {
+				type: "list",
+				ids: v,
+			}
+		},
+	})
+}
+
+export function useIsSelected(id: MaybeRefOrGetter<string>, localPath?: MaybeRefOrGetter<string | undefined>) {
+	const editor = useDataEditor()
+	const path = useDataPath()
+
+	return computed(() => {
+		const selectionPath = joinDataPath(toValue(path), toValue(localPath))
+		const selectionId = toValue(id)
+		const user = editor.value.editingUsers.get("local")
+
+		if (!selectionPath) return false
+		if (!user) return false
+		if (user.selection?.type != "list") return false
+		if (user.focusPath != selectionPath) return false
+
+		return user.selection.ids.includes(selectionId)
+	})
 }
 
 export interface DocumentInfo {
@@ -50,12 +98,28 @@ export interface OpenDocumentEditor {
 	dirty: boolean
 	documentData: object
 	viewData: ViewData
-	editorStates: Map<string, DataEditUser>
+	editor: DataEditor
 }
 
 export const useDocumentStore = defineStore("documents2", () => {
 	const items = ref<DocumentInfo[]>([])
-	const tree = ref<ProjectTreeNode[]>([])
+	const tree = ref<ProjectTreeNode[]>([
+		{
+			name: "Folder",
+			items: [
+				{ plugin: "test", type: "test", id: nanoid(), name: "Test File" },
+				{ plugin: "test", type: "test2", id: nanoid(), name: "Test2 File" },
+				{
+					name: "Inner Folder",
+					items: [
+						{ plugin: "test", type: "test", id: nanoid(), name: "Test3 File" },
+						{ plugin: "test", type: "test2", id: nanoid(), name: "Test4 File" },
+					],
+				},
+			],
+		},
+		{ plugin: "test", type: "test", id: nanoid(), name: "Test5 File" },
+	])
 
 	const documentEditorComponents = ref<Map<string, Component>>(new Map())
 
@@ -85,10 +149,10 @@ export const useDocumentStore = defineStore("documents2", () => {
 				data: {},
 				subPaths: {},
 			},
-			editorStates: new Map(),
+			editor: createDataEditor(),
 		}
 
-		newEditor.editorStates.set("local", {
+		newEditor.editor.editingUsers.set("local", {
 			focusPath: "",
 			selection: { type: "range", startIndex: 0, length: 0 },
 		})

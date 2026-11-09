@@ -41,6 +41,6 @@ export function isDocumentInfo(item: ProjectTreeNode): item is ProjectTreeFileIn
 	return item && "plugin" in item && "type" in item
 }
 
-export function isDoumentFolderInfo(item: ProjectTreeNode): item is ProjectTreeFolderInfo {
+export function isDocumentFolderInfo(item: ProjectTreeNode): item is ProjectTreeFolderInfo {
 	return item && "items" in item
 }

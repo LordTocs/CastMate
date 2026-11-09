@@ -1,17 +1,22 @@
 <template>
 	<data-input-base v-model="model" :schema="schema" v-slot="inputProps" :local-path="localPath">
-		<duration-field v-model="model" :required="schema.required" v-bind="inputProps" ref="durationInput" />
+		<duration-field
+			v-model="model"
+			:required="SchemaMeta.isRequired(schema)"
+			v-bind="inputProps"
+			ref="durationInput"
+		/>
 	</data-input-base>
 </template>
 
 <script setup lang="ts">
 import DataInputBase from "../base-components/DataInputBase.vue"
-import { Duration } from "castmate-schema"
+import { Duration, SchemaMeta } from "castmate-schema"
 import { SchemaDuration } from "castmate-schema"
 import DurationField from "../../ui/base-components/fields/DurationField.vue"
 import { ref, useModel } from "vue"
 import { SharedDataInputProps } from "../DataInputTypes"
-import { useDataBinding, useDataUIBinding, useUndoCommitter } from "../../../editor/data-binding.ts"
+import { useDataBinding, useDataUIBinding } from "../../../editor/data-binding.ts"
 
 const props = defineProps<
 	{
@@ -24,7 +29,6 @@ useDataBinding(() => props.localPath)
 
 const model = useModel(props, "modelValue")
 
-const inputBase = ref<InstanceType<typeof DataInputBase>>()
 const durationInput = ref<InstanceType<typeof DurationField>>()
 
 useDataUIBinding({

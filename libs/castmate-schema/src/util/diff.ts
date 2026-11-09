@@ -3,6 +3,7 @@ import _cloneDeep from "lodash/cloneDeep"
 import _isEqual from "lodash/isEqual"
 import { DiffOpCode, iterDiff } from "./myers-diff"
 import { joinDataPath } from "../data/data-paths"
+import { parseDataPath } from "../editor/data-binding"
 
 export type DataDiff = GenericDiff<any> | ArrayDiff | ObjectDiff
 
@@ -43,6 +44,40 @@ export function computeDataDiff(a: any, b: any): DataDiff | undefined {
 	return undefined
 }
 
+export function computeSubDataDiff(a: any, b: any, path: string): DataDiff | undefined {
+	const diff = computeDataDiff(a, b)
+	if (!diff) return undefined
+	const pathParsed = parseDataPath(path)
+
+	let wrapDiff = diff
+
+	for (let i = pathParsed.length - 1; i >= 0; ++i) {
+		const part = pathParsed[i]
+		const index = Number.parseInt(part)
+		if (!isNaN(index)) {
+			wrapDiff = {
+				type: "array",
+				ops: [
+					{
+						type: "diff",
+						index,
+						diff: wrapDiff,
+					},
+				],
+			}
+		} else {
+			wrapDiff = {
+				type: "object",
+				properties: {
+					[part]: {
+						op: "diff",
+						diff: wrapDiff,
+					},
+				},
+			}
+		}
+	}
+}
 //APPLY
 
 function applyDataDiffArray(arr: any, diff: ArrayDiff) {

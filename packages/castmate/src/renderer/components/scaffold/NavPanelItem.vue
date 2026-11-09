@@ -26,8 +26,9 @@ function clickHandler(ev: MouseEvent) {
 	background-color: var(--surface-a);
 	padding: 0.1rem;
 	padding-left: 0.5rem;
+	cursor: pointer;
 }
 .nav-panel-item:hover {
-	background-color: var(--highlight-bg);
+	background-color: var(--surface-b);
 }
 </style>

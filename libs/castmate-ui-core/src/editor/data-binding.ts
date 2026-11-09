@@ -26,15 +26,14 @@ import {
 	applyInvDataDiff,
 	computeDataDiff,
 	getInvDataDiffPath,
+	parseDataPath,
 } from "castmate-schema"
+import { useDataEditor } from "./editor-ui-util"
 ///////////////////////////////////////
 ///////////////////////////////////////
 ///////////////////////////////////////
 
 //Handles document pathing like a.b[2].c
-function parsePath(path: string) {
-	return path.split(/\.|\[|\]\.?/i).filter((v) => v.length > 0)
-}
 
 export function useParentDataPath() {
 	return inject<ComputedRef<string>>(
@@ -94,14 +93,12 @@ export interface RootDataBinding {
 	id: string
 	delayedCommit: boolean
 	rootPath: DataPathBinding
-	editor: DataEditor
 }
 
-export function createRootDataBinding(editor: DataEditor): RootDataBinding {
+export function createRootDataBinding(): RootDataBinding {
 	return {
 		id: nanoid(),
 		delayedCommit: false,
-		editor,
 		rootPath: {
 			subPaths: {},
 			uiBindings: [],
@@ -112,142 +109,12 @@ export function createRootDataBinding(editor: DataEditor): RootDataBinding {
 
 ///
 
-function commitDataView(dataBinding: RootDataBinding) {
-	const newData = dataBinding.editor.data
-	const diff = computeDataDiff(dataBinding.rootPath.snapshot, newData)
-
-	if (diff == undefined) return
-
-	//const caller = new Error().stack?.split("\n")[2]?.trim().split(" ")[1]
-	//console.log("   - Commiting Undo", new Error().stack, caller, diff)
-
-	dataBinding.editor.editStack.undoStack.push(diff)
-	dataBinding.editor.editStack.snapshot = _cloneDeep(newData)
-	dataBinding.editor.editStack.redoStack = []
-}
-
-export function useCommitUndo() {
-	const databinding = useBaseDataBinding()
-
-	return function () {
-		commitDataView(databinding)
-	}
-}
-
-export function useDelayedCommitUndo() {
-	const databinding = useBaseDataBinding()
-
-	return function () {
-		if (databinding.delayedCommit) return
-		databinding.delayedCommit = true
-		nextTick(() => {
-			commitDataView(databinding)
-			databinding.delayedCommit = false
-		})
-	}
-}
-
-export function viewRef<T>(id: string): Ref<T | undefined>
-export function viewRef<T = any>(id: string, value: T): Ref<T>
-export function viewRef(id: string, value?: any) {
-	const viewData = useLocalViewData()
-
-	const backup = ref(value)
-
-	onMounted(() => {
-		if (!viewData.value) return
-		if (id in viewData.value.data) return
-
-		viewData.value.data[id] = value
-	})
-
-	return computed({
-		get() {
-			if (!viewData.value?.data) return backup.value
-			if (id in viewData.value.data) return viewData.value.data[id]
-			return backup.value
-		},
-		set(v) {
-			if (viewData.value) {
-				viewData.value.data[id] = v
-			} else {
-				backup.value = v
-			}
-		},
-	})
-}
-
-export function useUndoCommitter<T>(valueRef: Ref<T>) {
-	const commitUndo = useCommitUndo()
-
-	return computed({
-		get() {
-			return valueRef.value
-		},
-		set(v) {
-			valueRef.value = v
-			commitUndo()
-		},
-	})
-}
-
-// hello
-
-export function useTextUndoCommitter(inputElement: MaybeRefOrGetter<HTMLElement | undefined>) {
-	const commitUndo = useCommitUndo()
-
-	const lastInputType = ref<string>()
-
-	useEventListener(inputElement, "beforeinput", (ev: InputEvent) => {
-		const inputTypeChanged = lastInputType.value != null && lastInputType.value != ev.inputType
-
-		if (ev.inputType == "insertText") {
-			if (ev.data == " " || inputTypeChanged) {
-				commitUndo()
-			}
-		} else if (ev.inputType == "deleteContentBackward") {
-			//No way to determine what was deleted :(
-			if (inputTypeChanged) {
-				commitUndo()
-			}
-		} else if (ev.inputType == "deleteContentForward") {
-			//No way to determine what was deleted :(
-			if (inputTypeChanged) {
-				commitUndo()
-			}
-		} else {
-			commitUndo()
-		}
-
-		lastInputType.value = ev.inputType
-	})
-
-	// useEventListener(inputElement, "selectionchange", (ev) => {
-	// 	if (lastInputType.value != null) {
-	// 		lastInputType.value = undefined
-	// 		commitUndo()
-	// 	}
-	// })
-
-	useEventListener(inputElement, "keydown", (ev) => {
-		if (ev.ctrlKey && ev.key == "z") {
-			commitUndo()
-			ev.preventDefault()
-		}
-	})
-
-	useEventListener(inputElement, "blur", (ev) => {
-		lastInputType.value = undefined
-		commitUndo()
-	})
-}
-
 export function provideBaseDataBinding(binding: MaybeRefOrGetter<RootDataBinding | undefined>) {
-	provideLocal("ui-data-binding", toReactive(computed(() => toValue(binding) ?? createRootDataBinding(undefined))))
+	provideLocal("ui-data-binding", toReactive(computed(() => toValue(binding) ?? createRootDataBinding())))
 }
 
 export function useBaseDataBinding() {
-	return injectLocal<RootDataBinding>("ui-data-binding", createRootDataBinding(undefined))
+	return injectLocal<RootDataBinding>("ui-data-binding", createRootDataBinding())
 }
 
 export function useLocalDataBinding() {
@@ -257,15 +124,7 @@ export function useLocalDataBinding() {
 	return computed(() => getDataBindingByPath(baseBinding, path.value))
 }
 
-export function useLocalViewData() {
-	const baseBinding = useBaseDataBinding()
-	const path = useDataPath()
-
-	return computed(() => getViewDataByPath(baseBinding, path.value))
-}
-
 export function useDataUIBinding(uiBinding: MaybeRefOrGetter<DataUIBinding>, debug?: MaybeRefOrGetter<string>) {
-	const localPath = useDataPath()
 	const localBinding = useLocalDataBinding()
 	const currentBinding = ref<DataUIBinding>()
 
@@ -343,7 +202,7 @@ function nextTickAsync() {
 }
 
 export async function focusDataByPath(root: RootDataBinding, path: string) {
-	const parsedPath = parsePath(path)
+	const parsedPath = parseDataPath(path)
 
 	console.log("FOCUS PATH", parsedPath)
 
@@ -376,7 +235,7 @@ export async function focusDataByPath(root: RootDataBinding, path: string) {
 }
 
 export async function scrollIntoViewDataByPath(root: RootDataBinding, path: string) {
-	const parsedPath = parsePath(path)
+	const parsedPath = parseDataPath(path)
 
 	let base = root.rootPath
 	for (let i = 0; i < parsedPath.length; ++i) {
@@ -402,21 +261,9 @@ export async function scrollIntoViewDataByPath(root: RootDataBinding, path: stri
 ///////////////////////////////////////
 
 export function getDataBindingByPath(root: RootDataBinding, path: string) {
-	const pathParsed = parsePath(path)
+	const pathParsed = parseDataPath(path)
 
 	let base = root.rootPath
-	for (const trace of pathParsed) {
-		if (base == null) return undefined
-
-		base = base.subPaths[trace]
-	}
-	return base
-}
-
-export function getViewDataByPath(root: RootDataBinding, path: string) {
-	const pathParsed = parsePath(path)
-
-	let base = root.editor.view
 	for (const trace of pathParsed) {
 		if (base == null) return undefined
 
@@ -434,7 +281,7 @@ function createEmptyPathData(): DataPathBinding {
 }
 
 function ensureDataBinding(root: RootDataBinding, path: string, pathData?: DataPathBinding) {
-	const parsed = parsePath(path)
+	const parsed = parseDataPath(path)
 
 	const data: DataPathBinding = pathData ?? createEmptyPathData()
 
@@ -457,7 +304,7 @@ function ensureDataBinding(root: RootDataBinding, path: string, pathData?: DataP
 }
 
 function deleteDataBinding(root: RootDataBinding, path: string) {
-	const pathParsed = parsePath(path)
+	const pathParsed = parseDataPath(path)
 
 	let base = root.rootPath
 	for (let i = 0; i < pathParsed.length - 1; ++i) {
@@ -479,32 +326,3 @@ function deleteDataBinding(root: RootDataBinding, path: string) {
 }
 
 //TODO: moveDataView() - What to do about refCount > 1
-
-export async function undoDataView(dataBinding: RootDataBinding) {
-	const top = dataBinding.editor.editStack.undoStack.pop()
-
-	if (!top) return
-
-	const invPath = getInvDataDiffPath(top)
-
-	console.log("From", dataBinding.editor.data, getInvDataDiffPath(top))
-	applyInvDataDiff(dataBinding.editor, "data", top)
-	console.log("To", dataBinding.editor.data)
-
-	dataBinding.editor.editStack.redoStack.push(top)
-
-	dataBinding.editor.editStack.undoStack.snapshot = _cloneDeep(dataBinding.editor.data)
-
-	await focusDataByPath(dataBinding, invPath)
-}
-
-export function redoDataView(dataBinding: RootDataBinding) {
-	const top = dataBinding.editor.editStack.redoStack.pop()
-
-	if (!top) return
-
-	applyDataDiff(dataBinding.editor, "data", top)
-	dataBinding.editor.editStack.undoStack.push(top)
-
-	dataBinding.editor.editStack.snapshot = _cloneDeep(dataBinding.editor.data)
-}
