@@ -76,7 +76,9 @@ export { default as DropListItem } from "./components/ui/base-components/autocom
 export { default as FilterInputBox } from "./components/ui/base-components/autocomplete/FilterInputBox.vue"
 export { default as MediaDropDown } from "./components/data/base-components/media/MediaDropDown.vue"
 
-export { default as DataBindingDebugger } from "./components/data/binding/DataBindingDebugger.vue"
+export { default as UiDataEditorDebug } from "./components/data/binding/UiDataEditorDebug.vue"
+
+export { default as DebugData } from "./components/debug/DebugData.vue"
 
 //export { default as StreamPlanDashboardWidget } from "./components/stream-plan/StreamPlanDashboardWidget.vue"
 

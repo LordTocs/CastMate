@@ -43,7 +43,7 @@
 import { computed, markRaw, onBeforeMount, onMounted, ref, useModel } from "vue"
 import { LabelFloater, TemplateToggle, defaultStringIsTemplate, getDataLabel } from "../../../main"
 import ErrorLabel from "./ErrorLabel.vue"
-import { Schema } from "castmate-schema"
+import { Schema, SchemaMeta } from "castmate-schema"
 import { useValidator } from "../../../util/validation"
 
 import type { MenuItem } from "primevue/menuitem"
@@ -72,7 +72,7 @@ const props = withDefaults(
 
 const model = useModel(props, "modelValue")
 
-const canClear = computed(() => !props.schema.required)
+const canClear = computed(() => SchemaMeta.isOptional(props.schema))
 
 const inputMenu = ref<InstanceType<typeof DataInputBaseMenu>>()
 

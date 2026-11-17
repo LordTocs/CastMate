@@ -3,7 +3,7 @@ import {
 	applyInvDataDiff,
 	computeDataDiff,
 	computeSubDataDiff,
-	createDataEditor,
+	createEmptyDataEditor,
 	createEmptyEditStack,
 	DataEditor,
 	EditorEventSpec,
@@ -19,10 +19,32 @@ import {
 	SchemaType,
 } from "castmate-schema"
 import { ipcRenderer, IpcRendererEvent } from "electron"
-import { focusDataByPath, RootDataBinding, useBaseDataBinding, useDataPath, useIpcMessage } from "../main"
+import {
+	createRootDataBinding,
+	focusDataByPath,
+	provideBaseDataBinding,
+	RootDataBinding,
+	useBaseDataBinding,
+	useDataPath,
+	useIpcMessage,
+} from "../main"
 import { injectLocal, provideLocal, tryOnBeforeMount, tryOnUnmounted, useEventListener } from "@vueuse/core"
-import { computed, ComputedRef, inject, MaybeRefOrGetter, nextTick, onMounted, Ref, ref, toRaw, toValue } from "vue"
+import {
+	computed,
+	ComputedRef,
+	inject,
+	MaybeRefOrGetter,
+	nextTick,
+	onMounted,
+	Ref,
+	ref,
+	toRaw,
+	toValue,
+	reactive,
+} from "vue"
 import _cloneDeep from "lodash/cloneDeep"
+import { defineStore } from "pinia"
+import { toReactive } from "@vue/reactivity"
 
 type EditorEventHandler<TEditorEvent extends EditorEventSpec<Schema[]>> = (
 	...args: SchemaArgTypes<TEditorEvent["schema"]>
@@ -101,10 +123,6 @@ export function useRawEditorFunction<TFunc extends (...args: any[]) => any>(spec
 	return invoker
 }
 
-export function provideRootData(data: Ref<any>) {
-	provideLocal("root-data", data)
-}
-
 export function useRootData<T = any>() {
 	const result = injectLocal<Ref<T>>("root-data")
 	if (!result) {
@@ -113,19 +131,35 @@ export function useRootData<T = any>() {
 	return result
 }
 
-export function provideDataEditor() {
-	const editor = ref(createDataEditor())
+export interface UIDataEditor {
+	editor: DataEditor
+	rootData: any
+	dataBinding: RootDataBinding
+}
+
+export function provideUIDataEditor(rootData: Ref<any>) {
+	const editorStore = useEditorStore()
+
+	const uiEditor = ref(editorStore.createUIDataEditor(rootData))
+
+	provideLocal("root-data", rootData)
 	provideLocal<ComputedRef<DataEditor>>(
 		"data-editor",
-		computed(() => editor.value)
+		computed(() => uiEditor.value.editor)
 	)
-	return editor
+	provideBaseDataBinding(() => uiEditor.value.dataBinding)
+
+	onMounted(() => {
+		uiEditor.value.editor.editStack.snapshot = _cloneDeep(rootData.value)
+	})
+
+	return uiEditor
 }
 
 export function useDataEditor() {
 	return injectLocal<ComputedRef<DataEditor>>(
 		"data-editor",
-		computed(() => createDataEditor())
+		computed(() => createEmptyDataEditor())
 	)
 }
 
@@ -188,21 +222,21 @@ export function viewRef(id: string, value?: any) {
 	})
 }
 
-export async function undoEditorAction(editor: DataEditor, rootBinding: RootDataBinding, rootData: Ref<any>) {
-	const top = editor.editStack.undoStack.pop()
+export async function undoEditorAction(uiEditor: UIDataEditor) {
+	const top = uiEditor.editor.editStack.undoStack.pop()
 
 	if (!top) return
 
 	const invPath = getInvDataDiffPath(top)
 
-	console.log("From", rootData.value, getInvDataDiffPath(top))
-	applyInvDataDiff(rootData, "value", top)
-	console.log("To", rootData.value)
+	console.log("From", uiEditor.rootData, getInvDataDiffPath(top))
+	applyInvDataDiff(uiEditor.rootData, "value", top)
+	console.log("To", uiEditor.rootData)
 
-	editor.editStack.redoStack.push(top)
-	editor.editStack.snapshot = _cloneDeep(rootData.value)
+	uiEditor.editor.editStack.redoStack.push(top)
+	uiEditor.editor.editStack.snapshot = _cloneDeep(uiEditor.rootData.value)
 
-	await focusDataByPath(rootBinding, invPath)
+	await focusDataByPath(uiEditor.dataBinding, invPath)
 }
 
 export function redoEditorAction(editor: DataEditor, rootData: Ref<object>) {
@@ -329,4 +363,78 @@ export function useTextUndoCommitter(inputElement: MaybeRefOrGetter<HTMLElement 
 		lastInputType.value = undefined
 		commitUndo()
 	})
+}
+
+export function useFocusWatcher(inputElement: MaybeRefOrGetter<HTMLElement | undefined>) {
+	const path = useDataPath()
+	const editor = useDataEditor()
+
+	useEventListener(inputElement, "focus", (ev) => {
+		const localUser = editor.value.editingUsers.get("local")
+		if (!localUser) return
+		localUser.focusPath = path.value
+	})
+
+	useEventListener(inputElement, "blur", (ev) => {})
+}
+
+export function useTextSelectionWatcher(inputElement: MaybeRefOrGetter<HTMLInputElement | undefined>) {
+	const path = useDataPath()
+	const editor = useDataEditor()
+
+	useEventListener(inputElement, "selectionchange", (ev) => {
+		console.log("SELECTION CHANGE", ev, path.value)
+
+		const elem = toValue(inputElement)
+		const start = elem?.selectionStart
+		const end = elem?.selectionEnd
+
+		if (start == null || end == null) return
+
+		const local = editor.value.editingUsers.get("local")
+		if (!local) return
+
+		local.selection = {
+			type: "range",
+			startIndex: start,
+			length: end - start,
+		}
+	})
+}
+
+export const useEditorStore = defineStore("editor-store", () => {
+	//TODO: Store Connected users here to build editing user set
+	const editors = ref(new Map<string, UIDataEditor>())
+
+	function createUIDataEditor(rootData: Ref<any>): UIDataEditor {
+		const editor = createEmptyDataEditor()
+
+		editor.editingUsers.set("local", {
+			focusPath: "",
+			selection: undefined,
+		})
+
+		const uiEditor = toReactive({
+			editor,
+			dataBinding: createRootDataBinding(),
+			rootData,
+		})
+
+		//TODO: put into editor store so we can sync these with remote editors
+
+		return uiEditor
+	}
+
+	return {
+		createUIDataEditor,
+	}
+})
+
+export function focusAvailable(...elements: MaybeRefOrGetter<{ focus(): any } | null | undefined>[]) {
+	for (const elem of elements) {
+		const elemValue = toValue(elem)
+		if (elemValue) {
+			elemValue.focus()
+		}
+	}
 }

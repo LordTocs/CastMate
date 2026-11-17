@@ -103,7 +103,7 @@ export interface DataEditor {
 	editingUsers: Map<string, DataEditUser>
 }
 
-export function createDataEditor(): DataEditor {
+export function createEmptyDataEditor(): DataEditor {
 	return {
 		view: { data: {}, subPaths: {} },
 		editStack: createEmptyEditStack(),

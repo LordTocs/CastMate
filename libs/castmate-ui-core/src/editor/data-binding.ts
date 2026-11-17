@@ -91,14 +91,12 @@ function unregisterDataUiBinding(pathView: DataPathBinding, binding: DataUIBindi
 
 export interface RootDataBinding {
 	id: string
-	delayedCommit: boolean
 	rootPath: DataPathBinding
 }
 
 export function createRootDataBinding(): RootDataBinding {
 	return {
 		id: nanoid(),
-		delayedCommit: false,
 		rootPath: {
 			subPaths: {},
 			uiBindings: [],

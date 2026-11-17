@@ -1,4 +1,11 @@
-import { createDataEditor, DataEditor, DataEditUser, joinDataPath, ProjectTreeNode, ViewData } from "castmate-schema"
+import {
+	createEmptyDataEditor,
+	DataEditor,
+	DataEditUser,
+	joinDataPath,
+	ProjectTreeNode,
+	ViewData,
+} from "castmate-schema"
 import { defineStore } from "pinia"
 import { type MaybeRefOrGetter, computed, ref, type Component, toValue, markRaw } from "vue"
 import { useToast } from "primevue/usetoast"
@@ -149,7 +156,7 @@ export const useDocumentStore = defineStore("documents2", () => {
 				data: {},
 				subPaths: {},
 			},
-			editor: createDataEditor(),
+			editor: createEmptyDataEditor(),
 		}
 
 		newEditor.editor.editingUsers.set("local", {
