@@ -74,7 +74,7 @@ export namespace SchemaMeta {
 	}
 
 	export function isOptional<TSchema extends SchemaBase>(schema: TSchema) {
-		return schema.optional
+		return schema.optional == true
 	}
 
 	export function isRequired<TSchema extends SchemaBase>(schema: TSchema) {
