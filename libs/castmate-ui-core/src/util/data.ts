@@ -5,13 +5,11 @@ import {
 	Toggle,
 	Color,
 	Duration,
-	DynamicType,
 	Directory,
 	Command,
 	FilePath,
 	Timer,
 	Enumable,
-	isArray,
 	BooleanExpression,
 	SchemaTypeNames,
 	S,
@@ -311,7 +309,7 @@ export const useDataInputStore = defineStore("data-components", () => {
 	return { registerInputComponent, registerViewComponent, getInputComponent, getViewComponent }
 })
 
-export function useDataComponent(type: MaybeRefOrGetter<SchemaTypeNames>) {
+export function useDataComponent(type: MaybeRefOrGetter<string>) {
 	const inputStore = useDataInputStore()
 
 	return computed(() => inputStore.getInputComponent(toValue(type)))
@@ -329,35 +327,35 @@ export function initData() {
 	inputStore.registerInputComponent("String", StringInputVue)
 	inputStore.registerInputComponent("Number", NumberInputVue)
 	inputStore.registerInputComponent("Object", ObjectInputVue)
-	inputStore.registerInputComponent("Array", ArrayInputVue)
-	inputStore.registerInputComponent("Range", RangeInputVue)
-	inputStore.registerInputComponent("MediaFile", MediaFileInput)
-	inputStore.registerInputComponent("Resource", ResourceInputVue)
-	inputStore.registerInputComponent("Toggle", ToggleInputVue)
-	inputStore.registerInputComponent("Boolean", BooleanInputVue)
-	inputStore.registerInputComponent("Color", ColorInputVue)
-	inputStore.registerInputComponent("Duration", DurationInputVue)
-	inputStore.registerInputComponent("Timer", TimerInputVue)
+	// inputStore.registerInputComponent("Array", ArrayInputVue)
+	// inputStore.registerInputComponent("Range", RangeInputVue)
+	// inputStore.registerInputComponent("MediaFile", MediaFileInput)
+	// inputStore.registerInputComponent("Resource", ResourceInputVue)
+	// inputStore.registerInputComponent("Toggle", ToggleInputVue)
+	// inputStore.registerInputComponent("Boolean", BooleanInputVue)
+	// inputStore.registerInputComponent("Color", ColorInputVue)
+	// inputStore.registerInputComponent("Duration", DurationInputVue)
+	// inputStore.registerInputComponent("Timer", TimerInputVue)
 	//inputStore.registerInputComponent(DynamicType, DynamicTypeInputVue)
-	inputStore.registerInputComponent("Directory", DirectoryInputVue)
-	inputStore.registerInputComponent("FilePath", FilePathInputVue)
-	inputStore.registerInputComponent("Command", CommandInputVue)
+	// inputStore.registerInputComponent("Directory", DirectoryInputVue)
+	// inputStore.registerInputComponent("FilePath", FilePathInputVue)
+	// inputStore.registerInputComponent("Command", CommandInputVue)
 	//inputStore.registerInputComponent(BooleanExpression, BooleanExpressionInput)
 	//inputStore.registerInputComponent(ViewerVariableName, ViewerVariableNameInput)
 
-	inputStore.registerViewComponent("String", EnumableDataView)
-	inputStore.registerViewComponent("Number", EnumableDataView)
-	inputStore.registerViewComponent("Boolean", BooleanViewVue)
-	inputStore.registerViewComponent("Object", ObjectViewVue)
-	inputStore.registerViewComponent("Range", RangeViewVue)
-	inputStore.registerViewComponent("MediaFile", MediaFileViewVue)
-	inputStore.registerViewComponent("Resource", ResourceViewVue)
-	inputStore.registerViewComponent("Toggle", ToggleViewVue)
-	inputStore.registerViewComponent("Color", ColorViewVue)
-	inputStore.registerViewComponent("Duration", DurationViewVue)
-	inputStore.registerViewComponent("Command", CommandViewVue)
-	inputStore.registerViewComponent("Timer", TimerViewVue)
-	inputStore.registerViewComponent("DynamicType", DynamicTypeView)
+	// inputStore.registerViewComponent("String", EnumableDataView)
+	// inputStore.registerViewComponent("Number", EnumableDataView)
+	// inputStore.registerViewComponent("Boolean", BooleanViewVue)
+	// inputStore.registerViewComponent("Object", ObjectViewVue)
+	// inputStore.registerViewComponent("Range", RangeViewVue)
+	// inputStore.registerViewComponent("MediaFile", MediaFileViewVue)
+	// inputStore.registerViewComponent("Resource", ResourceViewVue)
+	// inputStore.registerViewComponent("Toggle", ToggleViewVue)
+	// inputStore.registerViewComponent("Color", ColorViewVue)
+	// inputStore.registerViewComponent("Duration", DurationViewVue)
+	// inputStore.registerViewComponent("Command", CommandViewVue)
+	// inputStore.registerViewComponent("Timer", TimerViewVue)
+	// inputStore.registerViewComponent("DynamicType", DynamicTypeView)
 }
 
 export function provideDataContextSchema(schema: MaybeRefOrGetter<SchemaObject>) {

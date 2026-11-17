@@ -47,7 +47,7 @@ import { computed, ref, onMounted, useModel, watch, useTemplateRef } from "vue"
 import EnumInput from "../base-components/EnumInput.vue"
 import { SharedDataInputProps } from "../DataInputTypes"
 import { useDataBinding } from "../../../editor/data-binding.ts"
-import { useCommitUndo } from "../../../main.ts"
+import { focusAvailable, useCommitUndo } from "../../../main.ts"
 
 const props = defineProps<
 	{
@@ -95,8 +95,7 @@ const numberInput = useTemplateRef("numberInput")
 
 defineExpose({
 	focus() {
-		enumInput.value?.focus()
-		numberInput.value?.focus()
+		focusAvailable(enumInput, numberInput)
 	},
 })
 </script>

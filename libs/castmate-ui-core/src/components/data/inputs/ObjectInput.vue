@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { type SchemaObj } from "castmate-schema"
+import { type SchemaObject } from "castmate-schema"
 import DataInput from "../DataInput.vue"
 import { getDataLabel, SharedDataInputProps } from "../DataInputTypes"
 import { computed } from "vue"
@@ -39,14 +39,16 @@ interface ObjType {
 
 const props = defineProps<
 	{
-		schema: SchemaObj
+		schema: SchemaObject
 		modelValue: ObjType | undefined
 	} & SharedDataInputProps
 >()
 
 useDataBinding(() => props.localPath)
 
-const propKeys = computed(() => Object.keys(props.schema.properties).filter(k => props.schema.properties[k].view !== false))
+const propKeys = computed(() =>
+	Object.keys(props.schema.properties).filter((k) => props.schema.properties[k].view !== false)
+)
 
 const emit = defineEmits(["update:modelValue"])
 
